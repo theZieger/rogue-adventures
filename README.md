@@ -4,7 +4,7 @@ Ein Roguelike-Lernspiel für Grundschüler (ca. 3. Klasse) – Monster, Karte, A
 Jede Attacke ist eine Aufgabe: richtig gelöst = Treffer, falsch = der Gegner schlägt zu.
 Komplett in einer HTML-Datei, kein Server, kein Account. Deutsch.
 
-**Spielen:** https://DEIN-GITHUB-NAME.github.io/lernquest/
+**Spielen:** https://thezieger.github.io/rogue-adventures/
 
 ## Modi
 
