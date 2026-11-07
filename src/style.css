@@ -277,3 +277,58 @@ p { margin: 8px 0; }
 .card.news h4 { margin: 10px 0 2px; font-size: 18px; }
 .card.news ul { margin: 0; padding-left: 22px; }
 .card.news li { margin: 3px 0; line-height: 1.35; }
+.ohelp { margin: 6px 0 0; font-size: 15px; color: var(--ink-soft); text-align: center; }
+
+/* ---------- Title: grade & subject, sound toggle ---------- */
+.grades { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.gradechip { border: 3px solid rgba(255,255,255,.35); background: transparent; color: var(--paper-ink); border-radius: 999px; padding: 4px 16px; font: inherit; font-size: 17px; font-weight: 800; min-height: 44px; cursor: pointer; }
+.gradechip.on { background: var(--gold); color: var(--ink); border-color: var(--ink); }
+.eyebrow { font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 2px; }
+.soundbtn { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); right: 12px; width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); font-size: 22px; cursor: pointer; z-index: 2; }
+.screen { position: relative; }
+.modecard .row .btn.small { min-width: 0; }
+
+/* ---------- Starter: recommendation and practice swap ---------- */
+.recbadge { display: inline-block; background: #FFF1C7; color: #6B4E00; border-radius: 999px; padding: 0 10px; font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.choice.swap { border-style: dashed; }
+.choice.swap .tick { margin-left: auto; width: 34px; height: 34px; flex: none; border-radius: 10px; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--green); background: #fff; }
+
+/* ---------- Toggles (Elternbereich, Feedback) ---------- */
+.toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+.toggle { border: 3px solid var(--ink-soft); background: #fff; color: var(--ink-soft); border-radius: 14px; padding: 6px 12px; min-height: 44px; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.toggle.on { border-color: var(--green); background: #E6F9EA; color: #1E6B32; }
+textarea#fbtext { width: 100%; margin-top: 10px; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 18px; color: var(--ink); background: #fff; resize: vertical; }
+textarea#fbtext:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
+
+/* ---------- Look: soft background glow, calmer shadows, gentle hover ---------- */
+body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,255,.14), transparent 65%), radial-gradient(700px 480px at 110% 110%, rgba(255,201,60,.07), transparent 60%); background-attachment: fixed; }
+.btn, .choice, .atk, .opt, .oitem, .node, .item, .toggle, .gradechip { transition: transform .12s ease, box-shadow .12s ease, filter .15s ease, background-color .2s ease, border-color .2s ease; }
+@media (hover: hover) { .btn:not(:disabled):hover, .choice:hover, .atk:hover, .opt:not(:disabled):hover, .oitem:hover, .item:hover, .toggle:hover, .gradechip:hover { filter: brightness(1.04); transform: translateY(-1px); } }
+:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- Motion (all short and soft; switched off for "reduce motion") ---------- */
+.enter { animation: screenIn .22s ease-out both; }
+@keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.fighter { position: relative; }
+.fighter .mon { animation: bob 3.2s ease-in-out infinite; }
+.fighter#fe .mon { animation-delay: -1.6s; }
+.hero .logo, .card.center > .mon, .choice.selected .mon { animation: bob 3.6s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+.floatnum { position: absolute; left: 50%; top: 10%; transform: translateX(-50%); font-weight: 800; font-size: 26px; color: #fff; text-shadow: 0 2px 0 var(--ink), 0 0 6px rgba(0,0,0,.4); pointer-events: none; animation: floatUp .9s ease-out forwards; z-index: 3; }
+.floatnum.crit { color: var(--gold); font-size: 32px; }
+@keyframes floatUp { 0% { opacity: 0; translate: 0 6px; } 15% { opacity: 1; } 100% { opacity: 0; translate: 0 -38px; } }
+.floor.current .node { animation: glow 2.4s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 3px var(--gold), var(--shadow); } 50% { box-shadow: 0 0 0 6px rgba(255,201,60,.55), var(--shadow); } }
+.overlay .modal { animation: modalIn .2s ease-out both; }
+@keyframes modalIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+.feedback.good { animation: pop .45s; }
+.atk.tired .tag.tired { animation: none; }
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+.confetti i { position: absolute; top: -12px; left: var(--x); width: 9px; height: 14px; border-radius: 3px; background: var(--c); opacity: 0; animation: fall 2.6s ease-in var(--d) 1 forwards; }
+@keyframes fall { 0% { opacity: 0; transform: translateY(0) rotate(0); } 10% { opacity: 1; } 100% { opacity: 0; transform: translateY(85vh) rotate(320deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .enter, .fighter .mon, .hero .logo, .card.center > .mon, .choice.selected .mon, .floor.current .node, .overlay .modal, .feedback.good, .confetti i { animation: none; }
+  .confetti { display: none; }
+  .floatnum { animation: none; opacity: 1; }
+  .btn, .choice, .atk, .opt, .oitem, .node, .item, .toggle, .gradechip { transition: none; }
+}

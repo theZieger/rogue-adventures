@@ -7,6 +7,15 @@
     kartoffel: MK.MODES.kartoffel,
   };
   const MODE_KEYS = ['math', 'ethik', 'kartoffel'];
+  // What can be learned, by school grade and subject. A subject can hold several units (game modes).
+  // Add grades/subjects/units here – the title screen builds itself from this list.
+  const CURRICULUM = [
+    { grade: 3, label: 'Klasse 3', subjects: [
+      { subject: 'Mathe', modes: ['math'] },
+      { subject: 'Ethik', modes: ['ethik'] },
+      { subject: 'Sachkunde', modes: ['kartoffel'] },
+    ] },
+  ];
   let mode = 'math';
   const CFG = () => MODES[mode];
   const MODULES_OF = () => CFG().modules;
@@ -24,14 +33,14 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '' });
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Load saved progress defensively: anything missing or of the wrong type falls back to the default,
   // so damaged storage can never stop the game from starting.
   function loadMeta() {
     const m = defaultMeta(); const raw = load(KEY_META, null);
     if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
-    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked']) if (!isObj(m[k])) m[k] = {};
+    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter']) if (!isObj(m[k])) m[k] = {};
     return m;
   }
   let meta = loadMeta();
@@ -40,6 +49,12 @@
   for (const m of MODE_KEYS) { if (!isObj(meta.stats[m])) meta.stats[m] = emptyStats(m); for (const k of Object.keys(MODES[m].modules)) if (!okStat(meta.stats[m][k])) meta.stats[m][k] = { c: 0, t: 0, hist: [] }; }
   if (!Number.isFinite(meta.knowSeq)) meta.knowSeq = 0;
   let run = null;
+  const curGrade = () => CURRICULUM.find((g) => g.grade === meta.grade) || CURRICULUM[0];
+  const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">🎓 ${esc(g.label)}</button>`).join('')}</div>`;
+  // task types parents switched off (Elternbereich) – at least two stay on per mode
+  const offList = (m) => (isObj(meta.off) && Array.isArray(meta.off[m]) ? meta.off[m] : []);
+  const enabledMods = (m) => { const all = Object.keys(MODES[m || mode].modules); const on = all.filter((k) => !offList(m || mode).includes(k)); return on.length >= 2 ? on : all; };
+  const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
   // A saved adventure is only removed when it really ends (endRun) or is replaced by a new one –
   // never as a side effect of saving while no adventure is loaded.
   const saveAll = () => { save(KEY_META, meta); if (run && !run.over) save(KEY_RUN_FOR(run.mode), run); };
@@ -72,7 +87,7 @@
     // adapt the level, but never beyond what the current world uses – otherwise the next world would start at its hardest level
     if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
   }
-  function weakestModule() { let best = null, bestAcc = 2; for (const k of MODKEYS()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
+  function weakestModule() { let best = null, bestAcc = 2; for (const k of enabledMods()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
   function makeTask(mod, tier, opts) {
     run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
     let t, sig;
@@ -85,13 +100,45 @@
     return t;
   }
   // all four attacks are available from the start, so children practise different task types
-  function heroAttacks() { return run.hero.attacks.map((a) => Object.assign({}, a)); }
+  // switched-off task types are replaced by enabled ones the hero doesn't have yet
+  function heroAttacks() {
+    const on = enabledMods(); const used = run.hero.attacks.map((a) => a.mod).filter((k) => on.includes(k)); const spare = on.filter((k) => !used.includes(k)); let i = 0;
+    return run.hero.attacks.map((a) => { if (on.includes(a.mod)) return Object.assign({}, a); const k = spare.length ? spare.shift() : on[i++ % on.length]; return { name: CFG().extra[k], mod: k }; });
+  }
   function gainXp(n) { run.hero.xp += n; let msgs = []; while (run.hero.xp >= xpNeeded(run.hero.level)) { run.hero.xp -= xpNeeded(run.hero.level); run.hero.level++; run.hero.maxHp += 8; run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + 8); msgs.push(`Level ${run.hero.level}! Alle Attacken machen mehr Schaden.`); } return msgs; }
   function heal(n) { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + n); }
 
   /* ---------- Rendering primitives ---------- */
   let keyHandler = null; // set while a number task is open: physical keyboard works like the on-screen keypad
-  function render(html) { keyHandler = null; app.innerHTML = html; }
+  // quiet = re-render of the same screen (no fade-in), e.g. every turn in a battle
+  function render(html, quiet) { keyHandler = null; app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
+
+  /* ---------- Sound: soft synthesized tones (no audio files), off via Elternbereich or 🔊 on the title screen ---------- */
+  const SFX = (() => {
+    let ctx = null;
+    const ac = () => { if (!meta.sound) return null; try { if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; ctx = new AC(); } if (ctx.state === 'suspended') ctx.resume(); return ctx; } catch (e) { return null; } };
+    function tone(f, t0, dur, o) {
+      o = o || {}; const c = ac(); if (!c) return; const t = c.currentTime + t0; const vol = o.vol || 0.05;
+      const osc = c.createOscillator(), g = c.createGain(); osc.type = o.type || 'sine'; osc.frequency.setValueAtTime(f, t); if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t + dur);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g); g.connect(c.destination); osc.start(t); osc.stop(t + dur + 0.03);
+    }
+    const notes = (seq, step, o) => seq.forEach((f, i) => tone(f, i * step, step * 2, o));
+    return {
+      tap: () => tone(740, 0, 0.05, { vol: 0.02, to: 600 }),
+      right: () => notes([523.25, 659.25, 783.99], 0.075, { type: 'triangle', vol: 0.05 }),
+      wrong: () => { tone(330, 0, 0.16, { vol: 0.035, to: 294 }); tone(262, 0.13, 0.22, { vol: 0.035, to: 233 }); },
+      hit: () => tone(200, 0, 0.13, { type: 'triangle', vol: 0.07, to: 80 }),
+      hurt: () => tone(150, 0, 0.16, { vol: 0.06, to: 70 }),
+      block: () => tone(700, 0, 0.12, { type: 'triangle', vol: 0.035, to: 1050 }),
+      item: () => notes([1046.5, 1318.5], 0.07, { vol: 0.035 }),
+      level: () => notes([523.25, 659.25, 783.99, 1046.5], 0.09, { type: 'triangle', vol: 0.05 }),
+      win: () => notes([392, 523.25, 659.25, 783.99, 1046.5], 0.12, { type: 'triangle', vol: 0.05 }),
+    };
+  })();
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('button')) SFX.tap(); }, true);
+  // floating damage number above a fighter
+  function fx(sel, text, cls) { const el = $(sel); if (!el) return; const s = document.createElement('span'); s.className = 'floatnum ' + (cls || ''); s.textContent = text; s.setAttribute('aria-hidden', 'true'); el.appendChild(s); setTimeout(() => s.remove(), 1000); }
   document.addEventListener('keydown', (e) => { if (keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) keyHandler(e); });
   // one persistent live region, so screen readers reliably announce battle messages
   const live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); document.body.appendChild(live);
@@ -162,8 +209,8 @@
       const ok = values.every((v, i) => parseInt(v, 10) === task.answers[i]);
       inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
-      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; }
-      else { const corr = task.answers.join(task.nb ? ' und ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
+      else { SFX.wrong(); const corr = task.answers.join(task.nb ? ' und ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -178,7 +225,7 @@
     // magnifier item: one wrong option is crossed out
     const strikeWrongOption = () => { const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🔎 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
-      locked = true; const fb = $('#fb', container);
+      locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small></div>`;
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
@@ -200,8 +247,8 @@
       container.querySelectorAll('[data-part]').forEach((g) => { g.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } }; g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
     } else if (task.kind === 'order') {
       const chosen = opts.hint ? [task.order[0]] : []; const fixed = chosen.length;
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><div id="fb" role="status" aria-live="polite"></div></div>`;
-      const paint = () => { $('#olist', container).innerHTML = task.display.map((it) => { const pos = chosen.indexOf(it.id); return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`; }).join(''); container.querySelectorAll('.oitem').forEach((b) => { b.onclick = () => { if (locked || chosen.includes(b.dataset.id)) return; chosen.push(b.dataset.id); paint(); }; }); $('#ocheck').disabled = chosen.length !== task.order.length; $('#oundo').disabled = chosen.length <= fixed; };
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><p class="ohelp">Tippe der Reihe nach. Nochmal tippen nimmt es wieder heraus.</p><div id="fb" role="status" aria-live="polite"></div></div>`;
+      const paint = () => { $('#olist', container).innerHTML = task.display.map((it) => { const pos = chosen.indexOf(it.id); return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}" aria-pressed="${pos >= 0}" aria-label="${esc(it.text)}${pos >= 0 ? ', Platz ' + (pos + 1) : ''}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`; }).join(''); container.querySelectorAll('.oitem').forEach((b) => { b.onclick = () => { if (locked) return; const pos = chosen.indexOf(b.dataset.id); if (pos >= fixed) chosen.splice(pos, 1); else if (pos < 0) chosen.push(b.dataset.id); paint(); }; }); /* tap again = take it out, the ones after it move up */ $('#ocheck').disabled = chosen.length !== task.order.length; $('#oundo').disabled = chosen.length <= fixed; };
       bottom.innerHTML = `<div class="row"><button class="btn secondary" id="oundo">↶ Rückgängig</button><button class="btn" id="ocheck">✓ Prüfen</button></div>`;
       $('#oundo').onclick = () => { if (!locked && chosen.length > fixed) { chosen.pop(); paint(); } };
       if (fixed) $('#olist', container).insertAdjacentHTML('afterend', '<div class="hintline">🔎 Tipp: Das Erste steht schon richtig.</div>');
@@ -235,11 +282,11 @@
 
   /* ---------- Screens ---------- */
   function screenTitle() {
-    render(`<div class="screen"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Monster · Wissen · Abenteuer</div></div>
+    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Monster · Wissen · Abenteuer</div></div>
       <div class="stack" style="margin-top:16px">
-        ${MODE_KEYS.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter (${c.worlds > 1 ? 'Welt ' + r.world + ', ' : ''}Etage ${r.floor})</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}
+        ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter (${c.worlds > 1 ? 'Welt ' + r.world + ', ' : ''}Etage ${r.floor})</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
-        <button class="btn ghost" id="news">📰 Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button>
+        <div class="row"><button class="btn ghost" id="news">📰 Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">💡 Idee senden</button></div>
         <p class="center muted">Abenteuer gespielt: ${meta.runs} · Geschafft: ${meta.wins}</p>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
@@ -247,6 +294,9 @@
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
     $('#news').onclick = screenNews;
+    $('#feedback').onclick = screenFeedback;
+    $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); screenTitle(); };
+    app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
   }
 
   /* ---------- Changelog ("Was ist neu?") – data comes from CHANGELOG.md via build.py ---------- */
@@ -264,12 +314,28 @@
 
   function screenStarter() {
     let sel = CFG().starters.length === 1 ? CFG().starters[0].id : null;
+    // recommend the monster whose attacks were practised least (and not the one played last time)
+    const S = CFG().starters; const last = meta.lastStarter[mode];
+    const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0);
+    const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
+    // offer to swap the most practised attack for a task type that was hardly practised yet
+    let swap = null, swapOn = true;
+    const swapFor = (s) => { if (!s) return null; const have = s.attacks.map((a) => a.mod); const cand = enabledMods().filter((k) => !have.includes(k)).sort((a, b) => practice(a) - practice(b))[0]; const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
+      return cand && most && practice(most) >= practice(cand) + 3 ? { from: most, to: cand } : null; };
+    const paintSwap = () => { const s = S.find((x) => x.id === sel); swap = swapFor(s); const box = $('#swapbox'); if (!box) return; const M = MODULES_OF();
+      box.innerHTML = swap ? `<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" aria-pressed="${swapOn}"><div class="meta"><div class="name">🎯 Neues üben: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name} (schon oft geübt) bekommst du die Attacke „${esc(CFG().extra[swap.to])}“. ✨ Bonus: Sternenstaub!</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>` : '';
+      if (swap) $('#swap').onclick = () => { swapOn = !swapOn; paintSwap(); }; };
     render(`<div class="screen">${topbar(CFG().starters.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
-      ${CFG().starters.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta"><div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${CFG().starters.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · ✨ Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      <div id="swapbox"></div>
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Los geht’s!</button></div></div></div>`);
     $('#back').onclick = screenTitle;
-    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; }; });
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false }; meta.runs++; saveAll(); screenMap(); };
+    app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
+    paintSwap();
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
+      if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
+      if ((rec && sel === rec) || (swap && swapOn)) run.items.push('stern');
+      meta.lastStarter[mode] = sel; meta.runs++; saveAll(); screenMap(); };
   }
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1] = ['school']; if (!m[4].includes('school')) m[4][0] = 'school'; } return m;
   }
@@ -328,6 +394,7 @@
     const h = run.hero, e = b.enemy;
     const pct = (a, m) => Math.max(0, (a / m) * 100);
     const hpcls = (a, m) => a / m < .3 ? 'low' : a / m < .6 ? 'mid' : '';
+    const quiet = !!b.shown; b.shown = true;
     render(`<div class="screen">${topbar(e.boss ? '👑 Bosskampf' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
       <div class="arena">
         <div class="fighter" id="fh">${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, h.evo)}<div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div></div>
@@ -335,7 +402,7 @@
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
-      <div class="bottom" id="bottom"></div></div>`);
+      <div class="bottom" id="bottom"></div></div>`, quiet);
     announce(b.log.replace(/<[^>]+>/g, ''));
     if (b.phase === 'choose') renderAttackChoice(b);
   }
@@ -387,8 +454,8 @@
           if (heroSpec().perk === 'heal') heal(3);
           b.log = `${atk.name}: ${crit ? 'VOLLTREFFER – doppelter Schaden! ' : inf.strong ? 'Stark! ' : 'Treffer! '}${dmg} Schaden${inf.tired ? ' (müde)' : ''}`; b.logCls = crit ? 'crit' : 'hit';
           saveAll();
-          if (b.enemy.hp <= 0) { renderBattle(b); $('#fe').classList.add('hurt'); setTimeout(() => { if (run) battleWon(b); }, 500); return; }
-          renderBattle(b); $('#fe').classList.add('hurt');
+          if (b.enemy.hp <= 0) { renderBattle(b); $('#fe').classList.add('hurt'); fx('#fe', '−' + dmg, crit ? 'crit' : ''); SFX.hit(); setTimeout(() => { if (run) battleWon(b); }, 650); return; }
+          renderBattle(b); $('#fe').classList.add('hurt'); fx('#fe', '−' + dmg, crit ? 'crit' : ''); SFX.hit();
           setTimeout(() => { if (run) enemyTurn(b, 1); }, 700);
         } else {
           b.log = `${atk.name} geht daneben… ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
@@ -400,11 +467,13 @@
   }
   function enemyTurn(b, mult) {
     const h = run.hero; const move = pick(ENEMY_MOVES);
+    b.taken = 0;
     if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
-    else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
+    else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); b.taken = dmg; h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
     const angel = run.items.indexOf('engel');
     if (h.hp <= 0 && angel >= 0) { run.items.splice(angel, 1); h.hp = Math.round(h.maxHp * 0.5); b.log += ` – aber ${ITEMS.engel.icon} der Schutzengel rettet dich! ❤️ ${h.hp}`; b.logCls = 'crit'; }
-    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b); $('#fh').classList.add('hurt');
+    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b);
+    if (b.taken) { $('#fh').classList.add('hurt'); fx('#fh', '−' + b.taken); SFX.hurt(); } else { fx('#fh', '🛡️', 'shield'); SFX.block(); }
     if (h.hp <= 0) setTimeout(() => screenGameOver(b), 600);
   }
   const LOOT = { normal: ['beere', 'beere', 'trank', 'keks', 'lupe', 'stern'], elite: ['trank', 'schild', 'keks', 'lupe', 'engel'], boss: ['engel', 'keks', 'schild'], chest: ['trank', 'schild', 'keks', 'lupe', 'engel', 'stern'] };
@@ -416,7 +485,7 @@
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
     else if (e.elite) drops.push(pick(LOOT.elite));
     else if (Math.random() < 0.5) drops.push(pick(LOOT.normal));
-    run.items.push(...drops);
+    run.items.push(...drops); if (drops.length) setTimeout(SFX.item, 250); if (msgs.length) setTimeout(SFX.level, 500);
     nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>✨ Entwicklung!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
@@ -430,13 +499,13 @@
     const EV = CFG().events; if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = rnd(0, EV.length - 1); saveAll(); }
     const ev = run.node ? EV[run.node.ev] : pick(EV);
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p></div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
-    app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => { const o = ev.opts[+btn.dataset.i]; if (o.task) { const mod = o.task === 'any' ? pick(MODKEYS()) : o.task; const tier = tierFor(mod); const t = makeTask(mod, tier); render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`); ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom') }, (ok) => { recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose, ok ? 'Geschafft!' : 'Leider daneben.'); })); } else applyEffect(o.effect, ev.title); }; });
+    app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => { const o = ev.opts[+btn.dataset.i]; if (o.task) { const mod = o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const tier = tierFor(mod); const t = makeTask(mod, tier); render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`); ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom') }, (ok) => { recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose, ok ? 'Geschafft!' : 'Leider daneben.'); })); } else applyEffect(o.effect, ev.title); }; });
   }
   function applyEffect(eff, title) {
     const lines = [];
     if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 ${eff.hp} Lebenspunkte`); } }
     if (eff.maxhp) { run.hero.maxHp += eff.maxhp; heal(eff.maxhp); lines.push(`💪 +${eff.maxhp} maximale Lebenspunkte`); }
-    if (eff.item) { run.items.push(eff.item); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
+    if (eff.item) { run.items.push(eff.item); setTimeout(SFX.item, 200); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
     if (eff.xp) { const m = gainXp(eff.xp); lines.push(`⭐ +${eff.xp} XP`); lines.push(...m); }
     if (!lines.length) lines.push('Nichts passiert.');
     nodeDone(); saveAll();
@@ -463,7 +532,7 @@
 
   /* ---------- Treasure ---------- */
   function screenTreasure() {
-    const owned = run.hero.attacks.map((a) => a.mod); const free = MODKEYS().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
+    const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
     const [i1, i2] = shuffle(LOOT.chest.slice()); const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
     const opts = [itemOpt(i1), { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' }];
     if (free.length) { const m = pick(free); opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push(itemOpt(i2));
@@ -500,8 +569,8 @@
   }
   function screenVictory() {
     meta.wins++; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
-    endRun(); run = null;
-    render(`<div class="screen">${topbar('Sieg!')}<div class="scroll"><div class="card center"><h1 style="font-size:36px">🎉 Du hast es geschafft!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> hat ${esc(bossName)} besiegt${CFG().worlds > 1 ? ` und alle ${CFG().worlds === 3 ? 'drei' : 'zwei'} Welten gemeistert` : ''}!</p><p>Abenteuer geschafft: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    endRun(); run = null; setTimeout(SFX.win, 200);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">🎉 Du hast es geschafft!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> hat ${esc(bossName)} besiegt${CFG().worlds > 1 ? ` und alle ${CFG().worlds === 3 ? 'drei' : 'zwei'} Welten gemeistert` : ''}!</p><p>Abenteuer geschafft: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenDex() {
@@ -512,13 +581,44 @@
   function screenParent() {
     const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
     const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = MK.L_POOL.find((p) => p.id === id) || MK.K_POOL.find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
-    render(`<div class="screen">${topbar('👨‍👩‍👦 Elternbereich')}<div class="scroll">${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
+    const settings = `<div class="card parent-stats" style="margin-bottom:12px"><h3>🎛️ Was soll geübt werden?</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.</p>${MODE_KEYS.map((m) => `<h4 style="margin:10px 0 4px">${MODES[m].icon} ${MODES[m].title}</h4><div class="toggles">${Object.keys(MODES[m].modules).map((k) => { const on = !offList(m).includes(k); return `<button class="toggle ${on ? 'on' : ''}" data-m="${m}" data-k="${k}" aria-pressed="${on}">${on ? '✔' : '✖'} ${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</button>`; }).join('')}</div>`).join('')}<p id="tmsg" class="muted" role="status" style="color:var(--red);min-height:1em;margin:6px 0 0"></p></div>
+      <div class="card parent-stats" style="margin-bottom:12px"><h3>🔊 Töne</h3><button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button></div>`;
+    render(`<div class="screen">${topbar('👨‍👩‍👦 Elternbereich')}<div class="scroll">${settings}${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
-      <div class="stack" style="margin-top:14px"><button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button></div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
+      <div class="stack" style="margin-top:14px"><button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn secondary" id="pfeedback">💡 Idee oder Fehler melden</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button></div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
     $('#back').onclick = screenTitle;
     $('#rtut').onclick = () => { meta.seenTut = {}; saveAll(); screenParent(); };
     $('#rstats').onclick = () => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); screenParent(); };
-    $('#rall').onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); };
+    $('#rall').onclick = () => { const ov = modal(`<h2>Wirklich alles löschen?</h2><p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht. Das kann man nicht rückgängig machen.</p><div class="stack"><button class="btn" id="yes" style="background:var(--red)">Ja, alles löschen</button><button class="btn secondary" id="no">Abbrechen</button></div>`); $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }; };
+    $('#psound').onclick = () => { meta.sound = !meta.sound; saveAll(); screenParent(); };
+    $('#pfeedback').onclick = screenFeedback;
+    app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
+      const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
+      if (i >= 0) off.splice(i, 1); else { if (Object.keys(MODES[m].modules).length - off.length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }
+      meta.off[m] = off; saveAll(); const y = $('.scroll').scrollTop; screenParent(); $('.scroll').scrollTop = y; }; });
+  }
+
+  /* ---------- Feedback ---------- */
+  // Where ideas go. GitHub works right away (needs a GitHub account). FEEDBACK.email / FEEDBACK.form can be filled in
+  // to let people without an account send ideas too (mail app / an online form) – see README "Feedback".
+  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: '' };
+  function screenFeedback() {
+    render(`<div class="screen">${topbar('💡 Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
+      <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
+      <label for="fbtext" class="sr-only">Deine Nachricht</label><textarea id="fbtext" rows="6" maxlength="2000" placeholder="Zum Beispiel: Ich wünsche mir Aufgaben zum Einmaleins mit 7 …"></textarea>
+      <p class="muted" style="color:var(--ink-soft);font-size:15px">Bitte keine Namen, Adressen oder Telefonnummern hineinschreiben.</p></div></div>
+      <div class="bottom"><div class="stack">${FEEDBACK.form ? '<button class="btn" id="fbform">Absenden (Online-Formular)</button>' : ''}${FEEDBACK.email ? '<button class="btn" id="fbmail">✉️ Per E-Mail senden</button>' : ''}<button class="btn ${FEEDBACK.form || FEEDBACK.email ? 'secondary' : ''}" id="fbgh">Auf GitHub senden</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
+    let kind = '💡 Idee';
+    app.querySelectorAll('[data-kind]').forEach((b) => { b.onclick = () => { kind = b.dataset.kind; app.querySelectorAll('[data-kind]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); }; });
+    const text = () => $('#fbtext').value.trim();
+    const body = () => `${text()}\n\n---\nArt: ${kind}\nVersion: ${(document.querySelector('meta[name=app-version]') || {}).content || '?'}\nGerät: ${navigator.userAgent}`;
+    const title = () => `${kind.replace(/^\S+ /, '')}: ${text().split('\n')[0].slice(0, 60)}`;
+    const need = () => { if (text()) return true; $('#fbtext').focus(); $('#fbtext').placeholder = 'Bitte zuerst etwas hineinschreiben 🙂'; return false; };
+    const open = (url) => { window.open(url, '_blank', 'noopener'); };
+    $('#back').onclick = screenTitle;
+    $('#fbgh').onclick = () => { if (need()) open(`${FEEDBACK.github}?title=${encodeURIComponent(title())}&body=${encodeURIComponent(body())}&labels=feedback`); };
+    if ($('#fbmail')) $('#fbmail').onclick = () => { if (need()) location.href = `mailto:${FEEDBACK.email}?subject=${encodeURIComponent('Lernquest – ' + title())}&body=${encodeURIComponent(body())}`; };
+    if ($('#fbform')) $('#fbform').onclick = () => { if (need()) open(FEEDBACK.form.replace('{text}', encodeURIComponent(body()))); };
   }
 
   screenTitle();

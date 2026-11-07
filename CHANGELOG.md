@@ -17,12 +17,22 @@ Jeder Punkt ist ein kurzer Satz, den auch Kinder und Eltern verstehen.
 - Lernquest lässt sich wie eine App auf dem Handy, Tablet oder Computer installieren und läuft auch ohne Internet.
 - Eigenes App-Symbol mit dem Sonnenfuchs und Startbildschirme für iPhone und iPad.
 - „Was ist neu?“ zeigt diese Liste im Spiel.
+- Startseite nach Klasse und Fach sortiert (Klasse 3: Mathe, Ethik, Sachkunde) – bereit für weitere Klassen.
+- Bei der Monsterwahl wird ein Monster empfohlen, das Neues übt. Dazu gibt es Sternenstaub als Bonus.
+- Vor dem Start kannst du eine selten geübte Aufgabenart gegen eine oft geübte tauschen – auch mit Bonus.
+- Im Elternbereich lässt sich einstellen, welche Aufgabenarten geübt werden.
+- „Idee senden“: Wünsche, Lob und Fehler direkt aus dem Spiel melden.
+- Sanfte Töne beim Tippen, bei richtigen und falschen Antworten, Treffern und Funden. Mit 🔊 auf der Startseite oder im Elternbereich abschaltbar.
+- Kleine Animationen: Monster schweben leicht, Schadenszahlen steigen auf, beim Sieg fällt Konfetti.
 
 ### Verbessert
 - Der Schaden jeder Attacke steht als ganze Zahl auf dem Knopf – ohne Kommazahlen. „stark!“ zeigt, wenn eine Attacke besonders gut wirkt.
 - Die Kombo-Leiste ist weg. Ein kurzes „So kämpfst du“ erklärt den Kampf beim ersten Mal.
 - Auf kleinen Handys und im Querformat ist die Aufgabe immer zu sehen, auch mit Zahlenfeld.
 - Mit der Tastatur spielen: Ziffern, Löschen und Enter funktionieren.
+- Reihenfolge-Aufgaben: Nochmal auf einen gewählten Eintrag tippen nimmt ihn wieder heraus, die anderen rücken nach.
+- Ruhigeres, freundlicheres Aussehen mit weichen Übergängen. Wer am Gerät „Bewegung reduzieren“ eingestellt hat, sieht keine Animationen.
+- „Alles löschen“ im Elternbereich fragt jetzt vorher nach.
 - Vorleseprogramme sagen Treffer und Rückmeldungen an.
 - Die Schrift ist jetzt im Spiel enthalten. Es werden keine Daten an andere Seiten geschickt.
 - Beim Öffnen gibt es immer gleich die neueste Version.

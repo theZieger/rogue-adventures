@@ -33,7 +33,10 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) immer die n
 - „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
-- Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Reset.
+- Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Aufgabenarten an/aus, Töne, Reset.
+- Startseite: Klasse → Fach → Einheit. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
+- „Idee senden“ öffnet ein GitHub-Issue (braucht ein GitHub-Konto). Für Feedback ohne Konto in `FEEDBACK` (`src/app.js`) eine E-Mail-Adresse oder ein Online-Formular eintragen.
+- Töne werden im Browser erzeugt (keine Audiodateien), Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Weiterspielen geht es genau dort weiter.
 - Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften.
 - Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich.
