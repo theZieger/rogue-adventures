@@ -6,6 +6,19 @@ Komplett in einer HTML-Datei, kein Server, kein Account. Deutsch.
 
 **Spielen:** https://thezieger.github.io/rogue-adventures/
 
+## Als App installieren
+
+Lernquest ist eine Web-App (PWA) – einmal installiert, startet es wie eine normale App mit eigenem Symbol und läuft auch **offline**.
+
+| Gerät | So geht's |
+|---|---|
+| Android (Chrome, Edge, Samsung Internet) | Seite öffnen → Menü ⋮ → „App installieren“ bzw. „Zum Startbildschirm hinzufügen“ |
+| iPhone / iPad (Safari) | Seite öffnen → Teilen-Symbol → „Zum Home-Bildschirm“ |
+| Windows / macOS / Linux / ChromeOS (Chrome, Edge) | Installieren-Symbol rechts in der Adressleiste oder Menü → „App installieren“ |
+| Mac (Safari 17+) | Ablage → „Zum Dock hinzufügen“ |
+
+Updates kommen automatisch: nach einem neuen Build lädt die App die neue Version beim nächsten Start.
+
 ## Modi
 
 | Modus | Inhalt |
@@ -28,9 +41,13 @@ src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/knowledge.js   Wissensinhalte Ethik + Kartoffel (Fragen, Notizkarten, Tutorials)
 src/monsters.js    Handgezeichnete SVG-Monster
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
-build.py           baut docs/index.html (eine Datei)
+src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
+src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
+build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
+tools/make_icons.js  erzeugt docs/icons/* aus der Sonnenfuchs-Grafik (Playwright, nur bei Icon-Änderungen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
+docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 ```
 
 ## Entwickeln

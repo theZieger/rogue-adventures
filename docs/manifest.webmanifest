@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "Lernquest – Mathe, Luther und Kartoffel",
+  "short_name": "Lernquest",
+  "description": "Roguelike-Lernspiel für Grundschüler: Monster, Karte, Attacken – jede Attacke ist eine Aufgabe. Funktioniert auch offline.",
+  "lang": "de",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141B33",
+  "theme_color": "#1C2541",
+  "categories": ["education", "games", "kids"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
