@@ -25,12 +25,33 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0 });
-  let meta = Object.assign(defaultMeta(), load(KEY_META, {}));
+  const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  // Load saved progress defensively: anything missing or of the wrong type falls back to the default,
+  // so damaged storage can never stop the game from starting.
+  function loadMeta() {
+    const m = defaultMeta(); const raw = load(KEY_META, null);
+    if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
+    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked']) if (!isObj(m[k])) m[k] = {};
+    return m;
+  }
+  let meta = loadMeta();
   (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
-  for (const m of MODE_KEYS) { if (!meta.stats[m]) meta.stats[m] = emptyStats(m); for (const k of Object.keys(MODES[m].modules)) if (!meta.stats[m][k]) meta.stats[m][k] = { c: 0, t: 0, hist: [] }; }
-  if (!meta.know) meta.know = {}; if (!meta.knowSeq) meta.knowSeq = 0;
+  const okStat = (v) => isObj(v) && Number.isFinite(v.c) && Number.isFinite(v.t) && Array.isArray(v.hist);
+  for (const m of MODE_KEYS) { if (!isObj(meta.stats[m])) meta.stats[m] = emptyStats(m); for (const k of Object.keys(MODES[m].modules)) if (!okStat(meta.stats[m][k])) meta.stats[m][k] = { c: 0, t: 0, hist: [] }; }
+  if (!Number.isFinite(meta.knowSeq)) meta.knowSeq = 0;
   let run = null;
-  const saveAll = () => { save(KEY_META, meta); if (run) save(KEY_RUN_FOR(run.mode), run); else clear(KEY_RUN_FOR(mode)); };
+  // A saved adventure is only removed when it really ends (endRun) or is replaced by a new one –
+  // never as a side effect of saving while no adventure is loaded.
+  const saveAll = () => { save(KEY_META, meta); if (run && !run.over) save(KEY_RUN_FOR(run.mode), run); };
+  function endRun() { if (run) { run.over = true; clear(KEY_RUN_FOR(run.mode)); } save(KEY_META, meta); }
+  // A saved adventure must belong to a known hero and have the fields the game needs.
+  function loadRun(m) {
+    const r = load(KEY_RUN_FOR(m), null);
+    const ok = isObj(r) && isObj(r.hero) && Array.isArray(r.map) && isObj(r.tiers) && Array.isArray(r.items) && Array.isArray(r.path) && Array.isArray(r.hero.attacks)
+      && Number.isFinite(r.world) && Number.isFinite(r.floor) && Number.isFinite(r.hero.hp) && MODES[m].starters.some((s) => s.id === r.hero.id) && r.world >= 1 && r.world <= MODES[m].worlds && r.floor >= 1 && r.floor <= r.map.length;
+    if (!ok) { if (r) clear(KEY_RUN_FOR(m)); return null; }
+    r.mode = m; return r;
+  }
 
   /* ---------- Monster art ---------- */
   const monsterSVG = MONART.monsterSVG; const shade = MONART.shade;
@@ -42,12 +63,14 @@
   const tutKey = (k) => mode + ':' + k;
   const typeChip = (t) => `<span class="chip" style="background:${TYPES[t].color};color:#1C2541">${TYPES[t].icon} ${TYPES[t].name}</span>`;
   const xpNeeded = (lvl) => 20 + lvl * 15;
-  function tierFor(mod) { const M = MODULES_OF()[mod]; const cap = M.worldCap[Math.min(run.world, M.worldCap.length) - 1]; return Math.max(1, Math.min(cap, run.tiers[mod] || 1)); }
+  const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(run.world, M.worldCap.length) - 1]); };
+  function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), run.tiers[mod] || 1)); }
   function recordAnswer(mod, ok, task) {
     const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
     if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
     const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
-    if (recent.length >= 6) { if (acc >= 0.85) { run.tiers[mod] = Math.min(M.maxTier, (run.tiers[mod] || 1) + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, (run.tiers[mod] || 1) - 1); s.hist = []; } }
+    // adapt the level, but never beyond what the current world uses – otherwise the next world would start at its hardest level
+    if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
   }
   function weakestModule() { let best = null, bestAcc = 2; for (const k of MODKEYS()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
   function makeTask(mod, tier, opts) {
@@ -66,7 +89,12 @@
   function heal(n) { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + n); }
 
   /* ---------- Rendering primitives ---------- */
-  function render(html) { app.innerHTML = html; }
+  let keyHandler = null; // set while a number task is open: physical keyboard works like the on-screen keypad
+  function render(html) { keyHandler = null; app.innerHTML = html; }
+  document.addEventListener('keydown', (e) => { if (keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) keyHandler(e); });
+  // one persistent live region, so screen readers reliably announce battle messages
+  const live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); document.body.appendChild(live);
+  function announce(text) { live.textContent = ''; setTimeout(() => { live.textContent = text; }, 50); }
   function topbar(title, extra) { return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`; }
   function modal(html) { const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; app.appendChild(ov); return ov; }
 
@@ -99,7 +127,7 @@
       let inputs = '';
       if (task.nb) inputs = `<div class="nbline"><div class="inpgroup"><div class="inp" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-i="1"></div><span>danach</span></div></div>`;
       else inputs = `<div class="inputs">${task.answers.map((_, i) => `<div class="inp" data-i="${i}"></div>`).join('')}</div>`;
-      return `<div class="task"><div class="head">${MODULES[mod].icon} ${MODULES[mod].name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${inputs}<div id="fb"></div></div>`;
+      return `<div class="task"><div class="head">${MODULES[mod].icon} ${MODULES[mod].name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
     }
     container.innerHTML = cardHtml();
     bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
@@ -109,7 +137,15 @@
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
     paint();
     bottom.onclick = (e) => {
-      const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; const k = b.dataset.k;
+      const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; press(b.dataset.k);
+    };
+    keyHandler = (e) => {
+      if (locked) return; let k = null;
+      if (/^[0-9]$/.test(e.key)) k = e.key; else if (e.key === 'Backspace' || e.key === 'Delete') k = 'del'; else if (e.key === 'Enter') k = 'ok';
+      else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Tab') && nAns > 1) { e.preventDefault(); active = (active + ((e.key === 'ArrowLeft' || e.shiftKey) ? nAns - 1 : 1)) % nAns; paint(); return; }
+      if (!k) return; e.preventDefault(); press(k);
+    };
+    function press(k) {
       if (k === 'cancel') { done(null); return; }
       if (k === 'del') { values[active] = values[active].slice(0, -1); }
       else if (k === 'ok') {
@@ -118,9 +154,9 @@
       }
       else { if (values[active].length < 3) values[active] += k; }
       paint();
-    };
+    }
     function submit() {
-      locked = true;
+      locked = true; keyHandler = null;
       const ok = values.every((v, i) => parseInt(v, 10) === task.answers[i]);
       inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
@@ -144,20 +180,20 @@
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
     if (task.kind === 'choice') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb"></div></div>`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options ${task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
     } else if (task.kind === 'parts') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ highlight: task.part })}<div id="fb"></div></div>`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ highlight: task.part })}<div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options two">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Das ist: ${esc(task.answer)}`); }; });
     } else if (task.kind === 'parts-find') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ clickable: true })}<div id="fb"></div></div>`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf den Teil in der Pflanze.</p>`;
-      container.querySelectorAll('[data-part]').forEach((g) => { g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
+      container.querySelectorAll('[data-part]').forEach((g) => { g.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } }; g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
     } else if (task.kind === 'order') {
       const chosen = [];
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><div id="fb"></div></div>`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><div id="fb" role="status" aria-live="polite"></div></div>`;
       const paint = () => { $('#olist', container).innerHTML = task.display.map((it) => { const pos = chosen.indexOf(it.id); return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`; }).join(''); container.querySelectorAll('.oitem').forEach((b) => { b.onclick = () => { if (locked || chosen.includes(b.dataset.id)) return; chosen.push(b.dataset.id); paint(); }; }); $('#ocheck').disabled = chosen.length !== task.order.length; $('#oundo').disabled = chosen.length === 0; };
       bottom.innerHTML = `<div class="row"><button class="btn secondary" id="oundo">↶ Rückgängig</button><button class="btn" id="ocheck">✓ Prüfen</button></div>`;
       $('#oundo').onclick = () => { if (!locked) { chosen.pop(); paint(); } };
@@ -171,7 +207,7 @@
   // opts: highlight (part id), clickable, labels (bool), step (1-6 for drawing school)
   function potatoSVG(opts) {
     opts = opts || {}; const step = opts.step || 6; const hl = (id) => opts.highlight === id ? ' glow' : '';
-    const g = (id, inner, cls) => (step >= PART_STEP[id] ? `<g data-part="${id}" class="part${hl(id)} ${cls || ''}" ${opts.clickable ? 'tabindex="0" role="button" aria-label="Pflanzenteil"' : ''}>${inner}</g>` : '');
+    const g = (id, inner, cls) => (step >= PART_STEP[id] ? `<g data-part="${id}" class="part${hl(id)} ${cls || ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="Pflanzenteil ${Object.keys(PART_STEP).indexOf(id) + 1}"` : ''}>${inner}</g>` : '');
     const label = (id, x, y, anchor) => opts.labels && step >= PART_STEP[id] ? `<text class="plabel" x="${x}" y="${y}" text-anchor="${anchor || 'start'}">${MK.PARTS.find((p) => p.id === id).name.replace(' (Frucht)', '')}</text>` : '';
     return `<svg class="plant ${opts.clickable ? 'clickable' : ''}" viewBox="0 0 260 300" aria-label="Kartoffelpflanze">
       <rect x="0" y="150" width="260" height="150" fill="#8B5E3C" opacity=".35"/><line x1="0" y1="150" x2="260" y2="150" stroke="#6B4423" stroke-width="3" stroke-dasharray="6 4"/>
@@ -193,13 +229,13 @@
   function screenTitle() {
     render(`<div class="screen"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Monster · Wissen · Abenteuer</div></div>
       <div class="stack" style="margin-top:16px">
-        ${MODE_KEYS.map((m) => { const r = load(KEY_RUN_FOR(m), null); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter (${c.worlds > 1 ? 'Welt ' + r.world + ', ' : ''}Etage ${r.floor})</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}
+        ${MODE_KEYS.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter (${c.worlds > 1 ? 'Welt ' + r.world + ', ' : ''}Etage ${r.floor})</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
         <p class="center muted">Abenteuer gespielt: ${meta.runs} · Geschafft: ${meta.wins}</p>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
-    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = load(KEY_RUN_FOR(mode), null); if (run) screenMap(); else screenTitle(); }; });
-    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = load(KEY_RUN_FOR(mode), null); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; clear(KEY_RUN_FOR(mode)); screenStarter(); }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
+    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
+    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
   }
 
@@ -207,7 +243,8 @@
     let sel = CFG().starters.length === 1 ? CFG().starters[0].id : null;
     render(`<div class="screen">${topbar(CFG().starters.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
       ${CFG().starters.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta"><div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
-      </div></div><div class="bottom"><button class="btn" id="go" ${sel ? '' : 'disabled'}>Los geht’s!</button></div></div>`);
+      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Los geht’s!</button></div></div></div>`);
+    $('#back').onclick = screenTitle;
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; }; });
     $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })), combos: {} }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false }; meta.runs++; saveAll(); screenMap(); };
   }
@@ -222,7 +259,7 @@
       <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div></div>
       <div class="scroll"><p class="center muted">Wohin gehst du? Tippe auf ein Feld.</p><div class="map">${rows.join('')}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
-    app.querySelectorAll('.floor.current .node').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni]; saveAll(); enterNode(type); }; });
+    app.querySelectorAll('.floor.current .node').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni]; run.node = { type }; saveAll(); enterNode(type); }; });
     $('#home').onclick = screenTitle;
     $('#bag').onclick = () => showBag(null);
     const scroller = $('.scroll'); const cur = $('.floor.current'); if (cur && scroller) scroller.scrollTop = Math.max(0, cur.offsetTop - scroller.clientHeight / 2);
@@ -233,6 +270,17 @@
     ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if (it.shield && !inBattle) { $('#bagdesc', ov).textContent = 'Den Schild kannst du nur im Kampf benutzen.'; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; saveAll(); ov.remove(); if (inBattle) inBattle(it); else screenMap(); }; });
   }
 
+  // Continue a saved adventure exactly where it stopped: a node that was entered can't be swapped for another
+  // one by closing the app, and a running fight continues with the same enemy and life points.
+  function resumeRun() {
+    const n = run.node;
+    if (!isObj(n)) return screenMap();
+    if (n.done) return advance();
+    if (isObj(n.enemy) && n.enemy.hp > 0) return renderBattle({ enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' });
+    enterNode(n.type);
+  }
+  // mark the current node as finished (rewards already given) – a reload then simply moves on
+  function nodeDone() { if (run.node) { run.node.done = true; run.node.enemy = null; } }
   function enterNode(type) {
     if (type === 'fight') startBattle(pick(CFG().enemies[run.world].normal), false);
     else if (type === 'elite') startBattle(CFG().enemies[run.world].elite, true);
@@ -242,14 +290,15 @@
     else if (type === 'treasure') screenTreasure();
     else if (type === 'school') screenSchool(1);
   }
-  function advance() { run.floor++; run.shield = false; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); run.hero.combos = {}; } } saveAll(); screenMap(); }
+  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); run.hero.combos = {}; } } saveAll(); screenMap(); }
 
   /* ---------- Battle ---------- */
   function startBattle(spec, hard) {
     const scale = 1 + (run.floor - 1) * 0.03;
     const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)), boss: !!spec.boss, elite: hard && !spec.boss };
     meta.dex[spec.name] = { type: spec.type, shape: spec.shape, world: run.world, mode };
-    const b = { enemy, log: 'Ein wildes ' + enemy.name + ' erscheint!', logCls: '', phase: 'choose' };
+    if (run.node) { run.node.enemy = enemy; saveAll(); }
+    const b = { enemy, log: `${enemy.name} taucht auf!`, logCls: '', phase: 'choose' };
     renderBattle(b);
   }
   function renderBattle(b) {
@@ -261,21 +310,23 @@
         <div class="fighter" id="fh">${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, h.evo)}<div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div></div>
         <div class="fighter" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0, 'enemy')}<div class="name">${esc(e.name)}</div>${typeChip(e.type)}<div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
       </div>
-      <div class="log ${b.logCls}" aria-live="polite">${b.log}</div>
+      <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`);
+    announce(b.log.replace(/<[^>]+>/g, ''));
     if (b.phase === 'choose') renderAttackChoice(b);
   }
   function renderAttackChoice(b) {
     const atks = heroAttacks(); const heroType = heroSpec().type; const MODULES = MODULES_OF();
     $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const eff = BEATS[heroType] === b.enemy.type; const combo = run.hero.combos[a.mod] || 0; return `<button class="atk ${a.unlocked ? '' : 'locked'}" data-i="${i}" ${a.unlocked ? '' : 'disabled'}><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${MODULES[a.mod].dmg}${eff ? ' ×1,5' : ''}</span></span>${a.unlocked ? `<span class="combo" aria-label="Kombo ${combo} von 3">${[0, 1, 2].map((k) => `<b class="${k < combo ? 'on' : ''}"></b>`).join('')}</span>` : `<span class="m">🔒 ab Level ${[1, 3, 6, 10][i]}</span>`}</button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Kombo voll = Volltreffer</span></div>`;
-    $('#bag').onclick = () => showBag((it) => { b.log = `${it.icon} ${it.name} benutzt!`; b.logCls = 'hit'; enemyTurn(b, 1); });
+    // a potion takes your turn; the shield doesn't – it waits for the enemy's next attack (also after a wrong answer)
+    $('#bag').onclick = () => showBag((it) => { b.log = `${it.icon} ${it.name} benutzt!`; b.logCls = 'hit'; if (it.shield) { b.log = `${it.icon} Schild bereit! Der nächste Angriff wird geblockt.`; b.phase = 'choose'; renderBattle(b); } else enemyTurn(b, 1); });
     app.querySelectorAll('.atk:not(.locked)').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
   }
   function chooseAttack(b, atk) {
     const tier = tierFor(atk.mod); const MODULES = MODULES_OF();
     let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
-    b.phase = 'task';
+    b.phase = 'task'; $('.screen').classList.add('tasking');
     ensureTutorial(t, () => {
       runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name }, (ok) => {
         recordAnswer(atk.mod, ok, t); const h = run.hero;
@@ -308,7 +359,7 @@
     const h = run.hero; const move = pick(ENEMY_MOVES);
     if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
-    b.phase = h.hp <= 0 ? 'over' : 'choose'; saveAll(); renderBattle(b); $('#fh').classList.add('hurt');
+    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b); $('#fh').classList.add('hurt');
     if (h.hp <= 0) setTimeout(() => screenGameOver(b), 600);
   }
   function battleWon(b) {
@@ -316,6 +367,7 @@
     const msgs = gainXp(xp); let drop = null;
     if (e.elite && Math.random() < 0.8) drop = pick(['trank', 'schild']); if (e.boss) drop = 'grosstrank'; if (!e.elite && !e.boss && Math.random() < 0.2) drop = 'beere';
     if (drop) run.items.push(drop);
+    nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>✨ Entwicklung!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
@@ -325,7 +377,8 @@
 
   /* ---------- Event ---------- */
   function screenEvent() {
-    const ev = pick(CFG().events);
+    const EV = CFG().events; if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = rnd(0, EV.length - 1); saveAll(); }
+    const ev = run.node ? EV[run.node.ev] : pick(EV);
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p></div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
     app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => { const o = ev.opts[+btn.dataset.i]; if (o.task) { const mod = o.task === 'any' ? pick(MODKEYS()) : o.task; const tier = tierFor(mod); const t = makeTask(mod, tier); render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`); ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom') }, (ok) => { recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose, ok ? 'Geschafft!' : 'Leider daneben.'); })); } else applyEffect(o.effect, ev.title); }; });
   }
@@ -336,7 +389,7 @@
     if (eff.item) { run.items.push(eff.item); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
     if (eff.xp) { const m = gainXp(eff.xp); lines.push(`⭐ +${eff.xp} XP`); lines.push(...m); }
     if (!lines.length) lines.push('Nichts passiert.');
-    saveAll();
+    nodeDone(); saveAll();
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
     $('#next').onclick = advance;
   }
@@ -350,7 +403,7 @@
     $('#train').onclick = () => training(weak, 3, 0);
   }
   function training(mod, total, done) {
-    if (done >= total) { const m = gainXp(15); saveAll(); render(`<div class="screen">${topbar('🔥 Training')}<div class="scroll"><div class="card center"><h2>Training geschafft!</h2><p>⭐ +15 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
+    if (done >= total) { const m = gainXp(15); nodeDone(); saveAll(); render(`<div class="screen">${topbar('🔥 Training')}<div class="scroll"><div class="card center"><h2>Training geschafft!</h2><p>⭐ +15 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
     const tier = tierFor(mod); const t = makeTask(mod, tier);
     render(`<div class="screen">${topbar(`🔥 Training ${done + 1} / ${total}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     const s = STATS()[mod]; const low = s.t >= 3 && s.c / s.t < 0.6;
@@ -368,8 +421,8 @@
   }
   function chooseSlot(mod) {
     const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${run.hero.attacks.map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Slot ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten</button></div></div></div>`);
-    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
+    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}" ${a.unlocked ? '' : 'disabled'}><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}${a.unlocked ? '' : ` · 🔒 erst ab Level ${[1, 3, 6, 10][i]}`}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten</button></div></div></div>`);
+    app.querySelectorAll('.choice:not([disabled])').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
     $('#skip').onclick = () => { run.items.push('trank'); saveAll(); advance(); };
   }
 
@@ -380,7 +433,7 @@
     $('#next').onclick = () => screenSchool(step + 1); if ($('#prev')) $('#prev').onclick = () => screenSchool(step - 1);
   }
   function schoolCheck(ids, i) {
-    if (i >= ids.length) { const m = gainXp(20); saveAll(); render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check geschafft!</h2><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
+    if (i >= ids.length) { const m = gainXp(20); nodeDone(); saveAll(); render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check geschafft!</h2><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
     const part = MK.PARTS.find((p) => p.id === ids[i]); const others = MK.shuffle(MK.PARTS.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name);
     const t = { kind: 'parts', mod: 'parts', tier: 1, group: 'parts:1', note: 'teile', q: 'Wie heißt der leuchtende Teil?', part: part.id, options: MK.shuffle(others.concat([part.name])), answer: part.name, qid: 'p_' + part.id };
     render(`<div class="screen">${topbar(`✏️ Merk-Check ${i + 1} / ${ids.length}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
@@ -389,14 +442,14 @@
 
   /* ---------- End screens ---------- */
   function screenGameOver(b) {
-    const world = run.world; const name = heroName();
-    run = null; saveAll();
-    render(`<div class="screen">${topbar('Besiegt…')}<div class="scroll"><div class="card center"><h2>Oh nein!</h2><p>${esc(name)} wurde von ${esc(b.enemy.name)} besiegt.</p><p>Du bist bis Welt ${world} gekommen. Deine Rechenkünste bleiben – beim nächsten Mal klappt es!</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
+    endRun(); run = null;
+    render(`<div class="screen">${topbar('Besiegt…')}<div class="scroll"><div class="card center"><h2>Oh nein!</h2><p>${esc(name)} wurde von ${esc(b.enemy.name)} besiegt.</p><p>${multi ? `Du bist bis Welt ${world} gekommen. ` : ''}Was du gelernt hast, bleibt – beim nächsten Mal klappt es bestimmt!</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
     meta.wins++; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
-    run = null; saveAll();
+    endRun(); run = null;
     render(`<div class="screen">${topbar('Sieg!')}<div class="scroll"><div class="card center"><h1 style="font-size:36px">🎉 Du hast es geschafft!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> hat ${esc(bossName)} besiegt${CFG().worlds > 1 ? ` und alle ${CFG().worlds === 3 ? 'drei' : 'zwei'} Welten gemeistert` : ''}!</p><p>Abenteuer geschafft: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
@@ -406,7 +459,7 @@
     $('#back').onclick = screenTitle;
   }
   function screenParent() {
-    const tables = MODE_KEYS.map((m) => { const r = load(KEY_RUN_FOR(m), null); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
+    const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
     const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = MK.L_POOL.find((p) => p.id === id) || MK.K_POOL.find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
     render(`<div class="screen">${topbar('👨‍👩‍👦 Elternbereich')}<div class="scroll">${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>

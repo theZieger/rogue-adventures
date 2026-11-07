@@ -49,8 +49,7 @@ html = f"""<!DOCTYPE html>
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
 <meta name="app-version" content="__BUILD__">
 {splash}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap">
+<link rel="preload" href="fonts/baloo2-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 {css}
 </style>
@@ -104,7 +103,7 @@ html = f"""<!DOCTYPE html>
 h = hashlib.sha256()
 for part in (html, manifest, sw_src):
     h.update(part.encode("utf-8"))
-for f in sorted((ROOT / "docs").glob("icons/*")) + sorted((ROOT / "docs").glob("splash/*")) + [ROOT / "docs" / "favicon.ico"]:
+for f in sorted((ROOT / "docs").glob("icons/*")) + sorted((ROOT / "docs").glob("splash/*")) + sorted((ROOT / "docs").glob("fonts/*")) + [ROOT / "docs" / "favicon.ico"]:
     if f.is_file():
         h.update(f.read_bytes())
 build_id = h.hexdigest()[:12]

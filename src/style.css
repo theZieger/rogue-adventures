@@ -1,3 +1,5 @@
+/* Baloo 2 (SIL OFL 1.1, see docs/fonts/OFL.txt) – self-hosted: no request to Google, works offline */
+@font-face { font-family: 'Baloo 2'; font-style: normal; font-weight: 400 800; font-display: swap; src: url(fonts/baloo2-latin.woff2) format('woff2'); }
 :root {
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -210,3 +212,51 @@ p { margin: 8px 0; }
 .plant .plabel { font-size: 12px; font-weight: 800; fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 .modecard .desc { font-size: 15px; color: var(--ink-soft); }
 .modecard .btn.small { flex: 1; }
+
+/* Screen-reader-only text */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.choice[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* While a task is open in battle the fighters shrink to a compact row, so the task stays visible above the keypad */
+.screen.tasking .arena { padding: 4px 14px 0; gap: 12px; }
+.screen.tasking .fighter { display: grid; grid-template-columns: 44px 1fr; column-gap: 8px; row-gap: 2px; align-items: center; }
+.screen.tasking .fighter .mon { width: 44px; height: 44px; grid-row: span 2; }
+.screen.tasking .fighter .name { font-size: 15px; justify-self: start; }
+.screen.tasking .fighter .chip, .screen.tasking .fighter .hptext, .screen.tasking .log { display: none; }
+.screen.tasking .hpbar { height: 12px; }
+
+/* Short screens (small phones, phones held sideways): tighter keypad and task card */
+@media (max-height: 720px) {
+  .numpad { gap: 6px; }
+  .numpad button { min-height: 48px; font-size: 24px; }
+  .task { padding: 10px 14px; }
+  .task .expr { font-size: 34px; margin: 4px 0 2px; }
+  .task .seq { font-size: 28px; margin: 4px 0 2px; }
+  .inp { height: 54px; font-size: 30px; }
+  .inputs { margin: 6px 0 2px; }
+  .taskwrap { padding: 6px 12px; }
+}
+@media (max-height: 600px) {
+  .numpad button { min-height: 42px; font-size: 22px; }
+  .bottom { padding: 6px 10px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+  .fighter .mon { width: 64px; height: 64px; }
+  .atk { min-height: 58px; padding: 6px 10px; }
+  .log { min-height: 28px; font-size: 17px; }
+}
+/* Phone held sideways: fighters as a compact row, task and keypad side by side */
+@media (max-height: 500px) and (orientation: landscape) {
+  .arena { padding: 4px 14px 0; gap: 12px; }
+  .fighter { display: grid; grid-template-columns: 48px 1fr; column-gap: 8px; row-gap: 2px; align-items: center; }
+  .fighter .mon { width: 48px; height: 48px; grid-row: span 3; }
+  .fighter .name { font-size: 16px; justify-self: start; }
+  .fighter .chip { display: none; }
+  .hpbar { height: 12px; }
+  .hptext { font-size: 13px; }
+  .attacks { grid-template-columns: repeat(4, 1fr); }
+  .screen.tasking { display: grid; grid-template-columns: 1fr minmax(240px, 38%); grid-template-rows: auto auto 1fr; }
+  .screen.tasking > .topbar, .screen.tasking .arena { grid-column: 1 / -1; }
+  .screen.tasking .taskwrap { grid-column: 1; grid-row: 3; }
+  .screen.tasking .bottom { grid-column: 2; grid-row: 3; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); display: flex; flex-direction: column; justify-content: center; overflow-y: auto; }
+  .screen.tasking .numpad button { min-height: 40px; }
+}
+.levelbadge { white-space: nowrap; }

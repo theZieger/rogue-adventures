@@ -90,6 +90,9 @@ async function step(){
   }
   const m=w.__mq.meta;
   console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
-  console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats).map(([k,v])=>[k,v.c+'/'+v.t]))));
-  console.log('saved run?', !!w.localStorage.getItem('mathquest_run_v1'));
+  const mode=process.env.MODE||'math';
+  console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
+  console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
+  if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }
+  if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }
 })().catch(e=>{console.error('PLAYTEST FAIL',e.message); console.log(errors); process.exit(1);});

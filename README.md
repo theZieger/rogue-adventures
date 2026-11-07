@@ -31,7 +31,9 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) immer die n
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Reset.
-- Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand.
+- Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Weiterspielen geht es genau dort weiter.
+- Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften.
+- Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich.
 
 ## Projektstruktur
 
@@ -48,6 +50,8 @@ tools/make_icons.js  erzeugt docs/icons/* und die iOS-Startbildschirme docs/spla
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
+docs/splash/       iOS/iPadOS-Startbildschirme
+docs/fonts/        Schrift Baloo 2 (SIL OFL) – lokal eingebunden, keine Verbindung zu Google
 ```
 
 ## Entwickeln
@@ -55,7 +59,7 @@ docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 ```bash
 npm install          # nur jsdom für die Tests
 npm run build        # src/* -> docs/index.html
-npm test             # Generatoren + Wissensfragen prüfen
+npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/)
 npm run playtest     # Bot spielt alle drei Modi durch
 ```
 
@@ -68,7 +72,7 @@ Inhalte anpassen:
 ## Veröffentlichen (GitHub Pages)
 
 Repository → Settings → Pages → Source „Deploy from a branch“, Branch `main`, Ordner `/docs`.
-Nach jedem `npm run build` die geänderte `docs/index.html` committen und pushen.
+Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI prüft, dass `docs/` zum Stand von `src/` passt.
 
 ## Lizenz
 

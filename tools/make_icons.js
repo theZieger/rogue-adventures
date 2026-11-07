@@ -93,13 +93,14 @@ const IPADS = [ // iPads ignore the portrait lock, so they get landscape too
   [768, 1024, 2],  // iPad 9.7", mini 1–5
   [744, 1133, 2],  // mini 6+
 ];
+const FONT_B64 = fs.readFileSync(path.join(__dirname, '..', 'docs', 'fonts', 'baloo2-latin.woff2')).toString('base64');
 const SPLASH_BG = '#1C2541'; // = --bg, so the launch flows straight into the game
 
 function splashHTML(w, h) {
   const m = Math.min(w, h);
   const foxW = m * 0.42, k = foxW / 120;
   const font = m * 0.13;
-  return `<html><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&display=block"></head>
+  return `<html><head><style>@font-face{font-family:'Baloo 2';font-weight:400 800;src:url(data:font/woff2;base64,${FONT_B64}) format('woff2')}</style></head>
 <body style="margin:0;width:${w}px;height:${h}px;background:${SPLASH_BG};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif">
 <svg width="${foxW * 1.6}" height="${foxW * 1.4}" viewBox="0 0 ${foxW * 1.6} ${foxW * 1.4}" style="overflow:visible">
 <defs><radialGradient id="glow"><stop offset="0" stop-color="#FFC93C" stop-opacity=".45"/><stop offset=".6" stop-color="#FF8A3D" stop-opacity=".12"/><stop offset="1" stop-color="#FF8A3D" stop-opacity="0"/></radialGradient></defs>
