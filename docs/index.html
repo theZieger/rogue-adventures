@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lernquest – Mathe, Luther und Kartoffel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #1C2541;
+  --bg2: #24305A;
+  --card: #FFF9EE;
+  --card2: #F3E9D2;
+  --ink: #1C2541;
+  --ink-soft: #4A5378;
+  --paper-ink: #FFFFFF;
+  --gold: #FFC93C;
+  --green: #4FC96A;
+  --red: #FF5A5A;
+  --blue: #3FA0FF;
+  --orange: #FF6A3D;
+  --key: #2F3B6A;
+  --key-ink: #FFFFFF;
+  --focus: #FFC93C;
+  --shadow: 0 6px 0 rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #141B33; --bg2: #1C2749; } }
+:root[data-theme="dark"] { --bg: #141B33; --bg2: #1C2749; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+body { height: 100%; margin: 0; overscroll-behavior: none; background: var(--bg); color: var(--paper-ink); font-family: 'Baloo 2', 'Nunito', 'Segoe UI Rounded', 'Arial Rounded MT Bold', system-ui, sans-serif; font-size: 20px; line-height: 1.3; -webkit-text-size-adjust: 100%; overflow: hidden; }
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
+
+#app { height: 100%; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; position: relative; }
+.screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.scroll { flex: 1; overflow-y: auto; padding: 14px 16px 24px; min-height: 0; }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--bg2); border-bottom: 3px solid rgba(255,255,255,.08); }
+.topbar .title { font-weight: 800; font-size: 20px; flex: 1; }
+.topbar .world { font-size: 16px; opacity: .85; }
+
+h1, h2, h3 { margin: 0; line-height: 1.15; }
+h1 { font-size: 44px; font-weight: 800; letter-spacing: -.5px; }
+h2 { font-size: 28px; font-weight: 800; }
+h3 { font-size: 22px; font-weight: 700; }
+p { margin: 8px 0; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; padding: 10px 20px; border: 3px solid var(--ink); border-radius: 18px; background: var(--gold); color: var(--ink); font-weight: 800; font-size: 21px; box-shadow: var(--shadow); cursor: pointer; width: 100%; text-align: center; }
+.btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.btn.secondary { background: #fff; border: 3px solid var(--ink); box-shadow: 0 6px 0 rgba(28,37,65,.35); }
+.card .btn.secondary, .modal .btn.secondary { background: #fff; border: 3px solid var(--ink); }
+.card .btn.small, .modal .btn.small { box-shadow: 0 4px 0 rgba(28,37,65,.35); }
+.btn.ghost { background: transparent; color: var(--paper-ink); box-shadow: none; border: 3px solid rgba(255,255,255,.6); }
+.btn.small { min-height: 44px; font-size: 17px; padding: 6px 14px; width: auto; border-radius: 14px; }
+.btn:disabled { opacity: .45; cursor: default; }
+.row { display: flex; gap: 10px; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+/* Title */
+.hero { text-align: center; padding: 30px 16px 10px; }
+.hero .logo { font-size: 72px; line-height: 1; }
+.hero .sub { color: var(--gold); font-weight: 700; font-size: 22px; }
+
+/* Cards */
+.card { background: var(--card); color: var(--ink); border-radius: 22px; padding: 16px; box-shadow: var(--shadow); }
+.card h3 { color: var(--ink); }
+.card.flat { box-shadow: none; }
+.choice { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 22px; padding: 14px; display: flex; gap: 14px; align-items: center; text-align: left; width: 100%; cursor: pointer; box-shadow: var(--shadow); }
+.choice:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.choice.selected { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold), var(--shadow); }
+.choice .mon { width: 96px; height: 96px; flex: none; }
+.choice .meta { flex: 1; }
+.choice .meta .name { font-weight: 800; font-size: 24px; }
+.choice .meta .desc { font-size: 16px; color: var(--ink-soft); }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; font-size: 15px; font-weight: 700; color: #fff; }
+
+/* Map */
+.map { display: flex; flex-direction: column-reverse; gap: 8px; padding: 10px 0; }
+.floor { display: flex; justify-content: center; gap: 12px; align-items: center; padding: 6px; border-radius: 18px; }
+.floor.current { background: rgba(255,201,60,.14); outline: 3px dashed var(--gold); }
+.floor .num { width: 28px; font-size: 14px; opacity: .6; text-align: right; }
+.node { width: 78px; height: 78px; border-radius: 50%; border: 3px solid rgba(255,255,255,.5); background: var(--bg2); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 30px; line-height: 1; cursor: default; }
+.node small { font-size: 11px; font-weight: 700; margin-top: 2px; }
+.floor.current .node { border-color: var(--ink); background: var(--card); color: var(--ink); cursor: pointer; box-shadow: 0 0 0 3px var(--gold), var(--shadow); }
+.floor.current .node:active { transform: translateY(3px); }
+.floor.done .node { opacity: .35; }
+.floor.done .node.taken { opacity: 1; border-color: var(--green); }
+.floor.future .node { opacity: .55; }
+
+/* Battle */
+.arena { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 6px 14px 2px; }
+.fighter { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fighter .mon { width: 88px; height: 88px; }
+.fighter .mon.enemy { transform: scaleX(-1); }
+.fighter .name { font-weight: 800; font-size: 19px; display: flex; gap: 6px; align-items: center; }
+.hpbar { width: 100%; height: 18px; background: rgba(0,0,0,.35); border-radius: 999px; overflow: hidden; border: 2px solid rgba(255,255,255,.25); }
+.hpbar i { display: block; height: 100%; background: var(--green); border-radius: 999px; transition: width .35s; }
+.hpbar i.mid { background: var(--gold); } .hpbar i.low { background: var(--red); }
+.hptext { font-size: 15px; font-weight: 700; }
+.combo { display: flex; gap: 4px; margin-top: 2px; }
+.combo b { width: 18px; height: 10px; border-radius: 4px; background: rgba(255,255,255,.2); }
+.combo b.on { background: var(--gold); }
+.log { min-height: 40px; padding: 4px 16px; text-align: center; font-weight: 700; font-size: 19px; }
+.log.hit { color: var(--green); } .log.miss { color: var(--red); } .log.crit { color: var(--gold); }
+
+.bottom { background: var(--bg2); border-top: 3px solid rgba(255,255,255,.08); padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); flex: none; }
+.attacks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.atk { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 18px; padding: 10px 12px; text-align: left; box-shadow: var(--shadow); cursor: pointer; min-height: 72px; display: flex; flex-direction: column; justify-content: center; }
+.atk:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.atk .n { font-weight: 800; font-size: 19px; }
+.atk .m { font-size: 14px; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; }
+.atk .m .dmg { margin-left: auto; font-weight: 800; color: var(--ink); }
+.atk.locked { opacity: .45; }
+
+/* Task */
+.taskwrap { flex: 1; overflow-y: auto; min-height: 0; padding: 8px 14px; display: flex; flex-direction: column; }
+.task { background: var(--card); color: var(--ink); border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow); position: relative; }
+.task .head { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--ink-soft); font-weight: 700; }
+.task .head .tut { margin-left: auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-weight: 800; font-size: 16px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.task .expr { font-size: 40px; font-weight: 800; text-align: center; margin: 10px 0 4px; letter-spacing: 1px; }
+.task .clues { font-size: 21px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
+.task .clues div::before { content: '• '; color: var(--orange); }
+.task .seq { font-size: 34px; font-weight: 800; text-align: center; margin: 10px 0 4px; }
+.task .prompt { text-align: center; color: var(--ink-soft); font-weight: 700; font-size: 17px; }
+.inputs { display: flex; gap: 10px; justify-content: center; margin: 10px 0 4px; flex-wrap: wrap; align-items: center; }
+.inp { min-width: 92px; height: 64px; border-radius: 16px; border: 4px solid var(--ink-soft); background: #fff; font-size: 34px; font-weight: 800; display: flex; align-items: center; justify-content: center; padding: 0 12px; color: var(--ink); cursor: pointer; }
+.inp.active { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
+.inp.ok { border-color: var(--green); background: #E6F9EA; } .inp.bad { border-color: var(--red); background: #FFE8E8; }
+.inp .lbl { position: absolute; }
+.inpgroup { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 15px; font-weight: 700; color: var(--ink-soft); }
+.nbline { display: flex; align-items: center; gap: 10px; justify-content: center; }
+.nbline .mid { font-size: 40px; font-weight: 800; }
+.grid { display: grid; grid-template-columns: repeat(3, 64px); gap: 6px; justify-content: center; margin: 10px 0; }
+.grid div { width: 64px; height: 64px; border-radius: 12px; background: var(--card2); border: 3px solid #D9CBAA; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; }
+.grid div.start { background: #fff; border-color: var(--ink); }
+.grid div.target { background: #FFF1B8; border-color: var(--gold); border-style: dashed; box-shadow: 0 0 0 3px rgba(255,201,60,.5); }
+.legend { display: flex; justify-content: center; gap: 10px; font-size: 15px; font-weight: 700; color: var(--ink-soft); flex-wrap: wrap; }
+.legend span { background: var(--card2); border-radius: 10px; padding: 2px 8px; }
+
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.numpad button { min-height: 58px; border: 3px solid var(--ink); border-radius: 14px; background: var(--key); color: var(--key-ink); font-size: 28px; font-weight: 800; box-shadow: 0 4px 0 rgba(0,0,0,.3); cursor: pointer; }
+.numpad button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+.numpad button.ok { background: var(--green); color: var(--ink); }
+.numpad button.del { background: #5A3E6B; font-size: 24px; }
+.numpad button.cancel { background: transparent; border: 3px solid rgba(255,255,255,.6); font-size: 18px; }
+
+/* Overlay / modal */
+.overlay { position: absolute; inset: 0; background: rgba(10,14,30,.72); display: flex; align-items: flex-end; justify-content: center; z-index: 20; padding: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+.modal { background: var(--card); color: var(--ink); border-radius: 24px; padding: 18px; width: 100%; max-width: 560px; max-height: 88%; overflow-y: auto; box-shadow: 0 10px 0 rgba(0,0,0,.3); }
+.modal h2 { color: var(--ink); margin-bottom: 8px; }
+.modal ol { padding-left: 24px; margin: 8px 0 14px; font-size: 19px; }
+.modal ol li { margin: 8px 0; }
+.modal .ex { background: var(--card2); border-radius: 14px; padding: 10px 12px; font-weight: 700; }
+
+/* Feedback */
+.feedback { text-align: center; padding: 10px; border-radius: 18px; font-weight: 800; font-size: 24px; margin-top: 10px; }
+.feedback.good { background: #E6F9EA; color: #1C6B2E; }
+.feedback.bad { background: #FFE8E8; color: #A42020; }
+.feedback small { display: block; font-size: 17px; font-weight: 700; margin-top: 2px; }
+
+.items { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.item { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; padding: 6px 12px; font-weight: 800; font-size: 16px; display: flex; gap: 6px; align-items: center; box-shadow: var(--shadow); cursor: pointer; min-height: 44px; }
+
+.statrow { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 2px solid var(--card2); font-size: 17px; }
+.statrow .n { flex: 1; font-weight: 700; }
+.bar { width: 110px; height: 14px; border-radius: 999px; background: var(--card2); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--green); }
+
+.shake { animation: shake .35s; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.pop { animation: pop .45s; }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.hurt { animation: hurt .4s; }
+@keyframes hurt { 0%,100% { filter: none; } 50% { filter: brightness(2) saturate(0); transform: translateX(-6px); } }
+@media (prefers-reduced-motion: reduce) { .shake, .pop, .hurt { animation: none; } .hpbar i { transition: none; } }
+
+.mon { display: block; }
+.xpbar { height: 10px; background: rgba(0,0,0,.35); border-radius: 999px; overflow: hidden; width: 100%; }
+.xpbar i { display: block; height: 100%; background: var(--blue); }
+.center { text-align: center; }
+.muted { opacity: .75; font-size: 16px; }
+.levelbadge { background: var(--gold); color: var(--ink); border-radius: 999px; padding: 0 8px; font-size: 14px; font-weight: 800; }
+.hidden { display: none !important; }
+.parent-stats table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.parent-stats td, .parent-stats th { padding: 6px 4px; border-bottom: 2px solid var(--card2); text-align: left; }
+@media (min-width: 500px) { body { font-size: 21px; } .fighter .mon { width: 140px; height: 140px; } .task .expr { font-size: 48px; } .grid { grid-template-columns: repeat(3, 76px); } .grid div { width: 76px; height: 76px; font-size: 28px; } }
+
+/* Knowledge tasks */
+.task .question { font-size: 22px; font-weight: 700; margin: 10px 0 6px; line-height: 1.35; }
+.task .question .blank { display: inline-block; border-bottom: 4px solid var(--blue); padding: 0 6px; color: var(--blue); }
+.options { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.options.two { grid-template-columns: 1fr 1fr; }
+.opt { min-height: 56px; border: 3px solid var(--ink); border-radius: 16px; background: var(--card); color: var(--ink); font-weight: 800; font-size: 19px; padding: 8px 14px; box-shadow: var(--shadow); cursor: pointer; text-align: center; line-height: 1.25; }
+.opt:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.opt.right { background: #CDEFD3; outline: 4px solid var(--green); }
+.opt.wrong { background: #FFD6D6; outline: 4px solid var(--red); }
+.orderlist { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.oitem { display: flex; gap: 10px; align-items: center; text-align: left; border: 3px solid var(--ink); background: #fff; color: var(--ink); border-radius: 14px; padding: 8px 10px; font-weight: 700; font-size: 17px; cursor: pointer; min-height: 52px; }
+.oitem .num { width: 32px; height: 32px; border-radius: 50%; background: var(--card2); display: inline-flex; align-items: center; justify-content: center; font-weight: 800; flex: none; }
+.oitem.picked { border-color: var(--blue); background: #EAF4FF; }
+.oitem.picked .num { background: var(--blue); color: #fff; }
+.oitem.right { border-color: var(--green); background: #E6F9EA; }
+.oitem.wrong { border-color: var(--red); background: #FFE8E8; }
+.plant { width: 100%; max-width: 320px; height: auto; display: block; margin: 6px auto; }
+.plant .part { transition: filter .2s; }
+.plant .part.glow { filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 10px #FFC93C); }
+.plant .part.glow * { stroke: #E0A800; stroke-width: 3; }
+.plant.clickable .part { cursor: pointer; }
+.plant.clickable .part:hover, .plant.clickable .part:focus-visible { filter: drop-shadow(0 0 5px #3FA0FF); outline: none; }
+.plant .part.reveal { filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 10px #FFC93C); }
+.plant .part.hit-part { filter: drop-shadow(0 0 8px #4FC96A); }
+.plant .part.miss-part { filter: drop-shadow(0 0 8px #FF5A5A); }
+.plant .plabel { font-size: 12px; font-weight: 800; fill: var(--ink); paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.modecard .desc { font-size: 15px; color: var(--ink-soft); }
+.modecard .btn.small { flex: 1; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ===== MathQuest Logic (generators, data) ===== */
+const MQ = (() => {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  /* ---------- Modules ---------- */
+  const MODULES = {
+    add: { name: 'Addition', icon: '➕', maxTier: 5, worldCap: [2, 4, 5], dmg: 10 },
+    sub: { name: 'Subtraktion', icon: '➖', maxTier: 5, worldCap: [2, 4, 5], dmg: 12 },
+    mul: { name: 'Einmaleins', icon: '✖️', maxTier: 3, worldCap: [2, 3, 3], dmg: 12 },
+    riddle: { name: 'Zahlenrätsel', icon: '🔍', maxTier: 3, worldCap: [1, 2, 3], dmg: 16 },
+    seq: { name: 'Zahlenfolgen', icon: '🔢', maxTier: 4, worldCap: [2, 3, 4], dmg: 14 },
+    nb: { name: 'Nachbarzahlen', icon: '↔️', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
+    grid: { name: 'Zahlengitter', icon: '🧩', maxTier: 3, worldCap: [1, 2, 3], dmg: 16 },
+  };
+  const MODULE_KEYS = Object.keys(MODULES);
+
+  /* ---------- Generators ---------- */
+  function genAdd(t) {
+    let a, b, c;
+    if (t === 1) { do { a = rnd(10, 89); b = rnd(3, 89 - a + 10); } while (a + b > 99 || (a % 10) + (b % 10) > 9); return task(`${a} + ${b} = ?`, [a + b]); }
+    if (t === 2) { do { a = rnd(11, 88); b = rnd(2, 99 - a); } while ((a % 10) + (b % 10) < 10 || a + b > 99); return task(`${a} + ${b} = ?`, [a + b]); }
+    if (t === 3) { do { a = rnd(100, 899); b = rnd(10, 999 - a); } while ((a % 10) + (b % 10) > 9 || (Math.floor(a / 10) % 10) + (Math.floor(b / 10) % 10) > 9); return task(`${a} + ${b} = ?`, [a + b]); }
+    if (t === 4) { do { a = rnd(100, 899); b = rnd(10, 999 - a); } while ((a % 10) + (b % 10) < 10 && (Math.floor(a / 10) % 10) + (Math.floor(b / 10) % 10) < 10); return task(`${a} + ${b} = ?`, [a + b]); }
+    do { a = rnd(50, 500); b = rnd(20, 300); c = rnd(5, 199); } while (a + b + c > 999); return task(`${a} + ${b} + ${c} = ?`, [a + b + c]);
+  }
+  function genSub(t) {
+    let a, b;
+    if (t === 1) { a = rnd(5, 19); b = rnd(1, Math.min(9, a - 1)); return task(`${a} − ${b} = ?`, [a - b]); }
+    if (t === 2) { do { a = rnd(21, 99); b = rnd(2, 9); } while (a % 10 >= b || a % 10 === 0); return task(`${a} − ${b} = ?`, [a - b]); }
+    if (t === 3) { do { a = rnd(30, 99); b = rnd(11, a - 1); } while (a % 10 >= b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
+    if (t === 4) { do { a = rnd(110, 999); b = rnd(5, 99); } while (a % 100 >= b % 100 && a % 10 >= b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
+    do { a = rnd(20, 99); b = rnd(2, 19); } while (a % 10 >= b % 10); return task(`${a} − ? = ${a - b}`, [b], { reverse: true });
+  }
+  function genMul(t) {
+    if (t === 1) { const a = rnd(1, 5), b = rnd(1, 10); return task(`${a} · ${b} = ?`, [a * b]); }
+    if (t === 2) { const a = rnd(2, 10), b = rnd(2, 10); return task(`${a} · ${b} = ?`, [a * b]); }
+    const a = rnd(2, 10), b = rnd(2, 10); return task(`? · ${a} = ${a * b}`, [b], { reverse: true });
+  }
+
+  function digits(n) { return { h: Math.floor(n / 100) % 10, z: Math.floor(n / 10) % 10, e: n % 10 }; }
+  const CLUE_TYPES_2 = [
+    (d) => d.z > 0 && d.e % d.z === 0 && d.e / d.z >= 2 ? { text: `Mein Einer ist ${d.e / d.z}-mal so groß wie mein Zehner.`, test: (x) => x.z > 0 && x.e === d.e / d.z * x.z } : null,
+    (d) => d.e > d.z ? { text: `Mein Einer ist um ${d.e - d.z} größer als mein Zehner.`, test: (x) => x.e - x.z === d.e - d.z } : null,
+    (d) => d.e < d.z ? { text: `Mein Einer ist um ${d.z - d.e} kleiner als mein Zehner.`, test: (x) => x.z - x.e === d.z - d.e } : null,
+    (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
+    (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
+    (d) => ({ text: `Meine Quersumme ist ${d.z + d.e}.`, test: (x) => x.z + x.e === d.z + d.e }),
+    (d) => d.e === d.z ? { text: `Mein Einer und mein Zehner sind gleich.`, test: (x) => x.e === x.z } : null,
+    (d) => ({ text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`, test: (x) => x.e % 2 === d.e % 2 }),
+  ];
+  const CLUE_TYPES_3 = [
+    (d) => d.z > 0 && d.e % d.z === 0 && d.e / d.z >= 2 ? { text: `Mein Einer ist ${d.e / d.z}-mal so groß wie mein Zehner.`, test: (x) => x.z > 0 && x.e === d.e / d.z * x.z } : null,
+    (d) => d.e > d.z ? { text: `Mein Einer ist um ${d.e - d.z} größer als mein Zehner.`, test: (x) => x.e - x.z === d.e - d.z } : null,
+    (d) => d.e < d.z ? { text: `Mein Einer ist um ${d.z - d.e} kleiner als mein Zehner.`, test: (x) => x.z - x.e === d.z - d.e } : null,
+    (d) => d.h < d.z ? { text: `Mein Hunderter ist um ${d.z - d.h} kleiner als mein Zehner.`, test: (x) => x.z - x.h === d.z - d.h } : null,
+    (d) => d.h > d.z ? { text: `Mein Hunderter ist um ${d.h - d.z} größer als mein Zehner.`, test: (x) => x.h - x.z === d.h - d.z } : null,
+    (d) => d.h > 0 && d.z % d.h === 0 && d.z / d.h >= 2 ? { text: `Mein Zehner ist ${d.z / d.h}-mal so groß wie mein Hunderter.`, test: (x) => x.h > 0 && x.z === d.z / d.h * x.h } : null,
+    (d) => ({ text: `Mein Hunderter ist ${d.h}.`, test: (x) => x.h === d.h }),
+    (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
+    (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
+    (d) => ({ text: `Meine Quersumme ist ${d.h + d.z + d.e}.`, test: (x) => x.h + x.z + x.e === d.h + d.z + d.e }),
+    (d) => ({ text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`, test: (x) => x.e % 2 === d.e % 2 }),
+  ];
+  function genRiddle(t) {
+    const three = t >= 2;
+    const lo = three ? 100 : 10, hi = three ? 999 : 99;
+    const types = three ? CLUE_TYPES_3 : CLUE_TYPES_2;
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const n = rnd(lo, hi); const d = digits(n);
+      let clues = types.map((f) => f(d)).filter(Boolean);
+      if (t === 1) clues = clues.filter((c) => !c.text.startsWith('Ich bin')); // keep tier 1 simpler? allow all
+      clues = shuffle(clues);
+      // prefer relation clues first (more interesting)
+      let rel = clues.filter((c) => c.text.includes('-mal') || c.text.includes('größer') || c.text.includes('kleiner'));
+      if (t === 1) rel = rel.slice(0, 1);
+      const others = clues.filter((c) => !rel.includes(c));
+      const ordered = rel.concat(others);
+      const chosen = [];
+      for (const c of ordered) {
+        chosen.push(c);
+        const matches = [];
+        for (let x = lo; x <= hi; x++) { const dx = digits(x); if (chosen.every((cc) => cc.test(dx))) { matches.push(x); if (matches.length > 1) break; } }
+        if (matches.length === 1) {
+          const maxClues = t === 3 ? 4 : 3;
+          if (chosen.length >= 2 && chosen.length <= maxClues && (t < 3 || rel.length >= 2)) {
+            return task(chosen.map((c) => c.text).join('\n'), [n], { riddle: true, digits: three ? 3 : 2 });
+          }
+          break;
+        }
+      }
+    }
+    // fallback: simple
+    const n = rnd(lo, hi); const d = digits(n);
+    const txt = three ? `Mein Hunderter ist ${d.h}.\nMein Zehner ist ${d.z}.\nMein Einer ist ${d.e}.` : `Mein Zehner ist ${d.z}.\nMein Einer ist ${d.e}.`;
+    return task(txt, [n], { riddle: true, digits: three ? 3 : 2 });
+  }
+  function genSeq(t) {
+    let start, step, step2 = null;
+    if (t === 1) { step = rnd(2, 10); start = rnd(1, 99 - step * 6); }
+    else if (t === 2) { step = -rnd(2, 10); start = rnd(-step * 6 + 1, 99); }
+    else if (t === 3) { step = pick([5, 10, 20, 25, 50, 100, 11, 15]) * pick([1, -1]); start = step > 0 ? rnd(100, 999 - step * 6) : rnd(100 - step * 6, 999); }
+    else { step = rnd(2, 9); step2 = rnd(2, 9); while (step2 === step) step2 = rnd(2, 9); start = rnd(100, 999 - (step + step2) * 4); }
+    const seq = [start];
+    for (let i = 1; i < 7; i++) seq.push(seq[i - 1] + (step2 === null ? step : (i % 2 === 1 ? step : step2)));
+    return task(seq.slice(0, 4).join(', ') + ', …', seq.slice(4, 7), { seq: seq.slice(0, 4) });
+  }
+  function genNb(t) {
+    if (t === 1) { let n; do { n = rnd(11, 98); } while (n % 10 === 0); const lo = Math.floor(n / 10) * 10; return task(`${n}`, [lo, lo + 10], { nb: 'Zehner', n }); }
+    if (t === 2) { let n; do { n = rnd(101, 899); } while (n % 100 === 0); const lo = Math.floor(n / 100) * 100; return task(`${n}`, [lo, lo + 100], { nb: 'Hunderter', n }); }
+    let n; do { n = rnd(101, 899); } while (n % 10 === 0); const lo = Math.floor(n / 10) * 10; return task(`${n}`, [lo, lo + 10], { nb: 'Zehner', n });
+  }
+  function genGrid(t, elite) {
+    const size = 3;
+    const stepR = t >= 3 ? 100 : 10, stepD = 1;
+    const sr = rnd(0, size - 1), sc = rnd(0, size - 1);
+    let tr, tc; do { tr = rnd(0, size - 1); tc = rnd(0, size - 1); } while ((tr === sr && tc === sc) || (!elite && Math.abs(tr - sr) + Math.abs(tc - sc) > 2) || (elite && Math.abs(tr - sr) + Math.abs(tc - sc) < 2));
+    let base;
+    if (t === 1) base = rnd(25, 75); else if (t === 2) base = rnd(120, 870); else base = rnd(230, 760);
+    const value = base + (tr - sr) * stepD + (tc - sc) * stepR;
+    return task('', [value], { grid: { size, sr, sc, tr, tc, base, stepR, stepD } });
+  }
+  function task(text, answers, extra) { return Object.assign({ text, answers }, extra || {}); }
+
+  function generate(mod, tier, opts) {
+    tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite) }[mod];
+    const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
+  }
+
+  /* ---------- Tutorials ---------- */
+  const TUT = {
+    add: {
+      1: { title: 'Plus rechnen', steps: ['Rechne zuerst die Zehner, dann die Einer.', '23 + 45: Zehner 20 + 40 = 60, Einer 3 + 5 = 8.', 'Zusammen: 68.'] },
+      2: { title: 'Plus über den Zehner', steps: ['Wenn die Einer über 10 gehen, fülle erst den Zehner auf.', '37 + 8: 37 + 3 = 40, dann noch 5 dazu.', '40 + 5 = 45.'] },
+      3: { title: 'Plus mit Hundertern', steps: ['Rechne Hunderter, Zehner und Einer getrennt.', '234 + 152: 200 + 100 = 300, 30 + 50 = 80, 4 + 2 = 6.', 'Zusammen: 386.'] },
+      4: { title: 'Plus über Zehner und Hunderter', steps: ['Rechne in Schritten: erst die Hunderter, dann Zehner, dann Einer.', '367 + 258: 367 + 200 = 567, dann + 50 = 617, dann + 8 = 625.', 'Schritt für Schritt kommst du sicher ans Ziel.'] },
+      5: { title: 'Drei Zahlen addieren', steps: ['Rechne erst zwei Zahlen zusammen, dann die dritte dazu.', '120 + 45 + 30: 120 + 45 = 165, dann 165 + 30 = 195.', 'Tipp: Fang mit den Zahlen an, die leicht zusammenpassen.'] },
+    },
+    sub: {
+      1: { title: 'Minus rechnen', steps: ['Zähle rückwärts oder denke: Was fehlt bis zur großen Zahl?', '9 − 4: Von 4 bis 9 sind es 5.', 'Also 9 − 4 = 5.'] },
+      2: { title: 'Minus über den Zehner', steps: ['Gehe erst bis zum vollen Zehner, dann den Rest.', '22 − 7: Erst 22 − 2 = 20. Es bleiben noch 5.', '20 − 5 = 15.'] },
+      3: { title: 'Zweistellig minus zweistellig', steps: ['Ziehe erst die Zehner ab, dann die Einer.', '63 − 28: 63 − 20 = 43, dann 43 − 8.', '43 − 3 = 40, 40 − 5 = 35. Also 35.'] },
+      4: { title: 'Minus mit Hundertern', steps: ['Ziehe Schritt für Schritt ab: erst Zehner, dann Einer.', '304 − 9: 304 − 4 = 300, dann 300 − 5 = 295.', '512 − 67: 512 − 60 = 452, dann 452 − 7 = 445.'] },
+      5: { title: 'Die fehlende Zahl', steps: ['Hier fehlt die Zahl in der Mitte.', '22 − ? = 15: Wie weit ist es von 15 bis 22?', 'Von 15 bis 22 sind es 7. Also ? = 7.'] },
+    },
+    mul: {
+      1: { title: 'Das Einmaleins', steps: ['4 · 3 heißt: 4 + 4 + 4.', 'Das sind 12.', 'Tipp: Die 5er-Reihe endet immer auf 5 oder 0.'] },
+      2: { title: 'Das große Einmaleins', steps: ['Wenn du eine Aufgabe nicht weißt, nimm eine Nachbaraufgabe.', '7 · 8: Du weißt 7 · 7 = 49. Dann noch 7 dazu.', '49 + 7 = 56.'] },
+      3: { title: 'Die fehlende Zahl', steps: ['? · 6 = 42: Wie oft passt die 6 in 42?', 'Zähle in 6er-Schritten: 6, 12, 18, 24, 30, 36, 42. Das sind 7 Schritte.', 'Also ? = 7.'] },
+    },
+    riddle: {
+      1: { title: 'Zahlenrätsel', steps: ['Eine Zahl hat Stellen: Zehner und Einer. Bei 47 ist der Zehner 4 und der Einer 7.', 'Lies die Hinweise und probiere Zahlen aus.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Zehner ist 3.“ → Einer ist 6. Die Zahl ist 36.'] },
+      3: { title: 'Knifflige Zahlenrätsel', steps: ['Mehrere Hinweise, alle müssen stimmen.', 'Starte mit dem Hinweis, der am meisten verrät (z. B. „Mein Zehner ist 4“).', 'Dann prüfe die anderen Hinweise nacheinander.'] },
+    },
+    seq: {
+      1: { title: 'Zahlenfolgen', steps: ['Finde heraus, wie viel jedes Mal dazukommt.', '3, 8, 13, 18: Jedes Mal + 5.', 'Also weiter: 23, 28, 33.'] },
+      2: { title: 'Rückwärts-Folgen', steps: ['Hier wird jedes Mal etwas abgezogen.', '50, 44, 38, 32: Jedes Mal − 6.', 'Also weiter: 26, 20, 14.'] },
+      3: { title: 'Große Schritte', steps: ['Der Schritt kann auch 25, 50 oder 100 sein.', '123, 173, 223, 273: Jedes Mal + 50.', 'Also weiter: 323, 373, 423.'] },
+      4: { title: 'Wechsel-Folgen', steps: ['Manchmal wechseln sich zwei Schritte ab.', '100, 102, 107, 109, 114: Erst + 2, dann + 5, dann + 2 …', 'Also weiter: 116, 121, 123.'] },
+    },
+    nb: {
+      1: { title: 'Zehner-Nachbarn', steps: ['Jede Zahl liegt zwischen zwei vollen Zehnern.', '15 liegt zwischen 10 und 20.', 'Zehner davor: 10. Zehner danach: 20.'] },
+      2: { title: 'Hunderter-Nachbarn', steps: ['Jede Zahl liegt zwischen zwei vollen Hundertern.', '437 liegt zwischen 400 und 500.', 'Hunderter davor: 400. Hunderter danach: 500.'] },
+      3: { title: 'Zehner-Nachbarn bei großen Zahlen', steps: ['Schau nur auf Zehner und Einer.', '437: Zwischen 430 und 440.', 'Davor: 430. Danach: 440.'] },
+    },
+    grid: {
+      1: { title: 'Das Zahlengitter', steps: ['Ein Feld zeigt eine Zahl. Das Zielfeld leuchtet.', 'Gehe von Feld zu Feld: nach unten + 1, nach oben − 1, nach rechts + 10, nach links − 10.', 'Beispiel: Start 45, ein Feld nach rechts (55), dann eins nach unten (56). Das Zielfeld ist 56.'] },
+      2: { title: 'Zahlengitter mit Hundertern', steps: ['Gleiche Regeln: unten + 1, oben − 1, rechts + 10, links − 10.', 'Beispiel: Start 348, ein Feld nach links (338), dann eins nach oben (337).', 'Das Zielfeld ist 337.'] },
+      3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt gilt: nach rechts + 100, nach links − 100. Oben und unten bleiben − 1 und + 1.', 'Beispiel: Start 420, zwei Felder nach rechts (620), dann eins nach unten (621).', 'Das Zielfeld ist 621.'] },
+    },
+  };
+  TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
+
+  /* ---------- Monsters ---------- */
+  const TYPES = { feuer: { name: 'Feuer', icon: '🔥', color: '#FF6A3D' }, wasser: { name: 'Wasser', icon: '💧', color: '#3FA0FF' }, pflanze: { name: 'Pflanze', icon: '🌿', color: '#4FC96A' }, normal: { name: 'Normal', icon: '⭐', color: '#C9A227' } };
+  const BEATS = { feuer: 'pflanze', pflanze: 'wasser', wasser: 'feuer' };
+
+  const STARTERS = [
+    { id: 'fuchs', type: 'feuer', shape: 'fox', names: ['Glutfuchs', 'Flammfuchs', 'Sonnenfuchs'], hp: 60, desc: 'Flink und mutig. Macht öfter Volltreffer.', perk: 'crit',
+      attacks: [{ name: 'Funkenbiss', mod: 'add' }, { name: 'Flammenstoß', mod: 'sub' }, { name: 'Feuerreihe', mod: 'seq' }, { name: 'Glutgitter', mod: 'grid' }] },
+    { id: 'kroete', type: 'wasser', shape: 'toad', names: ['Wellenkröte', 'Strudelkröte', 'Ozeankröte'], hp: 80, desc: 'Hält viel aus. Hat die meisten Lebenspunkte.', perk: 'tank',
+      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Blubberrätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
+    { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Heilt sich bei jeder richtigen Antwort ein bisschen.', perk: 'heal',
+      attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Rankenrechnen', mod: 'mul' }, { name: 'Moosgitter', mod: 'grid' }] },
+  ];
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Schattenschnitt', mul: 'Sternenmal', riddle: 'Geheimrätsel', seq: 'Reihenrausch', nb: 'Nachbarschlag', grid: 'Gitterblitz' };
+
+  const ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Flummibatz', type: 'pflanze', shape: 'blob', hp: 26, atk: 3 },
+        { name: 'Tropfling', type: 'wasser', shape: 'drop', hp: 24, atk: 4 },
+        { name: 'Zündi', type: 'feuer', shape: 'flame', hp: 22, atk: 4 },
+        { name: 'Krabbelstein', type: 'normal', shape: 'rock', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Dornenigel', type: 'pflanze', shape: 'hedgehog', hp: 45, atk: 5 },
+      boss: { name: 'Großglibber', acc: 'den Großglibber', type: 'wasser', shape: 'blob', hp: 70, atk: 6, boss: true },
+    },
+    2: {
+      normal: [
+        { name: 'Lavamolch', type: 'feuer', shape: 'newt', hp: 42, atk: 5 },
+        { name: 'Nebelqualle', type: 'wasser', shape: 'jelly', hp: 40, atk: 6 },
+        { name: 'Ranklerin', type: 'pflanze', shape: 'vine', hp: 44, atk: 5 },
+        { name: 'Flatterfledi', type: 'normal', shape: 'bat', hp: 38, atk: 6 },
+      ],
+      elite: { name: 'Kristallkäfer', type: 'normal', shape: 'beetle', hp: 70, atk: 8 },
+      boss: { name: 'Aschendrache', acc: 'den Aschendrachen', type: 'feuer', shape: 'dragon', hp: 110, atk: 9, boss: true },
+    },
+    3: {
+      normal: [
+        { name: 'Frostblitz', type: 'wasser', shape: 'drop', hp: 60, atk: 8 },
+        { name: 'Dschungelbrüller', type: 'pflanze', shape: 'bear', hp: 65, atk: 8 },
+        { name: 'Magmagolem', type: 'feuer', shape: 'rock', hp: 70, atk: 7 },
+        { name: 'Schattenwolf', type: 'normal', shape: 'fox', hp: 55, atk: 9 },
+      ],
+      elite: { name: 'Sturmgeist', type: 'normal', shape: 'ghost', hp: 100, atk: 11 },
+      boss: { name: 'Rechenkönig', acc: 'den Rechenkönig', type: 'normal', shape: 'king', hp: 170, atk: 12, boss: true },
+    },
+  };
+  const ENEMY_MOVES = ['Rempler', 'Kratzer', 'Zahlenwirbel', 'Rumpler', 'Knuffpuff', 'Stupser'];
+
+  const ITEMS = {
+    trank: { name: 'Trank', icon: '🧪', desc: 'Heilt 30 Lebenspunkte.', heal: 30 },
+    grosstrank: { name: 'Großer Trank', icon: '🍶', desc: 'Heilt 60 Lebenspunkte.', heal: 60 },
+    schild: { name: 'Schild', icon: '🛡️', desc: 'Blockt den nächsten Angriff des Gegners.', shield: true },
+    beere: { name: 'Beere', icon: '🫐', desc: 'Heilt 15 Lebenspunkte.', heal: 15 },
+  };
+
+  const EVENTS = [
+    { title: 'Die Brücke', text: 'Ein alter Troll bewacht eine Brücke. „Löse mein Rätsel, dann darfst du rüber und bekommst einen Trank!“', opts: [{ label: 'Rätsel lösen', task: 'riddle', win: { item: 'trank' }, lose: { hp: -8 } }, { label: 'Umweg nehmen (−5 LP)', effect: { hp: -5 } }] },
+    { title: 'Der Zahlenbrunnen', text: 'Ein Brunnen glitzert. Wenn du die richtige Zahl rufst, sprudelt Heilwasser.', opts: [{ label: 'Zahl rufen', task: 'nb', win: { hp: 25 }, lose: { hp: 0 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Schatztruhe', text: 'Eine Truhe mit Zahlenschloss! Die Zahlenfolge öffnet sie.', opts: [{ label: 'Schloss knacken', task: 'seq', win: { item: 'grosstrank' }, lose: { hp: -10 } }, { label: 'Lieber nicht', effect: {} }] },
+    { title: 'Die Händlerin', text: 'Eine Händlerin verkauft einen Schild. Sie nimmt 10 Lebenspunkte als Bezahlung.', opts: [{ label: 'Schild kaufen (−10 LP)', effect: { hp: -10, item: 'schild' } }, { label: 'Nein danke', effect: {} }] },
+    { title: 'Das Trainingslager', text: 'Ein freundlicher Trainer bietet dir eine Übungsrunde an. Wenn du es schaffst, lernt dein Monster schneller.', opts: [{ label: 'Trainieren', task: 'mul', win: { xp: 25 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Das Beerenfeld', text: 'Überall wachsen Beeren! Du kannst dir welche pflücken.', opts: [{ label: 'Beeren pflücken', effect: { item: 'beere' } }, { label: 'Schnell weiter', effect: {} }] },
+    { title: 'Der Zahlengeist', text: 'Ein Geist flüstert: „Zeig mir, dass du rechnen kannst, dann stärke ich dein Monster.“', opts: [{ label: 'Rechnen', task: 'add', win: { maxhp: 8 }, lose: { hp: -6 } }, { label: 'Weglaufen', effect: {} }] },
+    { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
+  ];
+
+  /* ---------- Map ---------- */
+  function makeMap(world) {
+    const floors = [];
+    for (let f = 1; f <= 8; f++) {
+      let nodes;
+      if (f === 1) nodes = ['fight'];
+      else if (f === 8) nodes = ['boss'];
+      else {
+        const count = rnd(2, 3);
+        nodes = [];
+        const pool = ['fight', 'fight', 'fight', 'fight', 'event', 'event', 'rest', 'treasure', 'elite'];
+        for (let i = 0; i < count; i++) nodes.push(pick(pool));
+        if (f === 4 && !nodes.includes('rest')) nodes[0] = 'rest';
+        if (f === 7 && !nodes.includes('rest')) nodes[nodes.length - 1] = 'rest';
+        if (f < 3) nodes = nodes.map((n) => (n === 'elite' ? 'fight' : n));
+        if (!nodes.includes('fight') && f !== 4 && f !== 7) nodes[0] = 'fight';
+        if (f === 6 && !nodes.includes('treasure') && Math.random() < 0.5) nodes[0] = 'treasure';
+      }
+      floors.push(nodes);
+    }
+    return floors;
+  }
+
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, digits };
+})();
+
+</script>
+<script>
+/* ===== Knowledge modes: Ethik (Luther) & Sachkunde (Kartoffel) ===== */
+const MK = (() => {
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  /* ---------- ETHIK: Martin Luther ---------- */
+  const L_NOTES = {
+    leben: { title: 'Luthers Leben', lines: ['Am 10. November 1483 in Eisleben geboren.', 'Vor ungefähr 500 Jahren sind die Menschen sehr arm und häufig hungrig.', 'Lebt und arbeitet später in Wittenberg für die Kirche. Er wird Pfarrer in Wittenberg.', 'Er ist sehr gläubig, wie die meisten anderen Menschen auch.', 'Die Kirche ist damals sehr mächtig.'] },
+    ablass: { title: 'Ablassbriefe und 95 Thesen', lines: ['Die Kirche handelt mit Ablassbriefen: Man bezahlt für Briefe, um keine Strafen für schlechte Taten zu befürchten.', 'Luther protestiert dagegen.', 'Am 31.10.1517 hängt er 95 Thesen an die Tür der Schlosskirche in Wittenberg.', 'Viele Menschen sind begeistert von Luthers Ideen. Er macht sich aber auch viele Feinde.'] },
+    wartburg: { title: 'Vogelfrei und Wartburg', lines: ['Luther wird für „vogelfrei“ erklärt: Er ist nicht durch das Gesetz geschützt. Man darf ihm etwas antun, ohne bestraft zu werden.', 'Er wird zum Schein auf die Wartburg bei Eisenach entführt.', 'Dort versteckt er sich 10 Monate als „Junker Jörg“.', 'Auf der Wartburg übersetzt er einen Teil der Bibel in die deutsche Sprache.'] },
+    reformation: { title: 'Reformation', lines: ['Reformation bedeutet „Erneuerung“.', 'Luther will eine Reformation (Erneuerung) der Kirche.', 'Die Kirche spaltet sich aber in die katholische Kirche (Gegner Luthers) und die evangelische Kirche (Anhänger Luthers). Das war nicht Luthers Absicht.'] },
+  };
+  const L_EVENTS_ORDER = [
+    { id: 'o1', text: 'Luther wird in Eisleben geboren' },
+    { id: 'o2', text: 'Luther arbeitet in Wittenberg für die Kirche' },
+    { id: 'o3', text: 'Luther protestiert gegen die Ablassbriefe' },
+    { id: 'o4', text: 'Luther hängt 95 Thesen an die Schlosskirche' },
+    { id: 'o5', text: 'Luther wird für vogelfrei erklärt' },
+    { id: 'o6', text: 'Luther versteckt sich als Junker Jörg auf der Wartburg' },
+    { id: 'o7', text: 'Luther übersetzt einen Teil der Bibel ins Deutsche' },
+    { id: 'o8', text: 'Die Kirche spaltet sich in katholisch und evangelisch' },
+  ];
+  // mod: rf = Richtig/Falsch, mc = Wähle aus, lt = Lückentext, def = Begriffe, ord = Reihenfolge
+  const L_POOL = [
+    // Richtig / Falsch
+    { id: 'rf1', mod: 'rf', g: 'leben', q: 'Martin Luther wurde 1483 geboren.', a: true },
+    { id: 'rf2', mod: 'rf', g: 'leben', q: 'Martin Luther wurde in Wittenberg geboren.', a: false, why: 'Er wurde in Eisleben geboren.' },
+    { id: 'rf3', mod: 'rf', g: 'leben', q: 'Luther lebte und arbeitete später in Wittenberg.', a: true },
+    { id: 'rf4', mod: 'rf', g: 'leben', q: 'Die Kirche war zu Luthers Zeit sehr mächtig.', a: true },
+    { id: 'rf5', mod: 'rf', g: 'leben', q: 'Luther war nicht gläubig.', a: false, why: 'Er war sehr gläubig, wie die meisten Menschen.' },
+    { id: 'rf6', mod: 'rf', g: 'ablass', q: 'Luther fand den Handel mit Ablassbriefen gut.', a: false, why: 'Er protestierte dagegen.' },
+    { id: 'rf7', mod: 'rf', g: 'ablass', q: 'Luther hängte 95 Thesen an die Tür der Schlosskirche.', a: true },
+    { id: 'rf8', mod: 'rf', g: 'ablass', q: 'Die Schlosskirche mit den Thesen steht in Eisleben.', a: false, why: 'Sie steht in Wittenberg.' },
+    { id: 'rf9', mod: 'rf', g: 'wartburg', q: 'Luther versteckte sich 10 Monate auf der Wartburg.', a: true },
+    { id: 'rf10', mod: 'rf', g: 'wartburg', q: 'Auf der Wartburg nannte sich Luther „Junker Jörg“.', a: true },
+    { id: 'rf11', mod: 'rf', g: 'wartburg', q: 'Vogelfrei bedeutet: Luther durfte frei reisen wie ein Vogel.', a: false, why: 'Vogelfrei heißt: nicht durch das Gesetz geschützt.' },
+    { id: 'rf12', mod: 'rf', g: 'wartburg', q: 'Luther wurde wirklich von Feinden auf die Wartburg entführt.', a: false, why: 'Die Entführung war nur zum Schein.' },
+    { id: 'rf13', mod: 'rf', g: 'wartburg', q: 'Luther übersetzte einen Teil der Bibel ins Deutsche.', a: true },
+    { id: 'rf14', mod: 'rf', g: 'reformation', q: 'Reformation bedeutet „Erneuerung“.', a: true },
+    { id: 'rf15', mod: 'rf', g: 'reformation', q: 'Die Kirche spaltete sich in die katholische und die evangelische Kirche.', a: true },
+    { id: 'rf16', mod: 'rf', g: 'reformation', q: 'Luther wollte eine ganz neue Religion gründen.', a: false, why: 'Er wollte die Kirche erneuern (Reformation).' },
+    { id: 'rf17', mod: 'rf', g: 'leben', q: 'Luther wurde am 10. November 1483 geboren.', a: true },
+    { id: 'rf18', mod: 'rf', g: 'ablass', q: 'Luther schlug seine Thesen am 31.10.1517 an.', a: true },
+    { id: 'rf19', mod: 'rf', g: 'wartburg', q: 'Die Wartburg liegt bei Eisenach.', a: true },
+    { id: 'rf20', mod: 'rf', g: 'leben', q: 'Luther wurde Pfarrer in Wittenberg.', a: true },
+    { id: 'rf21', mod: 'rf', g: 'reformation', q: 'Die Spaltung der Kirche war Luthers Absicht.', a: false, why: 'Das war nicht Luthers Absicht.' },
+    { id: 'rf22', mod: 'rf', g: 'leben', q: 'Vor 500 Jahren waren die meisten Menschen reich und satt.', a: false, why: 'Die Menschen waren sehr arm und häufig hungrig.' },
+    { id: 'rf23', mod: 'rf', g: 'ablass', q: 'Luther hatte nur Freunde und keine Feinde.', a: false, why: 'Viele waren begeistert, aber er machte sich auch viele Feinde.' },
+    // Wähle aus
+    { id: 'mc1', mod: 'mc', g: 'leben', q: 'Wo wurde Martin Luther geboren?', o: ['Eisleben', 'Wittenberg', 'Eisenach'], a: 0 },
+    { id: 'mc2', mod: 'mc', g: 'leben', q: 'In welchem Jahr wurde Luther geboren?', o: ['1483', '1517', '1348'], a: 0 },
+    { id: 'mc3', mod: 'mc', g: 'leben', q: 'Wo lebte und arbeitete Luther später für die Kirche?', o: ['Wittenberg', 'Eisleben', 'Rom'], a: 0 },
+    { id: 'mc4', mod: 'mc', g: 'ablass', q: 'Wogegen protestierte Luther?', o: ['Gegen den Handel mit Ablassbriefen', 'Gegen die Bibel', 'Gegen die Wartburg'], a: 0 },
+    { id: 'mc5', mod: 'mc', g: 'ablass', q: 'Wie viele Thesen hängte Luther an die Kirchentür?', o: ['95', '10', '1483'], a: 0 },
+    { id: 'mc6', mod: 'mc', g: 'ablass', q: 'Wofür bezahlten die Menschen bei einem Ablassbrief?', o: ['Um keine Strafen für schlechte Taten zu befürchten', 'Für eine Reise nach Wittenberg', 'Für eine deutsche Bibel'], a: 0 },
+    { id: 'mc7', mod: 'mc', g: 'ablass', q: 'An welche Tür hängte Luther seine Thesen?', o: ['An die Tür der Schlosskirche in Wittenberg', 'An die Tür der Wartburg', 'An die Tür seines Hauses in Eisleben'], a: 0 },
+    { id: 'mc8', mod: 'mc', g: 'wartburg', q: 'Wie lange versteckte sich Luther auf der Wartburg?', o: ['10 Monate', '10 Tage', '10 Jahre'], a: 0 },
+    { id: 'mc9', mod: 'mc', g: 'wartburg', q: 'Unter welchem Namen versteckte sich Luther?', o: ['Junker Jörg', 'Ritter Martin', 'Bruder Hans'], a: 0 },
+    { id: 'mc10', mod: 'mc', g: 'wartburg', q: 'Was machte Luther auf der Wartburg?', o: ['Er übersetzte einen Teil der Bibel ins Deutsche', 'Er schrieb Ablassbriefe', 'Er baute eine Kirche'], a: 0 },
+    { id: 'mc11', mod: 'mc', g: 'wartburg', q: 'Warum wurde Luther auf die Wartburg gebracht?', o: ['Zum Schein entführt, um ihn zu verstecken', 'Als Strafe für die Thesen', 'Weil er dort geboren wurde'], a: 0 },
+    { id: 'mc12', mod: 'mc', g: 'reformation', q: 'In welche zwei Kirchen spaltete sich die Kirche?', o: ['Katholisch und evangelisch', 'Alt und neu', 'Deutsch und römisch'], a: 0 },
+    { id: 'mc13', mod: 'mc', g: 'reformation', q: 'Was wollte Luther für die Kirche?', o: ['Eine Erneuerung (Reformation)', 'Mehr Ablassbriefe', 'Mehr Macht'], a: 0 },
+    { id: 'mc14', mod: 'mc', g: 'ablass', q: 'An welchem Tag schlug Luther seine 95 Thesen an?', o: ['31.10.1517', '10.11.1483', '24.12.1500'], a: 0 },
+    { id: 'mc15', mod: 'mc', g: 'wartburg', q: 'Wo liegt die Wartburg?', o: ['Bei Eisenach', 'Bei Wittenberg', 'Bei Eisleben'], a: 0 },
+    { id: 'mc16', mod: 'mc', g: 'leben', q: 'Wie ging es den Menschen vor ungefähr 500 Jahren?', o: ['Sie waren sehr arm und häufig hungrig', 'Sie waren reich', 'Sie hatten alle ein Auto'], a: 0 },
+    { id: 'mc17', mod: 'mc', g: 'reformation', q: 'Wer gehört zur evangelischen Kirche?', o: ['Die Anhänger Luthers', 'Die Gegner Luthers', 'Nur der Papst'], a: 0 },
+    { id: 'mc18', mod: 'mc', g: 'leben', q: 'Welchen Beruf hatte Luther in Wittenberg?', o: ['Pfarrer', 'Bauer', 'Ritter'], a: 0 },
+    // Lückentext
+    { id: 'lt1', mod: 'lt', g: 'leben', q: 'Martin Luther wurde ___ in Eisleben geboren.', o: ['1483', '1517', '1500'], a: 0 },
+    { id: 'lt2', mod: 'lt', g: 'leben', q: 'Luther lebte und arbeitete später in ___ für die Kirche.', o: ['Wittenberg', 'Eisleben', 'Berlin'], a: 0 },
+    { id: 'lt3', mod: 'lt', g: 'leben', q: 'Luther war sehr ___, wie die meisten Menschen auch.', o: ['gläubig', 'reich', 'mächtig'], a: 0 },
+    { id: 'lt4', mod: 'lt', g: 'ablass', q: 'Luther protestierte gegen den Handel mit ___.', o: ['Ablassbriefen', 'Bibeln', 'Burgen'], a: 0 },
+    { id: 'lt5', mod: 'lt', g: 'ablass', q: 'Luther hängte ___ Thesen an die Tür der Schlosskirche.', o: ['95', '59', '100'], a: 0 },
+    { id: 'lt6', mod: 'lt', g: 'ablass', q: 'Die Thesen hingen an der Tür der ___ in Wittenberg.', o: ['Schlosskirche', 'Wartburg', 'Schule'], a: 0 },
+    { id: 'lt7', mod: 'lt', g: 'wartburg', q: 'Luther wurde für ___ erklärt.', o: ['vogelfrei', 'heilig', 'reich'], a: 0 },
+    { id: 'lt8', mod: 'lt', g: 'wartburg', q: 'Luther versteckte sich ___ Monate auf der Wartburg.', o: ['10', '2', '20'], a: 0 },
+    { id: 'lt9', mod: 'lt', g: 'wartburg', q: 'Auf der Wartburg nannte er sich Junker ___.', o: ['Jörg', 'Martin', 'Karl'], a: 0 },
+    { id: 'lt10', mod: 'lt', g: 'wartburg', q: 'Luther übersetzte einen Teil der ___ ins Deutsche.', o: ['Bibel', 'Thesen', 'Gesetze'], a: 0 },
+    { id: 'lt11', mod: 'lt', g: 'reformation', q: 'Reformation bedeutet ___.', o: ['Erneuerung', 'Spaltung', 'Strafe'], a: 0 },
+    { id: 'lt12', mod: 'lt', g: 'reformation', q: 'Die Kirche spaltete sich in die katholische und die ___ Kirche.', o: ['evangelische', 'deutsche', 'neue'], a: 0 },
+    { id: 'lt13', mod: 'lt', g: 'leben', q: 'Am 10. ___ 1483 wird Martin Luther in Eisleben geboren.', o: ['November', 'Mai', 'Januar'], a: 0 },
+    { id: 'lt14', mod: 'lt', g: 'wartburg', q: 'Luther versteckt sich auf der Wartburg bei ___.', o: ['Eisenach', 'Eisleben', 'Wittenberg'], a: 0 },
+    { id: 'lt15', mod: 'lt', g: 'ablass', q: 'Am 31.10.___ schlägt Luther seine 95 Thesen an.', o: ['1517', '1483', '1500'], a: 0 },
+    { id: 'lt16', mod: 'lt', g: 'reformation', q: 'Die katholische Kirche sind die ___ Luthers.', o: ['Gegner', 'Anhänger', 'Freunde'], a: 0 },
+    // Begriffe
+    { id: 'def1', mod: 'def', g: 'reformation', q: 'Was bedeutet „Reformation“?', o: ['Erneuerung', 'Entführung', 'Bestrafung'], a: 0 },
+    { id: 'def2', mod: 'def', g: 'wartburg', q: 'Was bedeutet „vogelfrei“?', o: ['Nicht durch das Gesetz geschützt – man durfte ihm etwas antun, ohne bestraft zu werden', 'Frei wie ein Vogel reisen', 'Von der Kirche belohnt'], a: 0 },
+    { id: 'def3', mod: 'def', g: 'wartburg', q: 'Was ist die Wartburg?', o: ['Die Burg, auf der sich Luther 10 Monate versteckte', 'Die Kirche mit den 95 Thesen', 'Luthers Geburtshaus'], a: 0 },
+    { id: 'def4', mod: 'def', g: 'ablass', q: 'Was ist ein Ablassbrief?', o: ['Ein Brief, den man kauft, um keine Strafen für schlechte Taten zu befürchten', 'Ein Brief von Luther an den Papst', 'Eine deutsche Bibel'], a: 0 },
+    { id: 'def5', mod: 'def', g: 'wartburg', q: 'Wer war „Junker Jörg“?', o: ['Luther selbst, unter falschem Namen auf der Wartburg', 'Ein Ritter, der Luther entführte', 'Ein Ablasshändler'], a: 0 },
+    { id: 'def6', mod: 'def', g: 'ablass', q: 'Was sind die 95 Thesen?', o: ['Luthers Sätze gegen den Ablasshandel an der Kirchentür', '95 Ablassbriefe', '95 Seiten der Bibel'], a: 0 },
+  ];
+  const L_MODULES = {
+    rf: { name: 'Richtig oder falsch', icon: '✅', maxTier: 1, worldCap: [1], dmg: 10 },
+    mc: { name: 'Wähle aus', icon: '🔘', maxTier: 1, worldCap: [1], dmg: 12 },
+    lt: { name: 'Lückentext', icon: '✏️', maxTier: 1, worldCap: [1], dmg: 12 },
+    def: { name: 'Begriffe', icon: '📖', maxTier: 1, worldCap: [1], dmg: 14 },
+    ord: { name: 'Reihenfolge', icon: '🔢', maxTier: 1, worldCap: [1], dmg: 16 },
+  };
+  const L_TUT = {
+    'rf:1': { title: 'Richtig oder falsch', steps: ['Lies den Satz genau.', 'Stimmt er mit dem, was du über Luther weißt, überein? Dann „Richtig“.', 'Ist etwas vertauscht oder falsch? Dann „Falsch“.'] },
+    'mc:1': { title: 'Wähle aus', steps: ['Lies die Frage.', 'Nur eine der drei Antworten stimmt.', 'Tippe auf die richtige Antwort.'] },
+    'lt:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Lies den Satz mit jedem Wort einmal durch.', 'Tippe auf das Wort, das passt.'] },
+    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter: Reformation, vogelfrei, Wartburg, Ablassbrief, Junker Jörg, 95 Thesen.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
+    'ord:1': { title: 'Reihenfolge', steps: ['Vier Ereignisse sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Was passierte zuerst?', 'Mit „Rückgängig“ kannst du den letzten Tipp zurücknehmen.'] },
+  };
+  const L_STARTERS = [
+    { id: 'luther', type: 'normal', shape: 'luther', names: ['Martin Luther', 'Martin Luther', 'Martin Luther'], hp: 70, desc: 'Der Mönch aus Wittenberg. Mutig gegen die mächtige Kirche.', perk: 'none',
+      attacks: [{ name: 'Klare Worte', mod: 'rf' }, { name: 'Gute Antwort', mod: 'mc' }, { name: 'Federkiel', mod: 'lt' }, { name: 'Thesenschlag', mod: 'def' }] },
+  ];
+  const L_EXTRA = { rf: 'Wahrheitsblick', mc: 'Kluge Wahl', lt: 'Tintenfass', def: 'Wörterbuch', ord: 'Zeitstrahl' };
+  const L_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Zweifelgeist', type: 'normal', shape: 'ghost', hp: 26, atk: 3 },
+        { name: 'Vergesslgeist', type: 'normal', shape: 'ghost', hp: 24, atk: 4 },
+        { name: 'Verwechsler', type: 'normal', shape: 'bat', hp: 28, atk: 4 },
+        { name: 'Schwindelgeist', type: 'normal', shape: 'jelly', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Strenger Richter', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
+      boss: { name: 'Der Ablasshändler', acc: 'den Ablasshändler', type: 'normal', shape: 'merchant', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const L_EVENTS = [
+    { title: 'Der Mönch', text: 'Ein Mönch fragt dich: „Weißt du, was Luther wirklich wollte?“ Antworte richtig und er schenkt dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Kirchentür', text: 'Du stehst vor einer großen Kirchentür. Ein Zettel hängt daran: eine Frage!', opts: [{ label: 'Frage lesen', task: 'any', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Nicht lesen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Der Bote', text: 'Ein Bote bringt dir eine Nachricht. Wenn du sie richtig verstehst, schenkt er dir einen Schild.', opts: [{ label: 'Nachricht lesen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
+    { title: 'Das Gasthaus', text: 'Im Gasthaus kannst du dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
+  /* ---------- SACHKUNDE: Kartoffelpflanze ---------- */
+  const PARTS = [
+    { id: 'wurzeln', name: 'Wurzeln', ground: 'unten', desc: 'Wachsen aus der Saatkartoffel und holen Wasser aus dem Boden.' },
+    { id: 'mutterknolle', name: 'Saatkartoffel', ground: 'unten', desc: 'Die alte Kartoffel, die im Frühjahr gesetzt wird. Sie schrumpft später.' },
+    { id: 'auslaeufer', name: 'Triebe', ground: 'unten', desc: 'Wachsen aus der Saatkartoffel. An ihrem Ende bilden sich die neuen Knollen.' },
+    { id: 'tochterknollen', name: 'Knollen', ground: 'unten', desc: 'Die neuen Kartoffeln am Ende der Triebe. Sie werden im Herbst geerntet.' },
+    { id: 'staengel', name: 'Stängel', ground: 'oben', desc: 'Trägt Blätter, Blüten und Beeren.' },
+    { id: 'blaetter', name: 'Blätter', ground: 'oben', desc: 'Ohne Blätter kann die Pflanze nicht überleben.' },
+    { id: 'bluete', name: 'Blüten', ground: 'oben', desc: 'Im Sommer blüht die Pflanze.' },
+    { id: 'beere', name: 'Beeren', ground: 'oben', desc: 'Grüne, giftige Beeren, die aus den Blüten entstehen.' },
+  ];
+  const GROW = [
+    { id: 'g1', text: 'Im Frühjahr wird eine keimende Saatkartoffel in die Erde gesetzt' },
+    { id: 'g2', text: 'Wenige Wochen später wachsen kleine Triebe aus der Kartoffel' },
+    { id: 'g3', text: 'Triebe durchbrechen die Erde und werden zur Kartoffelpflanze' },
+    { id: 'g4', text: 'Die alte Kartoffel schrumpft, am Ende der Triebe bilden sich kleine Knollen' },
+    { id: 'g5', text: 'Im Sommer blüht die Pflanze, aus den Blüten werden grüne, giftige Beeren' },
+    { id: 'g6', text: 'Im Herbst verdorrt die Pflanze, die Knollen sind reif und werden geerntet' },
+  ];
+  const STORY = [
+    { id: 's1', text: 'Das Bäuerlein findet auf seinem Acker einen kleinen schwarzen Teufel auf feurigen Kohlen' },
+    { id: 's2', text: 'Der Teufel verspricht den Schatz, wenn er zwei Jahre die Hälfte der Ernte bekommt' },
+    { id: 's3', text: 'Der Teufel wählt, was über der Erde wächst – der Bauer pflanzt Kartoffeln' },
+    { id: 's4', text: 'Der Teufel bekommt nur gelbe, welke Blätter' },
+    { id: 's5', text: 'Der Teufel wählt, was unter der Erde wächst – der Bauer sät Weizen' },
+    { id: 's6', text: 'Der Teufel findet nur Stoppeln und fährt wütend in eine Felsenschlucht' },
+    { id: 's7', text: 'Das Bäuerlein holt sich den Schatz' },
+  ];
+  const K_NOTES = {
+    teile: { title: 'Die Teile der Kartoffelpflanze', lines: PARTS.map((p) => `${p.name}: ${p.desc}`) },
+    boden: { title: 'Über und unter der Erde', lines: ['Unter der Erde: Wurzeln, Saatkartoffel, Triebe, Knollen.', 'Über der Erde: Stängel, Blätter, Blüten, Beeren.'] },
+    wachstum: { title: 'Wie die Kartoffel wächst', lines: GROW.map((g, i) => `${i + 1}. ${g.text}.`) },
+    herkunft: { title: 'Woher kommt die Kartoffel?', lines: ['Die Kartoffel kommt aus Südamerika, aus Peru.', 'Die Spanier lernten sie im 16. Jahrhundert bei den Inkas kennen, der Urbevölkerung der Anden.', 'Für die Inkas war die Kartoffel ein wichtiges Nahrungsmittel.', 'Die Spanier nahmen die Kartoffeln kistenweise an Bord ihrer Schiffe mit nach Europa.', 'Nach anfänglichen Schwierigkeiten wurde die Kartoffelpflanze in ganz Europa angebaut.', 'Heute ist die Kartoffel neben dem Brot ein wichtiges Grundnahrungsmittel.'] },
+    ernte: { title: 'Die Kartoffelernte früher und heute', lines: ['Früher: mit großen Gabeln aus der Erde gehoben, kurz auf dem Feld getrocknet, dann aufgelesen und in Körbe und Säcke gefüllt.', 'Das Auflesen in gebückter Haltung war mühsam. Arme Leute und Kinder halfen und bekamen als Lohn Kartoffeln.', 'Heute: Maschinen ernten. Kartoffelroder fahren über das Feld und befreien die Kartoffeln von der anhaftenden Erde.', 'Eine Sortiermaschine sortiert sie der Größe nach in Säcke. Nur unförmige und grüne Kartoffeln werden von Hand aussortiert.'] },
+    kaefer: { title: 'Der Kartoffelkäfer', lines: ['Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', 'Ein Weibchen legt mehr als 2 500 Eier ab, daraus werden gefräßige Larven.', 'Dreißig Larven können in einer Woche eine Pflanze kahl fressen.', 'Ohne Blätter kann die Pflanze nicht überleben – es wachsen kaum neue Kartoffeln.', 'Heute bekämpft man die Käfer mit Schädlingsvernichtungsmitteln, früher sammelte man sie mit der Hand ein.'] },
+    woerter: { title: 'Kartoffelwörter', lines: ['die Bratkartoffel, die Salzkartoffel, die Saatkartoffel, die Frühkartoffel, die Pellkartoffel', 'die Kartoffelchips, die Kartoffelsuppe, die Kartoffelschale, der Kartoffelsalat, der Kartoffelbrei, das Kartoffelmehl'] },
+    maerchen: { title: 'Der Bauer und der Teufel (Gebrüder Grimm)', lines: ['Der Bauer ist klug, verschmitzt, listig, vergnügt und klein (ein Bäuerlein).', 'Der Teufel ist klein, schwarz, feurig und am Ende wütend.', 'Der Teufel sitzt auf einem Schatz und will zwei Jahre lang die Hälfte der Ernte.', 'Erstes Jahr: Teufel bekommt, was über der Erde ist – der Bauer pflanzt Kartoffeln.', 'Zweites Jahr: Teufel bekommt, was unter der Erde ist – der Bauer sät Weizen.', 'Der Teufel fährt wütend in eine Felsenschlucht, der Bauer holt den Schatz.'] },
+  };
+  const K_POOL = [];
+  PARTS.forEach((p) => { K_POOL.push({ id: 'p_' + p.id, mod: 'parts', g: 'teile', part: p.id, q: 'Wie heißt der leuchtende Teil?', a: p.name }); K_POOL.push({ id: 'gr_' + p.id, mod: 'ground', g: 'boden', q: `Wo wächst: ${p.name}?`, o: ['Über der Erde', 'Unter der Erde'], a: p.ground === 'oben' ? 0 : 1 }); });
+  K_POOL.push(
+    { id: 'kmc1', mod: 'ground', g: 'teile', q: 'Welchen Teil der Kartoffelpflanze essen wir?', o: ['Die Knollen', 'Die Beeren', 'Die Blätter'], a: 0 },
+    { id: 'kmc2', mod: 'ground', g: 'teile', q: 'Woran wachsen die neuen Knollen?', o: ['Am Ende der Triebe', 'An den Blättern', 'An der Blüte'], a: 0 },
+    { id: 'kmc3', mod: 'ground', g: 'teile', q: 'Was wird aus den Blüten?', o: ['Grüne, giftige Beeren', 'Neue Knollen', 'Wurzeln'], a: 0 },
+    { id: 'kmc4', mod: 'ground', g: 'teile', q: 'Was wird im Frühjahr in die Erde gesetzt?', o: ['Eine keimende Saatkartoffel', 'Eine Beere', 'Ein Blatt'], a: 0 },
+    { id: 'kmc5', mod: 'ground', g: 'wachstum', q: 'Was passiert mit der alten Kartoffel, wenn die Pflanze wächst?', o: ['Sie schrumpft', 'Sie wird größer', 'Sie blüht'], a: 0 },
+    { id: 'kmc6', mod: 'ground', g: 'wachstum', q: 'Wann werden die Knollen geerntet?', o: ['Im Herbst', 'Im Frühjahr', 'Im Sommer'], a: 0 },
+    // Lückentext: Herkunft
+    { id: 'lk1', mod: 'ltk', g: 'herkunft', q: 'Eigentlich kommt die Kartoffel aus ___, aus Peru.', o: ['Südamerika', 'Europa', 'Afrika'], a: 0 },
+    { id: 'lk2', mod: 'ltk', g: 'herkunft', q: 'Eigentlich kommt die Kartoffel aus Südamerika, aus ___.', o: ['Peru', 'Spanien', 'Italien'], a: 0 },
+    { id: 'lk3', mod: 'ltk', g: 'herkunft', q: 'Als die ___ im 16. Jahrhundert in Amerika an Land gingen, lernten sie die Kartoffel kennen.', o: ['Spanier', 'Deutschen', 'Inkas'], a: 0 },
+    { id: 'lk4', mod: 'ltk', g: 'herkunft', q: 'Sie lernten die Kartoffel bei den ___ kennen, der Urbevölkerung der Anden.', o: ['Inkas', 'Spaniern', 'Bauern'], a: 0 },
+    { id: 'lk5', mod: 'ltk', g: 'herkunft', q: 'Die Inkas waren die ___ der Anden.', o: ['Urbevölkerung', 'Könige', 'Seefahrer'], a: 0 },
+    { id: 'lk6', mod: 'ltk', g: 'herkunft', q: 'Für die Inkas war die Kartoffel ein wichtiges ___.', o: ['Nahrungsmittel', 'Geschenk', 'Spielzeug'], a: 0 },
+    { id: 'lk7', mod: 'ltk', g: 'herkunft', q: 'Die Spanier nahmen die Kartoffeln kistenweise an Bord ihrer ___ mit nach Hause.', o: ['Schiffe', 'Wagen', 'Flugzeuge'], a: 0 },
+    { id: 'lk8', mod: 'ltk', g: 'herkunft', q: 'Die Kartoffelpflanze wurde in ganz ___ angebaut.', o: ['Europa', 'Peru', 'Amerika'], a: 0 },
+    { id: 'lk9', mod: 'ltk', g: 'herkunft', q: 'Mittlerweile ist die Kartoffel neben dem Brot zu einem wichtigen ___ geworden.', o: ['Grundnahrungsmittel', 'Haustier', 'Gewürz'], a: 0 },
+    { id: 'lk10', mod: 'ltk', g: 'herkunft', q: 'Die Spanier kamen im ___ Jahrhundert nach Amerika.', o: ['16.', '20.', '10.'], a: 0 },
+    // Lückentext: Ernte
+    { id: 'le1', mod: 'ltk', g: 'ernte', q: 'Früher mussten die Kartoffeln mit großen ___ aus der Erde herausgehoben werden.', o: ['Gabeln', 'Maschinen', 'Löffeln'], a: 0 },
+    { id: 'le2', mod: 'ltk', g: 'ernte', q: 'Man ließ sie kurze Zeit auf den Feldern ___.', o: ['trocknen', 'wachsen', 'schlafen'], a: 0 },
+    { id: 'le3', mod: 'ltk', g: 'ernte', q: 'Dann wurden sie aufgelesen und in Körbe und ___ gefüllt.', o: ['Säcke', 'Flaschen', 'Kisten'], a: 0 },
+    { id: 'le4', mod: 'ltk', g: 'ernte', q: 'Das Auflesen in ___ Haltung war eine mühsame Arbeit.', o: ['gebückter', 'aufrechter', 'sitzender'], a: 0 },
+    { id: 'le5', mod: 'ltk', g: 'ernte', q: 'Arme Leute und auch ___ halfen den Bauern beim Auflesen.', o: ['Kinder', 'Könige', 'Maschinen'], a: 0 },
+    { id: 'le6', mod: 'ltk', g: 'ernte', q: 'Als Lohn bekamen sie ___.', o: ['Kartoffeln', 'Geld', 'Brot'], a: 0 },
+    { id: 'le7', mod: 'ltk', g: 'ernte', q: 'Heute werden die Kartoffeln mit ___ geerntet.', o: ['Maschinen', 'Gabeln', 'Händen'], a: 0 },
+    { id: 'le8', mod: 'ltk', g: 'ernte', q: 'Große ___ fahren über das Feld und ernten die Kartoffeln.', o: ['Kartoffelroder', 'Traktoren', 'Pflüge'], a: 0 },
+    { id: 'le9', mod: 'ltk', g: 'ernte', q: 'Sie befreien die Kartoffeln gleichzeitig von der anhaftenden ___.', o: ['Erde', 'Schale', 'Farbe'], a: 0 },
+    { id: 'le10', mod: 'ltk', g: 'ernte', q: 'Mit Hilfe einer ___ werden sie der Größe nach sortiert.', o: ['Sortiermaschine', 'Waschmaschine', 'Waage'], a: 0 },
+    { id: 'le11', mod: 'ltk', g: 'ernte', q: 'Sie werden der ___ nach sortiert, in Säcke gefüllt.', o: ['Größe', 'Farbe', 'Form'], a: 0 },
+    { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Nur die Aussortierung unförmiger und ___ Kartoffeln geschieht noch von Hand.', o: ['grüner', 'kleiner', 'dicker'], a: 0 },
+    // Wissen: Käfer + Herkunft + Ernte (rf / mc)
+    { id: 'kw1', mod: 'wissen', g: 'kaefer', q: 'Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', rf: true, a: true },
+    { id: 'kw2', mod: 'wissen', g: 'kaefer', q: 'Wie viele Eier legt ein Kartoffelkäferweibchen?', o: ['Mehr als 2 500', 'Etwa 25', 'Genau 100'], a: 0 },
+    { id: 'kw3', mod: 'wissen', g: 'kaefer', q: 'Was schlüpft aus den Eiern des Kartoffelkäfers?', o: ['Gefräßige Larven', 'Kleine Raupen', 'Fliegen'], a: 0 },
+    { id: 'kw4', mod: 'wissen', g: 'kaefer', q: 'Wie viele Larven können in einer Woche eine Pflanze kahl fressen?', o: ['Dreißig', 'Drei', 'Dreihundert'], a: 0 },
+    { id: 'kw5', mod: 'wissen', g: 'kaefer', q: 'Ohne Blätter kann die Kartoffelpflanze trotzdem gut überleben.', rf: true, a: false, why: 'Ohne Blätter kann sie nicht überleben.' },
+    { id: 'kw6', mod: 'wissen', g: 'kaefer', q: 'Was passiert bei einer abgefressenen Pflanze unter der Erde?', o: ['Es wachsen nur wenige oder keine neuen Kartoffeln', 'Es wachsen besonders viele Kartoffeln', 'Nichts verändert sich'], a: 0 },
+    { id: 'kw7', mod: 'wissen', g: 'kaefer', q: 'Wie bekämpft man den Kartoffelkäfer heute?', o: ['Mit Schädlingsvernichtungsmitteln', 'Mit der Hand', 'Mit Wasser'], a: 0 },
+    { id: 'kw8', mod: 'wissen', g: 'kaefer', q: 'Früher sammelte man die Käfer mit der Hand ein.', rf: true, a: true },
+    { id: 'kw9', mod: 'wissen', g: 'kaefer', q: 'Wo legt der Kartoffelkäfer seine Eier ab?', o: ['Auf dem Blatt', 'In der Erde', 'Auf der Knolle'], a: 0 },
+    { id: 'kw10', mod: 'wissen', g: 'herkunft', q: 'Die Kartoffel ist eine Frucht aus Europa.', rf: true, a: false, why: 'Sie kommt aus Südamerika, aus Peru.' },
+    { id: 'kw11', mod: 'wissen', g: 'herkunft', q: 'Wer brachte die Kartoffel nach Europa?', o: ['Die Spanier', 'Die Inkas', 'Die Deutschen'], a: 0 },
+    { id: 'kw12', mod: 'wissen', g: 'herkunft', q: 'Wer waren die Inkas?', o: ['Die Urbevölkerung der Anden', 'Spanische Seefahrer', 'Bauern aus Europa'], a: 0 },
+    { id: 'kw13', mod: 'wissen', g: 'herkunft', q: 'Die Kartoffel wuchs in Europa sofort ohne Probleme.', rf: true, a: false, why: 'Es gab anfängliche Schwierigkeiten.' },
+    { id: 'kw14', mod: 'wissen', g: 'ernte', q: 'Früher halfen auch Kinder beim Auflesen der Kartoffeln.', rf: true, a: true },
+    { id: 'kw15', mod: 'wissen', g: 'ernte', q: 'Was machen Kartoffelroder?', o: ['Sie ernten die Kartoffeln und befreien sie von der Erde', 'Sie pflanzen die Kartoffeln', 'Sie kochen die Kartoffeln'], a: 0 },
+    { id: 'kw16', mod: 'wissen', g: 'ernte', q: 'Welche Kartoffeln werden heute noch von Hand aussortiert?', o: ['Unförmige und grüne', 'Große und runde', 'Alle'], a: 0 },
+    { id: 'kw17', mod: 'wissen', g: 'ernte', q: 'Früher wurden die Kartoffeln mit Maschinen geerntet.', rf: true, a: false, why: 'Früher mit großen Gabeln, heute mit Maschinen.' },
+    // Kartoffelwörter
+    { id: 'wo1', mod: 'woerter', g: 'woerter', q: 'Brat- + Kartoffel = ?', o: ['die Bratkartoffel', 'der Bratkartoffel', 'das Bratkartoffel'], a: 0 },
+    { id: 'wo2', mod: 'woerter', g: 'woerter', q: 'Salz- + Kartoffel = ?', o: ['die Salzkartoffel', 'das Salzkartoffel', 'die Kartoffelsalz'], a: 0 },
+    { id: 'wo3', mod: 'woerter', g: 'woerter', q: 'Saat- + Kartoffel = ?', o: ['die Saatkartoffel', 'der Saatkartoffel', 'die Kartoffelsaat'], a: 0 },
+    { id: 'wo4', mod: 'woerter', g: 'woerter', q: 'Früh- + Kartoffel = ?', o: ['die Frühkartoffel', 'das Frühkartoffel', 'die Kartoffelfrüh'], a: 0 },
+    { id: 'wo5', mod: 'woerter', g: 'woerter', q: 'Pell- + Kartoffel = ?', o: ['die Pellkartoffel', 'der Pellkartoffel', 'die Kartoffelpell'], a: 0 },
+    { id: 'wo6', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -chips = ?', o: ['die Kartoffelchips', 'der Kartoffelchips', 'die Chipskartoffel'], a: 0 },
+    { id: 'wo7', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -suppe = ?', o: ['die Kartoffelsuppe', 'der Kartoffelsuppe', 'das Kartoffelsuppe'], a: 0 },
+    { id: 'wo8', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -schale = ?', o: ['die Kartoffelschale', 'das Kartoffelschale', 'der Kartoffelschale'], a: 0 },
+    { id: 'wo9', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -salat = ?', o: ['der Kartoffelsalat', 'die Kartoffelsalat', 'das Kartoffelsalat'], a: 0 },
+    { id: 'wo10', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -brei = ?', o: ['der Kartoffelbrei', 'die Kartoffelbrei', 'das Kartoffelbrei'], a: 0 },
+    { id: 'wo11', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -mehl = ?', o: ['das Kartoffelmehl', 'der Kartoffelmehl', 'die Kartoffelmehl'], a: 0 },
+    { id: 'wo12', mod: 'woerter', g: 'woerter', q: 'Welcher Artikel passt: ___ Kartoffelsalat', o: ['der', 'die', 'das'], a: 0 },
+    { id: 'wo13', mod: 'woerter', g: 'woerter', q: 'Welcher Artikel passt: ___ Kartoffelmehl', o: ['das', 'der', 'die'], a: 0 },
+    { id: 'wo14', mod: 'woerter', g: 'woerter', q: 'Welcher Artikel passt: ___ Kartoffelbrei', o: ['der', 'die', 'das'], a: 0 },
+    { id: 'wo15', mod: 'woerter', g: 'woerter', q: 'Welcher Artikel passt: ___ Bratkartoffel', o: ['die', 'der', 'das'], a: 0 },
+    // Märchen: Adjektive + Richtig/Falsch
+    { id: 'ma1', mod: 'maerchen', g: 'maerchen', q: 'Wer ist klug?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
+    { id: 'ma2', mod: 'maerchen', g: 'maerchen', q: 'Wer ist verschmitzt?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
+    { id: 'ma3', mod: 'maerchen', g: 'maerchen', q: 'Wer ist listig?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
+    { id: 'ma4', mod: 'maerchen', g: 'maerchen', q: 'Wer ist schwarz?', o: ['Der Bauer', 'Der Teufel'], a: 1 },
+    { id: 'ma5', mod: 'maerchen', g: 'maerchen', q: 'Wer ist am Ende wütend?', o: ['Der Bauer', 'Der Teufel'], a: 1 },
+    { id: 'ma6', mod: 'maerchen', g: 'maerchen', q: 'Wer ist vergnügt?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
+    { id: 'ma7', mod: 'maerchen', g: 'maerchen', q: 'Wer sitzt auf feurigen Kohlen?', o: ['Der Bauer', 'Der Teufel'], a: 1 },
+    { id: 'ma8', mod: 'maerchen', g: 'maerchen', q: 'Der Teufel sitzt auf einem Schatz.', rf: true, a: true },
+    { id: 'ma9', mod: 'maerchen', g: 'maerchen', q: 'Der Teufel will drei Jahre lang die ganze Ernte.', rf: true, a: false, why: 'Zwei Jahre lang die Hälfte.' },
+    { id: 'ma10', mod: 'maerchen', g: 'maerchen', q: 'Im ersten Jahr pflanzt der Bauer Kartoffeln, der Teufel bekommt nur welke Blätter.', rf: true, a: true },
+    { id: 'ma11', mod: 'maerchen', g: 'maerchen', q: 'Im zweiten Jahr sät der Bauer Weizen.', rf: true, a: true },
+    { id: 'ma12', mod: 'maerchen', g: 'maerchen', q: 'Am Ende bekommt der Teufel den Schatz.', rf: true, a: false, why: 'Der Bauer holt sich den Schatz.' },
+    { id: 'ma13', mod: 'maerchen', g: 'maerchen', q: 'Was bekommt der Teufel im zweiten Jahr?', o: ['Nur die Stoppeln', 'Die vollen Halme', 'Die Kartoffeln'], a: 0 },
+    { id: 'ma14', mod: 'maerchen', g: 'maerchen', q: 'Wohin fährt der Teufel am Ende?', o: ['In eine Felsenschlucht', 'In die Kirche', 'Nach Peru'], a: 0 },
+    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Wer hat das Märchen aufgeschrieben?', o: ['Die Gebrüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
+  );
+  const K_MODULES = {
+    parts: { name: 'Teile benennen', icon: '🥔', maxTier: 2, worldCap: [2, 2], dmg: 12 },
+    ground: { name: 'Oben oder unten', icon: '🌱', maxTier: 1, worldCap: [1, 1], dmg: 10 },
+    grow: { name: 'Wachstum ordnen', icon: '🔢', maxTier: 1, worldCap: [1, 1], dmg: 16 },
+    ltk: { name: 'Lückentext', icon: '✏️', maxTier: 1, worldCap: [1, 1], dmg: 12 },
+    wissen: { name: 'Kartoffelwissen', icon: '🪲', maxTier: 1, worldCap: [1, 1], dmg: 12 },
+    woerter: { name: 'Kartoffelwörter', icon: '🔤', maxTier: 1, worldCap: [1, 1], dmg: 10 },
+    maerchen: { name: 'Bauer und Teufel', icon: '😈', maxTier: 1, worldCap: [1, 1], dmg: 14 },
+  };
+  const K_TUT = {
+    'parts:1': { title: 'Teile benennen', steps: ['Ein Teil der Pflanze leuchtet gelb.', 'Unter der Erde: Wurzeln, Saatkartoffel, Triebe, Knollen. Über der Erde: Stängel, Blätter, Blüten, Beeren.', 'Tippe auf den richtigen Namen.'] },
+    'parts:2': { title: 'Teile finden', steps: ['Jetzt andersherum: Oben steht ein Name.', 'Tippe direkt auf diesen Teil in der Pflanze.', 'Schau genau: Was ist über, was unter der Erde?'] },
+    'ground:1': { title: 'Oben oder unten', steps: ['Die Kartoffelpflanze wächst halb unter, halb über der Erde.', 'Unten: Wurzeln, Saatkartoffel, Triebe und Knollen.', 'Oben: Stängel, Blätter, Blüten und Beeren.'] },
+    'grow:1': { title: 'Wachstum ordnen', steps: ['Die Schritte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Es beginnt im Frühjahr mit der Saatkartoffel.', 'Es endet im Herbst mit der Ernte.'] },
+    'ltk:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Die Sätze stammen aus deinen Arbeitsblättern „Woher kommt die Kartoffel?“ und „Die Kartoffelernte früher und heute“.', 'Tippe auf das Wort, das passt.'] },
+    'wissen:1': { title: 'Kartoffelwissen', steps: ['Fragen zum Kartoffelkäfer, zur Herkunft und zur Ernte.', 'Manchmal musst du „Richtig“ oder „Falsch“ wählen, manchmal eine von drei Antworten.', 'Lies genau – oft ist nur ein kleines Wort vertauscht.'] },
+    'woerter:1': { title: 'Kartoffelwörter', steps: ['Zwei Wortteile ergeben ein zusammengesetztes Wort: Brat- + Kartoffel = Bratkartoffel.', 'Der Artikel richtet sich nach dem letzten Teil: die Kartoffel → die Bratkartoffel, der Salat → der Kartoffelsalat.', 'Tippe auf das richtige Wort mit Artikel.'] },
+    'maerchen:1': { title: 'Der Bauer und der Teufel', steps: ['Fragen zum Märchen der Gebrüder Grimm.', 'Welche Adjektive passen zum Bauern (klug, listig, verschmitzt, vergnügt) und welche zum Teufel (schwarz, wütend)?', 'Und: Was passiert im ersten Jahr, was im zweiten?'] },
+    'story:1': { title: 'Märchen ordnen', steps: ['Die Teile der Geschichte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an.', 'Erst Kartoffeln, dann Weizen, zum Schluss der Schatz.'] },
+  };
+  const K_STARTERS = [
+    { id: 'knolli', type: 'pflanze', shape: 'potato', names: ['Knolli', 'Werkstatt-Knolli', 'Werkstatt-Knolli'], hp: 70, desc: 'Eine fröhliche Kartoffel, die alles über ihre Pflanze wissen will.', perk: 'heal',
+      attacks: [{ name: 'Knollenstoß', mod: 'parts' }, { name: 'Erdblick', mod: 'ground' }, { name: 'Wachstumsschub', mod: 'grow' }, { name: 'Blätterrascheln', mod: 'parts' }] },
+  ];
+  const K_WORLD_ATTACKS = { 2: [{ name: 'Lückenfüller', mod: 'ltk' }, { name: 'Käferwissen', mod: 'wissen' }, { name: 'Wörterwirbel', mod: 'woerter' }, { name: 'Teufelstrick', mod: 'maerchen' }] };
+  const K_EXTRA = { parts: 'Sprossenschlag', ground: 'Bodenblick', grow: 'Erntezeit', ltk: 'Satzschleuder', wissen: 'Forscherblick', woerter: 'Wortkette', maerchen: 'Bauernlist' };
+  const K_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Blattlaus', type: 'pflanze', shape: 'blob', hp: 24, atk: 3 },
+        { name: 'Drahtwurm', type: 'normal', shape: 'newt', hp: 28, atk: 4 },
+        { name: 'Wühlmaus', type: 'normal', shape: 'fox', hp: 30, atk: 4 },
+        { name: 'Fäulewolke', type: 'wasser', shape: 'ghost', hp: 26, atk: 3 },
+      ],
+      elite: { name: 'Käferlarve', type: 'normal', shape: 'newt', hp: 45, atk: 5 },
+      boss: { name: 'Kartoffelkäfer', acc: 'den Kartoffelkäfer', type: 'normal', shape: 'beetle', hp: 70, atk: 6, boss: true },
+    },
+    2: {
+      normal: [
+        { name: 'Blattfresser', type: 'pflanze', shape: 'beetle', hp: 42, atk: 5 },
+        { name: 'Hagelwolke', type: 'wasser', shape: 'ghost', hp: 40, atk: 6 },
+        { name: 'Ackerteufel', type: 'feuer', shape: 'flame', hp: 44, atk: 5 },
+        { name: 'Eierhaufen', type: 'normal', shape: 'blob', hp: 38, atk: 6 },
+      ],
+      elite: { name: 'Riesenlarve', type: 'normal', shape: 'newt', hp: 70, atk: 8 },
+      boss: { name: 'Käferkönigin', acc: 'die Käferkönigin', type: 'normal', shape: 'beetle', hp: 110, atk: 9, boss: true },
+    },
+  };
+  const K_EVENTS = [
+    { title: 'Der Bauer', text: 'Ein Bauer fragt dich etwas über seine Kartoffeln. Wenn du es weißt, schenkt er dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Das Kartoffelfeld', text: 'Du findest ein Feld voller Pflanzen. Wer sich auskennt, erntet eine Belohnung.', opts: [{ label: 'Ernten', task: 'any', win: { xp: 20, item: 'beere' }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Die Gärtnerin', text: 'Eine Gärtnerin zeigt dir ihre Pflanze und stellt eine Frage.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
+    { title: 'Der Regen', text: 'Es regnet. Die Pflanzen freuen sich – und du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+    { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
+  ];
+
+  /* ---------- Spaced repetition selection ---------- */
+  function weightedPick(items, know, seqNow) {
+    const w = items.map((it) => { const k = know[it.id]; if (!k) return 4; let x = 1 + k.ws * 3; if (k.t > 0 && k.c / k.t < 0.6) x += 2; if (seqNow - (k.last || 0) < 3) x *= 0.15; return x; });
+    let total = w.reduce((a, b) => a + b, 0); let r = Math.random() * total;
+    for (let i = 0; i < items.length; i++) { r -= w[i]; if (r <= 0) return items[i]; }
+    return items[items.length - 1];
+  }
+  function generate(mode, mod, tier, know, seqNow) {
+    const pool = mode === 'ethik' ? L_POOL : K_POOL;
+    const elite = false;
+    if (mod === 'ord') { const idx = shuffle(L_EVENTS_ORDER.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => L_EVENTS_ORDER[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'ord_' + idx.join('') }; }
+    if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
+    if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
+    const cands = pool.filter((p) => p.mod === mod);
+    const e = weightedPick(cands, know, seqNow);
+    if (mod === 'parts') {
+      const part = PARTS.find((p) => p.id === e.part);
+      if (tier >= 2) return { kind: 'parts-find', mod, tier: 2, group: 'parts:2', note: 'teile', q: `Tippe auf: ${part.name}`, part: part.id, answer: part.name, qid: e.id + '_find' };
+      const others = shuffle(PARTS.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name);
+      const options = shuffle(others.concat([part.name]));
+      return { kind: 'parts', mod, tier: 1, group: 'parts:1', note: 'teile', q: e.q, part: part.id, options, answer: part.name, qid: e.id };
+    }
+    if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
+    // mc, lt, def, ground
+    const correct = e.o[e.a]; const options = shuffle(e.o.slice());
+    return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options, answer: correct, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+  }
+  function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
+
+  const MODES = {
+    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Ethik: Martin Luther und die Reformation' },
+    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Sachkunde: Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
+  };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, L_EVENTS_ORDER, generate, record, shuffle, pick, rnd };
+})();
+
+</script>
+<script>
+/* ===== Monster art v2 (hand-drawn SVG) ===== */
+const MONART = (() => {
+  const OUT = '#1C2541';
+  let uid = 0;
+  function shade(hex, amt) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; const f = (c) => Math.max(0, Math.min(255, Math.round(amt > 0 ? c + (255 - c) * amt : c * (1 + amt)))); return '#' + [f(r), f(g), f(b)].map((c) => c.toString(16).padStart(2, '0')).join(''); }
+  const S = (w) => `stroke="${OUT}" stroke-width="${w || 2.5}" stroke-linejoin="round" stroke-linecap="round"`;
+
+  // eyes: two round eyes; look: 'normal' | 'angry' | 'happy' | 'sleepy' ; size scale
+  function eyes(cx, cy, gap, r, look) {
+    const l = cx - gap, rt = cx + gap; const pr = r * 0.55;
+    if (look === 'happy') return `<path d="M${l - r} ${cy} Q${l} ${cy - r * 1.3} ${l + r} ${cy}" fill="none" ${S(3)}/><path d="M${rt - r} ${cy} Q${rt} ${cy - r * 1.3} ${rt + r} ${cy}" fill="none" ${S(3)}/>`;
+    let brows = '';
+    if (look === 'angry') brows = `<path d="M${l - r} ${cy - r * 1.35} L${l + r * 0.9} ${cy - r * 0.75}" fill="none" ${S(3)}/><path d="M${rt + r} ${cy - r * 1.35} L${rt - r * 0.9} ${cy - r * 0.75}" fill="none" ${S(3)}/>`;
+    if (look === 'sleepy') brows = `<path d="M${l - r} ${cy - r * 0.6} L${l + r} ${cy - r * 0.6}" ${S(3)}/>`;
+    return `<ellipse cx="${l}" cy="${cy}" rx="${r}" ry="${r * 1.1}" fill="#fff" ${S(2.2)}/><ellipse cx="${rt}" cy="${cy}" rx="${r}" ry="${r * 1.1}" fill="#fff" ${S(2.2)}/>
+      <circle cx="${l + r * 0.2}" cy="${cy + r * 0.1}" r="${pr}" fill="${OUT}"/><circle cx="${rt + r * 0.2}" cy="${cy + r * 0.1}" r="${pr}" fill="${OUT}"/>
+      <circle cx="${l}" cy="${cy - r * 0.25}" r="${pr * 0.38}" fill="#fff"/><circle cx="${rt}" cy="${cy - r * 0.25}" r="${pr * 0.38}" fill="#fff"/>${brows}`;
+  }
+  function eye1(cx, cy, r, look) { // single big eye
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r * 1.05}" fill="#fff" ${S(2.5)}/><circle cx="${cx + r * 0.1}" cy="${cy + r * 0.1}" r="${r * 0.52}" fill="${OUT}"/><circle cx="${cx - r * 0.15}" cy="${cy - r * 0.3}" r="${r * 0.18}" fill="#fff"/>${look === 'angry' ? `<path d="M${cx - r * 1.1} ${cy - r * 1.2} L${cx + r * 1.1} ${cy - r * 1.0}" fill="none" ${S(3)}/>` : ''}`;
+  }
+  const mouth = {
+    smile: (cx, cy, w) => `<path d="M${cx - w} ${cy} Q${cx} ${cy + w * 0.9} ${cx + w} ${cy}" fill="none" ${S(3)}/>`,
+    grin: (cx, cy, w) => `<path d="M${cx - w} ${cy} Q${cx} ${cy + w * 1.3} ${cx + w} ${cy} Z" fill="#FF6E8E" ${S(2.5)}/><path d="M${cx - w * 0.6} ${cy + 1} Q${cx} ${cy + 4} ${cx + w * 0.6} ${cy + 1} L${cx + w * 0.6} ${cy} L${cx - w * 0.6} ${cy} Z" fill="#fff"/>`,
+    open: (cx, cy, w) => `<ellipse cx="${cx}" cy="${cy + w * 0.3}" rx="${w * 0.55}" ry="${w * 0.7}" fill="#FF6E8E" ${S(2.5)}/>`,
+    sad: (cx, cy, w) => `<path d="M${cx - w} ${cy + w * 0.6} Q${cx} ${cy - w * 0.4} ${cx + w} ${cy + w * 0.6}" fill="none" ${S(3)}/>`,
+    fangs: (cx, cy, w) => `<path d="M${cx - w} ${cy} Q${cx} ${cy + w * 0.8} ${cx + w} ${cy}" fill="none" ${S(3)}/><path d="M${cx - w * 0.6} ${cy + 1} L${cx - w * 0.4} ${cy + w * 0.7} L${cx - w * 0.2} ${cy + 2} Z M${cx + w * 0.6} ${cy + 1} L${cx + w * 0.4} ${cy + w * 0.7} L${cx + w * 0.2} ${cy + 2} Z" fill="#fff" ${S(1.5)}/>`,
+    flat: (cx, cy, w) => `<path d="M${cx - w} ${cy} L${cx + w} ${cy}" fill="none" ${S(3)}/>`,
+  };
+  function highlight(cx, cy, rx, ry) { return `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".35"/>`; }
+
+  const SHAPES = {
+    fox: (c, g, d, l) => `
+      <path d="M94 96 Q120 86 112 56 Q124 70 118 92 Q110 112 86 110 Z" fill="${g.flame}" ${S()}/>
+      <path d="M26 58 L16 10 L50 40 Z" fill="${g.body}" ${S()}/><path d="M29 52 L24 22 L42 40 Z" fill="${g.inner}"/>
+      <path d="M94 58 L104 10 L70 40 Z" fill="${g.body}" ${S()}/><path d="M91 52 L96 22 L78 40 Z" fill="${g.inner}"/>
+      <ellipse cx="60" cy="72" rx="38" ry="34" fill="${g.body}" ${S()}/>
+      <path d="M28 78 Q60 112 92 78 Q92 104 60 106 Q28 104 28 78 Z" fill="${g.inner}"/>
+      ${highlight(44, 50, 10, 6)}
+      <ellipse cx="60" cy="88" rx="6" ry="4" fill="${OUT}"/>${mouth.smile(60, 94, 9)}
+      ${eyes(60, 64, 13, 8, 'normal')}`,
+    toad: (c, g, d, l) => `
+      <path d="M14 94 Q2 70 22 66 L42 80 Z" fill="${g.body}" ${S()}/><path d="M106 94 Q118 70 98 66 L78 80 Z" fill="${g.body}" ${S()}/>
+      <ellipse cx="60" cy="74" rx="42" ry="32" fill="${g.body}" ${S()}/>
+      <ellipse cx="60" cy="88" rx="26" ry="14" fill="${g.inner}"/>
+      <circle cx="38" cy="44" r="15" fill="${g.body}" ${S()}/><circle cx="82" cy="44" r="15" fill="${g.body}" ${S()}/>
+      ${highlight(34, 64, 10, 5)}
+      ${eyes(60, 44, 22, 9, 'normal')}
+      <circle cx="30" cy="64" r="4" fill="${d}"/><circle cx="90" cy="64" r="4" fill="${d}"/><circle cx="60" cy="58" r="3" fill="${d}"/>
+      ${mouth.grin(60, 72, 20)}`,
+    bear: (c, g, d, l) => `
+      <circle cx="26" cy="34" r="14" fill="${g.body}" ${S()}/><circle cx="94" cy="34" r="14" fill="${g.body}" ${S()}/><circle cx="26" cy="34" r="7" fill="${g.inner}"/><circle cx="94" cy="34" r="7" fill="${g.inner}"/>
+      <ellipse cx="60" cy="68" rx="40" ry="36" fill="${g.body}" ${S()}/>
+      ${highlight(42, 44, 11, 6)}
+      <ellipse cx="60" cy="80" rx="18" ry="13" fill="${g.inner}"/>
+      <ellipse cx="60" cy="74" rx="6" ry="4" fill="${OUT}"/>${mouth.smile(60, 82, 8)}
+      ${eyes(60, 58, 14, 7, 'normal')}
+      <path d="M22 96 L30 108 M38 100 L42 112 M98 96 L90 108 M82 100 L78 112" fill="none" ${S(3)}/>`,
+    blob: (c, g, d, l) => `
+      <path d="M16 74 Q10 30 54 24 Q100 22 104 70 Q104 100 60 102 Q18 102 16 74 Z" fill="${g.body}" ${S()}/>
+      <path d="M30 30 Q20 24 26 14 M60 22 Q60 10 70 12 M90 34 Q96 24 104 30" fill="none" ${S(3)}/>
+      ${highlight(38, 42, 12, 7)}
+      <circle cx="84" cy="84" r="5" fill="${d}"/><circle cx="34" cy="88" r="3.5" fill="${d}"/>
+      ${eyes(60, 56, 15, 9, 'normal')}${mouth.open(60, 76, 11)}`,
+    drop: (c, g, d, l) => `
+      <path d="M60 8 Q96 52 96 70 A36 36 0 0 1 24 70 Q24 52 60 8 Z" fill="${g.body}" ${S()}/>
+      <path d="M40 46 Q32 60 34 72" fill="none" stroke="#fff" stroke-width="5" opacity=".6" stroke-linecap="round"/>
+      <circle cx="18" cy="40" r="4" fill="${g.body}" ${S(2)}/><circle cx="104" cy="52" r="3" fill="${g.body}" ${S(2)}/>
+      ${eyes(60, 68, 13, 8, 'normal')}${mouth.smile(60, 86, 8)}`,
+    flame: (c, g, d, l) => `
+      <path d="M60 6 Q88 34 78 56 Q96 60 90 84 A30 30 0 0 1 30 84 Q24 60 42 56 Q32 34 60 6 Z" fill="${g.body}" ${S()}/>
+      <path d="M60 44 Q74 62 68 80 A9 9 0 0 1 52 80 Q46 62 60 44 Z" fill="${g.flame}"/>
+      <path d="M16 26 Q24 18 26 30 M100 20 Q108 14 104 30" fill="none" stroke="${g.flame}" stroke-width="4" stroke-linecap="round"/>
+      ${eyes(60, 70, 12, 7, 'angry')}${mouth.grin(60, 90, 10)}`,
+    rock: (c, g, d, l) => `
+      <path d="M16 88 L22 48 L44 26 L76 22 L100 44 L104 90 Z" fill="${g.body}" ${S()}/>
+      <path d="M22 48 L44 26 L52 54 Z" fill="${g.inner}" opacity=".9"/><path d="M66 64 L104 90 L62 90 Z" fill="${d}" opacity=".8"/>
+      <path d="M8 100 L28 92 M112 100 L92 92" fill="none" ${S(5)}/>
+      <path d="M30 108 L44 96 M90 108 L76 96" fill="none" ${S(5)}/>
+      ${eyes(60, 56, 14, 7, 'sleepy')}${mouth.flat(60, 76, 9)}`,
+    hedgehog: (c, g, d, l) => `
+      <path d="M10 76 L26 42 L34 60 L46 30 L56 54 L68 26 L78 54 L92 36 L104 76 Z" fill="${d}" ${S()}/>
+      <path d="M18 74 L30 50 L36 64 L48 40 L56 60 L68 38 L78 62 L90 46 L98 74 Z" fill="${g.body}"/>
+      <ellipse cx="60" cy="80" rx="40" ry="24" fill="${g.inner}" ${S()}/>
+      ${highlight(44, 70, 10, 5)}
+      <ellipse cx="60" cy="90" rx="6" ry="4" fill="${OUT}"/>${mouth.smile(60, 96, 7)}
+      ${eyes(60, 76, 14, 6, 'normal')}`,
+    newt: (c, g, d, l) => `
+      <path d="M90 66 Q116 60 108 36" fill="none" stroke="${g.body}" stroke-width="12" stroke-linecap="round"/><path d="M90 66 Q116 60 108 36" fill="none" ${S(2)} stroke-dasharray="0"/>
+      <ellipse cx="54" cy="70" rx="40" ry="26" fill="${g.body}" ${S()}/>
+      <path d="M22 86 L12 100 M36 92 L30 108 M72 92 L78 108 M86 86 L96 100" fill="none" ${S(4)}/>
+      <ellipse cx="54" cy="82" rx="22" ry="10" fill="${g.inner}"/>
+      <circle cx="40" cy="52" r="4" fill="${g.flame}"/><circle cx="70" cy="56" r="3" fill="${g.flame}"/><circle cx="26" cy="68" r="3" fill="${g.flame}"/>
+      ${eyes(56, 60, 12, 7, 'normal')}${mouth.smile(56, 76, 10)}`,
+    jelly: (c, g, d, l) => `
+      <path d="M24 62 q4 24 0 36 M44 62 q6 24 0 40 M60 62 q-4 26 2 42 M78 62 q-4 24 0 38 M96 62 q2 24 -2 34" fill="none" stroke="${g.inner}" stroke-width="7" stroke-linecap="round"/>
+      <path d="M18 62 A42 42 0 0 1 102 62 Q102 70 90 68 Q80 72 70 66 Q60 72 50 66 Q40 72 30 68 Q18 70 18 62 Z" fill="${g.body}" ${S()}/>
+      ${highlight(40, 36, 12, 7)}
+      ${eyes(60, 46, 14, 8, 'normal')}${mouth.open(60, 58, 8)}`,
+    vine: (c, g, d, l) => `
+      <path d="M34 110 Q18 60 60 48 Q102 60 86 110 Z" fill="${g.body}" ${S()}/>
+      <path d="M60 48 Q58 30 64 14" fill="none" ${S(3)}/>
+      <ellipse cx="28" cy="46" rx="16" ry="9" fill="${g.inner}" ${S(2)} transform="rotate(-30 28 46)"/><ellipse cx="92" cy="46" rx="16" ry="9" fill="${g.inner}" ${S(2)} transform="rotate(30 92 46)"/>
+      <ellipse cx="68" cy="14" rx="9" ry="14" fill="${g.inner}" ${S(2)} transform="rotate(20 68 14)"/>
+      <path d="M22 82 Q6 76 10 60 M98 82 Q114 76 110 60" fill="none" ${S(4)}/>
+      ${eyes(60, 74, 13, 7, 'normal')}${mouth.grin(60, 92, 10)}`,
+    bat: (c, g, d, l) => `
+      <path d="M8 56 Q24 36 40 54 L40 76 Q26 66 8 80 Z" fill="${d}" ${S()}/><path d="M112 56 Q96 36 80 54 L80 76 Q94 66 112 80 Z" fill="${d}" ${S()}/>
+      <path d="M40 46 L44 26 L54 44 Z M80 46 L76 26 L66 44 Z" fill="${g.body}" ${S()}/>
+      <ellipse cx="60" cy="66" rx="26" ry="28" fill="${g.body}" ${S()}/>
+      ${highlight(50, 48, 8, 5)}
+      ${eyes(60, 62, 11, 7, 'angry')}${mouth.fangs(60, 80, 9)}`,
+    beetle: (c, g, d, l) => `
+      <path d="M44 34 Q36 14 26 10 M76 34 Q84 14 94 10" fill="none" ${S(3)}/><circle cx="26" cy="10" r="3.5" fill="${OUT}"/><circle cx="94" cy="10" r="3.5" fill="${OUT}"/>
+      <path d="M30 66 L10 56 M30 82 L8 90 M90 66 L110 56 M90 82 L112 90 M40 100 L26 114 M80 100 L94 114" fill="none" ${S(4)}/>
+      <ellipse cx="60" cy="78" rx="36" ry="34" fill="${g.body}" ${S()}/>
+      <path d="M60 44 L60 112" ${S(2.5)}/>
+      <path d="M36 50 Q30 78 38 108 M48 46 Q42 78 48 111 M72 46 Q78 78 72 111 M84 50 Q90 78 82 108" fill="none" stroke="${d}" stroke-width="4" stroke-linecap="round"/>
+      ${highlight(46, 58, 6, 10)}
+      <ellipse cx="60" cy="38" rx="20" ry="14" fill="${g.inner}" ${S()}/>
+      ${eyes(60, 37, 9, 5, 'angry')}${mouth.flat(60, 46, 5)}`,
+    dragon: (c, g, d, l) => `
+      <path d="M22 60 L6 30 L32 46 Z M98 60 L114 30 L88 46 Z" fill="${d}" ${S()}/>
+      <path d="M92 76 Q112 70 108 52" fill="none" stroke="${g.body}" stroke-width="10" stroke-linecap="round"/><path d="M106 48 L116 44 L112 56 Z" fill="${g.flame}" ${S(2)}/>
+      <ellipse cx="60" cy="66" rx="38" ry="32" fill="${g.body}" ${S()}/>
+      <path d="M40 38 L46 18 L54 38 Z M56 36 L62 14 L70 36 Z M72 38 L80 20 L84 40 Z" fill="${g.flame}" ${S(2)}/>
+      <ellipse cx="60" cy="80" rx="18" ry="11" fill="${g.inner}"/>
+      ${highlight(44, 50, 9, 5)}
+      <circle cx="56" cy="77" r="1.8" fill="${OUT}"/><circle cx="64" cy="77" r="1.8" fill="${OUT}"/>
+      ${eyes(60, 60, 14, 7, 'angry')}${mouth.fangs(60, 88, 11)}
+      <path d="M22 96 L30 110 M98 96 L90 110" fill="none" ${S(4)}/>`,
+    ghost: (c, g, d, l) => `
+      <path d="M20 60 A40 40 0 0 1 100 60 L100 106 L88 94 L76 108 L62 94 L48 108 L34 94 L20 106 Z" fill="${g.ghost}" ${S()}/>
+      <path d="M30 60 A30 30 0 0 1 90 60" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/>
+      <path d="M8 70 Q0 60 10 52 M112 70 Q120 60 110 52" fill="none" stroke="${g.ghost}" stroke-width="5" stroke-linecap="round"/>
+      ${eyes(60, 58, 14, 8, 'angry')}
+      <ellipse cx="60" cy="80" rx="7" ry="9" fill="${OUT}"/><ellipse cx="60" cy="83" rx="4" ry="4" fill="#FF6E8E"/>`,
+    king: (c, g, d, l) => `
+      <rect x="20" y="40" width="80" height="66" rx="16" fill="${g.body}" ${S()}/>
+      <path d="M20 42 L30 12 L44 32 L60 6 L76 32 L90 12 L100 42 Z" fill="#FFC93C" ${S()}/><circle cx="30" cy="12" r="3.5" fill="#FF6E8E"/><circle cx="60" cy="6" r="4" fill="#3FA0FF"/><circle cx="90" cy="12" r="3.5" fill="#FF6E8E"/>
+      <rect x="32" y="84" width="56" height="16" rx="6" fill="${g.inner}" ${S(2)}/>
+      <text x="60" y="97" text-anchor="middle" font-size="13" font-weight="800" fill="${OUT}" font-family="sans-serif">7·8=?</text>
+      ${eyes(60, 60, 15, 8, 'angry')}${mouth.flat(60, 76, 8)}
+      <path d="M12 108 L22 100 M108 108 L98 100" fill="none" ${S(4)}/>`,
+    merchant: (c, g, d, l) => `
+      <path d="M22 50 L98 50 L90 34 L30 34 Z" fill="#5A2A2A" ${S()}/><rect x="38" y="20" width="44" height="18" rx="5" fill="#5A2A2A" ${S()}/><rect x="38" y="30" width="44" height="5" fill="#FFC93C"/>
+      <ellipse cx="60" cy="78" rx="36" ry="30" fill="${g.body}" ${S()}/>
+      ${highlight(44, 62, 8, 5)}
+      <rect x="66" y="78" width="28" height="24" rx="6" fill="#FFC93C" ${S()}/><text x="80" y="95" text-anchor="middle" font-size="13" font-weight="800" fill="${OUT}" font-family="sans-serif">€</text>
+      <rect x="28" y="84" width="24" height="16" rx="3" fill="#FFF3C4" ${S(2)}/><path d="M32 89 L48 89 M32 94 L44 94" ${S(1.5)}/>
+      ${eyes(60, 66, 13, 7, 'angry')}${mouth.grin(60, 84, 9)}`,
+    luther: (c, g, d, l) => `
+      <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#2B2B2B" ${S()}/><path d="M50 84 L60 110 L70 84 Z" fill="#F5F0E6" ${S(2)}/>
+      <circle cx="60" cy="54" r="28" fill="#F5C9A0" ${S()}/>
+      <path d="M20 40 Q60 10 100 40 L100 48 Q60 32 20 48 Z" fill="#1C2541" ${S()}/><path d="M28 40 L92 40 L94 48 L26 48 Z" fill="#2B2B2B"/>
+      <path d="M36 52 Q34 40 48 42 M84 52 Q86 40 72 42" fill="none" ${S(2.5)}/>
+      ${eyes(60, 54, 11, 6, 'normal')}
+      <path d="M60 60 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
+      <path d="M66 92 L92 70" fill="none" stroke="#FFC93C" stroke-width="3" stroke-linecap="round"/><path d="M88 66 L96 68 L92 76 Z" fill="#FFF3C4" ${S(1.5)}/>`,
+    potato: (c, g, d, l) => `
+      <path d="M44 32 Q40 14 50 8 M72 30 Q74 14 84 10" fill="none" stroke="#3E8E41" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="48" cy="9" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(-30 48 9)"/><ellipse cx="84" cy="10" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(30 84 10)"/>
+      <path d="M18 66 Q16 30 58 30 Q104 28 102 66 Q104 100 60 102 Q16 104 18 66 Z" fill="#D9B35E" ${S()}/>
+      ${highlight(40, 48, 11, 6)}
+      <circle cx="30" cy="80" r="2.5" fill="#8A6A3F"/><circle cx="88" cy="42" r="2.5" fill="#8A6A3F"/><circle cx="84" cy="88" r="2.5" fill="#8A6A3F"/><circle cx="40" cy="38" r="2" fill="#8A6A3F"/>
+      <path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" stroke="#D9B35E" stroke-width="7" stroke-linecap="round"/><path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" ${S(2)}/>
+      <path d="M44 102 L42 114 M76 102 L78 114" fill="none" ${S(5)}/>
+      ${eyes(60, 62, 14, 8, 'normal')}${mouth.grin(60, 82, 12)}`,
+  };
+
+  function monsterSVG(shape, color, evo, cls) {
+    const id = 'mg' + (uid++);
+    const g = { body: `url(#${id})`, inner: shade(color, 0.55), flame: shade(color, 0.3), ghost: `url(#${id}g)` };
+    const d = shade(color, -0.3);
+    const defs = `<defs><radialGradient id="${id}" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="${shade(color, 0.35)}"/><stop offset=".6" stop-color="${color}"/><stop offset="1" stop-color="${shade(color, -0.25)}"/></radialGradient><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="${shade(color, 0.6)}"/></linearGradient></defs>`;
+    const aura = evo >= 1 ? `<circle cx="60" cy="62" r="56" fill="${shade(color, 0.5)}" opacity=".18"/><circle cx="60" cy="62" r="56" fill="none" stroke="${shade(color, 0.5)}" stroke-width="2" opacity=".5"/>` : '';
+    const crown = evo >= 2 && !['king', 'luther', 'merchant'].includes(shape) ? `<path d="M40 22 L46 6 L54 18 L60 2 L66 18 L74 6 L80 22 Z" fill="#FFC93C" ${S(2)}/><circle cx="60" cy="4" r="2.5" fill="#FF6E8E"/>` : '';
+    const sparkle = evo >= 1 ? `<path d="M12 18 L14 24 L20 26 L14 28 L12 34 L10 28 L4 26 L10 24 Z" fill="#FFC93C"/>` : '';
+    const body = (SHAPES[shape] || SHAPES.blob)(color, g, d, null);
+    return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true">${defs}${aura}${body}${crown}${sparkle}</svg>`;
+  }
+  return { monsterSVG, shapes: Object.keys(SHAPES), shade };
+})();
+
+</script>
+<script>
+/* ===== MathQuest App ===== */
+(() => {
+  const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
+  const MODES = {
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Mathe: Rechnen und Zahlen' },
+    ethik: MK.MODES.ethik,
+    kartoffel: MK.MODES.kartoffel,
+  };
+  const MODE_KEYS = ['math', 'ethik', 'kartoffel'];
+  let mode = 'math';
+  const CFG = () => MODES[mode];
+  const MODULES_OF = () => CFG().modules;
+  const MODKEYS = () => Object.keys(CFG().modules);
+  const $ = (sel, el) => (el || document).querySelector(sel);
+  const app = $('#app');
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ---------- Storage ---------- */
+  const KEY_META = 'mathquest_meta_v2';
+  const KEY_RUN_FOR = (m) => (m === 'math' ? 'mathquest_run_v1' : 'mathquest_run_' + m);
+  function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* storage unavailable */ } }
+  function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
+
+  const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0 });
+  let meta = Object.assign(defaultMeta(), load(KEY_META, {}));
+  (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
+  for (const m of MODE_KEYS) { if (!meta.stats[m]) meta.stats[m] = emptyStats(m); for (const k of Object.keys(MODES[m].modules)) if (!meta.stats[m][k]) meta.stats[m][k] = { c: 0, t: 0, hist: [] }; }
+  if (!meta.know) meta.know = {}; if (!meta.knowSeq) meta.knowSeq = 0;
+  let run = null;
+  const saveAll = () => { save(KEY_META, meta); if (run) save(KEY_RUN_FOR(run.mode), run); else clear(KEY_RUN_FOR(mode)); };
+
+  /* ---------- Monster art ---------- */
+  const monsterSVG = MONART.monsterSVG; const shade = MONART.shade;
+
+  /* ---------- Helpers ---------- */
+  const heroName = () => heroSpec().names[run.hero.evo];
+  const heroSpec = () => CFG().starters.find((s) => s.id === run.hero.id);
+  const STATS = () => meta.stats[mode];
+  const tutKey = (k) => mode + ':' + k;
+  const typeChip = (t) => `<span class="chip" style="background:${TYPES[t].color};color:#1C2541">${TYPES[t].icon} ${TYPES[t].name}</span>`;
+  const xpNeeded = (lvl) => 20 + lvl * 15;
+  function tierFor(mod) { const M = MODULES_OF()[mod]; const cap = M.worldCap[Math.min(run.world, M.worldCap.length) - 1]; return Math.max(1, Math.min(cap, run.tiers[mod] || 1)); }
+  function recordAnswer(mod, ok, task) {
+    const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
+    if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
+    const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
+    if (recent.length >= 6) { if (acc >= 0.85) { run.tiers[mod] = Math.min(M.maxTier, (run.tiers[mod] || 1) + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, (run.tiers[mod] || 1) - 1); s.hist = []; } }
+  }
+  function weakestModule() { let best = null, bestAcc = 2; for (const k of MODKEYS()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
+  function makeTask(mod, tier, opts) {
+    run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
+    let t, sig;
+    for (let i = 0; i < 12; i++) {
+      if (mode === 'math') { t = MQ.generate(mod, tier, opts); t.kind = 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
+      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq); sig = t.qid; }
+      if (!rec.includes(sig)) break;
+    }
+    rec.push(sig); if (rec.length > 8) rec.shift();
+    return t;
+  }
+  function heroAttacks() { const all = CFG().worldAttacks && run.world > 1; return run.hero.attacks.map((a, i) => Object.assign({}, a, { unlocked: all || run.hero.level >= [1, 3, 6, 10][i] })); }
+  function gainXp(n) { run.hero.xp += n; let msgs = []; while (run.hero.xp >= xpNeeded(run.hero.level)) { run.hero.xp -= xpNeeded(run.hero.level); run.hero.level++; run.hero.maxHp += 8; run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + 8); msgs.push(`Level ${run.hero.level}!`); const idx = [1, 3, 6, 10].indexOf(run.hero.level); if (idx >= 0 && run.hero.attacks[idx]) msgs.push(`Neue Attacke: ${run.hero.attacks[idx].name}!`); } return msgs; }
+  function heal(n) { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + n); }
+
+  /* ---------- Rendering primitives ---------- */
+  function render(html) { app.innerHTML = html; }
+  function topbar(title, extra) { return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`; }
+  function modal(html) { const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; app.appendChild(ov); return ov; }
+
+  /* ---------- Tutorials ---------- */
+  function tutFor(group) { if (mode === 'math') { const [mod, tier] = group.split(':'); return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]); } const t = CFG().tut[group]; const M = MODULES_OF()[group.split(':')[0]]; return Object.assign({ icon: M ? M.icon : '📖' }, t); }
+  function showTutorial(group, note, onClose, auto) {
+    const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
+    const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Das ist neu! So geht es:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden!</button>`);
+    $('#tutok', ov).focus();
+    $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
+  }
+  function ensureTutorial(task, then) { const needGroup = !meta.seenTut[tutKey(task.group)]; const needNote = task.note && !meta.seenTut[tutKey('note:' + task.note)]; if (needGroup || needNote) showTutorial(task.group, task.note, then, true); else then(); }
+
+  /* ---------- Task UI ---------- */
+  // Renders a task card and numpad; calls done(ok)
+  function runTask(task, opts, done) {
+    opts = opts || {}; window.__task = task;
+    if (task.kind !== 'num') return runChoiceTask(task, opts, done);
+    const mod = task.mod; const nAns = task.answers.length; const MODULES = MODULES_OF();
+    const values = Array(nAns).fill(''); let active = 0; let locked = false;
+    const container = opts.container; const bottom = opts.bottom;
+    const labelsFor = () => task.nb ? [`${task.nb} davor`, `${task.nb} danach`] : task.seq ? ['', '', ''] : [''];
+    function cardHtml() {
+      let body = '';
+      if (task.riddle) body = `<div class="clues">${task.text.split('\n').map((c) => `<div>${esc(c)}</div>`).join('')}</div><div class="prompt">Welche Zahl bin ich?</div>`;
+      else if (task.seq) body = `<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
+      else if (task.nb) body = `<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
+      else if (task.grid) { const g = task.grid; let cells = ''; for (let r = 0; r < g.size; r++) for (let c = 0; c < g.size; c++) { const isS = r === g.sr && c === g.sc, isT = r === g.tr && c === g.tc; cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`; } body = `<div class="grid">${cells}</div><div class="legend"><span>⬇ +${g.stepD}</span><span>⬆ −${g.stepD}</span><span>➡ +${g.stepR}</span><span>⬅ −${g.stepR}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`; }
+      else body = `<div class="expr">${esc(task.text)}</div>`;
+      let inputs = '';
+      if (task.nb) inputs = `<div class="nbline"><div class="inpgroup"><div class="inp" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-i="1"></div><span>danach</span></div></div>`;
+      else inputs = `<div class="inputs">${task.answers.map((_, i) => `<div class="inp" data-i="${i}"></div>`).join('')}</div>`;
+      return `<div class="task"><div class="head">${MODULES[mod].icon} ${MODULES[mod].name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${inputs}<div id="fb"></div></div>`;
+    }
+    container.innerHTML = cardHtml();
+    bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
+    const inps = Array.from(container.querySelectorAll('.inp'));
+    function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); }
+    inps.forEach((el) => { el.onclick = () => { if (!locked) { active = +el.dataset.i; paint(); } }; });
+    $('.tut', container).onclick = () => showTutorial(task.group, task.note);
+    paint();
+    bottom.onclick = (e) => {
+      const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; const k = b.dataset.k;
+      if (k === 'cancel') { done(null); return; }
+      if (k === 'del') { values[active] = values[active].slice(0, -1); }
+      else if (k === 'ok') {
+        if (values.some((v) => v === '')) { const idx = values.findIndex((v) => v === ''); if (idx === active) return; active = idx; paint(); return; }
+        submit(); return;
+      }
+      else { if (values[active].length < 3) values[active] += k; }
+      paint();
+    };
+    function submit() {
+      locked = true;
+      const ok = values.every((v, i) => parseInt(v, 10) === task.answers[i]);
+      inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
+      const fb = $('#fb', container);
+      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; }
+      else { const corr = task.answers.join(task.nb ? ' und ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
+      bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
+      $('#next').focus();
+      $('#next').onclick = () => done(ok);
+    }
+  }
+
+  /* ---------- Choice / order / parts tasks ---------- */
+  function runChoiceTask(task, opts, done) {
+    const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod]; let locked = false;
+    const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
+    const finish = (ok, extraHtml) => {
+      locked = true; const fb = $('#fb', container);
+      fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small></div>`;
+      if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
+      bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
+    };
+    if (task.kind === 'choice') {
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb"></div></div>`;
+      bottom.innerHTML = `<div class="options ${task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+      bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
+    } else if (task.kind === 'parts') {
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ highlight: task.part })}<div id="fb"></div></div>`;
+      bottom.innerHTML = `<div class="options two">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+      bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Das ist: ${esc(task.answer)}`); }; });
+    } else if (task.kind === 'parts-find') {
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ clickable: true })}<div id="fb"></div></div>`;
+      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf den Teil in der Pflanze.</p>`;
+      container.querySelectorAll('[data-part]').forEach((g) => { g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
+    } else if (task.kind === 'order') {
+      const chosen = [];
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><div id="fb"></div></div>`;
+      const paint = () => { $('#olist', container).innerHTML = task.display.map((it) => { const pos = chosen.indexOf(it.id); return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`; }).join(''); container.querySelectorAll('.oitem').forEach((b) => { b.onclick = () => { if (locked || chosen.includes(b.dataset.id)) return; chosen.push(b.dataset.id); paint(); }; }); $('#ocheck').disabled = chosen.length !== task.order.length; $('#oundo').disabled = chosen.length === 0; };
+      bottom.innerHTML = `<div class="row"><button class="btn secondary" id="oundo">↶ Rückgängig</button><button class="btn" id="ocheck">✓ Prüfen</button></div>`;
+      $('#oundo').onclick = () => { if (!locked) { chosen.pop(); paint(); } };
+      $('#ocheck').onclick = () => { if (locked || chosen.length !== task.order.length) return; const ok = chosen.every((id, i) => id === task.order[i]); const byId = Object.fromEntries(task.items.map((x) => [x.id, x.text])); container.querySelectorAll('.oitem').forEach((b) => { const i = chosen.indexOf(b.dataset.id); b.classList.add(task.order[i] === b.dataset.id ? 'right' : 'wrong'); }); finish(ok, 'Richtige Reihenfolge:<br>' + task.order.map((id, i) => `${i + 1}. ${esc(byId[id])}`).join('<br>')); };
+      paint();
+    }
+    $('.tut', container).onclick = () => showTutorial(task.group, task.note);
+  }
+
+  /* ---------- Potato plant drawing ---------- */
+  // opts: highlight (part id), clickable, labels (bool), step (1-6 for drawing school)
+  function potatoSVG(opts) {
+    opts = opts || {}; const step = opts.step || 6; const hl = (id) => opts.highlight === id ? ' glow' : '';
+    const g = (id, inner, cls) => (step >= PART_STEP[id] ? `<g data-part="${id}" class="part${hl(id)} ${cls || ''}" ${opts.clickable ? 'tabindex="0" role="button" aria-label="Pflanzenteil"' : ''}>${inner}</g>` : '');
+    const label = (id, x, y, anchor) => opts.labels && step >= PART_STEP[id] ? `<text class="plabel" x="${x}" y="${y}" text-anchor="${anchor || 'start'}">${MK.PARTS.find((p) => p.id === id).name.replace(' (Frucht)', '')}</text>` : '';
+    return `<svg class="plant ${opts.clickable ? 'clickable' : ''}" viewBox="0 0 260 300" aria-label="Kartoffelpflanze">
+      <rect x="0" y="150" width="260" height="150" fill="#8B5E3C" opacity=".35"/><line x1="0" y1="150" x2="260" y2="150" stroke="#6B4423" stroke-width="3" stroke-dasharray="6 4"/>
+      ${g('wurzeln', `<path d="M130 190 Q110 215 95 245 M130 190 Q150 220 160 250 M130 195 Q125 225 118 260 M130 195 Q140 230 150 270" stroke="#C7A27A" stroke-width="3" fill="none" stroke-linecap="round"/><path class="hitarea" d="M90 190 L170 190 L170 275 L90 275 Z" fill="transparent"/>`)}
+      ${g('mutterknolle', `<ellipse cx="130" cy="185" rx="26" ry="16" fill="#8A6A3F" stroke="#5A4327" stroke-width="2"/><circle cx="120" cy="182" r="2" fill="#5A4327"/><circle cx="138" cy="189" r="2" fill="#5A4327"/>`)}
+      ${g('auslaeufer', `<path d="M110 180 Q70 185 50 210 M150 180 Q190 185 215 205 M120 192 Q95 215 80 240 M140 192 Q170 215 190 240" stroke="#E6D3A3" stroke-width="3.5" fill="none" stroke-linecap="round"/>`)}
+      ${g('tochterknollen', `<ellipse cx="44" cy="218" rx="15" ry="10" fill="#C9A35B" stroke="#7A5A2A" stroke-width="2"/><ellipse cx="222" cy="214" rx="15" ry="10" fill="#C9A35B" stroke="#7A5A2A" stroke-width="2"/><ellipse cx="76" cy="248" rx="14" ry="9" fill="#C9A35B" stroke="#7A5A2A" stroke-width="2"/><ellipse cx="196" cy="248" rx="14" ry="9" fill="#C9A35B" stroke="#7A5A2A" stroke-width="2"/>`)}
+      ${g('staengel', `<path d="M130 170 Q128 120 130 60 M130 120 Q110 100 92 92 M130 95 Q152 80 168 72 M130 140 Q156 128 176 126 M130 125 Q104 118 84 120" stroke="#3E8E41" stroke-width="5" fill="none" stroke-linecap="round"/>`)}
+      ${g('blaetter', `<g fill="#4FB04F" stroke="#2F7A32" stroke-width="1.5"><ellipse cx="80" cy="88" rx="16" ry="9" transform="rotate(-25 80 88)"/><ellipse cx="62" cy="100" rx="13" ry="8" transform="rotate(-10 62 100)"/><ellipse cx="178" cy="66" rx="16" ry="9" transform="rotate(20 178 66)"/><ellipse cx="196" cy="80" rx="13" ry="8" transform="rotate(10 196 80)"/><ellipse cx="190" cy="124" rx="16" ry="9" transform="rotate(15 190 124)"/><ellipse cx="208" cy="138" rx="12" ry="7"/><ellipse cx="70" cy="122" rx="16" ry="9" transform="rotate(-15 70 122)"/><ellipse cx="52" cy="134" rx="12" ry="7"/><ellipse cx="118" cy="48" rx="12" ry="8" transform="rotate(-40 118 48)"/><ellipse cx="146" cy="100" rx="12" ry="7" transform="rotate(35 146 100)"/></g>`)}
+      ${g('bluete', `<g><circle cx="130" cy="40" r="4" fill="#F5D33F"/><g fill="#C9B0F5" stroke="#8C6BD1" stroke-width="1.5"><ellipse cx="130" cy="28" rx="6" ry="9"/><ellipse cx="141" cy="36" rx="6" ry="9" transform="rotate(72 141 36)"/><ellipse cx="137" cy="50" rx="6" ry="9" transform="rotate(144 137 50)"/><ellipse cx="123" cy="50" rx="6" ry="9" transform="rotate(216 123 50)"/><ellipse cx="119" cy="36" rx="6" ry="9" transform="rotate(288 119 36)"/></g><circle cx="130" cy="40" r="4" fill="#F5D33F"/><circle cx="156" cy="52" r="4" fill="#F5D33F"/><g fill="#C9B0F5" stroke="#8C6BD1" stroke-width="1.5"><ellipse cx="156" cy="43" rx="5" ry="7"/><ellipse cx="164" cy="49" rx="5" ry="7" transform="rotate(72 164 49)"/><ellipse cx="161" cy="59" rx="5" ry="7" transform="rotate(144 161 59)"/><ellipse cx="151" cy="59" rx="5" ry="7" transform="rotate(216 151 59)"/><ellipse cx="148" cy="49" rx="5" ry="7" transform="rotate(288 148 49)"/></g><circle cx="156" cy="52" r="3.5" fill="#F5D33F"/></g>`)}
+      ${g('beere', `<path d="M104 66 Q100 76 98 84" stroke="#3E8E41" stroke-width="3" fill="none"/><circle cx="98" cy="90" r="8" fill="#8BC34A" stroke="#4A7C23" stroke-width="2"/><circle cx="95" cy="87" r="2" fill="#D9F0B0"/>`)}
+      ${label('bluete', 168, 30)}${label('beere', 6, 76)}${label('blaetter', 4, 112)}${label('staengel', 140, 146)}${label('mutterknolle', 162, 178)}${label('wurzeln', 160, 290)}${label('auslaeufer', 6, 204)}${label('tochterknollen', 6, 276)}
+    </svg>`;
+  }
+  const PART_STEP = { mutterknolle: 1, wurzeln: 2, auslaeufer: 3, tochterknollen: 3, staengel: 4, blaetter: 5, bluete: 6, beere: 6 };
+  const DRAW_STEPS = ['Zeichne die Erdlinie und darunter die Mutterknolle.', 'Zeichne die Wurzeln nach unten.', 'Zeichne die Ausläufer zur Seite und daran die Tochterknollen.', 'Zeichne den Stängel nach oben mit Seitentrieben.', 'Zeichne die Blätter an die Triebe.', 'Zeichne oben die Blüten und eine kleine Beere.'];
+
+  /* ---------- Screens ---------- */
+  function screenTitle() {
+    render(`<div class="screen"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Monster · Wissen · Abenteuer</div></div>
+      <div class="stack" style="margin-top:16px">
+        ${MODE_KEYS.map((m) => { const r = load(KEY_RUN_FOR(m), null); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter (${c.worlds > 1 ? 'Welt ' + r.world + ', ' : ''}Etage ${r.floor})</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}
+        <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
+        <p class="center muted">Abenteuer gespielt: ${meta.runs} · Geschafft: ${meta.wins}</p>
+      </div></div></div>`);
+    let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
+    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = load(KEY_RUN_FOR(mode), null); if (run) screenMap(); else screenTitle(); }; });
+    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = load(KEY_RUN_FOR(mode), null); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; clear(KEY_RUN_FOR(mode)); screenStarter(); }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
+    $('#dex').onclick = screenDex;
+  }
+
+  function screenStarter() {
+    let sel = CFG().starters.length === 1 ? CFG().starters[0].id : null;
+    render(`<div class="screen">${topbar(CFG().starters.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
+      ${CFG().starters.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta"><div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      </div></div><div class="bottom"><button class="btn" id="go" ${sel ? '' : 'disabled'}>Los geht’s!</button></div></div>`);
+    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; }; });
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })), combos: {} }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false }; meta.runs++; saveAll(); screenMap(); };
+  }
+  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1] = ['school']; if (!m[4].includes('school')) m[4][0] = 'school'; } return m;
+  }
+
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'] };
+  function screenMap() {
+    const h = run.hero;
+    const rows = run.map.map((nodes, fi) => { const f = fi + 1; const cls = f === run.floor ? 'current' : f < run.floor ? 'done' : 'future'; return `<div class="floor ${cls}"><div class="num">${f}</div>${nodes.map((n, ni) => `<button class="node ${run.path[fi] === ni ? 'taken' : ''}" data-f="${f}" data-n="${ni}" ${f !== run.floor ? 'tabindex="-1" disabled' : ''} aria-label="${NODE_INFO[n][1]}">${NODE_INFO[n][0]}<small>${NODE_INFO[n][1]}</small></button>`).join('')}</div>`; });
+    render(`<div class="screen">${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
+      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div></div>
+      <div class="scroll"><p class="center muted">Wohin gehst du? Tippe auf ein Feld.</p><div class="map">${rows.join('')}</div></div>
+      <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
+    app.querySelectorAll('.floor.current .node').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni]; saveAll(); enterNode(type); }; });
+    $('#home').onclick = screenTitle;
+    $('#bag').onclick = () => showBag(null);
+    const scroller = $('.scroll'); const cur = $('.floor.current'); if (cur && scroller) scroller.scrollTop = Math.max(0, cur.offsetTop - scroller.clientHeight / 2);
+  }
+  function showBag(inBattle) {
+    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${run.items.map((it, i) => `<button class="item" data-i="${i}">${ITEMS[it].icon} ${ITEMS[it].name}</button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
+    $('#close', ov).onclick = () => ov.remove();
+    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if (it.shield && !inBattle) { $('#bagdesc', ov).textContent = 'Den Schild kannst du nur im Kampf benutzen.'; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; saveAll(); ov.remove(); if (inBattle) inBattle(it); else screenMap(); }; });
+  }
+
+  function enterNode(type) {
+    if (type === 'fight') startBattle(pick(CFG().enemies[run.world].normal), false);
+    else if (type === 'elite') startBattle(CFG().enemies[run.world].elite, true);
+    else if (type === 'boss') startBattle(CFG().enemies[run.world].boss, true);
+    else if (type === 'event') screenEvent();
+    else if (type === 'rest') screenRest();
+    else if (type === 'treasure') screenTreasure();
+    else if (type === 'school') screenSchool(1);
+  }
+  function advance() { run.floor++; run.shield = false; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); run.hero.combos = {}; } } saveAll(); screenMap(); }
+
+  /* ---------- Battle ---------- */
+  function startBattle(spec, hard) {
+    const scale = 1 + (run.floor - 1) * 0.03;
+    const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)), boss: !!spec.boss, elite: hard && !spec.boss };
+    meta.dex[spec.name] = { type: spec.type, shape: spec.shape, world: run.world, mode };
+    const b = { enemy, log: 'Ein wildes ' + enemy.name + ' erscheint!', logCls: '', phase: 'choose' };
+    renderBattle(b);
+  }
+  function renderBattle(b) {
+    const h = run.hero, e = b.enemy;
+    const pct = (a, m) => Math.max(0, (a / m) * 100);
+    const hpcls = (a, m) => a / m < .3 ? 'low' : a / m < .6 ? 'mid' : '';
+    render(`<div class="screen">${topbar(e.boss ? '👑 Bosskampf' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
+      <div class="arena">
+        <div class="fighter" id="fh">${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, h.evo)}<div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div></div>
+        <div class="fighter" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0, 'enemy')}<div class="name">${esc(e.name)}</div>${typeChip(e.type)}<div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
+      </div>
+      <div class="log ${b.logCls}" aria-live="polite">${b.log}</div>
+      <div class="taskwrap" id="taskwrap"></div>
+      <div class="bottom" id="bottom"></div></div>`);
+    if (b.phase === 'choose') renderAttackChoice(b);
+  }
+  function renderAttackChoice(b) {
+    const atks = heroAttacks(); const heroType = heroSpec().type; const MODULES = MODULES_OF();
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const eff = BEATS[heroType] === b.enemy.type; const combo = run.hero.combos[a.mod] || 0; return `<button class="atk ${a.unlocked ? '' : 'locked'}" data-i="${i}" ${a.unlocked ? '' : 'disabled'}><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${MODULES[a.mod].dmg}${eff ? ' ×1,5' : ''}</span></span>${a.unlocked ? `<span class="combo" aria-label="Kombo ${combo} von 3">${[0, 1, 2].map((k) => `<b class="${k < combo ? 'on' : ''}"></b>`).join('')}</span>` : `<span class="m">🔒 ab Level ${[1, 3, 6, 10][i]}</span>`}</button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Kombo voll = Volltreffer</span></div>`;
+    $('#bag').onclick = () => showBag((it) => { b.log = `${it.icon} ${it.name} benutzt!`; b.logCls = 'hit'; enemyTurn(b, 1); });
+    app.querySelectorAll('.atk:not(.locked)').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
+  }
+  function chooseAttack(b, atk) {
+    const tier = tierFor(atk.mod); const MODULES = MODULES_OF();
+    let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
+    b.phase = 'task';
+    ensureTutorial(t, () => {
+      runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name }, (ok) => {
+        recordAnswer(atk.mod, ok, t); const h = run.hero;
+        if (ok) {
+          let combo = (h.combos[atk.mod] || 0) + 1; let crit = false;
+          if (combo >= 3) { crit = true; combo = 0; }
+          h.combos[atk.mod] = combo;
+          const eff = BEATS[heroSpec().type] === b.enemy.type;
+          let dmg = MODULES[atk.mod].dmg + h.level * 2;
+          if (eff) dmg = Math.round(dmg * 1.5);
+          if (heroSpec().perk === 'crit' && !crit && Math.random() < 0.15) crit = true;
+          if (crit) dmg *= 2;
+          b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
+          if (heroSpec().perk === 'heal') heal(3);
+          b.log = `${atk.name}: ${crit ? 'VOLLTREFFER! ' : eff ? 'Sehr effektiv! ' : 'Treffer! '}${dmg} Schaden`; b.logCls = crit ? 'crit' : 'hit';
+          saveAll();
+          if (b.enemy.hp <= 0) { renderBattle(b); $('#fe').classList.add('hurt'); setTimeout(() => { if (run) battleWon(b); }, 500); return; }
+          renderBattle(b); $('#fe').classList.add('hurt');
+          setTimeout(() => { if (run) enemyTurn(b, 1); }, 700);
+        } else {
+          h.combos[atk.mod] = 0;
+          b.log = `${atk.name} geht daneben… ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
+          saveAll(); renderBattle(b);
+          setTimeout(() => { if (run) enemyTurn(b, 1.5); }, 900);
+        }
+      });
+    });
+  }
+  function enemyTurn(b, mult) {
+    const h = run.hero; const move = pick(ENEMY_MOVES);
+    if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
+    else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
+    b.phase = h.hp <= 0 ? 'over' : 'choose'; saveAll(); renderBattle(b); $('#fh').classList.add('hurt');
+    if (h.hp <= 0) setTimeout(() => screenGameOver(b), 600);
+  }
+  function battleWon(b) {
+    const e = b.enemy; const xp = e.boss ? 60 : e.elite ? 35 : 18;
+    const msgs = gainXp(xp); let drop = null;
+    if (e.elite && Math.random() < 0.8) drop = pick(['trank', 'schild']); if (e.boss) drop = 'grosstrank'; if (!e.elite && !e.boss && Math.random() < 0.2) drop = 'beere';
+    if (drop) run.items.push(drop);
+    let evoMsg = '';
+    if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>✨ Entwicklung!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
+    saveAll();
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>🏆 ${esc(e.name)} besiegt!</h2><p>+${xp} XP${drop ? ` · ${ITEMS[drop].icon} ${ITEMS[drop].name} gefunden` : ''}</p>${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    $('#next').onclick = advance;
+  }
+
+  /* ---------- Event ---------- */
+  function screenEvent() {
+    const ev = pick(CFG().events);
+    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p></div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
+    app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => { const o = ev.opts[+btn.dataset.i]; if (o.task) { const mod = o.task === 'any' ? pick(MODKEYS()) : o.task; const tier = tierFor(mod); const t = makeTask(mod, tier); render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`); ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom') }, (ok) => { recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose, ok ? 'Geschafft!' : 'Leider daneben.'); })); } else applyEffect(o.effect, ev.title); }; });
+  }
+  function applyEffect(eff, title) {
+    const lines = [];
+    if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 ${eff.hp} Lebenspunkte`); } }
+    if (eff.maxhp) { run.hero.maxHp += eff.maxhp; heal(eff.maxhp); lines.push(`💪 +${eff.maxhp} maximale Lebenspunkte`); }
+    if (eff.item) { run.items.push(eff.item); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
+    if (eff.xp) { const m = gainXp(eff.xp); lines.push(`⭐ +${eff.xp} XP`); lines.push(...m); }
+    if (!lines.length) lines.push('Nichts passiert.');
+    saveAll();
+    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    $('#next').onclick = advance;
+  }
+
+  /* ---------- Rest ---------- */
+  function screenRest() {
+    const weak = weakestModule(); const s = STATS()[weak]; const acc = s.t ? Math.round((s.c / s.t) * 100) : null; const MODULES = MODULES_OF();
+    render(`<div class="screen">${topbar('🔥 Rast')}<div class="scroll"><div class="card center"><h2>Am Lagerfeuer</h2>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>❤️ ${run.hero.hp} / ${run.hero.maxHp}</p></div></div>
+      <div class="bottom"><div class="stack"><button class="btn" id="heal">Ausruhen: +${Math.round(run.hero.maxHp * 0.4)} LP</button><button class="btn secondary" id="train">Training: ${MODULES[weak].icon} ${MODULES[weak].name}${acc !== null ? ` (${acc} % richtig)` : ''} – 3 Aufgaben, kein Risiko, +XP</button></div></div></div>`);
+    $('#heal').onclick = () => { heal(Math.round(run.hero.maxHp * 0.4)); saveAll(); advance(); };
+    $('#train').onclick = () => training(weak, 3, 0);
+  }
+  function training(mod, total, done) {
+    if (done >= total) { const m = gainXp(15); saveAll(); render(`<div class="screen">${topbar('🔥 Training')}<div class="scroll"><div class="card center"><h2>Training geschafft!</h2><p>⭐ +15 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
+    const tier = tierFor(mod); const t = makeTask(mod, tier);
+    render(`<div class="screen">${topbar(`🔥 Training ${done + 1} / ${total}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+    const s = STATS()[mod]; const low = s.t >= 3 && s.c / s.t < 0.6;
+    const go = () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Übung' }, (ok) => { recordAnswer(mod, ok, t); saveAll(); training(mod, total, done + 1); });
+    if (low && done === 0 && meta.seenTut[tutKey(t.group)]) showTutorial(t.group, t.note, go); else ensureTutorial(t, go);
+  }
+
+  /* ---------- Treasure ---------- */
+  function screenTreasure() {
+    const owned = run.hero.attacks.map((a) => a.mod); const free = MODKEYS().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
+    const opts = [{ k: 'item', label: `${ITEMS.trank.icon} Trank`, desc: ITEMS.trank.desc }, { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' }];
+    if (free.length) { const m = pick(free); opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push({ k: 'shield', label: `${ITEMS.schild.icon} Schild`, desc: ITEMS.schild.desc });
+    render(`<div class="screen">${topbar('🎁 Schatz')}<div class="scroll"><p class="center">Du findest eine Truhe. Wähle eine Belohnung:</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
+    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push('trank'); if (o.k === 'shield') run.items.push('schild'); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
+  }
+  function chooseSlot(mod) {
+    const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
+    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${run.hero.attacks.map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Slot ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten</button></div></div></div>`);
+    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
+    $('#skip').onclick = () => { run.items.push('trank'); saveAll(); advance(); };
+  }
+
+  /* ---------- Zeichenschule ---------- */
+  function screenSchool(step) {
+    if (step > 6) { render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${potatoSVG({})}</div></div><div class="bottom"><button class="btn" id="go">Los!</button></div></div>`); $('#go').onclick = () => schoolCheck(MK.shuffle(MK.PARTS.map((p) => p.id)), 0); return; }
+    render(`<div class="screen">${topbar(`✏️ Zeichenschule ${step} / 6`)}<div class="scroll"><div class="card"><h3>Schritt ${step}</h3><p>${esc(DRAW_STEPS[step - 1])}</p>${potatoSVG({ step, labels: true })}<p class="muted" style="color:var(--ink-soft)">Zeichne mit auf Papier. Die Namen stehen dabei.</p></div></div><div class="bottom"><div class="row">${step > 1 ? `<button class="btn secondary" id="prev">Zurück</button>` : ''}<button class="btn" id="next">${step < 6 ? 'Nächster Schritt' : 'Zum Merk-Check'}</button></div></div></div>`);
+    $('#next').onclick = () => screenSchool(step + 1); if ($('#prev')) $('#prev').onclick = () => screenSchool(step - 1);
+  }
+  function schoolCheck(ids, i) {
+    if (i >= ids.length) { const m = gainXp(20); saveAll(); render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check geschafft!</h2><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
+    const part = MK.PARTS.find((p) => p.id === ids[i]); const others = MK.shuffle(MK.PARTS.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name);
+    const t = { kind: 'parts', mod: 'parts', tier: 1, group: 'parts:1', note: 'teile', q: 'Wie heißt der leuchtende Teil?', part: part.id, options: MK.shuffle(others.concat([part.name])), answer: part.name, qid: 'p_' + part.id };
+    render(`<div class="screen">${topbar(`✏️ Merk-Check ${i + 1} / ${ids.length}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Merk-Check' }, (ok) => { recordAnswer('parts', ok, t); saveAll(); schoolCheck(ids, i + 1); }));
+  }
+
+  /* ---------- End screens ---------- */
+  function screenGameOver(b) {
+    const world = run.world; const name = heroName();
+    run = null; saveAll();
+    render(`<div class="screen">${topbar('Besiegt…')}<div class="scroll"><div class="card center"><h2>Oh nein!</h2><p>${esc(name)} wurde von ${esc(b.enemy.name)} besiegt.</p><p>Du bist bis Welt ${world} gekommen. Deine Rechenkünste bleiben – beim nächsten Mal klappt es!</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
+  }
+  function screenVictory() {
+    meta.wins++; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
+    run = null; saveAll();
+    render(`<div class="screen">${topbar('Sieg!')}<div class="scroll"><div class="card center"><h1 style="font-size:36px">🎉 Du hast es geschafft!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> hat ${esc(bossName)} besiegt${CFG().worlds > 1 ? ` und alle ${CFG().worlds === 3 ? 'drei' : 'zwei'} Welten gemeistert` : ''}!</p><p>Abenteuer geschafft: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
+  }
+  function screenDex() {
+    const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push(EN[w].elite); all.push(EN[w].boss); } }
+    render(`<div class="screen">${topbar('📖 Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    $('#back').onclick = screenTitle;
+  }
+  function screenParent() {
+    const tables = MODE_KEYS.map((m) => { const r = load(KEY_RUN_FOR(m), null); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
+    const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = MK.L_POOL.find((p) => p.id === id) || MK.K_POOL.find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
+    render(`<div class="screen">${topbar('👨‍👩‍👦 Elternbereich')}<div class="scroll">${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
+      <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
+      <div class="stack" style="margin-top:14px"><button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button></div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
+    $('#back').onclick = screenTitle;
+    $('#rtut').onclick = () => { meta.seenTut = {}; saveAll(); screenParent(); };
+    $('#rstats').onclick = () => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); screenParent(); };
+    $('#rall').onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); };
+  }
+
+  screenTitle();
+  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle };
+})();
+
+</script>
+</body>
+</html>
