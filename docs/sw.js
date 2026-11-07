@@ -1,9 +1,13 @@
 /* Lernquest service worker – makes the game installable and playable offline.
- * 692083ce36ba is replaced by build.py with a hash of the built files, so every
- * new build ships a new worker that refreshes the cache. */
-const VERSION = '692083ce36ba';
+ * a43e062245e9 is replaced by build.py with a hash of the sources, so every new
+ * build ships a new worker that refreshes the cache.
+ * Update strategy: the game page is fetched network-first (revalidated past the
+ * HTTP cache), so an online launch always shows the newest version; offline or
+ * on a slow connection the cached copy is used after a short timeout. */
+const VERSION = 'a43e062245e9';
 const CACHE = 'lernquest-' + VERSION;
 const FONT_CACHE = 'lernquest-fonts';
+const NET_TIMEOUT_MS = 3500;
 const CORE = [
   './',
   './index.html',
@@ -18,7 +22,7 @@ const CORE = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -26,6 +30,9 @@ self.addEventListener('activate', (e) => {
     caches.keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== FONT_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+      // tell open pages which version is now active (they reload if they are older)
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((wins) => wins.forEach((w) => w.postMessage({ type: 'sw-activated', version: VERSION })))
   );
 });
 
@@ -46,9 +53,23 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // The game page: precached copy (works offline, starts instantly).
+  // The game page: network first (always newest), cached copy as fallback.
   if (req.mode === 'navigate') {
-    e.respondWith(caches.match('./index.html').then((hit) => hit || fetch(req)));
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      const net = fetch(req, { cache: 'no-cache' }).then((res) => {
+        if (res.ok) cache.put('./index.html', res.clone());
+        return res;
+      });
+      net.catch(() => {});
+      const timeout = new Promise((r) => setTimeout(r, NET_TIMEOUT_MS));
+      try {
+        const res = await Promise.race([net, timeout]);
+        if (res) return res;
+      } catch (err) { /* offline – fall through */ }
+      const hit = await cache.match('./index.html');
+      return hit || net;
+    })());
     return;
   }
 

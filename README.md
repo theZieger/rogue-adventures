@@ -17,7 +17,7 @@ Lernquest ist eine Web-App (PWA) – einmal installiert, startet es wie eine nor
 | Windows / macOS / Linux / ChromeOS (Chrome, Edge) | Installieren-Symbol rechts in der Adressleiste oder Menü → „App installieren“ |
 | Mac (Safari 17+) | Ablage → „Zum Dock hinzufügen“ |
 
-Updates kommen automatisch: nach einem neuen Build lädt die App die neue Version beim nächsten Start.
+Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) immer die neueste Version. Wird ein Update veröffentlicht, während die App offen ist, wird es eingespielt, sobald sie in den Hintergrund geht – nie mitten im Kampf. Ohne Internet startet die zuletzt geladene Version.
 
 ## Modi
 

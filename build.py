@@ -11,6 +11,16 @@ logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 app = (SRC / "app.js").read_text(encoding="utf-8")
+manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
+sw_src = (SRC / "sw.js").read_text(encoding="utf-8")
+# build id = hash of everything the app ships; shared by page and service worker
+h = hashlib.sha256()
+for part in (css, logic, know, mon, app, manifest, sw_src):
+    h.update(part.encode("utf-8"))
+for f in sorted((ROOT / "docs" / "icons").glob("*")) + [ROOT / "docs" / "favicon.ico"]:
+    if f.is_file():
+        h.update(f.read_bytes())
+build_id = h.hexdigest()[:12]
 html = f"""<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -32,6 +42,7 @@ html = f"""<!DOCTYPE html>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
+<meta name="app-version" content="{build_id}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap">
 <style>
@@ -53,9 +64,31 @@ html = f"""<!DOCTYPE html>
 {app}
 </script>
 <script>
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {{
-  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {{}}));
-}}
+/* Offline support + automatic updates (see src/sw.js) */
+(function () {{
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+  const BUILD = '{build_id}';
+  const loadedAt = Date.now();
+  let pending = false;
+  function refresh(v) {{
+    // never loop: reload at most once per new version
+    try {{ if (sessionStorage.getItem('lq-reloaded') === v) return; sessionStorage.setItem('lq-reloaded', v); }} catch (e) {{ }}
+    location.reload();
+  }}
+  navigator.serviceWorker.addEventListener('message', (e) => {{
+    const d = e.data;
+    if (!d || d.type !== 'sw-activated' || d.version === BUILD) return;
+    // newer version ready: apply now if the app was just opened or is in the
+    // background; otherwise wait until it is put away (never mid-battle)
+    if (document.hidden || Date.now() - loadedAt < 8000) refresh(d.version); else pending = d.version;
+  }});
+  document.addEventListener('visibilitychange', () => {{
+    if (document.hidden) {{ if (pending) refresh(pending); return; }}
+    // app brought back to the foreground: look for a new version
+    navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {{}});
+  }});
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js', {{ updateViaCache: 'none' }}).catch(() => {{}}));
+}})();
 </script>
 </body>
 </html>
@@ -66,12 +99,6 @@ out.write_text(html, encoding="utf-8")
 print(f"built {out} ({len(html):,} bytes)")
 
 # PWA: manifest + service worker (cache version = hash of everything it caches)
-manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
 (out.parent / "manifest.webmanifest").write_text(manifest, encoding="utf-8")
-h = hashlib.sha256(html.encode("utf-8") + manifest.encode("utf-8"))
-for f in sorted((out.parent / "icons").glob("*")) + [out.parent / "favicon.ico"]:
-    if f.is_file():
-        h.update(f.read_bytes())
-sw = (SRC / "sw.js").read_text(encoding="utf-8").replace("__VERSION__", h.hexdigest()[:12])
-(out.parent / "sw.js").write_text(sw, encoding="utf-8")
-print(f"built {out.parent / 'sw.js'} (cache {h.hexdigest()[:12]})")
+(out.parent / "sw.js").write_text(sw_src.replace("__VERSION__", build_id), encoding="utf-8")
+print(f"built {out.parent / 'sw.js'} (version {build_id})")
