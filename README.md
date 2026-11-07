@@ -44,7 +44,7 @@ src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
-tools/make_icons.js  erzeugt docs/icons/* aus der Sonnenfuchs-Grafik (Playwright, nur bei Icon-Änderungen)
+tools/make_icons.js  erzeugt docs/icons/* und die iOS-Startbildschirme docs/splash/* aus der Sonnenfuchs-Grafik (Playwright, nur bei Grafik-Änderungen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
