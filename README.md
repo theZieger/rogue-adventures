@@ -27,7 +27,10 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) immer die n
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 
-- Kein Zeitdruck. Volltreffer über eine Kombo-Leiste (3 richtige in Folge) oder Typ-Vorteil.
+- Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
+- Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
+- Gegenstände: Trank, Großer Trank, Beere, Schild, Kraftkeks, Lupe (Tipp), Schutzengel, Sternenstaub.
+- „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Reset.
@@ -45,6 +48,7 @@ src/monsters.js    Handgezeichnete SVG-Monster
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
+CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
 tools/make_icons.js  erzeugt docs/icons/* und die iOS-Startbildschirme docs/splash/* aus der Sonnenfuchs-Grafik (Playwright, nur bei Grafik-Änderungen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)

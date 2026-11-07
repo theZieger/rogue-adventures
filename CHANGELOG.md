@@ -1,0 +1,40 @@
+# Was ist neu?
+
+Alle Änderungen an Lernquest, nach Datum sortiert (neueste zuerst).
+Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“).
+
+Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
+Jeder Punkt ist ein kurzer Satz, den auch Kinder und Eltern verstehen.
+
+## 2026-11-07
+
+### Neu
+- Lernquest ist online – mit drei Modi: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).
+- Alle vier Attacken sind von Anfang an da. So übst du verschiedene Aufgaben.
+- Abwechseln lohnt sich: Benutzt du dieselbe Attacke direkt noch einmal, wird sie müde und macht weniger Schaden.
+- Neue Gegenstände: Kraftkeks (doppelter Schaden), Lupe (Tipp bei der nächsten Aufgabe), Schutzengel (rettet dich einmal) und Sternenstaub (Erfahrung).
+- Gegner und Schatztruhen lassen öfter Gegenstände fallen.
+- Lernquest lässt sich wie eine App auf dem Handy, Tablet oder Computer installieren und läuft auch ohne Internet.
+- Eigenes App-Symbol mit dem Sonnenfuchs und Startbildschirme für iPhone und iPad.
+- „Was ist neu?“ zeigt diese Liste im Spiel.
+
+### Verbessert
+- Der Schaden jeder Attacke steht als ganze Zahl auf dem Knopf – ohne Kommazahlen. „stark!“ zeigt, wenn eine Attacke besonders gut wirkt.
+- Die Kombo-Leiste ist weg. Ein kurzes „So kämpfst du“ erklärt den Kampf beim ersten Mal.
+- Auf kleinen Handys und im Querformat ist die Aufgabe immer zu sehen, auch mit Zahlenfeld.
+- Mit der Tastatur spielen: Ziffern, Löschen und Enter funktionieren.
+- Vorleseprogramme sagen Treffer und Rückmeldungen an.
+- Die Schrift ist jetzt im Spiel enthalten. Es werden keine Daten an andere Seiten geschickt.
+- Beim Öffnen gibt es immer gleich die neueste Version.
+- Weiterspielen geht genau dort weiter, wo du aufgehört hast – auch mitten im Kampf.
+
+### Behoben
+- Der Elternbereich konnte einen gespeicherten Spielstand löschen.
+- Der Schild hat nichts gebracht. Jetzt kostet er keinen Zug und blockt den nächsten Angriff.
+- Die Schwierigkeit ist in Welt 1 zu weit gestiegen. Dadurch war Welt 2 gleich am Anfang sehr schwer.
+- Ein kaputter Spielstand konnte das Spiel am Start blockieren.
+- Bei der Monsterwahl gibt es jetzt einen Zurück-Knopf.
+- Fragen zu Luther und zur Kartoffel korrigiert: Die Spanier lernten die Kartoffel im 16. Jahrhundert bei den Inkas kennen, Luther war in Wittenberg Mönch, Professor und Prediger, und die „Ausläufer“ heißen jetzt richtig.
+- Bei Auswahlfragen ist immer nur eine Antwort richtig, und Reihenfolgen sind eindeutig.
+- Matheaufgaben passen besser zur Stufe: In Welt 1 bleibt alles unter 100, keine „mal 1“-Aufgaben am Anfang, und Zahlenrätsel haben keine überflüssigen Hinweise mehr.
+- Kleine Fehler im Text, zum Beispiel „Ein wildes Blattlaus“ und „Vergesslgeist“.

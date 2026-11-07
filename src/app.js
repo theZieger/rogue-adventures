@@ -24,7 +24,7 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0 });
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '' });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Load saved progress defensively: anything missing or of the wrong type falls back to the default,
   // so damaged storage can never stop the game from starting.
@@ -84,8 +84,9 @@
     rec.push(sig); if (rec.length > 8) rec.shift();
     return t;
   }
-  function heroAttacks() { const all = CFG().worldAttacks && run.world > 1; return run.hero.attacks.map((a, i) => Object.assign({}, a, { unlocked: all || run.hero.level >= [1, 3, 6, 10][i] })); }
-  function gainXp(n) { run.hero.xp += n; let msgs = []; while (run.hero.xp >= xpNeeded(run.hero.level)) { run.hero.xp -= xpNeeded(run.hero.level); run.hero.level++; run.hero.maxHp += 8; run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + 8); msgs.push(`Level ${run.hero.level}!`); const idx = [1, 3, 6, 10].indexOf(run.hero.level); if (idx >= 0 && run.hero.attacks[idx]) msgs.push(`Neue Attacke: ${run.hero.attacks[idx].name}!`); } return msgs; }
+  // all four attacks are available from the start, so children practise different task types
+  function heroAttacks() { return run.hero.attacks.map((a) => Object.assign({}, a)); }
+  function gainXp(n) { run.hero.xp += n; let msgs = []; while (run.hero.xp >= xpNeeded(run.hero.level)) { run.hero.xp -= xpNeeded(run.hero.level); run.hero.level++; run.hero.maxHp += 8; run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + 8); msgs.push(`Level ${run.hero.level}! Alle Attacken machen mehr Schaden.`); } return msgs; }
   function heal(n) { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + n); }
 
   /* ---------- Rendering primitives ---------- */
@@ -127,7 +128,8 @@
       let inputs = '';
       if (task.nb) inputs = `<div class="nbline"><div class="inpgroup"><div class="inp" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-i="1"></div><span>danach</span></div></div>`;
       else inputs = `<div class="inputs">${task.answers.map((_, i) => `<div class="inp" data-i="${i}"></div>`).join('')}</div>`;
-      return `<div class="task"><div class="head">${MODULES[mod].icon} ${MODULES[mod].name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      const a0 = task.answers[0]; const lo = Math.max(0, a0 - 1 - Math.floor(Math.random() * 3)); const hint = opts.hint ? `<div class="hintline">🔎 Tipp: ${task.answers.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>` : '';
+      return `<div class="task"><div class="head">${MODULES[mod].icon} ${MODULES[mod].name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
     }
     container.innerHTML = cardHtml();
     bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
@@ -173,6 +175,8 @@
   function runChoiceTask(task, opts, done) {
     const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod]; let locked = false;
     const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
+    // magnifier item: one wrong option is crossed out
+    const strikeWrongOption = () => { const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🔎 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
       locked = true; const fb = $('#fb', container);
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small></div>`;
@@ -183,20 +187,24 @@
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options ${task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
+      if (opts.hint) strikeWrongOption();
     } else if (task.kind === 'parts') {
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ highlight: task.part })}<div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options two">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Das ist: ${esc(task.answer)}`); }; });
+      if (opts.hint) strikeWrongOption();
     } else if (task.kind === 'parts-find') {
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
-      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf den Teil in der Pflanze.</p>`;
+      const pp = MK.PARTS.find((p) => p.id === task.part);
+      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf den Teil in der Pflanze.</p>${opts.hint && pp ? `<p class="center hintline">🔎 Tipp: Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.</p>` : ''}`;
       container.querySelectorAll('[data-part]').forEach((g) => { g.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } }; g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
     } else if (task.kind === 'order') {
-      const chosen = [];
+      const chosen = opts.hint ? [task.order[0]] : []; const fixed = chosen.length;
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><div id="fb" role="status" aria-live="polite"></div></div>`;
-      const paint = () => { $('#olist', container).innerHTML = task.display.map((it) => { const pos = chosen.indexOf(it.id); return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`; }).join(''); container.querySelectorAll('.oitem').forEach((b) => { b.onclick = () => { if (locked || chosen.includes(b.dataset.id)) return; chosen.push(b.dataset.id); paint(); }; }); $('#ocheck').disabled = chosen.length !== task.order.length; $('#oundo').disabled = chosen.length === 0; };
+      const paint = () => { $('#olist', container).innerHTML = task.display.map((it) => { const pos = chosen.indexOf(it.id); return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`; }).join(''); container.querySelectorAll('.oitem').forEach((b) => { b.onclick = () => { if (locked || chosen.includes(b.dataset.id)) return; chosen.push(b.dataset.id); paint(); }; }); $('#ocheck').disabled = chosen.length !== task.order.length; $('#oundo').disabled = chosen.length <= fixed; };
       bottom.innerHTML = `<div class="row"><button class="btn secondary" id="oundo">↶ Rückgängig</button><button class="btn" id="ocheck">✓ Prüfen</button></div>`;
-      $('#oundo').onclick = () => { if (!locked) { chosen.pop(); paint(); } };
+      $('#oundo').onclick = () => { if (!locked && chosen.length > fixed) { chosen.pop(); paint(); } };
+      if (fixed) $('#olist', container).insertAdjacentHTML('afterend', '<div class="hintline">🔎 Tipp: Das Erste steht schon richtig.</div>');
       $('#ocheck').onclick = () => { if (locked || chosen.length !== task.order.length) return; const ok = chosen.every((id, i) => id === task.order[i]); const byId = Object.fromEntries(task.items.map((x) => [x.id, x.text])); container.querySelectorAll('.oitem').forEach((b) => { const i = chosen.indexOf(b.dataset.id); b.classList.add(task.order[i] === b.dataset.id ? 'right' : 'wrong'); }); finish(ok, 'Richtige Reihenfolge:<br>' + task.order.map((id, i) => `${i + 1}. ${esc(byId[id])}`).join('<br>')); };
       paint();
     }
@@ -231,12 +239,27 @@
       <div class="stack" style="margin-top:16px">
         ${MODE_KEYS.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter (${c.worlds > 1 ? 'Welt ' + r.world + ', ' : ''}Etage ${r.floor})</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
+        <button class="btn ghost" id="news">📰 Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button>
         <p class="center muted">Abenteuer gespielt: ${meta.runs} · Geschafft: ${meta.wins}</p>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
+    $('#news').onclick = screenNews;
+  }
+
+  /* ---------- Changelog ("Was ist neu?") – data comes from CHANGELOG.md via build.py ---------- */
+  const NEWS = (typeof CHANGELOG !== 'undefined' && Array.isArray(CHANGELOG)) ? CHANGELOG : [];
+  const hasNews = () => NEWS.length > 0 && NEWS[0].date > (meta.seenNews || '');
+  const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+  const deDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d}. ${MONTHS[m - 1]} ${y}`; };
+  const GROUP_ICON = { 'Neu': '✨', 'Verbessert': '🔧', 'Behoben': '🐞' };
+  function screenNews() {
+    const unseen = meta.seenNews || '';
+    render(`<div class="screen">${topbar('📰 Was ist neu?')}<div class="scroll"><div class="stack">${NEWS.map((e) => `<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? ' <span class="newbadge">Neu!</span>' : ''}</h3>${e.groups.map((g) => `<h4>${GROUP_ICON[g.title] || '📌'} ${esc(g.title)}</h4><ul>${g.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>`).join('')}</div>`).join('') || '<p>Noch keine Einträge.</p>'}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    if (NEWS.length) { meta.seenNews = NEWS[0].date; saveAll(); }
+    $('#back').onclick = screenTitle;
   }
 
   function screenStarter() {
@@ -246,7 +269,7 @@
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Los geht’s!</button></div></div></div>`);
     $('#back').onclick = screenTitle;
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; }; });
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })), combos: {} }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false }; meta.runs++; saveAll(); screenMap(); };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false }; meta.runs++; saveAll(); screenMap(); };
   }
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1] = ['school']; if (!m[4].includes('school')) m[4][0] = 'school'; } return m;
   }
@@ -265,9 +288,9 @@
     const scroller = $('.scroll'); const cur = $('.floor.current'); if (cur && scroller) scroller.scrollTop = Math.max(0, cur.offsetTop - scroller.clientHeight / 2);
   }
   function showBag(inBattle) {
-    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${run.items.map((it, i) => `<button class="item" data-i="${i}">${ITEMS[it].icon} ${ITEMS[it].name}</button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
+    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${run.items.map((it, i) => `<button class="item" data-i="${i}"><span>${ITEMS[it].icon} ${ITEMS[it].name}</span><small>${esc(ITEMS[it].desc)}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
     $('#close', ov).onclick = () => ov.remove();
-    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if (it.shield && !inBattle) { $('#bagdesc', ov).textContent = 'Den Schild kannst du nur im Kampf benutzen.'; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; saveAll(); ov.remove(); if (inBattle) inBattle(it); else screenMap(); }; });
+    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: Das kannst du nur im Kampf benutzen.`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${it.desc}`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; if (it.xp) gainXp(it.xp); saveAll(); ov.remove(); if (inBattle) inBattle(it); else screenMap(); }; });
   }
 
   // Continue a saved adventure exactly where it stopped: a node that was entered can't be swapped for another
@@ -290,7 +313,7 @@
     else if (type === 'treasure') screenTreasure();
     else if (type === 'school') screenSchool(1);
   }
-  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); run.hero.combos = {}; } } saveAll(); screenMap(); }
+  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
   /* ---------- Battle ---------- */
   function startBattle(spec, hard) {
@@ -316,38 +339,58 @@
     announce(b.log.replace(/<[^>]+>/g, ''));
     if (b.phase === 'choose') renderAttackChoice(b);
   }
+  // Damage is always shown as a whole number. Using the same attack again in a row makes it "tired"
+  // (less damage), so it pays off to switch attacks and practise different things.
+  const TIRED = [1, 0.6, 0.35];
+  function attackInfo(b, atk) {
+    const strong = BEATS[heroSpec().type] === b.enemy.type;
+    const tired = b.enemy.lastMod === atk.mod ? Math.min(b.enemy.reps || 1, TIRED.length - 1) : 0;
+    let dmg = (MODULES_OF()[atk.mod].dmg + run.hero.level * 2) * (strong ? 1.5 : 1) * TIRED[tired];
+    if (run.power) dmg *= 2;
+    return { dmg: Math.max(1, Math.round(dmg)), strong, tired };
+  }
+  function noteAttackUsed(b, atk) { if (b.enemy.lastMod === atk.mod) b.enemy.reps = (b.enemy.reps || 1) + 1; else { b.enemy.lastMod = atk.mod; b.enemy.reps = 1; } }
   function renderAttackChoice(b) {
-    const atks = heroAttacks(); const heroType = heroSpec().type; const MODULES = MODULES_OF();
-    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const eff = BEATS[heroType] === b.enemy.type; const combo = run.hero.combos[a.mod] || 0; return `<button class="atk ${a.unlocked ? '' : 'locked'}" data-i="${i}" ${a.unlocked ? '' : 'disabled'}><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${MODULES[a.mod].dmg}${eff ? ' ×1,5' : ''}</span></span>${a.unlocked ? `<span class="combo" aria-label="Kombo ${combo} von 3">${[0, 1, 2].map((k) => `<b class="${k < combo ? 'on' : ''}"></b>`).join('')}</span>` : `<span class="m">🔒 ab Level ${[1, 3, 6, 10][i]}</span>`}</button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Kombo voll = Volltreffer</span></div>`;
-    // a potion takes your turn; the shield doesn't – it waits for the enemy's next attack (also after a wrong answer)
-    $('#bag').onclick = () => showBag((it) => { b.log = `${it.icon} ${it.name} benutzt!`; b.logCls = 'hit'; if (it.shield) { b.log = `${it.icon} Schild bereit! Der nächste Angriff wird geblockt.`; b.phase = 'choose'; renderBattle(b); } else enemyTurn(b, 1); });
-    app.querySelectorAll('.atk:not(.locked)').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
+    const atks = heroAttacks(); const MODULES = MODULES_OF();
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.strong ? '<span class="tag strong">💪 stark!</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🍪 doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Abwechseln macht stärker!</span></div>`;
+    $('#bag').onclick = () => showBag((it) => useItemInBattle(b, it));
+    app.querySelectorAll('.atk').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
+    if (!meta.seenTut['battle:intro']) showBattleIntro();
+  }
+  function showBattleIntro() {
+    const ov = modal(`<h2>⚔️ So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>stark!</b> heißt: Diese Attacke wirkt besonders gut gegen den Gegner.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Los geht’s!</button>`);
+    $('#tutok', ov).focus();
+    $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['battle:intro'] = true; saveAll(); };
+  }
+  // potions and stars take your turn; shield, cookie and magnifier don't – they prepare your next move
+  function useItemInBattle(b, it) {
+    b.logCls = 'hit';
+    if (it.shield) { b.log = `${it.icon} Schild bereit! Der nächste Angriff wird geblockt.`; b.phase = 'choose'; renderBattle(b); return; }
+    if (it.power) { b.log = `${it.icon} ${it.name}! Dein nächster Treffer macht doppelten Schaden.`; b.phase = 'choose'; renderBattle(b); return; }
+    if (it.hint) { b.log = `${it.icon} ${it.name}! Bei der nächsten Aufgabe bekommst du einen Tipp.`; b.phase = 'choose'; renderBattle(b); return; }
+    b.log = `${it.icon} ${it.name} benutzt!`; enemyTurn(b, 1);
   }
   function chooseAttack(b, atk) {
-    const tier = tierFor(atk.mod); const MODULES = MODULES_OF();
+    const tier = tierFor(atk.mod);
     let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
     b.phase = 'task'; $('.screen').classList.add('tasking');
+    const hint = !!run.hint; run.hint = false;
     ensureTutorial(t, () => {
-      runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name }, (ok) => {
-        recordAnswer(atk.mod, ok, t); const h = run.hero;
+      runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name, hint }, (ok) => {
+        recordAnswer(atk.mod, ok, t);
+        const inf = attackInfo(b, atk); noteAttackUsed(b, atk);
         if (ok) {
-          let combo = (h.combos[atk.mod] || 0) + 1; let crit = false;
-          if (combo >= 3) { crit = true; combo = 0; }
-          h.combos[atk.mod] = combo;
-          const eff = BEATS[heroSpec().type] === b.enemy.type;
-          let dmg = MODULES[atk.mod].dmg + h.level * 2;
-          if (eff) dmg = Math.round(dmg * 1.5);
-          if (heroSpec().perk === 'crit' && !crit && Math.random() < 0.15) crit = true;
+          let dmg = inf.dmg; const crit = heroSpec().perk === 'crit' && Math.random() < 0.15;
           if (crit) dmg *= 2;
+          run.power = false;
           b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
           if (heroSpec().perk === 'heal') heal(3);
-          b.log = `${atk.name}: ${crit ? 'VOLLTREFFER! ' : eff ? 'Sehr effektiv! ' : 'Treffer! '}${dmg} Schaden`; b.logCls = crit ? 'crit' : 'hit';
+          b.log = `${atk.name}: ${crit ? 'VOLLTREFFER – doppelter Schaden! ' : inf.strong ? 'Stark! ' : 'Treffer! '}${dmg} Schaden${inf.tired ? ' (müde)' : ''}`; b.logCls = crit ? 'crit' : 'hit';
           saveAll();
           if (b.enemy.hp <= 0) { renderBattle(b); $('#fe').classList.add('hurt'); setTimeout(() => { if (run) battleWon(b); }, 500); return; }
           renderBattle(b); $('#fe').classList.add('hurt');
           setTimeout(() => { if (run) enemyTurn(b, 1); }, 700);
         } else {
-          h.combos[atk.mod] = 0;
           b.log = `${atk.name} geht daneben… ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
           saveAll(); renderBattle(b);
           setTimeout(() => { if (run) enemyTurn(b, 1.5); }, 900);
@@ -359,19 +402,26 @@
     const h = run.hero; const move = pick(ENEMY_MOVES);
     if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
+    const angel = run.items.indexOf('engel');
+    if (h.hp <= 0 && angel >= 0) { run.items.splice(angel, 1); h.hp = Math.round(h.maxHp * 0.5); b.log += ` – aber ${ITEMS.engel.icon} der Schutzengel rettet dich! ❤️ ${h.hp}`; b.logCls = 'crit'; }
     b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b); $('#fh').classList.add('hurt');
     if (h.hp <= 0) setTimeout(() => screenGameOver(b), 600);
   }
+  const LOOT = { normal: ['beere', 'beere', 'trank', 'keks', 'lupe', 'stern'], elite: ['trank', 'schild', 'keks', 'lupe', 'engel'], boss: ['engel', 'keks', 'schild'], chest: ['trank', 'schild', 'keks', 'lupe', 'engel', 'stern'] };
   function battleWon(b) {
     const e = b.enemy; const xp = e.boss ? 60 : e.elite ? 35 : 18;
-    const msgs = gainXp(xp); let drop = null;
-    if (e.elite && Math.random() < 0.8) drop = pick(['trank', 'schild']); if (e.boss) drop = 'grosstrank'; if (!e.elite && !e.boss && Math.random() < 0.2) drop = 'beere';
-    if (drop) run.items.push(drop);
+    const msgs = gainXp(xp);
+    // loot: normal fights often drop something small, elites always drop something useful, bosses drop two things
+    const drops = [];
+    if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
+    else if (e.elite) drops.push(pick(LOOT.elite));
+    else if (Math.random() < 0.5) drops.push(pick(LOOT.normal));
+    run.items.push(...drops);
     nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>✨ Entwicklung!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>🏆 ${esc(e.name)} besiegt!</h2><p>+${xp} XP${drop ? ` · ${ITEMS[drop].icon} ${ITEMS[drop].name} gefunden` : ''}</p>${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>🏆 ${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = advance;
   }
 
@@ -414,15 +464,16 @@
   /* ---------- Treasure ---------- */
   function screenTreasure() {
     const owned = run.hero.attacks.map((a) => a.mod); const free = MODKEYS().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    const opts = [{ k: 'item', label: `${ITEMS.trank.icon} Trank`, desc: ITEMS.trank.desc }, { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' }];
-    if (free.length) { const m = pick(free); opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push({ k: 'shield', label: `${ITEMS.schild.icon} Schild`, desc: ITEMS.schild.desc });
+    const [i1, i2] = shuffle(LOOT.chest.slice()); const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
+    const opts = [itemOpt(i1), { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' }];
+    if (free.length) { const m = pick(free); opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push(itemOpt(i2));
     render(`<div class="screen">${topbar('🎁 Schatz')}<div class="scroll"><p class="center">Du findest eine Truhe. Wähle eine Belohnung:</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
-    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push('trank'); if (o.k === 'shield') run.items.push('schild'); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
+    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push(o.item); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
   }
   function chooseSlot(mod) {
     const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}" ${a.unlocked ? '' : 'disabled'}><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}${a.unlocked ? '' : ` · 🔒 erst ab Level ${[1, 3, 6, 10][i]}`}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten</button></div></div></div>`);
-    app.querySelectorAll('.choice:not([disabled])').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
+    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten</button></div></div></div>`);
+    app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
     $('#skip').onclick = () => { run.items.push('trank'); saveAll(); advance(); };
   }
 

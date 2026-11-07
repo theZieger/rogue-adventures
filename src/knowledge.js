@@ -6,19 +6,17 @@ const MK = (() => {
 
   /* ---------- ETHIK: Martin Luther ---------- */
   const L_NOTES = {
-    leben: { title: 'Luthers Leben', lines: ['Am 10. November 1483 in Eisleben geboren.', 'Vor ungefähr 500 Jahren sind die Menschen sehr arm und häufig hungrig.', 'Lebt und arbeitet später in Wittenberg für die Kirche. Er wird Pfarrer in Wittenberg.', 'Er ist sehr gläubig, wie die meisten anderen Menschen auch.', 'Die Kirche ist damals sehr mächtig.'] },
+    leben: { title: 'Luthers Leben', lines: ['Am 10. November 1483 in Eisleben geboren.', 'Vor ungefähr 500 Jahren sind die Menschen sehr arm und häufig hungrig.', 'Lebt und arbeitet später in Wittenberg für die Kirche: Er ist Mönch, lehrt als Professor an der Universität und predigt in der Kirche.', 'Er ist sehr gläubig, wie die meisten anderen Menschen auch.', 'Die Kirche ist damals sehr mächtig.'] },
     ablass: { title: 'Ablassbriefe und 95 Thesen', lines: ['Die Kirche handelt mit Ablassbriefen: Man bezahlt für Briefe, um keine Strafen für schlechte Taten zu befürchten.', 'Luther protestiert dagegen.', 'Am 31.10.1517 hängt er 95 Thesen an die Tür der Schlosskirche in Wittenberg.', 'Viele Menschen sind begeistert von Luthers Ideen. Er macht sich aber auch viele Feinde.'] },
     wartburg: { title: 'Vogelfrei und Wartburg', lines: ['Luther wird für „vogelfrei“ erklärt: Er ist nicht durch das Gesetz geschützt. Man darf ihm etwas antun, ohne bestraft zu werden.', 'Er wird zum Schein auf die Wartburg bei Eisenach entführt.', 'Dort versteckt er sich 10 Monate als „Junker Jörg“.', 'Auf der Wartburg übersetzt er einen Teil der Bibel in die deutsche Sprache.'] },
-    reformation: { title: 'Reformation', lines: ['Reformation bedeutet „Erneuerung“.', 'Luther will eine Reformation (Erneuerung) der Kirche.', 'Die Kirche spaltet sich aber in die katholische Kirche (Gegner Luthers) und die evangelische Kirche (Anhänger Luthers). Das war nicht Luthers Absicht.'] },
+    reformation: { title: 'Reformation', lines: ['Reformation bedeutet „Erneuerung“.', 'Luther will eine Reformation (Erneuerung) der Kirche.', 'Der Papst und viele Bischöfe sind gegen Luthers Ideen – sie werden seine Gegner.', 'Die Kirche spaltet sich in die katholische Kirche und die evangelische Kirche (Anhänger Luthers). Das war nicht Luthers Absicht.'] },
   };
   const L_EVENTS_ORDER = [
     { id: 'o1', text: 'Luther wird in Eisleben geboren' },
-    { id: 'o2', text: 'Luther arbeitet in Wittenberg für die Kirche' },
-    { id: 'o3', text: 'Luther protestiert gegen die Ablassbriefe' },
-    { id: 'o4', text: 'Luther hängt 95 Thesen an die Schlosskirche' },
+    { id: 'o2', text: 'Luther kommt nach Wittenberg und arbeitet dort für die Kirche' },
+    { id: 'o4', text: 'Luther hängt 95 Thesen gegen den Ablasshandel an die Schlosskirche' },
     { id: 'o5', text: 'Luther wird für vogelfrei erklärt' },
-    { id: 'o6', text: 'Luther versteckt sich als Junker Jörg auf der Wartburg' },
-    { id: 'o7', text: 'Luther übersetzt einen Teil der Bibel ins Deutsche' },
+    { id: 'o6', text: 'Luther versteckt sich als Junker Jörg auf der Wartburg und übersetzt dort einen Teil der Bibel ins Deutsche' },
     { id: 'o8', text: 'Die Kirche spaltet sich in katholisch und evangelisch' },
   ];
   // mod: rf = Richtig/Falsch, mc = Wähle aus, lt = Lückentext, def = Begriffe, ord = Reihenfolge
@@ -43,7 +41,7 @@ const MK = (() => {
     { id: 'rf17', mod: 'rf', g: 'leben', q: 'Luther wurde am 10. November 1483 geboren.', a: true },
     { id: 'rf18', mod: 'rf', g: 'ablass', q: 'Luther schlug seine Thesen am 31.10.1517 an.', a: true },
     { id: 'rf19', mod: 'rf', g: 'wartburg', q: 'Die Wartburg liegt bei Eisenach.', a: true },
-    { id: 'rf20', mod: 'rf', g: 'leben', q: 'Luther wurde Pfarrer in Wittenberg.', a: true },
+    { id: 'rf20', mod: 'rf', g: 'leben', q: 'Luther lehrte in Wittenberg an der Universität und predigte in der Kirche.', a: true },
     { id: 'rf21', mod: 'rf', g: 'reformation', q: 'Die Spaltung der Kirche war Luthers Absicht.', a: false, why: 'Das war nicht Luthers Absicht.' },
     { id: 'rf22', mod: 'rf', g: 'leben', q: 'Vor 500 Jahren waren die meisten Menschen reich und satt.', a: false, why: 'Die Menschen waren sehr arm und häufig hungrig.' },
     { id: 'rf23', mod: 'rf', g: 'ablass', q: 'Luther hatte nur Freunde und keine Feinde.', a: false, why: 'Viele waren begeistert, aber er machte sich auch viele Feinde.' },
@@ -65,7 +63,7 @@ const MK = (() => {
     { id: 'mc15', mod: 'mc', g: 'wartburg', q: 'Wo liegt die Wartburg?', o: ['Bei Eisenach', 'Bei Wittenberg', 'Bei Eisleben'], a: 0 },
     { id: 'mc16', mod: 'mc', g: 'leben', q: 'Wie ging es den Menschen vor ungefähr 500 Jahren?', o: ['Sie waren sehr arm und häufig hungrig', 'Sie waren reich', 'Sie hatten alle ein Auto'], a: 0 },
     { id: 'mc17', mod: 'mc', g: 'reformation', q: 'Wer gehört zur evangelischen Kirche?', o: ['Die Anhänger Luthers', 'Die Gegner Luthers', 'Nur der Papst'], a: 0 },
-    { id: 'mc18', mod: 'mc', g: 'leben', q: 'Welchen Beruf hatte Luther in Wittenberg?', o: ['Pfarrer', 'Bauer', 'Ritter'], a: 0 },
+    { id: 'mc18', mod: 'mc', g: 'leben', q: 'Was machte Luther in Wittenberg?', o: ['Er lehrte an der Universität und predigte', 'Er war Bauer auf einem Acker', 'Er war Ritter auf einer Burg'], a: 0 },
     // Lückentext
     { id: 'lt1', mod: 'lt', g: 'leben', q: 'Martin Luther wurde ___ in Eisleben geboren.', o: ['1483', '1517', '1500'], a: 0 },
     { id: 'lt2', mod: 'lt', g: 'leben', q: 'Luther lebte und arbeitete später in ___ für die Kirche.', o: ['Wittenberg', 'Eisleben', 'Berlin'], a: 0 },
@@ -82,7 +80,7 @@ const MK = (() => {
     { id: 'lt13', mod: 'lt', g: 'leben', q: 'Am 10. ___ 1483 wird Martin Luther in Eisleben geboren.', o: ['November', 'Mai', 'Januar'], a: 0 },
     { id: 'lt14', mod: 'lt', g: 'wartburg', q: 'Luther versteckt sich auf der Wartburg bei ___.', o: ['Eisenach', 'Eisleben', 'Wittenberg'], a: 0 },
     { id: 'lt15', mod: 'lt', g: 'ablass', q: 'Am 31.10.___ schlägt Luther seine 95 Thesen an.', o: ['1517', '1483', '1500'], a: 0 },
-    { id: 'lt16', mod: 'lt', g: 'reformation', q: 'Die katholische Kirche sind die ___ Luthers.', o: ['Gegner', 'Anhänger', 'Freunde'], a: 0 },
+    { id: 'lt16', mod: 'lt', g: 'reformation', q: 'Der Papst und viele Bischöfe wurden Luthers ___.', o: ['Gegner', 'Anhänger', 'Schüler'], a: 0 },
     // Begriffe
     { id: 'def1', mod: 'def', g: 'reformation', q: 'Was bedeutet „Reformation“?', o: ['Erneuerung', 'Entführung', 'Bestrafung'], a: 0 },
     { id: 'def2', mod: 'def', g: 'wartburg', q: 'Was bedeutet „vogelfrei“?', o: ['Nicht durch das Gesetz geschützt – man durfte ihm etwas antun, ohne bestraft zu werden', 'Frei wie ein Vogel reisen', 'Von der Kirche belohnt'], a: 0 },
@@ -114,7 +112,7 @@ const MK = (() => {
     1: {
       normal: [
         { name: 'Zweifelgeist', type: 'normal', shape: 'ghost', hp: 26, atk: 3 },
-        { name: 'Vergesslgeist', type: 'normal', shape: 'ghost', hp: 24, atk: 4 },
+        { name: 'Vergessgeist', type: 'normal', shape: 'ghost', hp: 24, atk: 4 },
         { name: 'Verwechsler', type: 'normal', shape: 'bat', hp: 28, atk: 4 },
         { name: 'Schwindelgeist', type: 'normal', shape: 'jelly', hp: 30, atk: 3 },
       ],
@@ -126,6 +124,8 @@ const MK = (() => {
     { title: 'Der Mönch', text: 'Ein Mönch fragt dich: „Weißt du, was Luther wirklich wollte?“ Antworte richtig und er schenkt dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Kirchentür', text: 'Du stehst vor einer großen Kirchentür. Ein Zettel hängt daran: eine Frage!', opts: [{ label: 'Frage lesen', task: 'any', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Nicht lesen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Der Bote', text: 'Ein Bote bringt dir eine Nachricht. Wenn du sie richtig verstehst, schenkt er dir einen Schild.', opts: [{ label: 'Nachricht lesen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
+    { title: 'Die Bibliothek', text: 'In einer alten Bibliothek liegt eine Lupe. Der Bibliothekar fragt dich etwas – weißt du es?', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Kapelle', text: 'In einer kleinen Kapelle ist es still. Eine Nonne stellt dir eine Frage und segnet dich.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Leise weitergehen', effect: {} }] },
     { title: 'Das Gasthaus', text: 'Im Gasthaus kannst du dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
@@ -133,8 +133,8 @@ const MK = (() => {
   const PARTS = [
     { id: 'wurzeln', name: 'Wurzeln', ground: 'unten', desc: 'Wachsen aus der Saatkartoffel und holen Wasser aus dem Boden.' },
     { id: 'mutterknolle', name: 'Saatkartoffel', ground: 'unten', desc: 'Die alte Kartoffel, die im Frühjahr gesetzt wird. Sie schrumpft später.' },
-    { id: 'auslaeufer', name: 'Triebe', ground: 'unten', desc: 'Wachsen aus der Saatkartoffel. An ihrem Ende bilden sich die neuen Knollen.' },
-    { id: 'tochterknollen', name: 'Knollen', ground: 'unten', desc: 'Die neuen Kartoffeln am Ende der Triebe. Sie werden im Herbst geerntet.' },
+    { id: 'auslaeufer', name: 'Ausläufer', ground: 'unten', desc: 'Wachsen unter der Erde aus der Saatkartoffel zur Seite. An ihrem Ende bilden sich die neuen Knollen.' },
+    { id: 'tochterknollen', name: 'Knollen', ground: 'unten', desc: 'Die neuen Kartoffeln am Ende der Ausläufer. Sie werden im Herbst geerntet.' },
     { id: 'staengel', name: 'Stängel', ground: 'oben', desc: 'Trägt Blätter, Blüten und Beeren.' },
     { id: 'blaetter', name: 'Blätter', ground: 'oben', desc: 'Ohne Blätter kann die Pflanze nicht überleben.' },
     { id: 'bluete', name: 'Blüten', ground: 'oben', desc: 'Im Sommer blüht die Pflanze.' },
@@ -142,9 +142,9 @@ const MK = (() => {
   ];
   const GROW = [
     { id: 'g1', text: 'Im Frühjahr wird eine keimende Saatkartoffel in die Erde gesetzt' },
-    { id: 'g2', text: 'Wenige Wochen später wachsen kleine Triebe aus der Kartoffel' },
-    { id: 'g3', text: 'Triebe durchbrechen die Erde und werden zur Kartoffelpflanze' },
-    { id: 'g4', text: 'Die alte Kartoffel schrumpft, am Ende der Triebe bilden sich kleine Knollen' },
+    { id: 'g2', text: 'Wenige Wochen später wachsen kleine Triebe (Keime) aus der Kartoffel' },
+    { id: 'g3', text: 'Die Triebe durchbrechen die Erde und werden zur Kartoffelpflanze' },
+    { id: 'g4', text: 'Unter der Erde wachsen Ausläufer, an ihrem Ende bilden sich kleine Knollen – die alte Kartoffel schrumpft' },
     { id: 'g5', text: 'Im Sommer blüht die Pflanze, aus den Blüten werden grüne, giftige Beeren' },
     { id: 'g6', text: 'Im Herbst verdorrt die Pflanze, die Knollen sind reif und werden geerntet' },
   ];
@@ -159,58 +159,58 @@ const MK = (() => {
   ];
   const K_NOTES = {
     teile: { title: 'Die Teile der Kartoffelpflanze', lines: PARTS.map((p) => `${p.name}: ${p.desc}`) },
-    boden: { title: 'Über und unter der Erde', lines: ['Unter der Erde: Wurzeln, Saatkartoffel, Triebe, Knollen.', 'Über der Erde: Stängel, Blätter, Blüten, Beeren.'] },
+    boden: { title: 'Über und unter der Erde', lines: ['Unter der Erde: Wurzeln, Saatkartoffel, Ausläufer, Knollen.', 'Über der Erde: Stängel, Blätter, Blüten, Beeren.'] },
     wachstum: { title: 'Wie die Kartoffel wächst', lines: GROW.map((g, i) => `${i + 1}. ${g.text}.`) },
     herkunft: { title: 'Woher kommt die Kartoffel?', lines: ['Die Kartoffel kommt aus Südamerika, aus Peru.', 'Die Spanier lernten sie im 16. Jahrhundert bei den Inkas kennen, der Urbevölkerung der Anden.', 'Für die Inkas war die Kartoffel ein wichtiges Nahrungsmittel.', 'Die Spanier nahmen die Kartoffeln kistenweise an Bord ihrer Schiffe mit nach Europa.', 'Nach anfänglichen Schwierigkeiten wurde die Kartoffelpflanze in ganz Europa angebaut.', 'Heute ist die Kartoffel neben dem Brot ein wichtiges Grundnahrungsmittel.'] },
     ernte: { title: 'Die Kartoffelernte früher und heute', lines: ['Früher: mit großen Gabeln aus der Erde gehoben, kurz auf dem Feld getrocknet, dann aufgelesen und in Körbe und Säcke gefüllt.', 'Das Auflesen in gebückter Haltung war mühsam. Arme Leute und Kinder halfen und bekamen als Lohn Kartoffeln.', 'Heute: Maschinen ernten. Kartoffelroder fahren über das Feld und befreien die Kartoffeln von der anhaftenden Erde.', 'Eine Sortiermaschine sortiert sie der Größe nach in Säcke. Nur unförmige und grüne Kartoffeln werden von Hand aussortiert.'] },
-    kaefer: { title: 'Der Kartoffelkäfer', lines: ['Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', 'Ein Weibchen legt mehr als 2 500 Eier ab, daraus werden gefräßige Larven.', 'Dreißig Larven können in einer Woche eine Pflanze kahl fressen.', 'Ohne Blätter kann die Pflanze nicht überleben – es wachsen kaum neue Kartoffeln.', 'Heute bekämpft man die Käfer mit Schädlingsvernichtungsmitteln, früher sammelte man sie mit der Hand ein.'] },
-    woerter: { title: 'Kartoffelwörter', lines: ['die Bratkartoffel, die Salzkartoffel, die Saatkartoffel, die Frühkartoffel, die Pellkartoffel', 'die Kartoffelchips, die Kartoffelsuppe, die Kartoffelschale, der Kartoffelsalat, der Kartoffelbrei, das Kartoffelmehl'] },
-    maerchen: { title: 'Der Bauer und der Teufel (Gebrüder Grimm)', lines: ['Der Bauer ist klug, verschmitzt, listig, vergnügt und klein (ein Bäuerlein).', 'Der Teufel ist klein, schwarz, feurig und am Ende wütend.', 'Der Teufel sitzt auf einem Schatz und will zwei Jahre lang die Hälfte der Ernte.', 'Erstes Jahr: Teufel bekommt, was über der Erde ist – der Bauer pflanzt Kartoffeln.', 'Zweites Jahr: Teufel bekommt, was unter der Erde ist – der Bauer sät Weizen.', 'Der Teufel fährt wütend in eine Felsenschlucht, der Bauer holt den Schatz.'] },
+    kaefer: { title: 'Der Kartoffelkäfer', lines: ['Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', 'Ein Weibchen legt mehrere hundert Eier auf die Blätter, daraus schlüpfen gefräßige Larven.', 'Dreißig Larven können in einer Woche eine Pflanze kahl fressen.', 'Ohne Blätter kann die Pflanze nicht überleben – es wachsen kaum neue Kartoffeln.', 'Heute bekämpft man die Käfer mit Schädlingsvernichtungsmitteln, früher sammelte man sie mit der Hand ein.'] },
+    woerter: { title: 'Kartoffelwörter', lines: ['die Bratkartoffel, die Salzkartoffel, die Saatkartoffel, die Frühkartoffel, die Pellkartoffel', 'der Kartoffelchip, die Kartoffelsuppe, die Kartoffelschale, der Kartoffelsalat, der Kartoffelbrei, das Kartoffelmehl'] },
+    maerchen: { title: 'Der Bauer und der Teufel (nach den Brüdern Grimm)', lines: ['Die Geschichte ist nach einem Märchen der Brüder Grimm erzählt. Bei den Grimms sät der Bauer im ersten Jahr Rüben – bei uns pflanzt er Kartoffeln.', 'Der Bauer ist klug, verschmitzt, listig, vergnügt und klein (ein Bäuerlein).', 'Der Teufel ist klein, schwarz, feurig und am Ende wütend.', 'Der Teufel sitzt auf einem Schatz und will zwei Jahre lang die Hälfte der Ernte.', 'Erstes Jahr: Teufel bekommt, was über der Erde ist – der Bauer pflanzt Kartoffeln.', 'Zweites Jahr: Teufel bekommt, was unter der Erde ist – der Bauer sät Weizen.', 'Der Teufel fährt wütend in eine Felsenschlucht, der Bauer holt den Schatz.'] },
   };
   const K_POOL = [];
   PARTS.forEach((p) => { K_POOL.push({ id: 'p_' + p.id, mod: 'parts', g: 'teile', part: p.id, q: 'Wie heißt der leuchtende Teil?', a: p.name }); K_POOL.push({ id: 'gr_' + p.id, mod: 'ground', g: 'boden', q: `Wo wächst: ${p.name}?`, o: ['Über der Erde', 'Unter der Erde'], a: p.ground === 'oben' ? 0 : 1 }); });
   K_POOL.push(
     { id: 'kmc1', mod: 'ground', g: 'teile', q: 'Welchen Teil der Kartoffelpflanze essen wir?', o: ['Die Knollen', 'Die Beeren', 'Die Blätter'], a: 0 },
-    { id: 'kmc2', mod: 'ground', g: 'teile', q: 'Woran wachsen die neuen Knollen?', o: ['Am Ende der Triebe', 'An den Blättern', 'An der Blüte'], a: 0 },
+    { id: 'kmc2', mod: 'ground', g: 'teile', q: 'Woran wachsen die neuen Knollen?', o: ['Am Ende der Ausläufer', 'An den Blättern', 'An der Blüte'], a: 0 },
     { id: 'kmc3', mod: 'ground', g: 'teile', q: 'Was wird aus den Blüten?', o: ['Grüne, giftige Beeren', 'Neue Knollen', 'Wurzeln'], a: 0 },
     { id: 'kmc4', mod: 'ground', g: 'teile', q: 'Was wird im Frühjahr in die Erde gesetzt?', o: ['Eine keimende Saatkartoffel', 'Eine Beere', 'Ein Blatt'], a: 0 },
     { id: 'kmc5', mod: 'ground', g: 'wachstum', q: 'Was passiert mit der alten Kartoffel, wenn die Pflanze wächst?', o: ['Sie schrumpft', 'Sie wird größer', 'Sie blüht'], a: 0 },
-    { id: 'kmc6', mod: 'ground', g: 'wachstum', q: 'Wann werden die Knollen geerntet?', o: ['Im Herbst', 'Im Frühjahr', 'Im Sommer'], a: 0 },
+    { id: 'kmc6', mod: 'ground', g: 'wachstum', q: 'Wann werden die Knollen geerntet?', o: ['Im Herbst', 'Im Frühjahr', 'Im Winter'], a: 0 },
     // Lückentext: Herkunft
     { id: 'lk1', mod: 'ltk', g: 'herkunft', q: 'Eigentlich kommt die Kartoffel aus ___, aus Peru.', o: ['Südamerika', 'Europa', 'Afrika'], a: 0 },
     { id: 'lk2', mod: 'ltk', g: 'herkunft', q: 'Eigentlich kommt die Kartoffel aus Südamerika, aus ___.', o: ['Peru', 'Spanien', 'Italien'], a: 0 },
-    { id: 'lk3', mod: 'ltk', g: 'herkunft', q: 'Als die ___ im 16. Jahrhundert in Amerika an Land gingen, lernten sie die Kartoffel kennen.', o: ['Spanier', 'Deutschen', 'Inkas'], a: 0 },
+    { id: 'lk3', mod: 'ltk', g: 'herkunft', q: 'Als die ___ im 16. Jahrhundert nach Südamerika zu den Inkas kamen, lernten sie die Kartoffel kennen.', o: ['Spanier', 'Deutschen', 'Inkas'], a: 0 },
     { id: 'lk4', mod: 'ltk', g: 'herkunft', q: 'Sie lernten die Kartoffel bei den ___ kennen, der Urbevölkerung der Anden.', o: ['Inkas', 'Spaniern', 'Bauern'], a: 0 },
     { id: 'lk5', mod: 'ltk', g: 'herkunft', q: 'Die Inkas waren die ___ der Anden.', o: ['Urbevölkerung', 'Könige', 'Seefahrer'], a: 0 },
     { id: 'lk6', mod: 'ltk', g: 'herkunft', q: 'Für die Inkas war die Kartoffel ein wichtiges ___.', o: ['Nahrungsmittel', 'Geschenk', 'Spielzeug'], a: 0 },
     { id: 'lk7', mod: 'ltk', g: 'herkunft', q: 'Die Spanier nahmen die Kartoffeln kistenweise an Bord ihrer ___ mit nach Hause.', o: ['Schiffe', 'Wagen', 'Flugzeuge'], a: 0 },
-    { id: 'lk8', mod: 'ltk', g: 'herkunft', q: 'Die Kartoffelpflanze wurde in ganz ___ angebaut.', o: ['Europa', 'Peru', 'Amerika'], a: 0 },
+    { id: 'lk8', mod: 'ltk', g: 'herkunft', q: 'Nach anfänglichen ___ wurde die Kartoffelpflanze in ganz Europa angebaut.', o: ['Schwierigkeiten', 'Festen', 'Geschenken'], a: 0 },
     { id: 'lk9', mod: 'ltk', g: 'herkunft', q: 'Mittlerweile ist die Kartoffel neben dem Brot zu einem wichtigen ___ geworden.', o: ['Grundnahrungsmittel', 'Haustier', 'Gewürz'], a: 0 },
-    { id: 'lk10', mod: 'ltk', g: 'herkunft', q: 'Die Spanier kamen im ___ Jahrhundert nach Amerika.', o: ['16.', '20.', '10.'], a: 0 },
+    { id: 'lk10', mod: 'ltk', g: 'herkunft', q: 'Die Spanier lernten die Kartoffel im ___ Jahrhundert bei den Inkas in Peru kennen.', o: ['16.', '20.', '10.'], a: 0 },
     // Lückentext: Ernte
     { id: 'le1', mod: 'ltk', g: 'ernte', q: 'Früher mussten die Kartoffeln mit großen ___ aus der Erde herausgehoben werden.', o: ['Gabeln', 'Maschinen', 'Löffeln'], a: 0 },
     { id: 'le2', mod: 'ltk', g: 'ernte', q: 'Man ließ sie kurze Zeit auf den Feldern ___.', o: ['trocknen', 'wachsen', 'schlafen'], a: 0 },
-    { id: 'le3', mod: 'ltk', g: 'ernte', q: 'Dann wurden sie aufgelesen und in Körbe und ___ gefüllt.', o: ['Säcke', 'Flaschen', 'Kisten'], a: 0 },
+    { id: 'le3', mod: 'ltk', g: 'ernte', q: 'Dann wurden sie aufgelesen und in Körbe und ___ gefüllt.', o: ['Säcke', 'Flaschen', 'Tassen'], a: 0 },
     { id: 'le4', mod: 'ltk', g: 'ernte', q: 'Das Auflesen in ___ Haltung war eine mühsame Arbeit.', o: ['gebückter', 'aufrechter', 'sitzender'], a: 0 },
     { id: 'le5', mod: 'ltk', g: 'ernte', q: 'Arme Leute und auch ___ halfen den Bauern beim Auflesen.', o: ['Kinder', 'Könige', 'Maschinen'], a: 0 },
     { id: 'le6', mod: 'ltk', g: 'ernte', q: 'Als Lohn bekamen sie ___.', o: ['Kartoffeln', 'Geld', 'Brot'], a: 0 },
     { id: 'le7', mod: 'ltk', g: 'ernte', q: 'Heute werden die Kartoffeln mit ___ geerntet.', o: ['Maschinen', 'Gabeln', 'Händen'], a: 0 },
-    { id: 'le8', mod: 'ltk', g: 'ernte', q: 'Große ___ fahren über das Feld und ernten die Kartoffeln.', o: ['Kartoffelroder', 'Traktoren', 'Pflüge'], a: 0 },
+    { id: 'le8', mod: 'ltk', g: 'ernte', q: 'Große ___ fahren über das Feld und ernten die Kartoffeln.', o: ['Kartoffelroder', 'Busse', 'Rasenmäher'], a: 0 },
     { id: 'le9', mod: 'ltk', g: 'ernte', q: 'Sie befreien die Kartoffeln gleichzeitig von der anhaftenden ___.', o: ['Erde', 'Schale', 'Farbe'], a: 0 },
     { id: 'le10', mod: 'ltk', g: 'ernte', q: 'Mit Hilfe einer ___ werden sie der Größe nach sortiert.', o: ['Sortiermaschine', 'Waschmaschine', 'Waage'], a: 0 },
     { id: 'le11', mod: 'ltk', g: 'ernte', q: 'Sie werden der ___ nach sortiert, in Säcke gefüllt.', o: ['Größe', 'Farbe', 'Form'], a: 0 },
     { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Nur die Aussortierung unförmiger und ___ Kartoffeln geschieht noch von Hand.', o: ['grüner', 'kleiner', 'dicker'], a: 0 },
     // Wissen: Käfer + Herkunft + Ernte (rf / mc)
     { id: 'kw1', mod: 'wissen', g: 'kaefer', q: 'Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', rf: true, a: true },
-    { id: 'kw2', mod: 'wissen', g: 'kaefer', q: 'Wie viele Eier legt ein Kartoffelkäferweibchen?', o: ['Mehr als 2 500', 'Etwa 25', 'Genau 100'], a: 0 },
-    { id: 'kw3', mod: 'wissen', g: 'kaefer', q: 'Was schlüpft aus den Eiern des Kartoffelkäfers?', o: ['Gefräßige Larven', 'Kleine Raupen', 'Fliegen'], a: 0 },
+    { id: 'kw2', mod: 'wissen', g: 'kaefer', q: 'Wie viele Eier legt ein Kartoffelkäferweibchen?', o: ['Mehrere hundert', 'Nur eins', 'Etwa drei'], a: 0 },
+    { id: 'kw3', mod: 'wissen', g: 'kaefer', q: 'Was schlüpft aus den Eiern des Kartoffelkäfers?', o: ['Gefräßige Larven', 'Kleine Schnecken', 'Fliegen'], a: 0 },
     { id: 'kw4', mod: 'wissen', g: 'kaefer', q: 'Wie viele Larven können in einer Woche eine Pflanze kahl fressen?', o: ['Dreißig', 'Drei', 'Dreihundert'], a: 0 },
     { id: 'kw5', mod: 'wissen', g: 'kaefer', q: 'Ohne Blätter kann die Kartoffelpflanze trotzdem gut überleben.', rf: true, a: false, why: 'Ohne Blätter kann sie nicht überleben.' },
     { id: 'kw6', mod: 'wissen', g: 'kaefer', q: 'Was passiert bei einer abgefressenen Pflanze unter der Erde?', o: ['Es wachsen nur wenige oder keine neuen Kartoffeln', 'Es wachsen besonders viele Kartoffeln', 'Nichts verändert sich'], a: 0 },
-    { id: 'kw7', mod: 'wissen', g: 'kaefer', q: 'Wie bekämpft man den Kartoffelkäfer heute?', o: ['Mit Schädlingsvernichtungsmitteln', 'Mit der Hand', 'Mit Wasser'], a: 0 },
+    { id: 'kw7', mod: 'wissen', g: 'kaefer', q: 'Wie bekämpft man den Kartoffelkäfer heute?', o: ['Mit Schädlingsvernichtungsmitteln', 'Mit Zucker', 'Mit lauter Musik'], a: 0 },
     { id: 'kw8', mod: 'wissen', g: 'kaefer', q: 'Früher sammelte man die Käfer mit der Hand ein.', rf: true, a: true },
     { id: 'kw9', mod: 'wissen', g: 'kaefer', q: 'Wo legt der Kartoffelkäfer seine Eier ab?', o: ['Auf dem Blatt', 'In der Erde', 'Auf der Knolle'], a: 0 },
-    { id: 'kw10', mod: 'wissen', g: 'herkunft', q: 'Die Kartoffel ist eine Frucht aus Europa.', rf: true, a: false, why: 'Sie kommt aus Südamerika, aus Peru.' },
+    { id: 'kw10', mod: 'wissen', g: 'herkunft', q: 'Die Kartoffel ist eine Pflanze aus Europa.', rf: true, a: false, why: 'Sie kommt aus Südamerika, aus Peru.' },
     { id: 'kw11', mod: 'wissen', g: 'herkunft', q: 'Wer brachte die Kartoffel nach Europa?', o: ['Die Spanier', 'Die Inkas', 'Die Deutschen'], a: 0 },
     { id: 'kw12', mod: 'wissen', g: 'herkunft', q: 'Wer waren die Inkas?', o: ['Die Urbevölkerung der Anden', 'Spanische Seefahrer', 'Bauern aus Europa'], a: 0 },
     { id: 'kw13', mod: 'wissen', g: 'herkunft', q: 'Die Kartoffel wuchs in Europa sofort ohne Probleme.', rf: true, a: false, why: 'Es gab anfängliche Schwierigkeiten.' },
@@ -224,7 +224,7 @@ const MK = (() => {
     { id: 'wo3', mod: 'woerter', g: 'woerter', q: 'Saat- + Kartoffel = ?', o: ['die Saatkartoffel', 'der Saatkartoffel', 'die Kartoffelsaat'], a: 0 },
     { id: 'wo4', mod: 'woerter', g: 'woerter', q: 'Früh- + Kartoffel = ?', o: ['die Frühkartoffel', 'das Frühkartoffel', 'die Kartoffelfrüh'], a: 0 },
     { id: 'wo5', mod: 'woerter', g: 'woerter', q: 'Pell- + Kartoffel = ?', o: ['die Pellkartoffel', 'der Pellkartoffel', 'die Kartoffelpell'], a: 0 },
-    { id: 'wo6', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -chips = ?', o: ['die Kartoffelchips', 'der Kartoffelchips', 'die Chipskartoffel'], a: 0 },
+    { id: 'wo6', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -chip = ?', o: ['der Kartoffelchip', 'die Kartoffelchip', 'die Chipkartoffel'], a: 0 },
     { id: 'wo7', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -suppe = ?', o: ['die Kartoffelsuppe', 'der Kartoffelsuppe', 'das Kartoffelsuppe'], a: 0 },
     { id: 'wo8', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -schale = ?', o: ['die Kartoffelschale', 'das Kartoffelschale', 'der Kartoffelschale'], a: 0 },
     { id: 'wo9', mod: 'woerter', g: 'woerter', q: 'Kartoffel + -salat = ?', o: ['der Kartoffelsalat', 'die Kartoffelsalat', 'das Kartoffelsalat'], a: 0 },
@@ -249,7 +249,7 @@ const MK = (() => {
     { id: 'ma12', mod: 'maerchen', g: 'maerchen', q: 'Am Ende bekommt der Teufel den Schatz.', rf: true, a: false, why: 'Der Bauer holt sich den Schatz.' },
     { id: 'ma13', mod: 'maerchen', g: 'maerchen', q: 'Was bekommt der Teufel im zweiten Jahr?', o: ['Nur die Stoppeln', 'Die vollen Halme', 'Die Kartoffeln'], a: 0 },
     { id: 'ma14', mod: 'maerchen', g: 'maerchen', q: 'Wohin fährt der Teufel am Ende?', o: ['In eine Felsenschlucht', 'In die Kirche', 'Nach Peru'], a: 0 },
-    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Wer hat das Märchen aufgeschrieben?', o: ['Die Gebrüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
+    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Wer hat das Märchen vom Bauern und dem Teufel aufgeschrieben?', o: ['Die Brüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
   );
   const K_MODULES = {
     parts: { name: 'Teile benennen', icon: '🥔', maxTier: 2, worldCap: [2, 2], dmg: 12 },
@@ -261,14 +261,14 @@ const MK = (() => {
     maerchen: { name: 'Bauer und Teufel', icon: '😈', maxTier: 1, worldCap: [1, 1], dmg: 14 },
   };
   const K_TUT = {
-    'parts:1': { title: 'Teile benennen', steps: ['Ein Teil der Pflanze leuchtet gelb.', 'Unter der Erde: Wurzeln, Saatkartoffel, Triebe, Knollen. Über der Erde: Stängel, Blätter, Blüten, Beeren.', 'Tippe auf den richtigen Namen.'] },
+    'parts:1': { title: 'Teile benennen', steps: ['Ein Teil der Pflanze leuchtet gelb.', 'Unter der Erde: Wurzeln, Saatkartoffel, Ausläufer, Knollen. Über der Erde: Stängel, Blätter, Blüten, Beeren.', 'Tippe auf den richtigen Namen.'] },
     'parts:2': { title: 'Teile finden', steps: ['Jetzt andersherum: Oben steht ein Name.', 'Tippe direkt auf diesen Teil in der Pflanze.', 'Schau genau: Was ist über, was unter der Erde?'] },
-    'ground:1': { title: 'Oben oder unten', steps: ['Die Kartoffelpflanze wächst halb unter, halb über der Erde.', 'Unten: Wurzeln, Saatkartoffel, Triebe und Knollen.', 'Oben: Stängel, Blätter, Blüten und Beeren.'] },
+    'ground:1': { title: 'Oben oder unten', steps: ['Die Kartoffelpflanze wächst halb unter, halb über der Erde.', 'Unten: Wurzeln, Saatkartoffel, Ausläufer und Knollen.', 'Oben: Stängel, Blätter, Blüten und Beeren.'] },
     'grow:1': { title: 'Wachstum ordnen', steps: ['Die Schritte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Es beginnt im Frühjahr mit der Saatkartoffel.', 'Es endet im Herbst mit der Ernte.'] },
     'ltk:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Die Sätze stammen aus deinen Arbeitsblättern „Woher kommt die Kartoffel?“ und „Die Kartoffelernte früher und heute“.', 'Tippe auf das Wort, das passt.'] },
     'wissen:1': { title: 'Kartoffelwissen', steps: ['Fragen zum Kartoffelkäfer, zur Herkunft und zur Ernte.', 'Manchmal musst du „Richtig“ oder „Falsch“ wählen, manchmal eine von drei Antworten.', 'Lies genau – oft ist nur ein kleines Wort vertauscht.'] },
     'woerter:1': { title: 'Kartoffelwörter', steps: ['Zwei Wortteile ergeben ein zusammengesetztes Wort: Brat- + Kartoffel = Bratkartoffel.', 'Der Artikel richtet sich nach dem letzten Teil: die Kartoffel → die Bratkartoffel, der Salat → der Kartoffelsalat.', 'Tippe auf das richtige Wort mit Artikel.'] },
-    'maerchen:1': { title: 'Der Bauer und der Teufel', steps: ['Fragen zum Märchen der Gebrüder Grimm.', 'Welche Adjektive passen zum Bauern (klug, listig, verschmitzt, vergnügt) und welche zum Teufel (schwarz, wütend)?', 'Und: Was passiert im ersten Jahr, was im zweiten?'] },
+    'maerchen:1': { title: 'Der Bauer und der Teufel', steps: ['Fragen zur Geschichte – erzählt nach einem Märchen der Brüder Grimm.', 'Welche Adjektive passen zum Bauern (klug, listig, verschmitzt, vergnügt) und welche zum Teufel (schwarz, wütend)?', 'Und: Was passiert im ersten Jahr, was im zweiten?'] },
     'story:1': { title: 'Märchen ordnen', steps: ['Die Teile der Geschichte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an.', 'Erst Kartoffeln, dann Weizen, zum Schluss der Schatz.'] },
   };
   const K_STARTERS = [
@@ -303,6 +303,8 @@ const MK = (() => {
     { title: 'Der Bauer', text: 'Ein Bauer fragt dich etwas über seine Kartoffeln. Wenn du es weißt, schenkt er dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Das Kartoffelfeld', text: 'Du findest ein Feld voller Pflanzen. Wer sich auskennt, erntet eine Belohnung.', opts: [{ label: 'Ernten', task: 'any', win: { xp: 20, item: 'beere' }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Die Gärtnerin', text: 'Eine Gärtnerin zeigt dir ihre Pflanze und stellt eine Frage.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
+    { title: 'Die Kartoffelküche', text: 'Es duftet nach Kartoffelpuffern! Die Köchin gibt dir einen Kraftkeks, wenn du ihre Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Gartenzwerg', text: 'Ein Gartenzwerg hält eine Lupe. „Weißt du etwas über Kartoffeln? Dann leihe ich sie dir.“', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Regen', text: 'Es regnet. Die Pflanzen freuen sich – und du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
   ];

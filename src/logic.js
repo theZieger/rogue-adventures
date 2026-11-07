@@ -27,15 +27,17 @@ const MQ = (() => {
   }
   function genSub(t) {
     let a, b;
-    if (t === 1) { a = rnd(5, 19); b = rnd(1, Math.min(9, a - 1)); return task(`${a} − ${b} = ?`, [a - b]); }
+    // tier 1: no ten-crossing (Einer reichen), b ≥ 2, result ≥ 2
+    if (t === 1) { do { a = rnd(5, 19); b = rnd(2, 9); } while (a % 10 < b || a - b < 2); return task(`${a} − ${b} = ?`, [a - b]); }
     if (t === 2) { do { a = rnd(21, 99); b = rnd(2, 9); } while (a % 10 >= b || a % 10 === 0); return task(`${a} − ${b} = ?`, [a - b]); }
     if (t === 3) { do { a = rnd(30, 99); b = rnd(11, a - 1); } while (a % 10 >= b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
     if (t === 4) { do { a = rnd(110, 999); b = rnd(5, 99); } while (a % 100 >= b % 100 && a % 10 >= b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
     do { a = rnd(20, 99); b = rnd(2, 19); } while (a % 10 >= b % 10); return task(`${a} − ? = ${a - b}`, [b], { reverse: true });
   }
   function genMul(t) {
-    if (t === 1) { const a = rnd(1, 5), b = rnd(1, 10); return task(`${a} · ${b} = ?`, [a * b]); }
-    if (t === 2) { const a = rnd(2, 10), b = rnd(2, 10); return task(`${a} · ${b} = ?`, [a * b]); }
+    if (t === 1) { const a = rnd(2, 5), b = rnd(2, 10); return task(`${a} · ${b} = ?`, [a * b]); }
+    // tier 2 is still world 1 (results must stay under 100), so 10 · 10 is excluded
+    if (t === 2) { let a, b; do { a = rnd(2, 10); b = rnd(2, 10); } while (a * b >= 100); return task(`${a} · ${b} = ?`, [a * b]); }
     const a = rnd(2, 10), b = rnd(2, 10); return task(`? · ${a} = ${a * b}`, [b], { reverse: true });
   }
 
@@ -63,38 +65,43 @@ const MQ = (() => {
     (d) => ({ text: `Meine Quersumme ist ${d.h + d.z + d.e}.`, test: (x) => x.h + x.z + x.e === d.h + d.z + d.e }),
     (d) => ({ text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`, test: (x) => x.e % 2 === d.e % 2 }),
   ];
+  const isRel = (c) => c.text.includes('-mal') || c.text.includes('größer') || c.text.includes('kleiner');
+  function countMatches(clues, lo, hi) {
+    let n = 0;
+    for (let x = lo; x <= hi; x++) { const dx = digits(x); if (clues.every((c) => c.test(dx))) { n++; if (n > 1) break; } }
+    return n;
+  }
   function genRiddle(t) {
     const three = t >= 2;
     const lo = three ? 100 : 10, hi = three ? 999 : 99;
     const types = three ? CLUE_TYPES_3 : CLUE_TYPES_2;
-    for (let attempt = 0; attempt < 200; attempt++) {
+    const maxClues = t === 3 ? 4 : 3, minRel = t === 3 ? 2 : 1;
+    for (let attempt = 0; attempt < 300; attempt++) {
       const n = rnd(lo, hi); const d = digits(n);
       let clues = types.map((f) => f(d)).filter(Boolean);
-      if (t === 1) clues = clues.filter((c) => !c.text.startsWith('Ich bin')); // keep tier 1 simpler? allow all
+      if (t === 1) clues = clues.filter((c) => !c.text.startsWith('Ich bin'));
       clues = shuffle(clues);
       // prefer relation clues first (more interesting)
-      let rel = clues.filter((c) => c.text.includes('-mal') || c.text.includes('größer') || c.text.includes('kleiner'));
+      let rel = clues.filter(isRel);
       if (t === 1) rel = rel.slice(0, 1);
-      const others = clues.filter((c) => !rel.includes(c));
-      const ordered = rel.concat(others);
-      const chosen = [];
-      for (const c of ordered) {
-        chosen.push(c);
-        const matches = [];
-        for (let x = lo; x <= hi; x++) { const dx = digits(x); if (chosen.every((cc) => cc.test(dx))) { matches.push(x); if (matches.length > 1) break; } }
-        if (matches.length === 1) {
-          const maxClues = t === 3 ? 4 : 3;
-          if (chosen.length >= 2 && chosen.length <= maxClues && (t < 3 || rel.length >= 2)) {
-            return task(chosen.map((c) => c.text).join('\n'), [n], { riddle: true, digits: three ? 3 : 2 });
-          }
-          break;
-        }
+      const ordered = rel.concat(clues.filter((c) => !isRel(c)));
+      let chosen = [];
+      for (const c of ordered) { chosen.push(c); if (countMatches(chosen, lo, hi) === 1) break; }
+      if (countMatches(chosen, lo, hi) !== 1) continue;
+      // drop every clue that is not needed for a unique solution (plain clues first, then relations)
+      for (const c of chosen.filter((x) => !isRel(x)).concat(chosen.filter(isRel))) {
+        const rest = chosen.filter((x) => x !== c);
+        if (countMatches(rest, lo, hi) === 1) chosen = rest;
+      }
+      if (chosen.length >= 2 && chosen.length <= maxClues && chosen.filter(isRel).length >= minRel) {
+        return task(chosen.map((c) => c.text).join('\n'), [n], { riddle: true, digits: three ? 3 : 2 });
       }
     }
-    // fallback: simple
-    const n = rnd(lo, hi); const d = digits(n);
-    const txt = three ? `Mein Hunderter ist ${d.h}.\nMein Zehner ist ${d.z}.\nMein Einer ist ${d.e}.` : `Mein Zehner ist ${d.z}.\nMein Einer ist ${d.e}.`;
-    return task(txt, [n], { riddle: true, digits: three ? 3 : 2 });
+    // fallback: a fixed digit plus relations to it (always unique, nothing redundant)
+    let n, d; do { n = rnd(lo, hi); d = digits(n); } while (d.e === d.z || (three && d.h === d.z));
+    const lines = [`Mein Zehner ist ${d.z}.`, d.e > d.z ? `Mein Einer ist um ${d.e - d.z} größer als mein Zehner.` : `Mein Einer ist um ${d.z - d.e} kleiner als mein Zehner.`];
+    if (three) lines.push(d.h > d.z ? `Mein Hunderter ist um ${d.h - d.z} größer als mein Zehner.` : `Mein Hunderter ist um ${d.z - d.h} kleiner als mein Zehner.`);
+    return task(lines.join('\n'), [n], { riddle: true, digits: three ? 3 : 2 });
   }
   function genSeq(t) {
     let start, step, step2 = null;
@@ -107,7 +114,8 @@ const MQ = (() => {
     return task(seq.slice(0, 4).join(', ') + ', …', seq.slice(4, 7), { seq: seq.slice(0, 4) });
   }
   function genNb(t) {
-    if (t === 1) { let n; do { n = rnd(11, 98); } while (n % 10 === 0); const lo = Math.floor(n / 10) * 10; return task(`${n}`, [lo, lo + 10], { nb: 'Zehner', n }); }
+    // tier 1 (world 1): n ≤ 89 so both neighbours stay under 100
+    if (t === 1) { let n; do { n = rnd(11, 89); } while (n % 10 === 0); const lo = Math.floor(n / 10) * 10; return task(`${n}`, [lo, lo + 10], { nb: 'Zehner', n }); }
     if (t === 2) { let n; do { n = rnd(101, 899); } while (n % 100 === 0); const lo = Math.floor(n / 100) * 100; return task(`${n}`, [lo, lo + 100], { nb: 'Hunderter', n }); }
     let n; do { n = rnd(101, 899); } while (n % 10 === 0); const lo = Math.floor(n / 10) * 10; return task(`${n}`, [lo, lo + 10], { nb: 'Zehner', n });
   }
@@ -178,7 +186,7 @@ const MQ = (() => {
   const BEATS = { feuer: 'pflanze', pflanze: 'wasser', wasser: 'feuer' };
 
   const STARTERS = [
-    { id: 'fuchs', type: 'feuer', shape: 'fox', names: ['Glutfuchs', 'Flammfuchs', 'Sonnenfuchs'], hp: 60, desc: 'Flink und mutig. Macht öfter Volltreffer.', perk: 'crit',
+    { id: 'fuchs', type: 'feuer', shape: 'fox', names: ['Glutfuchs', 'Flammfuchs', 'Sonnenfuchs'], hp: 60, desc: 'Flink und mutig. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Funkenbiss', mod: 'add' }, { name: 'Flammenstoß', mod: 'sub' }, { name: 'Feuerreihe', mod: 'seq' }, { name: 'Glutgitter', mod: 'grid' }] },
     { id: 'kroete', type: 'wasser', shape: 'toad', names: ['Wellenkröte', 'Strudelkröte', 'Ozeankröte'], hp: 80, desc: 'Hält viel aus. Hat die meisten Lebenspunkte.', perk: 'tank',
       attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Blubberrätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
@@ -226,6 +234,10 @@ const MQ = (() => {
     grosstrank: { name: 'Großer Trank', icon: '🍶', desc: 'Heilt 60 Lebenspunkte.', heal: 60 },
     schild: { name: 'Schild', icon: '🛡️', desc: 'Blockt den nächsten Angriff des Gegners.', shield: true },
     beere: { name: 'Beere', icon: '🫐', desc: 'Heilt 15 Lebenspunkte.', heal: 15 },
+    keks: { name: 'Kraftkeks', icon: '🍪', desc: 'Dein nächster Treffer macht doppelten Schaden. Kostet keinen Zug.', power: true },
+    lupe: { name: 'Lupe', icon: '🔎', desc: 'Gibt dir einen Tipp bei der nächsten Aufgabe im Kampf. Kostet keinen Zug.', hint: true },
+    engel: { name: 'Schutzengel', icon: '👼', desc: 'Hilft von selbst: Fallen deine Lebenspunkte auf 0, rettet er dich einmal.', revive: true },
+    stern: { name: 'Sternenstaub', icon: '✨', desc: 'Gibt deinem Monster sofort 25 XP.', xp: 25 },
   };
 
   const EVENTS = [
@@ -236,6 +248,8 @@ const MQ = (() => {
     { title: 'Das Trainingslager', text: 'Ein freundlicher Trainer bietet dir eine Übungsrunde an. Wenn du es schaffst, lernt dein Monster schneller.', opts: [{ label: 'Trainieren', task: 'mul', win: { xp: 25 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Das Beerenfeld', text: 'Überall wachsen Beeren! Du kannst dir welche pflücken.', opts: [{ label: 'Beeren pflücken', effect: { item: 'beere' } }, { label: 'Schnell weiter', effect: {} }] },
     { title: 'Der Zahlengeist', text: 'Ein Geist flüstert: „Zeig mir, dass du rechnen kannst, dann stärke ich dein Monster.“', opts: [{ label: 'Rechnen', task: 'add', win: { maxhp: 8 }, lose: { hp: -6 } }, { label: 'Weglaufen', effect: {} }] },
+    { title: 'Der Bäcker', text: 'Ein Bäcker hat frische Kraftkekse gebacken. „Wer mir beim Abwiegen hilft, bekommt einen!“', opts: [{ label: 'Helfen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Sternenhimmel', text: 'Eine Sternschnuppe fällt vom Himmel. Setze die leuchtende Zahlenreihe fort, dann gehört der Sternenstaub dir.', opts: [{ label: 'Zählen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Nur anschauen', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
   ];
 
