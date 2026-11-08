@@ -74,7 +74,7 @@ async function step(){
     click(chosen||nodes[0]); return; }
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
   if($('.opt')||$('.oitem')||$('.plant.clickable')){ await solveKnow(Math.random()>ACC); return; }
-  if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); click(atks[Math.floor(Math.random()*atks.length)]); return; }
+  if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
   if($('#next')){ click($('#next')); return; }
   if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
   if($('#train')){ rests++; click(Math.random()<0.5?$('#train'):$('#heal')); return; }
