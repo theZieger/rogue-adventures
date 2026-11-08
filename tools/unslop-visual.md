@@ -22,23 +22,21 @@ analysis describes was, line for line, Lernquest's own first version. This file 
 - `user-scalable=no` (15): don't block zoom.
 - Feedback red #ff6b6b-ish and green #22c55e-ish (the same two hexes in most files).
 
-## What Lernquest does instead („Tafel und Heft“)
+## What was decided (2026-11-08)
 
-- Surface: chalkboard green with a faint dust texture; paper sheets on it. No gradients as decoration.
-- Ink: pencil-dark outlines (2px), small radii (4–8px), paper offset shadow `3px 3px 0`; pressing pushes
-  a sheet into its shadow (`translate: 2px 2px`), no lip.
-- Colour from the classroom: fountain-pen blue as the primary, teacher's green/red pencil for right/wrong,
-  highlighter yellow for hints, and the German exercise-book cover colours per subject
-  (Mathe blue, Ethik red, Sachkunde green). Yellow is a highlight, never the main button.
-- Type: Patrick Hand for chalk and headings, Andika for text and numerals (made for children learning
-  to read; 1/l/I and 6/9 can't be confused). Numerals tabular.
-- Title: an exercise-book cover with a paper label (Name / Klasse) and the fox from our own art, not an
-  emoji mascot over a centred stack.
-- Task card: squared paper (Karopapier). Keypad: chalk keys drawn on the board.
-- Motion stays short and soft, and everything respects `prefers-reduced-motion`.
+The owner compared a full „Tafel und Heft“ proposal (chalkboard, paper buttons, fountain-pen blue, exercise-book
+colours) with the existing look and kept the candy look on purpose. Taken over from the proposal:
 
-## Still on the list (not done in the first visual pass)
+- Patrick Hand (handwriting) for headings, monster and attack names, battle messages and feedback.
+- Andika for all text and every number (made for children learning to read; 1/l/I and 6/9 unmistakable),
+  tabular numerals on sums, inputs and the keypad.
+- Squared paper (Karopapier) on the task card.
+
+So the navy surface, gold buttons with a lip, rounded corners and the title stack stay by choice, not by default.
+When something is redesigned later, this file is the list of what not to drift back into without deciding.
+
+## Still on the list
 
 - The monsters follow the recipe above (big white eyes, glint, blush). A redraw is a separate decision.
-- Map nodes, items and types still use emoji icons. Small drawn icons in the chalk style would fit better.
-- App icon, iOS launch screens and install screenshots still use Baloo 2; regenerate after the look is approved.
+- Map nodes, items and types use emoji icons.
+- App icon, iOS launch screens and install screenshots use Baloo 2; regenerate with Patrick Hand after the merge.
