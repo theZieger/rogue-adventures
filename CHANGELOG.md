@@ -18,6 +18,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Gegner und Ereignisse passen besser zum Thema.
 - Die Töne sind wieder raus.
 - Neue Schriften: Handschrift für Überschriften und Namen, eine Leseanfänger-Schrift für Text und Zahlen. Rechenaufgaben stehen auf Karopapier.
+- Der Kampf ist neu aufgebaut: Gegner oben rechts, dein Monster unten links, die Meldung in einer Textbox. Alle Attacken-Knöpfe sind gleich groß.
 - Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter.
 
 ### Behoben
