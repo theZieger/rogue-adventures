@@ -92,7 +92,7 @@ Der Knopf „📨 Absenden“ öffnet ein Google-Formular mit der Nachricht scho
    In `src/app.js` bei `FEEDBACK.form` eintragen und `TEXT` durch `{text}` ersetzen.
 4. `npm run build`, committen, pushen. Antworten landen im Formular (optional per E-Mail-Benachrichtigung).
 
-Solange dort noch der Platzhalter `FORMULAR-ID-EINTRAGEN` steht, führt der Knopf ins Leere. „Auf GitHub senden“ funktioniert immer (mit GitHub-Konto).
+Eingerichtet ist das Formular „Feedback“ (Frage „Dein Feedback“, `entry.1794178349`). „Auf GitHub senden“ funktioniert zusätzlich (mit GitHub-Konto).
 
 ## Lizenz
 

@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="5b842392fd80">
+<meta name="app-version" content="6e1739a53925">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1875,7 +1875,7 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
   // Where ideas go. GitHub works right away (needs a GitHub account). FEEDBACK.email / FEEDBACK.form can be filled in
   // to let people without an account send ideas too (mail app / an online form) – see README "Feedback".
   // form: Google-Formular-Link mit vorausgefülltem Textfeld; {text} wird durch die Nachricht ersetzt (Anleitung im README).
-  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: 'https://docs.google.com/forms/d/e/FORMULAR-ID-EINTRAGEN/viewform?usp=pp_url&entry.0000000000={text}' };
+  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw/viewform?usp=pp_url&entry.1794178349={text}' };
   function screenFeedback(back) {
     back = typeof back === 'function' ? back : screenTitle;
     render(`<div class="screen">${topbar('💡 Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
@@ -1905,7 +1905,7 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
 /* Offline support + automatic updates (see src/sw.js) */
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '5b842392fd80';
+  const BUILD = '6e1739a53925';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

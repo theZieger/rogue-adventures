@@ -641,7 +641,7 @@
   // Where ideas go. GitHub works right away (needs a GitHub account). FEEDBACK.email / FEEDBACK.form can be filled in
   // to let people without an account send ideas too (mail app / an online form) – see README "Feedback".
   // form: Google-Formular-Link mit vorausgefülltem Textfeld; {text} wird durch die Nachricht ersetzt (Anleitung im README).
-  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: 'https://docs.google.com/forms/d/e/FORMULAR-ID-EINTRAGEN/viewform?usp=pp_url&entry.0000000000={text}' };
+  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw/viewform?usp=pp_url&entry.1794178349={text}' };
   function screenFeedback(back) {
     back = typeof back === 'function' ? back : screenTitle;
     render(`<div class="screen">${topbar('💡 Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
