@@ -11,6 +11,12 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 - Under the date use only these groups, in this order: `### Neu`, `### Verbessert`, `### Behoben`.
 - One `- ` line per point: a short German sentence a child or parent understands
   (no technical terms like "localStorage", "Service Worker", "CI").
+- **Keep it short – it's release notes for players, not a commit log.** Summarise what a player notices:
+  at most about 3 points per group and 6 per day, each point one short sentence (roughly 15 words).
+  Merge related changes into one point, mention only the most noticeable fixes and sum up the rest
+  (e.g. „Viele kleine Text- und Anzeigefehler.“). Details belong in commit messages.
+- The oldest entry (2026-11-07) is the go-live release note („Lernquest ist online!“). Leave it as it is;
+  never add fixes or details to it.
 - Purely internal changes (tests, CI, refactoring) don't need an entry.
 - The file is shown in the game ("Was ist neu?" on the title screen): `build.py` parses it, so keep the format
   exactly as described in the file header and run `npm run build` afterwards. The build fails if dates are out of order.
