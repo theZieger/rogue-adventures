@@ -197,33 +197,33 @@ const MQ = (() => {
   const ENEMIES = {
     1: {
       normal: [
-        { name: 'Sumpfbrocken', type: 'pflanze', shape: 'blob', hp: 26, atk: 3 },
-        { name: 'Regenwicht', type: 'wasser', shape: 'drop', hp: 24, atk: 4 },
-        { name: 'Streichholzkopf', type: 'feuer', shape: 'flame', hp: 22, atk: 4 },
-        { name: 'Krabbelstein', type: 'normal', shape: 'rock', hp: 30, atk: 3 },
+        { name: 'Sumpfbrocken', type: 'pflanze', shape: 'sumpfbrocken', hp: 26, atk: 3 },
+        { name: 'Regenwicht', type: 'wasser', shape: 'regenwicht', hp: 24, atk: 4 },
+        { name: 'Streichholzkopf', type: 'feuer', shape: 'streichholzkopf', hp: 22, atk: 4 },
+        { name: 'Krabbelstein', type: 'normal', shape: 'krabbelstein', hp: 30, atk: 3 },
       ],
-      elite: { name: 'Dornenigel', type: 'pflanze', shape: 'hedgehog', hp: 45, atk: 5 },
-      boss: { name: 'Moorschlund', acc: 'den Moorschlund', type: 'wasser', shape: 'blob', hp: 70, atk: 6, boss: true },
+      elite: { name: 'Dornenigel', type: 'pflanze', shape: 'dornenigel', hp: 45, atk: 5 },
+      boss: { name: 'Moorschlund', acc: 'den Moorschlund', type: 'wasser', shape: 'moorschlund', hp: 70, atk: 6, boss: true },
     },
     2: {
       normal: [
-        { name: 'Lavamolch', type: 'feuer', shape: 'newt', hp: 42, atk: 5 },
-        { name: 'Nebelqualle', type: 'wasser', shape: 'jelly', hp: 40, atk: 6 },
-        { name: 'Ranklerin', type: 'pflanze', shape: 'vine', hp: 44, atk: 5 },
-        { name: 'Nachtschwinge', type: 'normal', shape: 'bat', hp: 38, atk: 6 },
+        { name: 'Lavamolch', type: 'feuer', shape: 'lavamolch', hp: 42, atk: 5 },
+        { name: 'Nebelqualle', type: 'wasser', shape: 'nebelqualle', hp: 40, atk: 6 },
+        { name: 'Ranklerin', type: 'pflanze', shape: 'ranklerin', hp: 44, atk: 5 },
+        { name: 'Nachtschwinge', type: 'normal', shape: 'nachtschwinge', hp: 38, atk: 6 },
       ],
-      elite: { name: 'Glaspanzer', type: 'normal', shape: 'beetle', hp: 70, atk: 8 },
-      boss: { name: 'Ofenwurm', acc: 'den Ofenwurm', type: 'feuer', shape: 'dragon', hp: 110, atk: 9, boss: true },
+      elite: { name: 'Glaspanzer', type: 'normal', shape: 'glaspanzer', hp: 70, atk: 8 },
+      boss: { name: 'Ofenwurm', acc: 'den Ofenwurm', type: 'feuer', shape: 'ofenwurm', hp: 110, atk: 9, boss: true },
     },
     3: {
       normal: [
-        { name: 'Frostblitz', type: 'wasser', shape: 'drop', hp: 60, atk: 8 },
-        { name: 'Dschungelbrüller', type: 'pflanze', shape: 'bear', hp: 65, atk: 8 },
-        { name: 'Magmagolem', type: 'feuer', shape: 'rock', hp: 70, atk: 7 },
-        { name: 'Schattenwolf', type: 'normal', shape: 'fox', hp: 55, atk: 9 },
+        { name: 'Frostblitz', type: 'wasser', shape: 'frostblitz', hp: 60, atk: 8 },
+        { name: 'Dschungelbrüller', type: 'pflanze', shape: 'dschungelbrueller', hp: 65, atk: 8 },
+        { name: 'Magmagolem', type: 'feuer', shape: 'magmagolem', hp: 70, atk: 7 },
+        { name: 'Schattenwolf', type: 'normal', shape: 'schattenwolf', hp: 55, atk: 9 },
       ],
-      elite: { name: 'Sturmreiter', type: 'normal', shape: 'ghost', hp: 100, atk: 11 },
-      boss: { name: 'Rechenkönig', acc: 'den Rechenkönig', type: 'normal', shape: 'king', hp: 170, atk: 12, boss: true },
+      elite: { name: 'Sturmreiter', type: 'normal', shape: 'sturmreiter', hp: 100, atk: 11 },
+      boss: { name: 'Rechenkönig', acc: 'den Rechenkönig', type: 'normal', shape: 'rechenkoenig', hp: 170, atk: 12, boss: true },
     },
   };
   const ENEMY_MOVES = ['Rempler', 'Kratzer', 'Zahlensalat', 'Rumpler', 'Schlammspritzer', 'Biss'];

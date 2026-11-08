@@ -118,13 +118,13 @@ const MK = (() => {
   const L_ENEMIES = {
     1: {
       normal: [
-        { name: 'Der Zweifler', type: 'normal', shape: 'ghost', hp: 26, atk: 3 },
-        { name: 'Der Vergessliche', type: 'normal', shape: 'ghost', hp: 24, atk: 4 },
-        { name: 'Der Verwechsler', type: 'normal', shape: 'bat', hp: 28, atk: 4 },
-        { name: 'Der Schwindler', type: 'normal', shape: 'jelly', hp: 30, atk: 3 },
+        { name: 'Der Zweifler', type: 'normal', shape: 'zweifler', hp: 26, atk: 3 },
+        { name: 'Der Vergessliche', type: 'normal', shape: 'vergesslicher', hp: 24, atk: 4 },
+        { name: 'Der Verwechsler', type: 'normal', shape: 'verwechsler', hp: 28, atk: 4 },
+        { name: 'Der Schwindler', type: 'normal', shape: 'schwindler', hp: 30, atk: 3 },
       ],
-      elite: { name: 'Der strenge Richter', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
-      boss: { name: 'Der Ablasshändler', acc: 'den Ablasshändler', type: 'normal', shape: 'merchant', hp: 70, atk: 6, boss: true },
+      elite: { name: 'Der strenge Richter', type: 'normal', shape: 'richter', hp: 45, atk: 5 },
+      boss: { name: 'Der Ablasshändler', acc: 'den Ablasshändler', type: 'normal', shape: 'ablasshaendler', hp: 70, atk: 6, boss: true },
     },
   };
   // Gegner-Angriffe: „<Gegner> greift mit <Angriff> an“
@@ -291,23 +291,23 @@ const MK = (() => {
   const K_ENEMIES = {
     1: {
       normal: [
-        { name: 'Blattlaus', type: 'pflanze', shape: 'blob', hp: 24, atk: 3 },
-        { name: 'Drahtwurm', type: 'normal', shape: 'newt', hp: 28, atk: 4 },
-        { name: 'Wühlmaus', type: 'normal', shape: 'fox', hp: 30, atk: 4 },
-        { name: 'Fäulewolke', type: 'wasser', shape: 'ghost', hp: 26, atk: 3 },
+        { name: 'Blattlaus', type: 'pflanze', shape: 'blattlaus', hp: 24, atk: 3 },
+        { name: 'Drahtwurm', type: 'normal', shape: 'drahtwurm', hp: 28, atk: 4 },
+        { name: 'Wühlmaus', type: 'normal', shape: 'wuehlmaus', hp: 30, atk: 4 },
+        { name: 'Fäulewolke', type: 'wasser', shape: 'faeulewolke', hp: 26, atk: 3 },
       ],
-      elite: { name: 'Käferlarve', type: 'normal', shape: 'newt', hp: 45, atk: 5 },
-      boss: { name: 'Kartoffelkäfer', acc: 'den Kartoffelkäfer', type: 'normal', shape: 'beetle', hp: 70, atk: 6, boss: true },
+      elite: { name: 'Käferlarve', type: 'normal', shape: 'kaeferlarve', hp: 45, atk: 5 },
+      boss: { name: 'Kartoffelkäfer', acc: 'den Kartoffelkäfer', type: 'normal', shape: 'kartoffelkaefer', hp: 70, atk: 6, boss: true },
     },
     2: {
       normal: [
-        { name: 'Blattfresser', type: 'pflanze', shape: 'beetle', hp: 42, atk: 5 },
-        { name: 'Hagelwolke', type: 'wasser', shape: 'ghost', hp: 40, atk: 6 },
-        { name: 'Ackerteufel', type: 'feuer', shape: 'flame', hp: 44, atk: 5 },
-        { name: 'Eierhaufen', type: 'normal', shape: 'blob', hp: 38, atk: 6 },
+        { name: 'Blattfresser', type: 'pflanze', shape: 'blattfresser', hp: 42, atk: 5 },
+        { name: 'Hagelwolke', type: 'wasser', shape: 'hagelwolke', hp: 40, atk: 6 },
+        { name: 'Ackerteufel', type: 'feuer', shape: 'ackerteufel', hp: 44, atk: 5 },
+        { name: 'Eierhaufen', type: 'normal', shape: 'eierhaufen', hp: 38, atk: 6 },
       ],
-      elite: { name: 'Riesenlarve', type: 'normal', shape: 'newt', hp: 70, atk: 8 },
-      boss: { name: 'Käferkönigin', acc: 'die Käferkönigin', type: 'normal', shape: 'beetle', hp: 110, atk: 9, boss: true },
+      elite: { name: 'Riesenlarve', type: 'normal', shape: 'riesenlarve', hp: 70, atk: 8 },
+      boss: { name: 'Käferkönigin', acc: 'die Käferkönigin', type: 'normal', shape: 'kaeferkoenigin', hp: 110, atk: 9, boss: true },
     },
   };
   const K_MOVES = ['Käferbiss', 'Blattfraß', 'Erdklumpen', 'Hagelschauer', 'Wühlattacke', 'Matschwurf'];
