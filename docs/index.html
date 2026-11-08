@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="e95aee063d89">
+<meta name="app-version" content="86b3ba3ae219">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -195,7 +195,9 @@ p { margin: 8px 0; }
 .grid div.start { background: #fff; border-color: var(--ink); }
 .grid div.target { background: #FFF1B8; border-color: var(--gold); border-style: dashed; box-shadow: 0 0 0 3px rgba(255,201,60,.5); }
 .legend { display: flex; justify-content: center; gap: 10px; font-size: 15px; font-weight: 700; color: var(--ink-soft); flex-wrap: wrap; }
-.legend span { background: var(--card2); border-radius: 10px; padding: 2px 8px; }
+.legend span { background: var(--card2); border-radius: 10px; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
+.legend .arr { width: 16px; height: 16px; flex: none; color: var(--ink); }
+.legend .arr-l { transform: rotate(180deg); } .legend .arr-d { transform: rotate(90deg); } .legend .arr-u { transform: rotate(-90deg); }
 
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .numpad button { min-height: 58px; border: 3px solid var(--ink); border-radius: 14px; background: var(--key); color: var(--key-ink); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; box-shadow: 0 4px 0 rgba(0,0,0,.3); cursor: pointer; }
@@ -532,7 +534,8 @@ const MQ = (() => {
   }
   function genGrid(t, elite) {
     const size = 3;
-    const stepR = t >= 3 ? 100 : 10, stepD = 1;
+    // like the Hundertertafel: one step right = +1, one step down = +10 (tier 3: ×10, so +10 and +100)
+    const stepR = t >= 3 ? 10 : 1, stepD = t >= 3 ? 100 : 10;
     const sr = rnd(0, size - 1), sc = rnd(0, size - 1);
     let tr, tc; do { tr = rnd(0, size - 1); tc = rnd(0, size - 1); } while ((tr === sr && tc === sc) || (!elite && Math.abs(tr - sr) + Math.abs(tc - sc) > 2) || (elite && Math.abs(tr - sr) + Math.abs(tc - sc) < 2));
     let base;
@@ -585,9 +588,9 @@ const MQ = (() => {
       3: { title: 'Zehner-Nachbarn bei großen Zahlen', steps: ['Schau nur auf Zehner und Einer.', '437: Zwischen 430 und 440.', 'Davor: 430. Danach: 440.'] },
     },
     grid: {
-      1: { title: 'Das Zahlengitter', steps: ['Ein Feld zeigt eine Zahl. Das Zielfeld leuchtet.', 'Gehe von Feld zu Feld: nach unten + 1, nach oben − 1, nach rechts + 10, nach links − 10.', 'Beispiel: Start 45, ein Feld nach rechts (55), dann eins nach unten (56). Das Zielfeld ist 56.'] },
-      2: { title: 'Zahlengitter mit Hundertern', steps: ['Gleiche Regeln: unten + 1, oben − 1, rechts + 10, links − 10.', 'Beispiel: Start 348, ein Feld nach links (338), dann eins nach oben (337).', 'Das Zielfeld ist 337.'] },
-      3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt gilt: nach rechts + 100, nach links − 100. Oben und unten bleiben − 1 und + 1.', 'Beispiel: Start 420, zwei Felder nach rechts (620), dann eins nach unten (621).', 'Das Zielfeld ist 621.'] },
+      1: { title: 'Das Zahlengitter', steps: ['Ein Feld zeigt eine Zahl. Das Zielfeld leuchtet.', 'Wie in der Hundertertafel: nach rechts + 1, nach links − 1, nach unten + 10, nach oben − 10.', 'Beispiel: Start 45, ein Feld nach rechts (46), dann eins nach unten (56). Das Zielfeld ist 56.'] },
+      2: { title: 'Zahlengitter mit Hundertern', steps: ['Gleiche Regeln: rechts + 1, links − 1, unten + 10, oben − 10.', 'Beispiel: Start 348, ein Feld nach links (347), dann eins nach oben (337).', 'Das Zielfeld ist 337.'] },
+      3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt sind die Schritte zehnmal so groß: nach rechts + 10, nach links − 10, nach unten + 100, nach oben − 100.', 'Beispiel: Start 420, ein Feld nach rechts (430), dann eins nach unten (530).', 'Das Zielfeld ist 530.'] },
     },
   };
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', 'Die Quersumme sind alle Ziffern zusammen: Bei 258 ist sie 2 + 5 + 8 = 15.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
@@ -1241,7 +1244,7 @@ const MONART = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto.", "Neue Begriffe-Fragen zu Luther."]}, {"title": "Verbessert", "items": ["Nach einem Fehler darfst du dieselbe Attacke gleich nochmal üben – sie wird nur nach Treffern müde.", "Die Eselsbrücke (früher Lupe) hilft jetzt auch bei Richtig-oder-Falsch-Fragen.", "Gegner und Ereignisse passen besser zum Thema.", "Die Töne sind wieder raus.", "Neue Schriften: Handschrift für Überschriften und Namen, eine Leseanfänger-Schrift für Text und Zahlen. Rechenaufgaben stehen auf Karopapier.", "Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter."]}, {"title": "Behoben", "items": ["Wer die App mitten im Kampf schließt, verliert keine Antworten oder Belohnungen mehr.", "Viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto.", "Neue Begriffe-Fragen zu Luther."]}, {"title": "Verbessert", "items": ["Nach einem Fehler darfst du dieselbe Attacke gleich nochmal üben – sie wird nur nach Treffern müde.", "Die Eselsbrücke (früher Lupe) hilft jetzt auch bei Richtig-oder-Falsch-Fragen.", "Gegner und Ereignisse passen besser zum Thema.", "Die Töne sind wieder raus.", "Neue Schriften: Handschrift für Überschriften und Namen, eine Leseanfänger-Schrift für Text und Zahlen. Rechenaufgaben stehen auf Karopapier.", "Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10. Die Pfeile in der Erklärung sind gleich groß.", "Wer die App mitten im Kampf schließt, verliert keine Antworten oder Belohnungen mehr.", "Viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 /* ===== MathQuest App ===== */
@@ -1269,6 +1272,8 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
   const $ = (sel, el) => (el || document).querySelector(sel);
   const app = $('#app');
   const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // same-size arrows for the grid legend (emoji arrows differ in size between fonts)
+  const arrow = (dir) => `<svg class="arr arr-${dir}" viewBox="0 0 20 20" aria-label="${{ r: 'rechts', l: 'links', d: 'unten', u: 'oben' }[dir]}"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
   /* ---------- Storage ---------- */
@@ -1406,7 +1411,7 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
       if (task.riddle) body = `<div class="clues">${task.text.split('\n').map((c) => `<div>${esc(c)}</div>`).join('')}</div><div class="prompt">Welche Zahl bin ich?</div>`;
       else if (task.seq) body = `<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
       else if (task.nb) body = `<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
-      else if (task.grid) { const g = task.grid; let cells = ''; for (let r = 0; r < g.size; r++) for (let c = 0; c < g.size; c++) { const isS = r === g.sr && c === g.sc, isT = r === g.tr && c === g.tc; cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`; } body = `<div class="grid">${cells}</div><div class="legend"><span>⬇ +${g.stepD}</span><span>⬆ −${g.stepD}</span><span>➡ +${g.stepR}</span><span>⬅ −${g.stepR}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`; }
+      else if (task.grid) { const g = task.grid; let cells = ''; for (let r = 0; r < g.size; r++) for (let c = 0; c < g.size; c++) { const isS = r === g.sr && c === g.sc, isT = r === g.tr && c === g.tc; cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`; } body = `<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${arrow('r')} +${g.stepR}</span><span>${arrow('l')} −${g.stepR}</span><span>${arrow('d')} +${g.stepD}</span><span>${arrow('u')} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`; }
       else body = `<div class="expr">${esc(task.text)}</div>`;
       let inputs = '';
       if (task.nb) inputs = `<div class="nbline"><div class="inpgroup"><div class="inp" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-i="1"></div><span>danach</span></div></div>`;
@@ -1907,7 +1912,7 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
 /* Offline support + automatic updates (see src/sw.js) */
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'e95aee063d89';
+  const BUILD = '86b3ba3ae219';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

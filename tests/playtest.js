@@ -46,7 +46,7 @@ async function solveTask(forceWrong){
     } if(ok) res.push(x);} if(res.length!==1) throw new Error('riddle not unique '+clues+' '+res); answers=res;
   } else if($('.seq')){ const s=$('.seq').textContent.match(/-?\d+/g).map(Number); const d1=s[1]-s[0], d2=s[2]-s[1]; const out=[]; let last=s[3]; for(let i=4;i<7;i++){ last+= (d1===d2)? d1 : (i%2===1?d1:d2); out.push(last);} answers=out; }
   else if($('.nbline')){ const n=+$('.nbline .mid').textContent; const kind=t.includes('Hunderterzahl')?100:10; const lo=Math.floor(n/kind)*kind; answers=[lo,lo+kind]; }
-  else if($('.grid')){ const cells=$$('.grid div'); const si=cells.findIndex(c=>c.classList.contains('start')), ti=cells.findIndex(c=>c.classList.contains('target')); const base=+cells[si].textContent; const leg=$('.legend').textContent; const stepR=+leg.match(/➡ \+(\d+)/)[1]; const sr=Math.floor(si/3), sc=si%3, tr=Math.floor(ti/3), tc=ti%3; answers=[base+(tr-sr)+(tc-sc)*stepR]; }
+  else if($('.grid')){ const cells=$$('.grid div'); const si=cells.findIndex(c=>c.classList.contains('start')), ti=cells.findIndex(c=>c.classList.contains('target')); const base=+cells[si].textContent; const leg=$('.legend'); const stepR=+leg.dataset.stepR, stepD=+leg.dataset.stepD; const sr=Math.floor(si/3), sc=si%3, tr=Math.floor(ti/3), tc=ti%3; answers=[base+(tr-sr)*stepD+(tc-sc)*stepR]; }
   if(!answers) throw new Error('could not parse task: '+t);
   if(forceWrong) answers=answers.map(a=>a+1);
   for(let i=0;i<answers.length;i++){ click(inps[i]); for(const ch of String(answers[i])){ click($(`.numpad [data-k="${ch}"]`)); } click($('.numpad [data-k="ok"]')); }

@@ -21,6 +21,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter.
 
 ### Behoben
+- Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10. Die Pfeile in der Erklärung sind gleich groß.
 - Wer die App mitten im Kampf schließt, verliert keine Antworten oder Belohnungen mehr.
 - Viele kleine Text- und Anzeigefehler.
 

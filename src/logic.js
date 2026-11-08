@@ -121,7 +121,8 @@ const MQ = (() => {
   }
   function genGrid(t, elite) {
     const size = 3;
-    const stepR = t >= 3 ? 100 : 10, stepD = 1;
+    // like the Hundertertafel: one step right = +1, one step down = +10 (tier 3: ×10, so +10 and +100)
+    const stepR = t >= 3 ? 10 : 1, stepD = t >= 3 ? 100 : 10;
     const sr = rnd(0, size - 1), sc = rnd(0, size - 1);
     let tr, tc; do { tr = rnd(0, size - 1); tc = rnd(0, size - 1); } while ((tr === sr && tc === sc) || (!elite && Math.abs(tr - sr) + Math.abs(tc - sc) > 2) || (elite && Math.abs(tr - sr) + Math.abs(tc - sc) < 2));
     let base;
@@ -174,9 +175,9 @@ const MQ = (() => {
       3: { title: 'Zehner-Nachbarn bei großen Zahlen', steps: ['Schau nur auf Zehner und Einer.', '437: Zwischen 430 und 440.', 'Davor: 430. Danach: 440.'] },
     },
     grid: {
-      1: { title: 'Das Zahlengitter', steps: ['Ein Feld zeigt eine Zahl. Das Zielfeld leuchtet.', 'Gehe von Feld zu Feld: nach unten + 1, nach oben − 1, nach rechts + 10, nach links − 10.', 'Beispiel: Start 45, ein Feld nach rechts (55), dann eins nach unten (56). Das Zielfeld ist 56.'] },
-      2: { title: 'Zahlengitter mit Hundertern', steps: ['Gleiche Regeln: unten + 1, oben − 1, rechts + 10, links − 10.', 'Beispiel: Start 348, ein Feld nach links (338), dann eins nach oben (337).', 'Das Zielfeld ist 337.'] },
-      3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt gilt: nach rechts + 100, nach links − 100. Oben und unten bleiben − 1 und + 1.', 'Beispiel: Start 420, zwei Felder nach rechts (620), dann eins nach unten (621).', 'Das Zielfeld ist 621.'] },
+      1: { title: 'Das Zahlengitter', steps: ['Ein Feld zeigt eine Zahl. Das Zielfeld leuchtet.', 'Wie in der Hundertertafel: nach rechts + 1, nach links − 1, nach unten + 10, nach oben − 10.', 'Beispiel: Start 45, ein Feld nach rechts (46), dann eins nach unten (56). Das Zielfeld ist 56.'] },
+      2: { title: 'Zahlengitter mit Hundertern', steps: ['Gleiche Regeln: rechts + 1, links − 1, unten + 10, oben − 10.', 'Beispiel: Start 348, ein Feld nach links (347), dann eins nach oben (337).', 'Das Zielfeld ist 337.'] },
+      3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt sind die Schritte zehnmal so groß: nach rechts + 10, nach links − 10, nach unten + 100, nach oben − 100.', 'Beispiel: Start 420, ein Feld nach rechts (430), dann eins nach unten (530).', 'Das Zielfeld ist 530.'] },
     },
   };
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', 'Die Quersumme sind alle Ziffern zusammen: Bei 258 ist sie 2 + 5 + 8 = 15.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };

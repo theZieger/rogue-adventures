@@ -139,7 +139,9 @@ p { margin: 8px 0; }
 .grid div.start { background: #fff; border-color: var(--ink); }
 .grid div.target { background: #FFF1B8; border-color: var(--gold); border-style: dashed; box-shadow: 0 0 0 3px rgba(255,201,60,.5); }
 .legend { display: flex; justify-content: center; gap: 10px; font-size: 15px; font-weight: 700; color: var(--ink-soft); flex-wrap: wrap; }
-.legend span { background: var(--card2); border-radius: 10px; padding: 2px 8px; }
+.legend span { background: var(--card2); border-radius: 10px; padding: 2px 8px; display: inline-flex; align-items: center; gap: 4px; }
+.legend .arr { width: 16px; height: 16px; flex: none; color: var(--ink); }
+.legend .arr-l { transform: rotate(180deg); } .legend .arr-d { transform: rotate(90deg); } .legend .arr-u { transform: rotate(-90deg); }
 
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .numpad button { min-height: 58px; border: 3px solid var(--ink); border-radius: 14px; background: var(--key); color: var(--key-ink); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; box-shadow: 0 4px 0 rgba(0,0,0,.3); cursor: pointer; }
