@@ -61,10 +61,10 @@ function startMathFight() {
 // 3. A fight continues after reopening (same enemy, can't escape to another node)
 {
   const p1 = startMathFight();
-  const enemy = p1.$('#fe .name') && p1.$('#fe .name').textContent;
+  const enemy = p1.$('.plate.enemy .name') && p1.$('.plate.enemy .name').textContent;
   const p2 = open(p1.dump());
   p2.click('[data-cont="math"]');
-  check(!!p2.$('#fe') && p2.$('#fe .name').textContent === enemy, 'reopened adventure continues the same fight (' + enemy + ')');
+  check(!!p2.$('#fe') && p2.$('.plate.enemy .name').textContent === enemy, 'reopened adventure continues the same fight (' + enemy + ')');
   check(p2.text().includes('Der Kampf geht weiter'), 'shows that the fight continues');
 }
 

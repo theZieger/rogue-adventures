@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="86b3ba3ae219">
+<meta name="app-version" content="3e9aae4a2abb">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -150,22 +150,34 @@ p { margin: 8px 0; }
 .floor.done .node.taken { opacity: 1; border-color: var(--green); }
 .floor.future .node { opacity: .55; }
 
-/* Battle */
-.arena { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 6px 14px 2px; }
-.fighter { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.fighter .mon { width: 88px; height: 88px; }
-.fighter .mon.enemy { transform: scaleX(-1); }
-.fighter .name { font-family: var(--hand); font-size: 23px; line-height: 1.1; display: flex; gap: 6px; align-items: center; }
+/* Battle: classic diagonal arena – enemy top right with its plate top left, hero bottom left with its plate bottom right */
+.arena { flex: 1 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "eplate esprite" "gap gap" "hsprite hplate"; gap: 4px 10px; padding: 8px 14px 4px; align-items: end; }
+.plate { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; padding: 6px 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.plate.enemy { grid-area: eplate; align-self: start; }
+.plate.hero { grid-area: hplate; }
+.plate .name { font-family: var(--hand); font-size: 22px; line-height: 1.05; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.plateline { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.plate .hpbar { height: 14px; border-color: var(--ink); background: rgba(0,0,0,.18); }
+.plate .hptext { font-size: 14px; font-weight: 700; }
+.plate .xpbar { height: 6px; background: rgba(0,0,0,.15); }
+.sprite { position: relative; display: flex; justify-content: center; align-items: flex-end; min-width: 0; }
+.sprite .mon { position: relative; z-index: 1; }
+.sprite .ground { position: absolute; left: 50%; bottom: -2px; width: 78%; height: 22px; translate: -50% 0; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255,255,255,.22), rgba(255,255,255,.06) 60%, transparent 72%); }
+.sprite.enemy { grid-area: esprite; }
+.sprite.enemy .mon { width: 108px; height: 108px; transform: scaleX(-1); }
+.sprite.hero { grid-area: hsprite; }
+.sprite.hero .mon { width: 132px; height: 132px; }
 .hpbar { width: 100%; height: 18px; background: rgba(0,0,0,.35); border-radius: 999px; overflow: hidden; border: 2px solid rgba(255,255,255,.25); }
 .hpbar i { display: block; height: 100%; background: var(--green); border-radius: 999px; transition: width .35s; }
 .hpbar i.mid { background: var(--gold); } .hpbar i.low { background: var(--red); }
 .hptext { font-size: 15px; font-weight: 700; }
-.log { min-height: 40px; padding: 4px 16px; text-align: center; font-family: var(--hand); font-size: 24px; line-height: 1.15; }
-.log.hit { color: var(--green); } .log.miss { color: var(--red); } .log.crit { color: var(--gold); }
+/* the message box, like a text box under the arena */
+.log { margin: 6px 14px 8px; min-height: 48px; padding: 8px 14px; background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; font-family: var(--hand); font-size: 23px; line-height: 1.15; text-align: left; box-shadow: var(--shadow); }
+.log.hit { color: #1C6B2E; } .log.miss { color: #A42020; } .log.crit { color: #7A5300; }
 
 .bottom { background: var(--bg2); border-top: 3px solid rgba(255,255,255,.08); padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); flex: none; }
-.attacks { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.atk { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 18px; padding: 10px 12px; text-align: left; box-shadow: var(--shadow); cursor: pointer; min-height: 72px; display: flex; flex-direction: column; justify-content: center; }
+.attacks { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 1fr; gap: 10px; }
+.atk { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 18px; padding: 10px 12px; text-align: left; box-shadow: var(--shadow); cursor: pointer; min-height: 92px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
 .atk:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
 .atk .n { font-family: var(--hand); font-size: 23px; line-height: 1.1; }
 .atk .m { font-size: 14px; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; }
@@ -174,6 +186,7 @@ p { margin: 8px 0; }
 
 /* Task */
 .taskwrap { flex: 1; overflow-y: auto; min-height: 0; padding: 8px 14px; display: flex; flex-direction: column; }
+.taskwrap:empty { display: none; }
 .task { background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 22px 22px; background-position: 11px 11px; color: var(--ink); border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow); position: relative; }
 .task .head { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--ink-soft); font-weight: 700; }
 .task .head .tut { margin-left: auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; font-size: 16px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
@@ -245,7 +258,7 @@ p { margin: 8px 0; }
 .hidden { display: none !important; }
 .parent-stats table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .parent-stats td, .parent-stats th { padding: 6px 4px; border-bottom: 2px solid var(--card2); text-align: left; }
-@media (min-width: 500px) { body { font-size: 21px; } .fighter .mon { width: 140px; height: 140px; } .task .expr { font-size: 48px; } .grid { grid-template-columns: repeat(3, 76px); } .grid div { width: 76px; height: 76px; font-size: 28px; } }
+@media (min-width: 500px) { body { font-size: 21px; } .sprite.hero .mon { width: 160px; height: 160px; } .sprite.enemy .mon { width: 130px; height: 130px; } .task .expr { font-size: 48px; } .grid { grid-template-columns: repeat(3, 76px); } .grid div { width: 76px; height: 76px; font-size: 28px; } }
 
 /* Knowledge tasks */
 .task .question { font-size: 22px; font-weight: 700; margin: 10px 0 6px; line-height: 1.35; }
@@ -280,16 +293,20 @@ p { margin: 8px 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .choice[disabled] { opacity: .5; cursor: not-allowed; }
 
-/* While a task is open in battle the fighters shrink to a compact row, so the task stays visible above the keypad */
-.screen.tasking .arena { padding: 4px 14px 0; gap: 12px; }
-.screen.tasking .fighter { display: grid; grid-template-columns: 44px 1fr; column-gap: 8px; row-gap: 2px; align-items: center; }
-.screen.tasking .fighter .mon { width: 44px; height: 44px; grid-row: span 2; }
-.screen.tasking .fighter .name { font-size: 15px; justify-self: start; }
-.screen.tasking .fighter .chip, .screen.tasking .fighter .hptext, .screen.tasking .log { display: none; }
-.screen.tasking .hpbar { height: 12px; }
+/* While a task is open in battle the arena collapses to one row (sprite + plate for each side), so the task stays visible above the keypad */
+.screen.tasking .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 6px; padding: 4px 14px 2px; align-items: center; }
+.screen.tasking .plate { padding: 3px 8px; gap: 1px; border-width: 2px; box-shadow: none; }
+.screen.tasking .plate.enemy { align-self: center; }
+.screen.tasking .plate .name { font-size: 15px; }
+.screen.tasking .plate .hptext, .screen.tasking .plateline, .screen.tasking .plate .xpbar, .screen.tasking .log, .screen.tasking .sprite .ground { display: none; }
+.screen.tasking .plate .hpbar { height: 10px; }
+.screen.tasking .sprite .mon { width: 48px; height: 48px; }
 
 /* Short screens (small phones, phones held sideways): tighter keypad and task card */
 @media (max-height: 720px) {
+  .atk { min-height: 76px; padding: 6px 10px; } .atk .n { font-size: 20px; } .atk .m { font-size: 13px; } .atk .tags { min-height: 0; }
+  .sprite.hero .mon { width: 104px; height: 104px; } .sprite.enemy .mon { width: 88px; height: 88px; }
+  .log { min-height: 40px; font-size: 20px; padding: 6px 12px; margin: 4px 14px 6px; }
   .numpad { gap: 6px; }
   .numpad button { min-height: 48px; font-size: 24px; }
   .task { padding: 10px 14px; }
@@ -302,30 +319,28 @@ p { margin: 8px 0; }
 @media (max-height: 600px) {
   .numpad button { min-height: 42px; font-size: 22px; }
   .bottom { padding: 6px 10px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
-  .fighter .mon { width: 64px; height: 64px; }
-  .atk { min-height: 58px; padding: 6px 10px; }
-  .log { min-height: 28px; font-size: 17px; }
+  .sprite.hero .mon { width: 96px; height: 96px; } .sprite.enemy .mon { width: 84px; height: 84px; }
+  .atk { min-height: 70px; padding: 6px 10px; }
+  .log { min-height: 36px; font-size: 19px; padding: 5px 10px; }
 }
-/* Phone held sideways: fighters as a compact row, task and keypad side by side */
+/* Phone held sideways: arena as one row, task and keypad side by side */
 @media (max-height: 500px) and (orientation: landscape) {
-  .arena { padding: 4px 14px 0; gap: 12px; }
-  .fighter { display: grid; grid-template-columns: 48px 1fr; column-gap: 8px; row-gap: 2px; align-items: center; }
-  .fighter .mon { width: 48px; height: 48px; grid-row: span 3; }
-  .fighter .name { font-size: 16px; justify-self: start; }
-  .fighter .chip { display: none; }
-  .hpbar { height: 12px; }
-  .hptext { font-size: 13px; }
-  .attacks { grid-template-columns: repeat(4, 1fr); }
+  .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 8px; padding: 4px 14px 0; align-items: center; }
+  .sprite .mon { width: 48px; height: 48px; } .sprite .ground { display: none; }
+  .plate { padding: 3px 8px; gap: 1px; } .plate .name { font-size: 16px; } .plateline, .plate .xpbar { display: none; } .plate .hpbar { height: 10px; } .plate .hptext { font-size: 12px; }
+  .log { min-height: 32px; font-size: 18px; padding: 4px 10px; margin: 4px 14px; }
+  .attacks { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .atk { min-height: 54px; padding: 4px 8px; } .atk .n { font-size: 18px; } .atk .m { font-size: 12px; } .atk .tags { min-height: 0; }
+  .bottom { padding-top: 6px; } .bottom .row .muted { display: none; } .bottom .row { margin-top: 6px !important; }
   .screen.tasking { display: grid; grid-template-columns: 1fr minmax(240px, 38%); grid-template-rows: auto auto 1fr; }
   .screen.tasking > .topbar, .screen.tasking .arena { grid-column: 1 / -1; }
   .screen.tasking .taskwrap { grid-column: 1; grid-row: 3; }
   .screen.tasking .bottom { grid-column: 2; grid-row: 3; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); display: flex; flex-direction: column; justify-content: center; overflow-y: auto; }
   .screen.tasking .numpad button { min-height: 40px; }
 }
-.levelbadge { white-space: nowrap; }
 
 /* Attack tags: whole-number damage plus plain-language hints */
-.atk .tags { display: flex; flex-wrap: wrap; gap: 4px; min-height: 0; }
+.atk .tags { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; }
 .atk .tag { font-size: 13px; font-weight: 700; border-radius: 999px; padding: 0 8px; line-height: 20px; }
 .atk .tag.tired { background: #FFE3D6; color: #8A2E0E; }
 .atk .tag.power { background: #FFF1C7; color: #6B4E00; }
@@ -373,9 +388,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 /* ---------- Motion (all short and soft; switched off for "reduce motion") ---------- */
 .enter { animation: screenIn .22s ease-out both; }
 @keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.fighter { position: relative; }
-.fighter .mon { animation: bob 3.2s ease-in-out infinite; }
-.fighter#fe .mon { animation-delay: -1.6s; }
+.sprite .mon { animation: bob 3.2s ease-in-out infinite; }
+.sprite#fe .mon { animation-delay: -1.6s; }
 .hero .logo, .card.center > .mon, .choice.selected .mon { animation: bob 3.6s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
 .floatnum { position: fixed; transform: translateX(-50%); font-family: var(--hand); font-size: 32px; color: #fff; text-shadow: 0 2px 0 var(--ink), 0 0 6px rgba(0,0,0,.4); pointer-events: none; animation: floatUp .9s ease-out forwards; z-index: 3; }
@@ -391,14 +405,13 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .confetti i { position: absolute; top: -12px; left: var(--x); width: 9px; height: 14px; border-radius: 3px; background: var(--c); opacity: 0; animation: fall 2.6s ease-in var(--d) 1 forwards; }
 @keyframes fall { 0% { opacity: 0; transform: translateY(0) rotate(0); } 10% { opacity: 1; } 100% { opacity: 0; transform: translateY(85vh) rotate(320deg); } }
 @media (prefers-reduced-motion: reduce) {
-  .enter, .fighter .mon, .hero .logo, .card.center > .mon, .choice.selected .mon, .floor.current .node, .overlay .modal, .feedback.good, .confetti i { animation: none; }
+  .enter, .sprite .mon, .hero .logo, .card.center > .mon, .choice.selected .mon, .floor.current .node, .overlay .modal, .feedback.good, .confetti i { animation: none; }
   .confetti { display: none; }
   .floatnum { animation: none; opacity: 1; }
   .btn, .choice, .atk, .opt, .oitem, .node, .item, .toggle, .gradechip { transition: none; }
 }
 
 .advantage { font-size: 13px; font-weight: 700; background: #DFF5E3; color: #1E6B32; border-radius: 999px; padding: 0 8px; line-height: 20px; }
-.screen.tasking .advantage { display: none; }
 @media (max-height: 720px) { .grid { grid-template-columns: repeat(3, 52px); gap: 5px; margin: 6px 0; } .grid div { width: 52px; height: 52px; font-size: 20px; } .legend { font-size: 13px; gap: 6px; } }
 @media (max-height: 720px) and (min-width: 500px) { .grid { grid-template-columns: repeat(3, 56px); } .grid div { width: 56px; height: 56px; } }
 
@@ -1646,8 +1659,10 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
     const quiet = !!b.shown; b.shown = true;
     render(`<div class="screen">${topbar(e.boss ? '👑 Bosskampf' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
       <div class="arena">
-        <div class="fighter" id="fh">${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, h.evo)}<div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div></div>
-        <div class="fighter" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0, 'enemy')}<div class="name">${esc(e.name)}</div>${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<div class="advantage">💪 Du bist stark gegen ${TYPES[e.type].name}!</div>` : ''}<div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
+        <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
+        <div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
+        <div class="sprite hero" id="fh">${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, h.evo)}<i class="ground"></i></div>
+        <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div><div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
@@ -1912,7 +1927,7 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
 /* Offline support + automatic updates (see src/sw.js) */
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '86b3ba3ae219';
+  const BUILD = '3e9aae4a2abb';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
