@@ -16,9 +16,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Nach einem Fehler darfst du dieselbe Attacke gleich nochmal üben – sie wird nur nach Treffern müde.
 - Die Eselsbrücke (früher Lupe) hilft jetzt auch bei Richtig-oder-Falsch-Fragen.
 - Gegner und Ereignisse passen besser zum Thema.
-- Die Töne sind wieder raus.
+- Echte Töne: Klick, Treffer, Fanfare nach dem Kampf und Applaus im Finale. Mit 🔊 auf der Startseite oder im Elternbereich abschaltbar.
 - Neue Schriften: Handschrift für Überschriften und Namen, eine Leseanfänger-Schrift für Text und Zahlen. Rechenaufgaben stehen auf Karopapier.
-- Der Kampf ist neu aufgebaut: Gegner oben rechts, dein Monster unten links, die Meldung in einer Textbox. Alle Attacken-Knöpfe sind gleich groß.
+- Der Kampf ist neu aufgebaut: Gegner oben rechts, dein Monster unten links, die Meldung in einer Textbox. Alle Attacken-Knöpfe sind gleich groß. Zwischen den Aktionen gibt es kurze Pausen, und die Schadenszahlen bleiben länger sichtbar.
 - Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter.
 
 ### Behoben

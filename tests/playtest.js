@@ -91,7 +91,8 @@ async function step(){
   while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; click($('#again')); }
     if($('[data-new]') && ends>0 && steps>5 && !$('.choice')){ /* back at title: handled in step */ }
     // advance timeouts (enemy turn 700-900ms) -> wait a bit when nothing clickable
-    if(!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.floor.current .node')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')) await sleep(950);
+    // battle pauses (up to ~2 s between actions): wait until something is clickable again
+    for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.floor.current .node')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
   console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});

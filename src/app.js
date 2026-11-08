@@ -35,7 +35,7 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {} });
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Load saved progress defensively: anything missing or of the wrong type falls back to the default,
   // so damaged storage can never stop the game from starting.
@@ -116,7 +116,8 @@
     const on = enabledMods(); const used = run.hero.attacks.map((a) => a.mod).filter((k) => on.includes(k)); const spare = on.filter((k) => !used.includes(k)); let i = 0;
     return run.hero.attacks.map((a) => { if (on.includes(a.mod)) return Object.assign({}, a); const k = spare.length ? spare.shift() : on[i++ % on.length]; return { name: CFG().extra[k], mod: k }; });
   }
-  function gainXp(n) { run.hero.xp += n; let msgs = []; while (run.hero.xp >= xpNeeded(run.hero.level)) { run.hero.xp -= xpNeeded(run.hero.level); run.hero.level++; run.hero.maxHp += 8; run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + 8); msgs.push(`Level ${run.hero.level}! Alle Attacken machen mehr Schaden.`); } return msgs; }
+  function gainXp(n) { run.hero.xp += n; let msgs = []; while (run.hero.xp >= xpNeeded(run.hero.level)) { run.hero.xp -= xpNeeded(run.hero.level); run.hero.level++; run.hero.maxHp += 8; run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + 8); msgs.push(`Level ${run.hero.level}! Alle Attacken machen mehr Schaden.`); }
+    if (msgs.length) setTimeout(SFX.levelup, 1400); return msgs; }
   function heal(n) { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + n); }
 
   /* ---------- Rendering primitives ---------- */
@@ -124,8 +125,24 @@
   // quiet = re-render of the same screen (no fade-in), e.g. every turn in a battle
   function render(html, quiet) { keyHandler = null; app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
 
+  /* ---------- Sounds: CC0 clips in docs/sounds/ (see SOURCES.md), decoded with WebAudio.
+     Phones keep audio silent until the page is "unlocked" by a user gesture, so the first tap resumes the context. ---------- */
+  const SFX = (() => {
+    const FILES = { tap: 0.45, right: 0.9, wrong: 0.9, hit: 1, crit: 1, hurt: 0.9, block: 1, levelup: 1, win: 1, finale: 1, lose: 0.9 };
+    const AC = window.AudioContext || window.webkitAudioContext;
+    let ctx = null, loading = false; const buffers = {};
+    function load() { loading = true; if (typeof fetch !== 'function') return; for (const k of Object.keys(FILES)) fetch('sounds/' + k + '.mp3').then((r) => r.arrayBuffer()).then((ab) => ctx.decodeAudioData(ab)).then((buf) => { buffers[k] = buf; }).catch(() => { }); }
+    function ensure() { if (!AC || !meta.sound) return null; try { if (!ctx) ctx = new AC(); if (ctx.state === 'suspended') ctx.resume(); if (!loading) load(); return ctx; } catch (e) { return null; } }
+    function play(k) { const c = ensure(); if (!c || !buffers[k]) return; try { const src = c.createBufferSource(); src.buffer = buffers[k]; const g = c.createGain(); g.gain.value = FILES[k]; src.connect(g); g.connect(c.destination); src.start(); } catch (e) { } }
+    const api = { unlock: ensure, loaded: () => Object.keys(buffers).length };
+    for (const k of Object.keys(FILES)) api[k] = () => play(k);
+    return api;
+  })();
+  ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => SFX.unlock(), { capture: true, passive: true }));
+  document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('button')) SFX.tap(); }, true);
+  window.__sfx = SFX;
   // floating damage number above a fighter
-  function fx(sel, text, cls) { const el = $(sel); if (!el) return; const r = el.getBoundingClientRect(); const s = document.createElement('span'); s.className = 'floatnum ' + (cls || ''); s.textContent = text; s.setAttribute('aria-hidden', 'true'); s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top + Math.min(40, r.height * 0.3)) + 'px'; document.body.appendChild(s); setTimeout(() => s.remove(), 1000); }
+  function fx(sel, text, cls) { const el = $(sel); if (!el) return; const r = el.getBoundingClientRect(); const s = document.createElement('span'); s.className = 'floatnum ' + (cls || ''); s.textContent = text; s.setAttribute('aria-hidden', 'true'); s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top + Math.min(40, r.height * 0.3)) + 'px'; document.body.appendChild(s); setTimeout(() => s.remove(), 2100); }
   document.addEventListener('keydown', (e) => { if (keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) keyHandler(e); });
   // one persistent live region, so screen readers reliably announce battle messages
   const live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); document.body.appendChild(live);
@@ -202,8 +219,8 @@
       if (opts.onResult) opts.onResult(ok); // game state changes now, so a reload can't undo the answer
       inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
-      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; }
-      else { const corr = task.answers.join(task.nb ? ' und ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
+      else { SFX.wrong(); const corr = task.answers.join(task.nb ? ' und ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -218,7 +235,7 @@
     // magnifier item: with two options (e.g. richtig/falsch) crossing one out would give the answer away – show the notes instead
     const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
-      locked = true; const fb = $('#fb', container);
+      locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
       if (opts.onResult) opts.onResult(ok);
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small></div>`;
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
@@ -276,7 +293,7 @@
 
   /* ---------- Screens ---------- */
   function screenTitle() {
-    render(`<div class="screen"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
@@ -289,6 +306,7 @@
     $('#dex').onclick = screenDex;
     $('#news').onclick = screenNews;
     $('#feedback').onclick = () => screenFeedback(screenTitle);
+    $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
   }
 
@@ -362,7 +380,7 @@
     if (isObj(n.enemy)) {
       const b = { enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
       if (n.enemy.hp <= 0) return battleWon(b); // defeated just before the app closed: hand out the reward
-      if (n.enemy.pending) { b.phase = 'wait'; renderBattle(b); setTimeout(() => { if (run) enemyTurn(b, n.enemy.pending); }, 600); return; } // the enemy still has its turn
+      if (n.enemy.pending) { b.phase = 'wait'; renderBattle(b); setTimeout(() => { if (run) enemyTurn(b, n.enemy.pending); }, 1200); return; } // the enemy still has its turn
       return renderBattle(b);
     }
     if (n.type === 'event' && Number.isInteger(n.opt)) return screenEvent(n.opt); // a started event task can't be swapped for the safe option
@@ -469,10 +487,11 @@
     ensureTutorial(t, () => {
       runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name, hint, onResult }, () => {
         b.phase = b.enemy.hp <= 0 ? 'over' : 'wait'; // attacks come back after the enemy's turn
-        if (hit) { renderBattle(b, true); $('#fe').classList.add('hurt'); fx('#fe', '−' + hit.dmg, hit.crit ? 'crit' : ''); }
+        if (hit) { renderBattle(b, true); $('#fe').classList.add('hurt'); fx('#fe', '−' + hit.dmg, hit.crit ? 'crit' : ''); if (hit.crit) SFX.crit(); else SFX.hit(); }
         else renderBattle(b, true);
-        if (b.enemy.hp <= 0) { setTimeout(() => { if (run) battleWon(b); }, 650); return; }
-        setTimeout(() => { if (run) enemyTurn(b, b.enemy.pending || 1); }, hit ? 700 : 900);
+        // a breath between the actions, so the numbers and the hit can be seen
+        if (b.enemy.hp <= 0) { setTimeout(() => { if (run) battleWon(b); }, 1500); return; }
+        setTimeout(() => { if (run) enemyTurn(b, b.enemy.pending || 1); }, hit ? 1700 : 1900);
       });
     });
   }
@@ -484,8 +503,8 @@
     const angel = run.items.indexOf('engel');
     if (h.hp <= 0 && angel >= 0) { run.items.splice(angel, 1); h.hp = Math.round(h.maxHp * 0.5); b.log += ` – aber ${ITEMS.engel.icon} der Schutzengel rettet dich! ❤️ ${h.hp}`; b.logCls = 'crit'; }
     b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b);
-    if (b.taken) { $('#fh').classList.add('hurt'); fx('#fh', '−' + b.taken); } else { fx('#fh', '🛡️', 'shield'); }
-    if (h.hp <= 0) setTimeout(() => screenGameOver(b), 600);
+    if (b.taken) { $('#fh').classList.add('hurt'); fx('#fh', '−' + b.taken); SFX.hurt(); } else { fx('#fh', '🛡️', 'shield'); SFX.block(); }
+    if (h.hp <= 0) setTimeout(() => screenGameOver(b), 1600);
   }
   const LOOT = { normal: ['beere', 'beere', 'trank', 'keks', 'lupe', 'stern'], elite: ['trank', 'schild', 'keks', 'lupe', 'engel'], boss: ['engel', 'keks', 'schild'], chest: ['trank', 'schild', 'keks', 'lupe', 'engel', 'stern'] };
   function battleWon(b) {
@@ -497,6 +516,7 @@
     else if (e.elite) drops.push(pick(LOOT.elite));
     else if (Math.random() < 0.5) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
+    if (!(e.boss && run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
     nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
@@ -588,13 +608,13 @@
   /* ---------- End screens ---------- */
   function screenGameOver(b) {
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
-    endRun(); run = null;
+    endRun(); run = null; setTimeout(SFX.lose, 200);
     render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p><p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
     meta.wins++; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
-    endRun(); run = null;
+    endRun(); run = null; setTimeout(SFX.finale, 300);
     render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p><p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
@@ -607,7 +627,8 @@
     const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
     const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = MK.L_POOL.find((p) => p.id === id) || MK.K_POOL.find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
     const settings = `<div class="card parent-stats" style="margin-bottom:12px"><h3>🎛️ Was soll geübt werden?</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.</p>${MODE_KEYS.map((m) => `<h4 style="margin:10px 0 4px">${MODES[m].icon} ${MODES[m].title}</h4><div class="toggles">${Object.keys(MODES[m].modules).map((k) => { const on = !offList(m).includes(k); return `<button class="toggle ${on ? 'on' : ''}" data-m="${m}" data-k="${k}" aria-pressed="${on}">${on ? '✔' : '✖'} ${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</button>`; }).join('')}</div>`).join('')}<p id="tmsg" class="muted" role="status" style="color:var(--red);min-height:1em;margin:6px 0 0"></p></div>`;
-    render(`<div class="screen">${topbar('Elternbereich')}<div class="scroll">${settings}${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
+    const soundCard = `<div class="card parent-stats" style="margin-bottom:12px"><h3>Töne</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</p><button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button></div>`;
+    render(`<div class="screen">${topbar('Elternbereich')}<div class="scroll">${settings}${soundCard}${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
       <div class="stack" style="margin-top:14px"><button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn secondary" id="pfeedback">Idee oder Fehler melden</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button></div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
     $('#back').onclick = screenTitle;
@@ -615,6 +636,7 @@
     $('#rstats').onclick = () => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); screenParent(); };
     $('#rall').onclick = () => { const ov = modal(`<h2>Wirklich alles löschen?</h2><p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht. Das kann man nicht rückgängig machen.</p><div class="stack"><button class="btn" id="yes" style="background:var(--red)">Ja, alles löschen</button><button class="btn secondary" id="no">Abbrechen</button></div>`); $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }; };
     $('#pfeedback').onclick = () => screenFeedback(screenParent);
+    $('#psound').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenParent(); };
     app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
       const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
       if (i >= 0) off.splice(i, 1); else { if (Object.keys(MODES[m].modules).length - off.length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }

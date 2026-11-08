@@ -93,7 +93,7 @@ async function reloadCases() {
     const p1 = startMathFight(); const hp0 = p1.w.__mq.run.hero.hp;
     answer(p1, false);
     const p2 = open(p1.dump()); p2.click('[data-cont="math"]');
-    await sleep(900);
+    await sleep(1700);
     const r = p2.w.__mq.run; const tries = Object.values(p2.w.__mq.meta.stats.math).reduce((n, s) => n + s.t, 0);
     check(tries === 1, 'a wrong answer is counted even if the app is closed before "Weiter"');
     check(r.hero.hp < hp0 || r.shield === false && p2.text().includes('greift'), 'the enemy takes its owed turn after reopening');
