@@ -1,10 +1,5 @@
-/* Lernquest service worker – makes the game installable and playable offline.
- * c9570cb4f43b is replaced by build.py with a hash of the sources, so every new
- * build ships a new worker that refreshes the cache.
- * Update strategy: the game page is fetched network-first (revalidated past the
- * HTTP cache), so an online launch always shows the newest version; offline or
- * on a slow connection the cached copy is used after a short timeout. */
-const VERSION = 'c9570cb4f43b';
+// 6ab8c06715e7 = build hash (build.py), so every build refreshes the cache.
+const VERSION = '6ab8c06715e7';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;
 const CORE = [
@@ -43,7 +38,6 @@ self.addEventListener('activate', (e) => {
     caches.keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
-      // tell open pages which version is now active (they reload if they are older)
       .then(() => self.clients.matchAll({ type: 'window' }))
       .then((wins) => wins.forEach((w) => w.postMessage({ type: 'sw-activated', version: VERSION })))
   );
@@ -56,8 +50,7 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // The game page (./ or ./index.html): network first (newest version), cached copy as fallback.
-  // Other pages opened inside the app's folder (e.g. fonts/OFL.txt) are passed through and never cached as the game.
+  // game page: network first with timeout, cache fallback; other pages (e.g. fonts/OFL.txt) pass through
   const scope = new URL(self.registration.scope);
   const isGame = url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html';
   if (req.mode === 'navigate' && !isGame) return;
@@ -80,6 +73,5 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Everything else from our origin: cache first, then network.
   e.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
 });
