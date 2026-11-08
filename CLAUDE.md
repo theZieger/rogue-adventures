@@ -29,5 +29,6 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 - All player-facing text is German, child-friendly, with German typography („…“, –).
 - No time pressure, no comma numbers in what children see (show whole numbers).
 - No external requests at runtime (fonts are self-hosted in `docs/fonts/`), no tracking, everything stays on the device.
+  Only exception: the feedback screen posts the message to the Google Form when the player taps „Absenden“.
 - The app is an installable PWA: assets the game needs offline must be listed in `CORE` in `src/sw.js`.
 - Learning content follows the class worksheets – check factual changes to `src/knowledge.js` carefully.

@@ -35,10 +35,10 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Aufgabenarten an/aus, Töne, Reset.
 - Startseite: Klasse → Fach → Einheit. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
-- „Idee senden“ schickt Ideen, Fehler und Lob über ein Google-Formular (kein Konto nötig) oder als GitHub-Issue – siehe „Feedback einrichten“.
+- „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
 - Töne werden im Browser erzeugt (keine Audiodateien), Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Weiterspielen geht es genau dort weiter.
-- Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften.
+- Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften. Einzige Ausnahme: eine Nachricht, die man selbst mit „Idee senden“ abschickt.
 - Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich.
 
 ## Projektstruktur
@@ -82,17 +82,11 @@ Inhalte anpassen:
 Repository → Settings → Pages → Source „Deploy from a branch“, Branch `main`, Ordner `/docs`.
 Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI prüft, dass `docs/` zum Stand von `src/` passt.
 
-## Feedback einrichten
+## Feedback
 
-Der Knopf „📨 Absenden“ öffnet ein Google-Formular mit der Nachricht schon eingetragen.
+„💡 Idee senden“ (Startseite und Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
 
-1. Google-Formular anlegen mit einer Frage vom Typ „Absatz“ (z. B. „Deine Nachricht“).
-2. Im Formular: ⋮ → „Vorausgefüllten Link abrufen“, in das Feld `TEXT` schreiben, „Link abrufen“ → Link kopieren.
-3. Der Link sieht so aus: `https://docs.google.com/forms/d/e/…/viewform?usp=pp_url&entry.123456789=TEXT`.
-   In `src/app.js` bei `FEEDBACK.form` eintragen und `TEXT` durch `{text}` ersetzen.
-4. `npm run build`, committen, pushen. Antworten landen im Formular (optional per E-Mail-Benachrichtigung).
-
-Eingerichtet ist das Formular „Feedback“ (Frage „Dein Feedback“, `entry.1794178349`). „Auf GitHub senden“ funktioniert zusätzlich (mit GitHub-Konto).
+Ein anderes Formular verwenden: In `FEEDBACK` (`src/app.js`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
 
 ## Lizenz
 

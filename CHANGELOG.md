@@ -9,7 +9,7 @@ Jeder Punkt ist ein kurzer Satz, den auch Kinder und Eltern verstehen.
 ## 2026-11-08
 
 ### Neu
-- „Idee senden“ geht jetzt über ein Formular – ganz ohne Konto.
+- „Idee senden“ schickt deine Nachricht direkt aus dem Spiel ab – ganz ohne Konto.
 - Beim Installieren zeigt das Handy oder der Computer Bilder vom Spiel.
 - Neue Begriffe-Fragen zu Luther, zum Beispiel „protestieren“, „Professor“ und „evangelisch“.
 

@@ -638,28 +638,39 @@
   }
 
   /* ---------- Feedback ---------- */
-  // Where ideas go. GitHub works right away (needs a GitHub account). FEEDBACK.email / FEEDBACK.form can be filled in
-  // to let people without an account send ideas too (mail app / an online form) – see README "Feedback".
-  // form: Google-Formular-Link mit vorausgefülltem Textfeld; {text} wird durch die Nachricht ersetzt (Anleitung im README).
-  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw/viewform?usp=pp_url&entry.1794178349={text}' };
+  // Messages go to a Google Form ("Feedback", question "Dein Feedback"). They are sent from our own screen, so players
+  // never leave the game; only if sending fails (e.g. offline) the form opens in a new tab with the text filled in.
+  // This is the only request to another server, and only when the player taps "Absenden".
+  const FEEDBACK = { form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw', entry: 'entry.1794178349' };
   function screenFeedback(back) {
     back = typeof back === 'function' ? back : screenTitle;
     render(`<div class="screen">${topbar('💡 Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
       <label for="fbtext" class="sr-only">Deine Nachricht</label><textarea id="fbtext" rows="6" maxlength="2000" placeholder="Zum Beispiel: Ich wünsche mir Aufgaben zum Einmaleins mit 7 …"></textarea>
-      <p class="muted" style="color:var(--ink-soft);font-size:15px">Bitte keine Namen, Adressen oder Telefonnummern hineinschreiben.</p></div></div>
-      <div class="bottom"><div class="stack">${FEEDBACK.form ? '<button class="btn" id="fbform">📨 Absenden</button>' : ''}${FEEDBACK.email ? '<button class="btn" id="fbmail">✉️ Per E-Mail senden</button>' : ''}<button class="btn ${FEEDBACK.form || FEEDBACK.email ? 'secondary' : ''}" id="fbgh">Auf GitHub senden (mit GitHub-Konto)</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
-    let kind = '💡 Idee';
+      <p class="muted" style="color:var(--ink-soft);font-size:15px">Bitte keine Namen, Adressen oder Telefonnummern hineinschreiben.</p><p id="fbmsg" role="status" aria-live="polite" class="fbmsg"></p></div></div>
+      <div class="bottom"><div class="stack"><button class="btn" id="fbsend">📨 Absenden</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
+    let kind = '💡 Idee'; let sending = false;
     app.querySelectorAll('[data-kind]').forEach((b) => { b.onclick = () => { kind = b.dataset.kind; app.querySelectorAll('[data-kind]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); }; });
     const text = () => $('#fbtext').value.trim();
-    const body = () => `${text()}\n\n---\nArt: ${kind}\nVersion: ${(document.querySelector('meta[name=app-version]') || {}).content || '?'}`;
-    const title = () => `${kind.replace(/^\S+ /, '')}: ${text().split('\n')[0].slice(0, 60)}`;
-    const need = () => { if (text()) return true; $('#fbtext').focus(); $('#fbtext').placeholder = 'Bitte zuerst etwas hineinschreiben 🙂'; return false; };
-    const open = (url) => { window.open(url, '_blank', 'noopener'); };
+    const body = () => `${kind}: ${text()}\n\n(Lernquest, Version ${(document.querySelector('meta[name=app-version]') || {}).content || '?'})`;
+    const formLink = () => `${FEEDBACK.form}/viewform?usp=pp_url&${FEEDBACK.entry}=${encodeURIComponent(body())}`;
     $('#back').onclick = () => back();
-    $('#fbgh').onclick = () => { if (need()) open(`${FEEDBACK.github}?title=${encodeURIComponent(title())}&body=${encodeURIComponent(body())}&labels=feedback`); };
-    if ($('#fbmail')) $('#fbmail').onclick = () => { if (need()) location.href = `mailto:${FEEDBACK.email}?subject=${encodeURIComponent('Lernquest – ' + title())}&body=${encodeURIComponent(body())}`; };
-    if ($('#fbform')) $('#fbform').onclick = () => { if (need()) open(FEEDBACK.form.replace('{text}', encodeURIComponent(body()))); };
+    $('#fbsend').onclick = async () => {
+      if (sending) return;
+      if (!text()) { $('#fbtext').focus(); $('#fbmsg').textContent = 'Bitte zuerst etwas hineinschreiben 🙂'; return; }
+      sending = true; $('#fbsend').disabled = true; $('#fbsend').textContent = '📨 Wird gesendet …';
+      try {
+        if (navigator.onLine === false) throw new Error('offline');
+        // Google Forms doesn't allow reading the answer (no-cors), but a request that goes out arrives.
+        await fetch(`${FEEDBACK.form}/formResponse`, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ [FEEDBACK.entry]: body() }) });
+        SFX.item();
+        render(`<div class="screen">${topbar('💡 Danke!')}<div class="scroll"><div class="card center"><div style="font-size:56px" aria-hidden="true">💌</div><h2>Danke für deine Nachricht!</h2><p>Sie ist angekommen. Vielleicht steht deine Idee bald unter „Was ist neu?“.</p></div></div><div class="bottom"><button class="btn" id="back">Zurück</button></div></div>`);
+        $('#back').onclick = () => back();
+      } catch (e) {
+        sending = false; $('#fbsend').disabled = false; $('#fbsend').textContent = '📨 Nochmal versuchen';
+        $('#fbmsg').innerHTML = `Das hat nicht geklappt – bist du mit dem Internet verbunden? Dein Text bleibt hier stehen. <a href="${esc(formLink())}" target="_blank" rel="noopener">Oder im Formular senden ↗</a>`;
+      }
+    };
   }
 
   screenTitle();

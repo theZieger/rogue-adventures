@@ -336,3 +336,6 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .screen.tasking .advantage { display: none; }
 @media (max-height: 720px) { .grid { grid-template-columns: repeat(3, 52px); gap: 5px; margin: 6px 0; } .grid div { width: 52px; height: 52px; font-size: 20px; } .legend { font-size: 13px; gap: 6px; } }
 @media (max-height: 720px) and (min-width: 500px) { .grid { grid-template-columns: repeat(3, 56px); } .grid div { width: 56px; height: 56px; } }
+
+.fbmsg { min-height: 1em; margin: 6px 0 0; font-weight: 700; color: var(--ink); }
+.fbmsg a { color: var(--blue); }
