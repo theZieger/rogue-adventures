@@ -48,7 +48,6 @@ const MQ = (() => {
     (d) => d.e < d.z ? { text: `Mein Einer ist um ${d.z - d.e} kleiner als mein Zehner.`, test: (x) => x.z - x.e === d.z - d.e } : null,
     (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
     (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
-    (d) => ({ text: `Meine Quersumme ist ${d.z + d.e}.`, test: (x) => x.z + x.e === d.z + d.e }),
     (d) => d.e === d.z ? { text: `Mein Einer und mein Zehner sind gleich.`, test: (x) => x.e === x.z } : null,
     (d) => ({ text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`, test: (x) => x.e % 2 === d.e % 2 }),
   ];
@@ -62,7 +61,6 @@ const MQ = (() => {
     (d) => ({ text: `Mein Hunderter ist ${d.h}.`, test: (x) => x.h === d.h }),
     (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
     (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
-    (d) => ({ text: `Meine Quersumme ist ${d.h + d.z + d.e}.`, test: (x) => x.h + x.z + x.e === d.h + d.z + d.e }),
     (d) => ({ text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`, test: (x) => x.e % 2 === d.e % 2 }),
   ];
   const isRel = (c) => c.text.includes('-mal') || c.text.includes('größer') || c.text.includes('kleiner');
@@ -160,8 +158,8 @@ const MQ = (() => {
       3: { title: 'Die fehlende Zahl', steps: ['? · 6 = 42: Wie oft passt die 6 in 42?', 'Zähle in 6er-Schritten: 6, 12, 18, 24, 30, 36, 42. Das sind 7 Schritte.', 'Also ? = 7.'] },
     },
     riddle: {
-      1: { title: 'Zahlenrätsel', steps: ['Eine Zahl hat Stellen: Zehner und Einer. Bei 47 ist der Zehner 4 und der Einer 7.', 'Quersumme: Alle Ziffern zusammenzählen. Bei 23 ist die Quersumme 2 + 3 = 5.', 'Lies die Hinweise und probiere Zahlen aus.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Zehner ist 3.“ → Einer ist 6. Die Zahl ist 36.'] },
-      3: { title: 'Knifflige Zahlenrätsel', steps: ['Mehrere Hinweise, alle müssen stimmen.', 'Starte mit dem Hinweis, der am meisten verrät (z. B. „Mein Zehner ist 4“).', 'Dann prüfe die anderen Hinweise nacheinander.', 'Quersumme: Alle Ziffern zusammenzählen. Bei 258 ist die Quersumme 2 + 5 + 8 = 15.'] },
+      1: { title: 'Zahlenrätsel', steps: ['Eine Zahl hat Stellen: Zehner und Einer. Bei 47 ist der Zehner 4 und der Einer 7.', 'Lies die Hinweise und probiere Zahlen aus.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Zehner ist 3.“ → Einer ist 6. Die Zahl ist 36.'] },
+      3: { title: 'Knifflige Zahlenrätsel', steps: ['Mehrere Hinweise, alle müssen stimmen.', 'Starte mit dem Hinweis, der am meisten verrät (z. B. „Mein Zehner ist 4“).', 'Dann prüfe die anderen Hinweise nacheinander.'] },
     },
     seq: {
       1: { title: 'Zahlenfolgen', steps: ['Finde heraus, wie viel jedes Mal dazukommt.', '3, 8, 13, 18: Jedes Mal + 5.', 'Also weiter: 23, 28, 33.'] },
@@ -180,7 +178,7 @@ const MQ = (() => {
       3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt sind die Schritte zehnmal so groß: nach rechts + 10, nach links − 10, nach unten + 100, nach oben − 100.', 'Beispiel: Start 420, ein Feld nach rechts (430), dann eins nach unten (530).', 'Das Zielfeld ist 530.'] },
     },
   };
-  TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', 'Die Quersumme sind alle Ziffern zusammen: Bei 258 ist sie 2 + 5 + 8 = 15.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
+  TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
   const TYPES = { feuer: { name: 'Feuer', icon: '🔥', color: '#FF6A3D' }, wasser: { name: 'Wasser', icon: '💧', color: '#3FA0FF' }, pflanze: { name: 'Pflanze', icon: '🌿', color: '#4FC96A' }, normal: { name: 'Normal', icon: '⭐', color: '#C9A227' } };
