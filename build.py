@@ -79,7 +79,8 @@ html = f"""<!DOCTYPE html>
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
 <meta name="app-version" content="__BUILD__">
 {splash}
-<link rel="preload" href="fonts/baloo2-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/andika-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/patrickhand-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 {css}
 </style>

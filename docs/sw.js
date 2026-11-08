@@ -1,10 +1,10 @@
 /* Lernquest service worker – makes the game installable and playable offline.
- * a6258b09ff3e is replaced by build.py with a hash of the sources, so every new
+ * 7659c533d008 is replaced by build.py with a hash of the sources, so every new
  * build ships a new worker that refreshes the cache.
  * Update strategy: the game page is fetched network-first (revalidated past the
  * HTTP cache), so an online launch always shows the newest version; offline or
  * on a slow connection the cached copy is used after a short timeout. */
-const VERSION = 'a6258b09ff3e';
+const VERSION = '7659c533d008';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;
 const CORE = [
@@ -12,7 +12,9 @@ const CORE = [
   './index.html',
   './manifest.webmanifest',
   './favicon.ico',
-  './fonts/baloo2-latin.woff2',
+  './fonts/andika-400-latin.woff2',
+  './fonts/andika-700-latin.woff2',
+  './fonts/patrickhand-latin.woff2',
   './icons/favicon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
