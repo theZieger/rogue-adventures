@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="73c43fdc4f5e">
+<meta name="app-version" content="cc488fa6734b">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -402,6 +402,7 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 
 .fbmsg { min-height: 1em; margin: 6px 0 0; font-weight: 700; color: var(--ink); }
 .fbmsg a { color: var(--blue); }
+.row .btn.small { white-space: nowrap; }
 
 </style>
 </head>
@@ -1934,7 +1935,7 @@ const CHANGELOG = [{"date": "2026-11-08", "groups": [{"title": "Neu", "items": [
 /* Offline support + automatic updates (see src/sw.js) */
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '73c43fdc4f5e';
+  const BUILD = 'cc488fa6734b';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

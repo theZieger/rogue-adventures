@@ -346,3 +346,4 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 
 .fbmsg { min-height: 1em; margin: 6px 0 0; font-weight: 700; color: var(--ink); }
 .fbmsg a { color: var(--blue); }
+.row .btn.small { white-space: nowrap; }

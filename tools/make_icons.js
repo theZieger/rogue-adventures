@@ -93,21 +93,21 @@ const IPADS = [ // iPads ignore the portrait lock, so they get landscape too
   [768, 1024, 2],  // iPad 9.7", mini 1–5
   [744, 1133, 2],  // mini 6+
 ];
-const FONT_B64 = fs.readFileSync(path.join(__dirname, '..', 'docs', 'fonts', 'baloo2-latin.woff2')).toString('base64');
+const FONT_B64 = fs.readFileSync(path.join(__dirname, '..', 'docs', 'fonts', 'patrickhand-latin.woff2')).toString('base64');
 const SPLASH_BG = '#1C2541'; // = --bg, so the launch flows straight into the game
 
 function splashHTML(w, h) {
   const m = Math.min(w, h);
   const foxW = m * 0.42, k = foxW / 120;
   const font = m * 0.13;
-  return `<html><head><style>@font-face{font-family:'Baloo 2';font-weight:400 800;src:url(data:font/woff2;base64,${FONT_B64}) format('woff2')}</style></head>
-<body style="margin:0;width:${w}px;height:${h}px;background:${SPLASH_BG};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif">
+  return `<html><head><style>@font-face{font-family:'Patrick Hand';font-weight:400;src:url(data:font/woff2;base64,${FONT_B64}) format('woff2')}</style></head>
+<body style="margin:0;width:${w}px;height:${h}px;background:${SPLASH_BG};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Patrick Hand',cursive">
 <svg width="${foxW * 1.6}" height="${foxW * 1.4}" viewBox="0 0 ${foxW * 1.6} ${foxW * 1.4}" style="overflow:visible">
 <defs><radialGradient id="glow"><stop offset="0" stop-color="#FFC93C" stop-opacity=".45"/><stop offset=".6" stop-color="#FF8A3D" stop-opacity=".12"/><stop offset="1" stop-color="#FF8A3D" stop-opacity="0"/></radialGradient></defs>
 <circle cx="${foxW * 0.8}" cy="${foxW * 0.72}" r="${foxW * 0.7}" fill="url(#glow)"/>
 <g transform="translate(${foxW * 0.3} ${foxW * 0.12}) scale(${k})">${fox()}</g></svg>
 <div style="color:#fff;font-weight:800;font-size:${font}px;line-height:1;margin-top:${m * 0.02}px;letter-spacing:-.01em">Lernquest</div>
-<div style="color:#FFC93C;font-weight:800;font-size:${font * 0.32}px;margin-top:${m * 0.025}px">Monster · Wissen · Abenteuer</div>
+<div style="color:#FFC93C;font-weight:800;font-size:${font * 0.32}px;margin-top:${m * 0.025}px">Jede Attacke ist eine Aufgabe.</div>
 </body></html>`;
 }
 

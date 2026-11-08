@@ -59,7 +59,7 @@ docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
 docs/screenshots/  Bilder für den Installieren-Dialog (Android/Desktop)
-docs/fonts/        Schrift Baloo 2 (SIL OFL) – lokal eingebunden, keine Verbindung zu Google
+docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebunden, keine Verbindung zu Google
 ```
 
 ## Entwickeln
@@ -90,7 +90,7 @@ Ein anderes Formular verwenden: In `FEEDBACK` (`src/app.js`) die Formular-Adress
 
 ## Texte und Namen
 
-`tools/unslop-text.md` listet die Floskeln und Namensmuster, die im Spiel vermieden werden (Ergebnis einer Analyse von 40 generierten Textproben). Neue Gegner, Attacken, Gegenstände und Meldungen bitte daran prüfen.
+`tools/unslop-text.md` und `tools/unslop-visual.md` listen die Floskeln und Namensmuster, die im Spiel vermieden werden (Ergebnis einer Analyse von 40 generierten Text- und 20 Spielproben). Neue Gegner, Attacken, Gegenstände, Meldungen und Gestaltung bitte daran prüfen.
 
 ## Lizenz
 
