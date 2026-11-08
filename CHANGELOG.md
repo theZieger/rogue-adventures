@@ -14,8 +14,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Verbessert
 - Nach einem Fehler darfst du dieselbe Attacke gleich nochmal üben – sie wird nur nach Treffern müde.
-- Die Lupe hilft jetzt auch bei Richtig-oder-Falsch-Fragen.
+- Die Eselsbrücke (früher Lupe) hilft jetzt auch bei Richtig-oder-Falsch-Fragen.
 - Gegner und Ereignisse passen besser zum Thema.
+- Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter.
 
 ### Behoben
 - Wer die App mitten im Kampf schließt, verliert keine Antworten oder Belohnungen mehr.

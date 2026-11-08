@@ -37,6 +37,7 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 ## Conventions
 
 - All player-facing text is German, child-friendly, with German typography („…“, –).
+  Check new names and messages against `tools/unslop-text.md` (patterns to avoid).
 - No time pressure, no comma numbers in what children see (show whole numbers).
 - No external requests at runtime (fonts are self-hosted in `docs/fonts/`), no tracking, everything stays on the device.
   Only exception: the feedback screen posts the message to the Google Form when the player taps „Absenden“.

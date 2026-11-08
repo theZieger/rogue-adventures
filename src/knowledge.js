@@ -114,27 +114,27 @@ const MK = (() => {
     { id: 'luther', type: 'normal', shape: 'luther', names: ['Martin Luther', 'Martin Luther', 'Martin Luther'], hp: 70, desc: 'Der Mönch in Wittenberg. Mutig gegen die mächtige Kirche.', perk: 'none',
       attacks: [{ name: 'Klare Worte', mod: 'rf' }, { name: 'Gute Antwort', mod: 'mc' }, { name: 'Federkiel', mod: 'lt' }, { name: 'Thesenschlag', mod: 'def' }] },
   ];
-  const L_EXTRA = { rf: 'Wahrheitsblick', mc: 'Kluge Wahl', lt: 'Tintenfass', def: 'Wörterbuch', ord: 'Zeitstrahl' };
+  const L_EXTRA = { rf: 'Wahrheitsblick', mc: 'Kluge Wahl', lt: 'Druckerpresse', def: 'Wörterbuch', ord: 'Zeitstrahl' };
   const L_ENEMIES = {
     1: {
       normal: [
-        { name: 'Zweifelgeist', type: 'normal', shape: 'ghost', hp: 26, atk: 3 },
-        { name: 'Vergessgeist', type: 'normal', shape: 'ghost', hp: 24, atk: 4 },
-        { name: 'Verwechsler', type: 'normal', shape: 'bat', hp: 28, atk: 4 },
-        { name: 'Schwindelgeist', type: 'normal', shape: 'jelly', hp: 30, atk: 3 },
+        { name: 'Der Zweifler', type: 'normal', shape: 'ghost', hp: 26, atk: 3 },
+        { name: 'Der Vergessliche', type: 'normal', shape: 'ghost', hp: 24, atk: 4 },
+        { name: 'Der Verwechsler', type: 'normal', shape: 'bat', hp: 28, atk: 4 },
+        { name: 'Der Schwindler', type: 'normal', shape: 'jelly', hp: 30, atk: 3 },
       ],
-      elite: { name: 'Strenger Richter', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
+      elite: { name: 'Der strenge Richter', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
       boss: { name: 'Der Ablasshändler', acc: 'den Ablasshändler', type: 'normal', shape: 'merchant', hp: 70, atk: 6, boss: true },
     },
   };
   // Gegner-Angriffe: „<Gegner> greift mit <Angriff> an“
-  const L_MOVES = ['Bannspruch', 'Siegelstempel', 'Zweifelsnebel', 'Tintenklecks', 'Wirrwarr', 'Vergessenszauber'];
+  const L_MOVES = ['Bannspruch', 'Siegelstempel', 'Zweifelsnebel', 'Lateinvortrag', 'Drohbrief', 'Ablassrechnung'];
   const L_EVENTS = [
     { title: 'Der Mönch', text: 'Ein Mönch fragt dich: „Weißt du, was Luther wirklich wollte?“ Antworte richtig und er schenkt dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', g: 'reformation', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Kirchentür', text: 'Du stehst vor einer großen Kirchentür. Ein Zettel hängt daran: eine Frage zu Luthers Thesen!', opts: [{ label: 'Frage lesen', task: 'any', g: 'ablass', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Nicht lesen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Der Bote', text: 'Ein Bote bringt dir eine Nachricht. Wenn du sie richtig verstehst, schenkt er dir einen Schild.', opts: [{ label: 'Nachricht lesen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
-    { title: 'Die Bibliothek', text: 'In einer alten Bibliothek liegt eine Lupe. Der Bibliothekar fragt dich etwas – weißt du es?', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Die Kapelle', text: 'In einer kleinen Kapelle ist es still. Eine Nonne stellt dir eine Frage und segnet dich.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Leise weitergehen', effect: {} }] },
+    { title: 'Die Bibliothek', text: 'Der Bibliothekar kennt eine Eselsbrücke. Er verrät sie dir, wenn du seine Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Kapelle', text: 'In der Kapelle brennt nur eine Kerze. Eine Nonne stellt dir eine Frage und segnet dich.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Leise weitergehen', effect: {} }] },
     { title: 'Das Gasthaus', text: 'Im Gasthaus kannst du dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
@@ -283,10 +283,10 @@ const MK = (() => {
     'story:1': { title: 'Märchen ordnen', steps: ['Die Teile der Geschichte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an.', 'Erst Kartoffeln, dann Weizen, zum Schluss der Schatz.'] },
   };
   const K_STARTERS = [
-    { id: 'knolli', type: 'pflanze', shape: 'potato', names: ['Knolli', 'Werkstatt-Knolli', 'Werkstatt-Knolli'], hp: 70, desc: 'Eine fröhliche Kartoffel, die alles über ihre Pflanze wissen will.', perk: 'heal',
+    { id: 'knolli', type: 'pflanze', shape: 'potato', names: ['Knolli', 'Werkstatt-Knolli', 'Werkstatt-Knolli'], hp: 70, desc: 'Eine Kartoffel mit Keimen am Kopf. Will wissen, wie sie selbst gewachsen ist.', perk: 'heal',
       attacks: [{ name: 'Knollenstoß', mod: 'parts' }, { name: 'Erdblick', mod: 'ground' }, { name: 'Wachstumsschub', mod: 'grow' }, { name: 'Wörterbrei', mod: 'woerter' }] },
   ];
-  const K_WORLD_ATTACKS = { 2: [{ name: 'Lückenfüller', mod: 'ltk' }, { name: 'Käferwissen', mod: 'wissen' }, { name: 'Wörterwirbel', mod: 'woerter' }, { name: 'Teufelstrick', mod: 'maerchen' }] };
+  const K_WORLD_ATTACKS = { 2: [{ name: 'Lückenfüller', mod: 'ltk' }, { name: 'Käferwissen', mod: 'wissen' }, { name: 'Rezeptbuch', mod: 'woerter' }, { name: 'Teufelstrick', mod: 'maerchen' }] };
   const K_EXTRA = { parts: 'Sprossenschlag', ground: 'Bodenblick', grow: 'Erntezeit', ltk: 'Satzschleuder', wissen: 'Forscherblick', woerter: 'Wortkette', maerchen: 'Bauernlist' };
   const K_ENEMIES = {
     1: {
@@ -315,9 +315,9 @@ const MK = (() => {
     { title: 'Der Bauer', text: 'Ein Bauer fragt dich etwas über seine Kartoffeln. Wenn du es weißt, schenkt er dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Das Kartoffelfeld', text: 'Du findest ein Feld voller Pflanzen. Wer sich auskennt, erntet eine Belohnung.', opts: [{ label: 'Ernten', task: 'any', win: { xp: 20, item: 'trank' }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Die Gärtnerin', text: 'Eine Gärtnerin zeigt dir ihre Kartoffelpflanze und stellt eine Frage zu den Pflanzenteilen.', opts: [{ label: 'Antworten', task: 'any', g: 'teile', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
-    { title: 'Die Kartoffelküche', text: 'Es duftet nach Kartoffelpuffern! Die Köchin gibt dir einen Kraftkeks, wenn du ihre Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Der Gartenzwerg', text: 'Ein Gartenzwerg hält eine Lupe. „Weißt du etwas über Kartoffeln? Dann leihe ich sie dir.“', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Der Regen', text: 'Es regnet. Die Pflanzen freuen sich – und du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+    { title: 'Die Kartoffelküche', text: 'In der Küche brutzeln Kartoffelpuffer. Die Köchin gibt dir eine Chilischote aus ihrem Gewürzregal, wenn du ihre Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Gartenzwerg', text: 'Ein Gartenzwerg kennt eine Eselsbrücke. „Weißt du etwas über Kartoffeln? Dann verrate ich sie dir.“', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Regen', text: 'Es regnet. Gut für die Pflanzen, und du kannst dich unterstellen und ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', g: 'herkunft', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
   ];
 

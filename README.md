@@ -29,7 +29,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
-- Gegenstände: Trank, Großer Trank, Beere, Schild, Kraftkeks, Lupe (Tipp), Schutzengel, Sternenstaub.
+- Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
 - „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
@@ -87,6 +87,10 @@ Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI p
 „💡 Idee senden“ (Startseite und Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
 
 Ein anderes Formular verwenden: In `FEEDBACK` (`src/app.js`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
+
+## Texte und Namen
+
+`tools/unslop-text.md` listet die Floskeln und Namensmuster, die im Spiel vermieden werden (Ergebnis einer Analyse von 40 generierten Textproben). Neue Gegner, Attacken, Gegenstände und Meldungen bitte daran prüfen.
 
 ## Lizenz
 

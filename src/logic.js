@@ -189,32 +189,32 @@ const MQ = (() => {
     { id: 'fuchs', type: 'feuer', shape: 'fox', names: ['Glutfuchs', 'Flammfuchs', 'Sonnenfuchs'], hp: 60, desc: 'Flink und mutig. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Funkenbiss', mod: 'add' }, { name: 'Flammenstoß', mod: 'sub' }, { name: 'Feuerreihe', mod: 'seq' }, { name: 'Glutgitter', mod: 'grid' }] },
     { id: 'kroete', type: 'wasser', shape: 'toad', names: ['Wellenkröte', 'Strudelkröte', 'Ozeankröte'], hp: 80, desc: 'Hält viel aus. Hat die meisten Lebenspunkte.', perk: 'tank',
-      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Blubberrätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
-    { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Heilt sich bei jeder richtigen Antwort ein bisschen.', perk: 'heal',
-      attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Rankenrechnen', mod: 'mul' }, { name: 'Moosgitter', mod: 'grid' }] },
+      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
+    { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Jede richtige Antwort heilt ihn um 3 Lebenspunkte.', perk: 'heal',
+      attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Moosgitter', mod: 'grid' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Schattenschnitt', mul: 'Sternenmal', riddle: 'Geheimrätsel', seq: 'Reihenrausch', nb: 'Nachbarschlag', grid: 'Gitterblitz' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz' };
 
   const ENEMIES = {
     1: {
       normal: [
-        { name: 'Flummibatz', type: 'pflanze', shape: 'blob', hp: 26, atk: 3 },
-        { name: 'Tropfling', type: 'wasser', shape: 'drop', hp: 24, atk: 4 },
-        { name: 'Zündi', type: 'feuer', shape: 'flame', hp: 22, atk: 4 },
+        { name: 'Sumpfbrocken', type: 'pflanze', shape: 'blob', hp: 26, atk: 3 },
+        { name: 'Regenwicht', type: 'wasser', shape: 'drop', hp: 24, atk: 4 },
+        { name: 'Streichholzkopf', type: 'feuer', shape: 'flame', hp: 22, atk: 4 },
         { name: 'Krabbelstein', type: 'normal', shape: 'rock', hp: 30, atk: 3 },
       ],
       elite: { name: 'Dornenigel', type: 'pflanze', shape: 'hedgehog', hp: 45, atk: 5 },
-      boss: { name: 'Großglibber', acc: 'den Großglibber', type: 'wasser', shape: 'blob', hp: 70, atk: 6, boss: true },
+      boss: { name: 'Moorschlund', acc: 'den Moorschlund', type: 'wasser', shape: 'blob', hp: 70, atk: 6, boss: true },
     },
     2: {
       normal: [
         { name: 'Lavamolch', type: 'feuer', shape: 'newt', hp: 42, atk: 5 },
         { name: 'Nebelqualle', type: 'wasser', shape: 'jelly', hp: 40, atk: 6 },
         { name: 'Ranklerin', type: 'pflanze', shape: 'vine', hp: 44, atk: 5 },
-        { name: 'Flatterfledi', type: 'normal', shape: 'bat', hp: 38, atk: 6 },
+        { name: 'Nachtschwinge', type: 'normal', shape: 'bat', hp: 38, atk: 6 },
       ],
-      elite: { name: 'Kristallkäfer', type: 'normal', shape: 'beetle', hp: 70, atk: 8 },
-      boss: { name: 'Aschendrache', acc: 'den Aschendrachen', type: 'feuer', shape: 'dragon', hp: 110, atk: 9, boss: true },
+      elite: { name: 'Glaspanzer', type: 'normal', shape: 'beetle', hp: 70, atk: 8 },
+      boss: { name: 'Ofenwurm', acc: 'den Ofenwurm', type: 'feuer', shape: 'dragon', hp: 110, atk: 9, boss: true },
     },
     3: {
       normal: [
@@ -223,33 +223,33 @@ const MQ = (() => {
         { name: 'Magmagolem', type: 'feuer', shape: 'rock', hp: 70, atk: 7 },
         { name: 'Schattenwolf', type: 'normal', shape: 'fox', hp: 55, atk: 9 },
       ],
-      elite: { name: 'Sturmgeist', type: 'normal', shape: 'ghost', hp: 100, atk: 11 },
+      elite: { name: 'Sturmreiter', type: 'normal', shape: 'ghost', hp: 100, atk: 11 },
       boss: { name: 'Rechenkönig', acc: 'den Rechenkönig', type: 'normal', shape: 'king', hp: 170, atk: 12, boss: true },
     },
   };
-  const ENEMY_MOVES = ['Rempler', 'Kratzer', 'Zahlenwirbel', 'Rumpler', 'Knuffpuff', 'Stupser'];
+  const ENEMY_MOVES = ['Rempler', 'Kratzer', 'Zahlensalat', 'Rumpler', 'Schlammspritzer', 'Biss'];
 
   const ITEMS = {
     trank: { name: 'Trank', icon: '🧪', desc: 'Heilt 30 Lebenspunkte.', heal: 30 },
     grosstrank: { name: 'Großer Trank', icon: '🍶', desc: 'Heilt 60 Lebenspunkte.', heal: 60 },
     schild: { name: 'Schild', icon: '🛡️', desc: 'Blockt den nächsten Angriff des Gegners.', shield: true },
     beere: { name: 'Beere', icon: '🫐', desc: 'Heilt 15 Lebenspunkte.', heal: 15 },
-    keks: { name: 'Kraftkeks', icon: '🍪', desc: 'Dein nächster Treffer macht doppelten Schaden. Kostet keinen Zug.', power: true },
-    lupe: { name: 'Lupe', icon: '🔎', desc: 'Gibt dir einen Tipp bei der nächsten Aufgabe im Kampf. Kostet keinen Zug.', hint: true },
+    keks: { name: 'Chilischote', icon: '🌶️', desc: 'Scharf: Dein nächster Treffer macht doppelten Schaden. Kostet keinen Zug.', power: true },
+    lupe: { name: 'Eselsbrücke', icon: '🌉', desc: 'Ein Tipp bei der nächsten Aufgabe im Kampf. Kostet keinen Zug.', hint: true },
     engel: { name: 'Schutzengel', icon: '👼', desc: 'Hilft von selbst: Fallen deine Lebenspunkte auf 0, rettet er dich einmal.', revive: true },
-    stern: { name: 'Sternenstaub', icon: '✨', desc: 'Gibt deinem Monster sofort 25 XP.', xp: 25 },
+    stern: { name: 'Fleißbienchen', icon: '🐝', desc: 'Ein Stempel fürs Üben: Dein Monster bekommt sofort 25 XP.', xp: 25 },
   };
 
   const EVENTS = [
     { title: 'Die Brücke', text: 'Ein alter Troll bewacht eine Brücke. „Löse mein Rätsel, dann darfst du rüber und bekommst einen Trank!“', opts: [{ label: 'Rätsel lösen', task: 'riddle', win: { item: 'trank' }, lose: { hp: -8 } }, { label: 'Umweg nehmen (−5 LP)', effect: { hp: -5 } }] },
-    { title: 'Der Zahlenbrunnen', text: 'Ein Brunnen glitzert. Auf dem Rand steht eine Zahl. Rufe ihre beiden Nachbarzahlen, dann sprudelt Heilwasser.', opts: [{ label: 'Nachbarzahlen rufen', task: 'nb', win: { hp: 25 }, lose: { hp: 0 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Zahlenbrunnen', text: 'Ein alter Brunnen. In den Rand ist eine Zahl geritzt. Rufe ihre beiden Nachbarzahlen in den Schacht, dann steigt Heilwasser auf.', opts: [{ label: 'Nachbarzahlen rufen', task: 'nb', win: { hp: 25 }, lose: { hp: 0 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Schatztruhe', text: 'Eine Truhe mit Zahlenschloss! Die Zahlenfolge öffnet sie.', opts: [{ label: 'Schloss knacken', task: 'seq', win: { item: 'grosstrank' }, lose: { hp: -10 } }, { label: 'Lieber nicht', effect: {} }] },
     { title: 'Die Händlerin', text: 'Eine Händlerin verkauft einen Schild. Sie nimmt 10 Lebenspunkte als Bezahlung.', opts: [{ label: 'Schild kaufen (−10 LP)', effect: { hp: -10, item: 'schild' } }, { label: 'Nein danke', effect: {} }] },
-    { title: 'Das Trainingslager', text: 'Ein freundlicher Trainer bietet dir eine Einmaleins-Übungsrunde an. Wenn du es schaffst, lernt dein Monster schneller.', opts: [{ label: 'Trainieren', task: 'mul', win: { xp: 25 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
-    { title: 'Das Beerenfeld', text: 'Überall wachsen Beeren! Du kannst dir welche pflücken.', opts: [{ label: 'Beeren pflücken', effect: { item: 'beere' } }, { label: 'Schnell weiter', effect: {} }] },
-    { title: 'Der Zahlengeist', text: 'Ein Geist flüstert: „Zeig mir, dass du plus rechnen kannst, dann stärke ich dein Monster.“', opts: [{ label: 'Plus rechnen', task: 'add', win: { maxhp: 8 }, lose: { hp: -6 } }, { label: 'Weglaufen', effect: {} }] },
-    { title: 'Der Bäcker', text: 'Ein Bäcker hat frische Kraftkekse gebacken, aber einige sind schon verkauft. „Hilf mir mit einer Minus-Aufgabe, damit ich weiß, wie viele übrig sind – dann bekommst du einen!“', opts: [{ label: 'Minus rechnen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Der Sternenhimmel', text: 'Eine Sternschnuppe fällt vom Himmel. Setze die leuchtende Zahlenreihe fort, dann gehört der Sternenstaub dir.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Nur anschauen', effect: {} }] },
+    { title: 'Der Rechenmeister', text: 'Auf dem Dorfplatz übt ein Rechenmeister mit seinen Schülern das Einmaleins. Wer mitmacht und richtig rechnet, lernt schneller.', opts: [{ label: 'Trainieren', task: 'mul', win: { xp: 25 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Das Beerenfeld', text: 'Am Weg wachsen Heidelbeeren. Du kannst dir welche pflücken.', opts: [{ label: 'Beeren pflücken', effect: { item: 'beere' } }, { label: 'Schnell weiter', effect: {} }] },
+    { title: 'Der hohle Baum', text: 'Aus einem hohlen Baum ruft eine Stimme: „Rechne eine Plusaufgabe für mich, dann mache ich dein Monster zäher.“', opts: [{ label: 'Plus rechnen', task: 'add', win: { maxhp: 8 }, lose: { hp: -6 } }, { label: 'Weglaufen', effect: {} }] },
+    { title: 'Der Chilibauer', text: 'Ein Bauer hat Chilischoten geerntet, aber ein paar sind schon verkauft. „Rechne aus, wie viele noch da sind, dann bekommst du eine.“', opts: [{ label: 'Minus rechnen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Bienenstock', text: 'Vor einem Bienenstock summt es. Die Bienen fliegen in einer Zahlenreihe ein und aus. Setze die Reihe fort, dann bekommst du ein Fleißbienchen.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Lieber Abstand halten', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
   ];
 
