@@ -72,6 +72,8 @@
     const ok = isObj(r) && isObj(r.hero) && Array.isArray(r.map) && isObj(r.tiers) && Array.isArray(r.items) && Array.isArray(r.path) && Array.isArray(r.hero.attacks)
       && Number.isFinite(r.world) && Number.isFinite(r.floor) && Number.isFinite(r.hero.hp) && MODES[m].starters.some((s) => s.id === r.hero.id) && r.world >= 1 && r.world <= MODES[m].worlds && r.floor >= 1 && r.floor <= r.map.length;
     if (!ok) { if (r) clear(KEY_RUN_FOR(m)); return null; }
+    r.map = r.map.map((fl, f, all) => (Array.isArray(fl) ? fl.map((n, i) => (isObj(n) ? n : { t: n, c: 1.5 + (i - (fl.length - 1) / 2) * 1.1, n: f < all.length - 1 && Array.isArray(all[f + 1]) ? all[f + 1].map((_, j) => j) : [] })) : fl));
+    if (!r.map.every((fl) => Array.isArray(fl) && fl.length && fl.every((n) => isObj(n) && NODE_INFO[n.t] && Array.isArray(n.n) && Number.isFinite(n.c)))) { clear(KEY_RUN_FOR(m)); return null; }
     if (isObj(r.node) && !NODE_INFO[r.node.type]) r.node = null;
     r.items = r.items.filter((it) => ITEMS[it]);
     r.hero.attacks.forEach((a) => { if (RENAMES[a.name]) a.name = RENAMES[a.name]; });
@@ -349,24 +351,42 @@
       if (swap && swapOn) run.items.push('stern');
       meta.lastStarter[mode] = sel; meta.runs++; saveAll(); screenMap(); };
   }
-  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1] = ['school']; if (!m[4].includes('school')) m[4][0] = 'school'; } return m;
+  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; } return m;
   }
 
   const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'] };
   function screenMap() {
     const h = run.hero;
-    const rows = run.map.map((nodes, fi) => { const f = fi + 1; const cls = f === run.floor ? 'current' : f < run.floor ? 'done' : 'future'; return `<div class="floor ${cls}"><div class="num">${f}</div>${nodes.map((n, ni) => `<button class="node ${run.path[fi] === ni ? 'taken' : ''}" data-f="${f}" data-n="${ni}" ${f !== run.floor ? 'tabindex="-1" disabled' : ''} aria-label="${NODE_INFO[n][1]}">${NODE_INFO[n][0]}<small>${NODE_INFO[n][1]}</small></button>`).join('')}</div>`; });
+    // which nodes can be reached: the open ones on this floor and everything that follows from them
+    const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
+    for (let f = run.floor - 1; f < run.map.length - 1; f++) live[f].forEach((i) => run.map[f][i].n.forEach((j) => live[f + 1].add(j)));
+    const ROW = 86, H = run.map.length * ROW; const X = (c) => (c + 0.5) * 25; const Y = (f) => H - (f + 0.5) * ROW;
+    let lines = '';
+    run.map.forEach((fl, f) => fl.forEach((nd, i) => nd.n.forEach((j) => { if (!run.map[f + 1] || !run.map[f + 1][j]) return;
+      const walked = run.path[f] === i && run.path[f + 1] === j && f + 1 < run.floor - 1; const next = f === run.floor - 2 && run.path[f] === i && open.includes(j);
+      const dead = !walked && !next && !(live[f].has(i) && live[f + 1].has(j));
+      lines += `<line class="${walked ? 'walked' : next ? 'next' : dead ? 'dead' : ''}" x1="${X(nd.c)}" y1="${Y(f)}" x2="${X(run.map[f + 1][j].c)}" y2="${Y(f + 1)}"/>`; })));
+    const nodes = run.map.map((fl, f) => fl.map((nd, i) => { const isOpen = f === run.floor - 1 && open.includes(i); const taken = run.path[f] === i && f < run.floor - 1;
+      const cls = isOpen ? 'open' : taken ? 'taken' : f < run.floor - 1 ? 'past' : live[f].has(i) ? 'future' : 'dead';
+      return `<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}" ${isOpen ? '' : 'tabindex="-1" disabled'} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`; }).join('')).join('');
     render(`<div class="screen">${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
-      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div></div>
-      <div class="scroll"><p class="center muted">Wohin gehst du? Tippe auf ein Feld.</p><div class="map">${rows.join('')}</div></div>
+      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
+      <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
-    app.querySelectorAll('.floor.current .node').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni]; run.node = { type }; saveAll(); enterNode(type); }; });
+    app.querySelectorAll('.node.open').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni].t; run.node = { type }; saveAll(); enterNode(type); }; });
     $('#home').onclick = screenTitle;
     $('#bag').onclick = () => showBag(null);
-    const scroller = $('.scroll'); const cur = $('.floor.current'); if (cur && scroller) scroller.scrollTop = Math.max(0, cur.offsetTop - scroller.clientHeight / 2);
+    const scroller = $('.scroll'); const cur = $('.node.open'); if (cur && scroller) scroller.scrollTop = Math.max(0, scroller.scrollTop + cur.getBoundingClientRect().top - scroller.getBoundingClientRect().top - scroller.clientHeight / 2);
+  }
+  // nodes the hero can step on now: all of floor 1, later only those the last node leads to
+  function openNodes() {
+    const fl = run.map[run.floor - 1]; const all = fl.map((_, i) => i); if (run.floor === 1) return all;
+    const prev = run.map[run.floor - 2][run.path[run.floor - 2]]; const n = prev ? prev.n.filter((i) => fl[i]) : [];
+    return n.length ? n : all;
   }
   function showBag(inBattle) {
-    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${run.items.map((it, i) => `<button class="item" data-i="${i}"><span>${ITEMS[it].icon} ${ITEMS[it].name}</span><small>${esc(ITEMS[it].desc)}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
+    const stacks = []; run.items.forEach((it, i) => { const st = stacks.find((x) => x.id === it); if (st) st.n++; else stacks.push({ id: it, i, n: 1 }); });
+    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${stacks.map((st) => `<button class="item" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${esc(ITEMS[st.id].desc)}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? ` <b class="count">×${st.n}</b>` : ''}</span><small>${esc(ITEMS[st.id].desc)}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
     $('#close', ov).onclick = () => ov.remove();
     ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: Das kannst du nur im Kampf benutzen.`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${it.desc}`; return; } if ((it.shield && run.shield) || (it.power && run.power) || (it.hint && run.hint)) { $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; const lv = it.xp ? gainXp(it.xp) : []; saveAll(); ov.remove(); if (inBattle) inBattle(it, lv); else { screenMap(); if (it.xp) { const m = modal(`<h2>${it.icon} +${it.xp} XP</h2>${lv.map((x) => `<p style="font-weight:800;color:var(--orange)">${esc(x)}</p>`).join('') || '<p>Dein Monster lernt dazu.</p>'}<button class="btn" id="tutok">Weiter</button>`); $('#tutok', m).focus({ preventScroll: true }); $('#tutok', m).onclick = () => m.remove(); } } }; });
   }
@@ -377,6 +397,7 @@
     const n = run.node;
     if (!isObj(n)) return screenMap();
     if (n.done) return advance();
+    if (n.reward) return screenTreasure('elite'); // elite beaten, reward not picked yet
     if (isObj(n.enemy)) {
       const b = { enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
       if (n.enemy.hp <= 0) return battleWon(b); // defeated just before the app closed: hand out the reward
@@ -401,11 +422,12 @@
 
   /* ---------- Battle ---------- */
   function startBattle(spec, hard) {
-    const scale = 1 + (run.floor - 1) * 0.03;
-    const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)), boss: !!spec.boss, elite: hard && !spec.boss };
+    // enemies have more life points than their base value: hits on the weak spot do more damage, so fights stay about as long
+    const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
+    const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weak: pickWeak() };
     meta.dex[spec.name] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
-    const b = { enemy, log: `${enemy.name} taucht auf!`, logCls: '', phase: 'choose' };
+    const b = { enemy, log: `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
     renderBattle(b);
   }
   function renderBattle(b) {
@@ -428,26 +450,35 @@
   }
   // Damage is always shown as a whole number. Using the same attack again in a row makes it "tired"
   // (less damage), so it pays off to switch attacks and practise different things.
-  const TIRED = [1, 0.6, 0.35];
+  // Each enemy also has a weak spot on one of the hero's attacks. After a hit there it moves on to the attack
+  // practised least in this adventure, so following it means practising every task type about equally.
+  const TIRED = [1, 0.6, 0.35], WEAK = 1.5, ENEMY_HP = 1.4;
+  function pickWeak(except) {
+    run.used = isObj(run.used) ? run.used : {};
+    const mods = [...new Set(heroAttacks().map((a) => a.mod))]; const pool = mods.length > 1 ? mods.filter((m) => m !== except) : mods;
+    const least = Math.min(...pool.map((m) => run.used[m] || 0)); return pick(pool.filter((m) => (run.used[m] || 0) === least));
+  }
+  function weakName(mod) { const a = heroAttacks().find((x) => x.mod === mod); return a ? a.name : MODULES_OF()[mod].name; }
   function attackInfo(b, atk) {
-    const strong = BEATS[heroSpec().type] === b.enemy.type;
+    const strong = BEATS[heroSpec().type] === b.enemy.type; const weak = b.enemy.weak === atk.mod;
     const tired = b.enemy.lastMod === atk.mod ? Math.min(b.enemy.reps || 1, TIRED.length - 1) : 0;
-    let dmg = (MODULES_OF()[atk.mod].dmg + run.hero.level * 2) * (strong ? 1.5 : 1) * TIRED[tired];
+    let dmg = (MODULES_OF()[atk.mod].dmg + run.hero.level * 2) * (strong ? 1.5 : 1) * (weak ? WEAK : 1) * TIRED[tired];
     if (run.power) dmg *= 2;
-    return { dmg: Math.max(1, Math.round(dmg)), strong, tired };
+    return { dmg: Math.max(1, Math.round(dmg)), strong, tired, weak };
   }
   function noteAttackUsed(b, atk) { if (b.enemy.lastMod === atk.mod) b.enemy.reps = (b.enemy.reps || 1) + 1; else { b.enemy.lastMod = atk.mod; b.enemy.reps = 1; } }
   function renderAttackChoice(b) {
     const atks = heroAttacks(); const MODULES = MODULES_OF();
-    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Abwechseln – sonst wird die Attacke müde.</span></div>`;
+    if (!atks.some((a) => a.mod === b.enemy.weak)) { b.enemy.weak = pickWeak(); saveAll(); } // older save or task types switched in the parent area
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.weak ? ', Schwachstelle' : ''}${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.weak ? '<span class="tag weak">🎯 Schwachstelle</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
     $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
     app.querySelectorAll('.atk').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
-    if (!meta.seenTut['battle:intro']) showBattleIntro();
+    if (!meta.seenTut['battle:intro2']) showBattleIntro();
   }
   function showBattleIntro() {
-    const ov = modal(`<h2>So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Alles klar</button>`);
+    const ov = modal(`<h2>So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>🎯 <b>Schwachstelle</b>: Mit dieser Attacke triffst du besonders stark. Nach dem Treffer wandert sie zu einer anderen Attacke.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Alles klar</button>`);
     $('#tutok', ov).focus({ preventScroll: true });
-    $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['battle:intro'] = true; saveAll(); };
+    $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['battle:intro2'] = true; saveAll(); };
   }
   // potions take your turn; shield, cookie, magnifier and stars don't
   function useItemInBattle(b, it, lv) {
@@ -474,8 +505,10 @@
         if (crit) dmg *= 2;
         run.power = false;
         b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
+        run.used = isObj(run.used) ? run.used : {}; run.used[atk.mod] = (run.used[atk.mod] || 0) + 1;
+        if (inf.weak) b.enemy.weak = pickWeak(atk.mod);
         if (heroSpec().perk === 'heal') heal(3);
-        b.log = `${atk.name}: ${crit ? 'VOLLTREFFER – doppelter Schaden! ' : inf.strong ? 'Stark! ' : 'Treffer! '}${dmg} Schaden${inf.tired ? ' (müde)' : ''}`; b.logCls = crit ? 'crit' : 'hit';
+        b.log = `${atk.name}: ${crit ? 'VOLLTREFFER – doppelter Schaden! ' : inf.weak ? 'Schwachstelle getroffen! ' : inf.strong ? 'Stark! ' : 'Treffer! '}${dmg} Schaden${inf.tired ? ' (müde)' : ''}`; b.logCls = crit ? 'crit' : 'hit';
         hit = { dmg, crit };
         if (b.enemy.hp > 0) b.enemy.pending = 1;
       } else {
@@ -506,23 +539,23 @@
     if (b.taken) { $('#fh').classList.add('hurt'); fx('#fh', '−' + b.taken); SFX.hurt(); } else { fx('#fh', '🛡️', 'shield'); SFX.block(); }
     if (h.hp <= 0) setTimeout(() => screenGameOver(b), 1600);
   }
-  const LOOT = { normal: ['beere', 'beere', 'trank', 'keks', 'lupe', 'stern'], elite: ['trank', 'schild', 'keks', 'lupe', 'engel'], boss: ['engel', 'keks', 'schild'], chest: ['trank', 'schild', 'keks', 'lupe', 'engel', 'stern'] };
+  const LOOT = { normal: ['beere', 'beere', 'trank', 'keks', 'lupe', 'stern'], boss: ['engel', 'keks', 'schild'], chest: ['trank', 'schild', 'keks', 'lupe', 'engel', 'stern'], rare: ['engel', 'grosstrank', 'schild'] };
   function battleWon(b) {
     const e = b.enemy; const xp = e.boss ? 60 : e.elite ? 35 : 18;
     const msgs = gainXp(xp);
-    // loot: normal fights often drop something small, elites always drop something useful, bosses drop two things
+    // loot: about every third normal fight drops something small, bosses drop two things,
+    // elites let the child pick one of three rare rewards right after this screen
     const drops = [];
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
-    else if (e.elite) drops.push(pick(LOOT.elite));
-    else if (Math.random() < 0.5) drops.push(pick(LOOT.normal));
+    else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
     if (!(e.boss && run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
-    nodeDone();
+    if (e.elite && run.node) { run.node.enemy = null; run.node.reward = true; } else nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
-    $('#next').onclick = advance;
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
   /* ---------- Event ---------- */
@@ -575,13 +608,15 @@
   }
 
   /* ---------- Treasure ---------- */
-  function screenTreasure() {
-    const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    if (run.node && !Array.isArray(run.node.chest)) { const [a1, a2] = shuffle(LOOT.chest.slice()); run.node.chest = [a1, a2, free.length ? pick(free) : null]; saveAll(); }
-    const [i1, i2, freeMod] = (run.node && run.node.chest) || [pick(LOOT.chest), pick(LOOT.chest), free.length ? pick(free) : null]; const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
-    const opts = [itemOpt(i1), { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' }];
-    if (freeMod && free.includes(freeMod)) { const m = freeMod; opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push(itemOpt(i2));
-    render(`<div class="screen">${topbar('🎁 Schatz')}<div class="scroll"><p class="center">Du findest eine Truhe. Wähle eine Belohnung:</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
+  // a chest: one rare item, +10 max LP and a new attack (or a second item); an elite: two rare items and a new attack (or +10 max LP)
+  function screenTreasure(kind) {
+    const elite = kind === 'elite'; const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
+    if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null]; saveAll(); }
+    const [i1, i2, freeMod] = (run.node && run.node.chest) || [pick(LOOT.rare), pick(LOOT.chest), free.length ? pick(free) : null]; const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
+    const maxhp = { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' };
+    const atkOpt = freeMod && free.includes(freeMod) ? { k: 'atk', mod: freeMod, label: `${MODULES[freeMod].icon} Neue Attacke: ${EXTRA_ATTACKS[freeMod]}`, desc: `${MODULES[freeMod].name} – ersetzt eine deiner Attacken.` } : null;
+    const opts = elite ? [itemOpt(i1), itemOpt(i2), atkOpt || maxhp] : [itemOpt(i1), maxhp, atkOpt || itemOpt(i2)];
+    render(`<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? 'Der Elitegegner hat etwas dagelassen. Wähle eine Belohnung:' : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push(o.item); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
   }
   function chooseSlot(mod) {

@@ -9,23 +9,18 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-08
 
 ### Neu
+- Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.
+- Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.
 - „Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto.
-- Neue Begriffe-Fragen zu Luther.
 
 ### Verbessert
-- Nach einem Fehler darfst du dieselbe Attacke gleich nochmal üben – sie wird nur nach Treffern müde.
-- Die Eselsbrücke (früher Lupe) hilft jetzt auch bei Richtig-oder-Falsch-Fragen.
-- Gegner und Ereignisse passen besser zum Thema.
-- Zahlenrätsel kommen ohne „Quersumme“ aus – das Wort kennen die Kinder noch nicht.
-- Echte Töne: Klick, Treffer, Fanfare nach dem Kampf und Applaus im Finale. Mit 🔊 auf der Startseite oder im Elternbereich abschaltbar.
-- Neue Schriften: Handschrift für Überschriften und Namen, eine Leseanfänger-Schrift für Text und Zahlen. Rechenaufgaben stehen auf Karopapier.
-- Der Kampf ist neu aufgebaut: Gegner oben rechts, dein Monster unten links, die Meldung in einer Textbox. Alle Attacken-Knöpfe sind gleich groß. Zwischen den Aktionen gibt es kurze Pausen, und die Schadenszahlen bleiben länger sichtbar.
-- Viele Gegner, Attacken und Gegenstände haben neue Namen, und die Texte im Spiel sind ruhiger: weniger Glitzer und Ausrufezeichen, mehr Charakter.
+- Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.
+- Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.
+- Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus.
 
 ### Behoben
-- Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10. Die Pfeile in der Erklärung sind gleich groß.
-- Wer die App mitten im Kampf schließt, verliert keine Antworten oder Belohnungen mehr.
-- Viele kleine Text- und Anzeigefehler.
+- Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.
+- Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler.
 
 ## 2026-11-07
 

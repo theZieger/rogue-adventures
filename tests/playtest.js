@@ -13,7 +13,7 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
-let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, rests=0, treasures=0;
+let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, rests=0, treasures=0, eliteRewards=0;
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 async function solveTask(forceWrong){
   // current task in DOM
@@ -67,9 +67,9 @@ async function solveKnow(forceWrong){
 async function step(){
   if(await closeModal()) return;
   const tx=text();
-  if($('[data-new]')&&!$('.choice')&&!$('.floor')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
+  if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
-  if($('.floor.current .node')){ const nodes=$$('.floor.current .node'); // prefer variety
+  if($('.node.open')){ const nodes=$$('.node.open'); // prefer variety
     const pref=['school','treasure','event','rest','elite','fight','boss']; let chosen=null; for(const p of pref){ chosen=nodes.find(n=>n.getAttribute('aria-label')===({school:'Zeichenschule',treasure:'Schatz',event:'Ereignis',rest:'Rast',elite:'Elite',fight:'Kampf',boss:'Boss'}[p])); if(chosen&&Math.random()<0.6) break; }
     click(chosen||nodes[0]); return; }
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
@@ -79,7 +79,7 @@ async function step(){
   if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
   if($('#train')){ rests++; click(Math.random()<0.5?$('#train'):$('#heal')); return; }
   if($('.bottom .btn[data-i]')){ events++; click($('.bottom .btn[data-i="0"]')); return; }
-  if($('.choice[data-i]')&&tx.includes('Belohnung')){ treasures++; click($$('.choice[data-i]').pop()); return; }
+  if($('.choice[data-i]')&&tx.includes('Belohnung')){ if(tx.includes('Elitegegner')) eliteRewards++; else treasures++; click($$('.choice[data-i]').pop()); return; }
   if($('.choice[data-i]')&&tx.includes('ersetzen')){ click($$('.choice[data-i]')[0]); return; }
   if($('#again')){ console.log('END SCREEN:', tx.slice(0,110)); return 'end'; }
   if(tx.includes('❤️ 0 /')){ await sleep(700); return; }
@@ -92,10 +92,10 @@ async function step(){
     if($('[data-new]') && ends>0 && steps>5 && !$('.choice')){ /* back at title: handled in step */ }
     // advance timeouts (enemy turn 700-900ms) -> wait a bit when nothing clickable
     // battle pauses (up to ~2 s between actions): wait until something is clickable again
-    for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.floor.current .node')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay'); w++) await sleep(500);
+    for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
-  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
+  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,eliteRewards,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));

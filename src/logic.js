@@ -252,29 +252,60 @@ const MQ = (() => {
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
   ];
 
-  /* ---------- Map ---------- */
-  function makeMap(world) {
-    const floors = [];
-    for (let f = 1; f <= 8; f++) {
-      let nodes;
-      if (f === 1) nodes = ['fight'];
-      else if (f === 8) nodes = ['boss'];
-      else {
-        const count = rnd(2, 3);
-        nodes = [];
-        const pool = ['fight', 'fight', 'fight', 'fight', 'event', 'event', 'rest', 'treasure', 'elite'];
-        for (let i = 0; i < count; i++) nodes.push(pick(pool));
-        if (f === 4 && !nodes.includes('rest')) nodes[0] = 'rest';
-        if (f === 7 && !nodes.includes('rest')) nodes[nodes.length - 1] = 'rest';
-        if (f < 3) nodes = nodes.map((n) => (n === 'elite' ? 'fight' : n));
-        if (!nodes.includes('fight') && f !== 4 && f !== 7) nodes[0] = 'fight';
-        if (f === 6 && !nodes.includes('treasure') && Math.random() < 0.5) nodes[0] = 'treasure';
+  /* ---------- Map ----------
+     A path map like in Slay the Spire: 8 floors on 4 lanes. Every node leads to one or two nodes on the floor above,
+     so choosing a way closes others. A floor is an array of nodes { t: type, c: lane 0–3, n: [indexes on the next floor] }.
+     Rules: floor 1 fights, no elite before floor 3, rest only on floors 4–5 and as the camp before the boss (floor 7),
+     rest/elite/event/treasure never twice in a row on a path, two treasures per map – preferably right behind an elite. */
+  const LANES = 4, FLOORS = 8;
+  function makeMap() {
+    const used = Array.from({ length: FLOORS - 1 }, () => new Set());
+    const edges = Array.from({ length: FLOORS - 1 }, () => Array.from({ length: LANES }, () => new Set()));
+    const crosses = (f, c, n) => { for (let c2 = 0; c2 < LANES; c2++) { if (c2 === c) continue; for (const n2 of edges[f][c2]) if ((c2 < c && n2 > n) || (c2 > c && n2 < n)) return true; } return false; };
+    for (let p = 0; p < 4; p++) {
+      let c = p === 0 ? rnd(0, 1) : p === 1 ? rnd(2, 3) : rnd(0, LANES - 1);
+      used[0].add(c);
+      for (let f = 0; f < FLOORS - 2; f++) {
+        let n = c, tries = 0;
+        do { n = Math.max(0, Math.min(LANES - 1, c + rnd(-1, 1))); tries++; } while (crosses(f, c, n) && tries < 20);
+        if (crosses(f, c, n)) n = c;
+        edges[f][c].add(n); used[f + 1].add(n); c = n;
       }
-      floors.push(nodes);
     }
-    return floors;
+    const lanes = used.map((s) => [...s].sort((a, b) => a - b));
+    const type = lanes.map(() => ({}));
+    const parents = (f, c) => (f === 0 ? [] : lanes[f - 1].filter((p) => edges[f - 1][p].has(c)));
+    const children = (f, c) => (f >= FLOORS - 2 ? [] : [...edges[f][c]]);
+    for (const c of lanes[0]) type[0][c] = 'fight';
+    for (const c of lanes[FLOORS - 2]) type[FLOORS - 2][c] = 'rest';
+    const WEIGHT = { fight: 46, event: 16, elite: 16, rest: 8 };
+    for (let f = 1; f < FLOORS - 2; f++) for (const c of lanes[f]) {
+      const ps = parents(f, c).map((p) => type[f - 1][p]);
+      const sib = new Set(); for (const p of parents(f, c)) for (const s of edges[f - 1][p]) if (s !== c && type[f][s]) sib.add(type[f][s]);
+      const bag = [];
+      for (const [k, w] of Object.entries(WEIGHT)) {
+        if (k === 'elite' && f < 2) continue;
+        if (k === 'rest' && (f < 3 || f > 4)) continue;
+        if (k !== 'fight' && ps.includes(k)) continue;
+        const n = Math.round(w * (sib.has(k) && k !== 'fight' ? 0.3 : 1)); for (let i = 0; i < n; i++) bag.push(k);
+      }
+      type[f][c] = pick(bag);
+    }
+    // two treasures on floors 4–6, behind an elite where possible
+    const cand = [];
+    for (let f = 3; f <= 5; f++) for (const c of lanes[f]) if (type[f][c] === 'fight' || type[f][c] === 'event') cand.push({ f, c, lure: parents(f, c).some((p) => type[f - 1][p] === 'elite') ? 1 : 0, r: Math.random() });
+    cand.sort((a, b) => b.lure - a.lure || a.r - b.r);
+    let placed = 0;
+    for (const x of cand) {
+      if (placed >= 2) break;
+      if (parents(x.f, x.c).some((p) => type[x.f - 1][p] === 'treasure') || children(x.f, x.c).some((n) => type[x.f + 1][n] === 'treasure')) continue;
+      type[x.f][x.c] = 'treasure'; placed++;
+    }
+    const map = lanes.map((cs, f) => cs.map((c) => ({ t: type[f][c], c, n: f < FLOORS - 2 ? [...edges[f][c]].sort((a, b) => a - b).map((n) => lanes[f + 1].indexOf(n)) : [0] })));
+    map.push([{ t: 'boss', c: 1.5, n: [] }]);
+    return map;
   }
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, digits };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;

@@ -30,7 +30,7 @@ function startMathFight() {
   const p = open();
   p.click('[data-new="math"]');
   p.click('.choice'); p.click('#go');
-  const fight = [...p.d.querySelectorAll('.floor.current .node')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p.$('.floor.current .node');
+  const fight = [...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p.$('.node.open');
   p.click(fight);
   return p;
 }
