@@ -1,10 +1,10 @@
 /* Lernquest service worker – makes the game installable and playable offline.
- * 0d02aa3a43d0 is replaced by build.py with a hash of the sources, so every new
+ * 5b842392fd80 is replaced by build.py with a hash of the sources, so every new
  * build ships a new worker that refreshes the cache.
  * Update strategy: the game page is fetched network-first (revalidated past the
  * HTTP cache), so an online launch always shows the newest version; offline or
  * on a slow connection the cached copy is used after a short timeout. */
-const VERSION = '0d02aa3a43d0';
+const VERSION = '5b842392fd80';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;
 const CORE = [
@@ -43,7 +43,11 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // The game page: network first (always newest), cached copy as fallback.
+  // The game page (./ or ./index.html): network first (newest version), cached copy as fallback.
+  // Other pages opened inside the app's folder (e.g. fonts/OFL.txt) are passed through and never cached as the game.
+  const scope = new URL(self.registration.scope);
+  const isGame = url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html';
+  if (req.mode === 'navigate' && !isGame) return;
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);

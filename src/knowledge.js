@@ -88,6 +88,13 @@ const MK = (() => {
     { id: 'def4', mod: 'def', g: 'ablass', q: 'Was ist ein Ablassbrief?', o: ['Ein Brief, den man kauft, um keine Strafen für schlechte Taten zu befürchten', 'Ein Brief von Luther an den Papst', 'Eine deutsche Bibel'], a: 0 },
     { id: 'def5', mod: 'def', g: 'wartburg', q: 'Wer war „Junker Jörg“?', o: ['Luther selbst, unter falschem Namen auf der Wartburg', 'Ein Ritter, der Luther entführte', 'Ein Ablasshändler'], a: 0 },
     { id: 'def6', mod: 'def', g: 'ablass', q: 'Was sind die 95 Thesen?', o: ['Luthers Sätze gegen den Ablasshandel an der Kirchentür', '95 Ablassbriefe', '95 Seiten der Bibel'], a: 0 },
+    { id: 'def7', mod: 'def', g: 'ablass', q: 'Was bedeutet „protestieren“?', o: ['Sagen, dass man etwas falsch findet, und sich dagegen wehren', 'Etwas ganz toll finden', 'Sich heimlich verstecken'], a: 0 },
+    { id: 'def8', mod: 'def', g: 'ablass', q: 'Was ist die Schlosskirche?', o: ['Die Kirche in Wittenberg, an deren Tür Luther die 95 Thesen hängte', 'Die Burg, auf der sich Luther versteckte', 'Luthers Geburtshaus in Eisleben'], a: 0 },
+    { id: 'def9', mod: 'def', g: 'wartburg', q: 'Was bedeutet „zum Schein entführt“?', o: ['Die Entführung war nur gespielt, um Luther zu verstecken', 'Luther wurde von echten Feinden gefangen', 'Luther ist selbst weggelaufen'], a: 0 },
+    { id: 'def10', mod: 'def', g: 'wartburg', q: 'Was bedeutet es, die Bibel zu „übersetzen“?', o: ['Sie in eine andere Sprache bringen – Luther schrieb sie auf Deutsch', 'Sie abschreiben, ohne etwas zu ändern', 'Sie an eine Kirchentür hängen'], a: 0 },
+    { id: 'def11', mod: 'def', g: 'reformation', q: 'Was ist die evangelische Kirche?', o: ['Die Kirche der Anhänger Luthers', 'Die Kirche des Papstes', 'Eine Kirche ohne Bibel'], a: 0 },
+    { id: 'def12', mod: 'def', g: 'reformation', q: 'Wer sind die „Anhänger Luthers“?', o: ['Menschen, die Luthers Ideen gut finden und ihm folgen', 'Menschen, die gegen Luther kämpfen', 'Zettel, die an der Kirchentür hängen'], a: 0 },
+    { id: 'def13', mod: 'def', g: 'leben', q: 'Was ist ein Professor?', o: ['Ein Lehrer an der Universität', 'Ein Ritter auf einer Burg', 'Ein Händler mit Ablassbriefen'], a: 0 },
   ];
   const L_MODULES = {
     rf: { name: 'Richtig oder falsch', icon: '✅', maxTier: 1, worldCap: [1], dmg: 10 },
@@ -100,11 +107,11 @@ const MK = (() => {
     'rf:1': { title: 'Richtig oder falsch', steps: ['Lies den Satz genau.', 'Stimmt er mit dem, was du über Luther weißt, überein? Dann „Richtig“.', 'Ist etwas vertauscht oder falsch? Dann „Falsch“.'] },
     'mc:1': { title: 'Wähle aus', steps: ['Lies die Frage.', 'Nur eine der drei Antworten stimmt.', 'Tippe auf die richtige Antwort.'] },
     'lt:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Lies den Satz mit jedem Wort einmal durch.', 'Tippe auf das Wort, das passt.'] },
-    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter: Reformation, vogelfrei, Wartburg, Ablassbrief, Junker Jörg, 95 Thesen.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
-    'ord:1': { title: 'Reihenfolge', steps: ['Vier Ereignisse sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Was passierte zuerst?', 'Mit „Rückgängig“ kannst du den letzten Tipp zurücknehmen.'] },
+    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter wie Reformation, vogelfrei, Ablassbrief, 95 Thesen, Junker Jörg, protestieren oder evangelisch.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
+    'ord:1': { title: 'Reihenfolge', steps: ['Vier Ereignisse sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Was passierte zuerst?', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
   };
   const L_STARTERS = [
-    { id: 'luther', type: 'normal', shape: 'luther', names: ['Martin Luther', 'Martin Luther', 'Martin Luther'], hp: 70, desc: 'Der Mönch aus Wittenberg. Mutig gegen die mächtige Kirche.', perk: 'none',
+    { id: 'luther', type: 'normal', shape: 'luther', names: ['Martin Luther', 'Martin Luther', 'Martin Luther'], hp: 70, desc: 'Der Mönch in Wittenberg. Mutig gegen die mächtige Kirche.', perk: 'none',
       attacks: [{ name: 'Klare Worte', mod: 'rf' }, { name: 'Gute Antwort', mod: 'mc' }, { name: 'Federkiel', mod: 'lt' }, { name: 'Thesenschlag', mod: 'def' }] },
   ];
   const L_EXTRA = { rf: 'Wahrheitsblick', mc: 'Kluge Wahl', lt: 'Tintenfass', def: 'Wörterbuch', ord: 'Zeitstrahl' };
@@ -120,9 +127,11 @@ const MK = (() => {
       boss: { name: 'Der Ablasshändler', acc: 'den Ablasshändler', type: 'normal', shape: 'merchant', hp: 70, atk: 6, boss: true },
     },
   };
+  // Gegner-Angriffe: „<Gegner> greift mit <Angriff> an“
+  const L_MOVES = ['Bannspruch', 'Siegelstempel', 'Zweifelsnebel', 'Tintenklecks', 'Wirrwarr', 'Vergessenszauber'];
   const L_EVENTS = [
-    { title: 'Der Mönch', text: 'Ein Mönch fragt dich: „Weißt du, was Luther wirklich wollte?“ Antworte richtig und er schenkt dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Die Kirchentür', text: 'Du stehst vor einer großen Kirchentür. Ein Zettel hängt daran: eine Frage!', opts: [{ label: 'Frage lesen', task: 'any', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Nicht lesen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Der Mönch', text: 'Ein Mönch fragt dich: „Weißt du, was Luther wirklich wollte?“ Antworte richtig und er schenkt dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', g: 'reformation', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Kirchentür', text: 'Du stehst vor einer großen Kirchentür. Ein Zettel hängt daran: eine Frage zu Luthers Thesen!', opts: [{ label: 'Frage lesen', task: 'any', g: 'ablass', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Nicht lesen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Der Bote', text: 'Ein Bote bringt dir eine Nachricht. Wenn du sie richtig verstehst, schenkt er dir einen Schild.', opts: [{ label: 'Nachricht lesen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
     { title: 'Die Bibliothek', text: 'In einer alten Bibliothek liegt eine Lupe. Der Bibliothekar fragt dich etwas – weißt du es?', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Kapelle', text: 'In einer kleinen Kapelle ist es still. Eine Nonne stellt dir eine Frage und segnet dich.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Leise weitergehen', effect: {} }] },
@@ -130,15 +139,17 @@ const MK = (() => {
   ];
 
   /* ---------- SACHKUNDE: Kartoffelpflanze ---------- */
+  // Teile der Pflanze (für Lehrkräfte anpassbar): id, name, ground ('oben' = über, 'unten' = unter der Erde), desc (Notizkarte)
+  // und wo = Frage für „Oben oder unten“ (fehlt sie, wird „Wo findest du „Name“ – über oder unter der Erde?“ gefragt).
   const PARTS = [
-    { id: 'wurzeln', name: 'Wurzeln', ground: 'unten', desc: 'Wachsen aus der Saatkartoffel und holen Wasser aus dem Boden.' },
-    { id: 'mutterknolle', name: 'Saatkartoffel', ground: 'unten', desc: 'Die alte Kartoffel, die im Frühjahr gesetzt wird. Sie schrumpft später.' },
-    { id: 'auslaeufer', name: 'Ausläufer', ground: 'unten', desc: 'Wachsen unter der Erde aus der Saatkartoffel zur Seite. An ihrem Ende bilden sich die neuen Knollen.' },
-    { id: 'tochterknollen', name: 'Knollen', ground: 'unten', desc: 'Die neuen Kartoffeln am Ende der Ausläufer. Sie werden im Herbst geerntet.' },
-    { id: 'staengel', name: 'Stängel', ground: 'oben', desc: 'Trägt Blätter, Blüten und Beeren.' },
-    { id: 'blaetter', name: 'Blätter', ground: 'oben', desc: 'Ohne Blätter kann die Pflanze nicht überleben.' },
-    { id: 'bluete', name: 'Blüten', ground: 'oben', desc: 'Im Sommer blüht die Pflanze.' },
-    { id: 'beere', name: 'Beeren', ground: 'oben', desc: 'Grüne, giftige Beeren, die aus den Blüten entstehen.' },
+    { id: 'wurzeln', name: 'Wurzeln', ground: 'unten', wo: 'Wo wachsen die Wurzeln?', desc: 'Wachsen aus der Saatkartoffel und holen Wasser aus dem Boden.' },
+    { id: 'mutterknolle', name: 'Saatkartoffel', ground: 'unten', wo: 'Wo liegt die Saatkartoffel?', desc: 'Die alte Kartoffel, die im Frühjahr gesetzt wird. Sie schrumpft später.' },
+    { id: 'auslaeufer', name: 'Ausläufer', ground: 'unten', wo: 'Wo wachsen die Ausläufer?', desc: 'Wachsen unter der Erde aus der Saatkartoffel zur Seite. An ihrem Ende bilden sich die neuen Knollen.' },
+    { id: 'tochterknollen', name: 'Knollen', ground: 'unten', wo: 'Wo wachsen die neuen Knollen?', desc: 'Die neuen Kartoffeln am Ende der Ausläufer. Sie werden im Herbst geerntet.' },
+    { id: 'staengel', name: 'Stängel', ground: 'oben', wo: 'Wo wächst der Stängel?', desc: 'Trägt Blätter, Blüten und Beeren.' },
+    { id: 'blaetter', name: 'Blätter', ground: 'oben', wo: 'Wo wachsen die Blätter?', desc: 'Ohne Blätter kann die Pflanze nicht überleben.' },
+    { id: 'bluete', name: 'Blüten', ground: 'oben', wo: 'Wo wachsen die Blüten?', desc: 'Im Sommer blüht die Pflanze.' },
+    { id: 'beere', name: 'Beeren', ground: 'oben', wo: 'Wo wachsen die Beeren?', desc: 'Grüne, giftige Beeren, die aus den Blüten entstehen.' },
   ];
   const GROW = [
     { id: 'g1', text: 'Im Frühjahr wird eine keimende Saatkartoffel in die Erde gesetzt' },
@@ -168,14 +179,14 @@ const MK = (() => {
     maerchen: { title: 'Der Bauer und der Teufel (nach den Brüdern Grimm)', lines: ['Die Geschichte ist nach einem Märchen der Brüder Grimm erzählt. Bei den Grimms sät der Bauer im ersten Jahr Rüben – bei uns pflanzt er Kartoffeln.', 'Der Bauer ist klug, verschmitzt, listig, vergnügt und klein (ein Bäuerlein).', 'Der Teufel ist klein, schwarz, feurig und am Ende wütend.', 'Der Teufel sitzt auf einem Schatz und will zwei Jahre lang die Hälfte der Ernte.', 'Erstes Jahr: Teufel bekommt, was über der Erde ist – der Bauer pflanzt Kartoffeln.', 'Zweites Jahr: Teufel bekommt, was unter der Erde ist – der Bauer sät Weizen.', 'Der Teufel fährt wütend in eine Felsenschlucht, der Bauer holt den Schatz.'] },
   };
   const K_POOL = [];
-  PARTS.forEach((p) => { K_POOL.push({ id: 'p_' + p.id, mod: 'parts', g: 'teile', part: p.id, q: 'Wie heißt der leuchtende Teil?', a: p.name }); K_POOL.push({ id: 'gr_' + p.id, mod: 'ground', g: 'boden', q: `Wo wächst: ${p.name}?`, o: ['Über der Erde', 'Unter der Erde'], a: p.ground === 'oben' ? 0 : 1 }); });
+  PARTS.forEach((p) => { K_POOL.push({ id: 'p_' + p.id, mod: 'parts', g: 'teile', part: p.id, q: 'Wie heißt der leuchtende Teil?', a: p.name }); K_POOL.push({ id: 'gr_' + p.id, mod: 'ground', g: 'boden', q: p.wo || `Wo findest du „${p.name}“ – über oder unter der Erde?`, o: ['Über der Erde', 'Unter der Erde'], a: p.ground === 'oben' ? 0 : 1 }); });
   K_POOL.push(
-    { id: 'kmc1', mod: 'ground', g: 'teile', q: 'Welchen Teil der Kartoffelpflanze essen wir?', o: ['Die Knollen', 'Die Beeren', 'Die Blätter'], a: 0 },
-    { id: 'kmc2', mod: 'ground', g: 'teile', q: 'Woran wachsen die neuen Knollen?', o: ['Am Ende der Ausläufer', 'An den Blättern', 'An der Blüte'], a: 0 },
-    { id: 'kmc3', mod: 'ground', g: 'teile', q: 'Was wird aus den Blüten?', o: ['Grüne, giftige Beeren', 'Neue Knollen', 'Wurzeln'], a: 0 },
-    { id: 'kmc4', mod: 'ground', g: 'teile', q: 'Was wird im Frühjahr in die Erde gesetzt?', o: ['Eine keimende Saatkartoffel', 'Eine Beere', 'Ein Blatt'], a: 0 },
-    { id: 'kmc5', mod: 'ground', g: 'wachstum', q: 'Was passiert mit der alten Kartoffel, wenn die Pflanze wächst?', o: ['Sie schrumpft', 'Sie wird größer', 'Sie blüht'], a: 0 },
-    { id: 'kmc6', mod: 'ground', g: 'wachstum', q: 'Wann werden die Knollen geerntet?', o: ['Im Herbst', 'Im Frühjahr', 'Im Winter'], a: 0 },
+    { id: 'kmc1', mod: 'wissen', g: 'teile', q: 'Welchen Teil der Kartoffelpflanze essen wir?', o: ['Die Knollen', 'Die Beeren', 'Die Blätter'], a: 0 },
+    { id: 'kmc2', mod: 'wissen', g: 'teile', q: 'Woran wachsen die neuen Knollen?', o: ['Am Ende der Ausläufer', 'An den Blättern', 'An der Blüte'], a: 0 },
+    { id: 'kmc3', mod: 'wissen', g: 'teile', q: 'Was wird aus den Blüten?', o: ['Grüne, giftige Beeren', 'Neue Knollen', 'Wurzeln'], a: 0 },
+    { id: 'kmc4', mod: 'wissen', g: 'teile', q: 'Was wird im Frühjahr in die Erde gesetzt?', o: ['Eine keimende Saatkartoffel', 'Eine Beere', 'Ein Blatt'], a: 0 },
+    { id: 'kmc5', mod: 'wissen', g: 'wachstum', q: 'Was passiert mit der alten Kartoffel, wenn die Pflanze wächst?', o: ['Sie schrumpft', 'Sie wird größer', 'Sie blüht'], a: 0 },
+    { id: 'kmc6', mod: 'wissen', g: 'wachstum', q: 'Wann werden die Knollen geerntet?', o: ['Im Herbst', 'Im Frühjahr', 'Im Winter'], a: 0 },
     // Lückentext: Herkunft
     { id: 'lk1', mod: 'ltk', g: 'herkunft', q: 'Eigentlich kommt die Kartoffel aus ___, aus Peru.', o: ['Südamerika', 'Europa', 'Afrika'], a: 0 },
     { id: 'lk2', mod: 'ltk', g: 'herkunft', q: 'Eigentlich kommt die Kartoffel aus Südamerika, aus ___.', o: ['Peru', 'Spanien', 'Italien'], a: 0 },
@@ -197,10 +208,10 @@ const MK = (() => {
     { id: 'le7', mod: 'ltk', g: 'ernte', q: 'Heute werden die Kartoffeln mit ___ geerntet.', o: ['Maschinen', 'Gabeln', 'Händen'], a: 0 },
     { id: 'le8', mod: 'ltk', g: 'ernte', q: 'Große ___ fahren über das Feld und ernten die Kartoffeln.', o: ['Kartoffelroder', 'Busse', 'Rasenmäher'], a: 0 },
     { id: 'le9', mod: 'ltk', g: 'ernte', q: 'Sie befreien die Kartoffeln gleichzeitig von der anhaftenden ___.', o: ['Erde', 'Schale', 'Farbe'], a: 0 },
-    { id: 'le10', mod: 'ltk', g: 'ernte', q: 'Mit Hilfe einer ___ werden sie der Größe nach sortiert.', o: ['Sortiermaschine', 'Waschmaschine', 'Waage'], a: 0 },
-    { id: 'le11', mod: 'ltk', g: 'ernte', q: 'Sie werden der ___ nach sortiert, in Säcke gefüllt.', o: ['Größe', 'Farbe', 'Form'], a: 0 },
+    { id: 'le10', mod: 'ltk', g: 'ernte', q: 'Mit Hilfe einer ___ werden sie der Größe nach sortiert.', o: ['Sortiermaschine', 'Waschmaschine', 'Nähmaschine'], a: 0 },
+    { id: 'le11', mod: 'ltk', g: 'ernte', q: 'Nach dem Sortieren kommen die Kartoffeln in ___.', o: ['Säcke', 'Flaschen', 'Gläser'], a: 0 },
     { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Nur die Aussortierung unförmiger und ___ Kartoffeln geschieht noch von Hand.', o: ['grüner', 'kleiner', 'dicker'], a: 0 },
-    // Wissen: Käfer + Herkunft + Ernte (rf / mc)
+    // Wissen: Käfer + Herkunft + Ernte (rf / mc); kmc1–6 oben gehören auch dazu
     { id: 'kw1', mod: 'wissen', g: 'kaefer', q: 'Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', rf: true, a: true },
     { id: 'kw2', mod: 'wissen', g: 'kaefer', q: 'Wie viele Eier legt ein Kartoffelkäferweibchen?', o: ['Mehrere hundert', 'Nur eins', 'Etwa drei'], a: 0 },
     { id: 'kw3', mod: 'wissen', g: 'kaefer', q: 'Was schlüpft aus den Eiern des Kartoffelkäfers?', o: ['Gefräßige Larven', 'Kleine Schnecken', 'Fliegen'], a: 0 },
@@ -266,14 +277,14 @@ const MK = (() => {
     'ground:1': { title: 'Oben oder unten', steps: ['Die Kartoffelpflanze wächst halb unter, halb über der Erde.', 'Unten: Wurzeln, Saatkartoffel, Ausläufer und Knollen.', 'Oben: Stängel, Blätter, Blüten und Beeren.'] },
     'grow:1': { title: 'Wachstum ordnen', steps: ['Die Schritte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Es beginnt im Frühjahr mit der Saatkartoffel.', 'Es endet im Herbst mit der Ernte.'] },
     'ltk:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Die Sätze stammen aus deinen Arbeitsblättern „Woher kommt die Kartoffel?“ und „Die Kartoffelernte früher und heute“.', 'Tippe auf das Wort, das passt.'] },
-    'wissen:1': { title: 'Kartoffelwissen', steps: ['Fragen zum Kartoffelkäfer, zur Herkunft und zur Ernte.', 'Manchmal musst du „Richtig“ oder „Falsch“ wählen, manchmal eine von drei Antworten.', 'Lies genau – oft ist nur ein kleines Wort vertauscht.'] },
+    'wissen:1': { title: 'Kartoffelwissen', steps: ['Fragen zur Pflanze, zum Wachsen, zum Kartoffelkäfer, zur Herkunft und zur Ernte.', 'Manchmal musst du „Richtig“ oder „Falsch“ wählen, manchmal eine von drei Antworten.', 'Lies genau – oft ist nur ein kleines Wort vertauscht.'] },
     'woerter:1': { title: 'Kartoffelwörter', steps: ['Zwei Wortteile ergeben ein zusammengesetztes Wort: Brat- + Kartoffel = Bratkartoffel.', 'Der Artikel richtet sich nach dem letzten Teil: die Kartoffel → die Bratkartoffel, der Salat → der Kartoffelsalat.', 'Tippe auf das richtige Wort mit Artikel.'] },
     'maerchen:1': { title: 'Der Bauer und der Teufel', steps: ['Fragen zur Geschichte – erzählt nach einem Märchen der Brüder Grimm.', 'Welche Adjektive passen zum Bauern (klug, listig, verschmitzt, vergnügt) und welche zum Teufel (schwarz, wütend)?', 'Und: Was passiert im ersten Jahr, was im zweiten?'] },
     'story:1': { title: 'Märchen ordnen', steps: ['Die Teile der Geschichte sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an.', 'Erst Kartoffeln, dann Weizen, zum Schluss der Schatz.'] },
   };
   const K_STARTERS = [
     { id: 'knolli', type: 'pflanze', shape: 'potato', names: ['Knolli', 'Werkstatt-Knolli', 'Werkstatt-Knolli'], hp: 70, desc: 'Eine fröhliche Kartoffel, die alles über ihre Pflanze wissen will.', perk: 'heal',
-      attacks: [{ name: 'Knollenstoß', mod: 'parts' }, { name: 'Erdblick', mod: 'ground' }, { name: 'Wachstumsschub', mod: 'grow' }, { name: 'Blätterrascheln', mod: 'parts' }] },
+      attacks: [{ name: 'Knollenstoß', mod: 'parts' }, { name: 'Erdblick', mod: 'ground' }, { name: 'Wachstumsschub', mod: 'grow' }, { name: 'Wörterbrei', mod: 'woerter' }] },
   ];
   const K_WORLD_ATTACKS = { 2: [{ name: 'Lückenfüller', mod: 'ltk' }, { name: 'Käferwissen', mod: 'wissen' }, { name: 'Wörterwirbel', mod: 'woerter' }, { name: 'Teufelstrick', mod: 'maerchen' }] };
   const K_EXTRA = { parts: 'Sprossenschlag', ground: 'Bodenblick', grow: 'Erntezeit', ltk: 'Satzschleuder', wissen: 'Forscherblick', woerter: 'Wortkette', maerchen: 'Bauernlist' };
@@ -299,14 +310,15 @@ const MK = (() => {
       boss: { name: 'Käferkönigin', acc: 'die Käferkönigin', type: 'normal', shape: 'beetle', hp: 110, atk: 9, boss: true },
     },
   };
+  const K_MOVES = ['Käferbiss', 'Blattfraß', 'Erdklumpen', 'Hagelschauer', 'Wühlattacke', 'Matschwurf'];
   const K_EVENTS = [
     { title: 'Der Bauer', text: 'Ein Bauer fragt dich etwas über seine Kartoffeln. Wenn du es weißt, schenkt er dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Das Kartoffelfeld', text: 'Du findest ein Feld voller Pflanzen. Wer sich auskennt, erntet eine Belohnung.', opts: [{ label: 'Ernten', task: 'any', win: { xp: 20, item: 'beere' }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
-    { title: 'Die Gärtnerin', text: 'Eine Gärtnerin zeigt dir ihre Pflanze und stellt eine Frage.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
+    { title: 'Das Kartoffelfeld', text: 'Du findest ein Feld voller Pflanzen. Wer sich auskennt, erntet eine Belohnung.', opts: [{ label: 'Ernten', task: 'any', win: { xp: 20, item: 'trank' }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Die Gärtnerin', text: 'Eine Gärtnerin zeigt dir ihre Kartoffelpflanze und stellt eine Frage zu den Pflanzenteilen.', opts: [{ label: 'Antworten', task: 'any', g: 'teile', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
     { title: 'Die Kartoffelküche', text: 'Es duftet nach Kartoffelpuffern! Die Köchin gibt dir einen Kraftkeks, wenn du ihre Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Gartenzwerg', text: 'Ein Gartenzwerg hält eine Lupe. „Weißt du etwas über Kartoffeln? Dann leihe ich sie dir.“', opts: [{ label: 'Antworten', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Regen', text: 'Es regnet. Die Pflanzen freuen sich – und du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
-    { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', g: 'herkunft', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
   ];
 
   /* ---------- Spaced repetition selection ---------- */
@@ -316,13 +328,15 @@ const MK = (() => {
     for (let i = 0; i < items.length; i++) { r -= w[i]; if (r <= 0) return items[i]; }
     return items[items.length - 1];
   }
-  function generate(mode, mod, tier, know, seqNow) {
+  // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls
+  function generate(mode, mod, tier, know, seqNow, opts) {
     const pool = mode === 'ethik' ? L_POOL : K_POOL;
     const elite = false;
     if (mod === 'ord') { const idx = shuffle(L_EVENTS_ORDER.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => L_EVENTS_ORDER[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'ord_' + idx.join('') }; }
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
-    const cands = pool.filter((p) => p.mod === mod);
+    let cands = pool.filter((p) => p.mod === mod);
+    if (opts && opts.g) { const topic = cands.filter((p) => p.g === opts.g); if (topic.length) cands = topic; }
     const e = weightedPick(cands, know, seqNow);
     if (mod === 'parts') {
       const part = PARTS.find((p) => p.id === e.part);
@@ -339,8 +353,8 @@ const MK = (() => {
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
   const MODES = {
-    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Ethik: Martin Luther und die Reformation' },
-    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Sachkunde: Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
+    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Ethik: Martin Luther und die Reformation' },
+    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Sachkunde: Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
   return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, L_EVENTS_ORDER, generate, record, shuffle, pick, rnd };
 })();

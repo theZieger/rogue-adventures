@@ -6,6 +6,36 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Jeder Punkt ist ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-08
+
+### Neu
+- „Idee senden“ geht jetzt über ein Formular – ganz ohne Konto.
+- Beim Installieren zeigt das Handy oder der Computer Bilder vom Spiel.
+- Neue Begriffe-Fragen zu Luther, zum Beispiel „protestieren“, „Professor“ und „evangelisch“.
+
+### Verbessert
+- Nur Treffer machen eine Attacke müde. Nach einem Fehler kannst du dieselbe Aufgabenart gleich nochmal üben.
+- „Stark gegen …“ steht jetzt einmal beim Gegner statt auf jeder Attacke.
+- Die Lupe hilft bei Richtig-oder-Falsch-Fragen mit einem Blick in deine Notizen, statt die Antwort zu verraten.
+- Sternenstaub kostet im Kampf keinen Zug und zeigt an, wenn dein Monster ein Level aufsteigt.
+- Beim Zahlengitter auf kleinen Bildschirmen ist das Antwortfeld immer zu sehen.
+- Gegner greifen passend zum Thema an, zum Beispiel mit „Käferbiss“ oder „Bannspruch“.
+- Ereignisse fragen, was sie versprechen: Das spanische Schiff fragt nach der Reise der Kartoffel.
+- Das Zahlenrätsel erklärt, was eine Quersumme ist.
+- Fragen wie „Wo wachsen die Wurzeln?“ sind jetzt richtig formuliert.
+- Knolli hat vier verschiedene Attacken.
+
+### Behoben
+- Wer nach einer Antwort die App schloss, konnte Fehler, Gegnerangriffe oder Belohnungen verlieren. Jetzt zählt jede Antwort sofort.
+- Schatztruhen und Ereignisse ändern sich nicht mehr, wenn man die App neu öffnet.
+- Ein zweiter Kraftkeks, Schild oder eine zweite Lupe gehen nicht mehr verloren, wenn schon einer aktiv ist.
+- Beide Bonus-Sterne beim Start werden jetzt auch wirklich verteilt.
+- Mit der Tastatur konnte man zwei Aufgaben gleichzeitig öffnen.
+- Schadenszahlen verschwinden nicht mehr zu früh.
+- „Idee senden“ aus dem Elternbereich führt wieder dorthin zurück und schickt keine Geräteinfos mit.
+- Kleine Textfehler, zum Beispiel „beide Welten“ statt „alle zwei Welten“ und das richtige Minuszeichen.
+- Das Kartoffelfeld schenkt keine Beere mehr – Kartoffelbeeren sind ja giftig.
+
 ## 2026-11-07
 
 ### Neu

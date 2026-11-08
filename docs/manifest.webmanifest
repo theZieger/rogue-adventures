@@ -11,12 +11,99 @@
   "orientation": "any",
   "background_color": "#141B33",
   "theme_color": "#1C2541",
-  "categories": ["education", "games", "kids"],
+  "categories": [
+    "education",
+    "games",
+    "kids"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icons/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/narrow-1-start.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Startseite: Klasse und Fach wählen"
+    },
+    {
+      "src": "screenshots/narrow-2-karte.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Die Abenteuerkarte"
+    },
+    {
+      "src": "screenshots/narrow-3-kampf.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Kampf: Attacke wählen"
+    },
+    {
+      "src": "screenshots/narrow-4-aufgabe.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Jede Attacke ist eine Aufgabe"
+    },
+    {
+      "src": "screenshots/wide-1-start.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Startseite: Klasse und Fach wählen"
+    },
+    {
+      "src": "screenshots/wide-2-karte.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Die Abenteuerkarte"
+    },
+    {
+      "src": "screenshots/wide-3-kampf.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Kampf: Attacke wählen"
+    },
+    {
+      "src": "screenshots/wide-4-aufgabe.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Jede Attacke ist eine Aufgabe"
+    }
   ]
 }

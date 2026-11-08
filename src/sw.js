@@ -43,7 +43,11 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // The game page: network first (always newest), cached copy as fallback.
+  // The game page (./ or ./index.html): network first (newest version), cached copy as fallback.
+  // Other pages opened inside the app's folder (e.g. fonts/OFL.txt) are passed through and never cached as the game.
+  const scope = new URL(self.registration.scope);
+  const isGame = url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html';
+  if (req.mode === 'navigate' && !isGame) return;
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);

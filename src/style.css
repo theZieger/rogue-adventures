@@ -261,7 +261,6 @@ p { margin: 8px 0; }
 /* Attack tags: whole-number damage plus plain-language hints */
 .atk .tags { display: flex; flex-wrap: wrap; gap: 4px; min-height: 0; }
 .atk .tag { font-size: 13px; font-weight: 800; border-radius: 999px; padding: 0 8px; line-height: 20px; }
-.atk .tag.strong { background: #DFF5E3; color: #1E6B32; }
 .atk .tag.tired { background: #FFE3D6; color: #8A2E0E; }
 .atk .tag.power { background: #FFF1C7; color: #6B4E00; }
 .atk.tired { background: var(--card2); }
@@ -314,7 +313,7 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .fighter#fe .mon { animation-delay: -1.6s; }
 .hero .logo, .card.center > .mon, .choice.selected .mon { animation: bob 3.6s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
-.floatnum { position: absolute; left: 50%; top: 10%; transform: translateX(-50%); font-weight: 800; font-size: 26px; color: #fff; text-shadow: 0 2px 0 var(--ink), 0 0 6px rgba(0,0,0,.4); pointer-events: none; animation: floatUp .9s ease-out forwards; z-index: 3; }
+.floatnum { position: fixed; transform: translateX(-50%); font-weight: 800; font-size: 26px; color: #fff; text-shadow: 0 2px 0 var(--ink), 0 0 6px rgba(0,0,0,.4); pointer-events: none; animation: floatUp .9s ease-out forwards; z-index: 3; }
 .floatnum.crit { color: var(--gold); font-size: 32px; }
 @keyframes floatUp { 0% { opacity: 0; translate: 0 6px; } 15% { opacity: 1; } 100% { opacity: 0; translate: 0 -38px; } }
 .floor.current .node { animation: glow 2.4s ease-in-out infinite; }
@@ -332,3 +331,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
   .floatnum { animation: none; opacity: 1; }
   .btn, .choice, .atk, .opt, .oitem, .node, .item, .toggle, .gradechip { transition: none; }
 }
+
+.advantage { font-size: 13px; font-weight: 800; background: #DFF5E3; color: #1E6B32; border-radius: 999px; padding: 0 8px; line-height: 20px; }
+.screen.tasking .advantage { display: none; }
+@media (max-height: 720px) { .grid { grid-template-columns: repeat(3, 52px); gap: 5px; margin: 6px 0; } .grid div { width: 52px; height: 52px; font-size: 20px; } .legend { font-size: 13px; gap: 6px; } }
+@media (max-height: 720px) and (min-width: 500px) { .grid { grid-template-columns: repeat(3, 56px); } .grid div { width: 56px; height: 56px; } }

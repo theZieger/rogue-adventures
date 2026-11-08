@@ -77,12 +77,44 @@ function startMathFight() {
   }
 }
 
-// 5. Stats are kept per mode and per task type
+// 5./6. Answers count when they are checked – reloading before "Weiter" changes nothing
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function answer(p, right) {
+  if (p.$('#tutok')) p.click('#tutok');
+  p.click('.atk[data-i="0"]');
+  if (p.$('#tutok')) p.click('#tutok');
+  const ans = p.w.__task.answers.map((a) => (right ? a : a + 1));
+  const inps = [...p.d.querySelectorAll('.inp')];
+  ans.forEach((a, i) => { inps[i].click(); for (const ch of String(a)) p.click(`.numpad [data-k="${ch}"]`); });
+  p.click('.numpad [data-k="ok"]');
+}
+async function reloadCases() {
+  { // wrong answer, reload before "Weiter": the enemy still gets its free hit
+    const p1 = startMathFight(); const hp0 = p1.w.__mq.run.hero.hp;
+    answer(p1, false);
+    const p2 = open(p1.dump()); p2.click('[data-cont="math"]');
+    await sleep(900);
+    const r = p2.w.__mq.run; const tries = Object.values(p2.w.__mq.meta.stats.math).reduce((n, s) => n + s.t, 0);
+    check(tries === 1, 'a wrong answer is counted even if the app is closed before "Weiter"');
+    check(r.hero.hp < hp0 || r.shield === false && p2.text().includes('greift'), 'the enemy takes its owed turn after reopening');
+  }
+  { // winning hit, reload before "Weiter": the reward is not lost
+    const p1 = startMathFight(); p1.w.__mq.run.node.enemy.hp = 1;
+    answer(p1, true);
+    const p2 = open(p1.dump()); p2.click('[data-cont="math"]');
+    check(p2.text().includes('besiegt'), 'a defeated enemy gives its reward after reopening');
+    check(p2.w.__mq.run.hero.xp > 0 || p2.w.__mq.run.hero.level > 1, 'XP from the won fight is kept');
+  }
+}
+
+// 7. Stats are kept per mode and per task type
 {
   const p = open();
   const m = p.w.__mq.meta;
   check(m.stats.math && m.stats.math.add && typeof m.stats.math.add.c === 'number', 'stats are stored per mode and task type');
 }
 
-console.log('storage fails', fails);
-if (fails) process.exit(1);
+reloadCases().then(() => {
+  console.log('storage fails', fails);
+  if (fails) process.exit(1);
+});

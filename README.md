@@ -17,7 +17,7 @@ Lernquest ist eine Web-App (PWA) – einmal installiert, startet es wie eine nor
 | Windows / macOS / Linux / ChromeOS (Chrome, Edge) | Installieren-Symbol rechts in der Adressleiste oder Menü → „App installieren“ |
 | Mac (Safari 17+) | Ablage → „Zum Dock hinzufügen“ |
 
-Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) immer die neueste Version. Wird ein Update veröffentlicht, während die App offen ist, wird es eingespielt, sobald sie in den Hintergrund geht – nie mitten im Kampf. Ohne Internet startet die zuletzt geladene Version.
+Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerweise sofort die neueste Version – bei sehr langsamer Verbindung startet nach 3–4 Sekunden die gespeicherte und das Update folgt beim nächsten Mal. Wird ein Update veröffentlicht, während die App offen ist, wird es eingespielt, sobald sie in den Hintergrund geht – nie mitten im Kampf. Ohne Internet startet die zuletzt geladene Version.
 
 ## Modi
 
@@ -35,7 +35,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) immer die n
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Aufgabenarten an/aus, Töne, Reset.
 - Startseite: Klasse → Fach → Einheit. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
-- „Idee senden“ öffnet ein GitHub-Issue (braucht ein GitHub-Konto). Für Feedback ohne Konto in `FEEDBACK` (`src/app.js`) eine E-Mail-Adresse oder ein Online-Formular eintragen.
+- „Idee senden“ schickt Ideen, Fehler und Lob über ein Google-Formular (kein Konto nötig) oder als GitHub-Issue – siehe „Feedback einrichten“.
 - Töne werden im Browser erzeugt (keine Audiodateien), Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Weiterspielen geht es genau dort weiter.
 - Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften.
@@ -53,11 +53,12 @@ src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetz
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
-tools/make_icons.js  erzeugt docs/icons/* und die iOS-Startbildschirme docs/splash/* aus der Sonnenfuchs-Grafik (Playwright, nur bei Grafik-Änderungen)
+tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
+docs/screenshots/  Bilder für den Installieren-Dialog (Android/Desktop)
 docs/fonts/        Schrift Baloo 2 (SIL OFL) – lokal eingebunden, keine Verbindung zu Google
 ```
 
@@ -80,6 +81,18 @@ Inhalte anpassen:
 
 Repository → Settings → Pages → Source „Deploy from a branch“, Branch `main`, Ordner `/docs`.
 Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI prüft, dass `docs/` zum Stand von `src/` passt.
+
+## Feedback einrichten
+
+Der Knopf „📨 Absenden“ öffnet ein Google-Formular mit der Nachricht schon eingetragen.
+
+1. Google-Formular anlegen mit einer Frage vom Typ „Absatz“ (z. B. „Deine Nachricht“).
+2. Im Formular: ⋮ → „Vorausgefüllten Link abrufen“, in das Feld `TEXT` schreiben, „Link abrufen“ → Link kopieren.
+3. Der Link sieht so aus: `https://docs.google.com/forms/d/e/…/viewform?usp=pp_url&entry.123456789=TEXT`.
+   In `src/app.js` bei `FEEDBACK.form` eintragen und `TEXT` durch `{text}` ersetzen.
+4. `npm run build`, committen, pushen. Antworten landen im Formular (optional per E-Mail-Benachrichtigung).
+
+Solange dort noch der Platzhalter `FORMULAR-ID-EINTRAGEN` steht, führt der Knopf ins Leere. „Auf GitHub senden“ funktioniert immer (mit GitHub-Konto).
 
 ## Lizenz
 

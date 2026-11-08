@@ -159,8 +159,8 @@ const MQ = (() => {
       3: { title: 'Die fehlende Zahl', steps: ['? · 6 = 42: Wie oft passt die 6 in 42?', 'Zähle in 6er-Schritten: 6, 12, 18, 24, 30, 36, 42. Das sind 7 Schritte.', 'Also ? = 7.'] },
     },
     riddle: {
-      1: { title: 'Zahlenrätsel', steps: ['Eine Zahl hat Stellen: Zehner und Einer. Bei 47 ist der Zehner 4 und der Einer 7.', 'Lies die Hinweise und probiere Zahlen aus.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Zehner ist 3.“ → Einer ist 6. Die Zahl ist 36.'] },
-      3: { title: 'Knifflige Zahlenrätsel', steps: ['Mehrere Hinweise, alle müssen stimmen.', 'Starte mit dem Hinweis, der am meisten verrät (z. B. „Mein Zehner ist 4“).', 'Dann prüfe die anderen Hinweise nacheinander.'] },
+      1: { title: 'Zahlenrätsel', steps: ['Eine Zahl hat Stellen: Zehner und Einer. Bei 47 ist der Zehner 4 und der Einer 7.', 'Quersumme: Alle Ziffern zusammenzählen. Bei 23 ist die Quersumme 2 + 3 = 5.', 'Lies die Hinweise und probiere Zahlen aus.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Zehner ist 3.“ → Einer ist 6. Die Zahl ist 36.'] },
+      3: { title: 'Knifflige Zahlenrätsel', steps: ['Mehrere Hinweise, alle müssen stimmen.', 'Starte mit dem Hinweis, der am meisten verrät (z. B. „Mein Zehner ist 4“).', 'Dann prüfe die anderen Hinweise nacheinander.', 'Quersumme: Alle Ziffern zusammenzählen. Bei 258 ist die Quersumme 2 + 5 + 8 = 15.'] },
     },
     seq: {
       1: { title: 'Zahlenfolgen', steps: ['Finde heraus, wie viel jedes Mal dazukommt.', '3, 8, 13, 18: Jedes Mal + 5.', 'Also weiter: 23, 28, 33.'] },
@@ -179,7 +179,7 @@ const MQ = (() => {
       3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt gilt: nach rechts + 100, nach links − 100. Oben und unten bleiben − 1 und + 1.', 'Beispiel: Start 420, zwei Felder nach rechts (620), dann eins nach unten (621).', 'Das Zielfeld ist 621.'] },
     },
   };
-  TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
+  TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', 'Die Quersumme sind alle Ziffern zusammen: Bei 258 ist sie 2 + 5 + 8 = 15.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
   const TYPES = { feuer: { name: 'Feuer', icon: '🔥', color: '#FF6A3D' }, wasser: { name: 'Wasser', icon: '💧', color: '#3FA0FF' }, pflanze: { name: 'Pflanze', icon: '🌿', color: '#4FC96A' }, normal: { name: 'Normal', icon: '⭐', color: '#C9A227' } };
@@ -242,14 +242,14 @@ const MQ = (() => {
 
   const EVENTS = [
     { title: 'Die Brücke', text: 'Ein alter Troll bewacht eine Brücke. „Löse mein Rätsel, dann darfst du rüber und bekommst einen Trank!“', opts: [{ label: 'Rätsel lösen', task: 'riddle', win: { item: 'trank' }, lose: { hp: -8 } }, { label: 'Umweg nehmen (−5 LP)', effect: { hp: -5 } }] },
-    { title: 'Der Zahlenbrunnen', text: 'Ein Brunnen glitzert. Wenn du die richtige Zahl rufst, sprudelt Heilwasser.', opts: [{ label: 'Zahl rufen', task: 'nb', win: { hp: 25 }, lose: { hp: 0 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Zahlenbrunnen', text: 'Ein Brunnen glitzert. Auf dem Rand steht eine Zahl. Rufe ihre beiden Nachbarzahlen, dann sprudelt Heilwasser.', opts: [{ label: 'Nachbarzahlen rufen', task: 'nb', win: { hp: 25 }, lose: { hp: 0 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Schatztruhe', text: 'Eine Truhe mit Zahlenschloss! Die Zahlenfolge öffnet sie.', opts: [{ label: 'Schloss knacken', task: 'seq', win: { item: 'grosstrank' }, lose: { hp: -10 } }, { label: 'Lieber nicht', effect: {} }] },
     { title: 'Die Händlerin', text: 'Eine Händlerin verkauft einen Schild. Sie nimmt 10 Lebenspunkte als Bezahlung.', opts: [{ label: 'Schild kaufen (−10 LP)', effect: { hp: -10, item: 'schild' } }, { label: 'Nein danke', effect: {} }] },
-    { title: 'Das Trainingslager', text: 'Ein freundlicher Trainer bietet dir eine Übungsrunde an. Wenn du es schaffst, lernt dein Monster schneller.', opts: [{ label: 'Trainieren', task: 'mul', win: { xp: 25 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Das Trainingslager', text: 'Ein freundlicher Trainer bietet dir eine Einmaleins-Übungsrunde an. Wenn du es schaffst, lernt dein Monster schneller.', opts: [{ label: 'Trainieren', task: 'mul', win: { xp: 25 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
     { title: 'Das Beerenfeld', text: 'Überall wachsen Beeren! Du kannst dir welche pflücken.', opts: [{ label: 'Beeren pflücken', effect: { item: 'beere' } }, { label: 'Schnell weiter', effect: {} }] },
-    { title: 'Der Zahlengeist', text: 'Ein Geist flüstert: „Zeig mir, dass du rechnen kannst, dann stärke ich dein Monster.“', opts: [{ label: 'Rechnen', task: 'add', win: { maxhp: 8 }, lose: { hp: -6 } }, { label: 'Weglaufen', effect: {} }] },
-    { title: 'Der Bäcker', text: 'Ein Bäcker hat frische Kraftkekse gebacken. „Wer mir beim Abwiegen hilft, bekommt einen!“', opts: [{ label: 'Helfen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Der Sternenhimmel', text: 'Eine Sternschnuppe fällt vom Himmel. Setze die leuchtende Zahlenreihe fort, dann gehört der Sternenstaub dir.', opts: [{ label: 'Zählen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Nur anschauen', effect: {} }] },
+    { title: 'Der Zahlengeist', text: 'Ein Geist flüstert: „Zeig mir, dass du plus rechnen kannst, dann stärke ich dein Monster.“', opts: [{ label: 'Plus rechnen', task: 'add', win: { maxhp: 8 }, lose: { hp: -6 } }, { label: 'Weglaufen', effect: {} }] },
+    { title: 'Der Bäcker', text: 'Ein Bäcker hat frische Kraftkekse gebacken, aber einige sind schon verkauft. „Hilf mir mit einer Minus-Aufgabe, damit ich weiß, wie viele übrig sind – dann bekommst du einen!“', opts: [{ label: 'Minus rechnen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Sternenhimmel', text: 'Eine Sternschnuppe fällt vom Himmel. Setze die leuchtende Zahlenreihe fort, dann gehört der Sternenstaub dir.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Nur anschauen', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
   ];
 

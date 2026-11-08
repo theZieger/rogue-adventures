@@ -65,6 +65,8 @@
     const ok = isObj(r) && isObj(r.hero) && Array.isArray(r.map) && isObj(r.tiers) && Array.isArray(r.items) && Array.isArray(r.path) && Array.isArray(r.hero.attacks)
       && Number.isFinite(r.world) && Number.isFinite(r.floor) && Number.isFinite(r.hero.hp) && MODES[m].starters.some((s) => s.id === r.hero.id) && r.world >= 1 && r.world <= MODES[m].worlds && r.floor >= 1 && r.floor <= r.map.length;
     if (!ok) { if (r) clear(KEY_RUN_FOR(m)); return null; }
+    if (isObj(r.node) && !NODE_INFO[r.node.type]) r.node = null;
+    r.items = r.items.filter((it) => ITEMS[it]);
     r.mode = m; return r;
   }
 
@@ -93,7 +95,7 @@
     let t, sig;
     for (let i = 0; i < 12; i++) {
       if (mode === 'math') { t = MQ.generate(mod, tier, opts); t.kind = 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
-      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq); sig = t.qid; }
+      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, opts && opts.g ? { g: opts.g } : undefined); sig = t.qid; }
       if (!rec.includes(sig)) break;
     }
     rec.push(sig); if (rec.length > 8) rec.shift();
@@ -138,20 +140,25 @@
   })();
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('button')) SFX.tap(); }, true);
   // floating damage number above a fighter
-  function fx(sel, text, cls) { const el = $(sel); if (!el) return; const s = document.createElement('span'); s.className = 'floatnum ' + (cls || ''); s.textContent = text; s.setAttribute('aria-hidden', 'true'); el.appendChild(s); setTimeout(() => s.remove(), 1000); }
+  function fx(sel, text, cls) { const el = $(sel); if (!el) return; const r = el.getBoundingClientRect(); const s = document.createElement('span'); s.className = 'floatnum ' + (cls || ''); s.textContent = text; s.setAttribute('aria-hidden', 'true'); s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top + Math.min(40, r.height * 0.3)) + 'px'; document.body.appendChild(s); setTimeout(() => s.remove(), 1000); }
   document.addEventListener('keydown', (e) => { if (keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) keyHandler(e); });
   // one persistent live region, so screen readers reliably announce battle messages
   const live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); document.body.appendChild(live);
   function announce(text) { live.textContent = ''; setTimeout(() => { live.textContent = text; }, 50); }
   function topbar(title, extra) { return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`; }
-  function modal(html) { const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; app.appendChild(ov); return ov; }
+  function modal(html) {
+    const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+    const behind = [...app.children]; behind.forEach((el) => { el.inert = true; }); app.appendChild(ov);
+    const rm = ov.remove.bind(ov); ov.remove = () => { behind.forEach((el) => { el.inert = false; }); rm(); };
+    return ov;
+  }
 
   /* ---------- Tutorials ---------- */
   function tutFor(group) { if (mode === 'math') { const [mod, tier] = group.split(':'); return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]); } const t = CFG().tut[group]; const M = MODULES_OF()[group.split(':')[0]]; return Object.assign({ icon: M ? M.icon : '📖' }, t); }
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Das ist neu! So geht es:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden!</button>`);
-    $('#tutok', ov).focus();
+    $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
   }
   function ensureTutorial(task, then) { const needGroup = !meta.seenTut[tutKey(task.group)]; const needNote = task.note && !meta.seenTut[tutKey('note:' + task.note)]; if (needGroup || needNote) showTutorial(task.group, task.note, then, true); else then(); }
@@ -181,7 +188,7 @@
     container.innerHTML = cardHtml();
     bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
     const inps = Array.from(container.querySelectorAll('.inp'));
-    function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); }
+    function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); const a = inps[active]; if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' }); }
     inps.forEach((el) => { el.onclick = () => { if (!locked) { active = +el.dataset.i; paint(); } }; });
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
     paint();
@@ -191,7 +198,7 @@
     keyHandler = (e) => {
       if (locked) return; let k = null;
       if (/^[0-9]$/.test(e.key)) k = e.key; else if (e.key === 'Backspace' || e.key === 'Delete') k = 'del'; else if (e.key === 'Enter') k = 'ok';
-      else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Tab') && nAns > 1) { e.preventDefault(); active = (active + ((e.key === 'ArrowLeft' || e.shiftKey) ? nAns - 1 : 1)) % nAns; paint(); return; }
+      else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && nAns > 1) { e.preventDefault(); active = (active + (e.key === 'ArrowLeft' ? nAns - 1 : 1)) % nAns; paint(); return; }
       if (!k) return; e.preventDefault(); press(k);
     };
     function press(k) {
@@ -207,6 +214,7 @@
     function submit() {
       locked = true; keyHandler = null;
       const ok = values.every((v, i) => parseInt(v, 10) === task.answers[i]);
+      if (opts.onResult) opts.onResult(ok); // game state changes now, so a reload can't undo the answer
       inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
       if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
@@ -222,10 +230,11 @@
   function runChoiceTask(task, opts, done) {
     const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod]; let locked = false;
     const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
-    // magnifier item: one wrong option is crossed out
-    const strikeWrongOption = () => { const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🔎 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
+    // magnifier item: with two options (e.g. richtig/falsch) crossing one out would give the answer away – show the notes instead
+    const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', n ? `<div class="hintline">🔎 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🔎 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🔎 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
       locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
+      if (opts.onResult) opts.onResult(ok);
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small></div>`;
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
@@ -294,7 +303,7 @@
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
     $('#news').onclick = screenNews;
-    $('#feedback').onclick = screenFeedback;
+    $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
   }
@@ -334,7 +343,8 @@
     paintSwap();
     $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
-      if ((rec && sel === rec) || (swap && swapOn)) run.items.push('stern');
+      if (rec && sel === rec) run.items.push('stern');
+      if (swap && swapOn) run.items.push('stern');
       meta.lastStarter[mode] = sel; meta.runs++; saveAll(); screenMap(); };
   }
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1] = ['school']; if (!m[4].includes('school')) m[4][0] = 'school'; } return m;
@@ -356,7 +366,7 @@
   function showBag(inBattle) {
     const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${run.items.map((it, i) => `<button class="item" data-i="${i}"><span>${ITEMS[it].icon} ${ITEMS[it].name}</span><small>${esc(ITEMS[it].desc)}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
     $('#close', ov).onclick = () => ov.remove();
-    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: Das kannst du nur im Kampf benutzen.`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${it.desc}`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; if (it.xp) gainXp(it.xp); saveAll(); ov.remove(); if (inBattle) inBattle(it); else screenMap(); }; });
+    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: Das kannst du nur im Kampf benutzen.`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${it.desc}`; return; } if ((it.shield && run.shield) || (it.power && run.power) || (it.hint && run.hint)) { $('#bagdesc', ov).textContent = `${it.name} ist schon aktiv. Heb dir den nächsten auf!`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; const lv = it.xp ? gainXp(it.xp) : []; if (lv.length) setTimeout(SFX.level, 150); else SFX.item(); saveAll(); ov.remove(); if (inBattle) inBattle(it, lv); else { screenMap(); if (it.xp) { const m = modal(`<h2>${it.icon} +${it.xp} XP</h2>${lv.map((x) => `<p style="font-weight:800;color:var(--orange)">${esc(x)}</p>`).join('') || '<p>Dein Monster lernt dazu.</p>'}<button class="btn" id="tutok">Super!</button>`); $('#tutok', m).focus({ preventScroll: true }); $('#tutok', m).onclick = () => m.remove(); } } }; });
   }
 
   // Continue a saved adventure exactly where it stopped: a node that was entered can't be swapped for another
@@ -365,7 +375,13 @@
     const n = run.node;
     if (!isObj(n)) return screenMap();
     if (n.done) return advance();
-    if (isObj(n.enemy) && n.enemy.hp > 0) return renderBattle({ enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' });
+    if (isObj(n.enemy)) {
+      const b = { enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
+      if (n.enemy.hp <= 0) return battleWon(b); // defeated just before the app closed: hand out the reward
+      if (n.enemy.pending) { b.phase = 'wait'; renderBattle(b); setTimeout(() => { if (run) enemyTurn(b, n.enemy.pending); }, 600); return; } // the enemy still has its turn
+      return renderBattle(b);
+    }
+    if (n.type === 'event' && Number.isInteger(n.opt)) return screenEvent(n.opt); // a started event task can't be swapped for the safe option
     enterNode(n.type);
   }
   // mark the current node as finished (rewards already given) – a reload then simply moves on
@@ -398,7 +414,7 @@
     render(`<div class="screen">${topbar(e.boss ? '👑 Bosskampf' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
       <div class="arena">
         <div class="fighter" id="fh">${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, h.evo)}<div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div></div>
-        <div class="fighter" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0, 'enemy')}<div class="name">${esc(e.name)}</div>${typeChip(e.type)}<div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
+        <div class="fighter" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0, 'enemy')}<div class="name">${esc(e.name)}</div>${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<div class="advantage">💪 Du bist stark gegen ${TYPES[e.type].name}!</div>` : ''}<div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
@@ -419,19 +435,20 @@
   function noteAttackUsed(b, atk) { if (b.enemy.lastMod === atk.mod) b.enemy.reps = (b.enemy.reps || 1) + 1; else { b.enemy.lastMod = atk.mod; b.enemy.reps = 1; } }
   function renderAttackChoice(b) {
     const atks = heroAttacks(); const MODULES = MODULES_OF();
-    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.strong ? '<span class="tag strong">💪 stark!</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🍪 doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Abwechseln macht stärker!</span></div>`;
-    $('#bag').onclick = () => showBag((it) => useItemInBattle(b, it));
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🍪 doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Abwechseln – sonst wird die Attacke müde.</span></div>`;
+    $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
     app.querySelectorAll('.atk').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
     if (!meta.seenTut['battle:intro']) showBattleIntro();
   }
   function showBattleIntro() {
-    const ov = modal(`<h2>⚔️ So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>stark!</b> heißt: Diese Attacke wirkt besonders gut gegen den Gegner.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Los geht’s!</button>`);
-    $('#tutok', ov).focus();
+    const ov = modal(`<h2>⚔️ So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Los geht’s!</button>`);
+    $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['battle:intro'] = true; saveAll(); };
   }
-  // potions and stars take your turn; shield, cookie and magnifier don't – they prepare your next move
-  function useItemInBattle(b, it) {
+  // potions take your turn; shield, cookie, magnifier and stars don't
+  function useItemInBattle(b, it, lv) {
     b.logCls = 'hit';
+    if (it.xp) { b.log = `${it.icon} +${it.xp} XP!${lv && lv.length ? ' ' + lv.join(' ') : ''}`; b.phase = 'choose'; renderBattle(b); return; }
     if (it.shield) { b.log = `${it.icon} Schild bereit! Der nächste Angriff wird geblockt.`; b.phase = 'choose'; renderBattle(b); return; }
     if (it.power) { b.log = `${it.icon} ${it.name}! Dein nächster Treffer macht doppelten Schaden.`; b.phase = 'choose'; renderBattle(b); return; }
     if (it.hint) { b.log = `${it.icon} ${it.name}! Bei der nächsten Aufgabe bekommst du einen Tipp.`; b.phase = 'choose'; renderBattle(b); return; }
@@ -440,34 +457,42 @@
   function chooseAttack(b, atk) {
     const tier = tierFor(atk.mod);
     let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
-    b.phase = 'task'; $('.screen').classList.add('tasking');
+    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; // no second attack while the task opens
     const hint = !!run.hint; run.hint = false;
+    let hit = null;
+    // the answer counts the moment it is checked: damage, stats and the enemy's turn are saved right away
+    const onResult = (ok) => {
+      recordAnswer(atk.mod, ok, t);
+      const inf = attackInfo(b, atk);
+      if (ok) {
+        noteAttackUsed(b, atk); // only hits make an attack tired – after a mistake the child may try the same type again
+        let dmg = inf.dmg; const crit = heroSpec().perk === 'crit' && Math.random() < 0.15;
+        if (crit) dmg *= 2;
+        run.power = false;
+        b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
+        if (heroSpec().perk === 'heal') heal(3);
+        b.log = `${atk.name}: ${crit ? 'VOLLTREFFER – doppelter Schaden! ' : inf.strong ? 'Stark! ' : 'Treffer! '}${dmg} Schaden${inf.tired ? ' (müde)' : ''}`; b.logCls = crit ? 'crit' : 'hit';
+        hit = { dmg, crit };
+        if (b.enemy.hp > 0) b.enemy.pending = 1;
+      } else {
+        b.log = `${atk.name} geht daneben… ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
+        b.enemy.pending = 1.5;
+      }
+      saveAll();
+    };
     ensureTutorial(t, () => {
-      runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name, hint }, (ok) => {
-        recordAnswer(atk.mod, ok, t);
-        const inf = attackInfo(b, atk); noteAttackUsed(b, atk);
-        if (ok) {
-          let dmg = inf.dmg; const crit = heroSpec().perk === 'crit' && Math.random() < 0.15;
-          if (crit) dmg *= 2;
-          run.power = false;
-          b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
-          if (heroSpec().perk === 'heal') heal(3);
-          b.log = `${atk.name}: ${crit ? 'VOLLTREFFER – doppelter Schaden! ' : inf.strong ? 'Stark! ' : 'Treffer! '}${dmg} Schaden${inf.tired ? ' (müde)' : ''}`; b.logCls = crit ? 'crit' : 'hit';
-          saveAll();
-          if (b.enemy.hp <= 0) { renderBattle(b); $('#fe').classList.add('hurt'); fx('#fe', '−' + dmg, crit ? 'crit' : ''); SFX.hit(); setTimeout(() => { if (run) battleWon(b); }, 650); return; }
-          renderBattle(b); $('#fe').classList.add('hurt'); fx('#fe', '−' + dmg, crit ? 'crit' : ''); SFX.hit();
-          setTimeout(() => { if (run) enemyTurn(b, 1); }, 700);
-        } else {
-          b.log = `${atk.name} geht daneben… ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
-          saveAll(); renderBattle(b);
-          setTimeout(() => { if (run) enemyTurn(b, 1.5); }, 900);
-        }
+      runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name, hint, onResult }, () => {
+        b.phase = b.enemy.hp <= 0 ? 'over' : 'wait'; // attacks come back after the enemy's turn
+        if (hit) { renderBattle(b, true); $('#fe').classList.add('hurt'); fx('#fe', '−' + hit.dmg, hit.crit ? 'crit' : ''); SFX.hit(); }
+        else renderBattle(b, true);
+        if (b.enemy.hp <= 0) { setTimeout(() => { if (run) battleWon(b); }, 650); return; }
+        setTimeout(() => { if (run) enemyTurn(b, b.enemy.pending || 1); }, hit ? 700 : 900);
       });
     });
   }
   function enemyTurn(b, mult) {
-    const h = run.hero; const move = pick(ENEMY_MOVES);
-    b.taken = 0;
+    const h = run.hero; const move = pick(CFG().moves || ENEMY_MOVES);
+    b.taken = 0; delete b.enemy.pending;
     if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); b.taken = dmg; h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
     const angel = run.items.indexOf('engel');
@@ -495,20 +520,33 @@
   }
 
   /* ---------- Event ---------- */
-  function screenEvent() {
+  function screenEvent(resumeOpt) {
     const EV = CFG().events; if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = rnd(0, EV.length - 1); saveAll(); }
     const ev = run.node ? EV[run.node.ev] : pick(EV);
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p></div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
-    app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => { const o = ev.opts[+btn.dataset.i]; if (o.task) { const mod = o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const tier = tierFor(mod); const t = makeTask(mod, tier); render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`); ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom') }, (ok) => { recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose, ok ? 'Geschafft!' : 'Leider daneben.'); })); } else applyEffect(o.effect, ev.title); }; });
+    const runOpt = (i) => { const o = ev.opts[i]; if (!o) return screenEvent();
+      if (!o.task) { applyEffect(o.effect); showEffect(ev.title); return; }
+      if (run.node) { run.node.opt = i; saveAll(); }
+      const mod = o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, tierFor(mod), { g: o.g });
+      render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+      let won = false;
+      ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), onResult: (ok) => { won = ok; recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose); } }, () => showEffect(won ? 'Geschafft!' : 'Leider daneben.')));
+    };
+    if (Number.isInteger(resumeOpt)) return runOpt(resumeOpt);
+    app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => runOpt(+btn.dataset.i); });
   }
-  function applyEffect(eff, title) {
-    const lines = [];
-    if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 ${eff.hp} Lebenspunkte`); } }
+  // applies an event result to the game state (saved at once); showEffect() then shows it
+  function applyEffect(eff) {
+    const lines = []; run.node && (run.node.lines = lines);
+    if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 −${Math.abs(eff.hp)} Lebenspunkte`); } }
     if (eff.maxhp) { run.hero.maxHp += eff.maxhp; heal(eff.maxhp); lines.push(`💪 +${eff.maxhp} maximale Lebenspunkte`); }
     if (eff.item) { run.items.push(eff.item); setTimeout(SFX.item, 200); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
     if (eff.xp) { const m = gainXp(eff.xp); lines.push(`⭐ +${eff.xp} XP`); lines.push(...m); }
     if (!lines.length) lines.push('Nichts passiert.');
-    nodeDone(); saveAll();
+    nodeDone(); saveAll(); return lines;
+  }
+  function showEffect(title) {
+    const lines = (run.node && run.node.lines) || [];
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
     $('#next').onclick = advance;
   }
@@ -526,22 +564,23 @@
     const tier = tierFor(mod); const t = makeTask(mod, tier);
     render(`<div class="screen">${topbar(`🔥 Training ${done + 1} / ${total}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     const s = STATS()[mod]; const low = s.t >= 3 && s.c / s.t < 0.6;
-    const go = () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Übung' }, (ok) => { recordAnswer(mod, ok, t); saveAll(); training(mod, total, done + 1); });
+    const go = () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Übung', onResult: (ok) => { recordAnswer(mod, ok, t); saveAll(); } }, () => training(mod, total, done + 1));
     if (low && done === 0 && meta.seenTut[tutKey(t.group)]) showTutorial(t.group, t.note, go); else ensureTutorial(t, go);
   }
 
   /* ---------- Treasure ---------- */
   function screenTreasure() {
     const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    const [i1, i2] = shuffle(LOOT.chest.slice()); const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
+    if (run.node && !Array.isArray(run.node.chest)) { const [a1, a2] = shuffle(LOOT.chest.slice()); run.node.chest = [a1, a2, free.length ? pick(free) : null]; saveAll(); }
+    const [i1, i2, freeMod] = (run.node && run.node.chest) || [pick(LOOT.chest), pick(LOOT.chest), free.length ? pick(free) : null]; const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
     const opts = [itemOpt(i1), { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' }];
-    if (free.length) { const m = pick(free); opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push(itemOpt(i2));
+    if (freeMod && free.includes(freeMod)) { const m = freeMod; opts.push({ k: 'atk', mod: m, label: `${MODULES[m].icon} Neue Attacke: ${EXTRA_ATTACKS[m]}`, desc: `${MODULES[m].name} – ersetzt eine deiner Attacken.` }); } else opts.push(itemOpt(i2));
     render(`<div class="screen">${topbar('🎁 Schatz')}<div class="scroll"><p class="center">Du findest eine Truhe. Wähle eine Belohnung:</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push(o.item); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
   }
   function chooseSlot(mod) {
     const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten</button></div></div></div>`);
+    render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten – dafür gibt es einen 🧪 Trank</button></div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
     $('#skip').onclick = () => { run.items.push('trank'); saveAll(); advance(); };
   }
@@ -557,20 +596,20 @@
     const part = MK.PARTS.find((p) => p.id === ids[i]); const others = MK.shuffle(MK.PARTS.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name);
     const t = { kind: 'parts', mod: 'parts', tier: 1, group: 'parts:1', note: 'teile', q: 'Wie heißt der leuchtende Teil?', part: part.id, options: MK.shuffle(others.concat([part.name])), answer: part.name, qid: 'p_' + part.id };
     render(`<div class="screen">${topbar(`✏️ Merk-Check ${i + 1} / ${ids.length}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
-    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Merk-Check' }, (ok) => { recordAnswer('parts', ok, t); saveAll(); schoolCheck(ids, i + 1); }));
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Merk-Check', onResult: (ok) => { recordAnswer('parts', ok, t); saveAll(); } }, () => schoolCheck(ids, i + 1)));
   }
 
   /* ---------- End screens ---------- */
   function screenGameOver(b) {
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null;
-    render(`<div class="screen">${topbar('Besiegt…')}<div class="scroll"><div class="card center"><h2>Oh nein!</h2><p>${esc(name)} wurde von ${esc(b.enemy.name)} besiegt.</p><p>${multi ? `Du bist bis Welt ${world} gekommen. ` : ''}Was du gelernt hast, bleibt – beim nächsten Mal klappt es bestimmt!</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Besiegt…')}<div class="scroll"><div class="card center"><h2>Oh nein!</h2><p>${esc(b.enemy.name)} war diesmal stärker als ${esc(name)}.</p><p>${multi ? `Du bist bis Welt ${world} gekommen. ` : ''}Was du gelernt hast, bleibt – beim nächsten Mal klappt es bestimmt!</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
     meta.wins++; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.win, 200);
-    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">🎉 Du hast es geschafft!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> hat ${esc(bossName)} besiegt${CFG().worlds > 1 ? ` und alle ${CFG().worlds === 3 ? 'drei' : 'zwei'} Welten gemeistert` : ''}!</p><p>Abenteuer geschafft: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">🎉 Du hast es geschafft!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> hat ${esc(bossName)} besiegt${CFG().worlds > 1 ? ` und ${CFG().worlds === 2 ? 'beide Welten' : `alle ${CFG().worlds === 3 ? 'drei' : CFG().worlds} Welten`} gemeistert` : ''}!</p><p>Abenteuer geschafft: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenDex() {
@@ -591,7 +630,7 @@
     $('#rstats').onclick = () => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); screenParent(); };
     $('#rall').onclick = () => { const ov = modal(`<h2>Wirklich alles löschen?</h2><p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht. Das kann man nicht rückgängig machen.</p><div class="stack"><button class="btn" id="yes" style="background:var(--red)">Ja, alles löschen</button><button class="btn secondary" id="no">Abbrechen</button></div>`); $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }; };
     $('#psound').onclick = () => { meta.sound = !meta.sound; saveAll(); screenParent(); };
-    $('#pfeedback').onclick = screenFeedback;
+    $('#pfeedback').onclick = () => screenFeedback(screenParent);
     app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
       const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
       if (i >= 0) off.splice(i, 1); else { if (Object.keys(MODES[m].modules).length - off.length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }
@@ -601,21 +640,23 @@
   /* ---------- Feedback ---------- */
   // Where ideas go. GitHub works right away (needs a GitHub account). FEEDBACK.email / FEEDBACK.form can be filled in
   // to let people without an account send ideas too (mail app / an online form) – see README "Feedback".
-  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: '' };
-  function screenFeedback() {
+  // form: Google-Formular-Link mit vorausgefülltem Textfeld; {text} wird durch die Nachricht ersetzt (Anleitung im README).
+  const FEEDBACK = { github: 'https://github.com/theZieger/rogue-adventures/issues/new', email: '', form: 'https://docs.google.com/forms/d/e/FORMULAR-ID-EINTRAGEN/viewform?usp=pp_url&entry.0000000000={text}' };
+  function screenFeedback(back) {
+    back = typeof back === 'function' ? back : screenTitle;
     render(`<div class="screen">${topbar('💡 Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
       <label for="fbtext" class="sr-only">Deine Nachricht</label><textarea id="fbtext" rows="6" maxlength="2000" placeholder="Zum Beispiel: Ich wünsche mir Aufgaben zum Einmaleins mit 7 …"></textarea>
       <p class="muted" style="color:var(--ink-soft);font-size:15px">Bitte keine Namen, Adressen oder Telefonnummern hineinschreiben.</p></div></div>
-      <div class="bottom"><div class="stack">${FEEDBACK.form ? '<button class="btn" id="fbform">Absenden (Online-Formular)</button>' : ''}${FEEDBACK.email ? '<button class="btn" id="fbmail">✉️ Per E-Mail senden</button>' : ''}<button class="btn ${FEEDBACK.form || FEEDBACK.email ? 'secondary' : ''}" id="fbgh">Auf GitHub senden</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
+      <div class="bottom"><div class="stack">${FEEDBACK.form ? '<button class="btn" id="fbform">📨 Absenden</button>' : ''}${FEEDBACK.email ? '<button class="btn" id="fbmail">✉️ Per E-Mail senden</button>' : ''}<button class="btn ${FEEDBACK.form || FEEDBACK.email ? 'secondary' : ''}" id="fbgh">Auf GitHub senden (mit GitHub-Konto)</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
     let kind = '💡 Idee';
     app.querySelectorAll('[data-kind]').forEach((b) => { b.onclick = () => { kind = b.dataset.kind; app.querySelectorAll('[data-kind]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); }; });
     const text = () => $('#fbtext').value.trim();
-    const body = () => `${text()}\n\n---\nArt: ${kind}\nVersion: ${(document.querySelector('meta[name=app-version]') || {}).content || '?'}\nGerät: ${navigator.userAgent}`;
+    const body = () => `${text()}\n\n---\nArt: ${kind}\nVersion: ${(document.querySelector('meta[name=app-version]') || {}).content || '?'}`;
     const title = () => `${kind.replace(/^\S+ /, '')}: ${text().split('\n')[0].slice(0, 60)}`;
     const need = () => { if (text()) return true; $('#fbtext').focus(); $('#fbtext').placeholder = 'Bitte zuerst etwas hineinschreiben 🙂'; return false; };
     const open = (url) => { window.open(url, '_blank', 'noopener'); };
-    $('#back').onclick = screenTitle;
+    $('#back').onclick = () => back();
     $('#fbgh').onclick = () => { if (need()) open(`${FEEDBACK.github}?title=${encodeURIComponent(title())}&body=${encodeURIComponent(body())}&labels=feedback`); };
     if ($('#fbmail')) $('#fbmail').onclick = () => { if (need()) location.href = `mailto:${FEEDBACK.email}?subject=${encodeURIComponent('Lernquest – ' + title())}&body=${encodeURIComponent(body())}`; };
     if ($('#fbform')) $('#fbform').onclick = () => { if (need()) open(FEEDBACK.form.replace('{text}', encodeURIComponent(body()))); };

@@ -132,6 +132,39 @@ async function makeSplash(browser) {
   }
 }
 
+// Screenshots for the install dialog (manifest "screenshots"): played from the built game, so run `npm run build` first.
+async function makeScreenshots(browser) {
+  const dir = path.join(__dirname, '..', 'docs', 'screenshots');
+  fs.mkdirSync(dir, { recursive: true });
+  const game = 'file://' + path.join(__dirname, '..', 'docs', 'index.html');
+  const shots = [
+    // form factor, CSS viewport, pixel ratio (=> 1080x1920 / 1920x1080 pixels)
+    ['narrow', 360, 640, 3],
+    ['wide', 1280, 720, 1.5],
+  ];
+  for (const [form, w, h, dpr] of shots) {
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
+    await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('mathquest_meta_v2', JSON.stringify({ seenNews: '9999-12-31', sound: false, seenTut: { 'battle:intro': true } })); } } catch (e) { } });
+    const p = await ctx.newPage();
+    await p.goto(game); await p.waitForTimeout(400);
+    await p.screenshot({ path: path.join(dir, `${form}-1-start.png`) });
+    await p.click('[data-new="math"]'); await p.click('.choice[data-id]'); await p.click('#go'); await p.waitForTimeout(400);
+    await p.screenshot({ path: path.join(dir, `${form}-2-karte.png`) });
+    const nodes = await p.$$('.floor.current .node'); let t = nodes[0];
+    for (const n of nodes) if (await n.getAttribute('aria-label') === 'Kampf') t = n;
+    await t.click(); await p.waitForTimeout(500);
+    if (await p.$('#tutok')) await p.click('#tutok');
+    await p.waitForTimeout(300);
+    await p.screenshot({ path: path.join(dir, `${form}-3-kampf.png`) });
+    await p.click('.atk[data-i="0"]'); await p.waitForTimeout(200);
+    if (await p.$('#tutok')) await p.click('#tutok');
+    await p.waitForTimeout(400);
+    await p.screenshot({ path: path.join(dir, `${form}-4-aufgabe.png`) });
+    await ctx.close();
+    console.log('wrote screenshots/' + form + '-*.png');
+  }
+}
+
 (async () => {
   const { chromium } = require('playwright');
   fs.mkdirSync(OUT, { recursive: true });
@@ -146,6 +179,9 @@ async function makeSplash(browser) {
   // scalable favicon for modern browsers
   fs.writeFileSync(path.join(OUT, 'favicon.svg'), iconSVG(64, { radius: 0.2, scale: 0.98, stars: false }));
   console.log('wrote favicon.svg');
+  // favicon.ico (16 + 32 px) for old browsers – needs ImageMagick
+  try { require('child_process').execFileSync('convert', [path.join(OUT, 'favicon-16.png'), path.join(OUT, 'favicon-32.png'), path.join(OUT, '..', 'favicon.ico')]); console.log('wrote favicon.ico'); } catch (e) { console.log('skipped favicon.ico (ImageMagick "convert" not found)'); }
   await makeSplash(browser);
+  await makeScreenshots(browser);
   await browser.close();
 })();

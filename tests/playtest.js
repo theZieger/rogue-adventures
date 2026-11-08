@@ -1,7 +1,12 @@
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'),'utf8');
-const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/' });
+// Seeded randomness (game and bot), so a failing run can be reproduced: SEED=123 node tests/playtest.js
+const SEED=+(process.env.SEED||20261108);
+function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+Math.random=prng(SEED+1);
+const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); } });
+let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
@@ -63,7 +68,7 @@ async function step(){
   if(await closeModal()) return;
   const tx=text();
   if($('[data-new]')&&!$('.choice')&&!$('.floor')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
-  if($('#go')&&$('.choice')){ const ch=$$('.choice'); click(ch[battles%ch.length]); click($('#go')); return; }
+  if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
   if($('.floor.current .node')){ const nodes=$$('.floor.current .node'); // prefer variety
     const pref=['school','treasure','event','rest','elite','fight','boss']; let chosen=null; for(const p of pref){ chosen=nodes.find(n=>n.getAttribute('aria-label')===({school:'Zeichenschule',treasure:'Schatz',event:'Ereignis',rest:'Rast',elite:'Elite',fight:'Kampf',boss:'Boss'}[p])); if(chosen&&Math.random()<0.6) break; }
     click(chosen||nodes[0]); return; }
@@ -83,14 +88,14 @@ async function step(){
 (async()=>{
   // fake timers: jsdom setTimeout real; speed by awaiting
   let steps=0; let ends=0;
-  while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; if(ends>=RUNS) break; click($('#again')); }
+  while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; click($('#again')); }
     if($('[data-new]') && ends>0 && steps>5 && !$('.choice')){ /* back at title: handled in step */ }
     // advance timeouts (enemy turn 700-900ms) -> wait a bit when nothing clickable
     if(!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.floor.current .node')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')) await sleep(950);
   }
   const m=w.__mq.meta;
   console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
-  const mode=process.env.MODE||'math';
+  const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
   if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }

@@ -18,15 +18,26 @@ sw_src = (SRC / "sw.js").read_text(encoding="utf-8")
 
 # Changelog (CHANGELOG.md) -> data for the in-game "Was ist neu?" screen:
 # [{"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["..."]}]}]
+GROUPS = ["Neu", "Verbessert", "Behoben"]
 def parse_changelog(text):
+    """Strict: everything after the first date heading must be a date, a known group or a "- " line."""
     entries = []
-    for line in text.splitlines():
+    for n, line in enumerate(text.splitlines(), 1):
         if m := re.fullmatch(r"## (\d{4}-\d{2}-\d{2})\s*", line):
             entries.append({"date": m.group(1), "groups": []})
-        elif entries and (m := re.fullmatch(r"### (.+?)\s*", line)):
+        elif not entries or not line.strip():
+            continue  # file header / blank lines
+        elif m := re.fullmatch(r"### (.+?)\s*", line):
+            assert m.group(1) in GROUPS, f"CHANGELOG.md:{n}: group must be one of {GROUPS}, got {m.group(1)!r}"
             entries[-1]["groups"].append({"title": m.group(1), "items": []})
-        elif entries and entries[-1]["groups"] and (m := re.fullmatch(r"- (.+?)\s*", line)):
+        elif (m := re.fullmatch(r"- (.+?)\s*", line)) and entries[-1]["groups"]:
             entries[-1]["groups"][-1]["items"].append(m.group(1))
+        else:
+            raise AssertionError(f"CHANGELOG.md:{n}: unexpected line (one '- ' line per point, no line breaks): {line!r}")
+    for e in entries:
+        titles = [g["title"] for g in e["groups"]]
+        assert titles == [t for t in GROUPS if t in titles], f"CHANGELOG.md {e['date']}: groups must be in the order {GROUPS}"
+        assert all(g["items"] for g in e["groups"]), f"CHANGELOG.md {e['date']}: empty group"
     dates = [e["date"] for e in entries]
     assert dates == sorted(dates, reverse=True), "CHANGELOG.md: dates must be newest first"
     assert len(set(dates)) == len(dates), "CHANGELOG.md: each date only once"
