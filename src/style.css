@@ -491,6 +491,11 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .colcalc .colline { grid-column: 1 / -1; border-top: 4px solid var(--ink); margin: 2px 0; }
 .colcalc .inp { min-width: 0; width: 54px; padding: 0; }
 .colcalc .inp.dig { height: 58px; font-size: 32px; border-radius: 12px; }
+.colcalc.mul { grid-template-columns: 30px repeat(var(--w), 54px) 74px; }
+.task .numword { font-size: 30px; font-weight: 700; text-align: center; margin: 8px 0 4px; line-height: 1.2; }
+.task .figure svg.mauer { height: 150px; }
+.task .figure svg.mauer.tri { height: 200px; }
+.task .expr.long { font-size: 34px; }
 .colcalc .inp.carry { width: 32px; height: 32px; font-size: 18px; border-width: 3px; border-radius: 8px; justify-self: center; }
 /* Lesestube and Duell */
 .readcard p { font-size: 20px; line-height: 1.5; white-space: pre-line; }

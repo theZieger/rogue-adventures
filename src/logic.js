@@ -19,6 +19,12 @@ const MQ = (() => {
     // worldCap 0 = not offered in that world (written methods only in world 3)
     sadd: { name: 'Schriftlich addieren', icon: '📝', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
     ssub: { name: 'Schriftlich subtrahieren', icon: '🗒️', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
+    smul: { name: 'Schriftlich multiplizieren', icon: '🧾', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
+    teilbar: { name: 'Teilbarkeit', icon: '✂️', maxTier: 3, worldCap: [1, 2, 3], dmg: 12 },
+    mauer: { name: 'Zahlenmauern', icon: '🧱', maxTier: 3, worldCap: [1, 2, 3], dmg: 16 },
+    bruch: { name: 'Bruchteile', icon: '🥧', maxTier: 3, worldCap: [1, 2, 3], dmg: 14 },
+    vorrang: { name: 'Punkt vor Strich', icon: '🚦', maxTier: 2, worldCap: [1, 2, 2], dmg: 14 },
+    zahlwort: { name: 'Zahlwörter und Stellenwerte', icon: '🔤', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
     // practised at the market, never an attack
     geld: { name: 'Geld', icon: '🪙', maxTier: 2, worldCap: [1, 2, 2], dmg: 0, shop: true },
   };
@@ -164,12 +170,12 @@ const MQ = (() => {
   // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
   // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
   function columns(op, rows) {
-    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : rows[0] - rows[1];
+    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
     const w = Math.max(...rows.concat(res).map((n) => String(n).length));
     const dig = (n, i) => Math.floor(n / 10 ** (w - 1 - i)) % 10;
     const carry = Array(w).fill(0);
-    for (let i = w - 1; i > 0; i--) carry[i - 1] = op === '+' ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10) : (dig(rows[0], i) < dig(rows[1], i) + carry[i] ? 1 : 0);
-    return task(`${rows.join(op === '+' ? ' + ' : ' − ')} = ?`, [res], { col: { op, rows, carry, w } });
+    for (let i = w - 1; i > 0; i--) carry[i - 1] = op === '+' ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10) : op === '·' ? Math.floor((dig(rows[0], i) * rows[1] + carry[i]) / 10) : (dig(rows[0], i) < dig(rows[1], i) + carry[i] ? 1 : 0);
+    return task(`${rows.join(` ${op} `)} = ?`, [res], { col: { op, rows, carry, w } });
   }
   const carries = (t) => t.col.carry.filter(Boolean).length;
   function genSadd(t) {
@@ -184,6 +190,88 @@ const MQ = (() => {
     do { const a = rnd(200, 999); tk = columns('−', [a, rnd(10, a - 10)]); } while (tk.answers[0] < 10 || carries(tk) !== t);
     return tk;
   }
+  // multiplication: the second factor stands right of the first, the result goes under the first factor
+  function genSmul(t) {
+    let tk;
+    do { const b = t === 1 ? rnd(2, 4) : rnd(2, 9); tk = columns('·', [rnd(100, Math.floor(999 / b)), b]); } while ((t === 1 ? carries(tk) : !carries(tk)) || tk.col.rows[0] % 100 === 0);
+    return tk;
+  }
+  const choice = (q, options, answer, extra) => Object.assign({ kind: 'choice', text: q, q, options, answer }, extra);
+  const DIV_TIP = { 2: 'Durch 2 teilbar: Die letzte Ziffer ist 0, 2, 4, 6 oder 8.', 3: 'Durch 3 teilbar: Die Quersumme ist durch 3 teilbar.', 5: 'Durch 5 teilbar: Die letzte Ziffer ist 0 oder 5.', 9: 'Durch 9 teilbar: Die Quersumme ist durch 9 teilbar.', 10: 'Durch 10 teilbar: Die letzte Ziffer ist 0.', 100: 'Durch 100 teilbar: Die letzten beiden Ziffern sind 00.' };
+  const qsum = (n) => String(n).split('').reduce((s, c) => s + +c, 0);
+  function genTeilbar(t) {
+    if (t === 3 && Math.random() < 0.4) { const n = rnd(102, 999); return task(`${n}`, [qsum(n)], { ask: 'Wie groß ist die Quersumme? Zähle alle Ziffern zusammen.' }); }
+    const d = pick(t < 3 ? [2, 5, 10] : [3, 9, 9, 100]); const lo = t === 1 ? 10 : 100, hi = t === 1 ? 99 : 999;
+    const hit = () => d * rnd(Math.ceil(lo / d), Math.floor(hi / d)); const miss = () => { let n; do n = rnd(lo, hi); while (n % d === 0); return n; };
+    if (t === 2) { const right = hit(); const wrong = []; while (wrong.length < 2) { const n = miss(); if (!wrong.includes(n)) wrong.push(n); }
+      return choice(`Welche Zahl ist durch ${d} teilbar?`, shuffle([right, ...wrong]).map(String), String(right), { why: DIV_TIP[d], cols: 1 }); }
+    const yes = Math.random() < 0.5; const n = yes ? hit() : miss();
+    return choice(`Ist ${n} durch ${d} teilbar?`, ['ja', 'nein'], yes ? 'ja' : 'nein', { why: DIV_TIP[d] + (d === 3 || d === 9 ? ` Die Quersumme von ${n} ist ${qsum(n)}.` : ''), tip: DIV_TIP[d], cols: 2 });
+  }
+  // Zahlenmauer: every stone is the sum of the two below. Rechendreieck: each outer field is the sum of its two inner neighbours.
+  const stone = (x, y, w, v, miss) => `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${miss ? '#FFE27A' : '#F3D9B1'}" stroke="#1C2541" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="#1C2541">${v}</text></g>`;
+  function genMauer(t) {
+    if (t === 3) {
+      const inner = [0, 1, 2].map(() => rnd(20, 450)); const outer = [inner[0] + inner[1], inner[1] + inner[2], inner[0] + inner[2]];
+      const k = rnd(0, 5); const vals = inner.concat(outer); const show = vals.map((v, i) => (i === k ? '?' : v));
+      // inner fields at the corners of the triangle, outer fields beside the middle of each side
+      const P = [[120, 78], [72, 164], [168, 164], [28, 96], [120, 216], [212, 96]];
+      const box = (i) => { const [x, y] = P[i]; return `<g data-tri="${i}" data-v="${show[i]}"><rect x="${x - 30}" y="${y - 17}" width="60" height="34" rx="${i < 3 ? 17 : 4}" fill="${i === k ? '#FFE27A' : i < 3 ? '#FFFFFF' : '#CFE6FF'}" stroke="#1C2541" stroke-width="2"/><text x="${x}" y="${y + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#1C2541">${show[i]}</text></g>`; };
+      const svg = `<svg class="mauer tri" viewBox="-4 0 248 238" role="img" aria-label="Rechendreieck: innen ${show.slice(0, 3).join(', ')}, außen ${show.slice(3).join(', ')}"><path d="M120 8 L14 192 L226 192 Z" fill="none" stroke="#1C2541" stroke-width="2.5" stroke-linejoin="round"/>${[0, 1, 2, 3, 4, 5].map(box).join('')}</svg>`;
+      return task(`Rechendreieck ${show.join(' ')}`, [vals[k]], { svg, ask: 'Außen steht die Summe der beiden Zahlen innen daneben. Welche Zahl fehlt?' });
+    }
+    const max = t === 1 ? 99 : 999; let b;
+    do b = t === 1 ? [rnd(2, 30), rnd(2, 30), rnd(2, 30)] : [rnd(20, 300), rnd(20, 300), rnd(20, 300)]; while (b[0] + 2 * b[1] + b[2] > max);
+    const rows = [b, [b[0] + b[1], b[1] + b[2]], [b[0] + 2 * b[1] + b[2]]];
+    // tier 1: a stone in the middle row (add) or at the bottom (subtract); tier 2 anywhere
+    const r = t === 1 ? rnd(0, 1) : rnd(0, 2); const c = rnd(0, rows[r].length - 1);
+    const show = rows.map((row, i) => row.map((v, j) => (i === r && j === c ? '?' : v)));
+    const W = 64, svg = `<svg class="mauer" viewBox="0 0 ${3 * W + 4} ${3 * 36 + 4}" role="img" aria-label="Zahlenmauer: unten ${show[0].join(', ')}, Mitte ${show[1].join(', ')}, oben ${show[2][0]}">${show.map((row, i) => row.map((v, j) => stone(2 + (i * W) / 2 + j * W, 2 + (2 - i) * 36, W, v, v === '?').replace('<g ', `<g data-r="${i}" data-c="${j}" `)).join('')).join('')}</svg>`;
+    return task(`Zahlenmauer ${show.map((row) => row.join(' ')).join(' / ')}`, [rows[r][c]], { svg, ask: 'Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl fehlt?' });
+  }
+  const FRAC = { '½': [1, 2, 'die Hälfte'], '¼': [1, 4, 'ein Viertel'], '¾': [3, 4, 'drei Viertel'], '⅓': [1, 3, 'ein Drittel'] };
+  // ½ m = 50 cm, ¼ h = 15 min …: only pairs with a whole result
+  const SIZES = [['m', 'cm', 100, 'einem Meter'], ['h', 'min', 60, 'einer Stunde'], ['kg', 'g', 1000, 'einem Kilogramm'], ['km', 'm', 1000, 'einem Kilometer']];
+  function genBruch(t) {
+    if (t === 3) { const [u, v, f, of] = pick(SIZES); const g = pick(['½', '¼', '¾']); const [z, n, word] = FRAC[g];
+      return task(`${g} ${u} = ? ${v}`, [(f / n) * z], { ask: `Wie viel ist ${word} (${g}) von ${of}?` }); }
+    const g = t === 1 ? pick(['½', '¼']) : pick(['¾', '⅓', '½', '¼']); const [z, n, word] = FRAC[g];
+    // tier 1 stays under 100; tier 2 also takes ½ and ¼ of hundreds-and-tens numbers
+    const whole = t === 1 || g === '¾' || g === '⅓' ? n * rnd(g === '½' ? 6 : 3, Math.floor(99 / n)) : n * 10 * rnd(3, Math.floor(99 / n));
+    return task(`${g} von ${whole} = ?`, [(whole / n) * z], { ask: `Wie viel ist ${word} (${g}) von ${whole}?` });
+  }
+  // Punkt vor Strich, no brackets (not part of Klasse 3 in Saxony)
+  function genVorrang(t) {
+    const k = t === 1 ? 1 : 10; const hi = t === 1 ? 99 : 999;
+    for (;;) {
+      const x = rnd(2, 9) * k, y = rnd(2, 9); const div = Math.random() < 0.5; const p = div ? `${x * y} : ${y}` : `${x} · ${y}`; const pv = div ? x : x * y;
+      const a = t === 1 ? rnd(2, 40) : rnd(2, 60) * 10; const plus = Math.random() < 0.5; const first = Math.random() < 0.5;
+      const res = plus ? a + pv : first ? pv - a : a - pv;
+      if (res < 0 || res > hi || (div && x * y > hi)) continue;
+      return task(`${first ? `${p} ${plus ? '+' : '−'} ${a}` : `${a} ${plus ? '+' : '−'} ${p}`} = ?`, [res], { ask: 'Punkt vor Strich: Mal und geteilt rechnest du zuerst.', long: t === 2 });
+    }
+  }
+  const ONES = ['', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun'];
+  const TEENS = ['zehn', 'elf', 'zwölf', 'dreizehn', 'vierzehn', 'fünfzehn', 'sechzehn', 'siebzehn', 'achtzehn', 'neunzehn'];
+  const TENS = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
+  // „ein“ before „und“, „hundert“ and „tausend“, „eins“ at the end (101 = einhunderteins)
+  function numWord(n) {
+    if (n === 1000) return 'eintausend';
+    if (n >= 100) { const h = Math.floor(n / 100), r = n % 100; return (h === 1 ? 'ein' : ONES[h]) + 'hundert' + (r ? numWord(r) : ''); }
+    if (n < 10) return ONES[n]; if (n < 20) return TEENS[n - 10];
+    const e = n % 10; return (e ? (e === 1 ? 'ein' : ONES[e]) + 'und' : '') + TENS[Math.floor(n / 10)];
+  }
+  const PV = [['H', 100], ['Z', 10], ['E', 1]];
+  const pvText = (d, order) => order.map((i) => `${d[i]} ${PV[i][0]}`).join(' ');
+  function genZahlwort(t) {
+    if (t < 3) { const n = t === 1 ? rnd(13, 99) : rnd(101, 999); return task(numWord(n), [n], { word: true }); }
+    let n; do n = rnd(102, 999); while (new Set(String(n)).size < 3);
+    const d = [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
+    if (Math.random() < 0.5) return task(`${pvText(d, Math.random() < 0.5 ? [0, 1, 2] : shuffle([0, 1, 2]))} = ?`, [n], { ask: 'Welche Zahl ist das? H = Hunderter, Z = Zehner, E = Einer.' });
+    // wrong options swap two digits, so every place value has to be read
+    const opts = [d, [d[1], d[0], d[2]], [d[0], d[2], d[1]], [d[2], d[1], d[0]]].map((x) => pvText(x, [0, 1, 2]));
+    return choice(`${n} = ? H ? Z ? E`, shuffle([opts[0]].concat(shuffle(opts.slice(1)).slice(0, 2))), opts[0], { why: `${n} hat ${d[0]} Hunderter, ${d[1]} Zehner und ${d[2]} Einer.`, cols: 1 });
+  }
   // money is always shown as „3 € 50 ct“, never with a comma
   function euro(c) { const e = Math.floor(c / 100), ct = c % 100; return e ? `${e} €${ct ? ` ${String(ct).padStart(2, '0')} ct` : ''}` : `${ct} ct`; }
   const COINS = [200, 100, 50, 20, 10, 5, 2, 1];
@@ -197,7 +285,7 @@ const MQ = (() => {
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, geld: genGeld }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, smul: genSmul, teilbar: genTeilbar, mauer: genMauer, bruch: genBruch, vorrang: genVorrang, zahlwort: genZahlwort, geld: genGeld }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -277,6 +365,36 @@ const MQ = (() => {
       2: { title: 'Subtrahieren mit zwei Überträgen', steps: ['Ist die untere Zahl größer als die obere Ziffer, ergänzt du bis zur Zahl über 10 und schreibst 1 als Übertrag in die nächste Spalte.', '503 − 276: Einer: 6 + 7 = 13. Schreibe 7, Übertrag 1.', 'Zehner: 7 + 1 = 8. 8 plus wie viel ist 0? Das geht nicht, also bis 10: 8 + 2 = 10. Schreibe 2, Übertrag 1.', 'Hunderter: 2 + 1 = 3. 3 + 2 = 5. Schreibe 2. Ergebnis: 227.'] },
     },
   });
+  Object.assign(TUT, {
+    smul: {
+      1: { title: 'Schriftlich multiplizieren', steps: ['Die Aufgabe steht in einer Zeile, zum Beispiel 213 · 3. Das Ergebnis schreibst du unter die erste Zahl. Du rechnest von rechts nach links, Stelle für Stelle.', 'Einer: 3 · 3 = 9. Schreibe 9 unter die Einer.', 'Zehner: 3 · 1 = 3. Schreibe 3. Hunderter: 3 · 2 = 6. Schreibe 6.', 'Ergebnis: 639.'] },
+      2: { title: 'Multiplizieren mit Übertrag', steps: ['Ist ein Ergebnis 10 oder größer, schreibst du nur die Einer hin. Die Zehner merkst du dir als Übertrag im kleinen Feld der nächsten Spalte.', '247 · 3: Einer: 3 · 7 = 21. Schreibe 1, Übertrag 2.', 'Zehner: 3 · 4 = 12, plus Übertrag 2 = 14. Schreibe 4, Übertrag 1.', 'Hunderter: 3 · 2 = 6, plus Übertrag 1 = 7. Schreibe 7. Ergebnis: 741.'] },
+    },
+    teilbar: {
+      1: { title: 'Teilbar durch 2, 5 und 10', steps: ['Eine Zahl ist durch eine andere teilbar, wenn beim Teilen kein Rest bleibt. Dafür schaust du auf die letzte Ziffer.', 'Durch 2: Die letzte Ziffer ist 0, 2, 4, 6 oder 8. Durch 5: 0 oder 5. Durch 10: 0.', 'Ist 48 durch 2 teilbar? Die letzte Ziffer ist 8, also ja: 48 : 2 = 24. Ist 48 durch 5 teilbar? 8 ist weder 0 noch 5, also nein.'] },
+      2: { title: 'Die teilbare Zahl finden', steps: ['Prüfe jede Zahl einzeln an ihrer letzten Ziffer.', 'Welche Zahl ist durch 5 teilbar: 342, 415 oder 503?', '342 endet auf 2, 503 auf 3. Nur 415 endet auf 5. Also 415.'] },
+      3: { title: 'Quersumme: teilbar durch 3 und 9', steps: ['Die Quersumme ist die Summe aller Ziffern. Quersumme von 342: 3 + 4 + 2 = 9.', 'Durch 3 teilbar: Die Quersumme ist durch 3 teilbar. Durch 9 teilbar: Die Quersumme ist durch 9 teilbar.', 'Ist 342 durch 9 teilbar? Die Quersumme 9 ist durch 9 teilbar, also ja: 342 : 9 = 38.', 'Durch 100 teilbar: Die letzten beiden Ziffern sind 00, wie bei 700.'] },
+    },
+    mauer: {
+      1: { title: 'Zahlenmauern', steps: ['Jeder Stein ist die Summe der beiden Steine direkt darunter.', 'Unten 12, 7 und 15. Mitte: 12 + 7 = 19 und 7 + 15 = 22. Oben: 19 + 22 = 41.', 'Fehlt ein Stein unten, rechnest du minus: In der Mitte steht 19, unten links 12. 19 − 12 = 7.'] },
+      2: { title: 'Große Zahlenmauern', steps: ['Die Regel bleibt: Jeder Stein ist die Summe der beiden darunter.', 'Unten stehen 120 und ein fehlender Stein, darüber 305. Der fehlende Stein: 305 − 120 = 185.', 'Fehlt der oberste Stein, addierst du die beiden Steine der Mitte: 305 + 410 = 715.'] },
+      3: { title: 'Rechendreiecke', steps: ['Innen stehen drei Zahlen in den Ecken. Außen an jeder Seite steht die Summe der beiden Zahlen innen daneben.', 'Innen 140, 260 und 75. Außen: 140 + 260 = 400, 260 + 75 = 335, 140 + 75 = 215.', 'Fehlt eine Zahl innen, rechnest du minus: Außen steht 400, innen daneben 140. 400 − 140 = 260.'] },
+    },
+    bruch: {
+      1: { title: 'Die Hälfte und ein Viertel', steps: ['Die Hälfte (½) heißt: in 2 gleiche Teile teilen. Ein Viertel (¼) heißt: in 4 gleiche Teile teilen.', 'Die Hälfte von 48: 48 : 2 = 24.', 'Ein Viertel von 36: 36 : 4 = 9.'] },
+      2: { title: 'Drei Viertel und ein Drittel', steps: ['Ein Drittel (⅓) heißt: in 3 gleiche Teile teilen. Ein Drittel von 27: 27 : 3 = 9.', 'Drei Viertel (¾) sind drei von vier gleichen Teilen. Rechne erst ein Viertel aus, dann mal 3.', 'Drei Viertel von 20: 20 : 4 = 5, dann 5 · 3 = 15.'] },
+      3: { title: 'Bruchteile von Größen', steps: ['Rechne zuerst in die kleinere Einheit um: 1 m = 100 cm, 1 h = 60 min, 1 kg = 1000 g, 1 km = 1000 m.', '½ m: Die Hälfte von 100 cm ist 50 cm.', '¾ h: Ein Viertel von 60 min ist 15 min. Drei Viertel sind 3 · 15 = 45 min.'] },
+    },
+    vorrang: {
+      1: { title: 'Punkt vor Strich', steps: ['Mal (·) und geteilt (:) sind Punktrechnungen. Plus (+) und minus (−) sind Strichrechnungen.', 'Kommen beide in einer Aufgabe vor, rechnest du zuerst die Punktrechnung.', '3 + 4 · 2: Erst 4 · 2 = 8, dann 3 + 8 = 11.', '20 − 12 : 4: Erst 12 : 4 = 3, dann 20 − 3 = 17.'] },
+      2: { title: 'Punkt vor Strich mit großen Zahlen', steps: ['Auch mit Zehnerzahlen gilt: zuerst · oder :, dann + oder −.', '500 − 40 · 6: Erst 40 · 6 = 240, dann 500 − 240 = 260.', '350 + 480 : 8: Erst 480 : 8 = 60, dann 350 + 60 = 410.'] },
+    },
+    zahlwort: {
+      1: { title: 'Zahlwörter bis 100', steps: ['Im Zahlwort hörst du zuerst die Einer, dann die Zehner. Geschrieben wird aber zuerst der Zehner.', 'achtundvierzig: acht Einer und vierzig, also 4 Zehner. Die Zahl ist 48.', 'einundsechzig: ein Einer und sechzig. Die Zahl ist 61.'] },
+      2: { title: 'Zahlwörter bis 1000', steps: ['Zuerst kommen die Hunderter. Danach geht es weiter wie bis 100: erst die Einer, dann die Zehner.', 'dreihundertachtundvierzig: dreihundert, acht Einer und vierzig.', '3 Hunderter, 4 Zehner, 8 Einer. Die Zahl ist 348.'] },
+      3: { title: 'Die Stellenwerttafel', steps: ['H heißt Hunderter, Z Zehner, E Einer. Die Reihenfolge in der Aufgabe kann wechseln, lies die Buchstaben genau.', '3 H 4 Z 8 E: 300 + 40 + 8 = 348.', '5 H 0 E 6 Z: 5 Hunderter, 6 Zehner, 0 Einer. Die Zahl ist 560.', 'Umgekehrt: 348 hat 3 H, 4 Z und 8 E.'] },
+    },
+  });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
@@ -287,14 +405,14 @@ const MQ = (() => {
     { id: 'fuchs', type: 'feuer', shape: 'fox', names: ['Glutfuchs', 'Flammfuchs', 'Sonnenfuchs'], hp: 60, desc: 'Flink und mutig. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Funkenbiss', mod: 'add' }, { name: 'Flammenstoß', mod: 'sub' }, { name: 'Feuerreihe', mod: 'seq' }, { name: 'Glutgitter', mod: 'grid' }] },
     { id: 'kroete', type: 'wasser', shape: 'toad', names: ['Wellenkröte', 'Strudelkröte', 'Ozeankröte'], hp: 80, desc: 'Hält viel aus. Hat die meisten Lebenspunkte.', perk: 'tank',
-      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
+      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Uferdamm', mod: 'mauer' }] },
     { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Jede richtige Antwort heilt ihn um 3 Lebenspunkte.', perk: 'heal',
       attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Wabenteilung', mod: 'div' }] },
     // unlocked in the Stempelheft; practises the task types the other three heroes have least
     { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
-      attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Flügelschlag', mod: 'seq' }] },
+      attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Nachtruf', mod: 'zahlwort' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller', smul: 'Lawine', teilbar: 'Kornsieb', mauer: 'Steinwall', bruch: 'Halbmond', vorrang: 'Vortritt', zahlwort: 'Ausrufer' };
 
   const ENEMIES = {
     1: {
@@ -364,6 +482,7 @@ const MQ = (() => {
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
     { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann gibt er dir 50 ct Finderlohn.', opts: [{ label: 'Geld zählen', task: 'geld', win: { coins: 50 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. Die Fahrt kostet 40 ct. Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Fahrt bezahlen (40 ct)', effect: { coins: -40 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
+    { title: 'Die Backstube', text: 'Der Bäcker verteilt frische Brötchen auf seine Körbe: die Hälfte in den großen, ein Viertel in den kleinen. Rechnest du ihm einen Bruchteil aus, gibt er dir Beeren für unterwegs.', opts: [{ label: 'Bruchteil rechnen', task: 'bruch', win: { item: 'beere', xp: 10 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Holzplatz', text: 'Eine Försterin stapelt Holzscheite in gleich langen Reihen. Wer ausrechnet, wie viele es sind, darf zwei Scheite für die Werkbank mitnehmen.', opts: [{ label: 'Scheite zählen', task: 'mul', win: { holz: 2 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
   ];
 
@@ -673,6 +792,6 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;
