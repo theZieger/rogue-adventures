@@ -744,8 +744,10 @@ async function weeklyCases() {
   { // same week key → same goals on two devices; one goal per subject, only enabled task types
     const a = open(null, { now: W49 }), b = open(null, { now: W49 });
     const ga = a.w.__mq.weeklyGoals(), gb = b.w.__mq.weeklyGoals();
-    check(ga.length === 5 && same(ga, gb), 'two devices show the same goals in the same week');
-    check(same(ga.map((g) => g.subject), ['Mathe', 'Deutsch', 'Ethik', 'Sachkunde', 'Englisch']), 'one goal per subject of the grade');
+    // one goal per subject of the grade, in CURRICULUM order (a new subject adds a goal)
+    const subjects = a.w.__mq.CURRICULUM[0].subjects.map((s) => s.subject);
+    check(ga.length === subjects.length && same(ga, gb), 'two devices show the same goals in the same week');
+    check(same(ga.map((g) => g.subject), subjects) && subjects.includes('Englisch'), 'one goal per subject of the grade');
     check(ga.every((g) => (g.kind === 'right' ? g.n >= 15 && g.n <= 25 : g.kind === 'elite' ? g.n >= 2 && g.n <= 3 : g.n === 1)), 'goal sizes: 15–25 right answers, 2–3 elites, one win or weekly boss');
     check(ga[0].kind === 'right' && ga[0].m === 'math', 'this week has a right-answers goal in maths');
     const c = open(null, { now: '2027-02-03T10:00:00' });
@@ -758,7 +760,7 @@ async function weeklyCases() {
     const p = open(null, { now: W49 }); p.click('#later');
     check(!!p.$('#weekly') && p.$('#weekly').textContent.includes('Diese Woche') && p.$('#weekly').textContent.includes('Neue Aufgaben am Montag') && !!p.$('#weekly .bar'), 'title shows the card "Diese Woche" with a bar');
     p.click('#weekly');
-    check(p.text().includes('Wochenaufgabe') && p.d.querySelectorAll('.goal').length === 5 && p.text().includes('0 von') && p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'), 'goal screen lists one goal per subject with whole-number progress');
+    check(p.text().includes('Wochenaufgabe') && p.d.querySelectorAll('.goal').length === p.w.__mq.weeklyGoals().length && p.text().includes('0 von') && p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'), 'goal screen lists one goal per subject with whole-number progress');
   }
   { // right answers count for the goal of their task type; all three goals → 10 stamps, gold week, one card
     const p0 = startMathFight({ now: W49 }); const g = p0.w.__mq.weeklyGoals()[0];
@@ -780,7 +782,7 @@ async function weeklyCases() {
     const p2 = open(p.dump(), { now: W49 });
     check(p2.w.__mq.meta.weekly.done && p2.$('#weekly').textContent.includes('Wochenaufgabe geschafft'), 'a finished week is saved and shown on the title');
     p2.click('#parents');
-    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes('Wochenziele: 5 von 5 erledigt'), 'parent area shows the weekly report');
+    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes(`Wochenziele: ${p2.w.__mq.weeklyGoals().length} von ${p2.w.__mq.weeklyGoals().length} erledigt`), 'parent area shows the weekly report');
     const lines = p2.$('#wtext').value.split('\n');
     check(lines.length >= 3 && lines.length <= 5 && lines[0] === 'Lernquest, Woche 4' && lines.some((l) => l.startsWith('Geübt')) && !/Steinkauz|Moosbär/.test(p2.$('#wtext').value), 'report text has three to five lines and no names: ' + JSON.stringify(lines));
     p2.click('#wcopy');
@@ -884,7 +886,7 @@ async function weeklyCases() {
   const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { math: {} } }) });
   check(!!p.$('[data-new="bau"]') && p.text().includes('Die Baustelle'), 'title lists Die Baustelle under Mathe');
   const st = p.w.__mq.meta.stats.bau;
-  check(['wz', 'fq', 'netz', 'koerper', 'band', 'lage', 'umfang'].every((k) => st[k] && st[k].t === 0), 'old save gains stats for the Baustelle');
+  check(['wz', 'fq', 'netz', 'koerper', 'band', 'lage', 'umfang', 'flaeche', 'spiegel', 'bewegung', 'vieleck'].every((k) => st[k] && st[k].t === 0), 'old save gains stats for the Baustelle');
   p.click('[data-new="bau"]'); p.click('#go');
   p.click([...p.d.querySelectorAll('.node.open')][0]);
   const saved = p.dump();
@@ -893,6 +895,17 @@ async function weeklyCases() {
   check(!!p2.$('[data-cont="bau"]') && !!p2.$('[data-new="math"]') && !p2.$('[data-cont="math"]'), 'Baustelle adventure does not touch Zahlenquest');
   p2.click('[data-cont="bau"]');
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Baustelle fight continues after reopening');
+}
+
+// 23b. Saves from before step 22: Baustelle and Jahrmarkt stats without the new task types, a running adventure with old tiers
+{
+  const oldBau = { wz: { c: 5, t: 6, hist: [] }, netz: { c: 2, t: 3, hist: [] }, umfang: { c: 1, t: 1, hist: [] } }, oldJm = { uhr: { c: 4, t: 4, hist: [] }, tafel: { c: 1, t: 2, hist: [] } };
+  const run = { mode: 'bau', world: 2, floor: 2, map: JSON.parse(open().w.eval('JSON.stringify(MQ.makeMap(2))')), hero: { id: 'biber', evo: 1, level: 4, xp: 0, hp: 60, maxHp: 90, attacks: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] }, items: [], tiers: { netz: 1, umfang: 2 }, path: [0], shield: false };
+  const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { bau: oldBau, jahrmarkt: oldJm } }), mathquest_run_bau: JSON.stringify(run) });
+  const m = p.w.__mq.meta;
+  check(m.stats.bau.wz.c === 5 && m.stats.bau.netz.t === 3 && ['flaeche', 'spiegel', 'bewegung', 'vieleck'].every((k) => m.stats.bau[k].t === 0) && m.stats.jahrmarkt.uhr.c === 4 && m.stats.jahrmarkt.fahrplan.t === 0, 'old stats are kept and the new task types start empty');
+  p.click('[data-cont="bau"]'); p.click([...p.d.querySelectorAll('.node.open')][0]);
+  check(p.errors.length === 0 && p.w.__mq.run.tiers.netz === 1, 'old Baustelle adventure continues with its tiers');
 }
 
 // 24. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
