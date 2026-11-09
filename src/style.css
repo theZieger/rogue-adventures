@@ -456,6 +456,19 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .labres { margin: 8px 0; }
 .notecard { background: var(--card2); border-left: 6px solid var(--gold); border-radius: 12px; padding: 10px 12px; font-weight: 700; margin: 8px 0; }
 .plant .part.glow text { stroke: none; }
+
+/* Written methods: column layout, carries in the small fields above the line */
+.colcalc { display: grid; grid-template-columns: 30px repeat(var(--w), 54px); justify-content: center; align-items: center; gap: 2px 6px; margin: 8px 0 4px; font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.colcalc > span { text-align: center; line-height: 1.15; }
+.colcalc .op { color: var(--ink-soft); }
+.colcalc .colline { grid-column: 1 / -1; border-top: 4px solid var(--ink); margin: 2px 0; }
+.colcalc .inp { min-width: 0; width: 54px; padding: 0; }
+.colcalc .inp.dig { height: 58px; font-size: 32px; border-radius: 12px; }
+.colcalc .inp.carry { width: 32px; height: 32px; font-size: 18px; border-width: 3px; border-radius: 8px; justify-self: center; }
+/* Lesestube and Duell */
+.readcard p { font-size: 20px; line-height: 1.5; }
+.nameinput { width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 20px; color: var(--ink); background: #fff; }
+.nameinput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
 /* market */
 .seller .stall { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto 6px; }
 .seller .row { align-items: center; gap: 10px; }
