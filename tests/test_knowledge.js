@@ -70,6 +70,12 @@ for(const [mode,cfg] of Object.entries(K.MODES)) for(const mod of Object.keys(cf
     if(new Set(kj.pool.filter(e=>e.g===g).map(e=>e.mod)).size<2) fails.push('kirchenjahr topic '+g+' in fewer than 2 task types'); }
   if(K.KJ_GEBOTE.length!==10) fails.push('not ten commandments');
   for(const o of kj.order) if(!kj.notes[o.note]||o.items.length<4) fails.push('kirchenjahr order source '+o.qid); }
-const ids=Object.values(K.MODES).flatMap(c=>c.pool.map(p=>p.id)); const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
+// Schulgarten: every crop has questions, every question has a valid answer, the generator returns it
+for(const e of K.GARDEN_POOL){ if(!K.CROPS[e.crop]&&e.crop!=='getreide') fails.push('garden unknown crop '+e.id);
+  if(!Array.isArray(e.o)||!Number.isInteger(e.a)||!e.o[e.a]||new Set(e.o).size!==e.o.length) fails.push('garden bad options '+e.id); }
+for(const c of Object.keys(K.CROPS)){ if(K.GARDEN_POOL.filter(e=>e.crop===c).length<3) fails.push('garden too few questions '+c);
+  for(let i=0;i<50;i++){ const q=K.gardenQuestion(c); const e=K.GARDEN_POOL.find(x=>x.id===q.qid);
+    if(!q.options.includes(q.answer)||(e.crop!==c&&!(e.crop==='getreide'&&c!=='kartoffel'))) fails.push('garden question '+c+' '+q.qid); } }
+const ids=Object.values(K.MODES).flatMap(c=>c.pool.map(p=>p.id)).concat(K.GARDEN_POOL.map(p=>p.id)); const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
 console.log('knowledge fails',fails.length,'duplicate ids',dup.length,'questions',Object.keys(know).length);
 if(fails.length||dup.length){ console.log(fails.slice(0,20), dup); process.exit(1); }

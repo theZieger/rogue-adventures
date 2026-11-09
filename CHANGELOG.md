@@ -22,6 +22,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.
 - Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.
 - Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.
+- Schulgarten: Pflanze Kartoffeln, Weizen, Roggen oder Hafer. Nach 7 Tagen erntest du und bekommst Stempel.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.
