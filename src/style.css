@@ -442,3 +442,17 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .bed .btn.small { margin-top: auto; width: 100%; }
 .cropchoice .plant-art { width: 72px; height: 72px; flex: none; }
 .modal .question { font-size: 22px; font-weight: 700; line-height: 1.35; }
+/* Sachkunde: pictures in tasks, treasure map, research lab */
+.pic { width: 100%; max-width: 340px; height: auto; display: block; margin: 6px auto; }
+.pic text, .kmap text { font-family: var(--text); }
+.kmap { width: 100%; max-width: 360px; height: auto; display: block; margin: 6px auto; }
+.kmap .cell { fill: #F3E2B3; stroke: #B08D4A; stroke-width: 1.5; }
+.kmap.clickable .cell { cursor: pointer; }
+.kmap.clickable .cell:hover, .kmap.clickable .cell:focus-visible { fill: #CFE6FF; outline: none; }
+.kmap .cell.hit { fill: #9BE3A8; }
+.kmap .cell.miss { fill: #FFA3A3; }
+.kmap .cell.reveal { fill: #FFC93C; }
+.labor h3 { margin: 4px 0 6px; }
+.labres { margin: 8px 0; }
+.notecard { background: var(--card2); border-left: 6px solid var(--gold); border-radius: 12px; padding: 10px 12px; font-weight: 700; margin: 8px 0; }
+.plant .part.glow text { stroke: none; }
