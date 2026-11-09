@@ -776,17 +776,24 @@
     const hpcls = (a, m) => a / m < .3 ? 'low' : a / m < .6 ? 'mid' : '';
     const quiet = !!b.shown; b.shown = true; const T = e.top;
     render(`<div class="screen">${topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
-      <div class="arena">
+      <div class="arena ${T ? 'kreisel' : ''}">
         <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
-        <div class="sprite enemy" id="fe">${T ? MONART.topSVG(TYPES[e.type].color, foeParts(), 'enemy ' + (e.hp > 0 ? 'live' : 'fallen')) : monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
-        <div class="sprite hero" id="fh">${T ? MONART.topSVG(TYPES[heroSpec().type].color, T.parts, T.spin > 0 ? 'live' : 'fallen') : heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>
+        ${T ? `<div class="dish ${b.clash ? 'clash' : ''}" id="dish">${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '')}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '')}</div>` : `<div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
+        <div class="sprite hero" id="fh">${heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>`}
         <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div>${T ? `<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : `<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`, quiet);
     announce(b.log.replace(/<[^>]+>/g, ''));
+    delete b.clash; delete b.boost; // the clash plays once, on this render
     if (b.phase === 'choose') renderAttackChoice(b);
+  }
+  // a top in the dish: spins slower and wobbles more as its Schwung runs out; the burst shows where a clash lands
+  const BANG = `<svg class="bang" viewBox="0 0 100 100" aria-hidden="true"><path d="${Array.from({ length: 24 }, (_, i) => { const r = i % 2 ? 26 : 48, a = (i / 24) * 2 * Math.PI; return `${i ? 'L' : 'M'}${(50 + r * Math.cos(a)).toFixed(1)} ${(50 + r * Math.sin(a)).toFixed(1)}`; }).join('')}Z" fill="#FFC93C" stroke="#1C2541" stroke-width="3" stroke-linejoin="round"/><path d="${Array.from({ length: 12 }, (_, i) => { const r = i % 2 ? 10 : 24, a = (i / 12) * 2 * Math.PI + 0.3; return `${i ? 'L' : 'M'}${(50 + r * Math.cos(a)).toFixed(1)} ${(50 + r * Math.sin(a)).toFixed(1)}`; }).join('')}Z" fill="#FFF9EE"/></svg>`;
+  function topSprite(who, spin, max, color, parts, state) {
+    const live = spin > 0; const speed = (0.45 + 0.65 * (1 - spin / max)).toFixed(2);
+    return `<div class="sprite ${who} ${live ? 'live' : 'fallen'} ${live && spin / max < 0.3 ? 'low' : ''} ${state}" id="${who === 'hero' ? 'fh' : 'fe'}" style="--spin:${speed}s">${MONART.topSVG(color, parts, live ? 'live' : 'fallen')}${BANG}</div>`;
   }
   // Repeating an attack makes it tired; the weak spot moves to the least-practised attack after each hit.
   // Both push children to practise all task types. Damage is always a whole number.
@@ -925,20 +932,21 @@
   }
   function topAttack(b, atk) {
     const e = b.enemy, T = e.top; const t = makeTask(atk.mod, tierFor(atk.mod)); const wind = T.start < TOP_START;
-    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = '';
+    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; $('#dish').classList.remove('clash');
     let fxOn = null;
     const onResult = (ok) => {
       recordAnswer(atk.mod, ok, t);
-      if (wind) { T.start++; if (ok) T.spin += TOP_WIND; b.log = `${ok ? `Richtig: +${TOP_WIND} Schwung` : 'Daneben: kein Schwung dazu'} (${T.start} von ${TOP_START}).${T.start === TOP_START ? ' Jetzt stoßen die Kreisel zusammen.' : ''}`; b.logCls = ok ? 'hit' : 'miss'; if (ok) fxOn = ['#fh', '+' + TOP_WIND, 'shield']; }
-      else if (ok) { e.hp = Math.max(0, e.hp - T.wucht); b.log = `${esc(atk.name)}: Dein Kreisel stößt zu. Der andere verliert ${T.wucht} Schwung.`; b.logCls = 'hit'; fxOn = ['#fe', '−' + T.wucht]; }
-      else { const l = TOP_KNOCK - T.panzer; T.spin = Math.max(0, T.spin - l); b.log = `Daneben. Dein Kreisel wird angestoßen und verliert ${l} Schwung.`; b.logCls = 'miss'; fxOn = ['#fh', '−' + l]; }
+      if (wind) { T.start++; if (ok) T.spin += TOP_WIND; b.log = `${ok ? `Richtig: +${TOP_WIND} Schwung` : 'Daneben: kein Schwung dazu'} (${T.start} von ${TOP_START}).${T.start === TOP_START ? ' Jetzt stoßen die Kreisel zusammen.' : ''}`; b.logCls = ok ? 'hit' : 'miss'; if (ok) { fxOn = ['#fh', '+' + TOP_WIND, 'shield']; b.boost = true; } }
+      else if (ok) { e.hp = Math.max(0, e.hp - T.wucht); b.log = `${esc(atk.name)}: Dein Kreisel kracht in den anderen. Der verliert ${T.wucht} Schwung.`; b.logCls = 'hit'; fxOn = ['#fe', '−' + T.wucht]; b.clash = 'hero'; }
+      else { const l = TOP_KNOCK - T.panzer; T.spin = Math.max(0, T.spin - l); b.log = `Daneben. Der andere Kreisel kracht in deinen, der verliert ${l} Schwung.`; b.logCls = 'miss'; fxOn = ['#fh', '−' + l]; b.clash = 'foe'; }
       if (e.hp <= 0) b.log += ' Der andere Kreisel kippt um.'; else if (T.spin <= 0) b.log += ' Dein Kreisel kippt um.';
       saveAll();
     };
     ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: wind ? 'Schwung holen' : atk.name, onResult }, () => {
       b.phase = 'choose'; renderBattle(b, true);
-      if (!fxOn) return; fx(fxOn[0], fxOn[1], fxOn[2]);
-      if (!wind) { $(fxOn[0]).classList.add('hurt'); if (fxOn[0] === '#fe') SFX.hit(); else SFX.hurt(); }
+      if (!fxOn) return;
+      if (wind) fx(fxOn[0], fxOn[1], fxOn[2]);
+      else setTimeout(() => { if (!run || !$(fxOn[0])) return; fx(fxOn[0], fxOn[1]); if (fxOn[0] === '#fe') SFX.hit(); else SFX.hurt(); }, reducedMotion ? 0 : 560);
     }));
   }
   // like a fight: the answers pay their stamps either way, the win adds XP and 1 stamp

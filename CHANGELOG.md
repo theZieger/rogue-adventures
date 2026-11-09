@@ -14,6 +14,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.
 
 ### Verbessert
+- Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.
 - Eltern legen beim ersten Start eine PIN fest. Der Knopf „Eltern“ öffnet den neu geordneten Elternbereich mit Wochenbericht.
 - Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
 - Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen.
