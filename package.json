@@ -2,7 +2,7 @@
   "name": "lernquest",
   "version": "1.0.0",
   "private": true,
-  "description": "Roguelike-Lernspiel für Grundschüler: Mathe, Luther/Reformation, Kartoffel-Werkstatt. Eine HTML-Datei, kein Server.",
+  "description": "Roguelike-Lernspiel für Grundschüler (Klasse 3): Mathe, Deutsch, Ethik und Sachkunde. Eine HTML-Datei, kein Server.",
   "scripts": {
     "build": "python3 build.py",
     "test": "node tests/test_generators.js && node tests/test_knowledge.js && node tests/test_storage.js && node tests/test_data.js && node tests/test_duel.js && node tests/test_jahrmarkt.js",

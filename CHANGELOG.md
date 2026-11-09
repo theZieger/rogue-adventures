@@ -9,38 +9,14 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
-- Neues Mathe-Abenteuer „Der Jahrmarkt“: Uhr lesen, Längen, Gewichte, Glücksrad, Diagramme und Sachaufgaben mit Geld.
-- Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.
-- Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.
-- Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.
-- Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.
-- Stempelheft: Stempel 🏷️ für richtige Aufgaben, Bosse, Siege und neue Monster. Die Stempelkarte zeigt jede Schulwoche, in der du gespielt hast.
-- Mit Stempeln holst du neue Kartenfarben in Zahlenquest und den Steinkauz als vierten Helden.
-- Neues Ethik-Abenteuer „Das Kirchenjahr“ in zwei Welten: von Buß- und Bettag bis Weihnachten und von der Fastenzeit bis Pfingsten.
-- Neues Ethik-Abenteuer „Gute Freunde“: Streitregeln, Goldene Regel, Wahrheit und Karten, bei denen es kein Richtig oder Falsch gibt.
-- Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
-- Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
-- Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.
-- Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.
-- Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.
-- Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.
-- Schulgarten: Pflanze Kartoffeln, Weizen, Roggen oder Hafer. Nach 7 Tagen erntest du und bekommst Stempel.
-- Drei neue Sachkunde-Abenteuer: „Die Kornkammer“, „Die Wetterstation“ mit Forscherlabor und „Kompass und Karte“ mit Schatzkarte.
-- Duell zu zweit: Zwei Kinder rechnen oder rätseln abwechselnd an einem Gerät gegeneinander.
-- Lesestube in Deutsch und Ethik: Lies eine Fabel, einen Sachtext oder einen Witz und beantworte drei Fragen.
-- Neu auf der Karte: die Kreisel-Arena. Mit richtigen Antworten hält dein Kreisel länger durch als der andere.
-- Im Stempelheft baust du deinen Kreisel aus Spitze, Ring und Scheibe. Manche Teile liegen in Truhen.
-- Zahlenquest Welt 3: schriftlich addieren und subtrahieren, mit Feldern für den Übertrag.
-- Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.
-- Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.
-- Zahlenquest: Kämpfe bringen Münzen. Auf dem Markt bezahlst du passend, ab Welt 2 rechnest du das Rückgeld aus.
-- Werkbank im Stempelheft: Aus Holz, Stein, Erz und Ernte baust du Tränke, Schilde und Möbel.
-- Meine Hütte: Stell deine Möbel auf, hol dir ein zweites Zimmer und sieh im Regal, was du gesammelt hast.
-- Kleiderkammer im Stempelheft: Strohhut, Schal, Brille, Ranzen, Krone und Ährenkranz für deine Helden, sichtbar auch im Kampf.
+- Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch.
+- Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.
+- Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.
 
 ### Verbessert
-- Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.
-- Lernquest bittet den Browser, den Spielstand aufzuheben. In Safari erinnert einmal im Monat ein Hinweis daran.
+- Eltern legen beim ersten Start eine PIN fest. Der Knopf „Eltern“ öffnet den neu geordneten Elternbereich mit Wochenbericht.
+- Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
+- Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen.
 
 ## 2026-11-08
 
