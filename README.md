@@ -40,6 +40,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
 - Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
+- Werkbank (im Stempelheft): Holz (Ereignis „Der Holzplatz“ in Zahlenquest, Siege in der Kartoffel-Werkstatt), Stein und Erz (Bergwerk) und Ernte (Schulgarten) werden nach einer Einmaleins-Sachaufgabe zu Trank, Großem Trank, Schild oder Chilischote (Vorrat, höchstens drei, kommt ins nächste Abenteuer) oder zu Möbeln.
+- Meine Hütte (Titel): Zimmer als Bild mit Tisch, Regal (zählt Monsterbuch, Kreiselteile, Notizkarten), Wandhaken, Bett und Fenster; Zweites Zimmer für 30 Stempel und 12 Stein, Dachfenster für einen Sieg durch alle drei Welten von Zahlenquest.
 - „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
