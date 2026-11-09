@@ -44,9 +44,11 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {},
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} } });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  const TOP = MQ.TOP_PARTS;
+  const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
     Zweifelgeist: 'Der Zweifler', Vergessgeist: 'Der Vergessliche', Verwechsler: 'Der Verwechsler', Schwindelgeist: 'Der Schwindler', 'Strenger Richter': 'Der strenge Richter',
@@ -66,6 +68,7 @@
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
+    m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
     m.garden = { beds: defaultMeta().garden.beds.map((d, i) => { const b = beds[i]; return isObj(b) && MK.CROPS[b.crop] && Number.isFinite(b.plantedAt) ? { crop: b.crop, plantedAt: b.plantedAt } : d; }) };
     return m;
   }
@@ -654,6 +657,8 @@
     const fights = m[4].concat(m[5]).filter((n) => n.t === 'fight');
     if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
     if (readsIn(mode)) { const fights = m.slice(1, 6).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
+    // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
+    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(3, 6).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -664,7 +669,7 @@
     return Object.assign({}, e, { name: e.name + ' der Woche', base: e.name, hp: Math.round(e.hp * 1.25), weekboss: true, weakOrder: seededOrder(r, MODKEYS()) });
   }
 
-  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'] };
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'], arena: ['🌀', 'Kreisel-Arena'] };
   function screenMap() {
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
@@ -710,6 +715,7 @@
     if (n.reward) return screenTreasure('elite'); // elite beaten, reward not picked yet
     if (isObj(n.enemy)) {
       const b = { enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
+      if (isObj(n.enemy.top) && (n.enemy.hp <= 0 || n.enemy.top.spin <= 0)) return topEnd(b);
       if (n.enemy.hp <= 0) return n.enemy.read ? readEnd(b) : battleWon(b); // defeated just before the app closed: hand out the reward
       if (n.enemy.pending) { b.phase = 'wait'; renderBattle(b); setTimeout(() => { if (run) enemyTurn(b, n.enemy.pending); }, 1200); return; } // the enemy still has its turn
       return renderBattle(b);
@@ -724,6 +730,7 @@
     else if (type === 'elite') startBattle(CFG().enemies[run.world].elite, true);
     else if (type === 'boss') startBattle(CFG().enemies[run.world].boss, true);
     else if (type === 'weekboss') startBattle(weekBossSpec(run.world), true);
+    else if (type === 'arena') startBattle(pick(CFG().enemies[run.world].normal), false, true);
     else if (type === 'event') screenEvent();
     else if (type === 'rest') screenRest();
     else if (type === 'treasure') screenTreasure();
@@ -737,28 +744,29 @@
   function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
   /* ---------- Battle ---------- */
-  function startBattle(spec, hard) {
+  // arena: a spinning-top duel against the owner of the other top, which isn't a Monsterbuch entry
+  function startBattle(spec, hard, arena) {
     // extra HP offsets weak-spot damage, so fights stay about as long
     const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
-    const dexName = spec.base || spec.name; const fresh = !meta.dex[dexName]; if (fresh) giveStamps(2);
+    const dexName = spec.base || spec.name; const fresh = !arena && !meta.dex[dexName]; if (fresh) giveStamps(2);
     const mods = heroAttacks().map((a) => a.mod); const weak = spec.weakOrder ? spec.weakOrder.find((k) => mods.includes(k)) : pickWeak();
     const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weekboss: !!spec.weekboss, weak };
-    meta.dex[dexName] = { type: spec.type, shape: spec.shape, world: run.world, mode };
+    if (arena) Object.assign(enemy, { hp: TOP_FOE(), maxHp: TOP_FOE(), top: topStart(enemy) }); else meta.dex[dexName] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
-    const b = { enemy, log: `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
+    const b = { enemy, log: arena ? `${esc(enemy.name)} tritt mit einem Kreisel an. Hol zuerst Schwung: Jede richtige Aufgabe gibt +4.` : `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
     renderBattle(b);
   }
   function renderBattle(b) {
     const h = run.hero, e = b.enemy;
     const pct = (a, m) => Math.max(0, (a / m) * 100);
     const hpcls = (a, m) => a / m < .3 ? 'low' : a / m < .6 ? 'mid' : '';
-    const quiet = !!b.shown; b.shown = true;
-    render(`<div class="screen">${topbar(e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
+    const quiet = !!b.shown; b.shown = true; const T = e.top;
+    render(`<div class="screen">${topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
       <div class="arena">
-        <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
-        <div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
-        <div class="sprite hero" id="fh">${heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>
-        <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div><div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
+        <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
+        <div class="sprite enemy" id="fe">${T ? MONART.topSVG(TYPES[e.type].color, foeParts(), 'enemy ' + (e.hp > 0 ? 'live' : 'fallen')) : monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
+        <div class="sprite hero" id="fh">${T ? MONART.topSVG(TYPES[heroSpec().type].color, T.parts, T.spin > 0 ? 'live' : 'fallen') : heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>
+        <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div>${T ? `<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : `<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
@@ -785,6 +793,7 @@
   function noteAttackUsed(b, atk) { if (b.enemy.lastMod === atk.mod) b.enemy.reps = (b.enemy.reps || 1) + 1; else { b.enemy.lastMod = atk.mod; b.enemy.reps = 1; } }
   function renderAttackChoice(b) {
     if (b.enemy.read) return readChoice(b);
+    if (b.enemy.top) return topChoice(b);
     const atks = heroAttacks(); const MODULES = MODULES_OF();
     if (!atks.some((a) => a.mod === b.enemy.weak)) { b.enemy.weak = pickWeak(); saveAll(); } // older save or task types switched in the parent area
     $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.weak ? ', Schwachstelle' : ''}${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.weak ? '<span class="tag weak">🎯 Schwachstelle</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
@@ -875,6 +884,57 @@
     saveAll();
     render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
+  }
+
+  /* ---------- Kreisel-Arena ---------- */
+  // Schwung instead of life points: three tasks to wind up (+4 each), then each right answer costs the other top
+  // your Wucht, each wrong one costs yours 6 minus Panzer. No items; losing only ends this node.
+  const TOP_START = 3, TOP_WIND = 4, TOP_KNOCK = 6;
+  const TOP_FOE = () => 16 + 8 * run.world;
+  const topVal = (slot) => TOP[slot].find((p) => p.id === meta.top[slot]).val;
+  // the other top gets better parts in later worlds (only its look; its Schwung comes from TOP_FOE)
+  const foeParts = () => { const i = Math.min(run.world, 3) - 1; return { tip: TOP.tip[i].id, ring: TOP.ring[i].id, disc: TOP.disc[i].id }; };
+  // parts and values are fixed when the duel starts, so changing parts during a running duel changes nothing
+  const topStart = (enemy) => ({ start: 0, spin: topVal('disc'), max: topVal('disc') + TOP_START * TOP_WIND, wucht: topVal('tip') + (BEATS[heroSpec().type] === enemy.type ? 2 : 0), panzer: topVal('ring'), parts: Object.assign({}, meta.top) });
+  function topChoice(b) {
+    const e = b.enemy, T = e.top;
+    if (e.hp <= 0 || T.spin <= 0) { $('#bottom').innerHTML = '<button class="btn" id="next">Weiter</button>'; $('#next').onclick = () => topEnd(b); return; }
+    const atks = heroAttacks(); const M = MODULES_OF(); const wind = T.start < TOP_START;
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => `<button class="atk" data-i="${i}" aria-label="${esc(a.name)}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${esc(a.name)}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`).join('')}</div>
+      <p class="muted toprule">${wind ? `Schwung holen: Aufgabe ${T.start + 1} von ${TOP_START}` : `Wucht ${T.wucht} · Panzer ${T.panzer}. Eine falsche Antwort kostet dich ${TOP_KNOCK - T.panzer} Schwung.`}</p>`;
+    app.querySelectorAll('.atk').forEach((btn) => { btn.onclick = () => topAttack(b, atks[+btn.dataset.i]); });
+    if (!meta.seenTut['arena:intro']) {
+      const ov = modal(`<h2>🌀 Kreisel-Arena</h2><ol><li>Erst holst du Schwung: ${TOP_START} Aufgaben, jede richtige gibt deinem Kreisel ${TOP_WIND} Schwung.</li><li>Dann stoßen die Kreisel zusammen. Richtig gelöst: Der andere Kreisel verliert so viel Schwung, wie deine Wucht zeigt.</li><li>Falsch gelöst: Dein Kreisel verliert ${TOP_KNOCK} Schwung, weniger, je mehr Panzer er hat.</li><li>Ein Kreisel ohne Schwung kippt um. Verlierst du, geht dein Abenteuer einfach weiter.</li><li>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
+      $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['arena:intro'] = true; saveAll(); };
+    }
+  }
+  function topAttack(b, atk) {
+    const e = b.enemy, T = e.top; const t = makeTask(atk.mod, tierFor(atk.mod)); const wind = T.start < TOP_START;
+    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = '';
+    let fxOn = null;
+    const onResult = (ok) => {
+      recordAnswer(atk.mod, ok, t);
+      if (wind) { T.start++; if (ok) T.spin += TOP_WIND; b.log = `${ok ? `Richtig: +${TOP_WIND} Schwung` : 'Daneben: kein Schwung dazu'} (${T.start} von ${TOP_START}).${T.start === TOP_START ? ' Jetzt stoßen die Kreisel zusammen.' : ''}`; b.logCls = ok ? 'hit' : 'miss'; if (ok) fxOn = ['#fh', '+' + TOP_WIND, 'shield']; }
+      else if (ok) { e.hp = Math.max(0, e.hp - T.wucht); b.log = `${esc(atk.name)}: Dein Kreisel stößt zu. Der andere verliert ${T.wucht} Schwung.`; b.logCls = 'hit'; fxOn = ['#fe', '−' + T.wucht]; }
+      else { const l = TOP_KNOCK - T.panzer; T.spin = Math.max(0, T.spin - l); b.log = `Daneben. Dein Kreisel wird angestoßen und verliert ${l} Schwung.`; b.logCls = 'miss'; fxOn = ['#fh', '−' + l]; }
+      if (e.hp <= 0) b.log += ' Der andere Kreisel kippt um.'; else if (T.spin <= 0) b.log += ' Dein Kreisel kippt um.';
+      saveAll();
+    };
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: wind ? 'Schwung holen' : atk.name, onResult }, () => {
+      b.phase = 'choose'; renderBattle(b, true);
+      if (!fxOn) return; fx(fxOn[0], fxOn[1], fxOn[2]);
+      if (!wind) { $(fxOn[0]).classList.add('hurt'); if (fxOn[0] === '#fe') SFX.hit(); else SFX.hurt(); }
+    }));
+  }
+  // like a fight: the answers pay their stamps either way, the win adds XP and 1 stamp
+  function topEnd(b) {
+    const e = b.enemy, T = e.top, won = e.hp <= 0; const xp = won ? 18 : 0; const msgs = won ? gainXp(xp) : [];
+    const stamps = payAnswers() + (won ? giveStamps(1) : 0);
+    nodeDone(); saveAll(); if (won) setTimeout(SFX.win, 150);
+    render(`<div class="screen">${topbar('🌀 Kreisel-Arena')}<div class="scroll"><div class="card center topend" id="topend"><h2>${won ? 'Der andere Kreisel kippt um.' : 'Dein Kreisel kippt um.'}</h2>${MONART.topSVG(TYPES[heroSpec().type].color, T.parts, won ? 'live' : 'fallen')}
+      <p>${won ? `Dein Kreisel dreht sich noch mit ${T.spin} Schwung.` : `${esc(e.name)} gewinnt diesmal. Das kostet dich nichts, dein Abenteuer geht weiter.`}</p>${xp ? `<p>+${xp} XP</p>` : ''}${stampLine(stamps)}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}
+      ${won ? '' : '<p>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</p>'}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    $('#next').onclick = advance;
   }
 
   /* ---------- Lesestube ---------- */
@@ -980,12 +1040,17 @@
   /* ---------- Treasure ---------- */
   function screenTreasure(kind) {
     const elite = kind === 'elite'; const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null]; saveAll(); }
+    if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null];
+      // chests in world 2 and 3 hold the Flammenring and the Kugelspitze, once
+      const part = elite ? null : Object.keys(TOP).flatMap((s) => TOP[s].filter((p) => p.chest === run.world).map((p) => `top-${s}-${p.id}`)).find((k) => !meta.owned[k]);
+      if (part) { meta.owned[part] = true; run.node.part = part; meta.progressAt = new Date().toISOString(); }
+      saveAll(); }
+    const found = run.node && typeof run.node.part === 'string' && partOf(run.node.part);
     const [i1, i2, freeMod] = (run.node && run.node.chest) || [pick(LOOT.rare), pick(LOOT.chest), free.length ? pick(free) : null]; const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
     const maxhp = { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' };
     const atkOpt = freeMod && free.includes(freeMod) ? { k: 'atk', mod: freeMod, label: `${MODULES[freeMod].icon} Neue Attacke: ${EXTRA_ATTACKS[freeMod]}`, desc: `${MODULES[freeMod].name} – ersetzt eine deiner Attacken.` } : null;
     const opts = elite ? [itemOpt(i1), itemOpt(i2), atkOpt || maxhp] : [itemOpt(i1), maxhp, atkOpt || itemOpt(i2)];
-    render(`<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? `${run.node && run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
+    render(`<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? `${run.node && run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${found ? `<div class="card center">${MONART.topSVG(TYPES[heroSpec().type].color, Object.assign({}, meta.top, { [found.slot]: found.id }))}<p>In der Truhe liegt noch etwas für deinen Kreisel: <b>${found.name}</b>. Einbauen kannst du es im Stempelheft.</p></div>` : ''}${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push(o.item); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
   }
   function chooseSlot(mod) {
@@ -1160,10 +1225,12 @@
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', 'strohhut')}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
+      <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
       ${REWARDS.map(row).join('')}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
     $('#kk').onclick = () => screenWardrobe();
+    $('#kb').onclick = () => screenTop();
     app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
       const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel. Danach hast du noch ${meta.stamps - r.price}.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
@@ -1191,6 +1258,27 @@
       const ov = modal(`<h2>${o.name} holen?</h2><p>Das kostet ${o.price} Stempel. Danach hast du noch ${meta.stamps - o.price}.</p><div class="stack"><button class="btn" id="yes">Holen und anziehen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
       $('#yes', ov).onclick = () => { if (!hasOutfit(o) && meta.stamps >= o.price) { meta.stamps -= o.price; meta.owned['outfit-' + o.id] = true; meta.progressAt = new Date().toISOString(); meta.worn[hero.id] = o.id; } saveAll(); screenWardrobe(hero.id); }; }; });
+  }
+  const partOf = (key) => { const [, slot, id] = key.split('-'); const p = TOP[slot] && TOP[slot].find((x) => x.id === id); return p ? Object.assign({ slot }, p) : null; };
+  const TOP_ROWS = [['tip', 'Spitze', 'Wucht', 'So viel Schwung verliert der andere Kreisel bei jeder richtigen Antwort.'], ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`], ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.']];
+  function screenTop() {
+    const s = CFG().starters.find((x) => x.id === meta.lastStarter[mode]) || CFG().starters[0]; const color = TYPES[s.type].color;
+    const need = (p) => (p.chest ? `Liegt in einer Truhe in Welt ${p.chest}${p.chest > 2 ? ' von Zahlenquest' : ''}.` : 'Finde Erz im Bergwerk in Zahlenquest oder auf der Baustelle.');
+    const tile = (slot, label, p) => { const on = meta.top[slot] === p.id, has = hasPart(slot, p.id);
+      const act = on ? '<div class="rwhave">✔ Eingebaut</div>' : has ? `<button class="btn small" data-fit="${slot}:${p.id}">Einbauen</button>`
+        : p.price ? `<button class="btn small" data-buy="${slot}:${p.id}" ${meta.stamps < p.price ? 'disabled' : ''}>Holen · ${p.price} 🏷️</button>` : `<div class="desc">${need(p)}</div>`;
+      return `<div class="kkitem${on ? ' on' : ''}${has ? '' : ' locked'}">${MONART.topSVG(color, Object.assign({}, meta.top, { [slot]: p.id }))}<div class="name">${p.name}</div><div class="partval">${label} ${p.val}</div>${act}</div>`; };
+    render(`<div class="screen">${topbar('Kreisel bauen')}<div class="scroll"><div class="stack">
+      <div class="card center kkcard">${MONART.topSVG(color, meta.top, 'live')}<p class="topvals"><span>💥 Wucht ${topVal('tip')}</span><span>🛡️ Panzer ${topVal('ring')}</span><span>🌀 Schwung ${topVal('disc')}</span></p><p>🏷️ ${meta.stamps} Stempel</p><p class="pnote">Mit diesem Kreisel trittst du in der Kreisel-Arena an. Er hat den Typ deines Helden.</p></div>
+      ${TOP_ROWS.map(([slot, title, label, text]) => `<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p) => tile(slot, label, p)).join('')}</div></div>`).join('')}
+      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    const again = () => { const y = $('.scroll').scrollTop; screenTop(); $('.scroll').scrollTop = y; };
+    $('#back').onclick = screenStamps;
+    app.querySelectorAll('[data-fit]').forEach((b) => { b.onclick = () => { const [slot, id] = b.dataset.fit.split(':'); meta.top[slot] = id; saveAll(); again(); }; });
+    app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const [slot, id] = b.dataset.buy.split(':'); const p = TOP[slot].find((x) => x.id === id);
+      const ov = modal(`<h2>${p.name} holen?</h2><p>Das kostet ${p.price} Stempel. Danach hast du noch ${meta.stamps - p.price}.</p><div class="stack"><button class="btn" id="yes">Holen und einbauen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+      $('#no', ov).onclick = () => ov.remove();
+      $('#yes', ov).onclick = () => { if (!hasPart(slot, id) && meta.stamps >= p.price) { meta.stamps -= p.price; meta.owned[`top-${slot}-${id}`] = true; meta.progressAt = new Date().toISOString(); meta.top[slot] = id; saveAll(); } ov.remove(); again(); }; }; });
   }
   /* ---------- Duell ---------- */
   // Two children on one device. Nothing is saved: no run, no stamps, and no statistics, because
@@ -1454,5 +1542,5 @@
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe };
+  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop };
 })();

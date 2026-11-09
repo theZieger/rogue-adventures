@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="f22a9769d1b9">
+<meta name="app-version" content="0cd200dbdb3c">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -157,7 +157,7 @@ p { margin: 8px 0; }
 @media (max-width: 359px) { .wmap .node { width: 60px; height: 60px; font-size: 19px; } .wmap .node small { font-size: 9.5px; } }
 
 /* Battle */
-.arena { flex: 1 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "eplate esprite" "gap gap" "hsprite hplate"; gap: 4px 10px; padding: 8px 14px 4px; align-items: end; }
+.screen > .arena { flex: 1 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "eplate esprite" "gap gap" "hsprite hplate"; gap: 4px 10px; padding: 8px 14px 4px; align-items: end; }
 .plate { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; padding: 6px 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .plate.enemy { grid-area: eplate; align-self: start; }
 .plate.hero { grid-area: hplate; }
@@ -331,7 +331,7 @@ p { margin: 8px 0; }
 }
 /* Phone held sideways: arena as one row, task and keypad side by side */
 @media (max-height: 500px) and (orientation: landscape) {
-  .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 8px; padding: 4px 14px 0; align-items: center; }
+  .screen > .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 8px; padding: 4px 14px 0; align-items: center; }
   .sprite .mon { width: 48px; height: 48px; } .sprite .ground { display: none; }
   .plate { padding: 3px 8px; gap: 1px; } .plate .name { font-size: 16px; } .plateline, .plate .xpbar { display: none; } .plate .hpbar { height: 10px; } .plate .hptext { font-size: 12px; }
   .log { min-height: 32px; font-size: 18px; padding: 4px 10px; margin: 4px 14px; }
@@ -587,6 +587,23 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .mblock.covered:disabled { opacity: .6; }
 .mblock small { font-size: 14px; font-weight: 700; }
 @media (max-height: 720px) { .task .figure svg { height: 96px; } .task .figure figure:first-child svg { height: 72px; } .options.pics .opt svg { height: 60px; } }
+/* Kreisel: the squashed disc face turns around its centre; a top without Schwung lies on its side */
+.mon.top.live .spin { animation: topspin .7s linear infinite; transform-origin: 0 0; }
+@keyframes topspin { to { transform: rotate(360deg); } }
+.mon.top.fallen, .sprite .mon.top.fallen { transform: rotate(-72deg) translate(-8px, 16px); }
+@media (prefers-reduced-motion: reduce) { .mon.top.live .spin { animation: none; } }
+.topgrid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.topgrid .kkitem { padding: 8px 4px; border-radius: 18px; }
+.topgrid .kkitem .mon { width: 72px; height: 72px; }
+.topgrid .name { font-size: 19px; }
+.topgrid .btn.small { padding-left: 6px; padding-right: 6px; font-size: 15px; }
+.partval { font-weight: 800; font-size: 15px; }
+.topvals { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 14px; font-weight: 800; }
+.toprule { margin: 8px 0 0; font-size: 14px; text-align: center; }
+.wmap .node.arena small { white-space: normal; line-height: 1; text-align: center; }
+.sprite .mon.top { animation: none; }
+.toptext { margin: 2px 0 10px; font-size: 16px; }
+.card > .mon.top { display: block; width: 120px; height: 120px; margin: 0 auto; }
 
 </style>
 </head>
@@ -938,6 +955,13 @@ const MQ = (() => {
 
   // market prices in cents
   const PRICES = { trank: 120, beere: 60, schild: 205, keks: 85, lupe: 150, engel: 300 };
+  // Kreisel parts: each changes one number (tip: Wucht, ring: Panzer, disc: Schwung). The first of each row is the starter part,
+  // the others are owned['top-<slot>-<id>']: bought (price), found in a chest of that world (chest), or from the first ore (mine).
+  const TOP_PARTS = {
+    tip: [{ id: 'stahl', name: 'Stahlspitze', val: 5 }, { id: 'gummi', name: 'Gummispitze', val: 6, price: 8 }, { id: 'kugel', name: 'Kugelspitze', val: 7, chest: 3 }],
+    ring: [{ id: 'zahn', name: 'Zahnring', val: 1 }, { id: 'welle', name: 'Wellenring', val: 2, price: 12 }, { id: 'flamme', name: 'Flammenring', val: 3, chest: 2 }],
+    disc: [{ id: 'leicht', name: 'Leichte Scheibe', val: 20 }, { id: 'schwer', name: 'Schwere Scheibe', val: 24, price: 10 }, { id: 'eisen', name: 'Eisenscheibe', val: 28, mine: true }],
+  };
 
   const EVENTS = [
     { title: 'Die Brücke', text: 'Ein alter Troll bewacht eine Brücke. „Löse mein Rätsel, dann darfst du rüber und bekommst einen Trank!“', opts: [{ label: 'Rätsel lösen', task: 'riddle', win: { item: 'trank' }, lose: { hp: -8 } }, { label: 'Umweg nehmen (−5 LP)', effect: { hp: -5 } }] },
@@ -1260,7 +1284,7 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
 })();
 
 </script>
@@ -3875,7 +3899,29 @@ const MONART = (() => {
     const body = (SHAPES[shape] || SHAPES.blob)(color, g, d, null);
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true">${defs}${aura}${o && o.back ? o.back(fit) : ''}${body}${o ? o.front(fit) : ''}${crown}${sparkle}</svg>`;
   }
-  return { monsterSVG, shapes: Object.keys(SHAPES), shade, outfits: Object.keys(OUTFIT), dressable: Object.keys(FIT) };
+  // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
+  // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS
+  const DISC = { leicht: ['#E8C38A', 5], schwer: ['#9A6A45', 10], eisen: ['#A3ABB8', 8] };
+  const around = (n, f) => Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
+  const pt = (r, a) => `${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}`;
+  const TIP = {
+    stahl: `<path d="M50 70 L70 70 L60 102 Z" fill="#B8C0CC" ${S(3)}/>`,
+    gummi: `<path d="M50 70 L70 70 L66 94 Q60 103 54 94 Z" fill="#3A3D4A" ${S(3)}/>`,
+    kugel: `<path d="M52 70 L68 70 L63 88 L57 88 Z" fill="#B8C0CC" ${S(3)}/><circle cx="60" cy="95" r="7" fill="#E4E9F0" ${S(3)}/><circle cx="57.5" cy="92.5" r="2" fill="#fff"/>`,
+  };
+  const RING = {
+    zahn: '<circle r="30" fill="none" stroke="#5A6070" stroke-width="8" stroke-dasharray="6 4"/>',
+    welle: `<path d="M${around(48, (a) => pt(30 + 3.5 * Math.sin(8 * a), a) + ' L').slice(0, -2)}Z" fill="none" stroke="#2E86AB" stroke-width="6"/>`,
+    flamme: around(10, (a) => `<path d="M${pt(24, a - 0.2)} L${pt(42, a + 0.12)} L${pt(24, a + 0.25)} Z" fill="#FF8A3D" stroke="#C8401A" stroke-width="2"/>`),
+  };
+  function topSVG(color, parts, cls) {
+    const [fill, th] = DISC[parts.disc] || DISC.leicht; const dark = shade(fill, -0.3);
+    return `<svg class="mon top ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><g transform="translate(0 14)">${TIP[parts.tip] || TIP.stahl}
+      <ellipse cx="60" cy="${66 + th}" rx="44" ry="15" fill="${dark}" ${S(3)}/><rect x="16" y="66" width="88" height="${th}" fill="${dark}"/><path d="M16 66v${th}M104 66v${th}" ${S(3)}/>
+      <g transform="translate(60 66) scale(1 .34)"><g class="spin"><circle r="44" fill="${fill}" stroke="#1C2541" stroke-width="6"/>${around(4, (a) => `<circle cx="${pt(37, a).replace(' ', '" cy="')}" r="3.5" fill="${dark}"/>`)}${RING[parts.ring] || RING.zahn}<circle r="15" fill="${color}" stroke="#1C2541" stroke-width="5"/><circle cx="10" r="4" fill="#fff" opacity=".7"/></g></g>
+      <rect x="54" y="30" width="12" height="34" rx="5" fill="${color}" ${S(3)}/><ellipse cx="60" cy="30" rx="9" ry="4" fill="${shade(color, 0.35)}" ${S(2.5)}/></g></svg>`;
+  }
+  return { monsterSVG, topSVG, shapes: Object.keys(SHAPES), shade, outfits: Object.keys(OUTFIT), dressable: Object.keys(FIT) };
 })();
 
 </script>
@@ -3966,7 +4012,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neues Mathe-Abenteuer „Der Jahrmarkt“: Uhr lesen, Längen, Gewichte, Glücksrad, Diagramme und Sachaufgaben mit Geld.", "Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.", "Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.", "Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.", "Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.", "Stempelheft: Stempel 🏷️ für richtige Aufgaben, Bosse, Siege und neue Monster. Die Stempelkarte zeigt jede Schulwoche, in der du gespielt hast.", "Mit Stempeln holst du neue Kartenfarben in Zahlenquest und den Steinkauz als vierten Helden.", "Neues Ethik-Abenteuer „Das Kirchenjahr“ in zwei Welten: von Buß- und Bettag bis Weihnachten und von der Fastenzeit bis Pfingsten.", "Neues Ethik-Abenteuer „Gute Freunde“: Streitregeln, Goldene Regel, Wahrheit und Karten, bei denen es kein Richtig oder Falsch gibt.", "Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.", "Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.", "Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.", "Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.", "Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.", "Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.", "Schulgarten: Pflanze Kartoffeln, Weizen, Roggen oder Hafer. Nach 7 Tagen erntest du und bekommst Stempel.", "Drei neue Sachkunde-Abenteuer: „Die Kornkammer“, „Die Wetterstation“ mit Forscherlabor und „Kompass und Karte“ mit Schatzkarte.", "Duell zu zweit: Zwei Kinder rechnen oder rätseln abwechselnd an einem Gerät gegeneinander.", "Lesestube in Deutsch und Ethik: Lies eine Fabel, einen Sachtext oder einen Witz und beantworte drei Fragen.", "Zahlenquest Welt 3: schriftlich addieren und subtrahieren, mit Feldern für den Übertrag.", "Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.", "Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.", "Zahlenquest: Kämpfe bringen Münzen. Auf dem Markt bezahlst du passend, ab Welt 2 rechnest du das Rückgeld aus.", "Kleiderkammer im Stempelheft: Strohhut, Schal, Brille, Ranzen, Krone und Ährenkranz für deine Helden, sichtbar auch im Kampf."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.", "Lernquest bittet den Browser, den Spielstand aufzuheben. In Safari erinnert einmal im Monat ein Hinweis daran."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neues Mathe-Abenteuer „Der Jahrmarkt“: Uhr lesen, Längen, Gewichte, Glücksrad, Diagramme und Sachaufgaben mit Geld.", "Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.", "Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.", "Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.", "Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.", "Stempelheft: Stempel 🏷️ für richtige Aufgaben, Bosse, Siege und neue Monster. Die Stempelkarte zeigt jede Schulwoche, in der du gespielt hast.", "Mit Stempeln holst du neue Kartenfarben in Zahlenquest und den Steinkauz als vierten Helden.", "Neues Ethik-Abenteuer „Das Kirchenjahr“ in zwei Welten: von Buß- und Bettag bis Weihnachten und von der Fastenzeit bis Pfingsten.", "Neues Ethik-Abenteuer „Gute Freunde“: Streitregeln, Goldene Regel, Wahrheit und Karten, bei denen es kein Richtig oder Falsch gibt.", "Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.", "Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.", "Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.", "Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.", "Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.", "Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.", "Schulgarten: Pflanze Kartoffeln, Weizen, Roggen oder Hafer. Nach 7 Tagen erntest du und bekommst Stempel.", "Drei neue Sachkunde-Abenteuer: „Die Kornkammer“, „Die Wetterstation“ mit Forscherlabor und „Kompass und Karte“ mit Schatzkarte.", "Duell zu zweit: Zwei Kinder rechnen oder rätseln abwechselnd an einem Gerät gegeneinander.", "Lesestube in Deutsch und Ethik: Lies eine Fabel, einen Sachtext oder einen Witz und beantworte drei Fragen.", "Neu auf der Karte: die Kreisel-Arena. Mit richtigen Antworten hält dein Kreisel länger durch als der andere.", "Im Stempelheft baust du deinen Kreisel aus Spitze, Ring und Scheibe. Manche Teile liegen in Truhen.", "Zahlenquest Welt 3: schriftlich addieren und subtrahieren, mit Feldern für den Übertrag.", "Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.", "Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.", "Zahlenquest: Kämpfe bringen Münzen. Auf dem Markt bezahlst du passend, ab Welt 2 rechnest du das Rückgeld aus.", "Kleiderkammer im Stempelheft: Strohhut, Schal, Brille, Ranzen, Krone und Ährenkranz für deine Helden, sichtbar auch im Kampf."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.", "Lernquest bittet den Browser, den Spielstand aufzuheben. In Safari erinnert einmal im Monat ein Hinweis daran."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -4015,9 +4061,11 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {},
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} } });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  const TOP = MQ.TOP_PARTS;
+  const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
     Zweifelgeist: 'Der Zweifler', Vergessgeist: 'Der Vergessliche', Verwechsler: 'Der Verwechsler', Schwindelgeist: 'Der Schwindler', 'Strenger Richter': 'Der strenge Richter',
@@ -4037,6 +4085,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
+    m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
     m.garden = { beds: defaultMeta().garden.beds.map((d, i) => { const b = beds[i]; return isObj(b) && MK.CROPS[b.crop] && Number.isFinite(b.plantedAt) ? { crop: b.crop, plantedAt: b.plantedAt } : d; }) };
     return m;
   }
@@ -4625,6 +4674,8 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     const fights = m[4].concat(m[5]).filter((n) => n.t === 'fight');
     if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
     if (readsIn(mode)) { const fights = m.slice(1, 6).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
+    // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
+    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(3, 6).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -4635,7 +4686,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     return Object.assign({}, e, { name: e.name + ' der Woche', base: e.name, hp: Math.round(e.hp * 1.25), weekboss: true, weakOrder: seededOrder(r, MODKEYS()) });
   }
 
-  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'] };
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'], arena: ['🌀', 'Kreisel-Arena'] };
   function screenMap() {
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
@@ -4681,6 +4732,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     if (n.reward) return screenTreasure('elite'); // elite beaten, reward not picked yet
     if (isObj(n.enemy)) {
       const b = { enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
+      if (isObj(n.enemy.top) && (n.enemy.hp <= 0 || n.enemy.top.spin <= 0)) return topEnd(b);
       if (n.enemy.hp <= 0) return n.enemy.read ? readEnd(b) : battleWon(b); // defeated just before the app closed: hand out the reward
       if (n.enemy.pending) { b.phase = 'wait'; renderBattle(b); setTimeout(() => { if (run) enemyTurn(b, n.enemy.pending); }, 1200); return; } // the enemy still has its turn
       return renderBattle(b);
@@ -4695,6 +4747,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     else if (type === 'elite') startBattle(CFG().enemies[run.world].elite, true);
     else if (type === 'boss') startBattle(CFG().enemies[run.world].boss, true);
     else if (type === 'weekboss') startBattle(weekBossSpec(run.world), true);
+    else if (type === 'arena') startBattle(pick(CFG().enemies[run.world].normal), false, true);
     else if (type === 'event') screenEvent();
     else if (type === 'rest') screenRest();
     else if (type === 'treasure') screenTreasure();
@@ -4708,28 +4761,29 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
   /* ---------- Battle ---------- */
-  function startBattle(spec, hard) {
+  // arena: a spinning-top duel against the owner of the other top, which isn't a Monsterbuch entry
+  function startBattle(spec, hard, arena) {
     // extra HP offsets weak-spot damage, so fights stay about as long
     const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
-    const dexName = spec.base || spec.name; const fresh = !meta.dex[dexName]; if (fresh) giveStamps(2);
+    const dexName = spec.base || spec.name; const fresh = !arena && !meta.dex[dexName]; if (fresh) giveStamps(2);
     const mods = heroAttacks().map((a) => a.mod); const weak = spec.weakOrder ? spec.weakOrder.find((k) => mods.includes(k)) : pickWeak();
     const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weekboss: !!spec.weekboss, weak };
-    meta.dex[dexName] = { type: spec.type, shape: spec.shape, world: run.world, mode };
+    if (arena) Object.assign(enemy, { hp: TOP_FOE(), maxHp: TOP_FOE(), top: topStart(enemy) }); else meta.dex[dexName] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
-    const b = { enemy, log: `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
+    const b = { enemy, log: arena ? `${esc(enemy.name)} tritt mit einem Kreisel an. Hol zuerst Schwung: Jede richtige Aufgabe gibt +4.` : `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
     renderBattle(b);
   }
   function renderBattle(b) {
     const h = run.hero, e = b.enemy;
     const pct = (a, m) => Math.max(0, (a / m) * 100);
     const hpcls = (a, m) => a / m < .3 ? 'low' : a / m < .6 ? 'mid' : '';
-    const quiet = !!b.shown; b.shown = true;
-    render(`<div class="screen">${topbar(e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
+    const quiet = !!b.shown; b.shown = true; const T = e.top;
+    render(`<div class="screen">${topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
       <div class="arena">
-        <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">❤️ ${e.hp} / ${e.maxHp}</div></div>
-        <div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
-        <div class="sprite hero" id="fh">${heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>
-        <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div><div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div><div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
+        <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
+        <div class="sprite enemy" id="fe">${T ? MONART.topSVG(TYPES[e.type].color, foeParts(), 'enemy ' + (e.hp > 0 ? 'live' : 'fallen')) : monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
+        <div class="sprite hero" id="fh">${T ? MONART.topSVG(TYPES[heroSpec().type].color, T.parts, T.spin > 0 ? 'live' : 'fallen') : heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>
+        <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div>${T ? `<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : `<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
@@ -4756,6 +4810,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   function noteAttackUsed(b, atk) { if (b.enemy.lastMod === atk.mod) b.enemy.reps = (b.enemy.reps || 1) + 1; else { b.enemy.lastMod = atk.mod; b.enemy.reps = 1; } }
   function renderAttackChoice(b) {
     if (b.enemy.read) return readChoice(b);
+    if (b.enemy.top) return topChoice(b);
     const atks = heroAttacks(); const MODULES = MODULES_OF();
     if (!atks.some((a) => a.mod === b.enemy.weak)) { b.enemy.weak = pickWeak(); saveAll(); } // older save or task types switched in the parent area
     $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.weak ? ', Schwachstelle' : ''}${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.weak ? '<span class="tag weak">🎯 Schwachstelle</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
@@ -4846,6 +4901,57 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     saveAll();
     render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
+  }
+
+  /* ---------- Kreisel-Arena ---------- */
+  // Schwung instead of life points: three tasks to wind up (+4 each), then each right answer costs the other top
+  // your Wucht, each wrong one costs yours 6 minus Panzer. No items; losing only ends this node.
+  const TOP_START = 3, TOP_WIND = 4, TOP_KNOCK = 6;
+  const TOP_FOE = () => 16 + 8 * run.world;
+  const topVal = (slot) => TOP[slot].find((p) => p.id === meta.top[slot]).val;
+  // the other top gets better parts in later worlds (only its look; its Schwung comes from TOP_FOE)
+  const foeParts = () => { const i = Math.min(run.world, 3) - 1; return { tip: TOP.tip[i].id, ring: TOP.ring[i].id, disc: TOP.disc[i].id }; };
+  // parts and values are fixed when the duel starts, so changing parts during a running duel changes nothing
+  const topStart = (enemy) => ({ start: 0, spin: topVal('disc'), max: topVal('disc') + TOP_START * TOP_WIND, wucht: topVal('tip') + (BEATS[heroSpec().type] === enemy.type ? 2 : 0), panzer: topVal('ring'), parts: Object.assign({}, meta.top) });
+  function topChoice(b) {
+    const e = b.enemy, T = e.top;
+    if (e.hp <= 0 || T.spin <= 0) { $('#bottom').innerHTML = '<button class="btn" id="next">Weiter</button>'; $('#next').onclick = () => topEnd(b); return; }
+    const atks = heroAttacks(); const M = MODULES_OF(); const wind = T.start < TOP_START;
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => `<button class="atk" data-i="${i}" aria-label="${esc(a.name)}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${esc(a.name)}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`).join('')}</div>
+      <p class="muted toprule">${wind ? `Schwung holen: Aufgabe ${T.start + 1} von ${TOP_START}` : `Wucht ${T.wucht} · Panzer ${T.panzer}. Eine falsche Antwort kostet dich ${TOP_KNOCK - T.panzer} Schwung.`}</p>`;
+    app.querySelectorAll('.atk').forEach((btn) => { btn.onclick = () => topAttack(b, atks[+btn.dataset.i]); });
+    if (!meta.seenTut['arena:intro']) {
+      const ov = modal(`<h2>🌀 Kreisel-Arena</h2><ol><li>Erst holst du Schwung: ${TOP_START} Aufgaben, jede richtige gibt deinem Kreisel ${TOP_WIND} Schwung.</li><li>Dann stoßen die Kreisel zusammen. Richtig gelöst: Der andere Kreisel verliert so viel Schwung, wie deine Wucht zeigt.</li><li>Falsch gelöst: Dein Kreisel verliert ${TOP_KNOCK} Schwung, weniger, je mehr Panzer er hat.</li><li>Ein Kreisel ohne Schwung kippt um. Verlierst du, geht dein Abenteuer einfach weiter.</li><li>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
+      $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['arena:intro'] = true; saveAll(); };
+    }
+  }
+  function topAttack(b, atk) {
+    const e = b.enemy, T = e.top; const t = makeTask(atk.mod, tierFor(atk.mod)); const wind = T.start < TOP_START;
+    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = '';
+    let fxOn = null;
+    const onResult = (ok) => {
+      recordAnswer(atk.mod, ok, t);
+      if (wind) { T.start++; if (ok) T.spin += TOP_WIND; b.log = `${ok ? `Richtig: +${TOP_WIND} Schwung` : 'Daneben: kein Schwung dazu'} (${T.start} von ${TOP_START}).${T.start === TOP_START ? ' Jetzt stoßen die Kreisel zusammen.' : ''}`; b.logCls = ok ? 'hit' : 'miss'; if (ok) fxOn = ['#fh', '+' + TOP_WIND, 'shield']; }
+      else if (ok) { e.hp = Math.max(0, e.hp - T.wucht); b.log = `${esc(atk.name)}: Dein Kreisel stößt zu. Der andere verliert ${T.wucht} Schwung.`; b.logCls = 'hit'; fxOn = ['#fe', '−' + T.wucht]; }
+      else { const l = TOP_KNOCK - T.panzer; T.spin = Math.max(0, T.spin - l); b.log = `Daneben. Dein Kreisel wird angestoßen und verliert ${l} Schwung.`; b.logCls = 'miss'; fxOn = ['#fh', '−' + l]; }
+      if (e.hp <= 0) b.log += ' Der andere Kreisel kippt um.'; else if (T.spin <= 0) b.log += ' Dein Kreisel kippt um.';
+      saveAll();
+    };
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: wind ? 'Schwung holen' : atk.name, onResult }, () => {
+      b.phase = 'choose'; renderBattle(b, true);
+      if (!fxOn) return; fx(fxOn[0], fxOn[1], fxOn[2]);
+      if (!wind) { $(fxOn[0]).classList.add('hurt'); if (fxOn[0] === '#fe') SFX.hit(); else SFX.hurt(); }
+    }));
+  }
+  // like a fight: the answers pay their stamps either way, the win adds XP and 1 stamp
+  function topEnd(b) {
+    const e = b.enemy, T = e.top, won = e.hp <= 0; const xp = won ? 18 : 0; const msgs = won ? gainXp(xp) : [];
+    const stamps = payAnswers() + (won ? giveStamps(1) : 0);
+    nodeDone(); saveAll(); if (won) setTimeout(SFX.win, 150);
+    render(`<div class="screen">${topbar('🌀 Kreisel-Arena')}<div class="scroll"><div class="card center topend" id="topend"><h2>${won ? 'Der andere Kreisel kippt um.' : 'Dein Kreisel kippt um.'}</h2>${MONART.topSVG(TYPES[heroSpec().type].color, T.parts, won ? 'live' : 'fallen')}
+      <p>${won ? `Dein Kreisel dreht sich noch mit ${T.spin} Schwung.` : `${esc(e.name)} gewinnt diesmal. Das kostet dich nichts, dein Abenteuer geht weiter.`}</p>${xp ? `<p>+${xp} XP</p>` : ''}${stampLine(stamps)}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}
+      ${won ? '' : '<p>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</p>'}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    $('#next').onclick = advance;
   }
 
   /* ---------- Lesestube ---------- */
@@ -4951,12 +5057,17 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   /* ---------- Treasure ---------- */
   function screenTreasure(kind) {
     const elite = kind === 'elite'; const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
-    if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null]; saveAll(); }
+    if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null];
+      // chests in world 2 and 3 hold the Flammenring and the Kugelspitze, once
+      const part = elite ? null : Object.keys(TOP).flatMap((s) => TOP[s].filter((p) => p.chest === run.world).map((p) => `top-${s}-${p.id}`)).find((k) => !meta.owned[k]);
+      if (part) { meta.owned[part] = true; run.node.part = part; meta.progressAt = new Date().toISOString(); }
+      saveAll(); }
+    const found = run.node && typeof run.node.part === 'string' && partOf(run.node.part);
     const [i1, i2, freeMod] = (run.node && run.node.chest) || [pick(LOOT.rare), pick(LOOT.chest), free.length ? pick(free) : null]; const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
     const maxhp = { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' };
     const atkOpt = freeMod && free.includes(freeMod) ? { k: 'atk', mod: freeMod, label: `${MODULES[freeMod].icon} Neue Attacke: ${EXTRA_ATTACKS[freeMod]}`, desc: `${MODULES[freeMod].name} – ersetzt eine deiner Attacken.` } : null;
     const opts = elite ? [itemOpt(i1), itemOpt(i2), atkOpt || maxhp] : [itemOpt(i1), maxhp, atkOpt || itemOpt(i2)];
-    render(`<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? `${run.node && run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
+    render(`<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? `${run.node && run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${found ? `<div class="card center">${MONART.topSVG(TYPES[heroSpec().type].color, Object.assign({}, meta.top, { [found.slot]: found.id }))}<p>In der Truhe liegt noch etwas für deinen Kreisel: <b>${found.name}</b>. Einbauen kannst du es im Stempelheft.</p></div>` : ''}${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { const o = opts[+b.dataset.i]; if (o.k === 'item') run.items.push(o.item); if (o.k === 'maxhp') { run.hero.maxHp += 10; heal(10); } if (o.k === 'atk') { chooseSlot(o.mod); return; } saveAll(); advance(); }; });
   }
   function chooseSlot(mod) {
@@ -5131,10 +5242,12 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', 'strohhut')}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
+      <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
       ${REWARDS.map(row).join('')}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
     $('#kk').onclick = () => screenWardrobe();
+    $('#kb').onclick = () => screenTop();
     app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
       const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel. Danach hast du noch ${meta.stamps - r.price}.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
@@ -5162,6 +5275,27 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
       const ov = modal(`<h2>${o.name} holen?</h2><p>Das kostet ${o.price} Stempel. Danach hast du noch ${meta.stamps - o.price}.</p><div class="stack"><button class="btn" id="yes">Holen und anziehen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
       $('#yes', ov).onclick = () => { if (!hasOutfit(o) && meta.stamps >= o.price) { meta.stamps -= o.price; meta.owned['outfit-' + o.id] = true; meta.progressAt = new Date().toISOString(); meta.worn[hero.id] = o.id; } saveAll(); screenWardrobe(hero.id); }; }; });
+  }
+  const partOf = (key) => { const [, slot, id] = key.split('-'); const p = TOP[slot] && TOP[slot].find((x) => x.id === id); return p ? Object.assign({ slot }, p) : null; };
+  const TOP_ROWS = [['tip', 'Spitze', 'Wucht', 'So viel Schwung verliert der andere Kreisel bei jeder richtigen Antwort.'], ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`], ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.']];
+  function screenTop() {
+    const s = CFG().starters.find((x) => x.id === meta.lastStarter[mode]) || CFG().starters[0]; const color = TYPES[s.type].color;
+    const need = (p) => (p.chest ? `Liegt in einer Truhe in Welt ${p.chest}${p.chest > 2 ? ' von Zahlenquest' : ''}.` : 'Finde Erz im Bergwerk in Zahlenquest oder auf der Baustelle.');
+    const tile = (slot, label, p) => { const on = meta.top[slot] === p.id, has = hasPart(slot, p.id);
+      const act = on ? '<div class="rwhave">✔ Eingebaut</div>' : has ? `<button class="btn small" data-fit="${slot}:${p.id}">Einbauen</button>`
+        : p.price ? `<button class="btn small" data-buy="${slot}:${p.id}" ${meta.stamps < p.price ? 'disabled' : ''}>Holen · ${p.price} 🏷️</button>` : `<div class="desc">${need(p)}</div>`;
+      return `<div class="kkitem${on ? ' on' : ''}${has ? '' : ' locked'}">${MONART.topSVG(color, Object.assign({}, meta.top, { [slot]: p.id }))}<div class="name">${p.name}</div><div class="partval">${label} ${p.val}</div>${act}</div>`; };
+    render(`<div class="screen">${topbar('Kreisel bauen')}<div class="scroll"><div class="stack">
+      <div class="card center kkcard">${MONART.topSVG(color, meta.top, 'live')}<p class="topvals"><span>💥 Wucht ${topVal('tip')}</span><span>🛡️ Panzer ${topVal('ring')}</span><span>🌀 Schwung ${topVal('disc')}</span></p><p>🏷️ ${meta.stamps} Stempel</p><p class="pnote">Mit diesem Kreisel trittst du in der Kreisel-Arena an. Er hat den Typ deines Helden.</p></div>
+      ${TOP_ROWS.map(([slot, title, label, text]) => `<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p) => tile(slot, label, p)).join('')}</div></div>`).join('')}
+      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    const again = () => { const y = $('.scroll').scrollTop; screenTop(); $('.scroll').scrollTop = y; };
+    $('#back').onclick = screenStamps;
+    app.querySelectorAll('[data-fit]').forEach((b) => { b.onclick = () => { const [slot, id] = b.dataset.fit.split(':'); meta.top[slot] = id; saveAll(); again(); }; });
+    app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const [slot, id] = b.dataset.buy.split(':'); const p = TOP[slot].find((x) => x.id === id);
+      const ov = modal(`<h2>${p.name} holen?</h2><p>Das kostet ${p.price} Stempel. Danach hast du noch ${meta.stamps - p.price}.</p><div class="stack"><button class="btn" id="yes">Holen und einbauen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+      $('#no', ov).onclick = () => ov.remove();
+      $('#yes', ov).onclick = () => { if (!hasPart(slot, id) && meta.stamps >= p.price) { meta.stamps -= p.price; meta.owned[`top-${slot}-${id}`] = true; meta.progressAt = new Date().toISOString(); meta.top[slot] = id; saveAll(); } ov.remove(); again(); }; }; });
   }
   /* ---------- Duell ---------- */
   // Two children on one device. Nothing is saved: no run, no stamps, and no statistics, because
@@ -5425,14 +5559,14 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe };
+  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop };
 })();
 
 </script>
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'f22a9769d1b9';
+  const BUILD = '0cd200dbdb3c';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

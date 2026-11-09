@@ -860,7 +860,118 @@ async function weeklyCases() {
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
 }
 
-reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(() => {
+// 27. Kreisel: part values, old saves, buying and fitting, one arena per world, resume mid-duel, win and loss, chest parts
+function topCases() {
+  const skip = { setup: { done: false, skipped: true, at: 'x' } };
+  const START = '{"tip":"stahl","ring":"zahn","disc":"leicht"}';
+  { // every part changes one number; the starter parts come first and are always there
+    const T = open().w.eval('MQ.TOP_PARTS');
+    check(['tip', 'ring', 'disc'].every((k) => T[k].length === 3 && !T[k][0].price && !T[k][0].chest && !T[k][0].mine && T[k][0].val < T[k][1].val && T[k][1].val < T[k][2].val), 'three parts per row, starter part first, each better than the last');
+    check(T.tip.map((x) => x.name).join() === 'Stahlspitze,Gummispitze,Kugelspitze' && T.ring.map((x) => x.name).join() === 'Zahnring,Wellenring,Flammenring' && T.disc.map((x) => x.name).join() === 'Leichte Scheibe,Schwere Scheibe,Eisenscheibe', 'part names');
+    check(T.tip[1].price === 8 && T.ring[1].price === 12 && T.disc[1].price === 10 && T.ring[2].chest === 2 && T.tip[2].chest === 3 && T.disc[2].mine && T.disc[2].id === 'eisen', 'prices 8/12/10, Flammenring in world 2, Kugelspitze in world 3, Eisenscheibe from the Bergwerk (top-disc-eisen)');
+  }
+  { // old saves and damaged values load with the starter parts; a fitted part needs to be owned
+    const p = open({ [META]: JSON.stringify(Object.assign({ runs: 4, stamps: 3 }, skip)) });
+    check(JSON.stringify(p.w.__mq.meta.top) === START && p.errors.length === 0, 'old save without top loads with Stahlspitze, Zahnring and Leichte Scheibe');
+    for (const bad of [[1], 'x', 5, { tip: 'gibt-es-nicht', ring: 7 }, { tip: 'kugel', ring: 'welle', disc: 'eisen' }]) {
+      const q = open({ [META]: JSON.stringify({ top: bad }) });
+      check(JSON.stringify(q.w.__mq.meta.top) === START && q.errors.length === 0, 'wrong or not owned top parts fall back to the starter parts (' + JSON.stringify(bad) + ')');
+    }
+    const q = open({ [META]: JSON.stringify({ top: { tip: 'kugel', ring: 'zahn', disc: 'eisen' }, owned: { 'top-tip-kugel': true, 'top-disc-eisen': true } }) });
+    check(JSON.stringify(q.w.__mq.meta.top) === '{"tip":"kugel","ring":"zahn","disc":"eisen"}', 'owned parts stay fitted');
+    const merged = q.w.__mq.mergeMeta(p.w.__mq.meta, q.w.__mq.meta);
+    check(JSON.stringify(merged.top) === START && merged.owned['top-tip-kugel'] && merged.owned['top-disc-eisen'], 'merging a save code keeps the device top and adds the parts from the code');
+  }
+  { // Kreisel bauen: values, three rows, buy with a confirm dialog, fit
+    const p = open({ [META]: JSON.stringify(Object.assign({ stamps: 25, owned: { 'top-disc-eisen': true } }, skip)) }); const m = p.w.__mq.meta;
+    p.click('#stamps');
+    check(p.text().includes('Kreisel bauen') && !!p.$('#kb'), 'Stempelheft lists „Kreisel bauen“');
+    p.click('#kb');
+    const vals = () => p.$('.topvals').textContent;
+    check(vals().includes('Wucht 5') && vals().includes('Panzer 1') && vals().includes('Schwung 20') && p.d.querySelectorAll('.kkitem').length === 9 && p.d.querySelectorAll('.kkitem .rwhave').length === 3, 'Kreisel bauen shows the values and three rows of parts with the starter parts fitted');
+    check(p.text().includes('Truhe in Welt 2') && p.text().includes('Truhe in Welt 3') && !p.$('[data-buy="ring:flamme"]') && !!p.$('[data-fit="disc:eisen"]'), 'chest parts show where to find them, the iron disc from the Bergwerk can be fitted');
+    p.click('[data-buy="tip:gummi"]'); p.click('.overlay #no');
+    check(m.stamps === 25 && !m.owned['top-tip-gummi'] && m.top.tip === 'stahl', '"Zurück" in the buy dialog buys nothing');
+    p.click('[data-buy="tip:gummi"]'); p.click('.overlay #yes');
+    check(m.stamps === 17 && m.owned['top-tip-gummi'] === true && m.top.tip === 'gummi' && !!m.progressAt && vals().includes('Wucht 6'), 'buying the Gummispitze costs 8 stamps, fits it and raises the Wucht');
+    p.click('[data-buy="ring:welle"]'); p.click('.overlay #yes');
+    check(m.stamps === 5 && m.top.ring === 'welle' && vals().includes('Panzer 2') && p.$('[data-buy="disc:schwer"]').disabled, 'Wellenring costs 12; with 5 stamps left the heavy disc stays locked');
+    p.click('[data-fit="disc:eisen"]'); p.click('[data-fit="tip:stahl"]');
+    check(m.top.disc === 'eisen' && m.top.tip === 'stahl' && vals().includes('Schwung 28') && vals().includes('Wucht 5'), 'fitting owned parts changes the values');
+    const q = open(p.dump());
+    check(JSON.stringify(q.w.__mq.meta.top) === '{"tip":"stahl","ring":"welle","disc":"eisen"}' && q.w.__mq.meta.owned['top-tip-gummi'], 'the built top and the bought parts are saved');
+  }
+  { // one arena per world on floors 4–6, on a fight: the other special nodes stay as they were
+    const p = open({ [META]: JSON.stringify(skip) }); let maps = 0, arenas = 0, other = true;
+    for (const [m, specials] of [['math', ['markt']], ['satzbaustelle', ['lesen']], ['kartoffel', []]]) for (let i = 0; i < 30; i++) {
+      p.w.__mq.screenTitle(); p.click(`[data-new="${m}"]`); if (p.$('.overlay #yes')) p.click('.overlay #yes'); p.click('.choice'); p.click('#go');
+      const map = p.w.__mq.run.map; const at = map.flatMap((fl, f) => fl.filter((n) => n.t === 'arena').map(() => f)); maps++; arenas += at.length;
+      if (at.length > 1 || at.some((f) => f < 3 || f > 5)) check(false, 'arena on the wrong floor or twice: ' + at);
+      for (const t of specials) if (map.flat().filter((n) => n.t === t).length !== 1) other = false;
+      if (map.flat().filter((n) => n.t === 'weekboss').length > 1) other = false;
+    }
+    check(arenas >= maps - 3, 'one Kreisel-Arena per world map on floors 4–6 (' + arenas + ' in ' + maps + ')');
+    check(other, 'market, weekly boss and Lesestube keep their own node');
+  }
+  // an adventure standing in front of an arena on floor 1
+  const toArena = (meta) => { const p = open({ [META]: JSON.stringify(Object.assign({}, skip, meta)) }); p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+    p.w.__mq.run.map[0][0].t = 'arena'; p.w.__mq.screenMap(); p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kreisel-Arena')); return p; };
+  { // win: start phase, reload mid-duel, rounds, 1 stamp and XP
+    const p = toArena({ owned: { 'top-tip-gummi': true }, top: { tip: 'gummi', ring: 'zahn', disc: 'leicht' } }); const r = p.w.__mq.run;
+    const e = r.node.enemy;
+    check(!!p.$('.mon.top.live') && p.text().includes('Kreisel-Arena') && p.text().includes('Schwung') && !p.text().includes('❤️') && !p.$('#bag'), 'the arena shows two spinning tops with Schwung instead of life points and no bag');
+    check(e.top.spin === 20 && e.hp === 24 && e.top.wucht === 6 && e.top.panzer === 1 && !p.w.__mq.meta.dex[e.name], 'start values come from the parts (Schwung 20, Wucht 6) and the other top has 24 Schwung; no Monsterbuch entry');
+    answer(p, true); p.click('#next');
+    check(e.top.spin === 24 && e.top.start === 1 && e.hp === 24, 'a right answer in the start phase gives +4 Schwung');
+    const hp = r.hero.hp, items = r.items.join(), xp = r.hero.xp;
+    const p2 = open(p.dump()); p2.click('[data-cont="math"]'); const e2 = p2.w.__mq.run.node.enemy;
+    check(p2.text().includes('Kreisel-Arena') && p2.text().includes('Aufgabe 2 von 3') && e2.top.spin === 24 && e2.hp === 24 && p2.errors.length === 0, 'reopening the app mid-duel continues with the same Schwung and task number');
+    answer(p2, false); p2.click('#next');
+    check(e2.top.spin === 24 && e2.top.start === 2, 'a wrong answer in the start phase gives nothing');
+    answer(p2, true); p2.click('#next');
+    answer(p2, true); p2.click('#next');
+    check(e2.hp === 18 && e2.top.spin === 28, 'a right answer in a round costs the other top your Wucht');
+    answer(p2, false); p2.click('#next');
+    check(e2.top.spin === 23, 'a wrong answer costs your top 6 minus Panzer');
+    while (e2.hp > 6) { answer(p2, true); p2.click('#next'); }
+    const m = p2.w.__mq.meta; const before = m.stamps; p2.w.__mq.run.right = 0;
+    answer(p2, true);
+    const p3 = open(p2.dump()); p3.click('[data-cont="math"]'); const m3 = p3.w.__mq.meta; const r3 = p3.w.__mq.run;
+    check(!!p3.$('#topend') && p3.text().includes('Der andere Kreisel kippt um') && m3.stamps === before + 1 && p3.text().includes('+1 🏷') && r3.hero.xp === xp + 18 && r3.node.done, 'a win gives 1 stamp and 18 XP, also when the app was closed right after the last answer');
+    check(r3.hero.hp === hp && r3.items.join() === items, 'the duel never touches life points or items');
+    const p4 = open(p3.dump()); p4.click('[data-cont="math"]');
+    check(p4.w.__mq.meta.stamps === before + 1 && !!p4.$('.wmap') && p4.w.__mq.run.floor === 2, 'reopening after the win moves on without paying twice');
+  }
+  { // loss: costs nothing but the node
+    const p = toArena({ seenTut: { 'arena:intro': true } }); const r = p.w.__mq.run; const e = r.node.enemy; const m = p.w.__mq.meta;
+    const hp = r.hero.hp, xp = r.hero.xp, items = r.items.join(), stamps = m.stamps;
+    for (let i = 0; i < 3; i++) { answer(p, false); p.click('#next'); }
+    check(e.top.spin === 20 && e.top.start === 3, 'three wrong answers in the start phase leave the start value');
+    while (e.top.spin > 0) { answer(p, false); p.click('#next'); }
+    check(p.text().includes('Dein Kreisel kippt um') && !p.$('.atk'), 'without Schwung your top falls over');
+    p.click('#next');
+    check(!!p.$('#topend') && p.text().includes('kostet dich nichts') && m.stamps === stamps && r.hero.hp === hp && r.hero.xp === xp && r.items.join() === items && !p.w.__mq.run.over, 'a lost duel costs no life points, items, XP or stamps and the adventure goes on');
+    p.click('#next');
+    check(!!p.$('.wmap') && p.w.__mq.run.floor === 2 && !!p.dump()[RUN], 'after a lost duel the map moves on to the next floor');
+  }
+  { // chests: Flammenring in world 2, Kugelspitze in world 3, each once; nothing in world 1
+    const chest = (saved, world) => { const r = JSON.parse(saved[RUN]); r.world = world; r.node = { type: 'treasure' }; saved[RUN] = JSON.stringify(r); const p = open(saved); p.click('[data-cont="math"]'); return p; };
+    const p0 = toArena({ seenTut: { 'arena:intro': true } });
+    const p1 = chest(p0.dump(), 1);
+    check(!Object.keys(p1.w.__mq.meta.owned).some((k) => k.startsWith('top-')) && !p1.text().includes('Kreisel'), 'a chest in world 1 has no top part');
+    const p2 = chest(p0.dump(), 2);
+    check(p2.w.__mq.meta.owned['top-ring-flamme'] === true && p2.text().includes('Flammenring') && !!p2.w.__mq.meta.progressAt, 'the first chest in world 2 holds the Flammenring');
+    const p2b = open(p2.dump()); p2b.click('[data-cont="math"]');
+    check(p2b.text().includes('Flammenring') && p2b.w.__mq.run.node.part === 'top-ring-flamme', 'reopening at the chest still shows the part');
+    p2b.click('.choice[data-i="0"]');
+    const p2c = chest(p2b.dump(), 2);
+    check(!p2c.text().includes('Flammenring') && !p2c.w.__mq.run.node.part, 'the next chest in world 2 has no second Flammenring');
+    const p3 = chest(p2c.dump(), 3);
+    check(p3.w.__mq.meta.owned['top-tip-kugel'] === true && p3.text().includes('Kugelspitze'), 'a chest in world 3 holds the Kugelspitze');
+  }
+}
+
+reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
