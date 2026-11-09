@@ -320,6 +320,174 @@ const MK = (() => {
     { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', g: 'herkunft', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
   ];
 
+  /* ---------- ETHIK: Das Kirchenjahr ---------- */
+  const KJ_NOTES = {
+    busstag: { title: 'Buß- und Bettag', lines: ['Ein evangelischer Feiertag im November, immer an einem Mittwoch.', 'In Sachsen ist er ein Feiertag: Die Schule hat geschlossen.', 'Buße tun heißt: über eigene Fehler nachdenken, sie bereuen und es besser machen.', 'Christen beten an diesem Tag und bitten Gott um Vergebung.', 'Jeder Mensch kann an diesem Tag über sein Verhalten nachdenken und sich entschuldigen.'] },
+    konflikt: { title: 'Konflikte', lines: ['Ein Konflikt ist ein Streit oder ein Problem, für das man eine Lösung sucht.', 'Äußerer Konflikt: Ich streite mit anderen Menschen, zum Beispiel um ein Spielzeug.', 'Innerer Konflikt: Ich bin mit mir selbst uneins. Ich will zwei Dinge, die nicht zusammenpassen, und muss mich entscheiden.', 'Konflikte kann man lösen: miteinander reden, zuhören, sich entschuldigen, gemeinsam eine Lösung suchen.'] },
+    kreuz: { title: 'Das Kreuz', lines: ['Das Kreuz ist das wichtigste Zeichen (Symbol) der Christen.', 'Jesus ist am Kreuz gestorben.', 'Christen glauben, dass Jesus von den Toten auferstanden ist. Daran denken sie an Ostern.', 'Deshalb ist das Kreuz für Christen auch ein Zeichen der Hoffnung.', 'Kreuze gibt es auf Kirchtürmen, in Kirchen, auf Friedhöfen und als Kette am Hals.'] },
+    kirche: { title: 'Die Kirche', lines: ['Die Kirche ist ein Gotteshaus. Hier feiern Christen Gottesdienst: Sie beten, singen und hören Texte aus der Bibel.', 'Im Kirchturm hängen die Glocken. Sie rufen zum Gottesdienst.', 'Der lange Hauptraum mit den Bänken heißt Kirchenschiff.', 'Der Altar ist der wichtigste Tisch vorn in der Kirche. Dort stehen oft Kerzen und ein Kreuz.', 'Von der Kanzel aus wird gepredigt. Am Taufbecken wird getauft. Die Orgel ist das große Musikinstrument der Kirche.'] },
+    bibel: { title: 'Die Bibel', lines: ['Die Bibel ist das heilige Buch der Christen.', 'Das Wort Bibel kommt aus dem Griechischen und heißt „Bücher“: Sie ist eine Sammlung vieler Texte.', 'Viele Menschen haben über mehr als 1000 Jahre daran geschrieben.', 'Das Alte Testament erzählt von der Zeit vor Jesus. Seine Texte sind auch den Juden heilig.', 'Das Neue Testament erzählt von Jesus. Vier Evangelien berichten von seinem Leben: Matthäus, Markus, Lukas und Johannes.', 'Die Bibel ist ein Kulturgut: Sie wurde in sehr viele Sprachen übersetzt, und viele Bilder, Lieder und Redewendungen stammen aus ihr.'] },
+    gebote: { title: 'Die Zehn Gebote', lines: ['Die Zehn Gebote stehen im Alten Testament.', 'Die Bibel erzählt: Gott gab sie Mose auf dem Berg Sinai, geschrieben auf zwei Steintafeln.', 'Sie sind Regeln für ein gutes Leben mit Gott und mit den Mitmenschen.', '1. nur einen Gott haben · 2. Gottes Namen achten · 3. den Feiertag heiligen · 4. Vater und Mutter ehren · 5. nicht töten', '6. die Ehe achten · 7. nicht stehlen · 8. nicht lügen · 9. und 10. nicht haben wollen, was anderen gehört', 'Manche Kirchen zählen die Gebote etwas anders.'] },
+    advent: { title: 'Advent', lines: ['Advent heißt „Ankunft“. Christen warten auf das Fest der Geburt von Jesus.', 'Die Adventszeit hat vier Sonntage vor Weihnachten.', 'Am Adventskranz brennt jeden Sonntag eine Kerze mehr.', 'Mit dem 1. Advent beginnt das neue Kirchenjahr.'] },
+    weihnachten: { title: 'Weihnachten', lines: ['An Weihnachten feiern Christen die Geburt von Jesus: am 24. Dezember (Heiligabend) und am 25. und 26. Dezember.', 'Die Weihnachtsgeschichte mit den Hirten steht im Lukas-Evangelium.', 'Kaiser Augustus befiehlt, alle Menschen zu zählen. Maria und Josef ziehen von Nazareth nach Bethlehem.', 'Dort wird Jesus geboren. In der Herberge ist kein Platz, darum liegt er in einer Futterkrippe.', 'Ein Engel verkündet den Hirten auf dem Feld die Geburt. Sie gehen zur Krippe und erzählen danach allen davon.'] },
+    ethik: { title: 'Ethik und Religion', lines: ['Ethik: Wir denken darüber nach, was gut und richtig ist und wie Menschen gut zusammenleben.', 'Religion: Menschen glauben an Gott oder an mehrere Götter. Sie beten, feiern Feste und leben nach den Regeln ihres Glaubens.', 'Christentum, Judentum und Islam sind Religionen.', 'Im Fach Ethik denken Kinder gemeinsam nach, ob sie an Gott glauben oder nicht.'] },
+  };
+  // Zählung wie in Luthers Kleinem Katechismus (auch katholisch üblich)
+  const KJ_GEBOTE = [
+    { id: 'g1', text: 'Du sollst keine anderen Götter haben neben Gott.' },
+    { id: 'g2', text: 'Du sollst den Namen Gottes nicht missbrauchen.' },
+    { id: 'g3', text: 'Du sollst den Feiertag heiligen.' },
+    { id: 'g4', text: 'Du sollst Vater und Mutter ehren.' },
+    { id: 'g5', text: 'Du sollst nicht töten.' },
+    { id: 'g6', text: 'Du sollst die Ehe nicht brechen.' },
+    { id: 'g7', text: 'Du sollst nicht stehlen.' },
+    { id: 'g8', text: 'Du sollst nicht lügen.' },
+    { id: 'g9', text: 'Du sollst nicht das Haus deines Nächsten haben wollen.' },
+    { id: 'g10', text: 'Du sollst nichts haben wollen, was sonst deinem Nächsten gehört.' },
+  ];
+  const KJ_STORY = [
+    { id: 'w1', text: 'Kaiser Augustus befiehlt: Alle Menschen sollen gezählt werden.' },
+    { id: 'w2', text: 'Maria und Josef ziehen von Nazareth nach Bethlehem.' },
+    { id: 'w3', text: 'Jesus wird geboren. In der Herberge ist kein Platz, darum liegt er in einer Futterkrippe.' },
+    { id: 'w4', text: 'Ein Engel verkündet den Hirten auf dem Feld die Geburt.' },
+    { id: 'w5', text: 'Die Hirten gehen nach Bethlehem und finden das Kind in der Krippe.' },
+    { id: 'w6', text: 'Die Hirten erzählen allen, was sie gehört und gesehen haben.' },
+  ];
+  const INNER = 'Ein innerer Konflikt', OUTER = 'Ein äußerer Konflikt';
+  const KJ_POOL = [
+    // Richtig / Falsch
+    { id: 'kjrf1', mod: 'rf', g: 'busstag', q: 'Der Buß- und Bettag ist in Sachsen ein Feiertag.', a: true },
+    { id: 'kjrf2', mod: 'rf', g: 'busstag', q: 'Der Buß- und Bettag ist immer an einem Sonntag.', a: false, why: 'Er ist immer an einem Mittwoch im November.' },
+    { id: 'kjrf3', mod: 'rf', g: 'busstag', q: 'Buße tun heißt: über eigene Fehler nachdenken und es besser machen.', a: true },
+    { id: 'kjrf4', mod: 'rf', g: 'konflikt', q: 'Bei einem inneren Konflikt streite ich mit einem anderen Kind.', a: false, why: 'Das ist ein äußerer Konflikt. Beim inneren Konflikt bin ich mit mir selbst uneins.' },
+    { id: 'kjrf5', mod: 'rf', g: 'konflikt', q: 'Konflikte kann man lösen, zum Beispiel durch Reden und Zuhören.', a: true },
+    { id: 'kjrf6', mod: 'rf', g: 'kreuz', q: 'Das Kreuz ist das wichtigste Zeichen der Christen.', a: true },
+    { id: 'kjrf7', mod: 'rf', g: 'kreuz', q: 'Christen glauben, dass Jesus von den Toten auferstanden ist.', a: true },
+    { id: 'kjrf8', mod: 'rf', g: 'kreuz', q: 'Kreuze gibt es nur in Kirchen.', a: false, why: 'Auch auf Kirchtürmen, auf Friedhöfen und als Kette am Hals.' },
+    { id: 'kjrf9', mod: 'rf', g: 'kirche', q: 'Im Kirchturm hängen oft Glocken.', a: true },
+    { id: 'kjrf10', mod: 'rf', g: 'kirche', q: 'Die Orgel ist ein Musikinstrument in der Kirche.', a: true },
+    { id: 'kjrf11', mod: 'rf', g: 'kirche', q: 'Von der Kanzel aus wird getauft.', a: false, why: 'Von der Kanzel aus wird gepredigt. Getauft wird am Taufbecken.' },
+    { id: 'kjrf12', mod: 'rf', g: 'bibel', q: 'Die Bibel ist ein einziger Text, den ein einziger Mensch geschrieben hat.', a: false, why: 'Sie ist eine Sammlung vieler Texte von vielen Menschen.' },
+    { id: 'kjrf13', mod: 'rf', g: 'bibel', q: 'Die Bibel hat zwei Teile: das Alte und das Neue Testament.', a: true },
+    { id: 'kjrf14', mod: 'rf', g: 'bibel', q: 'Das Neue Testament erzählt von Jesus.', a: true },
+    { id: 'kjrf15', mod: 'rf', g: 'bibel', q: 'Die Bibel gibt es nur auf Deutsch.', a: false, why: 'Sie wurde in sehr viele Sprachen übersetzt.' },
+    { id: 'kjrf16', mod: 'rf', g: 'gebote', q: 'Die Zehn Gebote stehen im Neuen Testament.', a: false, why: 'Sie stehen im Alten Testament.' },
+    { id: 'kjrf17', mod: 'rf', g: 'gebote', q: 'Die Bibel erzählt, dass Mose die Zehn Gebote auf Steintafeln bekam.', a: true },
+    { id: 'kjrf18', mod: 'rf', g: 'gebote', q: '„Du sollst nicht stehlen“ ist eines der Zehn Gebote.', a: true },
+    { id: 'kjrf19', mod: 'rf', g: 'advent', q: 'Advent heißt „Ankunft“.', a: true },
+    { id: 'kjrf20', mod: 'rf', g: 'advent', q: 'Die Adventszeit hat vier Sonntage.', a: true },
+    { id: 'kjrf21', mod: 'rf', g: 'advent', q: 'Mit dem 1. Advent beginnt das neue Kirchenjahr.', a: true },
+    { id: 'kjrf22', mod: 'rf', g: 'weihnachten', q: 'In der Weihnachtsgeschichte nach Lukas bringt ein Engel den Hirten die Nachricht von der Geburt.', a: true },
+    { id: 'kjrf23', mod: 'rf', g: 'weihnachten', q: 'Nach der Weihnachtsgeschichte wurde Jesus in Nazareth geboren.', a: false, why: 'Er wurde in Bethlehem geboren.' },
+    { id: 'kjrf24', mod: 'rf', g: 'weihnachten', q: 'An Weihnachten feiern Christen die Geburt von Jesus.', a: true },
+    { id: 'kjrf25', mod: 'rf', g: 'ethik', q: 'Religion und Ethik bedeuten genau dasselbe.', a: false, why: 'Ethik fragt, was gut und richtig ist. Religion ist der Glaube an Gott oder Götter.' },
+    { id: 'kjrf26', mod: 'rf', g: 'ethik', q: 'Im Fach Ethik denkt man darüber nach, wie Menschen gut zusammenleben.', a: true },
+    // Wähle aus
+    { id: 'kjmc1', mod: 'mc', g: 'busstag', q: 'In welchem Monat ist der Buß- und Bettag?', o: ['November', 'Dezember', 'Mai'], a: 0 },
+    { id: 'kjmc2', mod: 'mc', g: 'busstag', q: 'An welchem Wochentag ist der Buß- und Bettag?', o: ['Mittwoch', 'Sonntag', 'Freitag'], a: 0 },
+    { id: 'kjmc3', mod: 'mc', g: 'busstag', q: 'Was passt zum Buß- und Bettag?', o: ['Über eigene Fehler nachdenken und sich entschuldigen', 'Geschenke auspacken', 'Ostereier suchen'], a: 0 },
+    { id: 'kjmc4', mod: 'mc', g: 'konflikt', q: 'Ben und Ali wollen beide mit demselben Ball spielen und streiten sich. Was ist das?', o: [OUTER, INNER], a: 0 },
+    { id: 'kjmc5', mod: 'mc', g: 'konflikt', q: 'Mia ist zu einem Geburtstag eingeladen. Zur selben Zeit hat sie ein Fußballspiel. Sie will zu beidem. Was ist das?', o: [INNER, OUTER], a: 0 },
+    { id: 'kjmc6', mod: 'mc', g: 'konflikt', q: 'Paul hat eine Vase zerbrochen. Soll er es sagen oder schweigen? Er weiß es nicht. Was ist das?', o: [INNER, OUTER], a: 0 },
+    { id: 'kjmc7', mod: 'mc', g: 'konflikt', q: 'Zwei Geschwister streiten, wer die Fernbedienung bekommt. Was ist das?', o: [OUTER, INNER], a: 0 },
+    { id: 'kjmc8', mod: 'mc', g: 'konflikt', q: 'Lea möchte sich Schokolade kaufen, will aber auch ihr Taschengeld sparen. Was ist das?', o: [INNER, OUTER], a: 0 },
+    { id: 'kjmc9', mod: 'mc', g: 'konflikt', q: 'Die Klasse kann sich nicht einigen, wohin der Ausflug geht. Alle reden durcheinander. Was ist das?', o: [OUTER, INNER], a: 0 },
+    { id: 'kjmc10', mod: 'mc', g: 'kreuz', q: 'Wofür ist das Kreuz für Christen ein Zeichen?', o: ['Für Jesus und die Hoffnung auf neues Leben', 'Für ein Weihnachtsgeschenk', 'Für den Sommeranfang'], a: 0 },
+    { id: 'kjmc11', mod: 'mc', g: 'kreuz', q: 'Wo sieht man oft ein Kreuz?', o: ['Auf dem Kirchturm', 'Auf dem Ortsschild', 'Auf dem Fußball'], a: 0 },
+    { id: 'kjmc12', mod: 'mc', g: 'kirche', q: 'Wozu läuten die Kirchenglocken?', o: ['Sie rufen die Menschen zum Gottesdienst', 'Sie zeigen an, dass es regnet', 'Sie beenden die Schulpause'], a: 0 },
+    { id: 'kjmc13', mod: 'mc', g: 'kirche', q: 'Wo wird in der Kirche getauft?', o: ['Am Taufbecken', 'An der Orgel', 'Im Kirchturm'], a: 0 },
+    { id: 'kjmc14', mod: 'mc', g: 'kirche', q: 'Wie heißt der lange Hauptraum der Kirche mit den Bänken?', o: ['Kirchenschiff', 'Kirchturm', 'Kanzel'], a: 0 },
+    { id: 'kjmc15', mod: 'mc', g: 'bibel', q: 'Welche zwei Teile hat die Bibel?', o: ['Altes und Neues Testament', 'Anfang und Ende', 'Lieder und Gebete'], a: 0 },
+    { id: 'kjmc16', mod: 'mc', g: 'bibel', q: 'Was bedeutet das Wort „Bibel“?', o: ['Bücher', 'Kirche', 'Kreuz'], a: 0 },
+    { id: 'kjmc17', mod: 'mc', g: 'bibel', q: 'Welcher Teil der Bibel erzählt von der Zeit vor Jesus?', o: ['Das Alte Testament', 'Das Neue Testament', 'Das Lukas-Evangelium'], a: 0 },
+    { id: 'kjmc18', mod: 'mc', g: 'bibel', q: 'Wer ist berühmt dafür, die Bibel ins Deutsche übersetzt zu haben?', o: ['Martin Luther', 'Mose', 'Kaiser Augustus'], a: 0 },
+    { id: 'kjmc19', mod: 'mc', g: 'gebote', q: 'Auf welchem Berg bekam Mose nach der Bibel die Zehn Gebote?', o: ['Sinai', 'Zugspitze', 'Brocken'], a: 0 },
+    { id: 'kjmc20', mod: 'mc', g: 'gebote', q: 'Tim nimmt heimlich den Radiergummi seiner Nachbarin. Welches Gebot passt?', o: ['Du sollst nicht stehlen.', 'Du sollst den Feiertag heiligen.', 'Du sollst nicht töten.'], a: 0 },
+    { id: 'kjmc21', mod: 'mc', g: 'gebote', q: 'Jonas behauptet, Lisa habe die Tafel bemalt. Das stimmt aber nicht. Welches Gebot passt?', o: ['Du sollst nicht lügen.', 'Du sollst nicht stehlen.', 'Du sollst den Feiertag heiligen.'], a: 0 },
+    { id: 'kjmc22', mod: 'mc', g: 'gebote', q: 'Welches Gebot ist das vierte?', o: ['Du sollst Vater und Mutter ehren.', 'Du sollst nicht stehlen.', 'Du sollst nicht töten.'], a: 0 },
+    { id: 'kjmc23', mod: 'mc', g: 'gebote', q: 'Wie viele Gebote gab Gott Mose nach der Bibel?', o: ['10', '12', '7'], a: 0 },
+    { id: 'kjmc24', mod: 'mc', g: 'gebote', q: 'Finn wünscht sich das neue Fahrrad seines Freundes so sehr, dass er neidisch wird. Welches Gebot passt?', o: ['Du sollst nichts haben wollen, was deinem Nächsten gehört.', 'Du sollst den Feiertag heiligen.', 'Du sollst nicht lügen.'], a: 0 },
+    { id: 'kjmc25', mod: 'mc', g: 'gebote', q: 'Wofür sind die Zehn Gebote da?', o: ['Als Regeln für ein gutes Leben mit Gott und den Mitmenschen', 'Als Rezept für ein Festessen', 'Als Spielregeln für ein Brettspiel'], a: 0 },
+    { id: 'kjmc26', mod: 'mc', g: 'advent', q: 'Wie viele Kerzen hat ein Adventskranz meistens?', o: ['4', '7', '24'], a: 0 },
+    { id: 'kjmc27', mod: 'mc', g: 'advent', q: 'Worauf warten Christen in der Adventszeit?', o: ['Auf Weihnachten, das Fest der Geburt von Jesus', 'Auf Ostern', 'Auf die Sommerferien'], a: 0 },
+    { id: 'kjmc28', mod: 'mc', g: 'weihnachten', q: 'Wo wurde Jesus nach der Weihnachtsgeschichte geboren?', o: ['In Bethlehem', 'In Nazareth', 'In Wittenberg'], a: 0 },
+    { id: 'kjmc29', mod: 'mc', g: 'weihnachten', q: 'Wer erzählt in der Bibel die Weihnachtsgeschichte mit den Hirten?', o: ['Der Evangelist Lukas', 'Mose', 'Martin Luther'], a: 0 },
+    { id: 'kjmc30', mod: 'mc', g: 'weihnachten', q: 'Wohin legte Maria das neugeborene Kind?', o: ['In eine Futterkrippe', 'In ein Himmelbett', 'In einen Korb am Fluss'], a: 0 },
+    { id: 'kjmc31', mod: 'mc', g: 'weihnachten', q: 'Wer befahl, dass alle Menschen gezählt werden sollten?', o: ['Kaiser Augustus', 'Mose', 'Martin Luther'], a: 0 },
+    { id: 'kjmc32', mod: 'mc', g: 'weihnachten', q: 'Wem verkündete der Engel auf dem Feld die Geburt von Jesus?', o: ['Den Hirten', 'Den Fischern', 'Den Soldaten'], a: 0 },
+    { id: 'kjmc33', mod: 'mc', g: 'ethik', q: 'Welche Frage ist eine Frage der Ethik?', o: ['Wie verhalte ich mich gerecht?', 'Wie viel ist 7 mal 8?', 'Wie hoch ist der Kirchturm?'], a: 0 },
+    { id: 'kjmc34', mod: 'mc', g: 'ethik', q: 'Was gehört zu einer Religion?', o: ['Der Glaube an Gott oder Götter, Gebete und Feste', 'Nur das Rechnen mit großen Zahlen', 'Nur das Turnen in der Halle'], a: 0 },
+    // Lückentext
+    { id: 'kjlt1', mod: 'lt', g: 'busstag', q: 'Der Buß- und Bettag ist immer an einem ___ im November.', o: ['Mittwoch', 'Sonntag', 'Montag'], a: 0 },
+    { id: 'kjlt2', mod: 'lt', g: 'busstag', q: 'Buße tun heißt: Fehler einsehen, sie bereuen und es ___ machen.', o: ['besser', 'schneller', 'heimlich'], a: 0 },
+    { id: 'kjlt3', mod: 'lt', g: 'konflikt', q: 'Streite ich mit anderen, ist das ein ___ Konflikt.', o: ['äußerer', 'innerer', 'stiller'], a: 0 },
+    { id: 'kjlt4', mod: 'lt', g: 'konflikt', q: 'Kann ich mich zwischen zwei Wünschen nicht entscheiden, ist das ein ___ Konflikt.', o: ['innerer', 'äußerer', 'lauter'], a: 0 },
+    { id: 'kjlt5', mod: 'lt', g: 'kreuz', q: 'Das Kreuz ist das wichtigste ___ der Christen.', o: ['Zeichen', 'Lied', 'Fest'], a: 0 },
+    { id: 'kjlt6', mod: 'lt', g: 'kreuz', q: 'Christen glauben, dass Jesus von den Toten ___ ist.', o: ['auferstanden', 'geflohen', 'eingeschlafen'], a: 0 },
+    { id: 'kjlt7', mod: 'lt', g: 'kirche', q: 'Im ___ hängen die Glocken.', o: ['Kirchturm', 'Kirchenschiff', 'Taufbecken'], a: 0 },
+    { id: 'kjlt8', mod: 'lt', g: 'kirche', q: 'Von der ___ aus wird im Gottesdienst gepredigt.', o: ['Kanzel', 'Orgel', 'Glocke'], a: 0 },
+    { id: 'kjlt9', mod: 'lt', g: 'bibel', q: 'Das Alte und das Neue ___ sind die zwei Teile der Bibel.', o: ['Testament', 'Gebot', 'Gesangbuch'], a: 0 },
+    { id: 'kjlt10', mod: 'lt', g: 'bibel', q: 'Die Bibel ist eine ___ vieler Texte.', o: ['Sammlung', 'Rechnung', 'Zeichnung'], a: 0 },
+    { id: 'kjlt11', mod: 'lt', g: 'gebote', q: 'Die Bibel erzählt: Mose bekam die Zehn Gebote auf zwei ___.', o: ['Steintafeln', 'Holzbrettern', 'Papierrollen'], a: 0 },
+    { id: 'kjlt12', mod: 'lt', g: 'gebote', q: 'Das siebte Gebot heißt: Du sollst nicht ___.', o: ['stehlen', 'singen', 'spielen'], a: 0 },
+    { id: 'kjlt13', mod: 'lt', g: 'gebote', q: 'Das fünfte Gebot heißt: Du sollst nicht ___.', o: ['töten', 'lachen', 'schlafen'], a: 0 },
+    { id: 'kjlt14', mod: 'lt', g: 'advent', q: 'Am Adventskranz brennt jeden Sonntag eine ___ mehr.', o: ['Kerze', 'Lampe', 'Fackel'], a: 0 },
+    { id: 'kjlt15', mod: 'lt', g: 'weihnachten', q: 'Maria und Josef zogen von Nazareth nach ___.', o: ['Bethlehem', 'Wittenberg', 'Rom'], a: 0 },
+    { id: 'kjlt16', mod: 'lt', g: 'weihnachten', q: 'Der 24. Dezember heißt ___.', o: ['Heiligabend', 'Ostersonntag', 'Pfingsten'], a: 0 },
+    { id: 'kjlt17', mod: 'lt', g: 'ethik', q: 'Im Fach ___ denken wir darüber nach, was gut und richtig ist.', o: ['Ethik', 'Mathematik', 'Musik'], a: 0 },
+    // Begriffe
+    { id: 'kjdef1', mod: 'def', g: 'busstag', q: 'Was bedeutet „Buße tun“?', o: ['Fehler einsehen, sie bereuen und es besser machen', 'Eine Geldstrafe bezahlen', 'Ganz laut singen'], a: 0 },
+    { id: 'kjdef2', mod: 'def', g: 'konflikt', q: 'Was ist ein innerer Konflikt?', o: ['Ich bin mit mir selbst uneins und muss mich entscheiden', 'Ich streite mit meinem Bruder', 'Zwei Mannschaften streiten um den Sieg'], a: 0 },
+    { id: 'kjdef3', mod: 'def', g: 'konflikt', q: 'Was ist ein äußerer Konflikt?', o: ['Ein Streit mit anderen Menschen', 'Ein Streit mit mir selbst in meinem Kopf', 'Ein Gewitter draußen'], a: 0 },
+    { id: 'kjdef4', mod: 'def', g: 'kreuz', q: 'Was ist ein Symbol?', o: ['Ein Zeichen, das für etwas Wichtiges steht', 'Ein Musikinstrument', 'Ein Feiertag'], a: 0 },
+    { id: 'kjdef5', mod: 'def', g: 'kirche', q: 'Was ist der Altar?', o: ['Der wichtigste Tisch vorn in der Kirche', 'Der Turm mit den Glocken', 'Das große Musikinstrument'], a: 0 },
+    { id: 'kjdef6', mod: 'def', g: 'kirche', q: 'Was ist ein Gottesdienst?', o: ['Eine Feier, bei der Christen beten, singen und Texte aus der Bibel hören', 'Eine Putzstunde in der Kirche', 'Eine Schulstunde in Mathe'], a: 0 },
+    { id: 'kjdef7', mod: 'def', g: 'kirche', q: 'Was ist eine Predigt?', o: ['Eine Rede im Gottesdienst über einen Text aus der Bibel', 'Ein Lied auf der Orgel', 'Der Platz im Kirchturm'], a: 0 },
+    { id: 'kjdef8', mod: 'def', g: 'bibel', q: 'Was ist die Bibel?', o: ['Das heilige Buch der Christen, eine Sammlung vieler Texte', 'Ein Wörterbuch', 'Ein Kalender für das Kirchenjahr'], a: 0 },
+    { id: 'kjdef9', mod: 'def', g: 'bibel', q: 'Was bedeutet „Kulturgut“?', o: ['Etwas Wertvolles, das Menschen seit langer Zeit bewahren und weitergeben', 'Ein Bauernhof', 'Ein neues Spielzeug'], a: 0 },
+    { id: 'kjdef10', mod: 'def', g: 'bibel', q: 'Was ist ein Evangelium?', o: ['Ein Buch im Neuen Testament, das vom Leben Jesu erzählt', 'Ein Lied in der Adventszeit', 'Ein Teil der Orgel'], a: 0 },
+    { id: 'kjdef11', mod: 'def', g: 'gebote', q: 'Was sind die Zehn Gebote?', o: ['Regeln aus der Bibel für ein gutes Leben mit Gott und den Mitmenschen', 'Zehn Lieder für Weihnachten', 'Zehn Bücher des Neuen Testaments'], a: 0 },
+    { id: 'kjdef12', mod: 'def', g: 'gebote', q: 'Was bedeutet „Vater und Mutter ehren“?', o: ['Die Eltern achten und gut zu ihnen sein', 'Den Eltern Geschenke kaufen', 'Für immer bei den Eltern wohnen'], a: 0 },
+    { id: 'kjdef13', mod: 'def', g: 'advent', q: 'Was bedeutet „Advent“?', o: ['Ankunft', 'Abschied', 'Abendessen'], a: 0 },
+    { id: 'kjdef14', mod: 'def', g: 'weihnachten', q: 'Was ist eine Krippe?', o: ['Ein Futtertrog für Tiere, in dem das Jesuskind lag', 'Ein Bett im Gasthaus', 'Ein Korb für Brot'], a: 0 },
+    { id: 'kjdef15', mod: 'def', g: 'ethik', q: 'Was bedeutet „Religion“?', o: ['Der Glaube an Gott oder Götter, mit Gebeten, Festen und Regeln', 'Nachdenken über Zahlen', 'Ein Fach für Sport'], a: 0 },
+    { id: 'kjdef16', mod: 'def', g: 'ethik', q: 'Was bedeutet „Ethik“?', o: ['Nachdenken darüber, was gut und richtig ist', 'Die Lehre von den Pflanzen', 'Ein Fest im Dezember'], a: 0 },
+  ];
+  const KJ_TUT = {
+    'rf:1': { title: 'Richtig oder falsch', steps: ['Lies den Satz genau.', 'Stimmt er mit dem, was du über Kirche, Bibel und Kirchenjahr weißt? Dann „Richtig“.', 'Ist etwas vertauscht oder falsch? Dann „Falsch“.'] },
+    'mc:1': { title: 'Wähle aus', steps: ['Lies die Frage. Nur eine Antwort stimmt.', 'Bei Konflikten fragst du: Streite ich mit anderen (äußerer Konflikt) oder bin ich mit mir selbst uneins (innerer Konflikt)?', 'Tippe auf die richtige Antwort.'] },
+    'lt:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Lies den Satz mit jedem Wort einmal durch.', 'Tippe auf das Wort, das passt.'] },
+    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter wie Buße, Symbol, Altar, Evangelium, Advent, Ethik und Religion.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
+    'ord:1': { title: 'Reihenfolge', steps: ['Vier Teile sind durcheinander: Zehn Gebote oder Weihnachtsgeschichte.', 'Tippe sie in der richtigen Reihenfolge an: Was kommt zuerst?', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
+  };
+  const KJ_STARTERS = [
+    { id: 'kuesterin', type: 'normal', shape: 'kuesterin', names: ['Die Küsterin', 'Die Küsterin', 'Die Küsterin'], hp: 70, desc: 'Sie schließt die Kirche auf, läutet die Glocken und zündet die Kerzen an.', perk: 'none',
+      attacks: [{ name: 'Schlüsselbund', mod: 'rf' }, { name: 'Glockenseil', mod: 'mc' }, { name: 'Kerzenlicht', mod: 'lt' }, { name: 'Gesangbuch', mod: 'def' }] },
+  ];
+  const KJ_EXTRA = { rf: 'Turmuhr', mc: 'Liedtafel', lt: 'Lesepult', def: 'Altarbibel', ord: 'Adventskranz' };
+  const KJ_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Der Streithahn', type: 'feuer', shape: 'fox', hp: 26, atk: 3 },
+        { name: 'Der Neidhammel', type: 'pflanze', shape: 'blob', hp: 28, atk: 4 },
+        { name: 'Der Novembernebel', type: 'wasser', shape: 'jelly', hp: 24, atk: 4 },
+        { name: 'Die Zugluft', type: 'normal', shape: 'bat', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Der Kerzenlöscher', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
+      boss: { name: 'Die längste Nacht', acc: 'die längste Nacht', type: 'wasser', shape: 'ghost', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const KJ_MOVES = ['Streitwort', 'Neidblick', 'Nebelwand', 'Windstoß', 'Kalter Hauch', 'Dunkelheit'];
+  const KJ_EVENTS = [
+    { title: 'Der Pausenhof', text: 'Zwei Kinder streiten um ein Springseil. Hilf ihnen mit einer Frage zu Konflikten, dann leihen sie dir einen Schild.', opts: [{ label: 'Helfen', task: 'mc', g: 'konflikt', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Weggabelung', text: 'Du willst beide Wege gehen und kannst dich nicht entscheiden: ein innerer Konflikt. Eine Frage hilft dir.', opts: [{ label: 'Nachdenken', task: 'mc', g: 'konflikt', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Der Kirchenchor', text: 'Der Chor probt Adventslieder. Die Chorleiterin stellt dir eine Frage zur Adventszeit und schenkt dir einen Trank.', opts: [{ label: 'Antworten', task: 'any', g: 'advent', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die alte Bibel', text: 'In der Stadtbibliothek liegt eine alte Bibel. Der Bibliothekar kennt eine Eselsbrücke und verrät sie dir für eine richtige Antwort.', opts: [{ label: 'Antworten', task: 'any', g: 'bibel', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Krippe', text: 'In der Kirche steht eine Krippe mit Figuren. Ein Mädchen fragt dich nach der Weihnachtsgeschichte.', opts: [{ label: 'Antworten', task: 'any', g: 'weihnachten', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Steintafeln', text: 'Im Klassenzimmer hängt ein Plakat mit den Zehn Geboten. Die Lehrerin gibt dir eine Chilischote, wenn du ihre Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', g: 'gebote', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Weihnachtsmarkt', text: 'Am Stand gibt es warmen Tee. Du kannst dich aufwärmen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
   /* ---------- DEUTSCH: Wörterwerkstatt und Satzbaustelle (Wortlisten in woerter.js) ---------- */
   const W = typeof MW !== 'undefined' ? MW : require('./woerter.js');
   const cap = (s) => s[0].toUpperCase() + s.slice(1);
@@ -510,7 +678,7 @@ const MK = (() => {
     const pool = MODES[mode].pool;
     if (mod === 'abc') return abcTask();
     if (mod === 'umstell') return umstellTask();
-    if (mod === 'ord') { const idx = shuffle(L_EVENTS_ORDER.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => L_EVENTS_ORDER[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'ord_' + idx.join('') }; }
+    if (mod === 'ord') { const o = pick(MODES[mode].order); const idx = shuffle(o.items.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => o.items[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: o.note, q: o.q, items, order: items.map((x) => x.id), display: shuffle(items), qid: o.qid + idx.join('') }; }
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
     let cands = pool.filter((p) => p.mod === mod);
@@ -531,11 +699,14 @@ const MK = (() => {
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
   const MODES = {
-    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation' },
+    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
+      order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
+    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 1, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Buß- und Bettag, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten',
+      order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' }] },
     woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wörterbuch, wörtliche Rede' },
     satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Oberbegriffe' },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, L_EVENTS_ORDER, W, SAETZE, generate, record, shuffle, pick, rnd };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, W, SAETZE, generate, record, shuffle, pick, rnd };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

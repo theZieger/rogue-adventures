@@ -25,7 +25,11 @@ async function solveTask(forceWrong){
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) − \? = (\d+)$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) · (\d+) = \?$/)) answers=[+m[1]*m[2]];
-    else if(m=s.match(/^\? · (\d+) = (\d+)$/)) answers=[+m[2]/m[1]];
+    else if(m=s.match(/^\? · (\d+) = (\d+)$/)||s.match(/^(\d+) · \? = (\d+)$/)) answers=[+m[2]/m[1]];
+    else if(m=s.match(/^(\d+) : (\d+) = \?$/)) answers=inps.length===2?[Math.floor(m[1]/m[2]),m[1]%m[2]]:[+m[1]/m[2]];
+    else if(/^\d+$/.test(s)){ const n=+s, ask=$('.prompt').textContent;
+      if(ask.includes('Runde')){ const to=ask.includes('Hunderter')?100:10; answers=[Math.round(n/to)*to]; }
+      else if(ask.includes('Verdopple')) answers=[2*n]; else if(ask.includes('Halbiere')) answers=[n/2]; }
   } else if($('.clues')){ const clues=$$('.clues div').map(x=>x.textContent); const dg=M.digits; const res=[];
     for(let x=10;x<=999;x++){ const dd=dg(x); if(clues.join('').includes('Hunderter')? x<100 : x>=100) continue; let ok=true; for(const c of clues){ let m;
       if(m=c.match(/Einer ist (\d+)-mal so groß wie mein Zehner/)) ok=ok&&dd.z>0&&dd.e===+m[1]*dd.z;
