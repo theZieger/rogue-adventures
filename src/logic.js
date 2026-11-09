@@ -19,6 +19,12 @@ const MQ = (() => {
     // worldCap 0 = not offered in that world (written methods only in world 3)
     sadd: { name: 'Schriftlich addieren', icon: '📝', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
     ssub: { name: 'Schriftlich subtrahieren', icon: '🗒️', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
+    smul: { name: 'Schriftlich multiplizieren', icon: '🧾', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
+    teilbar: { name: 'Teilbarkeit', icon: '✂️', maxTier: 3, worldCap: [1, 2, 3], dmg: 12 },
+    mauer: { name: 'Zahlenmauern', icon: '🧱', maxTier: 3, worldCap: [1, 2, 3], dmg: 16 },
+    bruch: { name: 'Bruchteile', icon: '🥧', maxTier: 3, worldCap: [1, 2, 3], dmg: 14 },
+    vorrang: { name: 'Punkt vor Strich', icon: '🚦', maxTier: 2, worldCap: [1, 2, 2], dmg: 14 },
+    zahlwort: { name: 'Zahlwörter und Stellenwerte', icon: '🔤', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
     // practised at the market, never an attack
     geld: { name: 'Geld', icon: '🪙', maxTier: 2, worldCap: [1, 2, 2], dmg: 0, shop: true },
   };
@@ -164,12 +170,12 @@ const MQ = (() => {
   // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
   // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
   function columns(op, rows) {
-    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : rows[0] - rows[1];
+    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
     const w = Math.max(...rows.concat(res).map((n) => String(n).length));
     const dig = (n, i) => Math.floor(n / 10 ** (w - 1 - i)) % 10;
     const carry = Array(w).fill(0);
-    for (let i = w - 1; i > 0; i--) carry[i - 1] = op === '+' ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10) : (dig(rows[0], i) < dig(rows[1], i) + carry[i] ? 1 : 0);
-    return task(`${rows.join(op === '+' ? ' + ' : ' − ')} = ?`, [res], { col: { op, rows, carry, w } });
+    for (let i = w - 1; i > 0; i--) carry[i - 1] = op === '+' ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10) : op === '·' ? Math.floor((dig(rows[0], i) * rows[1] + carry[i]) / 10) : (dig(rows[0], i) < dig(rows[1], i) + carry[i] ? 1 : 0);
+    return task(`${rows.join(` ${op} `)} = ?`, [res], { col: { op, rows, carry, w } });
   }
   const carries = (t) => t.col.carry.filter(Boolean).length;
   function genSadd(t) {
@@ -184,6 +190,88 @@ const MQ = (() => {
     do { const a = rnd(200, 999); tk = columns('−', [a, rnd(10, a - 10)]); } while (tk.answers[0] < 10 || carries(tk) !== t);
     return tk;
   }
+  // multiplication: the second factor stands right of the first, the result goes under the first factor
+  function genSmul(t) {
+    let tk;
+    do { const b = t === 1 ? rnd(2, 4) : rnd(2, 9); tk = columns('·', [rnd(100, Math.floor(999 / b)), b]); } while ((t === 1 ? carries(tk) : !carries(tk)) || tk.col.rows[0] % 100 === 0);
+    return tk;
+  }
+  const choice = (q, options, answer, extra) => Object.assign({ kind: 'choice', text: q, q, options, answer }, extra);
+  const DIV_TIP = { 2: 'Durch 2 teilbar: Die letzte Ziffer ist 0, 2, 4, 6 oder 8.', 3: 'Durch 3 teilbar: Die Quersumme ist durch 3 teilbar.', 5: 'Durch 5 teilbar: Die letzte Ziffer ist 0 oder 5.', 9: 'Durch 9 teilbar: Die Quersumme ist durch 9 teilbar.', 10: 'Durch 10 teilbar: Die letzte Ziffer ist 0.', 100: 'Durch 100 teilbar: Die letzten beiden Ziffern sind 00.' };
+  const qsum = (n) => String(n).split('').reduce((s, c) => s + +c, 0);
+  function genTeilbar(t) {
+    if (t === 3 && Math.random() < 0.4) { const n = rnd(102, 999); return task(`${n}`, [qsum(n)], { ask: 'Wie groß ist die Quersumme? Zähle alle Ziffern zusammen.' }); }
+    const d = pick(t < 3 ? [2, 5, 10] : [3, 9, 9, 100]); const lo = t === 1 ? 10 : 100, hi = t === 1 ? 99 : 999;
+    const hit = () => d * rnd(Math.ceil(lo / d), Math.floor(hi / d)); const miss = () => { let n; do n = rnd(lo, hi); while (n % d === 0); return n; };
+    if (t === 2) { const right = hit(); const wrong = []; while (wrong.length < 2) { const n = miss(); if (!wrong.includes(n)) wrong.push(n); }
+      return choice(`Welche Zahl ist durch ${d} teilbar?`, shuffle([right, ...wrong]).map(String), String(right), { why: DIV_TIP[d], cols: 1 }); }
+    const yes = Math.random() < 0.5; const n = yes ? hit() : miss();
+    return choice(`Ist ${n} durch ${d} teilbar?`, ['ja', 'nein'], yes ? 'ja' : 'nein', { why: DIV_TIP[d] + (d === 3 || d === 9 ? ` Die Quersumme von ${n} ist ${qsum(n)}.` : ''), tip: DIV_TIP[d], cols: 2 });
+  }
+  // Zahlenmauer: every stone is the sum of the two below. Rechendreieck: each outer field is the sum of its two inner neighbours.
+  const stone = (x, y, w, v, miss) => `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${miss ? '#FFE27A' : '#F3D9B1'}" stroke="#1C2541" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="#1C2541">${v}</text></g>`;
+  function genMauer(t) {
+    if (t === 3) {
+      const inner = [0, 1, 2].map(() => rnd(20, 450)); const outer = [inner[0] + inner[1], inner[1] + inner[2], inner[0] + inner[2]];
+      const k = rnd(0, 5); const vals = inner.concat(outer); const show = vals.map((v, i) => (i === k ? '?' : v));
+      // inner fields at the corners of the triangle, outer fields beside the middle of each side
+      const P = [[120, 78], [72, 164], [168, 164], [28, 96], [120, 216], [212, 96]];
+      const box = (i) => { const [x, y] = P[i]; return `<g data-tri="${i}" data-v="${show[i]}"><rect x="${x - 30}" y="${y - 17}" width="60" height="34" rx="${i < 3 ? 17 : 4}" fill="${i === k ? '#FFE27A' : i < 3 ? '#FFFFFF' : '#CFE6FF'}" stroke="#1C2541" stroke-width="2"/><text x="${x}" y="${y + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="#1C2541">${show[i]}</text></g>`; };
+      const svg = `<svg class="mauer tri" viewBox="-4 0 248 238" role="img" aria-label="Rechendreieck: innen ${show.slice(0, 3).join(', ')}, außen ${show.slice(3).join(', ')}"><path d="M120 8 L14 192 L226 192 Z" fill="none" stroke="#1C2541" stroke-width="2.5" stroke-linejoin="round"/>${[0, 1, 2, 3, 4, 5].map(box).join('')}</svg>`;
+      return task(`Rechendreieck ${show.join(' ')}`, [vals[k]], { svg, ask: 'Außen steht die Summe der beiden Zahlen innen daneben. Welche Zahl fehlt?' });
+    }
+    const max = t === 1 ? 99 : 999; let b;
+    do b = t === 1 ? [rnd(2, 30), rnd(2, 30), rnd(2, 30)] : [rnd(20, 300), rnd(20, 300), rnd(20, 300)]; while (b[0] + 2 * b[1] + b[2] > max);
+    const rows = [b, [b[0] + b[1], b[1] + b[2]], [b[0] + 2 * b[1] + b[2]]];
+    // tier 1: a stone in the middle row (add) or at the bottom (subtract); tier 2 anywhere
+    const r = t === 1 ? rnd(0, 1) : rnd(0, 2); const c = rnd(0, rows[r].length - 1);
+    const show = rows.map((row, i) => row.map((v, j) => (i === r && j === c ? '?' : v)));
+    const W = 64, svg = `<svg class="mauer" viewBox="0 0 ${3 * W + 4} ${3 * 36 + 4}" role="img" aria-label="Zahlenmauer: unten ${show[0].join(', ')}, Mitte ${show[1].join(', ')}, oben ${show[2][0]}">${show.map((row, i) => row.map((v, j) => stone(2 + (i * W) / 2 + j * W, 2 + (2 - i) * 36, W, v, v === '?').replace('<g ', `<g data-r="${i}" data-c="${j}" `)).join('')).join('')}</svg>`;
+    return task(`Zahlenmauer ${show.map((row) => row.join(' ')).join(' / ')}`, [rows[r][c]], { svg, ask: 'Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl fehlt?' });
+  }
+  const FRAC = { '½': [1, 2, 'die Hälfte'], '¼': [1, 4, 'ein Viertel'], '¾': [3, 4, 'drei Viertel'], '⅓': [1, 3, 'ein Drittel'] };
+  // ½ m = 50 cm, ¼ h = 15 min …: only pairs with a whole result
+  const SIZES = [['m', 'cm', 100, 'einem Meter'], ['h', 'min', 60, 'einer Stunde'], ['kg', 'g', 1000, 'einem Kilogramm'], ['km', 'm', 1000, 'einem Kilometer']];
+  function genBruch(t) {
+    if (t === 3) { const [u, v, f, of] = pick(SIZES); const g = pick(['½', '¼', '¾']); const [z, n, word] = FRAC[g];
+      return task(`${g} ${u} = ? ${v}`, [(f / n) * z], { ask: `Wie viel ist ${word} (${g}) von ${of}?` }); }
+    const g = t === 1 ? pick(['½', '¼']) : pick(['¾', '⅓', '½', '¼']); const [z, n, word] = FRAC[g];
+    // tier 1 stays under 100; tier 2 also takes ½ and ¼ of hundreds-and-tens numbers
+    const whole = t === 1 || g === '¾' || g === '⅓' ? n * rnd(g === '½' ? 6 : 3, Math.floor(99 / n)) : n * 10 * rnd(3, Math.floor(99 / n));
+    return task(`${g} von ${whole} = ?`, [(whole / n) * z], { ask: `Wie viel ist ${word} (${g}) von ${whole}?` });
+  }
+  // Punkt vor Strich, no brackets (not part of Klasse 3 in Saxony)
+  function genVorrang(t) {
+    const k = t === 1 ? 1 : 10; const hi = t === 1 ? 99 : 999;
+    for (;;) {
+      const x = rnd(2, 9) * k, y = rnd(2, 9); const div = Math.random() < 0.5; const p = div ? `${x * y} : ${y}` : `${x} · ${y}`; const pv = div ? x : x * y;
+      const a = t === 1 ? rnd(2, 40) : rnd(2, 60) * 10; const plus = Math.random() < 0.5; const first = Math.random() < 0.5;
+      const res = plus ? a + pv : first ? pv - a : a - pv;
+      if (res < 0 || res > hi || (div && x * y > hi)) continue;
+      return task(`${first ? `${p} ${plus ? '+' : '−'} ${a}` : `${a} ${plus ? '+' : '−'} ${p}`} = ?`, [res], { ask: 'Punkt vor Strich: Mal und geteilt rechnest du zuerst.', long: t === 2 });
+    }
+  }
+  const ONES = ['', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun'];
+  const TEENS = ['zehn', 'elf', 'zwölf', 'dreizehn', 'vierzehn', 'fünfzehn', 'sechzehn', 'siebzehn', 'achtzehn', 'neunzehn'];
+  const TENS = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
+  // „ein“ before „und“, „hundert“ and „tausend“, „eins“ at the end (101 = einhunderteins)
+  function numWord(n) {
+    if (n === 1000) return 'eintausend';
+    if (n >= 100) { const h = Math.floor(n / 100), r = n % 100; return (h === 1 ? 'ein' : ONES[h]) + 'hundert' + (r ? numWord(r) : ''); }
+    if (n < 10) return ONES[n]; if (n < 20) return TEENS[n - 10];
+    const e = n % 10; return (e ? (e === 1 ? 'ein' : ONES[e]) + 'und' : '') + TENS[Math.floor(n / 10)];
+  }
+  const PV = [['H', 100], ['Z', 10], ['E', 1]];
+  const pvText = (d, order) => order.map((i) => `${d[i]} ${PV[i][0]}`).join(' ');
+  function genZahlwort(t) {
+    if (t < 3) { const n = t === 1 ? rnd(13, 99) : rnd(101, 999); return task(numWord(n), [n], { word: true }); }
+    let n; do n = rnd(102, 999); while (new Set(String(n)).size < 3);
+    const d = [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
+    if (Math.random() < 0.5) return task(`${pvText(d, Math.random() < 0.5 ? [0, 1, 2] : shuffle([0, 1, 2]))} = ?`, [n], { ask: 'Welche Zahl ist das? H = Hunderter, Z = Zehner, E = Einer.' });
+    // wrong options swap two digits, so every place value has to be read
+    const opts = [d, [d[1], d[0], d[2]], [d[0], d[2], d[1]], [d[2], d[1], d[0]]].map((x) => pvText(x, [0, 1, 2]));
+    return choice(`${n} = ? H ? Z ? E`, shuffle([opts[0]].concat(shuffle(opts.slice(1)).slice(0, 2))), opts[0], { why: `${n} hat ${d[0]} Hunderter, ${d[1]} Zehner und ${d[2]} Einer.`, cols: 1 });
+  }
   // money is always shown as „3 € 50 ct“, never with a comma
   function euro(c) { const e = Math.floor(c / 100), ct = c % 100; return e ? `${e} €${ct ? ` ${String(ct).padStart(2, '0')} ct` : ''}` : `${ct} ct`; }
   const COINS = [200, 100, 50, 20, 10, 5, 2, 1];
@@ -197,7 +285,7 @@ const MQ = (() => {
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, geld: genGeld }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, smul: genSmul, teilbar: genTeilbar, mauer: genMauer, bruch: genBruch, vorrang: genVorrang, zahlwort: genZahlwort, geld: genGeld }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -277,6 +365,36 @@ const MQ = (() => {
       2: { title: 'Subtrahieren mit zwei Überträgen', steps: ['Ist die untere Zahl größer als die obere Ziffer, ergänzt du bis zur Zahl über 10 und schreibst 1 als Übertrag in die nächste Spalte.', '503 − 276: Einer: 6 + 7 = 13. Schreibe 7, Übertrag 1.', 'Zehner: 7 + 1 = 8. 8 plus wie viel ist 0? Das geht nicht, also bis 10: 8 + 2 = 10. Schreibe 2, Übertrag 1.', 'Hunderter: 2 + 1 = 3. 3 + 2 = 5. Schreibe 2. Ergebnis: 227.'] },
     },
   });
+  Object.assign(TUT, {
+    smul: {
+      1: { title: 'Schriftlich multiplizieren', steps: ['Die Aufgabe steht in einer Zeile, zum Beispiel 213 · 3. Das Ergebnis schreibst du unter die erste Zahl. Du rechnest von rechts nach links, Stelle für Stelle.', 'Einer: 3 · 3 = 9. Schreibe 9 unter die Einer.', 'Zehner: 3 · 1 = 3. Schreibe 3. Hunderter: 3 · 2 = 6. Schreibe 6.', 'Ergebnis: 639.'] },
+      2: { title: 'Multiplizieren mit Übertrag', steps: ['Ist ein Ergebnis 10 oder größer, schreibst du nur die Einer hin. Die Zehner merkst du dir als Übertrag im kleinen Feld der nächsten Spalte.', '247 · 3: Einer: 3 · 7 = 21. Schreibe 1, Übertrag 2.', 'Zehner: 3 · 4 = 12, plus Übertrag 2 = 14. Schreibe 4, Übertrag 1.', 'Hunderter: 3 · 2 = 6, plus Übertrag 1 = 7. Schreibe 7. Ergebnis: 741.'] },
+    },
+    teilbar: {
+      1: { title: 'Teilbar durch 2, 5 und 10', steps: ['Eine Zahl ist durch eine andere teilbar, wenn beim Teilen kein Rest bleibt. Dafür schaust du auf die letzte Ziffer.', 'Durch 2: Die letzte Ziffer ist 0, 2, 4, 6 oder 8. Durch 5: 0 oder 5. Durch 10: 0.', 'Ist 48 durch 2 teilbar? Die letzte Ziffer ist 8, also ja: 48 : 2 = 24. Ist 48 durch 5 teilbar? 8 ist weder 0 noch 5, also nein.'] },
+      2: { title: 'Die teilbare Zahl finden', steps: ['Prüfe jede Zahl einzeln an ihrer letzten Ziffer.', 'Welche Zahl ist durch 5 teilbar: 342, 415 oder 503?', '342 endet auf 2, 503 auf 3. Nur 415 endet auf 5. Also 415.'] },
+      3: { title: 'Quersumme: teilbar durch 3 und 9', steps: ['Die Quersumme ist die Summe aller Ziffern. Quersumme von 342: 3 + 4 + 2 = 9.', 'Durch 3 teilbar: Die Quersumme ist durch 3 teilbar. Durch 9 teilbar: Die Quersumme ist durch 9 teilbar.', 'Ist 342 durch 9 teilbar? Die Quersumme 9 ist durch 9 teilbar, also ja: 342 : 9 = 38.', 'Durch 100 teilbar: Die letzten beiden Ziffern sind 00, wie bei 700.'] },
+    },
+    mauer: {
+      1: { title: 'Zahlenmauern', steps: ['Jeder Stein ist die Summe der beiden Steine direkt darunter.', 'Unten 12, 7 und 15. Mitte: 12 + 7 = 19 und 7 + 15 = 22. Oben: 19 + 22 = 41.', 'Fehlt ein Stein unten, rechnest du minus: In der Mitte steht 19, unten links 12. 19 − 12 = 7.'] },
+      2: { title: 'Große Zahlenmauern', steps: ['Die Regel bleibt: Jeder Stein ist die Summe der beiden darunter.', 'Unten stehen 120 und ein fehlender Stein, darüber 305. Der fehlende Stein: 305 − 120 = 185.', 'Fehlt der oberste Stein, addierst du die beiden Steine der Mitte: 305 + 410 = 715.'] },
+      3: { title: 'Rechendreiecke', steps: ['Innen stehen drei Zahlen in den Ecken. Außen an jeder Seite steht die Summe der beiden Zahlen innen daneben.', 'Innen 140, 260 und 75. Außen: 140 + 260 = 400, 260 + 75 = 335, 140 + 75 = 215.', 'Fehlt eine Zahl innen, rechnest du minus: Außen steht 400, innen daneben 140. 400 − 140 = 260.'] },
+    },
+    bruch: {
+      1: { title: 'Die Hälfte und ein Viertel', steps: ['Die Hälfte (½) heißt: in 2 gleiche Teile teilen. Ein Viertel (¼) heißt: in 4 gleiche Teile teilen.', 'Die Hälfte von 48: 48 : 2 = 24.', 'Ein Viertel von 36: 36 : 4 = 9.'] },
+      2: { title: 'Drei Viertel und ein Drittel', steps: ['Ein Drittel (⅓) heißt: in 3 gleiche Teile teilen. Ein Drittel von 27: 27 : 3 = 9.', 'Drei Viertel (¾) sind drei von vier gleichen Teilen. Rechne erst ein Viertel aus, dann mal 3.', 'Drei Viertel von 20: 20 : 4 = 5, dann 5 · 3 = 15.'] },
+      3: { title: 'Bruchteile von Größen', steps: ['Rechne zuerst in die kleinere Einheit um: 1 m = 100 cm, 1 h = 60 min, 1 kg = 1000 g, 1 km = 1000 m.', '½ m: Die Hälfte von 100 cm ist 50 cm.', '¾ h: Ein Viertel von 60 min ist 15 min. Drei Viertel sind 3 · 15 = 45 min.'] },
+    },
+    vorrang: {
+      1: { title: 'Punkt vor Strich', steps: ['Mal (·) und geteilt (:) sind Punktrechnungen. Plus (+) und minus (−) sind Strichrechnungen.', 'Kommen beide in einer Aufgabe vor, rechnest du zuerst die Punktrechnung.', '3 + 4 · 2: Erst 4 · 2 = 8, dann 3 + 8 = 11.', '20 − 12 : 4: Erst 12 : 4 = 3, dann 20 − 3 = 17.'] },
+      2: { title: 'Punkt vor Strich mit großen Zahlen', steps: ['Auch mit Zehnerzahlen gilt: zuerst · oder :, dann + oder −.', '500 − 40 · 6: Erst 40 · 6 = 240, dann 500 − 240 = 260.', '350 + 480 : 8: Erst 480 : 8 = 60, dann 350 + 60 = 410.'] },
+    },
+    zahlwort: {
+      1: { title: 'Zahlwörter bis 100', steps: ['Im Zahlwort hörst du zuerst die Einer, dann die Zehner. Geschrieben wird aber zuerst der Zehner.', 'achtundvierzig: acht Einer und vierzig, also 4 Zehner. Die Zahl ist 48.', 'einundsechzig: ein Einer und sechzig. Die Zahl ist 61.'] },
+      2: { title: 'Zahlwörter bis 1000', steps: ['Zuerst kommen die Hunderter. Danach geht es weiter wie bis 100: erst die Einer, dann die Zehner.', 'dreihundertachtundvierzig: dreihundert, acht Einer und vierzig.', '3 Hunderter, 4 Zehner, 8 Einer. Die Zahl ist 348.'] },
+      3: { title: 'Die Stellenwerttafel', steps: ['H heißt Hunderter, Z Zehner, E Einer. Die Reihenfolge in der Aufgabe kann wechseln, lies die Buchstaben genau.', '3 H 4 Z 8 E: 300 + 40 + 8 = 348.', '5 H 0 E 6 Z: 5 Hunderter, 6 Zehner, 0 Einer. Die Zahl ist 560.', 'Umgekehrt: 348 hat 3 H, 4 Z und 8 E.'] },
+    },
+  });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
@@ -287,14 +405,14 @@ const MQ = (() => {
     { id: 'fuchs', type: 'feuer', shape: 'fox', names: ['Glutfuchs', 'Flammfuchs', 'Sonnenfuchs'], hp: 60, desc: 'Flink und mutig. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Funkenbiss', mod: 'add' }, { name: 'Flammenstoß', mod: 'sub' }, { name: 'Feuerreihe', mod: 'seq' }, { name: 'Glutgitter', mod: 'grid' }] },
     { id: 'kroete', type: 'wasser', shape: 'toad', names: ['Wellenkröte', 'Strudelkröte', 'Ozeankröte'], hp: 80, desc: 'Hält viel aus. Hat die meisten Lebenspunkte.', perk: 'tank',
-      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
+      attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Uferdamm', mod: 'mauer' }] },
     { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Jede richtige Antwort heilt ihn um 3 Lebenspunkte.', perk: 'heal',
       attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Wabenteilung', mod: 'div' }] },
     // unlocked in the Stempelheft; practises the task types the other three heroes have least
     { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
-      attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Flügelschlag', mod: 'seq' }] },
+      attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Nachtruf', mod: 'zahlwort' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller', smul: 'Lawine', teilbar: 'Kornsieb', mauer: 'Steinwall', bruch: 'Halbmond', vorrang: 'Vortritt', zahlwort: 'Ausrufer' };
 
   const ENEMIES = {
     1: {
@@ -364,6 +482,7 @@ const MQ = (() => {
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
     { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann gibt er dir 50 ct Finderlohn.', opts: [{ label: 'Geld zählen', task: 'geld', win: { coins: 50 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. Die Fahrt kostet 40 ct. Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Fahrt bezahlen (40 ct)', effect: { coins: -40 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
+    { title: 'Die Backstube', text: 'Der Bäcker verteilt frische Brötchen auf seine Körbe: die Hälfte in den großen, ein Viertel in den kleinen. Rechnest du ihm einen Bruchteil aus, gibt er dir Beeren für unterwegs.', opts: [{ label: 'Bruchteil rechnen', task: 'bruch', win: { item: 'beere', xp: 10 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Holzplatz', text: 'Eine Försterin stapelt Holzscheite in gleich langen Reihen. Wer ausrechnet, wie viele es sind, darf zwei Scheite für die Werkbank mitnehmen.', opts: [{ label: 'Scheite zählen', task: 'mul', win: { holz: 2 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
   ];
 
@@ -447,11 +566,15 @@ const MQ = (() => {
   const BAU_MODULES = {
     wz: { name: 'Würfel zählen', icon: '🧊', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     fq: { name: 'Quader ergänzen', icon: '📦', maxTier: 2, worldCap: [1, 2], dmg: 14 },
-    netz: { name: 'Würfelnetze', icon: '🎲', maxTier: 1, worldCap: [1, 1], dmg: 16 },
+    netz: { name: 'Würfel- und Quadernetze', icon: '🎲', maxTier: 2, worldCap: [1, 2], dmg: 16 },
     koerper: { name: 'Körper erkennen', icon: '🔺', maxTier: 1, worldCap: [1, 1], dmg: 10 },
     band: { name: 'Bandornamente', icon: '🔁', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     lage: { name: 'Parallel oder senkrecht', icon: '📐', maxTier: 1, worldCap: [1, 1], dmg: 10 },
     umfang: { name: 'Umfang', icon: '📏', maxTier: 2, worldCap: [1, 2], dmg: 14 },
+    flaeche: { name: 'Flächeninhalt', icon: '🟨', maxTier: 2, worldCap: [1, 2], dmg: 14 },
+    spiegel: { name: 'Achsensymmetrie', icon: '🦋', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    bewegung: { name: 'Spiegeln, drehen, schieben', icon: '🔄', maxTier: 1, worldCap: [1, 1], dmg: 12 },
+    vieleck: { name: 'Dreiecke und Vierecke', icon: '🔷', maxTier: 2, worldCap: [1, 2], dmg: 12 },
   };
   const INK = '#1C2541', LINE = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
   const svgFig = (x, y, w, h, body, label) => `<svg viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
@@ -503,13 +626,19 @@ const MQ = (() => {
   const shapeKey = (cells) => SYM.map((f) => JSON.stringify(normCells(cells.map(f)))).sort()[0];
   // Fold the squares around the first one like rolling a die: n is where the square ends up on the cube,
   // u and v are the grid's right and down directions on it. A net uses each of the 6 sides exactly once.
-  function cubeNet(cells) {
-    if (cells.length !== 6) return false;
-    const key = ([r, c]) => r + ',' + c, at = new Set(cells.map(key)), neg = (a) => a.map((x) => -x);
+  // fn(cell, frame, parent cell) is called in the order the squares are reached
+  function fold(cells, fn) {
+    const key = ([r, c]) => r + ',' + c, has = new Set(cells.map(key)), neg = (a) => a.map((x) => -x);
     const frames = new Map([[key(cells[0]), { n: [0, 0, -1], u: [1, 0, 0], v: [0, 1, 0] }]]); const queue = [cells[0]];
     const roll = [[0, 1, (f) => ({ n: f.u, u: neg(f.n), v: f.v })], [0, -1, (f) => ({ n: neg(f.u), u: f.n, v: f.v })], [1, 0, (f) => ({ n: f.v, u: f.u, v: neg(f.n) })], [-1, 0, (f) => ({ n: neg(f.v), u: f.u, v: f.n })]];
+    if (fn) fn(cells[0], frames.get(key(cells[0])), null);
     while (queue.length) { const [r, c] = queue.shift(); const f = frames.get(key([r, c]));
-      for (const [dr, dc, g] of roll) { const k = key([r + dr, c + dc]); if (at.has(k) && !frames.has(k)) { frames.set(k, g(f)); queue.push([r + dr, c + dc]); } } }
+      for (const [dr, dc, g] of roll) { const p = [r + dr, c + dc], k = key(p); if (has.has(k) && !frames.has(k)) { frames.set(k, g(f)); queue.push(p); if (fn) fn(p, frames.get(k), [r, c]); } } }
+    return frames;
+  }
+  function cubeNet(cells) {
+    if (cells.length !== 6) return false;
+    const frames = fold(cells);
     return frames.size === 6 && new Set([...frames.values()].map((f) => f.n.join())).size === 6;
   }
   const connected = (cells) => { const key = ([r, c]) => r + ',' + c, at = new Set(cells.map(key)), seen = new Set([key(cells[0])]), q = [cells[0]];
@@ -526,7 +655,41 @@ const MQ = (() => {
     const S = 14, h = Math.max(...cells.map((p) => p[0])) + 1, w = Math.max(...cells.map((p) => p[1])) + 1, ox = (size - w) * S / 2, oy = (size - h) * S / 2;
     return svgFig(-2, -2, size * S + 4, size * S + 4, cells.map(([r, c]) => `<rect x="${ox + c * S}" y="${oy + r * S}" width="${S}" height="${S}" fill="#F4C542" ${LINE}/>`).join(''), 'Netz aus 6 Quadraten');
   }
-  function genNetz() {
+  // Quadernetz: the squares of a cube net become rectangles; each face lies along two edges of the Quader (L = length per axis)
+  const axisOf = (v) => v.findIndex((x) => x !== 0);
+  const noBlock = (cells) => !cells.some(([r, c]) => [[r, c + 1], [r + 1, c], [r + 1, c + 1]].every((p) => cells.some((q) => q.join() === p.join())));
+  const normRects = (rs) => { const x0 = Math.min(...rs.map((r) => r[0])), y0 = Math.min(...rs.map((r) => r[1])); return rs.map(([x, y, w, h]) => [x - x0, y - y0, w, h]); };
+  function boxRects(cells, L) {
+    const rect = new Map(), key = (p) => p.join();
+    fold(cells, (p, f, from) => { const w = L[axisOf(f.u)], h = L[axisOf(f.v)];
+      if (!from) { rect.set(key(p), [0, 0, w, h]); return; }
+      const [x, y, pw, ph] = rect.get(key(from)), dr = p[0] - from[0], dc = p[1] - from[1];
+      rect.set(key(p), [dc > 0 ? x + pw : dc < 0 ? x - w : x, dr > 0 ? y + ph : dr < 0 ? y - h : y, w, h]); });
+    return normRects(cells.map((p) => rect.get(key(p))));
+  }
+  const overlap = (rs) => rs.some((a, i) => rs.some((b, j) => j > i && a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3]));
+  const rectKey = (rs) => JSON.stringify(rs.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]));
+  function rectSVG(rs, size) {
+    const S = 7, w = Math.max(...rs.map((r) => r[0] + r[2])), h = Math.max(...rs.map((r) => r[1] + r[3])), ox = (size - w) * S / 2, oy = (size - h) * S / 2;
+    return svgFig(-2, -2, size * S + 4, size * S + 4, rs.map(([x, y, rw, rh]) => `<rect x="${ox + x * S}" y="${oy + y * S}" width="${rw * S}" height="${rh * S}" fill="#F4C542" ${LINE}/>`).join(''), `Netz aus ${rs.length} Rechtecken`);
+  }
+  function genQuader() {
+    const L = shuffle(pick([[1, 2, 3], [2, 3, 4], [2, 3, 5], [2, 4, 5]])); let cells, good;
+    do { cells = normCells(parseNet(pick(NETS)).map(pick(SYM))); good = boxRects(cells, L); } while (overlap(good));
+    const nets = [good], keys = new Set([rectKey(good)]);
+    while (nets.length < 3) {
+      let n;
+      // wrong nets: one face missing at an end, or six faces where two land on the same side
+      if (nets.length === 1 && Math.random() < 0.5) { const leaves = cells.map((p, i) => i).filter((i) => cells.filter((q) => Math.abs(q[0] - cells[i][0]) + Math.abs(q[1] - cells[i][1]) === 1).length === 1); const i = pick(leaves); n = normRects(good.filter((_, j) => j !== i)); }
+      else { const sh = almostNet(); if (!noBlock(sh)) continue; n = boxRects(normCells(sh.map(pick(SYM))), L); if (overlap(n)) continue; }
+      if (!keys.has(rectKey(n))) { keys.add(rectKey(n)); nets.push(n); }
+    }
+    const size = Math.max(...nets.flat().map((r) => Math.max(r[0] + r[2], r[1] + r[3]))); const order = shuffle([0, 1, 2]);
+    const options = order.map((i) => rectSVG(nets[i], size));
+    return { kind: 'choice', q: 'Welches Netz lässt sich zu einem Quader falten?', options, answer: options[order.indexOf(0)], rects: order.map((i) => nets[i]), svgOpts: true, tall: true, why: 'Dieses Netz lässt sich zu einem Quader falten:', sig: rectKey(good) };
+  }
+  function genNetz(t) {
+    if (t === 2) return genQuader();
     const net = normCells(parseNet(pick(NETS)).map(pick(SYM))); const nets = [net]; const keys = new Set([shapeKey(net)]);
     while (nets.length < 3) { const n = almostNet(); if (!keys.has(shapeKey(n))) { keys.add(shapeKey(n)); nets.push(normCells(n.map(pick(SYM)))); } }
     const size = Math.max(...nets.flat().map((p) => Math.max(...p))) + 1; const order = shuffle([0, 1, 2]);
@@ -604,26 +767,161 @@ const MQ = (() => {
   const hasHole = (cells) => { const at = new Set(cells.map((p) => p.join())); const seen = new Set(['-1,-1']); const q = [[-1, -1]];
     while (q.length) { const [r, c] = q.pop(); for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (p[0] >= -1 && p[0] <= 6 && p[1] >= -1 && p[1] <= 6 && !at.has(p.join()) && !seen.has(p.join())) { seen.add(p.join()); q.push(p); } }
     return seen.size + cells.length < 64; };
+  // a connected shape of n squares in rows 0 … R−1 and columns 0 … C−1
+  function blob(n, R, C) {
+    const cells = [[rnd(0, R - 1), rnd(0, C - 1)]];
+    while (cells.length < n) { const [r, c] = pick(cells); const p = pick([[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]); if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < C && !cells.some((q) => q.join() === p.join())) cells.push(p); }
+    return cells;
+  }
+  // squared paper W × H; shapes: { cells, fill, line } with line = thin lines between the squares stay visible
+  const PS = 16;
+  function paperSVG(W, H, shapes, extra, label) {
+    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * PS} 0 V${H * PS}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * PS} H${W * PS}" stroke="#C9D3E8"/>`;
+    const body = shapes.map((s) => s.cells.map(([r, c]) => `<rect x="${c * PS}" y="${r * PS}" width="${PS}" height="${PS}" fill="${s.fill || '#FFE08A'}"${s.line ? ` stroke="${s.line}"` : ''}/>`).join('')
+      + edges(s.cells).map(([x1, y1, x2, y2]) => `<path d="M${x1 * PS} ${y1 * PS} L${x2 * PS} ${y2 * PS}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`).join('')).join('');
+    return svgFig(-2, -2, W * PS + 4, H * PS + 4, grid + body + (extra || ''), label);
+  }
+  const at = (cells, dr, dc) => cells.map(([r, c]) => [r + dr, c + dc]);
+  const span = (cells) => [Math.max(...cells.map((p) => p[0])) + 1, Math.max(...cells.map((p) => p[1])) + 1];
   function genUmfang(t) {
     let cells;
     if (t === 1) { const w = rnd(2, 5), h = rnd(1, 3); cells = []; for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) cells.push([r, c]); }
-    else do { cells = [[rnd(1, 3), rnd(1, 3)]]; const n = rnd(5, 7);
-      while (cells.length < n) { const [r, c] = pick(cells); const p = pick([[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]); if (p[0] >= 0 && p[0] <= 4 && p[1] >= 0 && p[1] <= 5 && !cells.some((q) => q.join() === p.join())) cells.push(p); }
-      cells = normCells(cells); } while (hasHole(cells));
-    const S = 16, H = Math.max(...cells.map((p) => p[0])) + 3, W = Math.max(...cells.map((p) => p[1])) + 3; const shift = cells.map(([r, c]) => [r + 1, c + 1]);
-    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * S} 0 V${H * S}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * S} H${W * S}" stroke="#C9D3E8"/>`;
-    const fill = shift.map(([r, c]) => `<rect x="${c * S}" y="${r * S}" width="${S}" height="${S}" fill="#FFE08A"/>`).join('');
-    const border = edges(shift).map(([x1, y1, x2, y2]) => `<path d="M${x1 * S} ${y1 * S} L${x2 * S} ${y2 * S}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`).join('');
-    return task('', [edges(cells).length], { svg: svgFig(-2, -2, W * S + 4, H * S + 4, grid + fill + border, 'Fläche auf Kästchenpapier'), ask: 'Wie lang ist der Umfang? Zähle die Kästchenseiten am Rand.', cells, sig: JSON.stringify(cells) });
+    else do cells = normCells(blob(rnd(5, 7), 5, 6)); while (hasHole(cells));
+    const [h, w] = span(cells);
+    return task('', [edges(cells).length], { svg: paperSVG(w + 2, h + 2, [{ cells: at(cells, 1, 1) }], '', 'Fläche auf Kästchenpapier'), ask: 'Wie lang ist der Umfang? Zähle die Kästchenseiten am Rand.', cells, sig: JSON.stringify(cells) });
+  }
+
+  // Flächeninhalt: whole squares only
+  function genFlaeche(t) {
+    if (t === 1) {
+      const area = normCells(blob(rnd(5, 12), 4, 6)); const [h, w] = span(area);
+      return task('', [area.length], { svg: paperSVG(w + 2, h + 2, [{ cells: at(area, 1, 1), line: '#C9A227' }], '', 'Fläche auf Kästchenpapier'), ask: 'Wie groß ist der Flächeninhalt? Zähle die Kästchen.', area, sig: JSON.stringify(area) });
+    }
+    // about a third have the same area in a different shape
+    const n = rnd(6, 11), same = Math.random() < 0.35; const a = normCells(blob(n, 4, 4)); let b;
+    do b = normCells(blob(same ? n : n + pick([-2, -1, 1, 2]), 4, 4)); while (shapeKey(b) === shapeKey(a));
+    const [ha, wa] = span(a), [hb, wb] = span(b), H = Math.max(ha, hb) + 2, W = wa + wb + 5;
+    const name = (txt, c, w) => `<text x="${(c + w / 2) * PS}" y="${PS * 0.78}" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">${txt}</text>`;
+    const pic = paperSVG(W, H, [{ cells: at(a, 1, 1), line: '#C9A227' }, { cells: at(b, 1, wa + 3), fill: '#9ED0FF', line: '#5B8DC9' }], name('A', 1, wa) + name('B', wa + 3, wb), 'zwei Flächen A und B');
+    const options = ['Figur A', 'Figur B', 'Beide gleich groß'];
+    return { kind: 'choice', q: 'Welche Figur hat den größeren Flächeninhalt?', pic, options, answer: a.length === b.length ? options[2] : a.length > b.length ? options[0] : options[1], figs: [a, b], cols: 1, why: `Figur A hat ${a.length} Kästchen, Figur B hat ${b.length} Kästchen.`, sig: shapeKey(a) + shapeKey(b) };
+  }
+
+  // Achsensymmetrie: a half of k columns next to a vertical axis; srt gives a position-exact key
+  const srt = (cells) => JSON.stringify(cells.slice().sort((p, q) => p[0] - q[0] || p[1] - q[1]));
+  const mirrorAt = (cells, k) => cells.map(([r, c]) => [r, 2 * k - 1 - c]);
+  const AXIS = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="#C0392B" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+  function half(R, k) { let L; do L = blob(rnd(3, 6), R, k); while (!L.some((p) => p[1] === k - 1)); return L; }
+  // one square moved to another free place next to the shape
+  function nudge(cells, R, k) {
+    for (;;) { const i = rnd(0, cells.length - 1); const rest = cells.filter((_, j) => j !== i); if (!connected(rest)) continue;
+      const free = []; for (const [r, c] of rest) for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !cells.some((q) => q.join() === p.join())) free.push(p);
+      if (free.length) return rest.concat([pick(free)]); }
+  }
+  function genSpiegel(t) {
+    const R = 4, k = 3;
+    if (t === 1) {
+      let L, shape, sym;
+      do { L = half(R, k); sym = Math.random() < 0.5; const other = sym ? L : nudge(L, R, k); shape = L.concat(mirrorAt(other, k)); }
+      while (!connected(shape) || (!sym && srt(shape) === srt(mirrorAt(shape, k))));
+      // turned on its side half of the time: the axis is then horizontal
+      const flat = Math.random() < 0.5; const cells = flat ? shape.map(([r, c]) => [c, r]) : shape;
+      const [H, W] = flat ? [2 * k + 2, R + 2] : [R + 2, 2 * k + 2];
+      const axis = flat ? AXIS(0, (k + 1) * PS, W * PS, (k + 1) * PS) : AXIS((k + 1) * PS, 0, (k + 1) * PS, H * PS);
+      return { kind: 'choice', q: 'Ist die Figur achsensymmetrisch zur gestrichelten Linie?', pic: paperSVG(W, H, [{ cells: at(cells, 1, 1) }], axis, 'Figur mit Spiegelachse'), options: ['ja', 'nein'], answer: sym ? 'ja' : 'nein', shape: cells, k, flat, cols: 2,
+        why: sym ? 'Jedes Kästchen hat auf der anderen Seite der Linie ein Spiegelbild.' : 'Klappst du die Figur an der Linie um, passen die beiden Hälften nicht aufeinander.', sig: srt(cells) };
+    }
+    // complete the mirror image: the right half in its own columns 0 … k−1, next to the axis
+    let L, right, opts;
+    do {
+      L = half(R, k); right = L.map(([r, c]) => [r, k - 1 - c]);
+      const cand = [L, right.map(([r, c]) => [R - 1 - r, c]), nudge(right, R, k), nudge(right, R, k), L.map(([r, c]) => [R - 1 - r, c])];
+      opts = [right]; for (const x of cand) if (!opts.some((o) => srt(o) === srt(x))) opts.push(x);
+    } while (opts.length < 3);
+    const halves = shuffle(opts.slice(0, 3)), axisAt = (x) => AXIS(x, 0, x, (R + 2) * PS);
+    const options = halves.map((hf) => paperSVG(k + 1, R + 2, [{ cells: at(hf, 1, 0) }], axisAt(0), 'rechte Hälfte'));
+    const answer = options[halves.indexOf(right)];
+    const pic = paperSVG(2 * k + 2, R + 2, [{ cells: at(L, 1, 1) }], axisAt((k + 1) * PS) + `<text x="${(k + 2.5) * PS}" y="${(R / 2 + 1.4) * PS}" text-anchor="middle" font-size="24" font-weight="700" fill="${INK}">?</text>`, 'linke Hälfte mit Spiegelachse');
+    return { kind: 'choice', q: 'Welches Bild ergänzt die Figur zu einer achsensymmetrischen Figur?', pic, options, answer, left: L, halves, svgOpts: true, why: 'So sieht das Spiegelbild aus:', sig: srt(L) };
+  }
+
+  // gespiegelt, gedreht oder verschoben: the shape has no symmetry, so the three cases never look alike
+  const TRANSFORMS = { verschoben: [SYM[0]], gedreht: [SYM[1], SYM[2], SYM[3]], gespiegelt: [SYM[4]] };
+  function genBewegung() {
+    let P; do P = normCells(blob(rnd(4, 5), 3, 3)); while (new Set(SYM.map((f) => JSON.stringify(normCells(P.map(f))))).size < 8);
+    const kind = pick(Object.keys(TRANSFORMS)); const Q = normCells(P.map(pick(TRANSFORMS[kind])));
+    const [hp, wp] = span(P), [hq, wq] = span(Q), dp = rnd(0, 1), dq = rnd(0, 1), H = Math.max(hp + dp, hq + dq) + 2, W = wp + wq + 5;
+    const arrow = `<path d="M${(wp + 1.6) * PS} ${H * PS / 2} H${(wp + 3.4) * PS} m-6 -5 l6 5 l-6 5" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const pic = paperSVG(W, H, [{ cells: at(P, 1 + dp, 1), fill: '#FF9A8B' }, { cells: at(Q, 1 + dq, wp + 4), fill: '#9ED0FF' }], arrow, 'rote Figur und blaue Figur');
+    const options = Object.keys(TRANSFORMS).sort((x, y) => (x < y ? -1 : 1));
+    return { kind: 'choice', q: 'Aus der roten Figur wird die blaue. Wurde sie gespiegelt, gedreht oder verschoben?', pic, options, answer: kind, from: P, to: Q, cols: 1,
+      why: { verschoben: 'Die Figur liegt genauso da, nur an einer anderen Stelle.', gedreht: 'Die Figur wurde um eine Ecke gedreht, nicht umgeklappt.', gespiegelt: 'Die Figur wurde umgeklappt wie im Spiegel.' }[kind], sig: kind + JSON.stringify(P) };
+  }
+
+  // Dreiecke und Vierecke: corners on the grid points, x to the right, y down
+  const SHAPES = ['Quadrat', 'Rechteck', 'Parallelogramm', 'Dreieck mit rechtem Winkel', 'Dreieck ohne rechten Winkel', 'Viereck ohne parallele Seiten'];
+  // names that are true for a shape (a square is also a rectangle and a parallelogram)
+  const TRUE_FOR = { Quadrat: ['Quadrat', 'Rechteck', 'Parallelogramm'], Rechteck: ['Rechteck', 'Parallelogramm'] };
+  const cross = ([ax, ay], [bx, by]) => ax * by - ay * bx, vec = (p, q) => [q[0] - p[0], q[1] - p[1]];
+  const sides = (pts) => pts.map((p, i) => vec(p, pts[(i + 1) % pts.length]));
+  const convexOk = (pts) => { const s = sides(pts).map((v, i, a) => cross(v, a[(i + 1) % a.length])); return s.every((x) => x > 0) || s.every((x) => x < 0); };
+  const rightAngles = (pts) => sides(pts).filter((v, i, a) => { const w = a[(i + 1) % a.length]; return v[0] * w[0] + v[1] * w[1] === 0; }).length;
+  function polyPoints(id) {
+    let pts;
+    if (id === 'Quadrat') { const s = rnd(2, 4); pts = [[0, 0], [s, 0], [s, s], [0, s]]; }
+    else if (id === 'Rechteck') { let w, h; do { w = rnd(2, 6); h = rnd(1, 4); } while (w === h); pts = [[0, 0], [w, 0], [w, h], [0, h]]; }
+    else if (id === 'Parallelogramm') { const w = rnd(3, 4), h = rnd(2, 3), s = rnd(1, 2); pts = [[s, 0], [s + w, 0], [w, h], [0, h]]; }
+    else if (id === 'Dreieck mit rechtem Winkel') { const a = rnd(2, 5), b = rnd(2, 4); pts = [[0, 0], [0, b], [a, b]]; }
+    else if (id === 'Dreieck ohne rechten Winkel') do pts = [[rnd(0, 5), 0], [5, rnd(2, 4)], [0, rnd(3, 4)]]; while (!convexOk(pts) || rightAngles(pts) || Math.abs(cross(...sides(pts).slice(0, 2))) < 8);
+    else do pts = [[rnd(1, 3), 0], [5, rnd(1, 3)], [rnd(2, 4), rnd(4, 5)], [0, rnd(2, 4)]]; while (!convexOk(pts) || sides(pts).some((v, i, a) => cross(v, a[(i + 2) % 4]) === 0));
+    // turned by a quarter turn now and then
+    for (let i = rnd(0, 3); i > 0; i--) pts = pts.map(([x, y]) => [-y, x]);
+    const x0 = Math.min(...pts.map((p) => p[0])), y0 = Math.min(...pts.map((p) => p[1]));
+    return pts.map(([x, y]) => [x - x0, y - y0]);
+  }
+  function polySVG(pts) {
+    const W = Math.max(...pts.map((p) => p[0])) + 2, H = Math.max(...pts.map((p) => p[1])) + 2;
+    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * PS} 0 V${H * PS}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * PS} H${W * PS}" stroke="#C9D3E8"/>`;
+    return svgFig(-2, -2, W * PS + 4, H * PS + 4, `${grid}<polygon points="${pts.map(([x, y]) => `${(x + 1) * PS},${(y + 1) * PS}`).join(' ')}" fill="#B5E48C" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`, 'Figur auf Kästchenpapier');
+  }
+  // tier 2: properties; each question lists the names that make it true
+  const PROPS = [
+    ['Welche Figur hat zwei Paar parallele Seiten?', ['Quadrat', 'Rechteck', 'Parallelogramm']],
+    ['Welche Figur hat vier rechte Winkel und vier gleich lange Seiten?', ['Quadrat']],
+    ['Welche Figur hat vier rechte Winkel, aber nicht vier gleich lange Seiten?', ['Rechteck']],
+    ['Welche Figur hat zwei Paar parallele Seiten, aber keinen rechten Winkel?', ['Parallelogramm']],
+    ['Welche Figur hat genau einen rechten Winkel?', ['Dreieck mit rechtem Winkel']],
+    ['Welche Figur hat drei Ecken und keinen rechten Winkel?', ['Dreieck ohne rechten Winkel']],
+  ];
+  // quiz pool per question: names that are clearly false for it (a general Viereck may have one right angle)
+  const PROP_FALSE = (q, yes) => SHAPES.filter((s) => !yes.includes(s) && !(q.includes('genau einen rechten') && s.startsWith('Viereck')));
+  const COUNTS = [
+    ['rechte Winkel', { Quadrat: 4, Rechteck: 4, Parallelogramm: 0, 'Dreieck mit rechtem Winkel': 1, 'Dreieck ohne rechten Winkel': 0 }, ['0', '1', '2', '4']],
+    ['Paare paralleler Seiten', { Quadrat: 2, Rechteck: 2, Parallelogramm: 2, 'Dreieck mit rechtem Winkel': 0, 'Dreieck ohne rechten Winkel': 0 }, ['0', '1', '2']],
+  ];
+  function genVieleck(t) {
+    if (t === 1) {
+      const id = pick(SHAPES), yes = TRUE_FOR[id] || [id]; const tri = id.startsWith('Dreieck');
+      const no = shuffle(SHAPES.filter((s) => !yes.includes(s))).sort((a, b) => (a.startsWith('Dreieck') === tri ? 0 : 1) - (b.startsWith('Dreieck') === tri ? 0 : 1));
+      const pts = polyPoints(id);
+      return { kind: 'choice', q: 'Wie heißt diese Figur?', pic: polySVG(pts), options: shuffle([id, no[0], pick(no.slice(1, 3))]), answer: id, shape: id, pts, cols: 1,
+        why: { Quadrat: 'Vier gleich lange Seiten und vier rechte Winkel.', Rechteck: 'Vier rechte Winkel, aber nicht alle Seiten gleich lang.', Parallelogramm: 'Gegenüberliegende Seiten sind parallel, es gibt keinen rechten Winkel.', 'Dreieck mit rechtem Winkel': 'Drei Ecken, eine davon ist ein rechter Winkel.', 'Dreieck ohne rechten Winkel': 'Drei Ecken, keine davon ist ein rechter Winkel.', 'Viereck ohne parallele Seiten': 'Vier Ecken, aber keine zwei Seiten sind parallel.' }[id], sig: 'n' + id + JSON.stringify(pts) };
+    }
+    if (Math.random() < 0.5) {
+      const [q, yes] = pick(PROPS); const right = pick(yes);
+      return { kind: 'choice', q, options: shuffle([right].concat(shuffle(PROP_FALSE(q, yes)).slice(0, 2))), answer: right, yes, cols: 1, sig: q };
+    }
+    const [what, val, opts] = pick(COUNTS); const id = pick(Object.keys(val)); const right = String(val[id]);
+    return { kind: 'choice', q: `Wie viele ${what} hat ein ${id}?`, pic: polySVG(polyPoints(id)), options: [right].concat(shuffle(opts.filter((o) => o !== right)).slice(0, 2)).sort(), answer: right, shape: id, cols: 1, sig: what + id };
   }
 
   function bauGenerate(mod, tier) {
     tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
-    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang }[mod](tier);
+    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang, flaeche: genFlaeche, spiegel: genSpiegel, bewegung: genBewegung, vieleck: genVieleck }[mod](tier);
     if (!tk.kind) tk.kind = 'num';
     if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
-    // one tutorial per task type
-    return Object.assign(tk, { mod, tier, group: mod + ':1' });
+    // one tutorial per task type, a second one where a tier brings something new
+    return Object.assign(tk, { mod, tier, group: BAU_TUT[mod + ':' + tier] ? mod + ':' + tier : mod + ':1' });
   }
   const BAU_TUT = {
     'wz:1': { title: 'Würfel zählen', steps: ['Der Bauplan zeigt das Gebäude von oben. Die Zahl in einem Feld sagt, wie viele Würfel dort übereinander stehen.', 'Bauplan mit 2, 1, 3 und 1: Rechne 2 + 1 + 3 + 1.', 'Das Gebäude hat 7 Würfel.'] },
@@ -632,14 +930,22 @@ const MQ = (() => {
     'koerper:1': { title: 'Körper erkennen', steps: ['Würfel: 6 gleich große Quadrate als Flächen. Quader: auch 6 Flächen, aber nicht alle gleich groß.', 'Kugel: rund, ohne Ecken und Kanten. Zylinder: oben und unten ein Kreis.', 'Kegel: unten ein Kreis, oben eine Spitze. Pyramide: unten ein Viereck, oben eine Spitze.'] },
     'band:1': { title: 'Bandornamente', steps: ['Ein Bandornament ist ein Muster, das sich immer wiederholt.', 'Suche das Stück, das sich wiederholt: ▲ ● ● ▲ ● ● ▲ … Das Stück ist ▲ ● ●.', 'Nach dem letzten ▲ kommen ● ●. Also geht es mit ● ● weiter.'] },
     'lage:1': { title: 'Parallel oder senkrecht', steps: ['Parallel: Die Linien sind überall gleich weit voneinander entfernt und treffen sich nie.', 'Senkrecht: Die Linien treffen sich in einem rechten Winkel. Prüfe ihn mit der Ecke eines Blatts Papier.', 'Beispiel Tür: Die linke und die rechte Kante sind parallel. Die obere und die linke Kante stehen senkrecht zueinander.', 'Treffen sich die Linien schräg, dann ist es weder noch.'] },
+    'netz:2': { title: 'Quadernetze', steps: ['Ein Quader hat 6 Rechtecke als Flächen. Je zwei gegenüberliegende sind gleich groß.', 'Ein Quadernetz hat also 6 Rechtecke, immer 3 Paare gleich große. Fehlt eins, kann der Quader nicht zugehen.', 'Wo zwei Rechtecke aneinanderstoßen, müssen die Kanten gleich lang sein. Beim Falten wird daraus eine Kante des Quaders.', 'Die Rechtecke liegen wie bei einem Würfelnetz: Eine Reihe aus 4 mit einem Rechteck oben und einem unten lässt sich falten.'] },
+    'flaeche:1': { title: 'Flächeninhalt', steps: ['Der Flächeninhalt sagt, wie groß eine Fläche ist. Du zählst, wie viele Kästchen sie bedeckt.', 'Der Umfang ist etwas anderes: der Weg einmal um den Rand herum.', 'Rechteck 4 Kästchen lang und 2 hoch: 4 + 4 = 8 Kästchen. Der Flächeninhalt ist 8 Kästchen, der Umfang 12 Kästchenseiten.'] },
+    'flaeche:2': { title: 'Flächen vergleichen', steps: ['Zähle bei beiden Figuren die Kästchen.', 'Figur A hat 7 Kästchen, Figur B hat 8. Figur B hat den größeren Flächeninhalt.', 'Zwei Figuren können ganz verschieden aussehen und trotzdem gleich viele Kästchen haben. Dann sind sie gleich groß.'] },
+    'spiegel:1': { title: 'Achsensymmetrie', steps: ['Eine Figur ist achsensymmetrisch, wenn beide Hälften beim Umklappen genau aufeinanderpassen. Die Linie dazwischen heißt Spiegelachse.', 'Prüfe Kästchen für Kästchen: Ein Kästchen 2 Felder links von der Linie braucht ein Kästchen 2 Felder rechts davon, in derselben Reihe.', 'Fehlt auch nur ein Spiegelbild, ist die Figur nicht achsensymmetrisch.'] },
+    'spiegel:2': { title: 'Spiegelbild ergänzen', steps: ['Die rechte Hälfte ist das Spiegelbild der linken Hälfte.', 'Was direkt an der Spiegelachse liegt, liegt auch im Spiegelbild direkt an der Achse. Was weit weg ist, bleibt weit weg.', 'Beispiel: Ein Kästchen ganz links in der obersten Reihe kommt im Spiegelbild ganz nach rechts, auch in die oberste Reihe.'] },
+    'bewegung:1': { title: 'Spiegeln, drehen, schieben', steps: ['Verschoben: Die Figur liegt genauso da wie vorher, nur an einer anderen Stelle.', 'Gedreht: Die Figur wurde um eine Ecke gedreht, zum Beispiel eine Vierteldrehung. Sie wurde nicht umgeklappt.', 'Gespiegelt: Die Figur wurde umgeklappt. Zeigt bei einem L der Fuß vorher nach rechts und jetzt nach links, ist es gespiegelt.'] },
+    'vieleck:1': { title: 'Dreiecke und Vierecke', steps: ['Quadrat: vier gleich lange Seiten und vier rechte Winkel. Rechteck: vier rechte Winkel, gegenüber gleich lange Seiten.', 'Parallelogramm: Gegenüberliegende Seiten sind parallel, es gibt keinen rechten Winkel.', 'Dreiecke haben drei Ecken. Beim Dreieck mit rechtem Winkel bilden zwei Seiten eine Ecke wie bei einem Blatt Papier.', 'Beispiel: 3 Kästchen lang, 3 Kästchen hoch, alle Ecken rechte Winkel: Das ist ein Quadrat.'] },
+    'vieleck:2': { title: 'Eigenschaften von Vierecken', steps: ['Rechteck und Quadrat haben vier rechte Winkel und zwei Paar parallele Seiten.', 'Ein Parallelogramm hat auch zwei Paar parallele Seiten, aber keinen rechten Winkel.', 'Ein Dreieck mit rechtem Winkel hat genau 1 rechten Winkel. Ein Dreieck hat nie parallele Seiten.'] },
     'umfang:1': { title: 'Umfang', steps: ['Der Umfang ist der Weg einmal ganz um die Fläche herum.', 'Zähle jede Kästchenseite am Rand. Starte an einer Ecke und fahre mit dem Finger herum.', 'Rechteck 3 Kästchen lang und 2 hoch: 3 + 2 + 3 + 2 = 10. Der Umfang ist 10 Kästchenseiten.'] },
   };
   const BAU = {
-    MODULES: BAU_MODULES, TUT: BAU_TUT, generate: bauGenerate, NETS, parseNet, cubeNet, shapeKey, edges, hasHole, SOLIDS, LAGE,
+    MODULES: BAU_MODULES, TUT: BAU_TUT, generate: bauGenerate, NETS, parseNet, cubeNet, shapeKey, normCells, edges, hasHole, SOLIDS, LAGE, SYM,
     STARTERS: [{ id: 'biber', type: 'wasser', shape: 'beaver', names: ['Dammbiber', 'Brückenbiber', 'Brückenbiber'], hp: 75, desc: 'Ein Biber mit Bauhelm. Misst jeden Stamm aus, bevor er ihn zersägt.', perk: 'tank',
       attacks: [{ name: 'Ziegelstapel', mod: 'wz' }, { name: 'Bauklotzwurf', mod: 'koerper' }, { name: 'Lotschnur', mod: 'lage' }, { name: 'Zollstock', mod: 'umfang' }] }],
     WORLD_ATTACKS: { 2: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] },
-    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock' },
+    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock', flaeche: 'Bodenplatten', spiegel: 'Fensterflügel', bewegung: 'Drehkran', vieleck: 'Winkeleisen' },
     ENEMIES: {
       1: {
         normal: [
@@ -669,10 +975,11 @@ const MQ = (() => {
       { title: 'Die Kartons', text: 'Ein Lieferwagen bringt flache Kartons. Der Fahrer fragt, welcher sich zu einem Würfel falten lässt.', opts: [{ label: 'Netz aussuchen', task: 'netz', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Holzkiste', text: 'In der Werkstatt steht eine Kiste mit Holzkörpern. Der Schreiner fragt nach einem Namen und verrät dir dafür eine Eselsbrücke.', opts: [{ label: 'Antworten', task: 'koerper', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Randsteine', text: 'Ein Pflasterer legt Randsteine um einen Platz. Er fragt, wie lang der Rand wird.', opts: [{ label: 'Umfang zählen', task: 'umfang', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Das Fenster', text: 'Der Glaser setzt ein Fenster mit zwei Flügeln ein. Er will wissen, ob das Muster auf beiden Seiten gleich ist. Für die richtige Antwort gibt er dir einen Schild.', opts: [{ label: 'Muster prüfen', task: 'spiegel', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Mittagspause', text: 'Die Bauleute machen Pause und teilen ihre Brote mit dir.', opts: [{ label: 'Mitessen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;
