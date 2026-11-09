@@ -11,6 +11,7 @@ def strip_exports(js, name):
 css = (SRC / "style.css").read_text(encoding="utf-8")
 logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
 fair = strip_exports((SRC / "jahrmarkt.js").read_text(encoding="utf-8"), "MJ")
+woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
@@ -92,6 +93,7 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {fair}
+{woerter}
 </script>
 <script>
 {know}

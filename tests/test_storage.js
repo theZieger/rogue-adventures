@@ -331,7 +331,85 @@ async function saveCodeCases() {
   check(o.backupAt === '' && o.progressAt === '', 'old save loads with empty backup and win dates');
 }
 
-// 13. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
+// 13. Stamps: earning rules, stamp card, buying, old saves
+async function stampCases() {
+  const week = (p) => p.w.eval('MQ.isoWeek(new Date())');
+  { // new Monsterbuch entry 2, every 10 right answers 1, shown on the won screen; the week is marked
+    const p = startMathFight(); const m = p.w.__mq.meta;
+    check(m.stamps === 2 && m.stampsTotal === 2, 'a new Monsterbuch entry gives 2 stamps');
+    p.w.__mq.run.right = 9; p.w.__mq.run.node.enemy.hp = 1;
+    answer(p, true); p.click('#next'); await sleep(1600);
+    check(m.stamps === 3 && m.stampsTotal === 3 && p.w.__mq.run.right === 0, 'the 10th right answer pays 1 stamp at the end of the fight');
+    check(p.text().includes('besiegt') && p.text().includes('+3 🏷'), 'won screen shows +3 🏷');
+    check(m.stampCard[week(p)] === 1, 'playing marks the current week on the stamp card');
+    const p2 = open(p.dump());
+    check(p2.w.__mq.meta.stamps === 3 && p2.w.__mq.meta.stampCard[week(p2)] === 1, 'stamps and stamp card are saved');
+    check(p2.$('#stampsTop').textContent.includes('3'), 'title shows the stamp count');
+  }
+  { // boss 5, adventure won 10
+    const p = startMathFight(); const r = p.w.__mq.run; const m = p.w.__mq.meta;
+    r.world = 3; r.floor = 8; r.node.enemy.boss = true; r.node.enemy.fresh = false; r.node.enemy.hp = 1; m.stamps = 0; m.stampsTotal = 0;
+    answer(p, true); p.click('#next'); await sleep(1600);
+    check(m.stamps === 5 && p.text().includes('+5 🏷'), 'a beaten boss gives 5 stamps');
+    p.click('#next');
+    check(m.stamps === 15 && m.stampsTotal === 15 && p.text().includes('+10 🏷') && p.text().includes('Sieg'), 'a won adventure gives 10 stamps');
+  }
+  { // a lost adventure pays the right answers too, and keeps a stamp week set to 2
+    const p = startMathFight(); const r = p.w.__mq.run; const m = p.w.__mq.meta;
+    r.right = 25; r.hero.hp = 1; r.items = []; m.stamps = 0; m.stampCard[week(p)] = 2;
+    answer(p, false); p.click('#next'); await sleep(3800);
+    check(p.text().includes('Besiegt') || p.text().includes('stärker'), 'hero lost the fight');
+    check(m.stamps === 2 && p.text().includes('+2 🏷'), 'a lost adventure pays 1 stamp per 10 right answers');
+    check(m.stampCard[week(p)] === 2, 'a playing week never lowers a 2 on the stamp card');
+  }
+  { // buying deducts and unlocks; old saves have 0 and still load
+    const old = { runs: 2, wins: 0, dex: {}, setup: { done: false, skipped: true, at: 'x' } };
+    const p = open({ [META]: JSON.stringify(old) }); const m = p.w.__mq.meta;
+    check(m.stamps === 0 && m.stampsTotal === 0 && JSON.stringify(m.stampCard) === '{}' && JSON.stringify(m.owned) === '{}' && m.progressAt === '' && p.errors.length === 0, 'old save loads with 0 stamps, empty card and nothing owned');
+    p.click('[data-new="math"]');
+    check(!p.$('.choice[data-id="kauz"]') && p.text().includes('Steinkauz') && p.text().includes('40 🏷'), 'fourth hero is locked on the starter screen');
+    p.click('#back'); p.click('#stamps');
+    check(p.text().includes('Stempelkarte') && p.d.querySelectorAll('.wk').length >= 47 && p.d.querySelectorAll('.wk.now').length === (p.w.eval('MQ.schoolWeeks(new Date()).includes(MQ.isoWeek(new Date()))') ? 1 : 0), 'Stempelheft shows the school-year card with this week outlined');
+    check(p.$('[data-buy="map-w1-winter"]').disabled, 'cannot buy without enough stamps');
+    m.stamps = 70; m.stampsTotal = 70; p.w.__mq.screenTitle(); p.click('#stamps');
+    p.click('[data-buy="map-w1-winter"]'); p.click('.overlay #no');
+    check(m.stamps === 70 && !m.owned['map-w1-winter'], '"Zurück" in the buy dialog buys nothing');
+    p.click('[data-buy="map-w1-winter"]'); p.click('.overlay #yes');
+    check(m.stamps === 45 && m.stampsTotal === 70 && m.owned['map-w1-winter'] === true && !!m.progressAt && !p.$('[data-buy="map-w1-winter"]'), 'buying the winter map costs 25 stamps');
+    p.click('[data-buy="hero-kauz"]'); p.click('.overlay #yes');
+    check(m.stamps === 5 && m.owned['hero-kauz'] === true, 'buying the fourth hero costs 40 stamps');
+    check(p.$('[data-buy="map-w2-herbst"]').disabled, 'with 5 stamps left the next map stays locked');
+    const p2 = open(p.dump());
+    p2.click('[data-new="math"]'); p2.click('.choice[data-id="kauz"]'); p2.click('#go');
+    check(p2.w.__mq.run.hero.id === 'kauz' && p2.$('.screen').style.background !== '', 'bought hero can be played, bought map look shows in world 1');
+    const p3 = open({ [META]: JSON.stringify({ stamps: -4, stampsTotal: 'x', stampCard: [1], owned: 7 }) });
+    const m3 = p3.w.__mq.meta;
+    check(m3.stamps === 0 && m3.stampsTotal === 0 && JSON.stringify(m3.stampCard) === '{}' && JSON.stringify(m3.owned) === '{}' && p3.errors.length === 0, 'wrong-typed stamp fields fall back to defaults');
+  }
+  { // parent area shows the total
+    const p = open({ [META]: JSON.stringify({ stampsTotal: 123, setup: { done: false, skipped: true, at: 'x' } }) });
+    p.click('#parents');
+    check(p.text().includes('Stempel verdient insgesamt') && p.text().includes('123'), 'parent area shows stamps earned in total');
+  }
+}
+// 14. Deutsch: a save from before the subject existed gets stats for it; a Deutsch adventure continues after reopening
+{
+  const old = { runs: 2, stats: { math: {}, ethik: {}, kirchenjahr: {}, kartoffel: {} }, setup: { done: false, skipped: true, at: '' } };
+  const p1 = open({ [META]: JSON.stringify(old) });
+  const m = p1.w.__mq.meta;
+  check(m.runs === 2 && m.stats.woerterwerkstatt.doppel.t === 0 && m.stats.satzbaustelle.umstell.t === 0 && p1.errors.length === 0, 'old save gets stats for the Deutsch units');
+  for (const mode of ['woerterwerkstatt', 'satzbaustelle']) {
+    const p1 = open({ [META]: JSON.stringify(old) });
+    p1.click('[data-new="' + mode + '"]'); p1.click('.choice'); p1.click('#go');
+    p1.click([...p1.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p1.$('.node.open'));
+    const enemy = p1.$('.plate.enemy .name').textContent;
+    const p2 = open(p1.dump());
+    p2.click('[data-cont="' + mode + '"]');
+    check(!!p2.$('#fe') && p2.$('.plate.enemy .name').textContent === enemy && p2.errors.length === 0, mode + ' adventure continues the same fight after reopening');
+  }
+}
+
+// 15. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
 {
   const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.jahrmarkt;
   const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
@@ -343,7 +421,7 @@ async function saveCodeCases() {
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
 }
 
-reloadCases().then(saveCodeCases).then(() => {
+reloadCases().then(saveCodeCases).then(stampCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });

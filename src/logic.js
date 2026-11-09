@@ -237,6 +237,9 @@ const MQ = (() => {
       attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
     { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Jede richtige Antwort heilt ihn um 3 Lebenspunkte.', perk: 'heal',
       attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Wabenteilung', mod: 'div' }] },
+    // unlocked in the Stempelheft; practises the task types the other three heroes have least
+    { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
+      attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Flügelschlag', mod: 'seq' }] },
   ];
   const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag' };
 
@@ -298,6 +301,22 @@ const MQ = (() => {
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
   ];
 
+  /* ---------- Calendar weeks ---------- */
+  // ISO 8601: weeks start on Monday, week 1 holds the year's first Thursday. Keys look like "2026-W46".
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const y = d.getUTCFullYear(); const w = Math.ceil(((d - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+    return y + '-W' + String(w).padStart(2, '0');
+  }
+  // school year on the stamp card: ISO week 36 to week 30 of the next year; in the summer gap the year that just ended
+  function schoolWeeks(date) {
+    const [y, w] = isoWeek(date).split('-W').map(Number); const start = w >= 36 ? y : y - 1;
+    const jan4 = new Date(start, 0, 4); const d = new Date(start, 0, 4 - ((jan4.getDay() || 7) - 1) + 35 * 7);
+    const out = []; const end = (start + 1) + '-W30';
+    for (let k = isoWeek(d); ; d.setDate(d.getDate() + 7), k = isoWeek(d)) { out.push(k); if (k === end) return out; }
+  }
+
   /* ---------- Map ----------
      Node: { t: type, c: lane 0–3, n: [indexes on the next floor] }.
      Rules: floor 1 fights, no elite before floor 3, rest only on floors 4–5 and as the camp before the boss (floor 7),
@@ -351,6 +370,6 @@ const MQ = (() => {
     return map;
   }
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;

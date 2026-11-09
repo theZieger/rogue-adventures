@@ -27,6 +27,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🎪 Der Jahrmarkt | Mathe, Größen und Daten: Uhrzeit auf die Minute und Zeitspannen (Uhr als Bild), m/cm/km, g/kg mit Waage und Stützpunkten, Glücksrad (sicher, möglich, unmöglich, wahrscheinlicher), Kombinationen zählen, Säulendiagramm, Sachaufgaben mit „3 € 50 ct“ – 2 Welten |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🕯️ Das Kirchenjahr | Ethik: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion |
+| ✏️ Wörterwerkstatt | Deutsch, Richtig schreiben: doppelte Mitlaute/ck/tz, Verlängern (d/t, g/k, b/p), silbentrennendes h, Groß oder klein, zusammengesetzte Wörter mit Artikel, Wörterbuch-Reihenfolge, wörtliche Rede |
+| 🏗️ Satzbaustelle | Deutsch, Sprache untersuchen: Wortarten, Zeitformen (Präsens/Präteritum), Steigerung mit „als“/„wie“, Subjekt und Prädikat, Umstellprobe, Oberbegriffe, Teekesselwörter |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
@@ -49,7 +51,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast)
 src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/jahrmarkt.js   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
-src/knowledge.js   Wissensinhalte Ethik + Kartoffel (Fragen, Notizkarten, Tutorials)
+src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
+src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/monsters.js    Handgezeichnete SVG-Monster
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
@@ -78,6 +81,7 @@ npm run playtest     # Bot spielt alle Modi durch
 Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
 - Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr) und `K_POOL` (Kartoffel) in `src/knowledge.js`
+- Deutsch-Wörter und -Sätze: `src/woerter.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
 - Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
 
