@@ -9,6 +9,8 @@ const MONART = (() => {
   let uid = 0;
   function shade(hex, amt) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; const f = (c) => Math.max(0, Math.min(255, Math.round(amt > 0 ? c + (255 - c) * amt : c * (1 + amt)))); return '#' + [f(r), f(g), f(b)].map((c) => c.toString(16).padStart(2, '0')).join(''); }
   let LW = 2.5; // outline width; elites draw a little heavier
+  let CLASSIC = false; // round-1 look (flat eyes, no rim light) for the drawings the owner kept from round 1
+  const CLASSIC_SHAPES = ['sumpfbrocken', 'moorschlund', 'ranklerin', 'blattlaus'];
   const S = (w) => `stroke="${OUT}" stroke-width="${(w || LW).toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"`;
   const F = (fill, w) => `fill="${fill}" ${S(w)}`;
   const N = (w) => `fill="none" ${S(w)}`;
@@ -33,11 +35,11 @@ const MONART = (() => {
         s += `<path d="M${x} ${y} m${f1(r * 0.15)} 0 a${f1(r * 0.15)} ${f1(r * 0.15)} 0 1 0 ${f1(-r * 0.3)} 0 a${f1(r * 0.35)} ${f1(r * 0.35)} 0 1 0 ${f1(r * 0.7)} 0 a${f1(r * 0.6)} ${f1(r * 0.6)} 0 1 0 ${f1(-r * 1.15)} 0" ${N(2)}/>`;
       } else {
         const px = x + dx, py = y + dy;
-        s += `<path d="M${f1(x - r * 0.82)} ${f1(y + ry * 0.38)} Q${x} ${f1(y + ry * 1.08)} ${f1(x + r * 0.82)} ${f1(y + ry * 0.38)} Q${x} ${f1(y + ry * 0.78)} ${f1(x - r * 0.82)} ${f1(y + ry * 0.38)} Z" fill="#D3DAEE"/>`;
-        if (o.iris) s += `<circle cx="${f1(px)}" cy="${f1(py)}" r="${f1(r * 0.66)}" fill="${o.iris}" stroke="${shade(o.iris, -0.42)}" stroke-width="${f1(r * 0.12)}"/>`;
+        if (!CLASSIC) s += `<path d="M${f1(x - r * 0.82)} ${f1(y + ry * 0.38)} Q${x} ${f1(y + ry * 1.08)} ${f1(x + r * 0.82)} ${f1(y + ry * 0.38)} Q${x} ${f1(y + ry * 0.78)} ${f1(x - r * 0.82)} ${f1(y + ry * 0.38)} Z" fill="#D3DAEE"/>`;
+        if (o.iris) s += CLASSIC ? `<circle cx="${f1(px)}" cy="${f1(py)}" r="${f1(r * 0.66)}" fill="${o.iris}"/>` : `<circle cx="${f1(px)}" cy="${f1(py)}" r="${f1(r * 0.66)}" fill="${o.iris}" stroke="${shade(o.iris, -0.42)}" stroke-width="${f1(r * 0.12)}"/>`;
         if (o.slit) s += `<ellipse cx="${f1(px)}" cy="${f1(py)}" rx="${f1(r * 0.18)}" ry="${f1(r * 0.62)}" fill="${OUT}"/>`;
         else s += `<circle cx="${f1(px)}" cy="${f1(py)}" r="${f1(r * (o.pupil || (o.iris ? 0.36 : 0.55)))}" fill="${OUT}"/>`;
-        s += `<circle cx="${f1(px - r * 0.28)}" cy="${f1(py - r * 0.3)}" r="${f1(r * 0.2)}" fill="#fff"/><circle cx="${f1(px + r * 0.24)}" cy="${f1(py + r * 0.26)}" r="${f1(r * 0.09)}" fill="#fff" opacity=".85"/>`;
+        s += `<circle cx="${f1(px - r * 0.28)}" cy="${f1(py - r * 0.3)}" r="${f1(r * 0.2)}" fill="#fff"/>${CLASSIC ? '' : `<circle cx="${f1(px + r * 0.24)}" cy="${f1(py + r * 0.26)}" r="${f1(r * 0.09)}" fill="#fff" opacity=".85"/>`}`;
       }
     }
     if (o.lid) { // eyelid: covers the top half, tilted by lidRot (positive = inner corner lower)
@@ -266,11 +268,9 @@ const MONART = (() => {
       <path d="M12 106 Q6 76 22 62 Q24 42 44 38 Q58 26 76 36 Q98 36 102 60 Q116 74 108 106 Z" ${F(mud)}/>
       <path d="M24 60 Q30 44 46 44 Q58 34 74 42 Q92 42 96 58 Q88 54 84 62 Q78 54 70 60 Q62 50 54 60 Q46 52 40 62 Q34 54 24 60 Z" ${F(moss, 2)}/>
       <path d="M40 62 Q40 68 38 70 M70 60 Q71 66 69 69" fill="none" stroke="${moss}" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="50" cy="48" r="2" fill="#7CC85E"/><circle cx="66" cy="44" r="1.6" fill="#7CC85E"/><circle cx="82" cy="50" r="2" fill="#7CC85E"/>
-      <path d="M28 104 Q30 112 26 114 Q22 112 24 104 Z M84 104 Q86 110 82 112 Q78 110 80 104 Z" ${F(mud, 2)}/>
       ${shine(32, 70, 7, 4, -25)}
       <circle cx="24" cy="92" r="3.5" fill="#55602D"/><circle cx="92" cy="88" r="4.5" fill="#55602D"/><circle cx="82" cy="98" r="2.5" fill="#55602D"/>
-      <circle cx="10" cy="56" r="4" ${F('none', 2)}/><circle cx="9" cy="54.5" r="1.2" fill="#fff" opacity=".7"/><circle cx="16" cy="46" r="2.5" ${F('none', 1.8)}/><circle cx="110" cy="48" r="3" ${F('none', 1.8)}/>
+      <circle cx="10" cy="56" r="4" ${F('none', 2)}/><circle cx="16" cy="46" r="2.5" ${F('none', 1.8)}/><circle cx="110" cy="48" r="3" ${F('none', 1.8)}/>
       ${pair(60, 76, 15, 8, { lid: '#6A7A3A', lidRot: 12, lidY: -0.15 })}
       <path d="M46 94 Q53 89 60 94 Q67 99 74 94" ${N(3)}/><path d="M64 96 L66 101 L69 96.5 Z" ${F('#fff', 1.6)}/>`;
   }
@@ -345,8 +345,6 @@ const MONART = (() => {
       <path d="M34 98 L40 88 L46 99 M74 99 L80 88 L86 98" ${F('#FFF8E6', 2)}/>
       <path d="M40 94 Q60 82 80 94 Q72 100 60 100 Q48 100 40 94 Z" fill="#E8516F"/>
       <path d="M22 84 Q20 92 24 98 M100 82 Q102 92 98 98" fill="none" stroke="${dk}" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="14" cy="78" r="3" fill="${dk}"/><circle cx="106" cy="72" r="3.5" fill="${dk}"/><circle cx="100" cy="94" r="2.2" fill="${dk}"/>
-      <path d="M52 78 Q53 86 50 88 Q48 86 50 78 Z M70 78 Q71 84 69 86 Q67 84 68 78 Z" fill="#A8E6A0" opacity=".9"/>
       <circle cx="8" cy="44" r="4" ${F('none', 2)}/><circle cx="112" cy="40" r="3" ${F('none', 2)}/><circle cx="104" cy="28" r="2" ${F('none', 1.6)}/>`;
   }
 
@@ -386,8 +384,7 @@ const MONART = (() => {
       <path d="M78 70 Q100 66 104 48 Q106 36 96 34 Q88 36 92 44 Q96 50 90 50" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M78 70 Q100 66 104 48 Q106 36 96 34 Q88 36 92 44 Q96 50 90 50" fill="none" stroke="${stem}" stroke-width="3.5" stroke-linecap="round"/>
       <path d="M22 64 Q12 70 14 78 Q22 76 22 64 Z M98 64 Q108 70 106 78 Q98 76 98 64 Z" ${F('#7EDB7A', 2)}/>
       <path d="M60 64 Q24 74 30 116 Q46 104 60 112 Q74 104 90 116 Q96 74 60 64 Z" ${F(leafG)}/>
-      <path d="M60 70 L60 110 M60 84 L46 96 M60 84 L74 96 M60 98 L50 106 M60 98 L70 106" fill="none" stroke="${stem}" stroke-width="2.4" stroke-linecap="round"/>
-      <path d="M40 88 Q44 82 46 88 A3 3 0 0 1 40 88 Z" fill="#CFF1FF" ${S(1.4)}/>
+      <path d="M60 70 L60 110 M60 84 L46 96 M60 84 L74 96" fill="none" stroke="${stem}" stroke-width="2.4" stroke-linecap="round"/>
       ${[0, 45, 90, 135, 180, 225, 270, 315].map((r) => `<ellipse cx="60" cy="18" rx="10" ry="14" ${F(petal, 2.2)} transform="rotate(${r} 60 42)"/>`).join('')}
       <circle cx="60" cy="42" r="21" ${F(C.grad('#9BE68F'))}/>
       ${shine(52, 32, 6, 3.5, -20)}
@@ -645,8 +642,7 @@ const MONART = (() => {
   /* ---------- Kartoffel-Werkstatt ---------- */
   function blattlaus(P, o, C) {
     const body = C.grad('#8EDB6A');
-    return `<path d="M4 108 Q60 82 116 108 Q60 120 4 108 Z" ${F('#3E9A47', 2.2)}/><path d="M10 107 Q60 98 112 106 M30 104 L22 110 M54 101 L48 110 M80 102 L86 110 M98 104 L104 110" fill="none" stroke="#2C7A36" stroke-width="2" stroke-linecap="round"/>
-      <path d="M96 76 Q100 82 98 86 A3 3 0 0 1 93 84 Q93 80 96 76 Z" fill="#E8FFD6" ${S(1.4)}/>
+    return `<path d="M4 108 Q60 82 116 108 Q60 120 4 108 Z" ${F('#3E9A47', 2.2)}/><path d="M10 107 Q60 98 112 106" fill="none" stroke="#2C7A36" stroke-width="2"/>
       <path d="M44 48 Q30 18 14 14 M76 48 Q90 18 106 14" ${N(2.4)}/>
       <path d="M34 86 L20 94 L18 104 M40 94 L32 104 M86 86 L100 94 L102 104 M80 94 L88 104 M50 100 L48 106 M70 100 L72 106" ${N(3)}/>
       <ellipse cx="60" cy="78" rx="32" ry="26" ${F(body)}/>
@@ -817,12 +813,13 @@ const MONART = (() => {
   const ALIAS = { blob: 'sumpfbrocken', drop: 'regenwicht', flame: 'streichholzkopf', rock: 'krabbelstein', hedgehog: 'dornenigel', newt: 'lavamolch', jelly: 'nebelqualle', vine: 'ranklerin', bat: 'nachtschwinge', beetle: 'kartoffelkaefer', dragon: 'ofenwurm', ghost: 'zweifler', king: 'rechenkoenig', merchant: 'ablasshaendler' };
   const HEROES = ['fox', 'toad', 'bear', 'luther', 'potato'];
 
-  function monsterSVG(shape, color, evo, cls, opts) {
+  // the drawing code: the source of truth, used by tools/svg.js to bake art/monsters/raw/*.svg
+  function render(shape, color, evo, cls, opts) {
     opts = opts || {};
     shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
-    const id = 'mg' + (uid++); const defs = []; let n = 0;
+    const id = opts.id || 'mg' + (uid++); const defs = []; let n = 0;
     const C = {
-      grad(c) { const k = `${id}_${n++}`; defs.push(`<radialGradient id="${k}" cx="36%" cy="30%" r="80%"><stop offset="0" stop-color="${shade(c, 0.42)}"/><stop offset=".5" stop-color="${c}"/><stop offset=".86" stop-color="${shade(c, -0.3)}"/><stop offset="1" stop-color="${shade(c, -0.14)}"/></radialGradient>`); return `url(#${k})`; },
+      grad(c) { const k = `${id}_${n++}`; defs.push(`<radialGradient id="${k}" cx="36%" cy="30%" r="80%">${CLASSIC ? `<stop offset="0" stop-color="${shade(c, 0.38)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -0.32)}"/>` : `<stop offset="0" stop-color="${shade(c, 0.42)}"/><stop offset=".5" stop-color="${c}"/><stop offset=".86" stop-color="${shade(c, -0.3)}"/><stop offset="1" stop-color="${shade(c, -0.14)}"/>`}</radialGradient>`); return `url(#${k})`; },
       lin(a, b) { const k = `${id}_${n++}`; defs.push(`<linearGradient id="${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`); return `url(#${k})`; },
       // counter-mirror glyphs on mirrored (enemy) sprites so „?“ stays readable
       glyph(x, svg) { return /\benemy\b/.test(cls || '') ? `<g transform="translate(${2 * x} 0) scale(-1 1)">${svg}</g>` : svg; },
@@ -830,10 +827,10 @@ const MONART = (() => {
     const hero = HEROES.includes(shape);
     const e = hero ? Math.max(0, Math.min(2, evo || 0)) : 0;
     const elite = !hero && !!opts.elite, boss = !hero && (!!opts.boss || (!opts.elite && evo >= 1));
-    LW = elite || boss ? 3 : 2.5;
+    LW = elite || boss ? 3 : 2.5; CLASSIC = CLASSIC_SHAPES.includes(shape);
     const P = { c: color };
     const body = SHAPES[shape](P, { evo: e, elite, boss }, C);
-    LW = 2.5;
+    LW = 2.5; CLASSIC = false;
     // heroes grow with each stage; normal enemies are a bit smaller than elites and bosses
     const k = hero ? [0.8, 0.9, 1][e] : elite || boss ? 1 : 0.88;
     let back = '', front = '';
@@ -844,6 +841,25 @@ const MONART = (() => {
     const tf = k === 1 ? '' : ` transform="translate(${f1(60 * (1 - k))} ${f1(116 * (1 - k))}) scale(${k})"`;
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><defs>${defs.join('')}</defs>${back}<g${tf}>${body}</g>${front}</svg>`;
   }
-  return { monsterSVG, shapes: Object.keys(SHAPES), shade };
+
+  /* Baked art: build.py inlines the svgo-optimised files from art/monsters/svg/ as MONBAKED.
+     Keys: hero "<shape>-<stage>", enemy "<shape>[-elite|-boss]", plus "-enemy" when the mirrored battle sprite differs. */
+  const BAKED = typeof MONBAKED !== 'undefined' ? MONBAKED : null;
+  function bakedKey(shape, evo, cls, opts) {
+    opts = opts || {};
+    shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
+    if (HEROES.includes(shape)) return `${shape}-${Math.max(0, Math.min(2, evo || 0))}`;
+    const boss = !!opts.boss || (!opts.elite && evo >= 1);
+    return shape + (opts.elite ? '-elite' : boss ? '-boss' : '');
+  }
+  function monsterSVG(shape, color, evo, cls, opts) {
+    if (BAKED) {
+      const k = bakedKey(shape, evo, cls, opts), mirrored = /\benemy\b/.test(cls || '') && BAKED[k + '-enemy'] ? k + '-enemy' : k, svg = BAKED[mirrored];
+      // ids are "m-<key>__…" in the file; make them unique per copy on the page
+      if (svg) return svg.replace('<svg', `<svg class="mon ${cls || ''}"`).split(`m-${mirrored}__`).join(`m-${mirrored}-${uid++}__`);
+    }
+    return render(shape, color, evo, cls, opts);
+  }
+  return { monsterSVG, render, bakedKey, heroes: HEROES, shapes: Object.keys(SHAPES), shade };
 })();
 if (typeof module !== 'undefined') module.exports = MONART;
