@@ -434,6 +434,14 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .kkitem.locked .mon { opacity: .55; }
 .kkitem .mon { width: 84px; height: 84px; }
 .kkitem .desc { font-size: 15px; color: var(--ink-soft); }
+.weekcard { display: block; width: 100%; text-align: left; border: 3px solid var(--ink); font: inherit; cursor: pointer; }
+.weekline { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 18px; }
+.weekline span { font-size: 15px; color: var(--ink-soft); }
+.weekcard .bar, .goal .bar { display: block; width: 100%; margin-top: 8px; }
+.goal p { margin: 2px 0 0; font-size: 19px; font-weight: 700; }
+.goalrow { display: flex; align-items: center; gap: 12px; } .goalrow b { white-space: nowrap; margin-top: 8px; }
+.codebox.reporttext { word-break: normal; font: 15px/1.4 var(--text); }
+.wmap .node.weekboss small { font-size: 9.5px; }
 .gardencard { display: flex; align-items: center; gap: 12px; border: 3px solid var(--green); }
 .gardencard p { flex: 1; margin: 0; font-weight: 700; }
 .beds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -447,3 +455,74 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .bed .btn.small { margin-top: auto; width: 100%; }
 .cropchoice .plant-art { width: 72px; height: 72px; flex: none; }
 .modal .question { font-size: 22px; font-weight: 700; line-height: 1.35; }
+/* Sachkunde: pictures in tasks, treasure map, research lab */
+.pic { width: 100%; max-width: 340px; height: auto; display: block; margin: 6px auto; }
+.pic text, .kmap text { font-family: var(--text); }
+.kmap { width: 100%; max-width: 360px; height: auto; display: block; margin: 6px auto; }
+.kmap .cell { fill: #F3E2B3; stroke: #B08D4A; stroke-width: 1.5; }
+.kmap.clickable .cell { cursor: pointer; }
+.kmap.clickable .cell:hover, .kmap.clickable .cell:focus-visible { fill: #CFE6FF; outline: none; }
+.kmap .cell.hit { fill: #9BE3A8; }
+.kmap .cell.miss { fill: #FFA3A3; }
+.kmap .cell.reveal { fill: #FFC93C; }
+.labor h3 { margin: 4px 0 6px; }
+.labres { margin: 8px 0; }
+.notecard { background: var(--card2); border-left: 6px solid var(--gold); border-radius: 12px; padding: 10px 12px; font-weight: 700; margin: 8px 0; }
+.plant .part.glow text { stroke: none; }
+
+/* Written methods: column layout, carries in the small fields above the line */
+.colcalc { display: grid; grid-template-columns: 30px repeat(var(--w), 54px); justify-content: center; align-items: center; gap: 2px 6px; margin: 8px 0 4px; font-size: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.colcalc > span { text-align: center; line-height: 1.15; }
+.colcalc .op { color: var(--ink-soft); }
+.colcalc .colline { grid-column: 1 / -1; border-top: 4px solid var(--ink); margin: 2px 0; }
+.colcalc .inp { min-width: 0; width: 54px; padding: 0; }
+.colcalc .inp.dig { height: 58px; font-size: 32px; border-radius: 12px; }
+.colcalc .inp.carry { width: 32px; height: 32px; font-size: 18px; border-width: 3px; border-radius: 8px; justify-self: center; }
+/* Lesestube and Duell */
+.readcard p { font-size: 20px; line-height: 1.5; }
+.nameinput { width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 20px; color: var(--ink); background: #fff; }
+.nameinput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
+/* market */
+.seller .stall { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto 6px; }
+.seller .row { align-items: center; gap: 10px; }
+.seller .say { flex: 1; margin: 0; font-family: var(--hand); font-size: 23px; line-height: 1.15; }
+.seller .tut { flex: none; min-height: 44px; min-width: 44px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-size: 18px; cursor: pointer; }
+.offer .ic { font-size: 34px; flex: none; }
+.offer .meta .name { font-size: 24px; }
+.offer .price { flex: none; font-weight: 700; font-size: 19px; white-space: nowrap; }
+.offer.sold { opacity: .55; cursor: default; }
+.purse .row { justify-content: space-between; font-size: 19px; }
+.purse .lbl { margin-top: 8px; font-weight: 700; font-size: 15px; color: var(--ink-soft); }
+.counter { min-height: 64px; margin: 4px 0 10px; padding: 6px; border: 3px dashed var(--ink-soft); border-radius: 14px; background: #F3E2C4; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.counter .muted { color: var(--ink-soft); font-size: 15px; padding: 0 4px; }
+.coins { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.coin { width: 58px; height: 58px; border-radius: 50%; border: 3px solid var(--ink); font-weight: 700; font-size: 15px; line-height: 1; color: var(--ink); cursor: pointer; padding: 0; box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.coin.copper { background: #D9895B; }
+.coin.brass { background: #F2CF5B; }
+.coin.euro { background: radial-gradient(circle, #F2CF5B 52%, #C9CED6 54%); }
+.coin.note { width: 84px; border-radius: 8px; }
+.coin.n500 { background: #C9C9CF; } .coin.n1000 { background: #EBA39B; }
+.coin:disabled { opacity: .35; cursor: default; }
+.counter .coin { width: 48px; height: 48px; font-size: 13px; }
+.counter .coin.note { width: 70px; }
+
+/* Baustelle pictures and the Bergwerk */
+.task .figure { display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin: 8px 0 6px; }
+.task .figure svg { height: 120px; width: auto; max-width: 100%; display: block; }
+.task .figure figure { margin: 0; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.task .figure figure:first-child svg { height: 90px; }
+.task .figure figcaption { font-size: 14px; font-weight: 700; color: var(--ink-soft); }
+.task .figure svg text { font-family: var(--text); }
+.options.pics { grid-template-columns: repeat(3, 1fr); }
+.feedback .fbpic { display: block; margin: 6px auto 0; width: 110px; }
+.feedback .fbpic svg { width: 100%; height: 64px; display: block; }
+.options.pics .opt { padding: 8px 6px; display: flex; align-items: center; justify-content: center; }
+.options.pics .opt svg { width: 100%; height: 72px; display: block; }
+.mine { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 340px; margin: 12px auto 6px; }
+.mblock { border: 0; background: none; padding: 0; color: var(--ink); font: inherit; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.mblock svg { width: 100%; max-width: 72px; aspect-ratio: 1; display: block; }
+.mblock.covered:not(:disabled) svg { filter: drop-shadow(0 4px 0 rgba(0,0,0,.3)); }
+.mblock:disabled { cursor: default; }
+.mblock.covered:disabled { opacity: .6; }
+.mblock small { font-size: 14px; font-weight: 700; }
+@media (max-height: 720px) { .task .figure svg { height: 96px; } .task .figure figure:first-child svg { height: 72px; } .options.pics .opt svg { height: 60px; } }
