@@ -99,6 +99,26 @@
   "out": "6bc218f92aa7cbeb",
   "config": "14e1c93b1e80bcea"
  },
+ "dirigentin-0": {
+  "raw": "e51a6626708a09c0",
+  "out": "b0e11041bc32b363",
+  "config": "14e1c93b1e80bcea"
+ },
+ "dirigentin-1": {
+  "raw": "db2a2209e2f4c0c0",
+  "out": "638949fcc60b3884",
+  "config": "14e1c93b1e80bcea"
+ },
+ "dirigentin-2": {
+  "raw": "ef0dd0fced7b0c45",
+  "out": "7a0d5d60ba4682cc",
+  "config": "14e1c93b1e80bcea"
+ },
+ "donnerpauke-elite": {
+  "raw": "5ef6f2f27ea4f450",
+  "out": "ba66d0b3f416c67b",
+  "config": "14e1c93b1e80bcea"
+ },
  "dornengestruepp": {
   "raw": "f946c8d9dda4917e",
   "out": "aa9e505142105748",
@@ -279,6 +299,11 @@
   "out": "8e22edd96ddca399",
   "config": "14e1c93b1e80bcea"
  },
+ "holzwurm": {
+  "raw": "e43e3979bfbb2fd6",
+  "out": "960fd4aed678b492",
+  "config": "14e1c93b1e80bcea"
+ },
  "horse-0": {
   "raw": "9c3ae0c89b4e8e7c",
   "out": "6d919dd26dd7fe6c",
@@ -292,6 +317,11 @@
  "horse-2": {
   "raw": "d9a46d280b52281b",
   "out": "4409cf1fa40f56f6",
+  "config": "14e1c93b1e80bcea"
+ },
+ "hustenreiz": {
+  "raw": "24aac010e6a5ea8e",
+  "out": "986c44e3128de36e",
   "config": "14e1c93b1e80bcea"
  },
  "imkerin-0": {
@@ -382,6 +412,11 @@
  "krabbelstein": {
   "raw": "37a64f42273f941e",
   "out": "ed80fa22f3bf071b",
+  "config": "14e1c93b1e80bcea"
+ },
+ "krachmacher-boss": {
+  "raw": "1cb54b0ec17778ef",
+  "out": "a9b15ee449c9a9f6",
   "config": "14e1c93b1e80bcea"
  },
  "kritzelei": {
@@ -477,6 +512,11 @@
  "mischtrommel-boss": {
   "raw": "3ffd58bfd89b0aa2",
   "out": "3ace31b31a35ea67",
+  "config": "14e1c93b1e80bcea"
+ },
+ "misston": {
+  "raw": "cd04ce326e79d4c1",
+  "out": "6493a28d32292846",
   "config": "14e1c93b1e80bcea"
  },
  "moertelbatzen": {
@@ -627,6 +667,11 @@
  "qualmwolke-elite": {
   "raw": "46672ba72229c5f0",
   "out": "963f9d85a49b83b9",
+  "config": "14e1c93b1e80bcea"
+ },
+ "quietschgeige": {
+  "raw": "c7e9fe2e3f415756",
+  "out": "73b0888d7c2aa06a",
   "config": "14e1c93b1e80bcea"
  },
  "radierer-elite": {
