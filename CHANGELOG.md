@@ -19,7 +19,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
 - Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
 - Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.
-- Wochenaufgabe: jede Woche drei Ziele, eins pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.
+- Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.
+- Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.
 - Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.
 
 ### Verbessert

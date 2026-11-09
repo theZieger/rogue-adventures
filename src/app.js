@@ -5,12 +5,15 @@
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
+    woerterwerkstatt: MK.MODES.woerterwerkstatt,
+    satzbaustelle: MK.MODES.satzbaustelle,
   };
-  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel'];
+  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', modes: ['math'] },
+      { subject: 'Deutsch', modes: ['woerterwerkstatt', 'satzbaustelle'] },
       { subject: 'Ethik', modes: ['ethik', 'kirchenjahr'] },
       { subject: 'Sachkunde', modes: ['kartoffel'] },
     ] },
@@ -142,7 +145,7 @@
   }
   function showWeeklyNews() {
     if (!weeklyNews) return; weeklyNews = false;
-    const ov = modal(`<h2>Wochenaufgabe geschafft</h2><p>Alle drei Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>${stampLine(10)}<button class="btn" id="tutok">Weiter</button>`);
+    const ov = modal(`<h2>Wochenaufgabe geschafft</h2><p>Alle Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>${stampLine(10)}<button class="btn" id="tutok">Weiter</button>`);
     $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => ov.remove();
   }
   const stampLine = (n) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
@@ -280,7 +283,7 @@
     const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod]; let locked = false;
     const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
     // with two options crossing one out gives the answer away, so show the notes instead
-    const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
+    const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', task.tip ? `<div class="hintline">🌉 Tipp: ${esc(task.tip)}</div>` : n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
       locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
       if (opts.onResult) opts.onResult(ok);
@@ -290,7 +293,7 @@
     };
     if (task.kind === 'choice') {
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
-      bottom.innerHTML = `<div class="options ${task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
+      bottom.innerHTML = `<div class="options ${task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}${task.inline ? '<span aria-hidden="true">.</span>' : ''}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
       if (opts.hint) strikeWrongOption();
     } else if (task.kind === 'parts') {
@@ -376,7 +379,7 @@
   function screenWeekly() {
     const goals = weeklyGoals();
     render(`<div class="screen">${topbar('Wochenaufgabe')}<div class="scroll"><div class="stack">
-      <p class="center">${weekly().done ? 'Alle drei Ziele dieser Woche sind erledigt.' : 'Schaffst du alle drei Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
+      <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
       ${goals.map((g, i) => { const c = goalCount(g, i); return `<div class="card goal"><div class="eyebrow">${esc(g.subject)}</div><p>${esc(goalText(g))}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div></div>`; }).join('')}
       <p class="center">Nichts geht verloren, wenn du eine Woche aussetzt. Neue Aufgaben gibt es am Montag.</p>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);

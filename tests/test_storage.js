@@ -394,14 +394,31 @@ async function stampCases() {
     check(p.text().includes('Stempel verdient insgesamt') && p.text().includes('123'), 'parent area shows stamps earned in total');
   }
 }
-// 14. Weekly goals, weekly boss, weekly report
+// 14. Deutsch: a save from before the subject existed gets stats for it; a Deutsch adventure continues after reopening
+{
+  const old = { runs: 2, stats: { math: {}, ethik: {}, kirchenjahr: {}, kartoffel: {} }, setup: { done: false, skipped: true, at: '' } };
+  const p1 = open({ [META]: JSON.stringify(old) });
+  const m = p1.w.__mq.meta;
+  check(m.runs === 2 && m.stats.woerterwerkstatt.doppel.t === 0 && m.stats.satzbaustelle.umstell.t === 0 && p1.errors.length === 0, 'old save gets stats for the Deutsch units');
+  for (const mode of ['woerterwerkstatt', 'satzbaustelle']) {
+    const p1 = open({ [META]: JSON.stringify(old) });
+    p1.click('[data-new="' + mode + '"]'); p1.click('.choice'); p1.click('#go');
+    p1.click([...p1.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p1.$('.node.open'));
+    const enemy = p1.$('.plate.enemy .name').textContent;
+    const p2 = open(p1.dump());
+    p2.click('[data-cont="' + mode + '"]');
+    check(!!p2.$('#fe') && p2.$('.plate.enemy .name').textContent === enemy && p2.errors.length === 0, mode + ' adventure continues the same fight after reopening');
+  }
+}
+
+// 15. Weekly goals, weekly boss, weekly report
 const W48 = '2026-11-25T10:00:00', W49 = '2026-12-02T10:00:00'; // maths goal: W48 the weekly boss, W49 right answers
 async function weeklyCases() {
   { // same week key → same goals on two devices; one goal per subject, only enabled task types
     const a = open(null, { now: W49 }), b = open(null, { now: W49 });
     const ga = a.w.__mq.weeklyGoals(), gb = b.w.__mq.weeklyGoals();
-    check(ga.length === 3 && same(ga, gb), 'two devices show the same three goals in the same week');
-    check(same(ga.map((g) => g.subject), ['Mathe', 'Ethik', 'Sachkunde']), 'one goal per subject of the grade');
+    check(ga.length === 4 && same(ga, gb), 'two devices show the same goals in the same week');
+    check(same(ga.map((g) => g.subject), ['Mathe', 'Deutsch', 'Ethik', 'Sachkunde']), 'one goal per subject of the grade');
     check(ga.every((g) => (g.kind === 'right' ? g.n >= 15 && g.n <= 25 : g.kind === 'elite' ? g.n >= 2 && g.n <= 3 : g.n === 1)), 'goal sizes: 15–25 right answers, 2–3 elites, one win or weekly boss');
     check(ga[0].kind === 'right' && ga[0].m === 'math', 'W49 has a right-answers goal in maths');
     const c = open(null, { now: '2026-12-09T10:00:00' });
@@ -414,7 +431,7 @@ async function weeklyCases() {
     const p = open(null, { now: W49 }); p.click('#later');
     check(!!p.$('#weekly') && p.$('#weekly').textContent.includes('Diese Woche') && p.$('#weekly').textContent.includes('Neue Aufgaben am Montag') && !!p.$('#weekly .bar'), 'title shows the card "Diese Woche" with a bar');
     p.click('#weekly');
-    check(p.text().includes('Wochenaufgabe') && p.d.querySelectorAll('.goal').length === 3 && p.text().includes('0 von') && p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'), 'goal screen lists three goals with whole-number progress');
+    check(p.text().includes('Wochenaufgabe') && p.d.querySelectorAll('.goal').length === 4 && p.text().includes('0 von') && p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'), 'goal screen lists one goal per subject with whole-number progress');
   }
   { // right answers count for the goal of their task type; all three goals → 10 stamps, gold week, one card
     const p0 = startMathFight({ now: W49 }); const g = p0.w.__mq.weeklyGoals()[0];
@@ -428,7 +445,7 @@ async function weeklyCases() {
     p.click('#next'); await sleep(2200);
     const goals = p.w.__mq.weeklyGoals(); m.weekly.progress = goals.map((x, i) => (i ? x.n : x.n - 1)); const st = m.stamps;
     answer(p, true);
-    check(m.weekly.done && m.stampCard['2026-W49'] === 2 && m.stamps === st + 10 && m.stampsTotal >= 10 && !!m.progressAt, 'all three goals: gold week on the stamp card, 10 stamps, progress date');
+    check(m.weekly.done && m.stampCard['2026-W49'] === 2 && m.stamps === st + 10 && m.stampsTotal >= 10 && !!m.progressAt, 'all goals: gold week on the stamp card, 10 stamps, progress date');
     p.w.__mq.screenMap();
     check(!!p.$('.overlay') && p.$('.overlay').textContent.includes('Wochenaufgabe geschafft') && p.$('.overlay').textContent.includes('+10'), 'a short card "Wochenaufgabe geschafft" shows once');
     p.click('.overlay #tutok'); p.w.__mq.screenMap();
@@ -436,7 +453,7 @@ async function weeklyCases() {
     const p2 = open(p.dump(), { now: W49 });
     check(p2.w.__mq.meta.weekly.done && p2.$('#weekly').textContent.includes('Wochenaufgabe geschafft'), 'a finished week is saved and shown on the title');
     p2.click('#parents');
-    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes('Wochenziele: 3 von 3 erledigt'), 'parent area shows the weekly report');
+    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes('Wochenziele: 4 von 4 erledigt'), 'parent area shows the weekly report');
     const lines = p2.$('#wtext').value.split('\n');
     check(lines.length >= 3 && lines.length <= 5 && lines[0] === 'Lernquest, Woche 49' && lines.some((l) => l.startsWith('Geübt')) && !/Steinkauz|Moosbär/.test(p2.$('#wtext').value), 'report text has three to five lines and no names: ' + JSON.stringify(lines));
     p2.click('#wcopy');
