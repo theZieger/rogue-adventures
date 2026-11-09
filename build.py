@@ -17,6 +17,10 @@ know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
+# Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
+baked = {f.stem: f.read_text(encoding="utf-8").strip() for f in sorted((ROOT / "art" / "monsters" / "svg").glob("*.svg"))}
+assert baked, "art/monsters/svg/ is empty: run npm run svg"
+mon = "const MONBAKED = " + json.dumps(baked, ensure_ascii=False).replace("</", "<\\/") + ";\n" + mon
 app = (SRC / "app.js").read_text(encoding="utf-8")
 manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
 sw_src = (SRC / "sw.js").read_text(encoding="utf-8")

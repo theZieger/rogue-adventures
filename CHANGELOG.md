@@ -9,13 +9,14 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
-- Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch.
+- Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch. Die Startseite ordnet sie nach Fächern.
 - Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.
 - Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.
+- Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs.
 
 ### Verbessert
 - Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.
-- Eltern legen beim ersten Start eine PIN fest. Der Knopf „Eltern“ öffnet den neu geordneten Elternbereich mit Wochenbericht.
+- Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.
 - Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
 - Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen.
 

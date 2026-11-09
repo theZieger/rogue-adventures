@@ -215,12 +215,12 @@ const MS = (() => {
     extra: { parts: 'Ährenkranz', arten: 'Saatkorn', brot: 'Mahlstein', nutzen: 'Vorratskammer', wert: 'Erntekrone', lt: 'Kornsieb' },
     enemies: { 1: {
       normal: [
-        { name: 'Kornkäfer', type: 'normal', shape: 'beetle', hp: 26, atk: 3 },
+        { name: 'Kornkäfer', type: 'normal', shape: 'kornkaefer', hp: 26, atk: 3 },
         { name: 'Feldmaus', type: 'normal', shape: 'fox', hp: 24, atk: 4 },
-        { name: 'Mehlmotte', type: 'normal', shape: 'bat', hp: 28, atk: 4 },
-        { name: 'Getreiderost', type: 'feuer', shape: 'blob', hp: 30, atk: 3 },
+        { name: 'Mehlmotte', type: 'normal', shape: 'mehlmotte', hp: 28, atk: 4 },
+        { name: 'Getreiderost', type: 'feuer', shape: 'getreiderost', hp: 30, atk: 3 },
       ],
-      elite: { name: 'Mutterkorn', type: 'normal', shape: 'jelly', hp: 45, atk: 5 },
+      elite: { name: 'Mutterkorn', type: 'normal', shape: 'mutterkorn', hp: 45, atk: 5 },
       boss: { name: 'Der Kornwolf', acc: 'den Kornwolf', type: 'feuer', shape: 'fox', hp: 70, atk: 6, boss: true },
     } },
     moves: ['Nagezahn', 'Mehlstaub', 'Rostfleck', 'Hagelkorn', 'Halmknick', 'Spelzenregen'],
@@ -407,13 +407,13 @@ const MS = (() => {
     extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender' },
     enemies: { 1: {
       normal: [
-        { name: 'Nieselregen', type: 'wasser', shape: 'drop', hp: 24, atk: 3 },
-        { name: 'Glatteis', type: 'wasser', shape: 'rock', hp: 30, atk: 3 },
-        { name: 'Die Sturmböe', type: 'normal', shape: 'bat', hp: 26, atk: 4 },
-        { name: 'Hitzeflimmern', type: 'feuer', shape: 'flame', hp: 28, atk: 4 },
+        { name: 'Nieselregen', type: 'wasser', shape: 'nieselregen', hp: 24, atk: 3 },
+        { name: 'Glatteis', type: 'wasser', shape: 'glatteis', hp: 30, atk: 3 },
+        { name: 'Die Sturmböe', type: 'normal', shape: 'sturmboee', hp: 26, atk: 4 },
+        { name: 'Hitzeflimmern', type: 'feuer', shape: 'hitzeflimmern', hp: 28, atk: 4 },
       ],
-      elite: { name: 'Die Gewitterzelle', type: 'wasser', shape: 'ghost', hp: 45, atk: 5 },
-      boss: { name: 'Das Unwetter', acc: 'das Unwetter', type: 'wasser', shape: 'dragon', hp: 70, atk: 6, boss: true },
+      elite: { name: 'Die Gewitterzelle', type: 'wasser', shape: 'gewitterzelle', hp: 45, atk: 5 },
+      boss: { name: 'Das Unwetter', acc: 'das Unwetter', type: 'wasser', shape: 'unwetter', hp: 70, atk: 6, boss: true },
     } },
     moves: ['Platzregen', 'Graupelschauer', 'Donnergrollen', 'Glätte', 'Windhose', 'Nebelwand'],
     events: [
@@ -604,13 +604,13 @@ const MS = (() => {
     extra: { richtung: 'Polarstern', rose: 'Wetterfahne', plan: 'Grenzstein', karte: 'Wegweiser', lt: 'Merkvers' },
     enemies: { 1: {
       normal: [
-        { name: 'Die Nebelbank', type: 'wasser', shape: 'ghost', hp: 26, atk: 3 },
-        { name: 'Das Dornengestrüpp', type: 'pflanze', shape: 'vine', hp: 28, atk: 4 },
-        { name: 'Der Morast', type: 'wasser', shape: 'blob', hp: 30, atk: 3 },
-        { name: 'Die Elster', type: 'normal', shape: 'bat', hp: 24, atk: 4 },
+        { name: 'Die Nebelbank', type: 'wasser', shape: 'nebelbank', hp: 26, atk: 3 },
+        { name: 'Das Dornengestrüpp', type: 'pflanze', shape: 'dornengestruepp', hp: 28, atk: 4 },
+        { name: 'Der Morast', type: 'wasser', shape: 'morast', hp: 30, atk: 3 },
+        { name: 'Die Elster', type: 'normal', shape: 'elster', hp: 24, atk: 4 },
       ],
-      elite: { name: 'Der Kartendieb', type: 'normal', shape: 'merchant', hp: 45, atk: 5 },
-      boss: { name: 'Der Magnetberg', acc: 'den Magnetberg', type: 'normal', shape: 'rock', hp: 70, atk: 6, boss: true },
+      elite: { name: 'Der Kartendieb', type: 'normal', shape: 'kartendieb', hp: 45, atk: 5 },
+      boss: { name: 'Der Magnetberg', acc: 'den Magnetberg', type: 'normal', shape: 'magnetberg', hp: 70, atk: 6, boss: true },
     } },
     moves: ['Nebelschleier', 'Dornenranke', 'Schlammloch', 'Kompassstörung', 'Falscher Wegweiser', 'Steinschlag'],
     events: [

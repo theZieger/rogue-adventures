@@ -6,6 +6,8 @@ const MONART = require('../src/monsters.js');
 const fails = [];
 const fail = (msg) => fails.push(msg);
 const shapes = new Set(MONART.shapes);
+const fs = require('fs');
+const baked = (key) => fs.existsSync(require('path').join(__dirname, '../art/monsters/svg', key + '.svg'));
 
 const modes = {
   math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, moves: MQ.ENEMY_MOVES, pool: null },
@@ -42,6 +44,8 @@ for (const [mode, cfg] of Object.entries(modes)) {
   for (const [w, set] of Object.entries(cfg.enemies)) {
     for (const e of set.normal.concat([set.elite, set.boss])) {
       if (!shapes.has(e.shape)) fail(`${mode} world ${w}: enemy ${e.name} has unknown shape ${e.shape}`);
+      const key = MONART.bakedKey(e.shape, 0, '', { elite: e === cfg.enemies[w].elite, boss: !!e.boss });
+      if (!baked(key)) fail(`${mode} world ${w}: no baked art for ${e.name} (art/monsters/svg/${key}.svg) – run npm run svg`);
       if (!MQ.TYPES[e.type]) fail(`${mode} world ${w}: enemy ${e.name} has unknown type ${e.type}`);
     }
   }
@@ -49,6 +53,7 @@ for (const [mode, cfg] of Object.entries(modes)) {
   // attacks: starters and world attacks need 4 distinct, existing modules
   const lists = cfg.starters.map((s) => [`starter ${s.id}`, s.attacks]);
   for (const s of cfg.starters) if (!shapes.has(s.shape)) fail(`${mode} starter ${s.id}: unknown shape ${s.shape}`);
+  for (const s of cfg.starters) for (let e = 0; e < 3; e++) if (!baked(MONART.bakedKey(s.shape, e))) fail(`${mode} starter ${s.id}: no baked art for stage ${e + 1} – run npm run svg`);
   for (const [w, list] of Object.entries(cfg.worldAttacks || {})) lists.push([`world ${w} attacks`, list]);
   for (const [name, list] of lists) {
     const ms = list.map((a) => a.mod);
@@ -113,13 +118,13 @@ for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) l
   const dressable = new Set(MONART.dressable);
   for (const cfg of Object.values(modes)) for (const s of cfg.starters) if (!dressable.has(s.shape)) fail(`hero ${s.id}: shape ${s.shape} has no clothing position`);
   for (const shape of MONART.dressable) for (const o of MONART.outfits) for (const evo of [0, 2]) {
-    const bare = MONART.monsterSVG(shape, '#4FC96A', evo).replace(/mg\d+/g, ''), svg = MONART.monsterSVG(shape, '#4FC96A', evo, '', o);
+    const bare = MONART.monsterSVG(shape, '#4FC96A', evo).replace(/mg\d+/g, ''), svg = MONART.monsterSVG(shape, '#4FC96A', evo, '', { outfit: o });
     const doc = parser.parseFromString(svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '), 'image/svg+xml');
     if (doc.getElementsByTagName('parsererror').length || doc.documentElement.nodeName !== 'svg' || /NaN|undefined/.test(svg)) fail(`${shape} with ${o} (evo ${evo}): broken SVG`);
     if (svg.replace(/mg\d+/g, '') === bare) fail(`${shape} with ${o}: piece not drawn`);
   }
   const enemy = MONART.shapes.find((s) => !dressable.has(s));
-  if (MONART.monsterSVG(enemy, '#4FC96A', 0, '', 'krone').replace(/mg\d+/g, '') !== MONART.monsterSVG(enemy, '#4FC96A', 0).replace(/mg\d+/g, '')) fail('enemies must not wear clothes');
+  if (MONART.monsterSVG(enemy, '#4FC96A', 0, '', { outfit: 'krone' }).replace(/mg\d+/g, '') !== MONART.monsterSVG(enemy, '#4FC96A', 0).replace(/mg\d+/g, '')) fail('enemies must not wear clothes');
 }
 
 console.log('data fails', fails.length);

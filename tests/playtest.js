@@ -11,11 +11,13 @@ function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.i
 Math.random=prng(SEED+1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
 const NOW=Date.parse(process.env.NOW||'2026-12-23T10:00:00');
-const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); } });
+// Fake time: the game's battle pauses (up to ~2 s) and the bot's waits run 100× faster; TIME=1 plays in real time.
+const TIME=+(process.env.TIME||0.01);
+const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const st=win.setTimeout; win.setTimeout=(fn,ms,...a)=>st.call(win,fn,(ms||0)*TIME,...a); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
-const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms*TIME));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
@@ -120,9 +122,10 @@ async function step(){
   if($('#later')){ click($('#later')); return; }
   const tx=text();
   // once per playtest: build a Schild at the Werkbank (materials seeded) and look into the hut; the Schild must come along into the adventure
-  if($('[data-new]')&&!$('.choice')&&!$('.wmap')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
+  if($('[data-sub]')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
     click($('#stamps')); click($('[data-craft="schild"]')); await solveTask(false); if(!text().includes('Gebaut: Schild')) throw new Error('Werkbank did not build: '+text().slice(0,200)); click($('#next')); click($('#back'));
     click($('#hut')); if(!$('svg.hutroom')) throw new Error('hut did not open'); click($('#back')); return; }
+  if($('[data-sub]')&&!$('.wmap')) { const sub=w.__mq.subjectOf(process.env.MODE||'math'); click($$('[data-sub]').find(b=>b.textContent.includes(sub.subject))); return; }
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); if(!fromPantry){ fromPantry=true; if(!w.__mq.run.items.includes('schild')||w.__mq.meta.pantry.length) throw new Error('pantry not taken into the adventure'); } return; }
   if($('.node.open')){ const nodes=$$('.node.open');

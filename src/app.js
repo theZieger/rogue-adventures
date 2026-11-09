@@ -18,10 +18,10 @@
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
-      { subject: 'Mathe', modes: ['math', 'bau', 'jahrmarkt'] },
-      { subject: 'Deutsch', modes: ['woerterwerkstatt', 'satzbaustelle'] },
-      { subject: 'Ethik', modes: ['ethik', 'kirchenjahr', 'freunde'] },
-      { subject: 'Sachkunde', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
+      { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
+      { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
+      { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde'] },
+      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
     ] },
   ];
   let mode = 'math';
@@ -161,7 +161,7 @@
   const goldWeeks = () => Object.values(meta.stampCard).filter((v) => v === 2).length;
   const hasOutfit = (o) => !!meta.owned['outfit-' + o.id] || !!(o.got && o.got());
   const wornBy = (heroId) => { const o = OUTFITS.find((x) => x.id === meta.worn[heroId]); return o && hasOutfit(o) ? o.id : null; };
-  const heroSVG = (s, evo, cls) => monsterSVG(s.shape, TYPES[s.type].color, evo, cls, wornBy(s.id));
+  const heroSVG = (s, evo, cls) => monsterSVG(s.shape, TYPES[s.type].color, evo, cls, { outfit: wornBy(s.id) });
   /* ---------- Weekly goals ---------- */
   // a new week starts fresh; finished weeks stay on the stamp card, nothing is taken away
   const weekly = () => { const k = MQ.isoWeek(new Date()); if (meta.weekly.week !== k) meta.weekly = { week: k, progress: [], done: false, beaten: [], tally: {} }; return meta.weekly; };
@@ -436,18 +436,16 @@
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${weeklyCard()}
-        ${gradeTabs()}${gardenCard()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
+        ${gradeTabs()}${gardenCard()}<div class="subjects">${curGrade().subjects.map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Spiel' : 'Spiele'}`}</span></button>`; }).join('')}</div>
         <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
         <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
         <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
         <div class="row"><button class="btn ghost" id="feedback">Idee senden</button></div>
-        <p class="center muted">Gespielt: ${meta.runs} · Gewonnen: ${meta.wins}</p>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
     $('#parents').onclick = () => askPin(screenParent);
     if ($('#warnx')) { const seen = () => { meta.storage.warnedAt = new Date().toISOString(); saveAll(); }; $('#warnx').onclick = () => { seen(); screenTitle(); }; $('#warnp').onclick = () => { seen(); askPin(() => screenParent('save')); }; }
-    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
-    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
+    app.querySelectorAll('[data-sub]').forEach((b) => { b.onclick = () => screenSubject(curGrade().subjects[+b.dataset.sub]); });
     $('#dex').onclick = screenDex;
     $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
     $('#news').onclick = screenNews;
@@ -458,6 +456,13 @@
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
     $('#weekly').onclick = screenWeekly;
     showWeeklyNews();
+  }
+  const subjectOf = (m) => curGrade().subjects.find((sub) => sub.modes.includes(m));
+  function screenSubject(sub) {
+    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenSubject(sub); }; });
+    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
+    $('#back').onclick = screenTitle;
   }
   const goalCount = (g, i) => Math.min(g.n, weekly().progress[i] || 0);
   function weeklyCard() {
@@ -651,7 +656,7 @@
       <div id="swapbox"></div>
       ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
-    $('#back').onclick = screenTitle;
+    $('#back').onclick = () => screenSubject(subjectOf(mode));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
     $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
@@ -778,7 +783,7 @@
     render(`<div class="screen">${topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
       <div class="arena ${T ? 'kreisel' : ''}">
         <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
-        ${T ? `<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${SPIRAL}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>` : `<div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, e.boss || e.weekboss ? 1 : 0, 'enemy')}<i class="ground"></i></div>
+        ${T ? `<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${SPIRAL}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>` : `<div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss })}<i class="ground"></i></div>
         <div class="sprite hero" id="fh">${heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>`}
         <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div>${T ? `<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : `<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
@@ -904,7 +909,7 @@
     if (e.weekboss) { weekly().beaten.push(mode); weeklyStep('boss'); } else if (e.elite) weeklyStep('elite');
     if (e.elite && run.node) { run.node.enemy = null; run.node.reward = true; } else nodeDone();
     let evoMsg = '';
-    if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${heroSVG(heroSpec(), run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
+    if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${heroSVG(heroSpec(), run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(heroSpec(), run.hero.evo, 'after')}</div><p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
     render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
@@ -964,7 +969,7 @@
 
   /* ---------- Lesestube ---------- */
   // three questions about a text are the attacks; after the third the reading lesson ends, beaten or not
-  const READ_FOE = { name: 'Der Zeilenspringer', type: 'normal', shape: 'letter', hp: 30, atk: 4 };
+  const READ_FOE = { name: 'Der Zeilenspringer', type: 'normal', shape: 'zeilenspringer', hp: 30, atk: 4 };
   const READ_MOD = { icon: '📖', name: 'Lesestube' };
   const READ_TUT = { title: 'Lesestube', steps: ['Lies den Text in Ruhe. Vor jeder Frage kannst du ihn noch einmal ansehen.', 'Jede richtige Antwort trifft den Zeilenspringer. Nach einer falschen Antwort schlägt er zurück.', 'Nach drei Fragen ist die Lesestunde vorbei.'] };
   const readText = () => TEXTE[run.node.text];
@@ -1238,8 +1243,8 @@
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenDex() {
-    const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push(EN[w].elite); all.push(EN[w].boss); } }
-    render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push({ ...EN[w].elite, elite: true }); all.push(EN[w].boss); } }
+    render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss }) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
   }
   function screenStamps(jump) {
@@ -1251,7 +1256,7 @@
       <div class="card center"><div class="stampbal">🏷️ ${meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenaufgabe: 10.</p></div>
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
-      <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', 'strohhut')}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
+      <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', { outfit: 'strohhut' })}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
       <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
       ${REWARDS.map(row).join('')}
       ${benchHtml()}
@@ -1363,7 +1368,7 @@
     const tile = (o) => { const has = hasOutfit(o);
       const act = o.id === worn ? `<button class="btn small secondary" data-off="${o.id}">Ablegen</button>` : has ? `<button class="btn small" data-wear="${o.id}">Anziehen</button>`
         : o.price ? `<button class="btn small" data-buy="${o.id}" ${meta.stamps < o.price ? 'disabled' : ''}>Holen · ${o.price} 🏷️</button>` : `<div class="desc">${esc(o.need())}</div>`;
-      return `<div class="kkitem${o.id === worn ? ' on' : ''}${has ? '' : ' locked'}">${monsterSVG(hero.shape, TYPES[hero.type].color, 0, '', o.id)}<div class="name">${o.name}</div>${act}</div>`; };
+      return `<div class="kkitem${o.id === worn ? ' on' : ''}${has ? '' : ' locked'}">${monsterSVG(hero.shape, TYPES[hero.type].color, 0, '', { outfit: o.id })}<div class="name">${o.name}</div>${act}</div>`; };
     render(`<div class="screen">${topbar('Kleiderkammer')}<div class="scroll"><div class="stack">
       <div class="card center kkcard">${heroSVG(hero, 0)}<div class="name">${esc(hero.names[0])}</div><p>🏷️ ${meta.stamps} Stempel</p><p class="pnote">Kleidung ändert nichts am Kampf. Jeder Held trägt ein Teil.</p></div>
       ${heroes.length > 1 ? `<div class="kkpick" role="group" aria-label="Held wählen">${heroes.map((s) => `<button class="kkhero${s === hero ? ' on' : ''}" data-hero="${s.id}" aria-pressed="${s === hero}" aria-label="${esc(s.names[0])}">${heroSVG(s, 0)}</button>`).join('')}</div>` : ''}
@@ -1569,6 +1574,7 @@
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Zahlenquest bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
       <h2 class="psec" id="p-progress">Fortschritt</h2>
       ${card('Stempel', `<div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>`)}
+      <div id="pruns">${card('🗺️ Abenteuer', `<div class="statrow"><span class="n">Begonnen</span><span>${meta.runs}</span></div><div class="statrow"><span class="n">Bis zum Ende geschafft</span><span>${meta.wins}</span></div>${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt. Die übrigen Abenteuer wurden verloren, abgebrochen oder laufen noch.')}`)}</div>
       <div id="p-weekrep">${card('Wochenbericht', report.html)}</div>
       ${tables}
       ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}
@@ -1592,7 +1598,7 @@
     $('#back').onclick = () => back();
     const keepScroll = (fn) => () => { const y = scroller.scrollTop; fn(); $('.scroll').scrollTop = y; };
     $('#rtut').onclick = keepScroll(() => { meta.seenTut = {}; saveAll(); again(); });
-    $('#rstats').onclick = keepScroll(() => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); again(); });
+    $('#rstats').onclick = keepScroll(() => { meta.stats = defaultMeta().stats; meta.know = {}; meta.runs = 0; meta.wins = 0; saveAll(); again(); });
     $('#rall').onclick = () => { const ov = modal(`<h2>Wirklich alles löschen?</h2><p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht. Das kann man nicht rückgängig machen.</p><div class="stack"><button class="btn" id="yes" style="background:var(--red)">Ja, alles löschen</button><button class="btn secondary" id="no">Abbrechen</button></div>`); $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }; };
     $('#pfeedback').onclick = () => screenFeedback(() => again('appsec'));
     $('#psound').onclick = keepScroll(() => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
@@ -1662,5 +1668,5 @@
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, subjectOf, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();
