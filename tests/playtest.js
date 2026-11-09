@@ -1,4 +1,5 @@
 const { JSDOM } = require('jsdom');
+const JM = require('./jm_solver.js');
 const fs = require('fs');
 const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'),'utf8');
 // Seeded randomness (game and bot), so a failing run can be reproduced: SEED=123 node tests/playtest.js
@@ -47,6 +48,7 @@ async function solveTask(forceWrong){
   if(T&&T.plan){ const n=T.plan.flat().reduce((a,b)=>a+b,0); answers=[T.full?T.plan.length*T.plan[0].length*T.full-n:n]; }
   else if(T&&T.cells){ const at=new Set(T.cells.map(p=>p.join())); answers=[T.cells.reduce((n,[r,c])=>n+[[r+1,c],[r-1,c],[r,c+1],[r,c-1]].filter(q=>!at.has(q.join())).length,0)]; }
   else if($('.story')){ const n=$('.story').textContent.match(/\d+/g).map(Number); answers=[n[0]*n[1]]; } // Werkbank: a · b from the text
+  else if($('.jm')) answers=JM.solve(task.innerHTML, null, w.eval('MJ').REF);
   else if(expr){ const s=expr.textContent; let m;
     if(/€|ct/.test(s)){ const v=s.includes(' − ')?s.split(' − ').map(cents).reduce((a,b)=>a-b):s.split(' + ').map(cents).reduce((a,b)=>a+b); answers=[Math.floor(v/100),v%100]; }
     else if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
@@ -87,7 +89,7 @@ async function solveTask(forceWrong){
 }
 async function solveKnow(forceWrong){
   const t=w.__task; if(!t) throw new Error('no task');
-  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf(t.answer); if(forceWrong) idx=(idx+1)%t.options.length; click(opts[idx]); }
+  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf($('.jm')?JM.solve($('.task').innerHTML, t.options, w.eval('MJ').REF):t.answer); if(idx<0) throw new Error('choice not solvable: '+$('.task').textContent); if(forceWrong) idx=(idx+1)%t.options.length; click(opts[idx]); }
   else if(t.kind==='parts-find'){ const parts=$$('.plant [data-part]'); let el=parts.find(x=>x.dataset.part===t.part); if(forceWrong) el=parts.find(x=>x.dataset.part!==t.part); click(el); }
   else if(t.kind==='karte'){ let cell=t.target.join('-'); if(forceWrong) cell=$$('[data-cell]').map(x=>x.dataset.cell).find(c=>c!==cell); click($('[data-cell="'+cell+'"]')); }
   else if(t.kind==='order'){ let order=t.order.slice();

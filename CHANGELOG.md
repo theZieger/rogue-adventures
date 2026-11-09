@@ -9,6 +9,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
+- Neues Mathe-Abenteuer „Der Jahrmarkt“: Uhr lesen, Längen, Gewichte, Glücksrad, Diagramme und Sachaufgaben mit Geld.
 - Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.
 - Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.
 - Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.

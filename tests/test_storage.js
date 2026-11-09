@@ -657,8 +657,8 @@ async function weeklyCases() {
     check(ga.length === 4 && same(ga, gb), 'two devices show the same goals in the same week');
     check(same(ga.map((g) => g.subject), ['Mathe', 'Deutsch', 'Ethik', 'Sachkunde']), 'one goal per subject of the grade');
     check(ga.every((g) => (g.kind === 'right' ? g.n >= 15 && g.n <= 25 : g.kind === 'elite' ? g.n >= 2 && g.n <= 3 : g.n === 1)), 'goal sizes: 15–25 right answers, 2–3 elites, one win or weekly boss');
-    check(ga[0].kind === 'right' && ga[0].m === 'math', 'W49 has a right-answers goal in maths');
-    const c = open(null, { now: '2026-12-09T10:00:00' });
+    check(ga[0].kind === 'right' && ga[0].m === 'math', 'this week has a right-answers goal in maths');
+    const c = open(null, { now: '2027-02-03T10:00:00' });
     check(!same(c.w.__mq.weeklyGoals(), ga), 'another week has other goals');
     const off = open({ [META]: JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, off: { math: [ga[0].mod] } }) }, { now: W49 });
     const go = off.w.__mq.weeklyGoals();
@@ -733,11 +733,11 @@ async function weeklyCases() {
     const n = open({ [META]: JSON.stringify(raw) }, { now: W49 }).w.__mq.meta.weekly;
     check(same(n.progress, [0, 3, 0]) && same(n.beaten, ['math']) && same(n.tally, { 'math:add': { c: 1, t: 2 } }), 'weekly fields are cleaned up when loading');
     const base = open().w.__mq.meta; const mk = (wk) => Object.assign(JSON.parse(JSON.stringify(base)), { weekly: wk });
-    const wa = { week: '2026-W49', progress: [3, 0, 1], done: false, beaten: [], tally: { 'math:add': { c: 2, t: 3 } } };
-    const wb = { week: '2026-W49', progress: [1, 2], done: false, beaten: ['ethik'], tally: { 'math:add': { c: 1, t: 1 }, 'ethik:rf': { c: 1, t: 1 } } };
+    const wa = { week: '2027-W04', progress: [3, 0, 1], done: false, beaten: [], tally: { 'math:add': { c: 2, t: 3 } } };
+    const wb = { week: '2027-W04', progress: [1, 2], done: false, beaten: ['ethik'], tally: { 'math:add': { c: 1, t: 1 }, 'ethik:rf': { c: 1, t: 1 } } };
     const mw = open().w.__mq.mergeMeta(mk(wa), mk(wb)).weekly;
     check(same(mw.progress, [3, 2, 1]) && same(mw.beaten, ['ethik']) && same(mw.tally, { 'math:add': { c: 3, t: 4 }, 'ethik:rf': { c: 1, t: 1 } }), 'merge: same week keeps the higher progress and adds the answers');
-    check(open().w.__mq.mergeMeta(mk(Object.assign({}, wa, { week: '2026-W48' })), mk(wb)).weekly.week === '2026-W49', 'merge: the newer week wins');
+    check(open().w.__mq.mergeMeta(mk(Object.assign({}, wa, { week: '2026-W48' })), mk(wb)).weekly.week === '2027-W04', 'merge: the newer week wins');
   }
 }
 // 22. Materials and owned things: defaults, damaged values, the Bergwerk fills them and survives a reload
@@ -805,7 +805,18 @@ async function weeklyCases() {
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Baustelle fight continues after reopening');
 }
 
-// 24. Werkbank, pantry and Meine Hütte (step 13)
+// 24. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.jahrmarkt;
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && p1.w.__mq.meta.stats.jahrmarkt && p1.w.__mq.meta.stats.jahrmarkt.uhr.t === 0, 'old save without Jahrmarkt stats loads with empty stats');
+  p1.click('[data-new="jahrmarkt"]'); p1.click('.choice'); p1.click('#go'); p1.click('.node.open');
+  const p2 = open(p1.dump());
+  check(!!p2.dump().mathquest_run_jahrmarkt && !!p2.$('[data-cont="jahrmarkt"]'), 'Jahrmarkt adventure is saved and can be continued');
+  p2.click('[data-cont="jahrmarkt"]');
+  check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
+}
+// 25. Werkbank, pantry and Meine Hütte (step 13)
 {
   const p0 = open({ [META]: JSON.stringify({ runs: 4, wins: 1, stamps: 3, setup: { skipped: true } }) }); const m0 = p0.w.__mq.meta;
   check(Array.isArray(m0.pantry) && m0.pantry.length === 0 && m0.hut.rooms === 1 && m0.hut.items.length === 0 && m0.stamps === 3, 'old save without pantry and hut loads with an empty pantry and one room');
