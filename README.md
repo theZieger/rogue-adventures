@@ -37,6 +37,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🌼 Die Wiese | Sachkunde: acht Wiesenpflanzen als Bild und nach Merkmalen, Stockwerke der Wiese (Bild, Tiere zuordnen, ordnen), Entwicklung von Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Wiese schützen, mit allen Sinnen |
 | 🕰️ Früher und heute | Sachkunde: Geräte und Leben auf dem Land früher und heute, Zeitleiste, Sprachen, Feste und Essen aus aller Welt (Dilemma-Karten ohne falsche Antwort), Nachschlagen und „Kann das stimmen?“ |
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
+| 👁️ Die fünf Sinne | Sachkunde: Sinnesorgane und Sinne, Auge und Ohr mit Zeichenschule, Sinne schützen, Hilfen für Menschen mit Behinderung (Blindenschrift, Führhund, Gebärdensprache, Hörgerät, Rampe), Nein zu Rauchen, Alkohol und fremden Medikamenten – Dilemma-Karten zum Nein sagen; Kartenfeld „Sinnestäuschung“ (erst vermuten, dann Ergebnis) |
+| 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
 | 🎻 Der Konzertsaal | Musik, nur zum Anschauen (keine Töne): Notenwerte und Pausen (Bilder, in Stufe 2 rechnen), Takt ergänzen (2/4, 3/4, Stufe 2 auch 4/4 mit Pausen), Tonhöhen c bis c im Violinschlüssel, Instrumente und ihre Familien, wie der Ton entsteht, piano/forte/crescendo, Komponisten (Bach, Mozart, Beethoven, Robert und Clara Schumann, Wagner) mit Reihenfolge nach Geburtsjahr, Instrumente und Tänze anderer Länder |
 
 - Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff.
@@ -68,6 +70,7 @@ src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Le
 src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
+src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
 src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
 src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
@@ -100,7 +103,7 @@ npm run playtest     # Bot spielt alle Modi durch
 
 Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
-- Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
+- Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Auge, Ohr und Fahrrad: `EYE_PARTS`, `EAR_PARTS`, `BIKE_PARTS` in `src/sachkunde2.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
 - Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.js`; Dilemma-Karten in `F_EVENTS`
 - Deutsch-Wörter und -Sätze: `src/woerter.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`

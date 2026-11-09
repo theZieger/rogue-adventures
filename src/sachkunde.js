@@ -12,8 +12,9 @@ const MS = (() => {
   /* ---------- Pflanzen-Bilder (gleiche Schnittstelle wie potatoSVG: highlight, clickable, labels, step) ---------- */
   function partsSVG(P, opts, body, labels) {
     opts = opts || {}; const step = opts.step || 99;
-    const g = (id, inner) => (step >= (P.stepOf[id] || 1) ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p) => p.id === id) + 1}"` : ''}>${inner}</g>` : '');
-    const lab = opts.labels ? labels.filter(([id]) => step >= (P.stepOf[id] || 1)).map(([id, x, y, a]) => `<text class="plabel" x="${x}" y="${y}" text-anchor="${a || 'start'}">${P.parts.find((p) => p.id === id).name}</text>`).join('') : '';
+    const g = (id, inner) => (step >= (P.stepOf[id] || 1) && opts.omit !== id ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p) => p.id === id) + 1}"` : ''}>${inner}</g>` : '');
+    // optional fifth entry: the point a thin leader line runs to
+    const lab = opts.labels ? labels.filter(([id]) => step >= (P.stepOf[id] || 1)).map(([id, x, y, a, to]) => `${to ? `<path d="M${x} ${y - 4} L${to[0]} ${to[1]}" stroke="${STROKE}" stroke-width="1" opacity=".6"/>` : ''}<text class="plabel" x="${x}" y="${y}" text-anchor="${a || 'start'}">${P.parts.find((p) => p.id === id).name}</text>`).join('') : '';
     return `<svg ${NS} class="plant ${opts.clickable ? 'clickable' : ''}" viewBox="${P.box}" aria-label="${P.label}">${body(g)}${lab}</svg>`;
   }
 
@@ -30,7 +31,7 @@ const MS = (() => {
   const GRAIN = { label: 'Getreidepflanze', box: '0 0 260 300', parts: GRAIN_PARTS, qid: 'kp_', note: 'teile',
     stepOf: { wurzeln: 1, halm: 2, knoten: 3, blaetter: 4, aehre: 5, grannen: 6, koerner: 6 },
     steps: ['Zeichne die Erdlinie und darunter die Wurzeln.', 'Zeichne den langen Halm nach oben.', 'Setze drei Knoten auf den Halm.', 'Zeichne an jeden Knoten ein langes, schmales Blatt.', 'Zeichne oben die Ähre mit den Körnern.', 'Zeichne die Grannen an die Ähre und daneben ein Korn, stark vergrößert.'],
-    ask: () => 'Wie heißt der leuchtende Teil?', find: (p) => `Tippe auf: ${p.name}` };
+    ask: () => 'Wie heißt der leuchtende Teil?', find: (p) => `Tippe auf: ${p.name}`, poolQ: 'Wie heißt dieser Teil der Getreidepflanze?' };
   const grainSpike = (g) => { let k = '', a = ''; for (let i = 0; i < 6; i++) { const y = 72 - i * 8; k += `<ellipse cx="115" cy="${y}" rx="5.5" ry="7" fill="#E2B84A" stroke="#A07A1E" stroke-width="1.5"/><ellipse cx="127" cy="${y - 4}" rx="5.5" ry="7" fill="#E2B84A" stroke="#A07A1E" stroke-width="1.5"/>`; a += `<path d="M112 ${y - 5} L99 ${y - 32} M130 ${y - 9} L143 ${y - 36}"/>`; } return g('aehre', `<path d="M121 80 L121 26" stroke="#A07A1E" stroke-width="2"/>${k}`) + g('grannen', `<g stroke="#C9A227" stroke-width="1.6" fill="none" stroke-linecap="round">${a}</g>`); };
   GRAIN.svg = (opts) => partsSVG(GRAIN, opts, (g) => `
     <rect x="0" y="230" width="260" height="70" fill="#8B5E3C" opacity=".35"/><line x1="0" y1="230" x2="260" y2="230" stroke="#6B4423" stroke-width="3" stroke-dasharray="6 4"/>
@@ -53,7 +54,7 @@ const MS = (() => {
   const num = (n, x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#fff" stroke="${STROKE}" stroke-width="2"/>${txt(x, y + 5, n, { size: 14 })}`;
   const cloud = (x, y, s, fill) => `<g transform="translate(${x} ${y}) scale(${s})" fill="${fill || '#fff'}" stroke="#7A8AA8" stroke-width="2"><path d="M-26 8 Q-34 -4 -20 -8 Q-18 -22 -2 -18 Q8 -28 20 -14 Q34 -14 30 2 Q36 10 24 12 L-22 12 Q-32 12 -26 8 Z"/></g>`;
   const CYCLE = { label: 'Wasserkreislauf', box: '0 0 300 220', parts: CYCLE_PARTS, stepOf: {},
-    ask: (p) => `Was passiert bei Nummer ${CYCLE_PARTS.indexOf(p) + 1}?`, find: (p) => `Tippe auf die Stelle: ${p.name}` };
+    ask: (p) => `Was passiert bei Nummer ${CYCLE_PARTS.indexOf(p) + 1}?`, find: (p) => `Tippe auf die Stelle: ${p.name}`, poolQ: 'Was passiert an dieser Stelle im Wasserkreislauf?', tap: 'die Stelle im Bild' };
   CYCLE.svg = (opts) => partsSVG(CYCLE, opts, (g) => `
     <rect width="300" height="220" fill="#E3F2FD"/><circle cx="34" cy="32" r="18" fill="#FFD54F" stroke="#F0A800" stroke-width="2"/>
     <path d="M180 220 L230 70 L262 120 L300 90 L300 220 Z" fill="#8D9E6B" stroke="#5E6E44" stroke-width="2"/><path d="M222 94 L230 70 L240 86 Z" fill="#fff"/>
@@ -66,16 +67,17 @@ const MS = (() => {
   [['verdunsten', 6, 116], ['wolken', 50, 96], ['wind', 120, 24], ['regen', 296, 108, 'end'], ['fluss', 296, 210, 'end']]);
   const PLANTS = { getreide: GRAIN, kreislauf: CYCLE };
 
-  function plantTask(cfg, plantKey, mod, tier, know, seq) {
-    const P = PLANTS[plantKey]; const e = weightedPick(cfg.pool.filter((x) => x.mod === mod), know, seq); const part = P.parts.find((p) => p.id === e.part);
+  function plantTask(cfg, plantKey, mod, tier, know, seq, opts) {
+    let cands = cfg.pool.filter((x) => x.mod === mod); if (opts && opts.g && cands.some((x) => x.g === opts.g)) cands = cands.filter((x) => x.g === opts.g);
+    const e = weightedPick(cands, know, seq); plantKey = e.plant || plantKey; const P = PLANTS[plantKey]; const part = P.parts.find((p) => p.id === e.part);
     if (tier >= 2) return { kind: 'parts-find', mod, tier: 2, group: mod + ':2', note: e.g, plant: plantKey, q: P.find(part), part: part.id, answer: part.name, qid: e.id + '_find' };
     const options = shuffle(shuffle(P.parts.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name).concat([part.name]));
     return { kind: 'parts', mod, tier: 1, group: mod + ':1', note: e.g, plant: plantKey, q: P.ask(part), part: part.id, options, answer: part.name, qid: e.id };
   }
-  const partPool = (plantKey, mod, g, prefix) => PLANTS[plantKey].parts.map((p) => ({ id: prefix + p.id, mod, g, part: p.id, plant: plantKey, q: plantKey === 'kreislauf' ? 'Was passiert an dieser Stelle im Wasserkreislauf?' : 'Wie heißt dieser Teil der Getreidepflanze?', a: p.name }));
+  const partPool = (plantKey, mod, g, prefix) => PLANTS[plantKey].parts.map((p) => ({ id: prefix + p.id, mod, g, part: p.id, plant: plantKey, q: PLANTS[plantKey].poolQ, a: p.name }));
   // the topic filter (events) asks the pool; generated pictures only without a topic
   const wantsPool = (cfg, mod, opts) => !!(opts && opts.g && cfg.pool.some((p) => p.mod === mod && p.g === opts.g));
-  const orderTask = (mod, group, note, q, src, qid) => { const idx = shuffle(src.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => src[i]); return { kind: 'order', mod, tier: 1, group, note, q, items, order: items.map((x) => x.id), display: shuffle(items), qid: qid + idx.join('') }; };
+  const orderTask = (mod, group, note, q, src, qid, n) => { const idx = shuffle(src.map((_, i) => i)).slice(0, n || 4).sort((a, b) => a - b); const items = idx.map((i) => src[i]); return { kind: 'order', mod, tier: 1, group, note, q, items, order: items.map((x) => x.id), display: shuffle(items), qid: qid + idx.join('') }; };
 
   /* ================= DIE KORNKAMMER (LB 3) ================= */
   // Ähren-Bilder: Weizen dicht ohne lange Grannen, Roggen schmal mit Grannen, Gerste mit sehr langen Grannen und geneigt, Hafer als Rispe, Mais als Kolben
@@ -623,6 +625,6 @@ const MS = (() => {
   KK.gen = kkGen(KK);
 
   K.MODES.kornkammer = KO; K.MODES.wetterstation = WE; K.MODES.kompass = KK;
-  return { PLANTS, partsSVG, choice, orderTask, wantsPool, txt, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
+  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
 })();
 if (typeof module !== 'undefined') module.exports = MS;

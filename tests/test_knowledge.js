@@ -1,4 +1,4 @@
-const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const know={};let seq=0;const fails=[];
+const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const know={};let seq=0;const fails=[];
 for(const [mode,cfg] of Object.entries(K.MODES)){ for(const mod of Object.keys(cfg.modules)){ for(let t=1;t<=cfg.modules[mod].maxTier;t++){ for(let i=0;i<400;i++){ const q=K.generate(mode,mod,t,know,++seq);
  if(q.kind==='choice'||q.kind==='parts'){ if(!q.options.includes(q.answer)) fails.push(JSON.stringify(q)); if(new Set(q.options).size!==q.options.length) fails.push('dup '+q.q); }
  if(q.kind==='order'){ const ids=q.items.map(x=>x.id), texts=q.items.map(x=>x.text);
@@ -158,6 +158,42 @@ for(let i=0;i<300;i++){ const set=S.laborSet(); if(set.length!==5) fails.push('l
   const kinds=set.map(x=>x.kind).sort().join(); if(kinds!=='float,float,state,state,urne') fails.push('labor mix '+kinds); }
 for(let i=0;i<300;i++){ const u=S.urnExperiment(); const want=u.r[0]>u.r[1]?0:u.r[1]>u.r[0]?1:2; if(u.a!==want) fails.push('urn outcome '+u.r); }
 for(const f of S.FLOAT) if(!f.why||typeof f.f!=='boolean') fails.push('float entry '+f.label);
+// Die fünf Sinne und Sicher im Verkehr: 50+ questions each, notes per topic, pictures with exactly one answer
+for(const m of ['sinne','verkehr']){ const cfg=K.MODES[m]; if(cfg.pool.length<50) fails.push(m+' has only '+cfg.pool.length+' questions');
+  for(const mod of Object.keys(cfg.modules)) for(let t=1;t<=cfg.modules[mod].maxTier;t++) for(let i=0;i<300;i++){ const q=K.generate(m,mod,t,{},++seq);
+    if(q.kind==='choice'||q.kind==='parts'){ if(q.options.filter(o=>o===q.answer).length!==1) fails.push(m+' not exactly one correct '+q.qid); if(q.options.length<2) fails.push(m+' too few options '+q.qid); }
+    if((q.kind==='parts'||q.kind==='parts-find')&&!S.PLANTS[q.plant].parts.some(p=>p.id===q.part&&p.name===q.answer)) fails.push(m+' bad picture part '+q.qid);
+    if(q.kind==='choice'&&q.svgOpts&&!q.why) fails.push(m+' picture options without why '+q.qid);
+    if(q.tier!==Math.min(t,cfg.modules[mod].maxTier)&&q.kind!=='order'&&!cfg.pool.some(e=>e.id===q.qid)) fails.push(m+' wrong tier '+q.qid+' for '+t);
+    if(!cfg.tut[q.group]||!cfg.notes[q.note]) fails.push(m+' tut/note '+q.group+' '+q.note);
+    if(/[0-9],[0-9]/.test(q.q+(q.svgOpts?'':(q.options||[]).join('|')))) fails.push(m+' comma number '+q.q); } }
+{ const si=K.MODES.sinne, ve=K.MODES.verkehr;
+  for(const g of ['sinne','auge','ohr','schutz','hilfen','drogen']) if(!si.notes[g]||!si.pool.some(e=>e.g===g)) fails.push('sinne topic '+g);
+  for(const g of ['zeichen','vorfahrt','fahrrad','abbiegen','fussweg','helm','sicht','radweg']) if(!ve.notes[g]||!ve.pool.some(e=>e.g===g)) fails.push('verkehr topic '+g);
+  if(si.events.filter(e=>e.dilemma).length<5) fails.push('sinne needs dilemma cards');
+  for(const e of si.events.filter(e=>e.dilemma)) if(!e.opts.some(o=>o.label==='Hol dir Hilfe bei einem Erwachsenen.')&&/rauch|Zigarette|Bier|Tabletten|tuscheln/i.test(e.text)) fails.push('sinne dilemma without adult help: '+e.title);
+  // the school draws both pictures, every part of each picture is in the pool
+  for(const k of ['auge','ohr','fahrrad']){ const P=S.PLANTS[k]; if(!P.steps||P.steps.length!==Math.max(...Object.values(P.stepOf))) fails.push(k+' drawing steps');
+    for(const p of P.parts){ if(!P.stepOf[p.id]) fails.push(k+' part without step '+p.id); if(![si,ve].some(c=>c.pool.some(e=>e.plant===k&&e.part===p.id))) fails.push(k+' part not in pool '+p.id);
+      if(!P.svg({}).includes('data-part="'+p.id+'"')||P.svg({omit:p.id}).includes('data-part="'+p.id+'"')) fails.push(k+' part drawing/omit '+p.id); } }
+  // Sinnestäuschungen: five experiments, three to look at, each with one result
+  for(let i=0;i<200;i++){ const set=si.labor(); if(set.length!==5||new Set(set.map(x=>x.kind)).size!==5) fails.push('illusion set '+set.map(x=>x.kind));
+    if(set.filter(x=>x.pic&&x.after).length!==3) fails.push('illusion set needs three pictures');
+    for(const x of set) if(!Number.isInteger(x.a)||x.a<0||x.a>=x.opts.length||!x.note||!si.notes[x.topic]) fails.push('illusion '+x.kind); }
+  // Vorfahrt: recompute who goes first from the picture's arms (rechts vor links), signs and lights put the main road / green first
+  const R=S2.RIGHT_OF;
+  for(let i=0;i<500;i++){ const q=K.generate('verkehr','vorfahrt',1,{},++seq); if(!q.qid.startsWith('vfr_')) continue; const arms=q.qid.slice(4).split('');
+    const first=arms.filter(a=>!arms.includes(R[a])); if(first.length!==1) fails.push('rechts vor links not unique '+arms);
+    if(arms.length===2&&R[arms[0]]!==arms[1]&&R[arms[1]]!==arms[0]) fails.push('two cars not at a right angle '+arms); }
+  for(let i=0;i<500;i++){ const q=K.generate('verkehr','vorfahrt',2,{},++seq); if(q.group!=='vorfahrt:2') fails.push('vorfahrt tier 2 group '+q.qid);
+    const arms=q.qid.replace(/^vf[as]_/,'').slice(0,q.options.length).split(''); const main=['S','N'].includes(arms[0])?['S','N']:['W','E'];
+    if(arms.slice(1).some(a=>main.includes(a))) fails.push('second car on the main road '+q.qid); }
+  // Verkehrszeichen: every sign is drawn, meanings are distinct, Stopp and Vorfahrt gewähren never rule each other out
+  const means=S2.SIGNS.map(x=>x.mean); if(new Set(means).size!==means.length) fails.push('sign meanings not distinct');
+  for(const sg of S2.SIGNS) if(!/<svg[^>]*>.+<\/svg>$/.test(S2.signSVG(sg.id))) fails.push('sign not drawn '+sg.id);
+  for(let i=0;i<500;i++){ const q=S2.signTask('zeichen',1); const ids=q.options.map(o=>S2.SIGNS.find(x=>x.mean===o).id); const ans=S2.SIGNS.find(x=>x.mean===q.answer).id; if(['stopp','vorfahrtgewaehren'].includes(ans)&&ids.includes('stopp')&&ids.includes('vorfahrtgewaehren')) fails.push('stop and give way together'); }
+  for(const src of [S2.ABBIEGEN,S2.QUEREN]) if(src.length!==5) fails.push('order source needs 5 steps');
+  for(let i=0;i<300;i++){ const q=S2.missingTask('fehlt'); const id=q.qid.slice(7); if(q.pic.includes('data-part="'+id+'"')||!S2.BIKE_PARTS.every(p=>p.id===id||q.pic.includes('data-part="'+p.id+'"'))) fails.push('missing part drawing '+id); } }
 // Landkreis: no questions while the list is empty; a filled list gives valid questions
 if(S.LANDKREIS.length===0&&K.MODES.kompass.pool.some(e=>e.g==='heimat')) fails.push('landkreis questions without data');
 { const lk=S.landkreisPool([{ort:'A-Dorf',kreisstadt:true,fluss:'Fluss A',lage:'Norden'},{ort:'B-Dorf',fluss:'Fluss B',lage:'Süden'},{ort:'C-Dorf',fluss:'Fluss C',lage:'Osten'}]);
