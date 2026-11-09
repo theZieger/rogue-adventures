@@ -17,7 +17,6 @@ for (const [mode, cfg] of Object.entries(modes)) {
   const mods = new Set(Object.keys(cfg.modules));
   const topics = cfg.pool ? new Set(cfg.pool.map((e) => e.g)) : new Set();
 
-  // events
   cfg.events.forEach((ev) => ev.opts.forEach((o, i) => {
     const tag = `${mode} event „${ev.title}“ option ${i}`;
     if (o.task && o.task !== 'any' && !mods.has(o.task)) fail(`${tag}: unknown task ${o.task}`);
@@ -29,7 +28,6 @@ for (const [mode, cfg] of Object.entries(modes)) {
     }
   }));
 
-  // enemies
   for (const [w, set] of Object.entries(cfg.enemies)) {
     for (const e of set.normal.concat([set.elite, set.boss])) {
       if (!shapes.has(e.shape)) fail(`${mode} world ${w}: enemy ${e.name} has unknown shape ${e.shape}`);
@@ -53,7 +51,6 @@ for (const [mode, cfg] of Object.entries(modes)) {
   }
   for (const m of mods) if (!cfg.extra[m]) fail(`${mode}: no extra attack name for module ${m}`);
 
-  // enemy moves
   if (!Array.isArray(cfg.moves) || !cfg.moves.length || cfg.moves.some((x) => typeof x !== 'string' || !x.trim())) fail(`${mode}: moves list empty or invalid`);
 
   // topic filter in MK.generate

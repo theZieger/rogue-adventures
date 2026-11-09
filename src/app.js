@@ -1,4 +1,3 @@
-/* ===== MathQuest App ===== */
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
   const MODES = {
@@ -7,8 +6,7 @@
     kartoffel: MK.MODES.kartoffel,
   };
   const MODE_KEYS = ['math', 'ethik', 'kartoffel'];
-  // What can be learned, by school grade and subject. A subject can hold several units (game modes).
-  // Add grades/subjects/units here – the title screen builds itself from this list.
+  // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', modes: ['math'] },
@@ -23,7 +21,7 @@
   const $ = (sel, el) => (el || document).querySelector(sel);
   const app = $('#app');
   const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // same-size arrows for the grid legend (emoji arrows differ in size between fonts)
+  // svg, not emoji: emoji arrows differ in size between fonts
   const arrow = (dir) => `<svg class="arr arr-${dir}" viewBox="0 0 20 20" aria-label="${{ r: 'rechts', l: 'links', d: 'unten', u: 'oben' }[dir]}"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -37,9 +35,7 @@
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
-  // Load saved progress defensively: anything missing or of the wrong type falls back to the default,
-  // so damaged storage can never stop the game from starting.
-  // old names (before the 2026-11-08 rename) in saved data are mapped to the new ones
+  // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
     Zweifelgeist: 'Der Zweifler', Vergessgeist: 'Der Vergessliche', Verwechsler: 'Der Verwechsler', Schwindelgeist: 'Der Schwindler', 'Strenger Richter': 'Der strenge Richter',
     'Blubberrätsel': 'Tiefseerätsel', Rankenrechnen: 'Honigrechnung', Schattenschnitt: 'Rückwärtsgang', Sternenmal: 'Malmühle', 'Geheimrätsel': 'Zifferncode', Reihenrausch: 'Treppenlauf', Tintenfass: 'Druckerpresse', 'Wörterwirbel': 'Rezeptbuch' };
@@ -58,15 +54,13 @@
   let run = null;
   const curGrade = () => CURRICULUM.find((g) => g.grade === meta.grade) || CURRICULUM[0];
   const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
-  // task types parents switched off (Elternbereich) – at least two stay on per mode
+  // switched off in the parent area; at least two stay on per mode
   const offList = (m) => (isObj(meta.off) && Array.isArray(meta.off[m]) ? meta.off[m] : []);
   const enabledMods = (m) => { const all = Object.keys(MODES[m || mode].modules); const on = all.filter((k) => !offList(m || mode).includes(k)); return on.length >= 2 ? on : all; };
   const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
-  // A saved adventure is only removed when it really ends (endRun) or is replaced by a new one –
-  // never as a side effect of saving while no adventure is loaded.
+  // a saved run is only removed by endRun or a new run, never as a side effect of saving
   const saveAll = () => { save(KEY_META, meta); if (run && !run.over) save(KEY_RUN_FOR(run.mode), run); };
   function endRun() { if (run) { run.over = true; clear(KEY_RUN_FOR(run.mode)); } save(KEY_META, meta); }
-  // A saved adventure must belong to a known hero and have the fields the game needs.
   function loadRun(m) {
     const r = load(KEY_RUN_FOR(m), null);
     const ok = isObj(r) && isObj(r.hero) && Array.isArray(r.map) && isObj(r.tiers) && Array.isArray(r.items) && Array.isArray(r.path) && Array.isArray(r.hero.attacks)
@@ -97,7 +91,7 @@
     const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
     if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
     const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
-    // adapt the level, but never beyond what the current world uses – otherwise the next world would start at its hardest level
+    // capped at the current world, otherwise the next world would start at its hardest tier
     if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
   }
   function weakestModule() { let best = null, bestAcc = 2; for (const k of enabledMods()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
@@ -112,7 +106,6 @@
     rec.push(sig); if (rec.length > 8) rec.shift();
     return t;
   }
-  // all four attacks are available from the start, so children practise different task types
   // switched-off task types are replaced by enabled ones the hero doesn't have yet
   function heroAttacks() {
     const on = enabledMods(); const used = run.hero.attacks.map((a) => a.mod).filter((k) => on.includes(k)); const spare = on.filter((k) => !used.includes(k)); let i = 0;
@@ -123,12 +116,12 @@
   function heal(n) { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + n); }
 
   /* ---------- Rendering primitives ---------- */
-  let keyHandler = null; // set while a number task is open: physical keyboard works like the on-screen keypad
-  // quiet = re-render of the same screen (no fade-in), e.g. every turn in a battle
+  let keyHandler = null; // physical keyboard while a number task is open
+  // quiet: re-render without fade-in (battle turns)
   function render(html, quiet) { keyHandler = null; app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
 
-  /* ---------- Sounds: CC0 clips in docs/sounds/ (see SOURCES.md), decoded with WebAudio.
-     Phones keep audio silent until the page is "unlocked" by a user gesture, so the first tap resumes the context. ---------- */
+  /* ---------- Sounds ---------- */
+  // phones stay silent until a user gesture, so the first tap unlocks the context
   const SFX = (() => {
     const FILES = { tap: 0.45, right: 0.9, wrong: 0.9, hit: 1, crit: 1, hurt: 0.9, block: 1, levelup: 1, win: 1, finale: 1, lose: 0.9 };
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -143,10 +136,9 @@
   ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => SFX.unlock(), { capture: true, passive: true }));
   document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('button')) SFX.tap(); }, true);
   window.__sfx = SFX;
-  // floating damage number above a fighter
   function fx(sel, text, cls) { const el = $(sel); if (!el) return; const r = el.getBoundingClientRect(); const s = document.createElement('span'); s.className = 'floatnum ' + (cls || ''); s.textContent = text; s.setAttribute('aria-hidden', 'true'); s.style.left = (r.left + r.width / 2) + 'px'; s.style.top = (r.top + Math.min(40, r.height * 0.3)) + 'px'; document.body.appendChild(s); setTimeout(() => s.remove(), 2100); }
   document.addEventListener('keydown', (e) => { if (keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) keyHandler(e); });
-  // one persistent live region, so screen readers reliably announce battle messages
+  // one persistent live region: screen readers miss re-created ones
   const live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); document.body.appendChild(live);
   function announce(text) { live.textContent = ''; setTimeout(() => { live.textContent = text; }, 50); }
   function topbar(title, extra) { return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`; }
@@ -168,7 +160,6 @@
   function ensureTutorial(task, then) { const needGroup = !meta.seenTut[tutKey(task.group)]; const needNote = task.note && !meta.seenTut[tutKey('note:' + task.note)]; if (needGroup || needNote) showTutorial(task.group, task.note, then, true); else then(); }
 
   /* ---------- Task UI ---------- */
-  // Renders a task card and numpad; calls done(ok)
   function runTask(task, opts, done) {
     opts = opts || {}; window.__task = task;
     if (task.kind !== 'num') return runChoiceTask(task, opts, done);
@@ -234,7 +225,7 @@
   function runChoiceTask(task, opts, done) {
     const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod]; let locked = false;
     const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
-    // magnifier item: with two options (e.g. richtig/falsch) crossing one out would give the answer away – show the notes instead
+    // with two options crossing one out gives the answer away, so show the notes instead
     const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
       locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
@@ -312,7 +303,7 @@
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
   }
 
-  /* ---------- Changelog ("Was ist neu?") – data comes from CHANGELOG.md via build.py ---------- */
+  /* ---------- Changelog (CHANGELOG.md via build.py) ---------- */
   const NEWS = (typeof CHANGELOG !== 'undefined' && Array.isArray(CHANGELOG)) ? CHANGELOG : [];
   const hasNews = () => NEWS.length > 0 && NEWS[0].date > (meta.seenNews || '');
   const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
@@ -357,7 +348,6 @@
   const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'] };
   function screenMap() {
     const h = run.hero;
-    // which nodes can be reached: the open ones on this floor and everything that follows from them
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
     for (let f = run.floor - 1; f < run.map.length - 1; f++) live[f].forEach((i) => run.map[f][i].n.forEach((j) => live[f + 1].add(j)));
     const ROW = 86, H = run.map.length * ROW; const X = (c) => (c + 0.5) * 25; const Y = (f) => H - (f + 0.5) * ROW;
@@ -391,8 +381,7 @@
     ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: Das kannst du nur im Kampf benutzen.`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${it.desc}`; return; } if ((it.shield && run.shield) || (it.power && run.power) || (it.hint && run.hint)) { $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; const lv = it.xp ? gainXp(it.xp) : []; saveAll(); ov.remove(); if (inBattle) inBattle(it, lv); else { screenMap(); if (it.xp) { const m = modal(`<h2>${it.icon} +${it.xp} XP</h2>${lv.map((x) => `<p style="font-weight:800;color:var(--orange)">${esc(x)}</p>`).join('') || '<p>Dein Monster lernt dazu.</p>'}<button class="btn" id="tutok">Weiter</button>`); $('#tutok', m).focus({ preventScroll: true }); $('#tutok', m).onclick = () => m.remove(); } } }; });
   }
 
-  // Continue a saved adventure exactly where it stopped: a node that was entered can't be swapped for another
-  // one by closing the app, and a running fight continues with the same enemy and life points.
+  // resume exactly where it stopped, so closing the app never swaps a node or resets a fight
   function resumeRun() {
     const n = run.node;
     if (!isObj(n)) return screenMap();
@@ -422,7 +411,7 @@
 
   /* ---------- Battle ---------- */
   function startBattle(spec, hard) {
-    // enemies have more life points than their base value: hits on the weak spot do more damage, so fights stay about as long
+    // extra HP offsets weak-spot damage, so fights stay about as long
     const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
     const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weak: pickWeak() };
     meta.dex[spec.name] = { type: spec.type, shape: spec.shape, world: run.world, mode };
@@ -448,10 +437,8 @@
     announce(b.log.replace(/<[^>]+>/g, ''));
     if (b.phase === 'choose') renderAttackChoice(b);
   }
-  // Damage is always shown as a whole number. Using the same attack again in a row makes it "tired"
-  // (less damage), so it pays off to switch attacks and practise different things.
-  // Each enemy also has a weak spot on one of the hero's attacks. After a hit there it moves on to the attack
-  // practised least in this adventure, so following it means practising every task type about equally.
+  // Repeating an attack makes it tired; the weak spot moves to the least-practised attack after each hit.
+  // Both push children to practise all task types. Damage is always a whole number.
   const TIRED = [1, 0.6, 0.35], WEAK = 1.5, ENEMY_HP = 1.4;
   function pickWeak(except) {
     run.used = isObj(run.used) ? run.used : {};
@@ -519,10 +506,9 @@
     };
     ensureTutorial(t, () => {
       runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: atk.name, hint, onResult }, () => {
-        b.phase = b.enemy.hp <= 0 ? 'over' : 'wait'; // attacks come back after the enemy's turn
+        b.phase = b.enemy.hp <= 0 ? 'over' : 'wait';
         if (hit) { renderBattle(b, true); $('#fe').classList.add('hurt'); fx('#fe', '−' + hit.dmg, hit.crit ? 'crit' : ''); if (hit.crit) SFX.crit(); else SFX.hit(); }
         else renderBattle(b, true);
-        // a breath between the actions, so the numbers and the hit can be seen
         if (b.enemy.hp <= 0) { setTimeout(() => { if (run) battleWon(b); }, 1500); return; }
         setTimeout(() => { if (run) enemyTurn(b, b.enemy.pending || 1); }, hit ? 1700 : 1900);
       });
@@ -543,8 +529,7 @@
   function battleWon(b) {
     const e = b.enemy; const xp = e.boss ? 60 : e.elite ? 35 : 18;
     const msgs = gainXp(xp);
-    // loot: about every third normal fight drops something small, bosses drop two things,
-    // elites let the child pick one of three rare rewards right after this screen
+    // ~1/3 of normal fights drop one item, bosses two; elites pick a reward on the next screen
     const drops = [];
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
     else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
@@ -574,7 +559,6 @@
     if (Number.isInteger(resumeOpt)) return runOpt(resumeOpt);
     app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => runOpt(+btn.dataset.i); });
   }
-  // applies an event result to the game state (saved at once); showEffect() then shows it
   function applyEffect(eff) {
     const lines = []; run.node && (run.node.lines = lines);
     if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 −${Math.abs(eff.hp)} Lebenspunkte`); } }
@@ -608,7 +592,6 @@
   }
 
   /* ---------- Treasure ---------- */
-  // a chest: one rare item, +10 max LP and a new attack (or a second item); an elite: two rare items and a new attack (or +10 max LP)
   function screenTreasure(kind) {
     const elite = kind === 'elite'; const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
     if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null]; saveAll(); }
@@ -679,9 +662,7 @@
   }
 
   /* ---------- Feedback ---------- */
-  // Messages go to a Google Form ("Feedback", question "Dein Feedback"). They are sent from our own screen, so players
-  // never leave the game; only if sending fails (e.g. offline) the form opens in a new tab with the text filled in.
-  // This is the only request to another server, and only when the player taps "Absenden".
+  // The only external request. If sending fails, the prefilled form opens in a new tab.
   const FEEDBACK = { form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw', entry: 'entry.1794178349' };
   function screenFeedback(back) {
     back = typeof back === 'function' ? back : screenTitle;
@@ -702,7 +683,7 @@
       sending = true; $('#fbsend').disabled = true; $('#fbsend').textContent = 'Wird gesendet …';
       try {
         if (navigator.onLine === false) throw new Error('offline');
-        // Google Forms doesn't allow reading the answer (no-cors), but a request that goes out arrives.
+        // no-cors: the response can't be read, but the request arrives
         await fetch(`${FEEDBACK.form}/formResponse`, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ [FEEDBACK.entry]: body() }) });
         render(`<div class="screen">${topbar('Danke')}<div class="scroll"><div class="card center"><div style="font-size:56px" aria-hidden="true">💌</div><h2>Danke für deine Nachricht!</h2><p>Sie ist angekommen. Vielleicht steht deine Idee bald unter „Was ist neu?“.</p></div></div><div class="bottom"><button class="btn" id="back">Zurück</button></div></div>`);
         $('#back').onclick = () => back();

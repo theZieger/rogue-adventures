@@ -1,10 +1,5 @@
 #!/usr/bin/env node
-/* Generates the app icons in docs/icons/ and the iOS/iPadOS startup screens
- * in docs/splash/ from the game's own monster art
- * (Sonnenfuchs, fully evolved). Uses the pre-installed Playwright Chromium
- * to rasterise the SVGs. Run manually when the icon design changes:
- *   node tools/make_icons.js
- * The PNGs are committed, so CI/build do not need Playwright. */
+// Icons + iOS splash screens from the monster art. Run manually when artwork changes; PNGs are committed.
 const fs = require('fs');
 const path = require('path');
 const MONART = require('../src/monsters.js');
@@ -23,7 +18,6 @@ function fox() {
 }
 
 function stars(s) {
-  // a few small twinkles in the background for a "quest" feel
   const pts = [[0.16, 0.2, 1], [0.84, 0.17, 0.8], [0.12, 0.78, 0.7], [0.88, 0.8, 0.9]];
   return pts.map(([x, y, k]) => {
     const r = s * 0.035 * k, cx = s * x, cy = s * y;
@@ -50,7 +44,6 @@ ${opts.stars ? stars(s) : ''}
 }
 
 const ICONS = [
-  // name, size, options
   // "any": rounded square, used on desktop (Windows/macOS/ChromeOS/Linux) and as favicon
   ['icon-192.png', 192, { radius: 0.22, scale: 0.80, stars: true }],
   ['icon-512.png', 512, { radius: 0.22, scale: 0.80, stars: true }],

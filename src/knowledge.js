@@ -1,4 +1,3 @@
-/* ===== Knowledge modes: Ethik (Luther) & Sachkunde (Kartoffel) ===== */
 const MK = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];

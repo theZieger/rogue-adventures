@@ -1,9 +1,3 @@
-/* ===== Monster art v3 (hand-drawn SVG) =====
-   Every monster has its own drawing, designed from its name.
-   monsterSVG(shape, color, evo, cls, opts)
-     evo   hero stage 0–2 (each stage is drawn differently and grows)
-     opts  { elite, boss } – elites get a jagged red aura and a heavier line, bosses golden rays.
-   Enemies are mirrored in battle (class "enemy"); glyphs such as „?“ are counter-mirrored so they stay readable. */
 const MONART = (() => {
   const OUT = '#1C2541';
   let uid = 0;
@@ -16,7 +10,6 @@ const MONART = (() => {
   const N = (w) => `fill="none" ${S(w)}`;
   const f1 = (v) => Math.round(v * 10) / 10;
 
-  /* ---------- faces ---------- */
   // eye: look 'n' | 'happy' | 'closed' | 'dizzy' | 'glow'; o: side (-1 left, 1 right), dir [dx,dy], iris, slit, pupil, brow, lid, lidRot, lidY, browColor, bw
   function eye(x, y, r, o = {}) {
     const look = o.look || 'n', side = o.side || 0, ry = r * (o.tall || 1.1);
@@ -88,7 +81,6 @@ const MONART = (() => {
     for (let i = 0; i < n * 2; i++) { const a = (i / (n * 2)) * Math.PI * 2 - Math.PI / 2, r = i % 2 ? rIn : rOut; d += `${i ? 'L' : 'M'}${f1(cx + r * Math.cos(a))} ${f1(cy + r * Math.sin(a))} `; }
     return d + 'Z';
   }
-  // segments along a quadratic curve (worms, caterpillars)
   function along(p0, p1, p2, n, fn) {
     let s = '';
     for (let i = 0; i < n; i++) { const t = i / (n - 1), u = 1 - t; s += fn(u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0], u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1], i, t); }
@@ -96,7 +88,6 @@ const MONART = (() => {
   }
   const qmark = (x, y, k, c) => `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-5 -5 Q-5 -12 1 -12 Q7 -12 7 -6 Q7 -2 2 0 Q0 1 0 4" fill="none" stroke="${c || '#FFE066'}" stroke-width="3.4" stroke-linecap="round"/><circle cx="0" cy="9.5" r="2.1" fill="${c || '#FFE066'}"/></g>`;
 
-  /* ---------- heroes ---------- */
   function fox(P, o, C) {
     const e = o.evo;
     const base = ['#FF6A3D', '#F24B2A', '#FF8A1F'][e];
@@ -105,26 +96,21 @@ const MONART = (() => {
     if (e === 2) { // sun corona
       s += `<path d="${spikes(60, 64, 38, 50, -60, 300, 12)}" ${F('#FF9A2E', 2)}/><path d="${spikes(60, 64, 38, 56, -75, 285, 12)}" ${F(gold, 2)}/>`;
     }
-    // tail(s)
     const tailSmall = `<path d="M76 104 Q104 106 106 82 Q106 66 96 58 Q98 76 88 86 Q80 92 74 96 Z" ${F(body)}/><path d="M96 58 Q107 64 106 80 Q99 72 92 70 Q97 66 96 58 Z" fill="#FFE066" ${S(2)}/>`;
     const tailFlame = `<path d="M74 104 Q112 106 110 74 Q114 58 102 42 Q102 56 96 60 Q100 46 90 34 Q92 58 84 70 Q76 82 72 96 Z" ${F(flameG)}/><path d="M80 98 Q100 96 100 78 Q100 70 96 66 Q94 78 86 84 Z" fill="#FFF3B0" opacity=".85"/>`;
     if (e === 0) s += tailSmall;
     if (e === 1) s += tailFlame;
     if (e === 2) s += [-34, -12, 10].map((r) => `<g transform="rotate(${r} 74 100)">${tailFlame}</g>`).join('');
-    // sitting body
     s += `<path d="M38 114 Q32 92 44 82 L76 82 Q88 92 82 114 Z" ${F(body)}/>`;
     s += `<path d="M46 86 Q60 96 74 86 L71 93 L75 98 L67 100 L60 107 L53 100 L45 98 L49 93 Z" fill="${cream}"/>`;
     s += `<ellipse cx="47" cy="112" rx="8" ry="4.5" ${F(cream, 2.2)}/><ellipse cx="73" cy="112" rx="8" ry="4.5" ${F(cream, 2.2)}/><path d="M45 110 L45 114 M49 110 L49 114 M71 110 L71 114 M75 110 L75 114" fill="none" stroke="#D9B48A" stroke-width="1.4" stroke-linecap="round"/>`;
     if (e >= 1) s += `<circle cx="12" cy="62" r="2.2" fill="#FFB23F"/><circle cx="18" cy="48" r="1.5" fill="#FFE066"/><circle cx="108" cy="50" r="1.8" fill="#FFB23F"/>`;
-    // ears
     s += `<path d="M30 52 L22 12 L54 38 Z" ${F(body)}/><path d="M33 45 L28 22 L46 37 Z" fill="${e === 2 ? gold : '#7A2A2A'}" opacity=".85"/>`;
     s += `<path d="M90 52 L98 12 L66 38 Z" ${F(body)}/><path d="M87 45 L92 22 L74 37 Z" fill="${e === 2 ? gold : '#7A2A2A'}" opacity=".85"/>`;
     if (e >= 1) { // flame ear tips
       s += `<path d="M22 18 Q14 10 19 1 Q22 8 27 9 Q30 14 24 20 Z" ${F(flameG, 2)}/><path d="M98 18 Q106 10 101 1 Q98 8 93 9 Q90 14 96 20 Z" ${F(flameG, 2)}/>`;
     }
-    // cheek tufts
     if (e >= 1) s += `<path d="M30 66 L12 70 L26 76 L14 84 L34 84 Z" ${F(cream, 2.2)}/><path d="M90 66 L108 70 L94 76 L106 84 L86 84 Z" ${F(cream, 2.2)}/>`;
-    // head (with a little tuft)
     s += `<path d="M48 38 Q51 22 59 30 Q65 18 72 38 Z" ${F(body)}/>`;
     s += `<path d="M24 62 Q24 33 60 31 Q96 33 96 62 Q98 80 84 90 Q72 98 60 100 Q48 98 36 90 Q22 80 24 62 Z" ${F(body)}/>`;
     s += shine(42, 44, 10, 5, -20);
@@ -147,7 +133,6 @@ const MONART = (() => {
     if (e === 1) s += `<ellipse cx="60" cy="110" rx="56" ry="9" fill="none" stroke="${lt}" stroke-width="3" stroke-dasharray="14 8" opacity=".9"/><path d="M8 104 q8 -10 18 -2 M112 104 q-8 -10 -18 -2" fill="none" stroke="${lt}" stroke-width="3" stroke-linecap="round"/>`;
     if (e === 2) { // big wave behind
       s += `<ellipse cx="60" cy="111" rx="56" ry="8" ${F(C.lin('#BFE6FF', '#5BB4FF'), 2.2)}/><path d="M10 108 Q4 98 12 92 Q14 100 20 104 M110 108 Q116 98 108 92 Q106 100 100 104" ${F('#BFE6FF', 2)}/>`;
-      // coral frills
       s += `<path d="M26 60 L10 40 M16 48 L6 50 M20 54 L12 62 M94 60 L110 40 M104 48 L114 50 M100 54 L108 62" fill="none" stroke="${OUT}" stroke-width="8" stroke-linecap="round"/><path d="M26 60 L10 40 M16 48 L6 50 M20 54 L12 62 M94 60 L110 40 M104 48 L114 50 M100 54 L108 62" fill="none" stroke="#FF8A7A" stroke-width="4" stroke-linecap="round"/>`;
     }
     s += `<path d="M18 106 Q4 94 14 78 Q22 70 32 84 Z" ${F(body)}/><path d="M102 106 Q116 94 106 78 Q98 70 88 84 Z" ${F(body)}/>`;
@@ -208,11 +193,9 @@ const MONART = (() => {
     const gown = C.grad('#3A3A46'), skin = C.grad('#F6CDA6');
     s += `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(gown)}/>`;
     s += `<path d="M48 80 L60 98 L72 80 Z" ${F('#F5F0E6', 2)}/>`;
-    // open book in his hands
     s += `<path d="M26 98 L58 102 L58 116 L26 112 Z" ${F('#FFF8E6', 2.2)}/><path d="M94 98 L62 102 L62 116 L94 112 Z" ${F('#FFF8E6', 2.2)}/><path d="M58 102 Q60 100 62 102 L62 116 Q60 114 58 116 Z" ${F('#8B2E2E', 2)}/>`;
     s += `<path d="M32 104 L52 106 M32 108 L52 110 M68 106 L88 104 M68 110 L88 108" fill="none" stroke="#9AA3C2" stroke-width="1.6" stroke-linecap="round"/>`;
     s += `<ellipse cx="30" cy="104" rx="6" ry="5" ${F(skin, 2)}/><ellipse cx="90" cy="104" rx="6" ry="5" ${F(skin, 2)}/>`;
-    // head + doctor's cap
     s += `<ellipse cx="60" cy="54" rx="26" ry="27" ${F(skin)}/>`;
     s += `<path d="M35 40 Q27 50 33 62 L38 50 Z M85 40 Q93 50 87 62 L82 50 Z" ${F('#4A3526', 2)}/>`;
     s += `<ellipse cx="34" cy="58" rx="4.5" ry="7" ${F(skin, 2)}/><ellipse cx="86" cy="58" rx="4.5" ry="7" ${F(skin, 2)}/>`;
@@ -223,7 +206,6 @@ const MONART = (() => {
     s += pair(60, 55, 11, 5.5, { brow: 'up', bw: 2.4 });
     s += `<path d="M60 60 Q58 67 61 68" ${N(2.2)}/>${M.smile(60, 73, 7)}`;
     s += blush(60, 66, 17, 4);
-    // quill behind the book
     s += `<path d="M98 112 L112 74" fill="none" stroke="${OUT}" stroke-width="2.4" stroke-linecap="round"/><path d="M112 74 Q122 80 112 96 Q108 88 104 92 Q104 80 112 74 Z" ${F('#FFFDF5', 2)}/>`;
     return s;
   }
@@ -259,7 +241,6 @@ const MONART = (() => {
     return s;
   }
 
-  /* ---------- Zahlenquest, Welt 1 ---------- */
   function sumpfbrocken(P, o, C) {
     const mud = C.grad('#7B8A45'), moss = '#4E9A3A';
     return `<ellipse cx="60" cy="108" rx="54" ry="8" fill="#5B4A2E" opacity=".9"/>
@@ -348,7 +329,6 @@ const MONART = (() => {
       <circle cx="8" cy="44" r="4" ${F('none', 2)}/><circle cx="112" cy="40" r="3" ${F('none', 2)}/><circle cx="104" cy="28" r="2" ${F('none', 1.6)}/>`;
   }
 
-  /* ---------- Zahlenquest, Welt 2 ---------- */
   function lavamolch(P, o, C) {
     const skin = C.grad('#B8382A'), glow = '#FFB23F';
     return `<path d="M82 92 Q110 96 112 72 Q112 58 102 54 Q104 70 94 76 Q86 80 80 80 Z" ${F(skin)}/>
@@ -446,7 +426,6 @@ const MONART = (() => {
       ${M.fangs(62, 58, 11)}`;
   }
 
-  /* ---------- Zahlenquest, Welt 3 ---------- */
   function frostblitz(P, o, C) {
     const ice = C.lin('#F2FCFF', '#7CCBF2');
     const flake = (x, y, r) => `<path d="M${x - r} ${y} L${x + r} ${y} M${x} ${y - r} L${x} ${y + r} M${f1(x - r * 0.7)} ${f1(y - r * 0.7)} L${f1(x + r * 0.7)} ${f1(y + r * 0.7)} M${f1(x - r * 0.7)} ${f1(y + r * 0.7)} L${f1(x + r * 0.7)} ${f1(y - r * 0.7)}" stroke="#DFF6FF" stroke-width="2.2" stroke-linecap="round"/>`;
@@ -549,7 +528,6 @@ const MONART = (() => {
       ${M.frown(60, 64, 6)}`;
   }
 
-  /* ---------- Luthers Weg ---------- */
   function zweifler(P, o, C) {
     const body = C.grad('#9CA9CC');
     return `${C.glyph(18, qmark(18, 30, 1.3))}${C.glyph(102, qmark(102, 22, 1))}${C.glyph(96, qmark(96, 50, 0.7, '#C9D2EA'))}
@@ -639,7 +617,6 @@ const MONART = (() => {
       ${blush(44, 58, 18, 4)}`;
   }
 
-  /* ---------- Kartoffel-Werkstatt ---------- */
   function blattlaus(P, o, C) {
     const body = C.grad('#8EDB6A');
     return `<path d="M4 108 Q60 82 116 108 Q60 120 4 108 Z" ${F('#3E9A47', 2.2)}/><path d="M10 107 Q60 98 112 106" fill="none" stroke="#2C7A36" stroke-width="2"/>
@@ -799,7 +776,6 @@ const MONART = (() => {
       ${e(60, 82, 16, 23, 0)}${pair(60, 80, 7, 5, { brow: 'angry', bw: 3 })}${M.fangs(60, 92, 6)}`;
   }
 
-  /* ---------- registry ---------- */
   const SHAPES = {
     fox, toad, bear, luther, potato,
     sumpfbrocken, regenwicht, streichholzkopf, krabbelstein, dornenigel, moorschlund,
@@ -813,7 +789,6 @@ const MONART = (() => {
   const ALIAS = { blob: 'sumpfbrocken', drop: 'regenwicht', flame: 'streichholzkopf', rock: 'krabbelstein', hedgehog: 'dornenigel', newt: 'lavamolch', jelly: 'nebelqualle', vine: 'ranklerin', bat: 'nachtschwinge', beetle: 'kartoffelkaefer', dragon: 'ofenwurm', ghost: 'zweifler', king: 'rechenkoenig', merchant: 'ablasshaendler' };
   const HEROES = ['fox', 'toad', 'bear', 'luther', 'potato'];
 
-  // the drawing code: the source of truth, used by tools/svg.js to bake art/monsters/raw/*.svg
   function render(shape, color, evo, cls, opts) {
     opts = opts || {};
     shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
