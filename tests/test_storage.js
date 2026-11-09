@@ -696,6 +696,15 @@ async function gardenWinCases() {
   const p2 = open(p1.dump());
   check(p2.errors.length === 0 && !!p2.dump().mathquest_run_freunde && !!p2.$('[data-cont="freunde"]'), 'Gute Freunde adventure is saved and can be continued');
 }
+// 17b. Ich, wir und die Welt: an old save without its stats loads, an adventure is saved and continues
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.ichwelt;
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && p1.w.__mq.meta.stats.ichwelt && p1.w.__mq.meta.stats.ichwelt.welten.t === 0, 'old save without Ich, wir und die Welt stats loads with empty stats, Drei Welten included');
+  p1.click('[data-new="ichwelt"]'); p1.click('.choice'); p1.click('#go'); p1.click('.node.open');
+  const p2 = open(p1.dump());
+  check(p2.errors.length === 0 && !!p2.dump().mathquest_run_ichwelt && /Weiter \(Welt 1\)/.test(p2.$('[data-cont="ichwelt"]').textContent), 'Ich, wir und die Welt adventure is saved and can be continued');
+}
 
 // 18. Weekly goals, weekly boss, weekly report
 // weeks whose maths goal is in Zahlenquest (the seed also picks Die Baustelle): W48 the weekly boss, W49 right answers

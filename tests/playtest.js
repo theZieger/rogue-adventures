@@ -184,7 +184,8 @@ async function step(){
   if(dilemmas!==consequences){ console.error('PLAYTEST FAIL: a dilemma choice showed no consequence'); process.exit(1); }
   if(!crafted){ console.error('PLAYTEST FAIL: never used the Werkbank'); process.exit(1); }
   if(W3&&colTasks<4){ console.error('PLAYTEST FAIL: only '+colTasks+' written tasks in world 3'); process.exit(1); }
-  if(['woerterwerkstatt','satzbaustelle','ethik','kirchenjahr'].includes(mode)&&readNodes<RUNS){ console.error('PLAYTEST FAIL: Lesestube not played'); process.exit(1); }
+  if(['woerterwerkstatt','satzbaustelle','ethik','kirchenjahr','ichwelt'].includes(mode)&&readNodes<RUNS){ console.error('PLAYTEST FAIL: Lesestube not played'); process.exit(1); }
+  if(mode==='ichwelt'&&!m.stats.ichwelt.welten.t){ console.error('PLAYTEST FAIL: never sorted into the three worlds'); process.exit(1); }
   if(mode==='math'&&!W3&&!arenas){ console.error('PLAYTEST FAIL: never played the Kreisel-Arena'); process.exit(1); }
   if(mode==='math'&&!W3&&!bought){ console.error('PLAYTEST FAIL: never bought anything at a market'); process.exit(1); }
   if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }

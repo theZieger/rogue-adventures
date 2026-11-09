@@ -1,4 +1,4 @@
-const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const know={};let seq=0;const fails=[];
+const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const E=require('../src/ethik.js');const know={};let seq=0;const fails=[];
 for(const [mode,cfg] of Object.entries(K.MODES)){ for(const mod of Object.keys(cfg.modules)){ for(let t=1;t<=cfg.modules[mod].maxTier;t++){ for(let i=0;i<400;i++){ const q=K.generate(mode,mod,t,know,++seq);
  if(q.kind==='choice'||q.kind==='parts'){ if(!q.options.includes(q.answer)) fails.push(JSON.stringify(q)); if(new Set(q.options).size!==q.options.length) fails.push('dup '+q.q); }
  if(q.kind==='order'){ const ids=q.items.map(x=>x.id), texts=q.items.map(x=>x.text);
@@ -24,7 +24,7 @@ for(const [mode,cfg] of Object.entries(K.MODES)){ for(const e of cfg.pool){ cons
   if(e.mod==='lt'||e.mod==='ltk'||e.mod==='regel'&&!e.rf&&e.o&&e.q.includes('___')){ if((e.q.match(/___/g)||[]).length!==1) fails.push(tag+' gap text needs exactly one ___'); }
 }}
 // order sources: distinct ids and texts
-for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,KJ_OSTERWEG:K.KJ_OSTERWEG,KJ_JAHR:K.KJ_JAHR,F_SCHLICHTEN:K.F_SCHLICHTEN,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS,BROT:S.BROT,GRAIN_PARTS:S.GRAIN_PARTS,CYCLE_PARTS:S.CYCLE_PARTS,CEREALS:S.CEREALS,WATER:S.WATER.map(x=>({id:x.id,text:x.label})),FLOAT:S.FLOAT.map(x=>({id:x.acc,text:x.label}))})){
+for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,KJ_OSTERWEG:K.KJ_OSTERWEG,KJ_JAHR:K.KJ_JAHR,F_SCHLICHTEN:K.F_SCHLICHTEN,VERSOEHNEN:E.VERSOEHNEN,BESSER:E.BESSER,ARCHE:E.ARCHE,PAPIER:E.PAPIER,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS,BROT:S.BROT,GRAIN_PARTS:S.GRAIN_PARTS,CYCLE_PARTS:S.CYCLE_PARTS,CEREALS:S.CEREALS,WATER:S.WATER.map(x=>({id:x.id,text:x.label})),FLOAT:S.FLOAT.map(x=>({id:x.acc,text:x.label}))})){
   const ids=arr.map(x=>x.id), texts=arr.map(x=>x.text||x.name);
   if(new Set(ids).size!==ids.length) fails.push(name+' duplicate ids'); if(new Set(texts).size!==texts.length) fails.push(name+' duplicate texts'); }
 
@@ -92,6 +92,28 @@ for(const [mode,cfg] of Object.entries(K.MODES)) for(const mod of Object.keys(cf
   // bullying situations always offer getting help from an adult
   for(const e of dil) if(/ausgelacht|lacht über|Auslachen/.test(e.text)&&!e.opts.some(o=>o.label==='Hol dir Hilfe bei einem Erwachsenen.')) fails.push('freunde dilemma without adult help: '+e.title);
   for(const o of gf.order) if(!gf.notes[o.note]||o.items.length<4) fails.push('freunde order source '+o.qid); }
+// Ich, wir und die Welt: two worlds with their own topics, every topic in two task types, Drei Welten with fixed buttons, dilemma cards
+{ const iw=K.MODES.ichwelt; if(iw.pool.length<70) fails.push('ichwelt has only '+iw.pool.length+' questions');
+  if(iw.worlds!==2||!iw.byWorld) fails.push('ichwelt needs two worlds');
+  const topics={1:['staerken','mut','erwachsen','verschieden','gutboese'],2:['zeichen','dreiwelten','natur','bewahren','elemente']};
+  for(const [w,gs] of Object.entries(topics)) for(const g of gs){ const qs=iw.pool.filter(e=>e.g===g); if(!iw.notes[g]) fails.push('ichwelt no note '+g);
+    if(!qs.length||qs.some(e=>(e.w||1)!==+w)) fails.push('ichwelt topic '+g+' not only in world '+w);
+    if(new Set(qs.map(e=>e.mod)).size<2) fails.push('ichwelt topic '+g+' in fewer than 2 task types'); }
+  if(iw.modules.welten.worldCap[0]!==0) fails.push('Drei Welten must stay out of world 1');
+  if(iw.starters.some(s=>s.attacks.some(a=>a.mod==='welten'))||!iw.worldAttacks[2].some(a=>a.mod==='welten')) fails.push('Drei Welten is an attack in world 2 only');
+  const seen=new Set();
+  for(let i=0;i<600;i++){ const q=K.generate('ichwelt','welten',1,know,++seq,{world:2}); seen.add(q.qid);
+    if(q.options.join()!==E.WELTEN.join()||q.options.filter(o=>o===q.answer).length!==1||!iw.tut[q.group]) fails.push('Drei Welten task '+q.qid); }
+  if(seen.size!==E.DINGE.length) fails.push('Drei Welten: only '+seen.size+' of '+E.DINGE.length+' things asked');
+  for(const k of [0,1,2]) if(E.DINGE.filter(d=>d[2]===k).length<6) fails.push('Drei Welten: fewer than 6 things for '+E.WELTEN[k]);
+  for(const w of [1,2]) for(const mod of ['rf','mc','lt','def','ord']) for(let i=0;i<200;i++){ const q=K.generate('ichwelt',mod,1,know,++seq,{world:w});
+    const inW2=q.kind==='order'?['iwa_','iwp_'].some(p=>q.qid.startsWith(p)):(iw.pool.find(e=>e.id===q.qid).w===2);
+    if(inW2!==(w===2)) { fails.push('ichwelt world '+w+' got '+q.qid); break; } }
+  for(const o of iw.order) if(!iw.notes[o.note]||o.items.length<4) fails.push('ichwelt order source '+o.qid);
+  const dil=(w)=>iw.events.filter(e=>e.dilemma&&e.w===w);
+  if(dil(1).length<8) fails.push('ichwelt world 1 has only '+dil(1).length+' dilemma cards');
+  if(dil(2).length<4) fails.push('ichwelt world 2 has only '+dil(2).length+' dilemma cards');
+  for(const e of dil(1).concat(dil(2))) if(/ausgelacht|lacht über|lachen über|Auslachen/.test(e.text)&&!e.opts.some(o=>o.label===E.HELP)) fails.push('ichwelt dilemma without adult help: '+e.title); }
 // Sachkunde: every unit has enough questions, every generated picture task has exactly one fitting answer
 for(const m of ['kornkammer','wetterstation','kompass']){ const cfg=K.MODES[m]; if(cfg.pool.length<40) fails.push(m+' has only '+cfg.pool.length+' questions');
   for(const mod of Object.keys(cfg.modules)) for(let t=1;t<=cfg.modules[mod].maxTier;t++) for(let i=0;i<300;i++){ const q=K.generate(m,mod,t,{},++seq);
