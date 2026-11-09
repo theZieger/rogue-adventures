@@ -906,6 +906,34 @@ async function weeklyCases() {
   p2.click('[data-cont="jahrmarkt"]');
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
 }
+// 28. Step 23: new Deutsch task types – a save from before them loads, gets empty stats and its adventure continues;
+// a Lesestube saved by text number keeps showing the same text now that more texts exist
+{
+  const NEW = { woerterwerkstatt: ['stamm', 'trenn', 'komma'], satzbaustelle: ['ersatz', 'weglass', 'pronomen', 'redensart'] };
+  for (const mode of Object.keys(NEW)) {
+    const p1 = open({ [META]: JSON.stringify(SKIPPED) });
+    p1.click('[data-new="' + mode + '"]'); p1.click('#go');
+    p1.click([...p1.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p1.$('.node.open'));
+    const enemy = p1.$('.plate.enemy .name').textContent;
+    const saved = p1.dump(); const meta = JSON.parse(saved[META]); const run = JSON.parse(saved['mathquest_run_' + mode]);
+    meta.stats[mode].doppel = meta.stats[mode].doppel && { c: 2, t: 3, hist: [1, 0, 1] };
+    for (const k of NEW[mode]) { delete meta.stats[mode][k]; delete run.tiers[k]; }
+    if (run.tiers.gross) run.tiers.gross = 1;
+    const p2 = open(Object.assign({}, saved, { [META]: JSON.stringify(meta), ['mathquest_run_' + mode]: JSON.stringify(run) }));
+    const st = p2.w.__mq.meta.stats[mode];
+    check(NEW[mode].every((k) => st[k] && st[k].t === 0) && (mode !== 'woerterwerkstatt' || st.doppel.t === 3), mode + ': old save gains empty stats for the new task types and keeps the old ones');
+    p2.click('[data-cont="' + mode + '"]');
+    check(!!p2.$('#fe') && p2.$('.plate.enemy .name').textContent === enemy && p2.errors.length === 0, mode + ': an adventure from before the new task types continues the same fight');
+  }
+  const p = open({ [META]: JSON.stringify(Object.assign({ seenTut: { 'battle:intro2': true } }, SKIPPED)) });
+  p.click('[data-new="satzbaustelle"]'); p.click('#go');
+  const r = p.w.__mq.run; const f = r.map.findIndex((fl) => fl.some((n) => n.t === 'lesen'));
+  r.floor = f + 1; r.path = r.map.slice(0, f).map(() => 0); if (f > 0) r.map[f - 1][0].n = [r.map[f].findIndex((n) => n.t === 'lesen')];
+  p.w.__mq.screenMap(); p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Lesestube'));
+  const saved = p.dump(); const run = JSON.parse(saved.mathquest_run_satzbaustelle); run.node.text = 13;
+  const p2 = open(Object.assign({}, saved, { mathquest_run_satzbaustelle: JSON.stringify(run) })); p2.click('[data-cont="satzbaustelle"]');
+  check(p2.text().includes('Wer anderen eine Grube gräbt') && p2.errors.length === 0, 'a Lesestube saved with text number 13 still shows the same text');
+}
 // 26. Werkbank, pantry and Meine Hütte (step 13)
 {
   const p0 = open({ [META]: JSON.stringify({ runs: 4, wins: 1, stamps: 3, setup: { skipped: true } }) }); const m0 = p0.w.__mq.meta;
