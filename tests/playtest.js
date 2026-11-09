@@ -16,9 +16,7 @@ function click(el){ if(!el) throw new Error('no element to click: '+text().slice
 let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, rests=0, treasures=0, eliteRewards=0;
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 async function solveTask(forceWrong){
-  // current task in DOM
   const inps=$$('.inp'); if(!inps.length) return false;
-  // Figure answers via the game's generate? Not accessible: instead reconstruct from DOM.
   const task=$('.task'); const t=task.textContent;
   let answers=null;
   const expr=$('.expr'); const M=w.eval('MQ');
@@ -69,7 +67,7 @@ async function step(){
   const tx=text();
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
-  if($('.node.open')){ const nodes=$$('.node.open'); // prefer variety
+  if($('.node.open')){ const nodes=$$('.node.open');
     const pref=['school','treasure','event','rest','elite','fight','boss']; let chosen=null; for(const p of pref){ chosen=nodes.find(n=>n.getAttribute('aria-label')===({school:'Zeichenschule',treasure:'Schatz',event:'Ereignis',rest:'Rast',elite:'Elite',fight:'Kampf',boss:'Boss'}[p])); if(chosen&&Math.random()<0.6) break; }
     click(chosen||nodes[0]); return; }
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
@@ -86,11 +84,8 @@ async function step(){
   throw new Error('stuck at: '+tx.slice(0,300));
 }
 (async()=>{
-  // fake timers: jsdom setTimeout real; speed by awaiting
   let steps=0; let ends=0;
   while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; click($('#again')); }
-    if($('[data-new]') && ends>0 && steps>5 && !$('.choice')){ /* back at title: handled in step */ }
-    // advance timeouts (enemy turn 700-900ms) -> wait a bit when nothing clickable
     // battle pauses (up to ~2 s between actions): wait until something is clickable again
     for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay'); w++) await sleep(500);
   }

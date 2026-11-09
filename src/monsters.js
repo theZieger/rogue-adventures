@@ -1,4 +1,3 @@
-/* ===== Monster art v2 (hand-drawn SVG) ===== */
 const MONART = (() => {
   const OUT = '#1C2541';
   let uid = 0;

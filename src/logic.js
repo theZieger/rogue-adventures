@@ -1,4 +1,3 @@
-/* ===== MathQuest Logic (generators, data) ===== */
 const MQ = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -79,7 +78,6 @@ const MQ = (() => {
       let clues = types.map((f) => f(d)).filter(Boolean);
       if (t === 1) clues = clues.filter((c) => !c.text.startsWith('Ich bin'));
       clues = shuffle(clues);
-      // prefer relation clues first (more interesting)
       let rel = clues.filter(isRel);
       if (t === 1) rel = rel.slice(0, 1);
       const ordered = rel.concat(clues.filter((c) => !isRel(c)));
@@ -253,8 +251,7 @@ const MQ = (() => {
   ];
 
   /* ---------- Map ----------
-     A path map like in Slay the Spire: 8 floors on 4 lanes. Every node leads to one or two nodes on the floor above,
-     so choosing a way closes others. A floor is an array of nodes { t: type, c: lane 0–3, n: [indexes on the next floor] }.
+     Node: { t: type, c: lane 0–3, n: [indexes on the next floor] }.
      Rules: floor 1 fights, no elite before floor 3, rest only on floors 4–5 and as the camp before the boss (floor 7),
      rest/elite/event/treasure never twice in a row on a path, two treasures per map – preferably right behind an elite. */
   const LANES = 4, FLOORS = 8;

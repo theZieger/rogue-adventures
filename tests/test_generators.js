@@ -1,7 +1,7 @@
 const M=require('../src/logic.js');
 const fails=[];
 function check(cond,msg,t){ if(!cond){ fails.push(msg+' '+JSON.stringify(t)); } }
-const evalExpr=(txt,ans)=>{ // verify arithmetic text
+const evalExpr=(txt,ans)=>{
   const m=txt.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/); if(m){ return (+m[1])+(+m[2])+(m[3]?+m[3]:0)===ans[0]; }
   const s=txt.match(/^(\d+) − (\d+) = \?$/); if(s){ return (+s[1])-(+s[2])===ans[0]; }
   const sr=txt.match(/^(\d+) − \? = (\d+)$/); if(sr){ return (+sr[1])-ans[0]===+sr[2]; }
@@ -21,7 +21,7 @@ for(const mod of M.MODULE_KEYS){ for(let t=1;t<=M.MODULES[mod].maxTier;t++){ con
     if(t<=M.MODULES[mod].worldCap[0]){ const nums=(tk.text.match(/\d+/g)||[]).map(Number).concat(tk.answers, tk.seq||[], tk.n!=null?[tk.n]:[]);
       if(tk.grid){ const g=tk.grid; for(let r=0;r<3;r++)for(let c=0;c<3;c++) nums.push(g.base+(r-g.sr)*g.stepD+(c-g.sc)*g.stepR); }
       check(nums.every(v=>v<100),'world1 <100',tk); }
-    if(mod==='riddle'){ const lo=tk.digits===3?100:10, hi=tk.digits===3?999:99; // uniqueness re-check via tutorial-less brute force not possible w/o tests; check clue count
+    if(mod==='riddle'){ const lo=tk.digits===3?100:10, hi=tk.digits===3?999:99;
       check(tk.text.split('\n').length>=2,'cluecount',tk); check(tk.answers[0]>=lo&&tk.answers[0]<=hi,'riddlerange',tk); }
     if(mod==='seq'){ const s=tk.seq.concat(tk.answers); const d1=s[1]-s[0],d2=s[2]-s[1]; if(t<4){ check(s.every((v,i)=>i===0||v-s[i-1]===d1),'seqstep',tk);} else { check(s.every((v,i)=>i===0||v-s[i-1]===(i%2===1?d1:d2)),'altseq',tk);} if(t<=2) check(s.every(v=>v>0&&v<100),'w1seq',tk); }
     if(mod==='nb'){ const n=tk.n; const [b,a]=tk.answers; check(b<n&&n<a,'nb',tk); if(tk.nb==='Zehner') check(a-b===10,'nb10',tk); else check(a-b===100,'nb100',tk); }

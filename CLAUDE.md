@@ -34,6 +34,19 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   (needs Playwright); only rerun it when the artwork changes.
 - GitHub Pages serves `docs/` from `main`: https://thezieger.github.io/rogue-adventures/
 
+## Code style
+
+- **Lazy senior dev:** the least code that solves the problem cleanly. Apply SOLID and the usual patterns only where
+  they pay off; if the cheap solution is fine long-term, take it. No speculative abstractions, no dead code.
+- **Comments: only the essential ones.** Comment a non-obvious *why* (a game rule, a save invariant, a browser quirk),
+  never what the code already says. No banners, no narration, no change history in comments. Keep it that way when editing.
+
+## Saves must never break
+
+- Players' saved progress and running adventures must keep loading after every change – always backwards compatible.
+- Never rename or repurpose storage keys or saved fields; add new fields with defaults, map old values to new ones
+  (see `RENAMES` and the defensive loading in `src/app.js`), and cover save changes in `tests/test_storage.js`.
+
 ## Conventions
 
 - All player-facing text is German, child-friendly, with German typography („…“, –).

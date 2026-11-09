@@ -1,6 +1,4 @@
-/* Fonts (SIL OFL 1.1, licences in docs/fonts/) – self-hosted: no request to Google, works offline.
-   Patrick Hand: handwriting for headings and names. Andika: made for children learning to read; its 1/l/I and 6/9
-   can't be confused, so it carries all text and every number. */
+/* Self-hosted fonts. Andika carries all text and numbers: its 1/l/I and 6/9 can't be confused. */
 @font-face { font-family: 'Andika'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/andika-400-latin.woff2) format('woff2'); }
 @font-face { font-family: 'Andika'; font-style: normal; font-weight: 700; font-display: swap; src: url(fonts/andika-700-latin.woff2) format('woff2'); }
 @font-face { font-family: 'Patrick Hand'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/patrickhand-latin.woff2) format('woff2'); }
@@ -84,7 +82,6 @@ p { margin: 8px 0; }
 /* Map */
 .node { width: 78px; height: 78px; border-radius: 50%; border: 3px solid rgba(255,255,255,.5); background: var(--bg2); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 30px; line-height: 1; cursor: default; }
 .node small { font-size: 11px; font-weight: 700; margin-top: 2px; }
-/* path map: nodes sit on 4 lanes, lines show where each node leads */
 .maphint { margin: 4px 0 0; font-size: 14px; line-height: 1.3; opacity: .85; text-align: center; }
 .wmap { position: relative; width: 100%; max-width: 440px; margin: 14px auto 8px; }
 .maplines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
@@ -103,7 +100,7 @@ p { margin: 8px 0; }
 .node.dead { opacity: .22; filter: grayscale(1); }
 @media (max-width: 359px) { .wmap .node { width: 60px; height: 60px; font-size: 19px; } .wmap .node small { font-size: 9.5px; } }
 
-/* Battle: classic diagonal arena – enemy top right with its plate top left, hero bottom left with its plate bottom right */
+/* Battle */
 .arena { flex: 1 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "eplate esprite" "gap gap" "hsprite hplate"; gap: 4px 10px; padding: 8px 14px 4px; align-items: end; }
 .plate { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; padding: 6px 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .plate.enemy { grid-area: eplate; align-self: start; }
@@ -124,7 +121,6 @@ p { margin: 8px 0; }
 .hpbar i { display: block; height: 100%; background: var(--green); border-radius: 999px; transition: width .35s; }
 .hpbar i.mid { background: var(--gold); } .hpbar i.low { background: var(--red); }
 .hptext { font-size: 15px; font-weight: 700; }
-/* the message box, like a text box under the arena */
 .log { margin: 6px 14px 8px; min-height: 48px; padding: 8px 14px; background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; font-family: var(--hand); font-size: 23px; line-height: 1.15; text-align: left; box-shadow: var(--shadow); }
 .log.hit { color: #1C6B2E; } .log.miss { color: #A42020; } .log.crit { color: #7A5300; }
 
@@ -246,7 +242,7 @@ p { margin: 8px 0; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .choice[disabled] { opacity: .5; cursor: not-allowed; }
 
-/* While a task is open in battle the arena collapses to one row (sprite + plate for each side), so the task stays visible above the keypad */
+/* Task open in battle: arena collapses to one row so the task stays above the keypad */
 .screen.tasking .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 6px; padding: 4px 14px 2px; align-items: center; }
 .screen.tasking .plate { padding: 3px 8px; gap: 1px; border-width: 2px; box-shadow: none; }
 .screen.tasking .plate.enemy { align-self: center; }
@@ -292,7 +288,7 @@ p { margin: 8px 0; }
   .screen.tasking .numpad button { min-height: 40px; }
 }
 
-/* Attack tags: whole-number damage plus plain-language hints */
+/* Attack tags */
 .atk .tags { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; }
 .atk .tag { font-size: 13px; font-weight: 700; border-radius: 999px; padding: 0 8px; line-height: 20px; }
 .atk .tag.tired { background: #FFE3D6; color: #8A2E0E; }
@@ -336,13 +332,13 @@ p { margin: 8px 0; }
 textarea#fbtext { width: 100%; margin-top: 10px; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 18px; color: var(--ink); background: #fff; resize: vertical; }
 textarea#fbtext:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
 
-/* ---------- Look: soft background glow, calmer shadows, gentle hover ---------- */
+/* ---------- Look ---------- */
 body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,255,.14), transparent 65%), radial-gradient(700px 480px at 110% 110%, rgba(255,201,60,.07), transparent 60%); background-attachment: fixed; }
 .btn, .choice, .atk, .opt, .oitem, .node, .item, .toggle, .gradechip { transition: transform .12s ease, box-shadow .12s ease, filter .15s ease, background-color .2s ease, border-color .2s ease; }
 @media (hover: hover) { .btn:not(:disabled):hover, .choice:hover, .atk:hover, .opt:not(:disabled):hover, .oitem:hover, .item:hover, .toggle:hover, .gradechip:hover { filter: brightness(1.04); transform: translateY(-1px); } }
 :focus-visible { outline: 4px solid var(--focus); outline-offset: 2px; }
 
-/* ---------- Motion (all short and soft; switched off for "reduce motion") ---------- */
+/* ---------- Motion ---------- */
 .enter { animation: screenIn .22s ease-out both; }
 @keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .sprite .mon { animation: bob 3.2s ease-in-out infinite; }
