@@ -55,6 +55,16 @@ const MONART = (() => {
       <ellipse cx="60" cy="74" rx="6" ry="4" fill="${OUT}"/>${mouth.smile(60, 82, 8)}
       ${eyes(60, 58, 14, 7, 'normal')}
       <path d="M22 96 L30 108 M38 100 L42 112 M98 96 L90 108 M82 100 L78 112" fill="none" ${S(3)}/>`,
+    owl: (c, g, d, l) => `
+      <path d="M32 44 L24 12 L50 32 Z M88 44 L96 12 L70 32 Z" fill="${d}" ${S()}/>
+      <ellipse cx="60" cy="68" rx="40" ry="40" fill="${g.body}" ${S()}/>
+      <path d="M24 64 Q12 90 34 106 Q30 84 40 68 Z M96 64 Q108 90 86 106 Q90 84 80 68 Z" fill="${d}" ${S()}/>
+      <ellipse cx="60" cy="90" rx="20" ry="15" fill="${g.inner}"/>
+      <path d="M50 84 q4 4 8 0 M62 84 q4 4 8 0 M56 94 q4 4 8 0" fill="none" stroke="${d}" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="45" cy="56" r="15" fill="${g.inner}" ${S(2)}/><circle cx="75" cy="56" r="15" fill="${g.inner}" ${S(2)}/>
+      ${eyes(60, 56, 15, 8, 'normal')}
+      <path d="M55 66 L65 66 L60 76 Z" fill="#FF9F2E" ${S(2)}/>
+      <path d="M48 106 L44 114 M54 107 L54 115 M66 107 L66 115 M72 106 L76 114" fill="none" ${S(3.5)}/>`,
     blob: (c, g, d, l) => `
       <path d="M16 74 Q10 30 54 24 Q100 22 104 70 Q104 100 60 102 Q18 102 16 74 Z" fill="${g.body}" ${S()}/>
       <path d="M30 30 Q20 24 26 14 M60 22 Q60 10 70 12 M90 34 Q96 24 104 30" fill="none" ${S(3)}/>
