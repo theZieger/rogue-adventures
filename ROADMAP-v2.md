@@ -9,7 +9,7 @@ beschriebenen Entscheidungen sind verbindlich. Wo etwas offen ist, steht es als 
 
 ### Branches und Pull Requests
 - Integrationsbranch ist `v2`. **Nie direkt auf `v2` oder `main` pushen.**
-- Jeder Schritt arbeitet auf seinem eigenen Branch `v2/NN-kurzname` (Nummer wie in Abschnitt C), abgezweigt
+- Jeder Schritt arbeitet auf seinem eigenen Branch `v2-NN-kurzname` (Bindestrich, nicht Schrägstrich: GitHub erlaubt kein `v2/…`, solange der Branch `v2` existiert) (Nummer wie in Abschnitt C), abgezweigt
   von der aktuellen Spitze von `origin/v2`.
 - Am Ende: Pull Request **gegen `v2`** (nicht gegen `main`). Titel: `v2/NN: <was der Spieler bekommt>`.
   PR-Text: was gebaut wurde, welche Entscheidungen getroffen wurden, wie getestet, bekannte Lücken.
