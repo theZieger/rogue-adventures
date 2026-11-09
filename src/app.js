@@ -130,7 +130,7 @@
     let t, sig;
     for (let i = 0; i < 12; i++) {
       if (CFG().gen) { t = CFG().gen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
-      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, opts && opts.g ? { g: opts.g } : undefined); sig = t.qid; }
+      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run.world }); sig = t.qid; }
       if (!rec.includes(sig)) break;
     }
     rec.push(sig); if (rec.length > 8) rec.shift();
