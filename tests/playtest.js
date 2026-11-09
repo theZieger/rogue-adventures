@@ -6,6 +6,8 @@ const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'
 const SEED=+(process.env.SEED||20261108);
 // W3=1: continue a Zahlenquest adventure in world 3 whose hero has the written methods as attacks
 const W3=process.env.W3==='1';
+// OFF=a,b: these task types are switched off in the parent area, so the hero fights with the others
+const OFF=process.env.OFF||'';
 const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(3), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Funkenbiss',mod:'add'},{name:'Flammenstoß',mod:'sub'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
@@ -13,7 +15,7 @@ Math.random=prng(SEED+1);
 const NOW=Date.parse(process.env.NOW||'2026-12-23T10:00:00');
 // Fake time: the game's battle pauses (up to ~2 s) and the bot's waits run 100× faster; TIME=1 plays in real time.
 const TIME=+(process.env.TIME||0.01);
-const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const st=win.setTimeout; win.setTimeout=(fn,ms,...a)=>st.call(win,fn,(ms||0)*TIME,...a); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); } });
+const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const st=win.setTimeout; win.setTimeout=(fn,ms,...a)=>st.call(win,fn,(ms||0)*TIME,...a); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); if(OFF) win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ off: { [process.env.MODE]: OFF.split(',') } })); } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
