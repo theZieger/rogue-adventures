@@ -68,6 +68,7 @@ async function solveKnow(forceWrong){
 }
 async function step(){
   if(await closeModal()) return;
+  if($('#later')){ click($('#later')); return; }
   const tx=text();
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }

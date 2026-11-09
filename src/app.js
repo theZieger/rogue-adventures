@@ -33,7 +33,8 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true });
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' } });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
@@ -43,6 +44,7 @@
     const m = defaultMeta(); const raw = load(KEY_META, null);
     if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
     for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter']) if (!isObj(m[k])) m[k] = {};
+    for (const k of ['setup', 'storage']) { const d = defaultMeta()[k]; for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f]) m[k][f] = d[f]; }
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     return m;
   }
@@ -287,15 +289,23 @@
   const DRAW_STEPS = ['Zeichne die Erdlinie und darunter die Mutterknolle.', 'Zeichne die Wurzeln nach unten.', 'Zeichne die Ausläufer zur Seite und daran die Tochterknollen.', 'Zeichne den Stängel nach oben mit Seitentrieben.', 'Zeichne die Blätter an die Triebe.', 'Zeichne oben die Blüten und eine kleine Beere.'];
 
   /* ---------- Screens ---------- */
+  const GEAR = '<svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.4 3.35"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="3.2"/></svg>';
+  // Safari (and every browser on iOS) deletes site data after 7 days without a visit, unless the app is on the home screen
+  const evictable = () => { const ua = navigator.userAgent; return (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || (/Safari\//.test(ua) && !/Chrome|Chromium|Edg|Android|Firefox/.test(ua))) && !navigator.standalone && !!window.matchMedia && window.matchMedia('(display-mode: browser)').matches; };
+  const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
   function screenTitle() {
-    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+    if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
+    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="parentbtn" id="parents">${GEAR} Eltern</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
+        ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
         <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
         <p class="center muted">Gespielt: ${meta.runs} · Gewonnen: ${meta.wins}</p>
       </div></div></div>`);
-    let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
+    let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
+    $('#parents').onclick = () => askPin(screenParent);
+    if ($('#warnx')) { const seen = () => { meta.storage.warnedAt = new Date().toISOString(); saveAll(); }; $('#warnx').onclick = () => { seen(); screenTitle(); }; $('#warnp').onclick = () => { seen(); askPin(() => screenParent('save')); }; }
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
@@ -303,6 +313,68 @@
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
+  }
+
+  /* ---------- First start, PIN, parental gate ---------- */
+  const setupDone = (how) => { meta.setup[how] = true; meta.setup.at = meta.setup.at || new Date().toISOString(); saveAll(); };
+  function screenSetup() {
+    render(`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
+      <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
+      <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
+      <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div></div></div>`);
+    $('#setpin').onclick = () => setPin(screenTitle, screenSetup);
+    $('#setload').onclick = () => screenParent('save', screenSetup);
+    $('#later').onclick = () => { setupDone('skipped'); screenTitle(); };
+  }
+  // a parental gate, not encryption: four digits are guessed quickly anyway, the hash only keeps the PIN out of plain sight
+  const pinHash = (p) => { let h = 2166136261; for (const c of 'lernquest:' + p) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return 'h1' + (h >>> 0).toString(36); };
+  let pinFails = 0, pinLockUntil = 0;
+  // one numpad screen for entering the PIN, choosing one and the parental gate
+  function screenCode(o) {
+    let val = ''; const len = o.len || 4;
+    render(`<div class="screen">${topbar(o.title)}<div class="scroll"><div class="card codecard"><p>${o.text}</p>${o.task ? `<div class="codetask">${o.task}</div>` : ''}<div class="codeval ${o.task ? 'plain' : ''}" id="cval" role="img"></div><p id="cmsg" class="cmsg" role="status">${esc(o.msg || '')}</p>${o.forgot ? '<button class="linkbtn" id="forgot">PIN vergessen?</button>' : ''}</div></div>
+      <div class="bottom"><div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Bestätigen">✓</button><button class="cancel" id="back" style="grid-column:1/-1">Zurück</button></div></div></div>`);
+    const paint = () => { const el = $('#cval'); el.innerHTML = o.task ? esc(val) : Array.from({ length: len }, (_, i) => `<i class="${i < val.length ? 'on' : ''}"></i>`).join(''); el.setAttribute('aria-label', o.task ? (val || 'leer') : `${val.length} von ${len} Ziffern`); };
+    const keys = [...app.querySelectorAll('.numpad [data-k]')];
+    const fail = (msg) => { val = ''; paint(); $('#cmsg').textContent = msg; };
+    function press(k) {
+      if (keys[0].disabled) return;
+      if (k === 'del') val = val.slice(0, -1);
+      else if (k === 'ok') { if (val && (o.task || val.length === len)) { const v = val; val = ''; o.onCode(v, fail); } return; }
+      else if (val.length < len) val += k;
+      paint();
+      if (!o.task && val.length === len) { const v = val; val = ''; o.onCode(v, fail); }
+    }
+    $('.numpad').onclick = (e) => { const b = e.target.closest('[data-k]'); if (b) press(b.dataset.k); };
+    keyHandler = (e) => { const k = /^[0-9]$/.test(e.key) ? e.key : e.key === 'Backspace' || e.key === 'Delete' ? 'del' : e.key === 'Enter' ? 'ok' : null; if (k) { e.preventDefault(); press(k); } };
+    $('#back').onclick = () => o.back();
+    if (o.forgot) $('#forgot').onclick = o.forgot;
+    paint();
+    const wait = pinLockUntil - Date.now();
+    if (o.lock && wait > 0) {
+      keys.forEach((b) => { b.disabled = true; }); $('#cmsg').textContent = 'Dreimal falsch. Bitte 30 Sekunden warten.';
+      setTimeout(() => { if (!keys[0].isConnected) return; keys.forEach((b) => { b.disabled = false; }); $('#cmsg').textContent = ''; }, wait);
+    }
+  }
+  function askPin(then) {
+    if (!meta.pin) return then();
+    screenCode({ title: 'Elternbereich', text: 'Bitte die Eltern-PIN eingeben.', lock: true, back: screenTitle, forgot: () => screenGate(then), onCode: (v, fail) => {
+      if (pinHash(v) === meta.pin) { pinFails = 0; return then(); }
+      if (++pinFails < 3) return fail('Falsche PIN.');
+      pinFails = 0; pinLockUntil = Date.now() + 30000; askPin(then);
+    } });
+  }
+  function setPin(done, back) {
+    const first = (msg) => screenCode({ title: 'PIN festlegen', text: 'Vier Ziffern für den Elternbereich wählen.', msg, back, onCode: (a) => screenCode({ title: 'PIN festlegen', text: 'Zur Kontrolle dieselbe PIN noch einmal eingeben.', back: () => first(), onCode: (b) => {
+      if (a !== b) return first('Die beiden Eingaben waren verschieden. Bitte neu wählen.');
+      meta.pin = pinHash(a); setupDone('done'); done();
+    } }) });
+    first();
+  }
+  function screenGate(then, msg) {
+    const a = rnd(13, 29), b = rnd(13, 29);
+    screenCode({ title: 'PIN vergessen?', text: 'Zur Kontrolle eine Aufgabe für Erwachsene. Danach eine neue PIN wählen.', task: `${a} · ${b} = ?`, msg, back: screenTitle,
+      onCode: (v) => (+v === a * b ? setPin(then, screenTitle) : screenGate(then, 'Das stimmt nicht. Hier ist eine neue Aufgabe.')) });
   }
 
   /* ---------- Changelog (CHANGELOG.md via build.py) ---------- */
@@ -643,24 +715,54 @@
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
   }
-  function screenParent() {
-    const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
+  function screenParent(jump, back) {
+    back = typeof back === 'function' ? back : screenTitle;
+    const again = (j) => screenParent(j, back);
+    const card = (h, body) => `<div class="card parent-stats"><h3>${h}</h3>${body}</div>`;
+    const note = (t) => `<p class="pnote">${t}</p>`;
+    const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return card(`${MODES[m].icon} ${MODES[m].title}`, `<table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table>`); }).join('');
     const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = MK.L_POOL.find((p) => p.id === id) || MK.K_POOL.find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
-    const settings = `<div class="card parent-stats" style="margin-bottom:12px"><h3>🎛️ Was soll geübt werden?</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.</p>${MODE_KEYS.map((m) => `<h4 style="margin:10px 0 4px">${MODES[m].icon} ${MODES[m].title}</h4><div class="toggles">${Object.keys(MODES[m].modules).map((k) => { const on = !offList(m).includes(k); return `<button class="toggle ${on ? 'on' : ''}" data-m="${m}" data-k="${k}" aria-pressed="${on}">${on ? '✔' : '✖'} ${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</button>`; }).join('')}</div>`).join('')}<p id="tmsg" class="muted" role="status" style="color:var(--red);min-height:1em;margin:6px 0 0"></p></div>`;
-    const soundCard = `<div class="card parent-stats" style="margin-bottom:12px"><h3>Töne</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</p><button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button></div>`;
-    render(`<div class="screen">${topbar('Elternbereich')}<div class="scroll">${settings}${soundCard}${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
+    const toggles = MODE_KEYS.map((m) => `<h4 style="margin:10px 0 4px">${MODES[m].icon} ${MODES[m].title}</h4><div class="toggles">${Object.keys(MODES[m].modules).map((k) => { const on = !offList(m).includes(k); return `<button class="toggle ${on ? 'on' : ''}" data-m="${m}" data-k="${k}" aria-pressed="${on}">${on ? '✔' : '✖'} ${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</button>`; }).join('')}</div>`).join('');
+    const SECTIONS = { practice: 'Üben', progress: 'Fortschritt', save: 'Spielstand', appsec: 'App' };
+    const version = (document.querySelector('meta[name=app-version]') || {}).content || '?';
+    render(`<div class="screen">${topbar('Elternbereich')}<nav class="jumpbar" aria-label="Abschnitte">${Object.entries(SECTIONS).map(([id, t]) => `<button data-jump="${id}">${t}</button>`).join('')}</nav><div class="scroll"><div class="stack">
+      ${meta.pin ? '' : `<div class="card warncard"><p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
+      <h2 class="psec" id="p-practice">Üben</h2>
+      ${card('Klasse', gradeTabs())}
+      ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
-      <div class="stack" style="margin-top:14px"><button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn secondary" id="pfeedback">Idee oder Fehler melden</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button></div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
-    $('#back').onclick = screenTitle;
-    $('#rtut').onclick = () => { meta.seenTut = {}; saveAll(); screenParent(); };
-    $('#rstats').onclick = () => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); screenParent(); };
+      <h2 class="psec" id="p-progress">Fortschritt</h2>
+      ${tables}
+      ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}
+      <h2 class="psec" id="p-save">Spielstand</h2>
+      ${card('Sichern und laden', note('Bald: den Spielstand als Code sichern und auf einem anderen Gerät laden.'))}
+      ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Spielen. Als App auf dem Startbildschirm ist er sicherer.'))}
+      <button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button>
+      <h2 class="psec" id="p-appsec">App</h2>
+      ${card('Töne', `${note('Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).')}<button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button>`)}
+      ${card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt.')}<button class="btn small" id="pset">PIN festlegen</button>`)}
+      <button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="pfeedback">Idee oder Fehler melden</button>
+      <p class="center muted">Lernquest, Version ${esc(version)}</p>
+      </div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
+    const scroller = $('.scroll');
+    const go = (id) => { const el = $('#p-' + id); if (el) scroller.scrollTop = el.offsetTop - scroller.offsetTop - 8; };
+    app.querySelectorAll('[data-jump]').forEach((b) => { b.onclick = () => go(b.dataset.jump); });
+    if (jump) go(jump);
+    $('#back').onclick = () => back();
+    const keepScroll = (fn) => () => { const y = scroller.scrollTop; fn(); $('.scroll').scrollTop = y; };
+    $('#rtut').onclick = keepScroll(() => { meta.seenTut = {}; saveAll(); again(); });
+    $('#rstats').onclick = keepScroll(() => { meta.stats = defaultMeta().stats; meta.know = {}; saveAll(); again(); });
     $('#rall').onclick = () => { const ov = modal(`<h2>Wirklich alles löschen?</h2><p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht. Das kann man nicht rückgängig machen.</p><div class="stack"><button class="btn" id="yes" style="background:var(--red)">Ja, alles löschen</button><button class="btn secondary" id="no">Abbrechen</button></div>`); $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }; };
-    $('#pfeedback').onclick = () => screenFeedback(screenParent);
-    $('#psound').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenParent(); };
+    $('#pfeedback').onclick = () => screenFeedback(() => again('appsec'));
+    $('#psound').onclick = keepScroll(() => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
+    const newPin = () => setPin(() => again('appsec'), () => again('appsec'));
+    for (const id of ['pnew', 'pset', 'pchange']) if ($('#' + id)) $('#' + id).onclick = newPin;
+    if ($('#pdel')) $('#pdel').onclick = () => { meta.pin = ''; saveAll(); again('appsec'); };
+    app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = keepScroll(() => { meta.grade = +b.dataset.grade; saveAll(); again(); }); });
     app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
       const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
       if (i >= 0) off.splice(i, 1); else { if (Object.keys(MODES[m].modules).length - off.length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }
-      meta.off[m] = off; saveAll(); const y = $('.scroll').scrollTop; screenParent(); $('.scroll').scrollTop = y; }; });
+      meta.off[m] = off; saveAll(); keepScroll(again)(); }; });
   }
 
   /* ---------- Feedback ---------- */
@@ -696,6 +798,7 @@
     };
   }
 
+  if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle };
 })();
