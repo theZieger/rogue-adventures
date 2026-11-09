@@ -447,11 +447,15 @@ const MQ = (() => {
   const BAU_MODULES = {
     wz: { name: 'Würfel zählen', icon: '🧊', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     fq: { name: 'Quader ergänzen', icon: '📦', maxTier: 2, worldCap: [1, 2], dmg: 14 },
-    netz: { name: 'Würfelnetze', icon: '🎲', maxTier: 1, worldCap: [1, 1], dmg: 16 },
+    netz: { name: 'Würfel- und Quadernetze', icon: '🎲', maxTier: 2, worldCap: [1, 2], dmg: 16 },
     koerper: { name: 'Körper erkennen', icon: '🔺', maxTier: 1, worldCap: [1, 1], dmg: 10 },
     band: { name: 'Bandornamente', icon: '🔁', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     lage: { name: 'Parallel oder senkrecht', icon: '📐', maxTier: 1, worldCap: [1, 1], dmg: 10 },
     umfang: { name: 'Umfang', icon: '📏', maxTier: 2, worldCap: [1, 2], dmg: 14 },
+    flaeche: { name: 'Flächeninhalt', icon: '🟨', maxTier: 2, worldCap: [1, 2], dmg: 14 },
+    spiegel: { name: 'Achsensymmetrie', icon: '🦋', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    bewegung: { name: 'Spiegeln, drehen, schieben', icon: '🔄', maxTier: 1, worldCap: [1, 1], dmg: 12 },
+    vieleck: { name: 'Dreiecke und Vierecke', icon: '🔷', maxTier: 2, worldCap: [1, 2], dmg: 12 },
   };
   const INK = '#1C2541', LINE = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
   const svgFig = (x, y, w, h, body, label) => `<svg viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
@@ -503,13 +507,19 @@ const MQ = (() => {
   const shapeKey = (cells) => SYM.map((f) => JSON.stringify(normCells(cells.map(f)))).sort()[0];
   // Fold the squares around the first one like rolling a die: n is where the square ends up on the cube,
   // u and v are the grid's right and down directions on it. A net uses each of the 6 sides exactly once.
-  function cubeNet(cells) {
-    if (cells.length !== 6) return false;
-    const key = ([r, c]) => r + ',' + c, at = new Set(cells.map(key)), neg = (a) => a.map((x) => -x);
+  // fn(cell, frame, parent cell) is called in the order the squares are reached
+  function fold(cells, fn) {
+    const key = ([r, c]) => r + ',' + c, has = new Set(cells.map(key)), neg = (a) => a.map((x) => -x);
     const frames = new Map([[key(cells[0]), { n: [0, 0, -1], u: [1, 0, 0], v: [0, 1, 0] }]]); const queue = [cells[0]];
     const roll = [[0, 1, (f) => ({ n: f.u, u: neg(f.n), v: f.v })], [0, -1, (f) => ({ n: neg(f.u), u: f.n, v: f.v })], [1, 0, (f) => ({ n: f.v, u: f.u, v: neg(f.n) })], [-1, 0, (f) => ({ n: neg(f.v), u: f.u, v: f.n })]];
+    if (fn) fn(cells[0], frames.get(key(cells[0])), null);
     while (queue.length) { const [r, c] = queue.shift(); const f = frames.get(key([r, c]));
-      for (const [dr, dc, g] of roll) { const k = key([r + dr, c + dc]); if (at.has(k) && !frames.has(k)) { frames.set(k, g(f)); queue.push([r + dr, c + dc]); } } }
+      for (const [dr, dc, g] of roll) { const p = [r + dr, c + dc], k = key(p); if (has.has(k) && !frames.has(k)) { frames.set(k, g(f)); queue.push(p); if (fn) fn(p, frames.get(k), [r, c]); } } }
+    return frames;
+  }
+  function cubeNet(cells) {
+    if (cells.length !== 6) return false;
+    const frames = fold(cells);
     return frames.size === 6 && new Set([...frames.values()].map((f) => f.n.join())).size === 6;
   }
   const connected = (cells) => { const key = ([r, c]) => r + ',' + c, at = new Set(cells.map(key)), seen = new Set([key(cells[0])]), q = [cells[0]];
@@ -526,7 +536,41 @@ const MQ = (() => {
     const S = 14, h = Math.max(...cells.map((p) => p[0])) + 1, w = Math.max(...cells.map((p) => p[1])) + 1, ox = (size - w) * S / 2, oy = (size - h) * S / 2;
     return svgFig(-2, -2, size * S + 4, size * S + 4, cells.map(([r, c]) => `<rect x="${ox + c * S}" y="${oy + r * S}" width="${S}" height="${S}" fill="#F4C542" ${LINE}/>`).join(''), 'Netz aus 6 Quadraten');
   }
-  function genNetz() {
+  // Quadernetz: the squares of a cube net become rectangles; each face lies along two edges of the Quader (L = length per axis)
+  const axisOf = (v) => v.findIndex((x) => x !== 0);
+  const noBlock = (cells) => !cells.some(([r, c]) => [[r, c + 1], [r + 1, c], [r + 1, c + 1]].every((p) => cells.some((q) => q.join() === p.join())));
+  const normRects = (rs) => { const x0 = Math.min(...rs.map((r) => r[0])), y0 = Math.min(...rs.map((r) => r[1])); return rs.map(([x, y, w, h]) => [x - x0, y - y0, w, h]); };
+  function boxRects(cells, L) {
+    const rect = new Map(), key = (p) => p.join();
+    fold(cells, (p, f, from) => { const w = L[axisOf(f.u)], h = L[axisOf(f.v)];
+      if (!from) { rect.set(key(p), [0, 0, w, h]); return; }
+      const [x, y, pw, ph] = rect.get(key(from)), dr = p[0] - from[0], dc = p[1] - from[1];
+      rect.set(key(p), [dc > 0 ? x + pw : dc < 0 ? x - w : x, dr > 0 ? y + ph : dr < 0 ? y - h : y, w, h]); });
+    return normRects(cells.map((p) => rect.get(key(p))));
+  }
+  const overlap = (rs) => rs.some((a, i) => rs.some((b, j) => j > i && a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3]));
+  const rectKey = (rs) => JSON.stringify(rs.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]));
+  function rectSVG(rs, size) {
+    const S = 7, w = Math.max(...rs.map((r) => r[0] + r[2])), h = Math.max(...rs.map((r) => r[1] + r[3])), ox = (size - w) * S / 2, oy = (size - h) * S / 2;
+    return svgFig(-2, -2, size * S + 4, size * S + 4, rs.map(([x, y, rw, rh]) => `<rect x="${ox + x * S}" y="${oy + y * S}" width="${rw * S}" height="${rh * S}" fill="#F4C542" ${LINE}/>`).join(''), `Netz aus ${rs.length} Rechtecken`);
+  }
+  function genQuader() {
+    const L = shuffle(pick([[1, 2, 3], [2, 3, 4], [2, 3, 5], [2, 4, 5]])); let cells, good;
+    do { cells = normCells(parseNet(pick(NETS)).map(pick(SYM))); good = boxRects(cells, L); } while (overlap(good));
+    const nets = [good], keys = new Set([rectKey(good)]);
+    while (nets.length < 3) {
+      let n;
+      // wrong nets: one face missing at an end, or six faces where two land on the same side
+      if (nets.length === 1 && Math.random() < 0.5) { const leaves = cells.map((p, i) => i).filter((i) => cells.filter((q) => Math.abs(q[0] - cells[i][0]) + Math.abs(q[1] - cells[i][1]) === 1).length === 1); const i = pick(leaves); n = normRects(good.filter((_, j) => j !== i)); }
+      else { const sh = almostNet(); if (!noBlock(sh)) continue; n = boxRects(normCells(sh.map(pick(SYM))), L); if (overlap(n)) continue; }
+      if (!keys.has(rectKey(n))) { keys.add(rectKey(n)); nets.push(n); }
+    }
+    const size = Math.max(...nets.flat().map((r) => Math.max(r[0] + r[2], r[1] + r[3]))); const order = shuffle([0, 1, 2]);
+    const options = order.map((i) => rectSVG(nets[i], size));
+    return { kind: 'choice', q: 'Welches Netz lässt sich zu einem Quader falten?', options, answer: options[order.indexOf(0)], rects: order.map((i) => nets[i]), svgOpts: true, tall: true, why: 'Dieses Netz lässt sich zu einem Quader falten:', sig: rectKey(good) };
+  }
+  function genNetz(t) {
+    if (t === 2) return genQuader();
     const net = normCells(parseNet(pick(NETS)).map(pick(SYM))); const nets = [net]; const keys = new Set([shapeKey(net)]);
     while (nets.length < 3) { const n = almostNet(); if (!keys.has(shapeKey(n))) { keys.add(shapeKey(n)); nets.push(normCells(n.map(pick(SYM)))); } }
     const size = Math.max(...nets.flat().map((p) => Math.max(...p))) + 1; const order = shuffle([0, 1, 2]);
@@ -604,26 +648,161 @@ const MQ = (() => {
   const hasHole = (cells) => { const at = new Set(cells.map((p) => p.join())); const seen = new Set(['-1,-1']); const q = [[-1, -1]];
     while (q.length) { const [r, c] = q.pop(); for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (p[0] >= -1 && p[0] <= 6 && p[1] >= -1 && p[1] <= 6 && !at.has(p.join()) && !seen.has(p.join())) { seen.add(p.join()); q.push(p); } }
     return seen.size + cells.length < 64; };
+  // a connected shape of n squares in rows 0 … R−1 and columns 0 … C−1
+  function blob(n, R, C) {
+    const cells = [[rnd(0, R - 1), rnd(0, C - 1)]];
+    while (cells.length < n) { const [r, c] = pick(cells); const p = pick([[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]); if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < C && !cells.some((q) => q.join() === p.join())) cells.push(p); }
+    return cells;
+  }
+  // squared paper W × H; shapes: { cells, fill, line } with line = thin lines between the squares stay visible
+  const PS = 16;
+  function paperSVG(W, H, shapes, extra, label) {
+    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * PS} 0 V${H * PS}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * PS} H${W * PS}" stroke="#C9D3E8"/>`;
+    const body = shapes.map((s) => s.cells.map(([r, c]) => `<rect x="${c * PS}" y="${r * PS}" width="${PS}" height="${PS}" fill="${s.fill || '#FFE08A'}"${s.line ? ` stroke="${s.line}"` : ''}/>`).join('')
+      + edges(s.cells).map(([x1, y1, x2, y2]) => `<path d="M${x1 * PS} ${y1 * PS} L${x2 * PS} ${y2 * PS}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`).join('')).join('');
+    return svgFig(-2, -2, W * PS + 4, H * PS + 4, grid + body + (extra || ''), label);
+  }
+  const at = (cells, dr, dc) => cells.map(([r, c]) => [r + dr, c + dc]);
+  const span = (cells) => [Math.max(...cells.map((p) => p[0])) + 1, Math.max(...cells.map((p) => p[1])) + 1];
   function genUmfang(t) {
     let cells;
     if (t === 1) { const w = rnd(2, 5), h = rnd(1, 3); cells = []; for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) cells.push([r, c]); }
-    else do { cells = [[rnd(1, 3), rnd(1, 3)]]; const n = rnd(5, 7);
-      while (cells.length < n) { const [r, c] = pick(cells); const p = pick([[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]); if (p[0] >= 0 && p[0] <= 4 && p[1] >= 0 && p[1] <= 5 && !cells.some((q) => q.join() === p.join())) cells.push(p); }
-      cells = normCells(cells); } while (hasHole(cells));
-    const S = 16, H = Math.max(...cells.map((p) => p[0])) + 3, W = Math.max(...cells.map((p) => p[1])) + 3; const shift = cells.map(([r, c]) => [r + 1, c + 1]);
-    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * S} 0 V${H * S}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * S} H${W * S}" stroke="#C9D3E8"/>`;
-    const fill = shift.map(([r, c]) => `<rect x="${c * S}" y="${r * S}" width="${S}" height="${S}" fill="#FFE08A"/>`).join('');
-    const border = edges(shift).map(([x1, y1, x2, y2]) => `<path d="M${x1 * S} ${y1 * S} L${x2 * S} ${y2 * S}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`).join('');
-    return task('', [edges(cells).length], { svg: svgFig(-2, -2, W * S + 4, H * S + 4, grid + fill + border, 'Fläche auf Kästchenpapier'), ask: 'Wie lang ist der Umfang? Zähle die Kästchenseiten am Rand.', cells, sig: JSON.stringify(cells) });
+    else do cells = normCells(blob(rnd(5, 7), 5, 6)); while (hasHole(cells));
+    const [h, w] = span(cells);
+    return task('', [edges(cells).length], { svg: paperSVG(w + 2, h + 2, [{ cells: at(cells, 1, 1) }], '', 'Fläche auf Kästchenpapier'), ask: 'Wie lang ist der Umfang? Zähle die Kästchenseiten am Rand.', cells, sig: JSON.stringify(cells) });
+  }
+
+  // Flächeninhalt: whole squares only
+  function genFlaeche(t) {
+    if (t === 1) {
+      const area = normCells(blob(rnd(5, 12), 4, 6)); const [h, w] = span(area);
+      return task('', [area.length], { svg: paperSVG(w + 2, h + 2, [{ cells: at(area, 1, 1), line: '#C9A227' }], '', 'Fläche auf Kästchenpapier'), ask: 'Wie groß ist der Flächeninhalt? Zähle die Kästchen.', area, sig: JSON.stringify(area) });
+    }
+    // about a third have the same area in a different shape
+    const n = rnd(6, 11), same = Math.random() < 0.35; const a = normCells(blob(n, 4, 4)); let b;
+    do b = normCells(blob(same ? n : n + pick([-2, -1, 1, 2]), 4, 4)); while (shapeKey(b) === shapeKey(a));
+    const [ha, wa] = span(a), [hb, wb] = span(b), H = Math.max(ha, hb) + 2, W = wa + wb + 5;
+    const name = (txt, c, w) => `<text x="${(c + w / 2) * PS}" y="${PS * 0.78}" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">${txt}</text>`;
+    const pic = paperSVG(W, H, [{ cells: at(a, 1, 1), line: '#C9A227' }, { cells: at(b, 1, wa + 3), fill: '#9ED0FF', line: '#5B8DC9' }], name('A', 1, wa) + name('B', wa + 3, wb), 'zwei Flächen A und B');
+    const options = ['Figur A', 'Figur B', 'Beide gleich groß'];
+    return { kind: 'choice', q: 'Welche Figur hat den größeren Flächeninhalt?', pic, options, answer: a.length === b.length ? options[2] : a.length > b.length ? options[0] : options[1], figs: [a, b], cols: 1, why: `Figur A hat ${a.length} Kästchen, Figur B hat ${b.length} Kästchen.`, sig: shapeKey(a) + shapeKey(b) };
+  }
+
+  // Achsensymmetrie: a half of k columns next to a vertical axis; srt gives a position-exact key
+  const srt = (cells) => JSON.stringify(cells.slice().sort((p, q) => p[0] - q[0] || p[1] - q[1]));
+  const mirrorAt = (cells, k) => cells.map(([r, c]) => [r, 2 * k - 1 - c]);
+  const AXIS = (x1, y1, x2, y2) => `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="#C0392B" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+  function half(R, k) { let L; do L = blob(rnd(3, 6), R, k); while (!L.some((p) => p[1] === k - 1)); return L; }
+  // one square moved to another free place next to the shape
+  function nudge(cells, R, k) {
+    for (;;) { const i = rnd(0, cells.length - 1); const rest = cells.filter((_, j) => j !== i); if (!connected(rest)) continue;
+      const free = []; for (const [r, c] of rest) for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !cells.some((q) => q.join() === p.join())) free.push(p);
+      if (free.length) return rest.concat([pick(free)]); }
+  }
+  function genSpiegel(t) {
+    const R = 4, k = 3;
+    if (t === 1) {
+      let L, shape, sym;
+      do { L = half(R, k); sym = Math.random() < 0.5; const other = sym ? L : nudge(L, R, k); shape = L.concat(mirrorAt(other, k)); }
+      while (!connected(shape) || (!sym && srt(shape) === srt(mirrorAt(shape, k))));
+      // turned on its side half of the time: the axis is then horizontal
+      const flat = Math.random() < 0.5; const cells = flat ? shape.map(([r, c]) => [c, r]) : shape;
+      const [H, W] = flat ? [2 * k + 2, R + 2] : [R + 2, 2 * k + 2];
+      const axis = flat ? AXIS(0, (k + 1) * PS, W * PS, (k + 1) * PS) : AXIS((k + 1) * PS, 0, (k + 1) * PS, H * PS);
+      return { kind: 'choice', q: 'Ist die Figur achsensymmetrisch zur gestrichelten Linie?', pic: paperSVG(W, H, [{ cells: at(cells, 1, 1) }], axis, 'Figur mit Spiegelachse'), options: ['ja', 'nein'], answer: sym ? 'ja' : 'nein', shape: cells, k, flat, cols: 2,
+        why: sym ? 'Jedes Kästchen hat auf der anderen Seite der Linie ein Spiegelbild.' : 'Klappst du die Figur an der Linie um, passen die beiden Hälften nicht aufeinander.', sig: srt(cells) };
+    }
+    // complete the mirror image: the right half in its own columns 0 … k−1, next to the axis
+    let L, right, opts;
+    do {
+      L = half(R, k); right = L.map(([r, c]) => [r, k - 1 - c]);
+      const cand = [L, right.map(([r, c]) => [R - 1 - r, c]), nudge(right, R, k), nudge(right, R, k), L.map(([r, c]) => [R - 1 - r, c])];
+      opts = [right]; for (const x of cand) if (!opts.some((o) => srt(o) === srt(x))) opts.push(x);
+    } while (opts.length < 3);
+    const halves = shuffle(opts.slice(0, 3)), axisAt = (x) => AXIS(x, 0, x, (R + 2) * PS);
+    const options = halves.map((hf) => paperSVG(k + 1, R + 2, [{ cells: at(hf, 1, 0) }], axisAt(0), 'rechte Hälfte'));
+    const answer = options[halves.indexOf(right)];
+    const pic = paperSVG(2 * k + 2, R + 2, [{ cells: at(L, 1, 1) }], axisAt((k + 1) * PS) + `<text x="${(k + 2.5) * PS}" y="${(R / 2 + 1.4) * PS}" text-anchor="middle" font-size="24" font-weight="700" fill="${INK}">?</text>`, 'linke Hälfte mit Spiegelachse');
+    return { kind: 'choice', q: 'Welches Bild ergänzt die Figur zu einer achsensymmetrischen Figur?', pic, options, answer, left: L, halves, svgOpts: true, why: 'So sieht das Spiegelbild aus:', sig: srt(L) };
+  }
+
+  // gespiegelt, gedreht oder verschoben: the shape has no symmetry, so the three cases never look alike
+  const TRANSFORMS = { verschoben: [SYM[0]], gedreht: [SYM[1], SYM[2], SYM[3]], gespiegelt: [SYM[4]] };
+  function genBewegung() {
+    let P; do P = normCells(blob(rnd(4, 5), 3, 3)); while (new Set(SYM.map((f) => JSON.stringify(normCells(P.map(f))))).size < 8);
+    const kind = pick(Object.keys(TRANSFORMS)); const Q = normCells(P.map(pick(TRANSFORMS[kind])));
+    const [hp, wp] = span(P), [hq, wq] = span(Q), dp = rnd(0, 1), dq = rnd(0, 1), H = Math.max(hp + dp, hq + dq) + 2, W = wp + wq + 5;
+    const arrow = `<path d="M${(wp + 1.6) * PS} ${H * PS / 2} H${(wp + 3.4) * PS} m-6 -5 l6 5 l-6 5" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const pic = paperSVG(W, H, [{ cells: at(P, 1 + dp, 1), fill: '#FF9A8B' }, { cells: at(Q, 1 + dq, wp + 4), fill: '#9ED0FF' }], arrow, 'rote Figur und blaue Figur');
+    const options = Object.keys(TRANSFORMS).sort((x, y) => (x < y ? -1 : 1));
+    return { kind: 'choice', q: 'Aus der roten Figur wird die blaue. Wurde sie gespiegelt, gedreht oder verschoben?', pic, options, answer: kind, from: P, to: Q, cols: 1,
+      why: { verschoben: 'Die Figur liegt genauso da, nur an einer anderen Stelle.', gedreht: 'Die Figur wurde um eine Ecke gedreht, nicht umgeklappt.', gespiegelt: 'Die Figur wurde umgeklappt wie im Spiegel.' }[kind], sig: kind + JSON.stringify(P) };
+  }
+
+  // Dreiecke und Vierecke: corners on the grid points, x to the right, y down
+  const SHAPES = ['Quadrat', 'Rechteck', 'Parallelogramm', 'Dreieck mit rechtem Winkel', 'Dreieck ohne rechten Winkel', 'Viereck ohne parallele Seiten'];
+  // names that are true for a shape (a square is also a rectangle and a parallelogram)
+  const TRUE_FOR = { Quadrat: ['Quadrat', 'Rechteck', 'Parallelogramm'], Rechteck: ['Rechteck', 'Parallelogramm'] };
+  const cross = ([ax, ay], [bx, by]) => ax * by - ay * bx, vec = (p, q) => [q[0] - p[0], q[1] - p[1]];
+  const sides = (pts) => pts.map((p, i) => vec(p, pts[(i + 1) % pts.length]));
+  const convexOk = (pts) => { const s = sides(pts).map((v, i, a) => cross(v, a[(i + 1) % a.length])); return s.every((x) => x > 0) || s.every((x) => x < 0); };
+  const rightAngles = (pts) => sides(pts).filter((v, i, a) => { const w = a[(i + 1) % a.length]; return v[0] * w[0] + v[1] * w[1] === 0; }).length;
+  function polyPoints(id) {
+    let pts;
+    if (id === 'Quadrat') { const s = rnd(2, 4); pts = [[0, 0], [s, 0], [s, s], [0, s]]; }
+    else if (id === 'Rechteck') { let w, h; do { w = rnd(2, 6); h = rnd(1, 4); } while (w === h); pts = [[0, 0], [w, 0], [w, h], [0, h]]; }
+    else if (id === 'Parallelogramm') { const w = rnd(3, 4), h = rnd(2, 3), s = rnd(1, 2); pts = [[s, 0], [s + w, 0], [w, h], [0, h]]; }
+    else if (id === 'Dreieck mit rechtem Winkel') { const a = rnd(2, 5), b = rnd(2, 4); pts = [[0, 0], [0, b], [a, b]]; }
+    else if (id === 'Dreieck ohne rechten Winkel') do pts = [[rnd(0, 5), 0], [5, rnd(2, 4)], [0, rnd(3, 4)]]; while (!convexOk(pts) || rightAngles(pts) || Math.abs(cross(...sides(pts).slice(0, 2))) < 8);
+    else do pts = [[rnd(1, 3), 0], [5, rnd(1, 3)], [rnd(2, 4), rnd(4, 5)], [0, rnd(2, 4)]]; while (!convexOk(pts) || sides(pts).some((v, i, a) => cross(v, a[(i + 2) % 4]) === 0));
+    // turned by a quarter turn now and then
+    for (let i = rnd(0, 3); i > 0; i--) pts = pts.map(([x, y]) => [-y, x]);
+    const x0 = Math.min(...pts.map((p) => p[0])), y0 = Math.min(...pts.map((p) => p[1]));
+    return pts.map(([x, y]) => [x - x0, y - y0]);
+  }
+  function polySVG(pts) {
+    const W = Math.max(...pts.map((p) => p[0])) + 2, H = Math.max(...pts.map((p) => p[1])) + 2;
+    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * PS} 0 V${H * PS}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * PS} H${W * PS}" stroke="#C9D3E8"/>`;
+    return svgFig(-2, -2, W * PS + 4, H * PS + 4, `${grid}<polygon points="${pts.map(([x, y]) => `${(x + 1) * PS},${(y + 1) * PS}`).join(' ')}" fill="#B5E48C" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`, 'Figur auf Kästchenpapier');
+  }
+  // tier 2: properties; each question lists the names that make it true
+  const PROPS = [
+    ['Welche Figur hat zwei Paar parallele Seiten?', ['Quadrat', 'Rechteck', 'Parallelogramm']],
+    ['Welche Figur hat vier rechte Winkel und vier gleich lange Seiten?', ['Quadrat']],
+    ['Welche Figur hat vier rechte Winkel, aber nicht vier gleich lange Seiten?', ['Rechteck']],
+    ['Welche Figur hat zwei Paar parallele Seiten, aber keinen rechten Winkel?', ['Parallelogramm']],
+    ['Welche Figur hat genau einen rechten Winkel?', ['Dreieck mit rechtem Winkel']],
+    ['Welche Figur hat drei Ecken und keinen rechten Winkel?', ['Dreieck ohne rechten Winkel']],
+  ];
+  // quiz pool per question: names that are clearly false for it (a general Viereck may have one right angle)
+  const PROP_FALSE = (q, yes) => SHAPES.filter((s) => !yes.includes(s) && !(q.includes('genau einen rechten') && s.startsWith('Viereck')));
+  const COUNTS = [
+    ['rechte Winkel', { Quadrat: 4, Rechteck: 4, Parallelogramm: 0, 'Dreieck mit rechtem Winkel': 1, 'Dreieck ohne rechten Winkel': 0 }, ['0', '1', '2', '4']],
+    ['Paare paralleler Seiten', { Quadrat: 2, Rechteck: 2, Parallelogramm: 2, 'Dreieck mit rechtem Winkel': 0, 'Dreieck ohne rechten Winkel': 0 }, ['0', '1', '2']],
+  ];
+  function genVieleck(t) {
+    if (t === 1) {
+      const id = pick(SHAPES), yes = TRUE_FOR[id] || [id]; const tri = id.startsWith('Dreieck');
+      const no = shuffle(SHAPES.filter((s) => !yes.includes(s))).sort((a, b) => (a.startsWith('Dreieck') === tri ? 0 : 1) - (b.startsWith('Dreieck') === tri ? 0 : 1));
+      const pts = polyPoints(id);
+      return { kind: 'choice', q: 'Wie heißt diese Figur?', pic: polySVG(pts), options: shuffle([id, no[0], pick(no.slice(1, 3))]), answer: id, shape: id, pts, cols: 1,
+        why: { Quadrat: 'Vier gleich lange Seiten und vier rechte Winkel.', Rechteck: 'Vier rechte Winkel, aber nicht alle Seiten gleich lang.', Parallelogramm: 'Gegenüberliegende Seiten sind parallel, es gibt keinen rechten Winkel.', 'Dreieck mit rechtem Winkel': 'Drei Ecken, eine davon ist ein rechter Winkel.', 'Dreieck ohne rechten Winkel': 'Drei Ecken, keine davon ist ein rechter Winkel.', 'Viereck ohne parallele Seiten': 'Vier Ecken, aber keine zwei Seiten sind parallel.' }[id], sig: 'n' + id + JSON.stringify(pts) };
+    }
+    if (Math.random() < 0.5) {
+      const [q, yes] = pick(PROPS); const right = pick(yes);
+      return { kind: 'choice', q, options: shuffle([right].concat(shuffle(PROP_FALSE(q, yes)).slice(0, 2))), answer: right, yes, cols: 1, sig: q };
+    }
+    const [what, val, opts] = pick(COUNTS); const id = pick(Object.keys(val)); const right = String(val[id]);
+    return { kind: 'choice', q: `Wie viele ${what} hat ein ${id}?`, pic: polySVG(polyPoints(id)), options: [right].concat(shuffle(opts.filter((o) => o !== right)).slice(0, 2)).sort(), answer: right, shape: id, cols: 1, sig: what + id };
   }
 
   function bauGenerate(mod, tier) {
     tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
-    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang }[mod](tier);
+    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang, flaeche: genFlaeche, spiegel: genSpiegel, bewegung: genBewegung, vieleck: genVieleck }[mod](tier);
     if (!tk.kind) tk.kind = 'num';
     if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
-    // one tutorial per task type
-    return Object.assign(tk, { mod, tier, group: mod + ':1' });
+    // one tutorial per task type, a second one where a tier brings something new
+    return Object.assign(tk, { mod, tier, group: BAU_TUT[mod + ':' + tier] ? mod + ':' + tier : mod + ':1' });
   }
   const BAU_TUT = {
     'wz:1': { title: 'Würfel zählen', steps: ['Der Bauplan zeigt das Gebäude von oben. Die Zahl in einem Feld sagt, wie viele Würfel dort übereinander stehen.', 'Bauplan mit 2, 1, 3 und 1: Rechne 2 + 1 + 3 + 1.', 'Das Gebäude hat 7 Würfel.'] },
@@ -632,14 +811,22 @@ const MQ = (() => {
     'koerper:1': { title: 'Körper erkennen', steps: ['Würfel: 6 gleich große Quadrate als Flächen. Quader: auch 6 Flächen, aber nicht alle gleich groß.', 'Kugel: rund, ohne Ecken und Kanten. Zylinder: oben und unten ein Kreis.', 'Kegel: unten ein Kreis, oben eine Spitze. Pyramide: unten ein Viereck, oben eine Spitze.'] },
     'band:1': { title: 'Bandornamente', steps: ['Ein Bandornament ist ein Muster, das sich immer wiederholt.', 'Suche das Stück, das sich wiederholt: ▲ ● ● ▲ ● ● ▲ … Das Stück ist ▲ ● ●.', 'Nach dem letzten ▲ kommen ● ●. Also geht es mit ● ● weiter.'] },
     'lage:1': { title: 'Parallel oder senkrecht', steps: ['Parallel: Die Linien sind überall gleich weit voneinander entfernt und treffen sich nie.', 'Senkrecht: Die Linien treffen sich in einem rechten Winkel. Prüfe ihn mit der Ecke eines Blatts Papier.', 'Beispiel Tür: Die linke und die rechte Kante sind parallel. Die obere und die linke Kante stehen senkrecht zueinander.', 'Treffen sich die Linien schräg, dann ist es weder noch.'] },
+    'netz:2': { title: 'Quadernetze', steps: ['Ein Quader hat 6 Rechtecke als Flächen. Je zwei gegenüberliegende sind gleich groß.', 'Ein Quadernetz hat also 6 Rechtecke, immer 3 Paare gleich große. Fehlt eins, kann der Quader nicht zugehen.', 'Wo zwei Rechtecke aneinanderstoßen, müssen die Kanten gleich lang sein. Beim Falten wird daraus eine Kante des Quaders.', 'Die Rechtecke liegen wie bei einem Würfelnetz: Eine Reihe aus 4 mit einem Rechteck oben und einem unten lässt sich falten.'] },
+    'flaeche:1': { title: 'Flächeninhalt', steps: ['Der Flächeninhalt sagt, wie groß eine Fläche ist. Du zählst, wie viele Kästchen sie bedeckt.', 'Der Umfang ist etwas anderes: der Weg einmal um den Rand herum.', 'Rechteck 4 Kästchen lang und 2 hoch: 4 + 4 = 8 Kästchen. Der Flächeninhalt ist 8 Kästchen, der Umfang 12 Kästchenseiten.'] },
+    'flaeche:2': { title: 'Flächen vergleichen', steps: ['Zähle bei beiden Figuren die Kästchen.', 'Figur A hat 7 Kästchen, Figur B hat 8. Figur B hat den größeren Flächeninhalt.', 'Zwei Figuren können ganz verschieden aussehen und trotzdem gleich viele Kästchen haben. Dann sind sie gleich groß.'] },
+    'spiegel:1': { title: 'Achsensymmetrie', steps: ['Eine Figur ist achsensymmetrisch, wenn beide Hälften beim Umklappen genau aufeinanderpassen. Die Linie dazwischen heißt Spiegelachse.', 'Prüfe Kästchen für Kästchen: Ein Kästchen 2 Felder links von der Linie braucht ein Kästchen 2 Felder rechts davon, in derselben Reihe.', 'Fehlt auch nur ein Spiegelbild, ist die Figur nicht achsensymmetrisch.'] },
+    'spiegel:2': { title: 'Spiegelbild ergänzen', steps: ['Die rechte Hälfte ist das Spiegelbild der linken Hälfte.', 'Was direkt an der Spiegelachse liegt, liegt auch im Spiegelbild direkt an der Achse. Was weit weg ist, bleibt weit weg.', 'Beispiel: Ein Kästchen ganz links in der obersten Reihe kommt im Spiegelbild ganz nach rechts, auch in die oberste Reihe.'] },
+    'bewegung:1': { title: 'Spiegeln, drehen, schieben', steps: ['Verschoben: Die Figur liegt genauso da wie vorher, nur an einer anderen Stelle.', 'Gedreht: Die Figur wurde um eine Ecke gedreht, zum Beispiel eine Vierteldrehung. Sie wurde nicht umgeklappt.', 'Gespiegelt: Die Figur wurde umgeklappt. Zeigt bei einem L der Fuß vorher nach rechts und jetzt nach links, ist es gespiegelt.'] },
+    'vieleck:1': { title: 'Dreiecke und Vierecke', steps: ['Quadrat: vier gleich lange Seiten und vier rechte Winkel. Rechteck: vier rechte Winkel, gegenüber gleich lange Seiten.', 'Parallelogramm: Gegenüberliegende Seiten sind parallel, es gibt keinen rechten Winkel.', 'Dreiecke haben drei Ecken. Beim Dreieck mit rechtem Winkel bilden zwei Seiten eine Ecke wie bei einem Blatt Papier.', 'Beispiel: 3 Kästchen lang, 3 Kästchen hoch, alle Ecken rechte Winkel: Das ist ein Quadrat.'] },
+    'vieleck:2': { title: 'Eigenschaften von Vierecken', steps: ['Rechteck und Quadrat haben vier rechte Winkel und zwei Paar parallele Seiten.', 'Ein Parallelogramm hat auch zwei Paar parallele Seiten, aber keinen rechten Winkel.', 'Ein Dreieck mit rechtem Winkel hat genau 1 rechten Winkel. Ein Dreieck hat nie parallele Seiten.'] },
     'umfang:1': { title: 'Umfang', steps: ['Der Umfang ist der Weg einmal ganz um die Fläche herum.', 'Zähle jede Kästchenseite am Rand. Starte an einer Ecke und fahre mit dem Finger herum.', 'Rechteck 3 Kästchen lang und 2 hoch: 3 + 2 + 3 + 2 = 10. Der Umfang ist 10 Kästchenseiten.'] },
   };
   const BAU = {
-    MODULES: BAU_MODULES, TUT: BAU_TUT, generate: bauGenerate, NETS, parseNet, cubeNet, shapeKey, edges, hasHole, SOLIDS, LAGE,
+    MODULES: BAU_MODULES, TUT: BAU_TUT, generate: bauGenerate, NETS, parseNet, cubeNet, shapeKey, normCells, edges, hasHole, SOLIDS, LAGE, SYM,
     STARTERS: [{ id: 'biber', type: 'wasser', shape: 'beaver', names: ['Dammbiber', 'Brückenbiber', 'Brückenbiber'], hp: 75, desc: 'Ein Biber mit Bauhelm. Misst jeden Stamm aus, bevor er ihn zersägt.', perk: 'tank',
       attacks: [{ name: 'Ziegelstapel', mod: 'wz' }, { name: 'Bauklotzwurf', mod: 'koerper' }, { name: 'Lotschnur', mod: 'lage' }, { name: 'Zollstock', mod: 'umfang' }] }],
     WORLD_ATTACKS: { 2: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] },
-    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock' },
+    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock', flaeche: 'Bodenplatten', spiegel: 'Fensterflügel', bewegung: 'Drehkran', vieleck: 'Winkeleisen' },
     ENEMIES: {
       1: {
         normal: [
@@ -669,6 +856,7 @@ const MQ = (() => {
       { title: 'Die Kartons', text: 'Ein Lieferwagen bringt flache Kartons. Der Fahrer fragt, welcher sich zu einem Würfel falten lässt.', opts: [{ label: 'Netz aussuchen', task: 'netz', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Holzkiste', text: 'In der Werkstatt steht eine Kiste mit Holzkörpern. Der Schreiner fragt nach einem Namen und verrät dir dafür eine Eselsbrücke.', opts: [{ label: 'Antworten', task: 'koerper', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Randsteine', text: 'Ein Pflasterer legt Randsteine um einen Platz. Er fragt, wie lang der Rand wird.', opts: [{ label: 'Umfang zählen', task: 'umfang', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Das Fenster', text: 'Der Glaser setzt ein Fenster mit zwei Flügeln ein. Er will wissen, ob das Muster auf beiden Seiten gleich ist. Für die richtige Antwort gibt er dir einen Schild.', opts: [{ label: 'Muster prüfen', task: 'spiegel', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Mittagspause', text: 'Die Bauleute machen Pause und teilen ihre Brote mit dir.', opts: [{ label: 'Mitessen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ],
   };
