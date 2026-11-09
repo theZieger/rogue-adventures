@@ -2,6 +2,7 @@
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
 require('../src/sachkunde.js'); // registers the Sachkunde units in MK.MODES
+require('../src/sachkunde3.js');
 const MONART = require('../src/monsters.js');
 const fails = [];
 const fail = (msg) => fails.push(msg);

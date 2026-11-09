@@ -11,17 +11,19 @@
     kornkammer: MK.MODES.kornkammer,
     wetterstation: MK.MODES.wetterstation,
     kompass: MK.MODES.kompass,
+    wiese: MK.MODES.wiese,
+    frueher: MK.MODES.frueher,
     freunde: MK.MODES.freunde,
     jahrmarkt: MJ.MODE,
   };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
       { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
       { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde'] },
-      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
+      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher'] },
     ] },
   ];
   let mode = 'math';
@@ -384,7 +386,7 @@
     } else if (task.kind === 'parts-find') {
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${plantOf(task.plant).svg({ clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
       const pp = plantOf(task.plant).parts.find((p) => p.id === task.part);
-      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf ${task.plant === 'kreislauf' ? 'die Stelle im Bild' : 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? `<p class="center hintline">🌉 Tipp: ${esc(pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`)}</p>` : ''}`;
+      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf ${['kreislauf', 'wiese'].includes(task.plant) ? 'die Stelle im Bild' : 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? `<p class="center hintline">🌉 Tipp: ${esc(pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`)}</p>` : ''}`;
       container.querySelectorAll('[data-part]').forEach((g) => { g.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } }; g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
     } else if (task.kind === 'karte') {
       const goal = task.target.join('-');

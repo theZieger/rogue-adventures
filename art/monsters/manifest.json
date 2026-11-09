@@ -134,6 +134,11 @@
   "out": "09da7fd96beaf05e",
   "config": "14e1c93b1e80bcea"
  },
+ "falschmeldung-elite": {
+  "raw": "69f89a112c18d45e",
+  "out": "0e604c10aa763e45",
+  "config": "14e1c93b1e80bcea"
+ },
  "fehlerteufel-boss": {
   "raw": "4ca3237eda33633f",
   "out": "b7c84a88aa81d2bf",
@@ -229,6 +234,21 @@
   "out": "254bf97af4ff23ca",
   "config": "14e1c93b1e80bcea"
  },
+ "heimatforscherin-0": {
+  "raw": "329d8cd24a9e0f17",
+  "out": "c29a1982ab46687d",
+  "config": "14e1c93b1e80bcea"
+ },
+ "heimatforscherin-1": {
+  "raw": "5aedd8cde0a0e6ac",
+  "out": "82eaa0c5c9d14cf2",
+  "config": "14e1c93b1e80bcea"
+ },
+ "heimatforscherin-2": {
+  "raw": "41e126f2ada18192",
+  "out": "46c041f2b26f684d",
+  "config": "14e1c93b1e80bcea"
+ },
  "herrdergeisterbahn-boss": {
   "raw": "75cde6207a1a87db",
   "out": "5a0ea9b1f6219af0",
@@ -252,6 +272,21 @@
  "horse-2": {
   "raw": "d9a46d280b52281b",
   "out": "4409cf1fa40f56f6",
+  "config": "14e1c93b1e80bcea"
+ },
+ "imkerin-0": {
+  "raw": "e6ddb36ba8d056a7",
+  "out": "173a5941a123188e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "imkerin-1": {
+  "raw": "2997b8ee794792fb",
+  "out": "0dff2f255dbe53a4",
+  "config": "14e1c93b1e80bcea"
+ },
+ "imkerin-2": {
+  "raw": "a0c5cc8ad84047f0",
+  "out": "730a48f363a58ae6",
   "config": "14e1c93b1e80bcea"
  },
  "jahrmarktwespe": {
@@ -382,6 +417,11 @@
  "luther-2": {
   "raw": "6dbd1313127a452d",
   "out": "1cbc017d3e15a261",
+  "config": "14e1c93b1e80bcea"
+ },
+ "maehmaschine-elite": {
+  "raw": "fbfc89d884f387f0",
+  "out": "c6d5ab7fa0517dba",
   "config": "14e1c93b1e80bcea"
  },
  "maerzsturm": {
@@ -534,6 +574,11 @@
   "out": "e52dfdcdb9de2e91",
   "config": "14e1c93b1e80bcea"
  },
+ "plastiktuete": {
+  "raw": "7b58cfa9f59e0784",
+  "out": "ecdc086cd17f5b3f",
+  "config": "14e1c93b1e80bcea"
+ },
  "potato-0": {
   "raw": "9d4de286447de56d",
   "out": "97a1da07e51f7462",
@@ -644,6 +689,11 @@
   "out": "143fb86f952e7abd",
   "config": "14e1c93b1e80bcea"
  },
+ "schimmelfleck": {
+  "raw": "8ef9c0c00c7d8a41",
+  "out": "89df9373203c22c7",
+  "config": "14e1c93b1e80bcea"
+ },
  "schotterhaufen": {
   "raw": "7922b8a2ac92cab1",
   "out": "c9931bd0d190d6b5",
@@ -664,9 +714,19 @@
   "out": "3179cfa9e1ba26d7",
   "config": "14e1c93b1e80bcea"
  },
+ "spinnennetz": {
+  "raw": "828f58c57ec9bd76",
+  "out": "2dfac31feb2c3a46",
+  "config": "14e1c93b1e80bcea"
+ },
  "spitzer-elite": {
   "raw": "e351c17df53c8d1a",
   "out": "231a9991c5bf7718",
+  "config": "14e1c93b1e80bcea"
+ },
+ "spritzmittel": {
+  "raw": "822ca75699670e5a",
+  "out": "729e4435b40f5895",
   "config": "14e1c93b1e80bcea"
  },
  "staubfahne": {
@@ -674,9 +734,19 @@
   "out": "741140e67d8eb14e",
   "config": "14e1c93b1e80bcea"
  },
+ "strassenwalze-boss": {
+  "raw": "67185200ddca2067",
+  "out": "07d7eaf9aab2920f",
+  "config": "14e1c93b1e80bcea"
+ },
  "streichholzkopf": {
   "raw": "06854e1b9af23b30",
   "out": "81856b83cc3a041e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "stromausfall": {
+  "raw": "d9f94cc8fe04133d",
+  "out": "31fd753cf70179f1",
   "config": "14e1c93b1e80bcea"
  },
  "stummel": {
@@ -714,9 +784,24 @@
   "out": "ff2b3a0fb397368b",
   "config": "14e1c93b1e80bcea"
  },
+ "trampelpfad": {
+  "raw": "6e251e1566a7bfca",
+  "out": "d66399180e682c9d",
+  "config": "14e1c93b1e80bcea"
+ },
+ "trockenheit": {
+  "raw": "1af66eece37f168c",
+  "out": "49ca9cdce05482c0",
+  "config": "14e1c93b1e80bcea"
+ },
  "unwetter-boss": {
   "raw": "f73853ca83c0fc1a",
   "out": "103f16a3f5482e65",
+  "config": "14e1c93b1e80bcea"
+ },
+ "vergessen-boss": {
+  "raw": "7a24a52933278cf6",
+  "out": "b6b82a0edeea6777",
   "config": "14e1c93b1e80bcea"
  },
  "vergesslicher": {
@@ -727,6 +812,11 @@
  "verwechsler": {
   "raw": "df9ec88d067cea3c",
   "out": "77b79b308c51ed8f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "vorurteil": {
+  "raw": "af6f053be8583130",
+  "out": "4dbb2a8cf329fff7",
   "config": "14e1c93b1e80bcea"
  },
  "wetterwart-0": {
