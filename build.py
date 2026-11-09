@@ -15,6 +15,7 @@ woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
 texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
+ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
 # Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
@@ -109,6 +110,9 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {sach}
+</script>
+<script>
+{ethik}
 </script>
 <script>
 {mon}

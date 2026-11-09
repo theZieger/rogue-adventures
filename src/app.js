@@ -12,15 +12,16 @@
     wetterstation: MK.MODES.wetterstation,
     kompass: MK.MODES.kompass,
     freunde: MK.MODES.freunde,
+    ichwelt: MK.MODES.ichwelt,
     jahrmarkt: MJ.MODE,
   };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'ichwelt'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
       { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
-      { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde'] },
+      { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde', 'ichwelt'] },
       { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
     ] },
   ];
