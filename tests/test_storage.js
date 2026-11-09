@@ -1007,7 +1007,9 @@ function topCases() {
     const p = toArena({ owned: { 'top-tip-gummi': true }, top: { tip: 'gummi', ring: 'zahn', disc: 'leicht' } }); const r = p.w.__mq.run;
     const e = r.node.enemy;
     check(!!p.$('.mon.top.live') && p.text().includes('Kreisel-Arena') && p.text().includes('Schwung') && !p.text().includes('❤️') && !p.$('#bag'), 'the arena shows two spinning tops with Schwung instead of life points and no bag');
-    check(e.top.spin === 20 && e.hp === 24 && e.top.wucht === 6 && e.top.panzer === 1 && !p.w.__mq.meta.dex[e.name], 'start values come from the parts (Schwung 20, Wucht 6) and the other top has 24 Schwung; no Monsterbuch entry');
+    // the opponent is a random enemy of the world: the hero's type advantage adds 2 Wucht
+    const bonus = p.w.eval('MQ.BEATS')[p.w.eval('MQ.STARTERS').find((s) => s.id === r.hero.id).type] === e.type ? 2 : 0;
+    check(e.top.spin === 20 && e.hp === 24 && e.top.wucht === 6 + bonus && e.top.panzer === 1 && !p.w.__mq.meta.dex[e.name], 'start values come from the parts (Schwung 20, Wucht 6, +2 with type advantage) and the other top has 24 Schwung; no Monsterbuch entry');
     answer(p, true); p.click('#next');
     check(e.top.spin === 24 && e.top.start === 1 && e.hp === 24, 'a right answer in the start phase gives +4 Schwung');
     const hp = r.hero.hp, items = r.items.join(), xp = r.hero.xp;
@@ -1017,10 +1019,10 @@ function topCases() {
     check(e2.top.spin === 24 && e2.top.start === 2, 'a wrong answer in the start phase gives nothing');
     answer(p2, true); p2.click('#next');
     answer(p2, true); p2.click('#next');
-    check(e2.hp === 18 && e2.top.spin === 28, 'a right answer in a round costs the other top your Wucht');
+    check(e2.hp === 24 - e2.top.wucht && e2.top.spin === 28, 'a right answer in a round costs the other top your Wucht');
     answer(p2, false); p2.click('#next');
     check(e2.top.spin === 23, 'a wrong answer costs your top 6 minus Panzer');
-    while (e2.hp > 6) { answer(p2, true); p2.click('#next'); }
+    while (e2.hp > e2.top.wucht) { answer(p2, true); p2.click('#next'); }
     const m = p2.w.__mq.meta; const before = m.stamps; p2.w.__mq.run.right = 0;
     answer(p2, true);
     const p3 = open(p2.dump()); p3.click('[data-cont="math"]'); const m3 = p3.w.__mq.meta; const r3 = p3.w.__mq.run;
