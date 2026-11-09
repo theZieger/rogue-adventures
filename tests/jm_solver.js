@@ -4,7 +4,7 @@ const UNIT = { km: 100000, m: 100, cm: 1, kg: 1000, g: 1 };
 const qty = (s) => { let v = 0; for (const [, n, u] of s.matchAll(/(½|\d+) (km|m|cm|kg|g)\b/g)) v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u]; return v; };
 const tags = (html, cls) => [...html.matchAll(/<[a-z]+\b[^>]*>/g)].map((m) => m[0]).filter((t) => new RegExp(`class="${cls}"`).test(t))
   .map((t) => Object.fromEntries([...t.matchAll(/data-([a-z0-9-]+)="([^"]*)"/g)].map((a) => [a[1], a[2]])));
-const textOf = (html) => html.replace(/<svg[\s\S]*?<\/svg>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+const textOf = (html) => html.replace(/<svg[\s\S]*?<\/svg>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
 const COLOR = { Rot: 'rot', Blau: 'blau', Gelb: 'gelb', 'Grün': 'gruen' };
 const fact = (n) => (n <= 1 ? 1 : n * fact(n - 1));
 const money = (ct) => [Math.floor(ct / 100), ct % 100];
