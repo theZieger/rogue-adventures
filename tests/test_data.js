@@ -66,5 +66,13 @@ for (const [mode, cfg] of Object.entries(modes)) {
   }
 }
 
+// the monster book and saved runs identify enemies by name, heroes by id
+const enemyNames = [], heroIds = [];
+for (const cfg of Object.values(modes)) {
+  for (const set of Object.values(cfg.enemies)) enemyNames.push(...set.normal.map((e) => e.name), set.elite.name, set.boss.name);
+  heroIds.push(...cfg.starters.map((s) => s.id));
+}
+for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) list.filter((x, i) => list.indexOf(x) !== i).forEach((x) => fail(`duplicate ${what}: ${x}`));
+
 console.log('data fails', fails.length);
 if (fails.length) { console.log(fails.join('\n')); process.exit(1); }

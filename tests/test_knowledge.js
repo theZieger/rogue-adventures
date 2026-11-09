@@ -24,10 +24,19 @@ for(const [mode,cfg] of Object.entries(K.MODES)){ for(const e of cfg.pool){ cons
   if(e.mod==='lt'||e.mod==='ltk'){ if((e.q.match(/___/g)||[]).length!==1) fails.push(tag+' gap text needs exactly one ___'); }
 }}
 // order sources: distinct ids and texts
-for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS})){
+for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS})){
   const ids=arr.map(x=>x.id), texts=arr.map(x=>x.text||x.name);
   if(new Set(ids).size!==ids.length) fails.push(name+' duplicate ids'); if(new Set(texts).size!==texts.length) fails.push(name+' duplicate texts'); }
 
-const ids=K.K_POOL.map(p=>p.id).concat(K.L_POOL.map(p=>p.id)); const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
+// every generated choice has exactly one correct option
+for(const [mode,cfg] of Object.entries(K.MODES)) for(const mod of Object.keys(cfg.modules)) for(let i=0;i<300;i++){ const q=K.generate(mode,mod,1,{},++seq);
+  if(q.kind==='choice'&&q.options.filter(o=>o===q.answer).length!==1) fails.push(mode+' not exactly one correct '+q.qid); }
+// Kirchenjahr: at least 60 questions, every topic of the unit is asked in at least two task types, the ten commandments are complete
+{ const kj=K.MODES.kirchenjahr; if(kj.pool.length<60) fails.push('kirchenjahr has only '+kj.pool.length+' questions');
+  for(const g of ['busstag','konflikt','kreuz','kirche','bibel','gebote','advent','weihnachten','ethik']){ if(!kj.notes[g]) fails.push('kirchenjahr no note '+g);
+    if(new Set(kj.pool.filter(e=>e.g===g).map(e=>e.mod)).size<2) fails.push('kirchenjahr topic '+g+' in fewer than 2 task types'); }
+  if(K.KJ_GEBOTE.length!==10) fails.push('not ten commandments');
+  for(const o of kj.order) if(!kj.notes[o.note]||o.items.length<4) fails.push('kirchenjahr order source '+o.qid); }
+const ids=Object.values(K.MODES).flatMap(c=>c.pool.map(p=>p.id)); const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
 console.log('knowledge fails',fails.length,'duplicate ids',dup.length,'questions',Object.keys(know).length);
 if(fails.length||dup.length){ console.log(fails.slice(0,20), dup); process.exit(1); }

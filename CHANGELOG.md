@@ -9,6 +9,10 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
+- Neues Ethik-Abenteuer „Das Kirchenjahr“: Buß- und Bettag, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten.
+- Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
+- Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.
+- Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.
 - Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.
 - Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.
 - Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
@@ -41,3 +45,4 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.
 - Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.
 - Elternbereich: 5× auf „Lernquest“ tippen.
+

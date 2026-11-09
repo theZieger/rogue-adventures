@@ -63,6 +63,7 @@ Run-Speicherstände mit, deshalb gehört **alles Persistente in meta oder die Ru
 | `pin` | `string` | `''` | 01 | Hash der Eltern-PIN (leer = keine PIN) |
 | `storage` | `{ persisted: bool, warnedAt: string }` | `{persisted:false,warnedAt:''}` | 01 | Dauerspeicher angefragt, Hinweis gezeigt |
 | `backupAt` | `string` ISO-Datum | `''` | 02 | letzter Export |
+| `progressAt` | `string` ISO-Datum | `''` | 02 | letzter Sieg oder Kauf (steuert die Sicherungs-Erinnerung); jeder Schritt, der etwas Wertvolles hinzufügt (Kauf, Ernte, Wochenaufgabe), setzt es |
 | `stamps` | `number` | `0` | 03 | Stempel-Guthaben |
 | `stampsTotal` | `number` | `0` | 03 | je verdient (für Belohnungen nach Taten) |
 | `stampCard` | `{ [yyyy-Www]: 1 \| 2 }` | `{}` | 03/04 | 1 = in der Woche gespielt, 2 = Wochenaufgabe geschafft |
