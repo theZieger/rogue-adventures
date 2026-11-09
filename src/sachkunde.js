@@ -623,6 +623,6 @@ const MS = (() => {
   KK.gen = kkGen(KK);
 
   K.MODES.kornkammer = KO; K.MODES.wetterstation = WE; K.MODES.kompass = KK;
-  return { PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
+  return { PLANTS, partsSVG, choice, orderTask, wantsPool, txt, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
 })();
 if (typeof module !== 'undefined') module.exports = MS;
