@@ -32,6 +32,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.
 - Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.
 - Zahlenquest: Kämpfe bringen Münzen. Auf dem Markt bezahlst du passend, ab Welt 2 rechnest du das Rückgeld aus.
+- Werkbank im Stempelheft: Aus Holz, Stein, Erz und Ernte baust du Tränke, Schilde und Möbel.
+- Meine Hütte: Stell deine Möbel auf, hol dir ein zweites Zimmer und sieh im Regal, was du gesammelt hast.
 - Kleiderkammer im Stempelheft: Strohhut, Schal, Brille, Ranzen, Krone und Ährenkranz für deine Helden, sichtbar auch im Kampf.
 
 ### Verbessert

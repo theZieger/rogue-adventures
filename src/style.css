@@ -531,3 +531,6 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .mblock.covered:disabled { opacity: .6; }
 .mblock small { font-size: 14px; font-weight: 700; }
 @media (max-height: 720px) { .task .figure svg { height: 96px; } .task .figure figure:first-child svg { height: 72px; } .options.pics .opt svg { height: 60px; } }
+.task .story { font-size: 21px; font-weight: 700; line-height: 1.4; margin: 10px 0; }
+.hutroom { width: 100%; height: auto; display: block; border: 3px solid var(--ink); border-radius: 18px; background: #E9D3A8; }
+.rwprev.furn { background: #E9D3A8; padding: 6px; box-sizing: border-box; }

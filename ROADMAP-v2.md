@@ -73,7 +73,8 @@ Run-Speicherstände mit, deshalb gehört **alles Persistente in meta oder die Ru
 | `garden` | `{ beds: [{ crop: string \| null, plantedAt: number }] }` | 4 Beete, leer | 09 | Schulgarten |
 | `top` | `{ tip: string, ring: string, disc: string }` | Standardteile | 10 | zusammengebauter Kreisel |
 | `materials` | `{ [id]: number }` | `{}` | 12/13 | Holz, Stein, Erz, Ernte |
-| `hut` | `{ rooms: number, items: string[] }` | `{rooms:1,items:[]}` | 13 | Meine Hütte |
+| `pantry` | `string[]` (Ids aus `ITEMS`) | `[]` | 13 | Vorrat aus der Werkbank, höchstens drei; kommt beim Start des nächsten Abenteuers in `run.items` und wird geleert |
+| `hut` | `{ rooms: number, items: string[] }` | `{rooms:1,items:[]}` | 13 | Meine Hütte: `rooms` 1 oder 2 (Zweites Zimmer), `items` = Möbel-Ids, die im zweiten Zimmer stehen; gebaute Möbel selbst stehen in `owned['hut-…']` |
 
 Kalenderwoche: ISO-Woche nach ISO 8601, Schlüssel `2026-W46`. Eine kleine Hilfsfunktion `isoWeek(date)` kommt in
 Schritt 03 nach `logic.js` und wird von allen späteren Schritten benutzt. Wochenaufgaben werden aus dem
