@@ -1,7 +1,7 @@
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
   const MODES = {
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, gen: MQ.generate, numTut: MQ.TUT, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, numGen: MQ.generate, numTut: MQ.TUT, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
@@ -130,7 +130,7 @@
     run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
     let t, sig;
     for (let i = 0; i < 12; i++) {
-      if (CFG().gen) { t = CFG().gen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
+      if (CFG().numGen) { t = CFG().numGen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
       else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run.world }); sig = t.qid; }
       if (!rec.includes(sig)) break;
     }

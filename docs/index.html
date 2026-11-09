@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="d23736852e4d">
+<meta name="app-version" content="9ba4e6afbaec">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1221,7 +1221,7 @@ const MJ = (() => {
     { title: 'Die Bank am Riesenrad', text: 'Neben dem Riesenrad steht eine Bank im Schatten. Du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
-  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, gen: generate, numTut: TUT, worlds: 2, title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Längen, Gewichte, Zufall und Sachaufgaben' };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Längen, Gewichte, Zufall und Sachaufgaben' };
   return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG };
 })();
 
@@ -3445,7 +3445,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
   const MODES = {
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, gen: MQ.generate, numTut: MQ.TUT, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, numGen: MQ.generate, numTut: MQ.TUT, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
@@ -3574,7 +3574,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
     let t, sig;
     for (let i = 0; i < 12; i++) {
-      if (CFG().gen) { t = CFG().gen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
+      if (CFG().numGen) { t = CFG().numGen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
       else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run.world }); sig = t.qid; }
       if (!rec.includes(sig)) break;
     }
@@ -4519,7 +4519,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'd23736852e4d';
+  const BUILD = '9ba4e6afbaec';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
