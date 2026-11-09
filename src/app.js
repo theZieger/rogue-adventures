@@ -38,7 +38,7 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, backupAt: '', progressAt: '' });
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
@@ -54,6 +54,10 @@
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
+    const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
+    m.garden = { beds: defaultMeta().garden.beds.map((d, i) => { const b = beds[i]; return isObj(b) && MK.CROPS[b.crop] && Number.isFinite(b.plantedAt) ? { crop: b.crop, plantedAt: b.plantedAt } : d; }) };
+    if (!isObj(m.materials)) m.materials = {};
+    for (const [k, v] of Object.entries(m.materials)) if (!Number.isFinite(v) || v < 0) delete m.materials[k];
     return m;
   }
   const okStat = (v) => isObj(v) && Number.isFinite(v.c) && Number.isFinite(v.t) && Array.isArray(v.hist);
@@ -318,8 +322,9 @@
     render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
-        ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
+        ${gradeTabs()}${gardenCard()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
+        <button class="btn ghost" id="garden">Schulgarten</button>
         <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
         <p class="center muted">Gespielt: ${meta.runs} · Gewonnen: ${meta.wins}</p>
       </div></div></div>`);
@@ -331,6 +336,7 @@
     $('#dex').onclick = screenDex;
     $('#stamps').onclick = $('#stampsTop').onclick = screenStamps;
     $('#news').onclick = screenNews;
+    $('#garden').onclick = screenGarden; if ($('#harvest')) $('#harvest').onclick = screenGarden;
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
@@ -453,6 +459,8 @@
     for (const g of MODE_KEYS) for (const [k, st] of Object.entries(m.stats[g])) { st.c += inc.stats[g][k].c; st.t += inc.stats[g][k].t; }
     for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
+    for (const [k, v] of Object.entries(inc.materials)) m.materials[k] = Math.max(m.materials[k] || 0, v);
+    m.garden.beds.forEach((b, i) => { if (!b.crop) m.garden.beds[i] = inc.garden.beds[i]; });
     // a device without PIN was not set up yet, so it takes the settings from the code
     if (!dev.pin && inc.pin) for (const k of ['off', 'sound', 'grade', 'pin', 'setup']) m[k] = inc[k];
     return m;
@@ -800,7 +808,7 @@
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
-    meta.wins++; giveStamps(10); meta.progressAt = new Date().toISOString(); const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
+    meta.wins++; giveStamps(10); meta.progressAt = new Date().toISOString(); if (mode === 'kartoffel') meta.owned['beet-4'] = true; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
     render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
@@ -825,6 +833,73 @@
       const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel. Danach hast du noch ${meta.stamps - r.price}.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
       $('#yes', ov).onclick = () => { if (!meta.owned[r.id] && meta.stamps >= r.price) { meta.stamps -= r.price; meta.owned[r.id] = true; meta.progressAt = new Date().toISOString(); saveAll(); } screenStamps(); }; }; });
+  }
+  /* ---------- Schulgarten ---------- */
+  const DAY = 864e5;
+  // tests set window.__mq.now; a clock set back or forward only changes what grows, nothing is lost
+  const clock = () => (Number.isFinite(window.__mq && window.__mq.now) ? window.__mq.now : Date.now());
+  const bedDays = (b) => Math.max(0, Math.floor((clock() - b.plantedAt) / DAY));
+  const bedPhase = (b) => { const d = bedDays(b); return d >= 7 ? 3 : d >= 5 ? 2 : d >= 2 ? 1 : 0; };
+  // bed 4 is the reward for winning the Kartoffel-Werkstatt (owned['beet-4'], set in screenVictory)
+  const bedOpen = (i) => i < 3 || !!meta.owned['beet-4'];
+  const ripeBeds = () => meta.garden.beds.filter((b, i) => b.crop && bedOpen(i) && bedPhase(b) === 3);
+  function gardenCard() {
+    const r = ripeBeds(); if (!r.length) return '';
+    const crops = [...new Set(r.map((b) => b.crop))];
+    return `<div class="card gardencard"><p>${crops.length === 1 ? MK.CROPS[crops[0]].ripe : 'Im Schulgarten ist etwas reif.'}</p><button class="btn small" id="harvest">Ernten</button></div>`;
+  }
+  function plantSVG(crop, ph) {
+    const ripe = ph === 3; const col = ripe ? '#E3B341' : '#5DBB4F'; const dark = ripe ? '#A67C1A' : '#2F7A32';
+    let p = '';
+    if (!crop) p = '';
+    else if (ph === 0) p = crop === 'kartoffel' ? '<ellipse cx="40" cy="69" rx="9" ry="6" fill="#D9B26A" stroke="#8A6A30" stroke-width="2"/>' : [26, 40, 54].map((x) => `<ellipse cx="${x}" cy="67" rx="3.5" ry="2.2" fill="#E8C97A" stroke="#8A6A30"/>`).join('');
+    else if (ph === 1) p = '<path d="M40 61V44" stroke="#2F7A32" stroke-width="3"/><path d="M40 52q-11-1-13-11q11 0 13 11zM40 47q11-1 13-11q-11 0-13 11z" fill="#6CCB5F" stroke="#2F7A32" stroke-width="1.5"/>';
+    else if (crop === 'kartoffel') {
+      p = `<path d="M40 61V30M40 46l-14-8M40 40l13-9" stroke="${dark}" stroke-width="3"/>${[[26, 36], [53, 29], [40, 28], [31, 48], [50, 45]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="9" ry="6" fill="${ripe ? '#C9B25A' : col}" stroke="${dark}" stroke-width="1.5"/>`).join('')}`;
+      p += ripe ? [[24, 70], [40, 73], [56, 69]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="5" fill="#D9B26A" stroke="#8A6A30" stroke-width="2"/>`).join('') : [[34, 20], [46, 19]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#F4ECFF" stroke="#8C6BD1" stroke-width="1.5"/><circle cx="${x}" cy="${y}" r="1.8" fill="#F5D33F"/>`).join('');
+    } else p = [24, 40, 56].map((x) => {
+      const stalk = `<path d="M${x} 61V${crop === 'roggen' ? 18 : 24}" stroke="${dark}" stroke-width="2.5"/>`;
+      if (crop === 'hafer') return stalk + [[-1, 30], [1, 34], [-1, 40], [1, 44]].map(([s, y]) => `<path d="M${x} ${y - 6}l${s * 4} 3" stroke="${dark}" stroke-width="1.5"/><ellipse cx="${x + s * 5}" cy="${y}" rx="2.2" ry="4" fill="${col}" stroke="${dark}"/>`).join('');
+      if (crop === 'roggen') return stalk + `<path d="M${x - 2} 10L${x - 5} 1M${x} 9V0M${x + 2} 10L${x + 5} 1" stroke="${dark}" stroke-width="1.2"/><ellipse cx="${x}" cy="17" rx="3" ry="9" fill="${col}" stroke="${dark}" stroke-width="1.5"/>`;
+      return stalk + `<ellipse cx="${x}" cy="20" rx="4.5" ry="9" fill="${col}" stroke="${dark}" stroke-width="1.5"/>`;
+    }).join('');
+    return `<svg class="plant-art" viewBox="0 0 80 80" aria-hidden="true"><rect x="2" y="60" width="76" height="18" rx="6" fill="#7A4E2D"/>${p}</svg>`;
+  }
+  function screenGarden() {
+    const bed = (b, i) => {
+      if (!bedOpen(i)) return `<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
+      if (!b.crop) return `<div class="bed">${plantSVG(null, 0)}<div class="bedname">Beet ${i + 1}</div><div class="beddesc">Noch leer.</div><button class="btn small" data-plant="${i}">Pflanzen</button></div>`;
+      const c = MK.CROPS[b.crop]; const ph = bedPhase(b); const d = bedDays(b);
+      return `<div class="bed${ph === 3 ? ' ripe' : ''}">${plantSVG(b.crop, ph)}<div class="bedname">${c.name}</div><div class="beddesc">${ph === 3 ? 'Reif' : d ? `${[c.put, 'Keimling', c.top][ph]}<br>Tag ${d} von 7` : `Heute ${c.put.toLowerCase()}`}</div>${ph === 3 ? `<button class="btn small" data-harvest="${i}">Ernten</button>` : ''}</div>`;
+    };
+    const got = Object.keys(MK.CROPS).filter((k) => meta.materials[k]).map((k) => `${MK.CROPS[k].name} ${meta.materials[k]}`);
+    render(`<div class="screen">${topbar('Schulgarten')}<div class="scroll"><div class="stack">
+      <div class="card"><p>Beete wachsen auch, wenn du nicht spielst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
+      <div class="beds">${meta.garden.beds.map(bed).join('')}</div>
+      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    $('#back').onclick = screenTitle;
+    app.querySelectorAll('[data-plant]').forEach((el) => { el.onclick = () => plantDialog(+el.dataset.plant); });
+    app.querySelectorAll('[data-harvest]').forEach((el) => { el.onclick = () => harvest(+el.dataset.harvest); });
+  }
+  function plantDialog(i) {
+    const ov = modal(`<h2>Was pflanzt du in Beet ${i + 1}?</h2><div class="stack">${Object.entries(MK.CROPS).map(([k, c]) => `<button class="choice cropchoice" data-crop="${k}">${plantSVG(k, 3)}<div class="meta"><div class="name">${c.name}</div><div class="desc">${c.desc}</div></div></button>`).join('')}<button class="btn secondary" id="no">Zurück</button></div>`);
+    $('#no', ov).onclick = () => ov.remove();
+    ov.querySelectorAll('[data-crop]').forEach((el) => { el.onclick = () => { meta.garden.beds[i] = { crop: el.dataset.crop, plantedAt: clock() }; markWeek(); saveAll(); screenGarden(); }; });
+  }
+  function harvest(i) {
+    const b = meta.garden.beds[i]; if (!b.crop || bedPhase(b) !== 3 || !bedOpen(i)) return screenGarden();
+    const c = MK.CROPS[b.crop]; const t = MK.gardenQuestion(b.crop);
+    const ov = modal(`<h2>${c.name} ernten</h2><p>Erst eine Frage zur Pflanze:</p><div class="question">${esc(t.q)}</div><div class="options" style="margin-top:12px">${t.options.map((o, k) => `<button class="opt" data-i="${k}">${esc(o)}</button>`).join('')}</div><div id="hfb" role="status" aria-live="polite"></div>`);
+    ov.querySelectorAll('.opt').forEach((el) => { el.onclick = () => {
+      const ok = t.options[+el.dataset.i] === t.answer; const first = !meta.owned['outfit-aehrenkranz'];
+      // the harvest pays either way: the question is for learning, not a gate
+      meta.garden.beds[i] = { crop: null, plantedAt: 0 }; meta.materials[b.crop] = (meta.materials[b.crop] || 0) + 1; giveStamps(4);
+      meta.owned['outfit-aehrenkranz'] = true; meta.progressAt = new Date().toISOString(); markWeek(); saveAll();
+      if (ok) SFX.right(); else SFX.wrong();
+      ov.querySelectorAll('.opt').forEach((o) => { o.disabled = true; if (t.options[+o.dataset.i] === t.answer) o.classList.add('right'); else if (o === el) o.classList.add('wrong'); });
+      $('#hfb', ov).innerHTML = `${ok ? '<div class="feedback good">Richtig! ✔</div>' : `<div class="feedback bad">Daneben<small>Richtig wäre: ${esc(t.answer)}</small></div>`}<p>Du hast ${c.name} geerntet.</p>${stampLine(4)}${first ? '<p>Das war deine erste Ernte. Dafür bekommst du den Ährenkranz für die Kleiderkammer.</p>' : ''}<button class="btn" id="hnext">Weiter</button>`;
+      $('#hnext', ov).focus(); $('#hnext', ov).onclick = screenGarden;
+    }; });
   }
   function screenParent(jump, back) {
     back = typeof back === 'function' ? back : screenTitle;
