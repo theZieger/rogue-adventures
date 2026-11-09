@@ -2,7 +2,7 @@
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
   const MODES = {
     math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Muster und Umfang', mine: true },
+    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
@@ -371,7 +371,7 @@
     if (task.kind === 'choice') {
       // svgOpts: the options are pictures (generated markup, not player text)
       container.innerHTML = `<div class="task">${head}${task.fig || ''}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div>${task.pic || ''}<div id="fb" role="status" aria-live="polite"></div></div>`;
-      bottom.innerHTML = `<div class="options ${task.svgOpts ? 'pics' : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}"${task.svgOpts ? ` aria-label="Bild ${i + 1}">${o}` : `>${esc(o)}`}</button>`).join('')}${task.inline ? '<span aria-hidden="true">.</span>' : ''}</div>`;
+      bottom.innerHTML = `<div class="options ${task.svgOpts ? 'pics' + (task.tall ? ' tall' : '') : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}"${task.svgOpts ? ` aria-label="Bild ${i + 1}">${o}` : `>${esc(o)}`}</button>`).join('')}${task.inline ? '<span aria-hidden="true">.</span>' : ''}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong');
         if (task.svgOpts) { finish(ok, `${esc(task.why)}<span class="fbpic">${task.answer}</span>`); return; }
         finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });

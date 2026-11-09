@@ -873,7 +873,7 @@ async function weeklyCases() {
   const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { math: {} } }) });
   check(!!p.$('[data-new="bau"]') && p.text().includes('Die Baustelle'), 'title lists Die Baustelle under Mathe');
   const st = p.w.__mq.meta.stats.bau;
-  check(['wz', 'fq', 'netz', 'koerper', 'band', 'lage', 'umfang'].every((k) => st[k] && st[k].t === 0), 'old save gains stats for the Baustelle');
+  check(['wz', 'fq', 'netz', 'koerper', 'band', 'lage', 'umfang', 'flaeche', 'spiegel', 'bewegung', 'vieleck'].every((k) => st[k] && st[k].t === 0), 'old save gains stats for the Baustelle');
   p.click('[data-new="bau"]'); p.click('#go');
   p.click([...p.d.querySelectorAll('.node.open')][0]);
   const saved = p.dump();
@@ -882,6 +882,17 @@ async function weeklyCases() {
   check(!!p2.$('[data-cont="bau"]') && !!p2.$('[data-new="math"]') && !p2.$('[data-cont="math"]'), 'Baustelle adventure does not touch Zahlenquest');
   p2.click('[data-cont="bau"]');
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Baustelle fight continues after reopening');
+}
+
+// 23b. Saves from before step 22: Baustelle and Jahrmarkt stats without the new task types, a running adventure with old tiers
+{
+  const oldBau = { wz: { c: 5, t: 6, hist: [] }, netz: { c: 2, t: 3, hist: [] }, umfang: { c: 1, t: 1, hist: [] } }, oldJm = { uhr: { c: 4, t: 4, hist: [] }, tafel: { c: 1, t: 2, hist: [] } };
+  const run = { mode: 'bau', world: 2, floor: 2, map: JSON.parse(open().w.eval('JSON.stringify(MQ.makeMap(2))')), hero: { id: 'biber', evo: 1, level: 4, xp: 0, hp: 60, maxHp: 90, attacks: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] }, items: [], tiers: { netz: 1, umfang: 2 }, path: [0], shield: false };
+  const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { bau: oldBau, jahrmarkt: oldJm } }), mathquest_run_bau: JSON.stringify(run) });
+  const m = p.w.__mq.meta;
+  check(m.stats.bau.wz.c === 5 && m.stats.bau.netz.t === 3 && ['flaeche', 'spiegel', 'bewegung', 'vieleck'].every((k) => m.stats.bau[k].t === 0) && m.stats.jahrmarkt.uhr.c === 4 && m.stats.jahrmarkt.fahrplan.t === 0, 'old stats are kept and the new task types start empty');
+  p.click('[data-cont="bau"]'); p.click([...p.d.querySelectorAll('.node.open')][0]);
+  check(p.errors.length === 0 && p.w.__mq.run.tiers.netz === 1, 'old Baustelle adventure continues with its tiers');
 }
 
 // 24. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
