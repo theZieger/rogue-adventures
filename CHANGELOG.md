@@ -26,6 +26,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Duell zu zweit: Zwei Kinder rechnen oder rätseln abwechselnd an einem Gerät gegeneinander.
 - Lesestube in Deutsch und Ethik: Lies eine Fabel, einen Sachtext oder einen Witz und beantworte drei Fragen.
 - Zahlenquest Welt 3: schriftlich addieren und subtrahieren, mit Feldern für den Übertrag.
+- Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.
+- Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.
