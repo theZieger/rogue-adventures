@@ -15,6 +15,7 @@ woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
 texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
+sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3")
 ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
@@ -112,6 +113,7 @@ html = f"""<!DOCTYPE html>
 {sach}
 </script>
 <script>
+{sach3}
 {ethik}
 </script>
 <script>

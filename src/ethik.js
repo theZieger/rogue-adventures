@@ -223,7 +223,7 @@ const ME = (() => {
         { name: 'Das Lampenfieber', type: 'feuer', shape: 'lampenfieber', hp: 26, atk: 3 },
         { name: 'Der Trotzkopf', type: 'normal', shape: 'trotzkopf', hp: 28, atk: 4 },
         { name: 'Die Ausrede', type: 'wasser', shape: 'ausrede', hp: 24, atk: 4 },
-        { name: 'Das Vorurteil', type: 'pflanze', shape: 'vorurteil', hp: 30, atk: 3 },
+        { name: 'Das Schubladendenken', type: 'pflanze', shape: 'schubladendenken', hp: 30, atk: 3 },
       ],
       elite: { name: 'Die Schadenfreude', type: 'normal', shape: 'schadenfreude', hp: 45, atk: 5 },
       boss: { name: 'Die große Angst', acc: 'die große Angst', type: 'wasser', shape: 'grosseangst', hp: 70, atk: 6, boss: true },
@@ -239,7 +239,7 @@ const ME = (() => {
       boss: { name: 'Der Kohlequalm', acc: 'den Kohlequalm', type: 'feuer', shape: 'kohlequalm', hp: 110, atk: 9, boss: true },
     },
   };
-  const MOVES = ['Kniezittern', 'Trotzanfall', 'Schulterzucken', 'Schubladendenken', 'Müllwelle', 'Sturmbö', 'Qualmwolke', 'Hitzewelle'];
+  const MOVES = ['Kniezittern', 'Trotzanfall', 'Schulterzucken', 'Abstempeln', 'Müllwelle', 'Sturmbö', 'Qualmwolke', 'Hitzewelle'];
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung (reward)
   const EVENTS = [

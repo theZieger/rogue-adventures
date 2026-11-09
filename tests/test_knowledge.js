@@ -1,4 +1,4 @@
-const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const E=require('../src/ethik.js');const know={};let seq=0;const fails=[];
+const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S3=require('../src/sachkunde3.js');const E=require('../src/ethik.js');const know={};let seq=0;const fails=[];
 for(const [mode,cfg] of Object.entries(K.MODES)){ for(const mod of Object.keys(cfg.modules)){ for(let t=1;t<=cfg.modules[mod].maxTier;t++){ for(let i=0;i<400;i++){ const q=K.generate(mode,mod,t,know,++seq);
  if(q.kind==='choice'||q.kind==='parts'){ if(!q.options.includes(q.answer)) fails.push(JSON.stringify(q)); if(new Set(q.options).size!==q.options.length) fails.push('dup '+q.q); }
  if(q.kind==='order'){ const ids=q.items.map(x=>x.id), texts=q.items.map(x=>x.text);
@@ -24,7 +24,7 @@ for(const [mode,cfg] of Object.entries(K.MODES)){ for(const e of cfg.pool){ cons
   if(e.mod==='lt'||e.mod==='ltk'||e.mod==='regel'&&!e.rf&&e.o&&e.q.includes('___')){ if((e.q.match(/___/g)||[]).length!==1) fails.push(tag+' gap text needs exactly one ___'); }
 }}
 // order sources: distinct ids and texts
-for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,KJ_OSTERWEG:K.KJ_OSTERWEG,KJ_JAHR:K.KJ_JAHR,F_SCHLICHTEN:K.F_SCHLICHTEN,VERSOEHNEN:E.VERSOEHNEN,BESSER:E.BESSER,ARCHE:E.ARCHE,PAPIER:E.PAPIER,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS,BROT:S.BROT,GRAIN_PARTS:S.GRAIN_PARTS,CYCLE_PARTS:S.CYCLE_PARTS,CEREALS:S.CEREALS,WATER:S.WATER.map(x=>({id:x.id,text:x.label})),FLOAT:S.FLOAT.map(x=>({id:x.acc,text:x.label}))})){
+for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,KJ_OSTERWEG:K.KJ_OSTERWEG,KJ_JAHR:K.KJ_JAHR,F_SCHLICHTEN:K.F_SCHLICHTEN,VERSOEHNEN:E.VERSOEHNEN,BESSER:E.BESSER,ARCHE:E.ARCHE,PAPIER:E.PAPIER,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS,BROT:S.BROT,GRAIN_PARTS:S.GRAIN_PARTS,HERBAR:S3.HERBAR,LAYERS:S3.LAYERS,FLORA:S3.FLORA,CYCLE_PARTS:S.CYCLE_PARTS,CEREALS:S.CEREALS,WATER:S.WATER.map(x=>({id:x.id,text:x.label})),FLOAT:S.FLOAT.map(x=>({id:x.acc,text:x.label}))})){
   const ids=arr.map(x=>x.id), texts=arr.map(x=>x.text||x.name);
   if(new Set(ids).size!==ids.length) fails.push(name+' duplicate ids'); if(new Set(texts).size!==texts.length) fails.push(name+' duplicate texts'); }
 
@@ -115,11 +115,21 @@ for(const [mode,cfg] of Object.entries(K.MODES)) for(const mod of Object.keys(cf
   if(dil(2).length<4) fails.push('ichwelt world 2 has only '+dil(2).length+' dilemma cards');
   for(const e of dil(1).concat(dil(2))) if(/ausgelacht|lacht über|lachen über|Auslachen/.test(e.text)&&!e.opts.some(o=>o.label===E.HELP)) fails.push('ichwelt dilemma without adult help: '+e.title); }
 // Sachkunde: every unit has enough questions, every generated picture task has exactly one fitting answer
-for(const m of ['kornkammer','wetterstation','kompass']){ const cfg=K.MODES[m]; if(cfg.pool.length<40) fails.push(m+' has only '+cfg.pool.length+' questions');
+for(const m of ['kornkammer','wetterstation','kompass','wiese','frueher']){ const cfg=K.MODES[m]; if(cfg.pool.length<40) fails.push(m+' has only '+cfg.pool.length+' questions');
   for(const mod of Object.keys(cfg.modules)) for(let t=1;t<=cfg.modules[mod].maxTier;t++) for(let i=0;i<300;i++){ const q=K.generate(m,mod,t,{},++seq);
     if(q.kind==='choice'||q.kind==='parts'){ if(q.options.filter(o=>o===q.answer).length!==1) fails.push(m+' not exactly one correct '+q.qid); if(q.options.length<2) fails.push(m+' too few options '+q.qid); }
     if(q.kind==='parts'||q.kind==='parts-find'){ if(!S.PLANTS[q.plant]||!S.PLANTS[q.plant].parts.some(p=>p.id===q.part&&p.name===q.answer)) fails.push(m+' bad picture part '+q.qid); }
     if(/[0-9],[0-9]/.test(q.q+(q.options||[]).join('|'))) fails.push(m+' comma number '+q.q); } }
+// Wiese and Früher und heute: at least 50 questions, notes per topic, tier-2 plant traits fit only the answer
+for(const m of ['wiese','frueher']){ const cfg=K.MODES[m]; if(cfg.pool.length<50) fails.push(m+' has only '+cfg.pool.length+' questions');
+  for(const g of new Set(cfg.pool.map(e=>e.g))) if(!cfg.notes[g]) fails.push(m+' no note '+g); }
+for(let i=0;i<500;i++){ const q=K.generate('wiese','pflanze',2,{},++seq); if(!q.qid.startsWith('wimerk_')) continue; const t=S3.TRAITS[+q.qid.slice(7)];
+  const fits=q.options.filter(o=>t.has.includes(S3.FLORA.find(p=>p.name===o).id)); if(fits.length!==1||fits[0]!==q.answer) fails.push('plant trait not unique '+q.q+' '+q.options); }
+for(const p of S3.FLORA) if(!S3.floraSVG(p.id).includes('<svg')) fails.push('no picture '+p.id);
+if(S3.TOOLS.map(x=>x[1]).length!==new Set(S3.TOOLS.map(x=>x[1])).size||S3.TOOLS.map(x=>x[0]).length!==new Set(S3.TOOLS.map(x=>x[0])).size) fails.push('früher/heute pairs not distinct');
+for(const x of S3.LOOKUP) if(!S3.SOURCES.includes(x.a)||x.skip.includes(x.a)||S3.SOURCES.length-1-x.skip.length<2) fails.push('lookup '+x.q);
+for(const l of S3.LINES.concat(S3.DEV)) if(l.items.length!==4) fails.push('order source needs 4 items '+l.qid);
+if(K.MODES.frueher.events.filter(e=>e.dilemma).length<4) fails.push('frueher needs dilemma cards');
 // Wettervorhersage: the answer is read from the card, and temperatures on the card are all different
 for(let i=0;i<300;i++){ const q=K.generate('wetterstation','vorhersage',1,{},++seq); if(!q.pic) continue; const temps=(q.pic.match(/>(−?\d+) °C</g)||[]); if(new Set(temps).size!==4) fails.push('forecast temps not distinct '+temps);
   if(q.q.startsWith('Wie warm')&&!q.pic.includes('>'+q.answer+'<')) fails.push('forecast answer not on card '+q.answer); }
