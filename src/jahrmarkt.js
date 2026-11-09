@@ -20,7 +20,7 @@ const MJ = (() => {
   const qty = (s) => { let v = 0; s.replace(/(½|\d+) (km|m|cm|kg|g)\b/g, (_, n, u) => { v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u]; }); return v; };
   const two = (v, big, small) => { const a = Math.floor(v / UNIT[big]), b = (v % UNIT[big]) / UNIT[small]; return a && b ? `${a} ${big} ${b} ${small}` : a ? `${a} ${big}` : `${b} ${small}`; };
   // amounts and times never break across lines (non-breaking spaces)
-  const euro = (ct) => { const e = Math.floor(ct / 100), c = ct % 100; return e && c ? `${e}\u00a0€\u00a0${c}\u00a0ct` : e ? `${e}\u00a0€` : `${c}\u00a0ct`; };
+  const euro = (ct) => (typeof MQ !== 'undefined' ? MQ : require('./logic.js')).euro(ct).replace(/ /g, '\u00a0');
   const pad = (m) => String(m).padStart(2, '0');
   const tm = (min) => `${Math.floor(min / 60)}:${pad(min % 60)}\u00a0Uhr`;
   const NAMES = ['Mia', 'Ole', 'Lena', 'Tim', 'Emil', 'Lotta', 'Can', 'Aylin', 'Jonas', 'Paula'];

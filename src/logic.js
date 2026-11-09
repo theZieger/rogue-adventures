@@ -16,6 +16,8 @@ const MQ = (() => {
     rest: { name: 'Teilen mit Rest', icon: '🧺', maxTier: 2, worldCap: [1, 2, 2], dmg: 16 },
     rund: { name: 'Runden', icon: '🎯', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
     dopp: { name: 'Verdoppeln und Halbieren', icon: '🪞', maxTier: 2, worldCap: [1, 2, 2], dmg: 10 },
+    // practised at the market, never an attack
+    geld: { name: 'Geld', icon: '🪙', maxTier: 2, worldCap: [1, 2, 2], dmg: 0, shop: true },
   };
   const MODULE_KEYS = Object.keys(MODULES);
 
@@ -154,11 +156,20 @@ const MQ = (() => {
     if (Math.random() < 0.5) { const n = t === 1 ? rnd(6, 49) : rnd(51, 499); return task(`${n}`, [2 * n], { ask: 'Verdopple die Zahl.' }); }
     const n = 2 * (t === 1 ? rnd(6, 49) : rnd(51, 499)); return task(`${n}`, [n / 2], { ask: 'Halbiere die Zahl.' });
   }
+  // money is always shown as „3 € 50 ct“, never with a comma
+  function euro(c) { const e = Math.floor(c / 100), ct = c % 100; return e ? `${e} €${ct ? ` ${String(ct).padStart(2, '0')} ct` : ''}` : `${ct} ct`; }
+  const COINS = [200, 100, 50, 20, 10, 5, 2, 1];
+  function genGeld(t) {
+    if (t === 1) { const cs = Array.from({ length: rnd(2, 4) }, () => pick(COINS.slice(1))).sort((a, b) => b - a); const s = cs.reduce((a, b) => a + b, 0);
+      return task(cs.map(euro).join(' + '), [Math.floor(s / 100), s % 100], { ask: 'Wie viel Geld ist das zusammen?', labels: ['€', 'ct'], money: true }); }
+    const price = rnd(7, 99) * 5; const paid = pick([200, 500, 1000].filter((p) => p > price)); const c = paid - price;
+    return task(`${euro(paid)} − ${euro(price)}`, [Math.floor(c / 100), c % 100], { ask: 'Wie viel Rückgeld bekommst du?', labels: ['€', 'ct'], money: true });
+  }
   function task(text, answers, extra) { return Object.assign({ text, answers }, extra || {}); }
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: genRest, rund: genRund, dopp: genDopp }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: genRest, rund: genRund, dopp: genDopp, geld: genGeld }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -222,6 +233,10 @@ const MQ = (() => {
     dopp: {
       1: { title: 'Verdoppeln und Halbieren', steps: ['Verdoppeln heißt: die Zahl zweimal nehmen. Halbieren heißt: in zwei gleiche Teile teilen.', 'Das Doppelte von 34: 30 + 30 = 60, 4 + 4 = 8. Zusammen 68.', 'Die Hälfte von 74: 74 = 60 + 14. Die Hälfte von 60 ist 30, von 14 ist 7. Zusammen 37.'] },
       2: { title: 'Verdoppeln und Halbieren bis 1000', steps: ['Zerlege die Zahl in Hunderter, Zehner und Einer.', 'Das Doppelte von 236: 400 + 60 + 12 = 472.', 'Die Hälfte von 470: 400 + 70. Die Hälfte von 400 ist 200, von 70 ist 35. Zusammen 235.'] },
+    },
+    geld: {
+      1: { title: 'Passend bezahlen', steps: ['100 ct sind 1 €. Zähle erst die Euro, dann die Cent.', 'Tippe auf eine Ware. Lege dann Münzen auf den Ladentisch, bis es genau der Preis ist.', 'Beispiel: Die Chilischote kostet 85 ct. Du legst 50 ct, 20 ct, 10 ct und 5 ct hin.', '50 + 20 + 10 + 5 = 85. Das sind genau 85 ct. Dann tippst du auf „Bezahlen“.'] },
+      2: { title: 'Rückgeld ausrechnen', steps: ['Du darfst auch mehr Geld hinlegen. Dann bekommst du Rückgeld.', 'Beispiel: Der Trank kostet 1 € 20 ct. Du gibst 2 €.', 'Von 1 € 20 ct bis 2 € fehlen 80 ct. Du bekommst 0 € und 80 ct zurück.', 'Zum Prüfen rechnest du plus: 1 € 20 ct + 80 ct = 2 €.'] },
     },
   });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
@@ -288,6 +303,9 @@ const MQ = (() => {
     stern: { name: 'Fleißbienchen', icon: '🐝', desc: 'Ein Stempel fürs Üben: Dein Monster bekommt sofort 25 XP.', xp: 25 },
   };
 
+  // market prices in cents
+  const PRICES = { trank: 120, beere: 60, schild: 205, keks: 85, lupe: 150, engel: 300 };
+
   const EVENTS = [
     { title: 'Die Brücke', text: 'Ein alter Troll bewacht eine Brücke. „Löse mein Rätsel, dann darfst du rüber und bekommst einen Trank!“', opts: [{ label: 'Rätsel lösen', task: 'riddle', win: { item: 'trank' }, lose: { hp: -8 } }, { label: 'Umweg nehmen (−5 LP)', effect: { hp: -5 } }] },
     { title: 'Der Zahlenbrunnen', text: 'Ein alter Brunnen. In den Rand ist eine Zahl geritzt. Rufe ihre beiden Nachbarzahlen in den Schacht, dann steigt Heilwasser auf.', opts: [{ label: 'Nachbarzahlen rufen', task: 'nb', win: { hp: 25 }, lose: { hp: 0 } }, { label: 'Weitergehen', effect: {} }] },
@@ -299,6 +317,8 @@ const MQ = (() => {
     { title: 'Der Chilibauer', text: 'Ein Bauer hat Chilischoten geerntet, aber ein paar sind schon verkauft. „Rechne aus, wie viele noch da sind, dann bekommst du eine.“', opts: [{ label: 'Minus rechnen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Bienenstock', text: 'Vor einem Bienenstock summt es. Die Bienen fliegen in einer Zahlenreihe ein und aus. Setze die Reihe fort, dann bekommst du ein Fleißbienchen.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Lieber Abstand halten', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
+    { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann gibt er dir 50 ct Finderlohn.', opts: [{ label: 'Geld zählen', task: 'geld', win: { coins: 50 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. Die Fahrt kostet 40 ct. Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Fahrt bezahlen (40 ct)', effect: { coins: -40 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
   ];
 
   /* ---------- Calendar weeks ---------- */
@@ -376,6 +396,6 @@ const MQ = (() => {
     return map;
   }
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;
