@@ -83,6 +83,36 @@ for(let t=1;t<=3;t++) for(let i=0;i<400;i++){ const tk=M.generate('riddle',t); c
   const netKeys=new Set(B.NETS.map(n=>B.shapeKey(B.parseNet(n))));
   check(netKeys.size===11&&foldable.every(s=>netKeys.has(B.shapeKey(s))),'NETS are the 11 cube nets',B.NETS);
   for(const s of shapes.values()) check(B.cubeNet(s)===folds(s),'cubeNet agrees with die rolling',s);
+  // Quadernetz check from the rectangles alone: roll a die over faces that share a whole edge; every face must
+  // measure the box lengths of the two die axes lying along it, and the six faces must land on six sides
+  const AX={top:0,bottom:0,n:1,s:1,e:2,w:2};
+  const boxFolds=(rs)=>{ if(rs.length!==6) return false;
+    const over=rs.some((a,i)=>rs.some((b,j)=>j>i&&a[0]<b[0]+b[2]&&b[0]<a[0]+a[2]&&a[1]<b[1]+b[3]&&b[1]<a[1]+a[3])); if(over) return false;
+    const dir=(a,b)=>a[0]+a[2]===b[0]&&a[1]===b[1]&&a[3]===b[3]?'r':b[0]+b[2]===a[0]&&a[1]===b[1]&&a[3]===b[3]?'l':a[1]+a[3]===b[1]&&a[0]===b[0]&&a[2]===b[2]?'d':b[1]+b[3]===a[1]&&a[0]===b[0]&&a[2]===b[2]?'u':null;
+    const L=[null,null,null]; const put=(ax,v)=>{ if(L[ax]===null) L[ax]=v; return L[ax]===v; };
+    const die=new Map([[0,{top:'top',bottom:'bottom',n:'n',s:'s',e:'e',w:'w'}]]); const q=[0]; let ok=true;
+    while(q.length){ const i=q.shift(), d=die.get(i); ok=ok&&put(AX[d.e],rs[i][2])&&put(AX[d.s],rs[i][3]);
+      rs.forEach((b,j)=>{ const k=dir(rs[i],b); if(k&&!die.has(j)){ const nd=Object.assign({},d); for(const [to,from] of Object.entries(ROLL[k])) nd[to]=d[from]; die.set(j,nd); q.push(j); } }); }
+    return ok&&die.size===6&&new Set([...die.values()].map(x=>x.bottom)).size===6; };
+  check(boxFolds([[1,0,2,1],[0,1,1,3],[1,1,2,3],[3,1,1,3],[4,1,2,3],[1,4,2,1]]),'a 2·1·3 box net folds');
+  check(!boxFolds([[1,0,2,1],[0,1,1,3],[1,1,2,3],[3,1,1,3],[4,1,2,3]]),'five faces do not fold');
+  check(!boxFolds([[1,0,2,1],[0,1,1,3],[1,1,2,3],[3,1,1,3],[4,1,2,3],[1,4,2,2]]),'a face of the wrong size does not fold');
+  // shapes on squared paper, recomputed here
+  const key=(cells)=>JSON.stringify(cells.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]));
+  const norm=(cells)=>{ const r0=Math.min(...cells.map(p=>p[0])),c0=Math.min(...cells.map(p=>p[1])); return key(cells.map(([r,c])=>[r-r0,c-c0])); };
+  const turn=(cells)=>cells.map(([r,c])=>[c,-r]), flipX=(cells)=>cells.map(([r,c])=>[r,-c]);
+  const rots=(cells)=>{ const out=[]; let x=cells; for(let i=0;i<4;i++){ out.push(norm(x)); x=turn(x); } return out; };
+  // properties of the named shapes; r = right angles (unknown for a general Viereck), p = pairs of parallel sides, g = four equal sides
+  const FIG={ Quadrat:{e:4,r:4,p:2,g:true}, Rechteck:{e:4,r:4,p:2,g:false}, Parallelogramm:{e:4,r:0,p:2,g:false}, 'Dreieck mit rechtem Winkel':{e:3,r:1,p:0,g:false}, 'Dreieck ohne rechten Winkel':{e:3,r:0,p:0,g:false}, 'Viereck ohne parallele Seiten':{e:4,r:null,p:0,g:false} };
+  const holds=(q,f)=>{ const c=[]; if(q.includes('zwei Paar parallele')) c.push(f.p===2); if(q.includes('nicht vier gleich lange')) c.push(!f.g); else if(q.includes('vier gleich lange')) c.push(f.g);
+    if(q.includes('vier rechte Winkel')) c.push(f.p===0?false:f.r===4); if(q.includes('keinen rechten Winkel')) c.push(f.p===0&&f.e===4?(f.r===null?null:f.r===0):f.r===0); if(q.includes('genau einen rechten')) c.push(f.r===null?null:f.r===1); if(q.includes('drei Ecken')) c.push(f.e===3);
+    return c.includes(false)?false:c.includes(null)?null:true; };
+  const sideV=(pts)=>pts.map((p,i)=>{ const q=pts[(i+1)%pts.length]; return [q[0]-p[0],q[1]-p[1]]; });
+  const classify=(pts)=>{ const v=sideV(pts), n=pts.length; const right=v.filter((a,i)=>{ const b=v[(i+1)%n]; return a[0]*b[0]+a[1]*b[1]===0; }).length;
+    if(n===3) return right?'Dreieck mit rechtem Winkel':'Dreieck ohne rechten Winkel';
+    const par=[0,1].filter(i=>v[i][0]*v[i+2][1]-v[i][1]*v[i+2][0]===0).length; const len=v.map(a=>a[0]*a[0]+a[1]*a[1]);
+    if(par===2&&right===4) return len.every(x=>x===len[0])?'Quadrat':'Rechteck'; if(par===2) return 'Parallelogramm'; return par===0?'Viereck ohne parallele Seiten':'?'; };
+  let equalAreas=0;
   const one=(tk)=>tk.options.filter(o=>o===tk.answer).length===1&&new Set(tk.options).size===tk.options.length;
   for(const mod of Object.keys(B.MODULES)) for(let t=1;t<=B.MODULES[mod].maxTier;t++) for(let i=0;i<1500;i++){ const tk=B.generate(mod,t);
     check(tk.mod===mod&&B.TUT[tk.group],'bau group has a tutorial',tk.group);
@@ -93,18 +123,35 @@ for(let t=1;t<=3;t++) for(let i=0;i<400;i++){ const tk=M.generate('riddle',t); c
       check((tk.svg.match(/<polygon/g)||[]).length===3*n,'wz: view shows every cube',tk.plan); }
     if(mod==='fq'){ const cells=tk.plan.length*tk.plan[0].length; check(tk.answers[0]===cells*tk.full-n&&tk.plan.flat().every(h=>h<=tk.full),'fq missing',tk.plan);
       check(tk.ask.includes(`${tk.plan[0].length} Würfel lang, ${tk.plan.length} breit und ${tk.full} hoch`),'fq size text',tk.ask); }
-    if(mod==='netz'){ const ok=tk.nets.map(folds); check(ok.filter(Boolean).length===1&&ok[tk.options.indexOf(tk.answer)],'netz: only the answer folds',tk.nets);
+    if(mod==='netz'&&t===1){ const ok=tk.nets.map(folds); check(ok.filter(Boolean).length===1&&ok[tk.options.indexOf(tk.answer)],'netz: only the answer folds',tk.nets);
       check(new Set(tk.nets.map(B.shapeKey)).size===3,'netz: three different shapes',tk.nets); }
     if(mod==='koerper'){ check(tk.shown.includes(tk.solid)&&new Set(tk.shown).size===3,'koerper options',tk.shown);
       check(tk.svgOpts?tk.options.indexOf(tk.answer)===tk.shown.indexOf(tk.solid):tk.answer===B.SOLIDS[tk.solid][0],'koerper answer',tk.solid); }
     if(mod==='band'){ const p=tk.seq.length; check(tk.next[0]===tk.seq[tk.shown%p]&&tk.next[1]===tk.seq[(tk.shown+1)%p]&&tk.shown>=2*p,'band continuation',tk.seq);
       check(new Set(tk.seq.map(String)).size>=2,'band has a pattern',tk.seq); check((tk.pic.match(/<g /g)||[]).length===tk.shown,'band shows the tiles',tk.shown); }
     if(mod==='lage'){ const d=((tk.angles[1]-tk.angles[0])%180+180)%180; check(tk.answer===(d===0?'parallel':d===90?'senkrecht':'weder noch'),'lage',tk.angles); }
+    if(mod==='netz'&&t===2){ const ok=tk.rects.map(boxFolds); check(ok.filter(Boolean).length===1&&ok[tk.options.indexOf(tk.answer)],'quadernetz: only the answer folds to a Quader',tk.rects);
+      check(tk.options.every((o,i)=>(o.match(/<rect/g)||[]).length===tk.rects[i].length),'quadernetz: picture shows every face',tk.rects); }
+    if(mod==='flaeche'&&t===1){ check(tk.answers[0]===tk.area.length&&(tk.svg.match(/<rect/g)||[]).length===tk.area.length&&tk.area.length>=5,'flaeche count',tk.area); }
+    if(mod==='flaeche'&&t===2){ const [a,b]=tk.figs; check(tk.answer===(a.length===b.length?'Beide gleich groß':a.length>b.length?'Figur A':'Figur B'),'flaeche compare',tk.figs);
+      check(B.shapeKey(a)!==B.shapeKey(b)&&(tk.pic.match(/<rect/g)||[]).length===a.length+b.length,'flaeche: two different shapes, both drawn',tk.figs); if(a.length===b.length) equalAreas++; }
+    if(mod==='spiegel'&&t===1){ const k=tk.k; const m=tk.shape.map(([r,c])=>tk.flat?[2*k-1-r,c]:[r,2*k-1-c]);
+      check(tk.answer===(key(m)===key(tk.shape)?'ja':'nein'),'spiegel: symmetric about the drawn axis',tk.shape); check(tk.options.join()==='ja,nein','spiegel options',tk.options); }
+    if(mod==='spiegel'&&t===2){ const want=key(tk.left.map(([r,c])=>[r,2-c])); const hits=tk.halves.map(h=>key(h)===want);
+      check(hits.filter(Boolean).length===1&&hits[tk.options.indexOf(tk.answer)],'spiegel: one option is the mirror image',tk.left); }
+    if(mod==='bewegung'){ const to=norm(tk.to); const kinds=[norm(tk.from)===to&&'verschoben', rots(tk.from).slice(1).includes(to)&&'gedreht', rots(flipX(tk.from)).includes(to)&&'gespiegelt'].filter(Boolean);
+      check(kinds.length===1&&kinds[0]===tk.answer,'bewegung: exactly one way fits',[tk.from,tk.to,kinds]); check(new Set(rots(tk.from).concat(rots(flipX(tk.from)))).size===8,'bewegung: shape has no symmetry',tk.from); }
+    if(mod==='vieleck'){ if(tk.pts) check(classify(tk.pts)===tk.shape,'vieleck: drawn shape is the named one',[tk.pts,tk.shape]);
+      if(t===1){ check(tk.answer===tk.shape,'vieleck name',tk.shape); const truth=(name)=>name===tk.shape||(tk.shape==='Quadrat'&&['Rechteck','Parallelogramm'].includes(name))||(tk.shape==='Rechteck'&&name==='Parallelogramm');
+        check(tk.options.filter(truth).length===1,'vieleck: no other option is also true',tk.options); }
+      else if(tk.q.startsWith('Welche')){ const v=tk.options.map(o=>holds(tk.q,FIG[o])); check(v.filter(x=>x===true).length===1&&v[tk.options.indexOf(tk.answer)]===true&&!v.includes(null),'vieleck property',[tk.q,tk.options,v]); }
+      else { const f=FIG[tk.shape]; check(tk.answer===String(tk.q.includes('rechte Winkel')?f.r:f.p),'vieleck count',[tk.q,tk.answer]); } }
     if(mod==='umfang'){ check(!B.hasHole(tk.cells),'umfang: no hole',tk.cells); const at=new Set(tk.cells.map(p=>p.join()));
       check(tk.answers[0]===4*tk.cells.length-2*tk.cells.filter(([r,c])=>at.has([r,c+1].join())).length-2*tk.cells.filter(([r,c])=>at.has([r+1,c].join())).length,'umfang',tk.cells);
       if(t===1) check(tk.answers[0]===2*(Math.max(...tk.cells.map(p=>p[0]))+1+Math.max(...tk.cells.map(p=>p[1]))+1),'umfang rectangle',tk.cells); }
   }
   check(B.hasHole([[0,0],[0,1],[0,2],[1,0],[1,2],[2,0],[2,1],[2,2]]),'a ring has a hole');
+  check(equalAreas>50,'flaeche: some pairs have the same area in different shapes',equalAreas);
   // Bergwerk ore blocks: division without remainder, still in the Einmaleins
   for(let t=1;t<=2;t++) for(let i=0;i<1000;i++){ const tk=M.generate('rest',t,{zero:true}); const m=tk.text.match(/^(\d+) : (\d+) = \?$/);
     check(m&&tk.answers[1]===0&&tk.answers[0]*(+m[2])===+m[1]&&tk.answers[0]>=2&&tk.answers[0]<=10&&+m[1]<=(t===1?50:99),'ore task',tk); }

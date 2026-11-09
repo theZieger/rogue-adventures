@@ -12,11 +12,16 @@ const mins = (q) => [...q.matchAll(/(\d+):(\d+) Uhr/g)].map((m) => 60 * m[1] + +
 // numbers in reading order; money is turned into cent
 const tokens = (q) => [...q.matchAll(/(\d+) € (\d+) ct|(\d+) €|(\d+) ct|(\d+)/g)].map((m) => (m[1] ? 100 * m[1] + +m[2] : m[3] ? 100 * m[3] : +(m[4] || m[5])));
 
+// Fahrplan: one row per stop with the times of each train in minutes
+const plan = (html) => [...html.matchAll(/<tr><th>([^<]+)<\/th>((?:<td>[^<]*<\/td>)+)<\/tr>/g)].map((m) => ({ stop: m[1], t: [...m[2].matchAll(/<td>(\d+):(\d+)<\/td>/g)].map((x) => 60 * x[1] + +x[2]) }));
+const secs = (s) => [...s.matchAll(/(\d+) (Minuten?|Sekunden?)\b/g)].reduce((v, m) => v + (m[2].startsWith('M') ? 60 : 1) * m[1], 0);
+
 function solve(html, options, REF) {
+  html = html.replace(/<div class="hintline">[\s\S]*?<\/div>/g, ''); // an Eselsbrücke hint is not part of the question
   const t = (html.match(/data-t="([^"]+)"/) || [])[1]; const q = textOf(html);
   const counts = {}; tags(html, 'sector').forEach((s) => { counts[s.color] = (counts[s.color] || 0) + 1; });
   const named = () => [...q.matchAll(/\b(Rot|Blau|Gelb|Grün)\b/g)].map((m) => COLOR[m[1]]);
-  const T = tokens(q);
+  const T = tokens(q); const ask = textOf((html.match(/<div class="question">([\s\S]*?)<\/div>/) || ['', ''])[1]);
   switch (t) {
     case 'clock': { const h = +tags(html, 'hand-h')[0].angle, m = +tags(html, 'hand-m')[0].angle; return [Math.floor(h / 30) || 12, Math.round(m / 6)]; }
     case 'span': { const [a, b] = mins(q); return [b - a]; }
@@ -43,6 +48,13 @@ function solve(html, options, REF) {
       const bars = tags(html, 'jm-bar').map((b) => ({ at: q.indexOf(b.label), v: +b.value })).filter((b) => b.at >= 0).sort((a, b) => a.at - b.at);
       return [q.includes(' mehr ') ? bars[0].v - bars[1].v : q.includes('zusammen') ? bars[0].v + bars[1].v : bars[0].v];
     }
+    case 'plan_dep': { const b = +ask.match(/Bahn (\d)/)[1] - 1; const row = plan(html).find((r) => ask.includes(r.stop)); return options.find((o) => mins(o.replace(/\s+/g, ' '))[0] === row.t[b]); }
+    case 'plan_dur': { const [a, b] = plan(html).filter((r) => ask.includes(r.stop)).sort((x, y) => ask.indexOf(x.stop) - ask.indexOf(y.stop)); return [b.t[0] - a.t[0]]; }
+    case 'plan_late': { const rows = plan(html), goal = mins(ask)[0]; const last = rows[rows.length - 1].t; return `Bahn ${last.filter((x) => x <= goal).length}`; }
+    case 'sec': return [60 * T[0]];
+    case 'secsplit': return [Math.floor(T[0] / 60), T[0] % 60];
+    case 'secjoin': return [60 * T[0] + T[1]];
+    case 'secdiff': { const [a, b] = [...q.matchAll(/braucht ([^.]+)\./g)].map((m) => secs(m[1])); return [b - a]; }
     case 's_mul': return [T[0] * T[1] / 100];
     case 's_sub': return [T[0] - T[1]];
     case 's_add': return [T[0] + T[1]];
