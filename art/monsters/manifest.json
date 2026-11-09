@@ -69,9 +69,19 @@
   "out": "5e474a59f2d7043a",
   "config": "14e1c93b1e80bcea"
  },
+ "blendlicht": {
+  "raw": "af9b09cfb8bd8201",
+  "out": "774a7a9dc19b5d51",
+  "config": "14e1c93b1e80bcea"
+ },
  "bratwurstglut": {
   "raw": "7df8f0f90b500968",
   "out": "dff8a65906be3a26",
+  "config": "14e1c93b1e80bcea"
+ },
+ "brennnesselwall": {
+  "raw": "1b2690a204dfa67b",
+  "out": "0e4953882506daf5",
   "config": "14e1c93b1e80bcea"
  },
  "brennnesselwall-elite": {
@@ -87,6 +97,11 @@
  "buchstabendreher-enemy": {
   "raw": "f057e9d18d48e0e4",
   "out": "da87e0b3d039e7fa",
+  "config": "14e1c93b1e80bcea"
+ },
+ "daemmerung": {
+  "raw": "a3ae384b21ab5c80",
+  "out": "6bc218f92aa7cbeb",
   "config": "14e1c93b1e80bcea"
  },
  "dornengestruepp": {
@@ -237,6 +252,11 @@
  "grosseangst-boss": {
   "raw": "9c6f17080094b611",
   "out": "c1fda3798692e5fe",
+  "config": "14e1c93b1e80bcea"
+ },
+ "gruppendruck-boss": {
+  "raw": "69ca047dbe75443d",
+  "out": "93e71c89f6b8f3d8",
   "config": "14e1c93b1e80bcea"
  },
  "hagelwolke": {
@@ -422,6 +442,11 @@
  "laengstenacht-boss-enemy": {
   "raw": "23813544a0743a31",
   "out": "6cd4bf783ea04600",
+  "config": "14e1c93b1e80bcea"
+ },
+ "laerm": {
+  "raw": "87f65d1d048b2e51",
+  "out": "2859aa2d76baff2e",
   "config": "14e1c93b1e80bcea"
  },
  "lampenfieber": {
@@ -654,6 +679,11 @@
   "out": "202a8f3bddc74e15",
   "config": "14e1c93b1e80bcea"
  },
+ "qualmwolke-elite": {
+  "raw": "46672ba72229c5f0",
+  "out": "963f9d85a49b83b9",
+  "config": "14e1c93b1e80bcea"
+ },
  "radierer-elite": {
   "raw": "7c6681b6fe24e509",
   "out": "22730cdbfcd0febb",
@@ -662,6 +692,11 @@
  "ranklerin": {
   "raw": "b4061962da01fa37",
   "out": "1535d6ae45a55069",
+  "config": "14e1c93b1e80bcea"
+ },
+ "raser-boss": {
+  "raw": "f1b1041eadf2003a",
+  "out": "33b4d17cde258582",
   "config": "14e1c93b1e80bcea"
  },
  "rechenkoenig-boss": {
@@ -754,6 +789,11 @@
   "out": "89df9373203c22c7",
   "config": "14e1c93b1e80bcea"
  },
+ "schlagloch": {
+  "raw": "582a894dd220c739",
+  "out": "33a57c07e1e8ff15",
+  "config": "14e1c93b1e80bcea"
+ },
  "schotterhaufen": {
   "raw": "7922b8a2ac92cab1",
   "out": "c9931bd0d190d6b5",
@@ -762,6 +802,21 @@
  "schubladendenken": {
   "raw": "ba5105fcbbfcf338",
   "out": "263d6b0bd4ba0ffc",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schulaerztin-0": {
+  "raw": "fe0d65dc99f20037",
+  "out": "820ab8af17532bb2",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schulaerztin-1": {
+  "raw": "b68a9acb43e943c8",
+  "out": "a94c9b894fa8dafc",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schulaerztin-2": {
+  "raw": "7522748da2c2b3dd",
+  "out": "c4c155e63d102fd8",
   "config": "14e1c93b1e80bcea"
  },
  "schweissfunke": {
@@ -854,6 +909,11 @@
   "out": "ff2b3a0fb397368b",
   "config": "14e1c93b1e80bcea"
  },
+ "totwinkel-elite": {
+  "raw": "a4576dd2fec8df6c",
+  "out": "7aa1bb679a6df296",
+  "config": "14e1c93b1e80bcea"
+ },
  "trampelpfad": {
   "raw": "6e251e1566a7bfca",
   "out": "d66399180e682c9d",
@@ -882,6 +942,21 @@
  "vergesslicher": {
   "raw": "183cf69e6dd609a2",
   "out": "1413b99404147203",
+  "config": "14e1c93b1e80bcea"
+ },
+ "verkehrspolizistin-0": {
+  "raw": "305f78a77230ca74",
+  "out": "761bbbd411f056ee",
+  "config": "14e1c93b1e80bcea"
+ },
+ "verkehrspolizistin-1": {
+  "raw": "69961f0ec37a1c08",
+  "out": "0cbef9e12025ce47",
+  "config": "14e1c93b1e80bcea"
+ },
+ "verkehrspolizistin-2": {
+  "raw": "d295fde32fe48e72",
+  "out": "34354bb74e476f36",
   "config": "14e1c93b1e80bcea"
  },
  "verwechsler": {

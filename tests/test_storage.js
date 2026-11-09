@@ -696,6 +696,30 @@ async function gardenWinCases() {
   const p5 = open(p4.dump()); p5.click('[data-cont="kompass"]');
   check(p5.errors.length === 0 && p5.text().includes('Truhe'), 'a found treasure opens the chest after reopening');
 }
+// 19. Die fünf Sinne und Sicher im Verkehr: an old save gains their stats; reopening in the Sinnestäuschung keeps the
+// experiment; the Zeichenschule draws the eye on floor 2 and the ear on floor 5
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); for (const m of ['sinne', 'verkehr']) delete old.stats[m];
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && ['sinne', 'verkehr'].every((m) => p1.w.__mq.meta.stats[m] && Object.values(p1.w.__mq.meta.stats[m]).every((x) => x.t === 0)), 'old save without stats for the new Sachkunde units loads with empty stats');
+  const enter = (p, mode, type, floor) => { p.click(`[data-new="${mode}"]`); const y = p.$('.overlay #yes'); if (y) y.click(); p.click('.choice'); p.click('#go'); const r = p.w.__mq.run; if (floor) { r.floor = floor; r.path = Array.from({ length: floor - 1 }, () => 0); r.map[floor - 2].forEach((n) => { n.n = [0]; }); } r.map[(floor || 1) - 1][0].t = type; p.w.__mq.screenMap(); p.click('.node.open'); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); };
+  enter(p1, 'sinne', 'taeusch');
+  check(p1.text().includes('Sinnestäuschung') && p1.text().includes('Versuch 1 von 5'), 'the Sinnestäuschung starts with the first of five experiments');
+  p1.click('.opt.guess'); p1.click('#next');
+  const q2 = p1.$('.labor h3').textContent;
+  const p2 = open(p1.dump()); p2.click('[data-cont="sinne"]');
+  check(p2.errors.length === 0 && p2.text().includes('Versuch 2 von 5') && p2.$('.labor h3').textContent === q2, 'reopening the Sinnestäuschung continues with the same experiment');
+  for (let i = 0; i < 4; i++) { p2.click('.opt.guess'); p2.click('#next'); }
+  check(p2.text().includes('Notizkarte') && p2.w.__mq.run.node.done === true, 'after five experiments the Sinnestäuschung shows the note card and is done');
+  const p3 = open(p2.dump()); enter(p3, 'sinne', 'school', 2);
+  check(p3.errors.length === 0 && p3.$('svg.plant').getAttribute('aria-label') === 'Auge', 'the Zeichenschule on floor 2 draws the eye');
+  const p4 = open(p3.dump()); enter(p4, 'sinne', 'school', 5);
+  check(p4.errors.length === 0 && p4.$('svg.plant').getAttribute('aria-label') === 'Ohr', 'the Zeichenschule on floor 5 draws the ear');
+  const p5 = open(p4.dump()); p5.click('[data-cont="sinne"]');
+  check(p5.errors.length === 0 && p5.$('svg.plant').getAttribute('aria-label') === 'Ohr', 'reopening the Zeichenschule on floor 5 still draws the ear');
+  const p6 = open(p5.dump()); enter(p6, 'verkehr', 'school', 2);
+  check(p6.errors.length === 0 && p6.$('svg.plant').getAttribute('aria-label') === 'Fahrrad', 'the Zeichenschule in Sicher im Verkehr draws the bicycle');
+}
 // 17. Kirchenjahr Teil 2 and Gute Freunde: an old save without Gute Freunde stats loads, a Kirchenjahr adventure
 // started in world 1 continues in world 1, and Gute Freunde adventures are saved
 {

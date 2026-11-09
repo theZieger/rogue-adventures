@@ -26,7 +26,7 @@ function click(el){ if(!el) throw new Error('no element to click: '+text().slice
 let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0, mines=0, arenas=0;
 const cents=(x)=>{ const m=x.trim().match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); if(!m) throw new Error('not money: '+x); return (+(m[1]||0))*100+(+(m[2]||0)); };
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
-let colTasks=0, readNodes=0, crafted=false, fromPantry=false;
+let colTasks=0, readNodes=0, schools=0, crafted=false, fromPantry=false;
 // written methods: work result and carries out column by column from the numbers on screen
 async function solveColumns(forceWrong){
   const label=$('.colcalc').getAttribute('aria-label'); const m=label.match(/^(\d+) ([+−·]) (\d+)(?: \+ (\d+))?$/); if(!m) throw new Error('column task not parsed '+label);
@@ -148,12 +148,12 @@ async function step(){
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); if(!fromPantry){ fromPantry=true; if(!w.__mq.run.items.includes('schild')||w.__mq.meta.pantry.length) throw new Error('pantry not taken into the adventure'); } return; }
   if($('.node.open')){ const nodes=$$('.node.open');
-    const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
+    const special=nodes.find(n=>['Forscherlabor','Sinnestäuschung','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')!=='Schatzkarte') labs++; else maps++; click(special); return; }
     // steer towards a Forscherlabor/Schatzkarte/Bergwerk or the Kreisel-Arena further up, so the bot plays them whatever the seed –
     // never at the cost of the weekly boss or the Lesestube; in even worlds the arena goes first, as it often shares floors with the Bergwerk
     { const r=w.__mq.run; const reach=(ts,f,i)=>{ const nd=r.map[f]&&r.map[f][i]; return !!nd&&(ts.includes(nd.t)||nd.n.some(j=>reach(ts,f+1,j))); };
       let pool=nodes; for(const t of ['weekboss','lesen']){ const k=pool.filter(n=>reach([t],r.floor-1,+n.dataset.n)); if(k.length) pool=k; }
-      const goals=[['labor','karte','bergwerk'],['arena']]; if(r.world%2===0) goals.reverse();
+      const goals=[['labor','taeusch','karte','bergwerk'],['arena']]; if(r.world%2===0) goals.reverse();
       for(const ts of goals){ const ways=pool.filter(n=>reach(ts,r.floor-1,+n.dataset.n)); const way=ways.find(n=>n.classList.contains('markt'))||ways[0];
         if(way){ if(way.classList.contains('weekboss')) weekbossFights++; if(way.classList.contains('lesen')) readNodes++; click(way); return; } } }
     // head for the Lesestube and the weekly boss when the path can still reach them; the market only when it lies on that way
@@ -172,7 +172,7 @@ async function step(){
   if($('.market')){ await shop(); return; }
   if($('#topend')) arenas++;
   if($('#next')){ click($('#next')); return; }
-  if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
+  if($('#go')&&text().includes('Merk-Check')){ schools++; click($('#go')); return; }
   if($('#train')){ rests++; click(Math.random()<0.5?$('#train'):$('#heal')); return; }
   if($('.bottom .btn[data-i]')&&tx.includes('kein Richtig oder Falsch')){ events++; dilemmas++; const opts=$$('.bottom .btn[data-i]'); click(opts[Math.floor(Math.random()*opts.length)]); if(text().includes('Denk mal nach:')) consequences++; return; }
   if($('.bottom .btn[data-i]')){ events++; click($('.bottom .btn[data-i]:not([disabled])')); return; }
@@ -196,6 +196,8 @@ async function step(){
   const goals=w.__mq.weeklyGoals(); const done=goals.filter((g,i)=>(m.weekly.progress[i]||0)>=g.n).length;
   console.log('weekly', m.weekly.week, 'boss fights', weekbossFights, 'goals done', done, JSON.stringify(m.weekly.progress));
   if(mode==='wetterstation'&&!labs){ console.error('PLAYTEST FAIL: the bot never reached the Forscherlabor'); process.exit(1); }
+  if(mode==='sinne'&&!labs){ console.error('PLAYTEST FAIL: the bot never reached the Sinnestäuschung'); process.exit(1); }
+  if(['sinne','verkehr','kartoffel','kornkammer'].includes(mode)&&!schools){ console.error('PLAYTEST FAIL: the bot never drew in the Zeichenschule'); process.exit(1); }
   if(mode==='kompass'&&!maps){ console.error('PLAYTEST FAIL: the bot never reached the Schatzkarte'); process.exit(1); }
   if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }
   if(['math','bau'].includes(mode)&&!W3&&!mines){ console.error('PLAYTEST FAIL: never reached the Bergwerk'); process.exit(1); }
