@@ -320,6 +320,184 @@ const MK = (() => {
     { title: 'Das spanische Schiff', text: 'Ein Schiff aus Peru legt an. Der Kapitän stellt dir eine Frage über die Reise der Kartoffel.', opts: [{ label: 'Antworten', task: 'ltk', g: 'herkunft', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
   ];
 
+  /* ---------- DEUTSCH: Wörterwerkstatt und Satzbaustelle (Wortlisten in woerter.js) ---------- */
+  const W = typeof MW !== 'undefined' ? MW : require('./woerter.js');
+  const cap = (s) => s[0].toUpperCase() + s.slice(1);
+  const noun = (w) => w.slice(w.indexOf(' ') + 1);
+  const ARTS = ['der', 'die', 'das'];
+  // a task's ids come from its words, so adding words to woerter.js keeps the learning history of the others
+  const W_POOL = [];
+  W.doppel.forEach(([r, f]) => W_POOL.push({ id: 'dk_' + r, mod: 'doppel', g: 'doppel', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0,
+    why: /ck/.test(r) ? 'Nach einem kurzen Selbstlaut schreibt man ck, nie kk.' : /tz/.test(r) ? 'Nach einem kurzen Selbstlaut schreibt man tz, nie zz.' : 'Nach einem kurzen Selbstlaut hört man einen Mitlaut, schreibt ihn aber doppelt.' }));
+  const PAIR = { d: 't', t: 'd', g: 'k', k: 'g', b: 'p', p: 'b' };
+  W.verlaengern.forEach(([w, l]) => { const x = w.slice(-1); W_POOL.push({ id: 'vl_' + w, mod: 'verl', g: 'verl', q: `Welcher Buchstabe fehlt? ${w.slice(0, -1)}___`, o: [x, PAIR[x]], a: 0, why: `Verlängert: ${l}`, tip: `Verlängere das Wort: ${l}` }); });
+  W.dehnungsh.forEach(([r, f, s]) => W_POOL.push({ id: 'dh_' + r, mod: 'dehn', g: 'dehn', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0, why: `In Silben: ${s}` }));
+  W.nomen.forEach((n) => W_POOL.push({ id: 'gk_' + n, mod: 'gross', g: 'gross', q: 'Welches Wort schreibt man groß?', o: [noun(n).toLowerCase(), pick(W.verben), pick(W.adjektive)], a: 0, why: `${n} ist ein Nomen. Nomen schreibt man groß.` }));
+  W.zusammen.forEach(([t1, t2, z]) => {
+    const n = noun(z); const art = z.split(' ')[0]; const rest = ARTS.filter((x) => x !== art); const why = `Der Artikel kommt vom letzten Teil: ${t2}.`;
+    W_POOL.push({ id: 'zs_' + z, mod: 'zus', g: 'zus', q: `${t1} + ${t2} = ?`, o: [z].concat(rest.map((x) => x + ' ' + n)), a: 0, why });
+    W_POOL.push({ id: 'za_' + z, mod: 'zus', g: 'zus', q: `Welcher Artikel passt? ___ ${n}`, o: [art].concat(rest), a: 0, why });
+  });
+  W.rede.forEach(([b, r]) => { const words = r.split(' '); const wrong = [`„${b} ${r}“`, `„${b}“ ${r}`, `${b} „${words.slice(0, -1).join(' ')}“ ${words[words.length - 1]}`];
+    W_POOL.push({ id: 'wr_' + r, mod: 'rede', g: 'rede', q: 'Wo stehen die Anführungszeichen richtig?', o: [`${b} „${r}“`].concat(shuffle(wrong).slice(0, 2)), a: 0, why: 'Nur das, was jemand sagt, steht in Anführungszeichen.' }); });
+  // dictionary order only needs the first three letters; woerter.js keeps those free of umlauts
+  const abcKey = (w) => w.slice(0, 3).toLowerCase();
+  function abcTask() {
+    const first = pick(W.abc)[0]; const same = W.abc.filter((w) => w[0] === first);
+    const from = shuffle(same.length >= 4 && Math.random() < 0.5 ? same : W.abc); const words = [];
+    for (const w of from.concat(shuffle(W.abc))) if (words.length < 4 && !words.some((x) => abcKey(x) === abcKey(w))) words.push(w);
+    words.sort((a, b) => (abcKey(a) < abcKey(b) ? -1 : 1));
+    const items = words.map((w) => ({ id: 'w_' + w, text: w }));
+    return { kind: 'order', mod: 'abc', tier: 1, group: 'abc:1', note: 'abc', q: 'Tippe die Wörter so an, wie sie im Wörterbuch stehen.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'abc_' + words.join('_') };
+  }
+  const W_NOTES = {
+    doppel: { title: 'Doppelte Mitlaute, ck und tz', lines: ['Nach einem kurzen Selbstlaut (a, e, i, o, u, ä, ö, ü) folgen zwei Mitlaute.', 'Hörst du nur einen Mitlaut, schreibst du ihn doppelt: die Sonne, die Tasse.', 'Statt kk schreibt man ck: die Jacke. Statt zz schreibt man tz: die Katze.'] },
+    verl: { title: 'Verlängern', lines: ['Am Wortende klingen d und t, g und k, b und p gleich.', 'Verlängere das Wort, dann hörst du den Unterschied: der Hund, die Hun-de.', 'Bei Adjektiven hilft ein Nomen dahinter: gelb, der gel-be Ball.'] },
+    dehn: { title: 'Silbentrennendes h', lines: ['Manchmal steht zwischen zwei Silben ein h: ge-hen, die Kü-he.', 'Man hört es kaum. Sprich das Wort deutlich in Silben.', 'Bei Wörtern mit einer Silbe hilft Verlängern: der Schuh, die Schu-he.'] },
+    gross: { title: 'Großschreibung', lines: ['Nomen schreibt man groß: der Hund, die Tasche.', 'Vor ein Nomen passt ein Artikel: der, die oder das.', 'Verben (laufen) und Adjektive (bunt) schreibt man klein.'] },
+    zus: { title: 'Zusammengesetzte Wörter', lines: ['Aus zwei Nomen wird ein neues Wort: die Schule + der Hof = der Schulhof.', 'Der Artikel richtet sich nach dem letzten Teil.'] },
+    abc: { title: 'Wörterbuch', lines: ['Im Wörterbuch stehen die Wörter nach dem ABC.', 'Ist der erste Buchstabe gleich, entscheidet der zweite, dann der dritte: Bach, Ball, Banane, Baum.'] },
+    rede: { title: 'Wörtliche Rede', lines: ['Was jemand sagt, steht in Anführungszeichen: „…“.', 'Der Begleitsatz sagt, wer spricht. Danach steht ein Doppelpunkt.', 'Das Satzzeichen der Rede steht vor dem schließenden Anführungszeichen: Mia sagt: „Ich komme mit.“'] },
+  };
+  const W_MODULES = {
+    doppel: { name: 'Doppelt, ck, tz', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
+    verl: { name: 'Verlängern', icon: '↔️', maxTier: 1, worldCap: [1], dmg: 12 },
+    dehn: { name: 'Silbentrennendes h', icon: '🔡', maxTier: 1, worldCap: [1], dmg: 12 },
+    gross: { name: 'Groß oder klein', icon: '🔠', maxTier: 1, worldCap: [1], dmg: 10 },
+    zus: { name: 'Zusammengesetzte Wörter', icon: '🧩', maxTier: 1, worldCap: [1], dmg: 12 },
+    abc: { name: 'Wörterbuch', icon: '📖', maxTier: 1, worldCap: [1], dmg: 16 },
+    rede: { name: 'Wörtliche Rede', icon: '💬', maxTier: 1, worldCap: [1], dmg: 14 },
+  };
+  const W_TUT = {
+    'doppel:1': { title: 'Doppelt, ck, tz', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort langsam. Ist der Selbstlaut kurz, folgt ein doppelter Mitlaut, ck oder tz.', 'Beispiel: „die Sonne“ oder „die Sone“? Das o ist kurz, also: die Sonne.', 'Tippe auf das richtige Wort.'] },
+    'verl:1': { title: 'Verlängern', steps: ['Am Ende fehlt ein Buchstabe: d oder t, g oder k, b oder p.', 'Verlängere das Wort, dann hörst du ihn.', 'Beispiel: der Hun_ → die Hun-de. Man hört ein d, also: der Hund.', 'Tippe auf den fehlenden Buchstaben.'] },
+    'dehn:1': { title: 'Silbentrennendes h', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort in Silben. Gehört zwischen die Silben ein h?', 'Beispiel: „gehen“ oder „geen“? In Silben: ge-hen, also mit h.', 'Bei Wörtern mit einer Silbe verlängerst du: der Schuh, die Schu-he.'] },
+    'gross:1': { title: 'Groß oder klein', steps: ['Drei Wörter, alle kleingeschrieben. Eines davon ist ein Nomen.', 'Probe: Passt der, die oder das davor?', 'Beispiel: hund, laufen, bunt. „Der Hund“ passt, also schreibt man Hund groß.', 'Tippe auf das Wort, das großgeschrieben wird.'] },
+    'zus:1': { title: 'Zusammengesetzte Wörter', steps: ['Zwei Nomen werden zu einem Wort.', 'Der Artikel kommt immer vom letzten Teil.', 'Beispiel: die Schule + der Hof = der Schulhof, weil es „der Hof“ heißt.', 'Tippe auf die Antwort mit dem richtigen Artikel.'] },
+    'abc:1': { title: 'Wörterbuch', steps: ['Vier Wörter sollen in die Reihenfolge wie im Wörterbuch.', 'Schau auf den ersten Buchstaben. Ist er gleich, schau auf den zweiten, dann auf den dritten.', 'Beispiel: Baum, Bach, Ball → Bach (c), Ball (l), Baum (u).', 'Tippe die Wörter der Reihe nach an. Nochmal tippen nimmt ein Wort wieder heraus.'] },
+    'rede:1': { title: 'Wörtliche Rede', steps: ['Jemand sagt etwas. Wo gehören die Anführungszeichen hin?', 'Nur das Gesagte steht in „…“. Davor steht der Begleitsatz mit Doppelpunkt.', 'Beispiel: Mia sagt: „Ich komme mit.“', 'Tippe auf den richtig geschriebenen Satz.'] },
+  };
+  const W_STARTERS = [
+    { id: 'graphit', type: 'normal', shape: 'pencil', names: ['Graphit', 'Graphit', 'Graphit'], hp: 65, desc: 'Ein Bleistift mit frisch gespitzter Mine. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
+      attacks: [{ name: 'Doppelstrich', mod: 'doppel' }, { name: 'Silbenbogen', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Daumenregister', mod: 'abc' }] },
+  ];
+  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen' };
+  const W_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Der Buchstabendreher', type: 'normal', shape: 'letter', hp: 26, atk: 3 },
+        { name: 'Das Eselsohr', type: 'normal', shape: 'notebook', hp: 24, atk: 4 },
+        { name: 'Der Stummel', type: 'feuer', shape: 'pencil', hp: 28, atk: 4 },
+        { name: 'Die Kritzelei', type: 'wasser', shape: 'blob', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Der Radierer', type: 'pflanze', shape: 'eraser', hp: 45, atk: 5 },
+      boss: { name: 'Der Fehlerteufel', acc: 'den Fehlerteufel', type: 'feuer', shape: 'flame', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const W_MOVES = ['Buchstabentausch', 'Eselsohrknick', 'Radierspur', 'Kringel am Rand', 'Spitzerspäne', 'Zeilensprung'];
+  const W_EVENTS = [
+    { title: 'Die Schulbibliothek', text: 'Die Bibliothekarin stellt neue Bücher ins Regal. Hilfst du ihr bei der Reihenfolge, schenkt sie dir einen Trank.', opts: [{ label: 'Helfen', task: 'abc', win: { item: 'trank' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Das Diktat', text: 'Auf dem Lehrertisch liegt ein Diktat. Findest du das richtig geschriebene Wort, bekommst du einen Schild.', opts: [{ label: 'Nachsehen', task: 'any', win: { item: 'schild' }, lose: { hp: -6 } }, { label: 'Liegen lassen', effect: {} }] },
+    { title: 'Der Briefträger', text: 'Der Briefträger hat eine Postkarte mit einem Fehler. Hilfst du ihm, verrät er dir eine Eselsbrücke.', opts: [{ label: 'Helfen', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Vorlesetag', text: 'In der Aula liest die vierte Klasse vor. Wer eine Frage zur wörtlichen Rede beantwortet, bekommt 20 XP.', opts: [{ label: 'Mitmachen', task: 'rede', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Zuhören (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Die Hofpause', text: 'Es klingelt zur großen Pause. Du setzt dich auf eine Bank und isst dein Brot.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
+  const S_POOL = [];
+  const KLASSEN = ['Nomen', 'Verb', 'Adjektiv', 'Pronomen', 'Artikel'];
+  const wortart = (id, q, k) => S_POOL.push({ id, mod: 'wortart', g: 'wortart', q, o: [k].concat(shuffle(KLASSEN.filter((x) => x !== k)).slice(0, 2)), a: 0 });
+  W.nomen.forEach((n) => wortart('wa_' + n, `Welche Wortart ist „${noun(n)}“?`, 'Nomen'));
+  W.verben.forEach((w) => wortart('wa_' + w, `Welche Wortart ist „${w}“?`, 'Verb'));
+  W.adjektive.forEach((w) => wortart('wa_' + w, `Welche Wortart ist „${w}“?`, 'Adjektiv'));
+  W.pronomen.forEach((w) => wortart('wa_' + w, `Welche Wortart ist „${w}“?`, 'Pronomen'));
+  // articles are asked with a noun, alone „das“ could also be a pronoun
+  [['der', ['der']], ['die', ['die']], ['das', ['das']], ['ein', ['der', 'das']], ['eine', ['die']]].forEach(([a, of]) => {
+    const n = noun(pick(W.nomen.filter((x) => of.includes(x.split(' ')[0])))); wortart('wa_art_' + a, `Welche Wortart ist „${a}“ in „${a} ${n}“?`, 'Artikel');
+  });
+  W.zeitformen.forEach(([p, t, f]) => {
+    S_POOL.push(Math.random() < 0.5 ? { id: 'zt_' + p, mod: 'zeit', g: 'zeit', q: `Setze ins Präteritum: „${p}“`, o: [t, f, p], a: 0 } : { id: 'zt_' + p, mod: 'zeit', g: 'zeit', q: `Setze ins Präsens: „${t}“`, o: [p, t, f], a: 0 });
+    const past = Math.random() < 0.5; S_POOL.push({ id: 'zb_' + p, mod: 'zeit', g: 'zeit', q: `In welcher Zeitform steht „${past ? t : p}“?`, o: past ? ['Präteritum', 'Präsens'] : ['Präsens', 'Präteritum'], a: 0 });
+  });
+  const STUFEN = ['Grundstufe', 'Mehrstufe', 'Meiststufe'];
+  W.steigerung.forEach((s) => {
+    const k = Math.floor(Math.random() * 3); const o = [s[k]].concat(s.filter((_, i) => i !== k));
+    S_POOL.push({ id: 'st_' + s[0], mod: 'steig', g: 'steig', q: k === 0 ? `Wie heißt die Grundstufe von „${s[2]}“?` : `Wie heißt die ${STUFEN[k]} von „${s[0]}“?`, o, a: 0 });
+    const j = Math.floor(Math.random() * 3); S_POOL.push({ id: 'ss_' + s[0], mod: 'steig', g: 'steig', q: `Welche Stufe ist „${s[j]}“?`, o: [STUFEN[j]].concat(STUFEN.filter((_, i) => i !== j)), a: 0 });
+  });
+  W.vergleiche.forEach(([q, x]) => S_POOL.push({ id: 'vg_' + q, mod: 'steig', g: 'steig', q: `Als oder wie? ${q}`, o: [x, x === 'als' ? 'wie' : 'als'], a: 0, why: x === 'als' ? 'Nach der Mehrstufe steht „als“.' : 'Nach „so“ und der Grundstufe steht „wie“.' }));
+  // '[Subjekt] | Prädikat | …' → parts as written mid-sentence, subject index; the predicate is always the second part
+  const SAETZE = W.saetze.map((s) => { const raw = s.split('|').map((x) => x.trim()); return { parts: raw.map((x) => x.replace(/^\[|\]$/g, '')), s: raw.findIndex((x) => x.startsWith('[')) }; });
+  SAETZE.forEach(({ parts, s }) => {
+    const shown = [cap(parts[0])].concat(parts.slice(1)); const key = parts.join(' ');
+    S_POOL.push({ id: 'sg_s_' + key, mod: 'satzglied', g: 'satzglied', q: 'Tippe auf das Subjekt. Frage: Wer oder was?', o: shown, a: s, inline: true });
+    S_POOL.push({ id: 'sg_p_' + key, mod: 'satzglied', g: 'satzglied', q: 'Tippe auf das Prädikat. Frage: Was tut jemand?', o: shown, a: 1, inline: true });
+  });
+  // three parts starting with the subject: the only other order with the verb second puts the last part first
+  const UMSTELL = SAETZE.filter((x) => x.parts.length === 3 && x.s === 0).map((x) => x.parts);
+  function umstellTask() {
+    const parts = pick(UMSTELL); const items = [2, 1, 0].map((i) => ({ id: 'u' + i, text: parts[i] }));
+    return { kind: 'order', mod: 'umstell', tier: 1, group: 'umstell:1', note: 'umstell', q: `Stelle den Satz um: „${cap(parts.join(' '))}.“ Tippe die Satzglieder in der neuen Reihenfolge an.`, items, order: items.map((x) => x.id), display: shuffle(items), qid: 'um_' + parts.join(' ') };
+  }
+  const OB = Object.keys(W.oberbegriffe);
+  OB.forEach((o) => {
+    const ws = W.oberbegriffe[o]; const rest = shuffle(OB.filter((x) => x !== o)).slice(0, 2);
+    S_POOL.push({ id: 'ob_' + o, mod: 'ober', g: 'ober', q: `Welcher Oberbegriff passt zu: ${shuffle(ws).slice(0, 3).join(', ')}?`, o: [o].concat(rest), a: 0 });
+    S_POOL.push({ id: 'og_' + o, mod: 'ober', g: 'ober', q: `Welches Wort gehört zu „${o}“?`, o: [pick(ws)].concat(rest.map((x) => pick(W.oberbegriffe[x]))), a: 0 });
+  });
+  W.teekessel.forEach(([w, b1, b2]) => S_POOL.push({ id: 'tk_' + w, mod: 'teekessel', g: 'teekessel', q: `Welches Wort passt zu beiden Sätzen? ${b1} ${b2}`, o: [w].concat(shuffle(W.teekessel.filter((x) => x[0] !== w)).slice(0, 2).map((x) => x[0])), a: 0 }));
+  const S_NOTES = {
+    wortart: { title: 'Wortarten', lines: ['Nomen sind Namen für Menschen, Tiere und Dinge: der Hund, die Schule.', 'Verben sagen, was jemand tut: laufen, lesen.', 'Adjektive sagen, wie etwas ist: groß, bunt.', 'Pronomen stehen für ein Nomen: ich, du, er, sie, es, wir, ihr.', 'Artikel begleiten ein Nomen: der, die, das, ein, eine.'] },
+    zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.'] },
+    steig: { title: 'Steigerung', lines: ['Grundstufe: groß. Mehrstufe: größer. Meiststufe: am größten.', 'Nach der Mehrstufe vergleicht man mit „als“: Der Turm ist höher als das Haus.', 'Mit „so“ und der Grundstufe vergleicht man mit „wie“: Lea ist so groß wie Ben.'] },
+    satzglied: { title: 'Subjekt und Prädikat', lines: ['Das Prädikat ist das Verb im Satz. Es sagt, was jemand tut: Der Hund schläft.', 'Das Subjekt findest du mit der Frage „Wer oder was?“: Wer schläft? Der Hund.', 'Im Aussagesatz steht das Prädikat an zweiter Stelle.'] },
+    umstell: { title: 'Umstellprobe', lines: ['Satzglieder sind Wörter, die beim Umstellen zusammenbleiben.', 'Der Hund | schläft | im Korb. Umgestellt: Im Korb | schläft | der Hund.', 'Das Prädikat bleibt an zweiter Stelle.'] },
+    ober: { title: 'Oberbegriffe', lines: ['Ein Oberbegriff fasst Wörter zusammen: Apfel, Birne und Kirsche sind Obst.', 'Hammer, Säge und Zange sind Werkzeuge.'] },
+    teekessel: { title: 'Teekesselwörter', lines: ['Ein Wort kann zwei Bedeutungen haben: die Bank im Park und die Bank für Geld.', 'Man schreibt und spricht beide gleich.'] },
+  };
+  const S_MODULES = {
+    wortart: { name: 'Wortarten', icon: '🏷️', maxTier: 1, worldCap: [1], dmg: 12 },
+    zeit: { name: 'Zeitformen', icon: '⏳', maxTier: 1, worldCap: [1], dmg: 12 },
+    steig: { name: 'Steigerung', icon: '📶', maxTier: 1, worldCap: [1], dmg: 12 },
+    satzglied: { name: 'Subjekt und Prädikat', icon: '🎯', maxTier: 1, worldCap: [1], dmg: 14 },
+    umstell: { name: 'Umstellprobe', icon: '🔀', maxTier: 1, worldCap: [1], dmg: 16 },
+    ober: { name: 'Oberbegriffe', icon: '🗂️', maxTier: 1, worldCap: [1], dmg: 10 },
+    teekessel: { name: 'Teekesselwörter', icon: '🫖', maxTier: 1, worldCap: [1], dmg: 12 },
+  };
+  const S_TUT = {
+    'wortart:1': { title: 'Wortarten', steps: ['Zu welcher Wortart gehört das Wort?', 'Nomen: der Hund. Verb: laufen. Adjektiv: bunt. Pronomen: er. Artikel: der, ein.', 'Beispiel: „schnell“. Wie ist etwas? Schnell. Also ein Adjektiv.', 'Tippe auf die richtige Wortart.'] },
+    'zeit:1': { title: 'Zeitformen', steps: ['Präsens heißt: Es passiert jetzt. Präteritum heißt: Es ist schon passiert.', 'Setze „heute“ oder „gestern“ davor und hör, was passt.', 'Beispiel: „er lief“. Gestern lief er, also Präteritum.', 'Tippe auf die richtige Antwort.'] },
+    'steig:1': { title: 'Steigerung', steps: ['Adjektive kann man steigern: Grundstufe, Mehrstufe, Meiststufe.', 'Beispiel: klein, kleiner, am kleinsten.', 'Nach der Mehrstufe steht „als“: kleiner als. Nach „so“ und der Grundstufe steht „wie“: so klein wie.', 'Tippe auf die richtige Antwort.'] },
+    'satzglied:1': { title: 'Subjekt und Prädikat', steps: ['Das Prädikat ist das Verb. Es sagt, was jemand tut.', 'Das Subjekt findest du mit der Frage „Wer oder was?“.', 'Beispiel: Der Hund schläft im Korb. Wer schläft? Der Hund ist das Subjekt. Schläft ist das Prädikat.', 'Tippe im Satz auf das gesuchte Satzglied.'] },
+    'umstell:1': { title: 'Umstellprobe', steps: ['Ein Satz hat drei Satzglieder. Stelle sie so um, dass ein neuer Satz entsteht.', 'Ein anderes Satzglied kommt nach vorn. Das Prädikat bleibt an zweiter Stelle.', 'Beispiel: der Hund | schläft | im Korb wird zu: im Korb | schläft | der Hund.', 'Tippe die Satzglieder in der neuen Reihenfolge an.'] },
+    'ober:1': { title: 'Oberbegriffe', steps: ['Ein Oberbegriff fasst viele Wörter zusammen.', 'Beispiel: Apfel, Birne, Kirsche gehören zum Oberbegriff Obst.', 'Manchmal ist der Oberbegriff gegeben, dann suchst du ein Wort, das dazugehört.', 'Tippe auf die richtige Antwort.'] },
+    'teekessel:1': { title: 'Teekesselwörter', steps: ['Ein Teekesselwort hat zwei Bedeutungen und wird gleich geschrieben.', 'Lies beide Sätze. Welches Wort passt zu beiden?', 'Beispiel: Darauf sitzt man im Park. Dort bringt man Geld hin. Das Wort ist: die Bank.', 'Tippe auf das Wort.'] },
+  };
+  const S_STARTERS = [
+    { id: 'elle', type: 'wasser', shape: 'ruler', names: ['Elle', 'Elle', 'Elle'], hp: 80, desc: 'Ein Holzlineal, 30 Zentimeter lang. Hält viel aus.', perk: 'tank',
+      attacks: [{ name: 'Farbmarker', mod: 'wortart' }, { name: 'Fragetest', mod: 'satzglied' }, { name: 'Umstellschub', mod: 'umstell' }, { name: 'Sortierkasten', mod: 'ober' }] },
+  ];
+  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn' };
+  const S_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Der Satzverdreher', type: 'normal', shape: 'letter', hp: 26, atk: 3 },
+        { name: 'Der Wortsalat', type: 'pflanze', shape: 'blob', hp: 28, atk: 4 },
+        { name: 'Das Knickheft', type: 'wasser', shape: 'notebook', hp: 24, atk: 4 },
+        { name: 'Der Punktdieb', type: 'normal', shape: 'ghost', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Der Spitzer', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
+      boss: { name: 'Der Rotstift', acc: 'den Rotstift', type: 'feuer', shape: 'pencil', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const S_MOVES = ['Satzverdrehung', 'Punktklau', 'Wortsalat', 'Scherenschnitt', 'Kommaregen', 'Rotstiftstrich'];
+  const S_EVENTS = [
+    { title: 'Die Klassenzeitung', text: 'Die Klassenzeitung sucht einen Satz für die Titelseite. Hilfst du, gibt es einen Trank.', opts: [{ label: 'Helfen', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Fundkiste', text: 'Der Hausmeister räumt die Fundkiste auf und braucht einen Oberbegriff für jedes Fach. Für deine Hilfe gibt er dir einen Schild.', opts: [{ label: 'Helfen', task: 'ober', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Vorlesestunde', text: 'Frau Weber liest eine Geschichte vor und stellt danach eine Frage. Wer sie beantwortet, bekommt einen Schutzengel.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Weiterlesen', effect: {} }] },
+    { title: 'Das Rätselheft', text: 'Im Rätselheft fehlt ein Teekesselwort. Findest du es, bekommst du ein Fleißbienchen.', opts: [{ label: 'Rätseln', task: 'teekessel', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Zuklappen', effect: {} }] },
+    { title: 'Der Trinkbrunnen', text: 'Am Trinkbrunnen im Flur machst du eine Pause.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
   /* ---------- Spaced repetition selection ---------- */
   function weightedPick(items, know, seqNow) {
     const w = items.map((it) => { const k = know[it.id]; if (!k) return 4; let x = 1 + k.ws * 3; if (k.t > 0 && k.c / k.t < 0.6) x += 2; if (seqNow - (k.last || 0) < 3) x *= 0.15; return x; });
@@ -329,8 +507,9 @@ const MK = (() => {
   }
   // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls
   function generate(mode, mod, tier, know, seqNow, opts) {
-    const pool = mode === 'ethik' ? L_POOL : K_POOL;
-    const elite = false;
+    const pool = MODES[mode].pool;
+    if (mod === 'abc') return abcTask();
+    if (mod === 'umstell') return umstellTask();
     if (mod === 'ord') { const idx = shuffle(L_EVENTS_ORDER.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => L_EVENTS_ORDER[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'ord_' + idx.join('') }; }
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
@@ -345,16 +524,18 @@ const MK = (() => {
       return { kind: 'parts', mod, tier: 1, group: 'parts:1', note: 'teile', q: e.q, part: part.id, options, answer: part.name, qid: e.id };
     }
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
-    // mc, lt, def, ground
-    const correct = e.o[e.a]; const options = shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options, answer: correct, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    // inline: the options are the parts of a sentence and keep their order
+    const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
+    return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options, answer: correct, why: e.why || '', tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
   const MODES = {
     ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation' },
+    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wörterbuch, wörtliche Rede' },
+    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Oberbegriffe' },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, L_EVENTS_ORDER, generate, record, shuffle, pick, rnd };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, L_EVENTS_ORDER, W, SAETZE, generate, record, shuffle, pick, rnd };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

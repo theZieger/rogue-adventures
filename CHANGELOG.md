@@ -11,6 +11,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Neu
 - Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.
 - Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.
+- Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.

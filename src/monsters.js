@@ -165,6 +165,32 @@ const MONART = (() => {
       <path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" stroke="#D9B35E" stroke-width="7" stroke-linecap="round"/><path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" ${S(2)}/>
       <path d="M44 102 L42 114 M76 102 L78 114" fill="none" ${S(5)}/>
       ${eyes(60, 62, 14, 8, 'normal')}${mouth.grin(60, 82, 12)}`,
+    pencil: (c, g, d, l) => `
+      <path d="M40 34 L60 4 L80 34 Z" fill="#F2D2A0" ${S()}/><path d="M53 15 L60 4 L67 15 Z" fill="#3A3A3A"/>
+      <rect x="40" y="34" width="40" height="62" fill="${g.body}" ${S()}/><path d="M53 34 L53 96 M67 34 L67 96" fill="none" stroke="${d}" stroke-width="2"/>
+      <rect x="38" y="96" width="44" height="9" fill="#B8BEC8" ${S(2)}/><rect x="40" y="105" width="40" height="11" rx="4" fill="#FF8FA8" ${S(2)}/>
+      <path d="M40 66 L22 78 M80 66 L98 78" fill="none" ${S(4)}/>
+      ${eyes(60, 54, 10, 6, 'normal')}${mouth.smile(60, 74, 7)}`,
+    eraser: (c, g, d, l) => `
+      <path d="M12 52 L34 30 L108 30 L108 88 L86 110 L12 110 Z" fill="${d}" ${S()}/>
+      <rect x="12" y="52" width="74" height="58" rx="6" fill="${g.body}" ${S()}/><rect x="12" y="52" width="30" height="58" rx="6" fill="${g.inner}" ${S()}/>
+      <circle cx="100" cy="114" r="3" fill="${g.inner}" ${S(1.5)}/><circle cx="110" cy="106" r="2.5" fill="${g.inner}" ${S(1.5)}/>
+      ${eyes(62, 74, 11, 7, 'angry')}${mouth.fangs(62, 94, 10)}`,
+    notebook: (c, g, d, l) => `
+      <path d="M22 14 L84 14 L98 28 L98 106 L22 106 Z" fill="${g.body}" ${S()}/><path d="M84 14 L84 28 L98 28 Z" fill="${g.inner}" ${S(2)}/>
+      <rect x="34" y="68" width="52" height="28" rx="3" fill="#FFFFFF" ${S(2)}/><path d="M40 78 L80 78 M40 87 L72 87" fill="none" stroke="#8FA3C8" stroke-width="2"/>
+      <path d="M30 14 L30 106" fill="none" stroke="${d}" stroke-width="3"/>
+      ${eyes(60, 44, 13, 7, 'angry')}${mouth.flat(60, 60, 7)}`,
+    ruler: (c, g, d, l) => `
+      <rect x="6" y="40" width="108" height="46" rx="6" fill="${g.body}" ${S()}/>
+      <path d="M16 40 L16 52 M26 40 L26 47 M36 40 L36 52 M46 40 L46 47 M74 40 L74 47 M84 40 L84 52 M94 40 L94 47 M104 40 L104 52" fill="none" ${S(2)}/>
+      <path d="M30 86 L26 106 M90 86 L94 106" fill="none" ${S(5)}/>
+      ${highlight(30, 74, 10, 4)}
+      ${eyes(60, 60, 13, 7, 'normal')}${mouth.smile(60, 74, 8)}`,
+    letter: (c, g, d, l) => `
+      <path d="M18 108 L48 12 L72 12 L102 108 L80 108 L73 86 L47 86 L40 108 Z M54 76 L66 76 L60 58 Z" fill="${g.body}" fill-rule="evenodd" ${S()}/>
+      <path d="M48 12 L72 12 L76 24 L44 24 Z" fill="${g.inner}" opacity=".7"/>
+      ${eyes(60, 38, 9, 6, 'angry')}${mouth.flat(60, 50, 5)}`,
   };
 
   function monsterSVG(shape, color, evo, cls) {

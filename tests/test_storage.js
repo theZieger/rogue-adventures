@@ -188,6 +188,23 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   check(p5.w.__mq.meta.pin === '' && p5.text().includes('Noch keine PIN'), 'PIN can be removed in the parent area');
 }
 
+// 10. Deutsch: a save from before the subject existed gets stats for it; a Deutsch adventure continues after reopening
+{
+  const old = { runs: 2, stats: { math: {}, ethik: {}, kartoffel: {} }, setup: { done: false, skipped: true, at: '' } };
+  const p1 = open({ [META]: JSON.stringify(old) });
+  const m = p1.w.__mq.meta;
+  check(m.runs === 2 && m.stats.woerterwerkstatt.doppel.t === 0 && m.stats.satzbaustelle.umstell.t === 0 && p1.errors.length === 0, 'old save gets stats for the Deutsch units');
+  for (const mode of ['woerterwerkstatt', 'satzbaustelle']) {
+    const p1 = open({ [META]: JSON.stringify(old) });
+    p1.click('[data-new="' + mode + '"]'); p1.click('.choice'); p1.click('#go');
+    p1.click([...p1.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p1.$('.node.open'));
+    const enemy = p1.$('.plate.enemy .name').textContent;
+    const p2 = open(p1.dump());
+    p2.click('[data-cont="' + mode + '"]');
+    check(!!p2.$('#fe') && p2.$('.plate.enemy .name').textContent === enemy && p2.errors.length === 0, mode + ' adventure continues the same fight after reopening');
+  }
+}
+
 reloadCases().then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

@@ -25,6 +25,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 |---|---|
 | 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
+| ✏️ Wörterwerkstatt | Deutsch, Richtig schreiben: doppelte Mitlaute/ck/tz, Verlängern (d/t, g/k, b/p), silbentrennendes h, Groß oder klein, zusammengesetzte Wörter mit Artikel, Wörterbuch-Reihenfolge, wörtliche Rede |
+| 🏗️ Satzbaustelle | Deutsch, Sprache untersuchen: Wortarten, Zeitformen (Präsens/Präteritum), Steigerung mit „als“/„wie“, Subjekt und Prädikat, Umstellprobe, Oberbegriffe, Teekesselwörter |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
@@ -46,7 +48,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 ```
 src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast)
 src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
-src/knowledge.js   Wissensinhalte Ethik + Kartoffel (Fragen, Notizkarten, Tutorials)
+src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
+src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/monsters.js    Handgezeichnete SVG-Monster
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
@@ -69,12 +72,13 @@ docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebu
 npm install          # nur jsdom für die Tests
 npm run build        # src/* -> docs/index.html
 npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/)
-npm run playtest     # Bot spielt alle drei Modi durch
+npm run playtest     # Bot spielt alle Modi durch
 ```
 
 Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
 - Fragen: `L_POOL` (Luther) und `K_POOL` (Kartoffel) in `src/knowledge.js`
+- Deutsch-Wörter und -Sätze: `src/woerter.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
 - Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
 
