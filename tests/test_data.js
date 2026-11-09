@@ -88,12 +88,14 @@ for (const [mode, cfg] of Object.entries(modes)) {
 // Lesestube texts: 60–120 words, three questions with one right answer each
 const TEXTE = require('../src/texte.js');
 if (TEXTE.length < 12) fail('Lesestube: fewer than 12 texts');
-for (const k of ['Fabel', 'Sachtext', 'Witz', 'Sprichwort']) if (!TEXTE.some((t) => t.kind === k)) fail('Lesestube: no ' + k);
+const KINDS = ['Fabel', 'Sachtext', 'Witz', 'Sprichwort', 'Gedicht', 'Erzählung', 'Anleitung', 'Rezept', 'Lexikon', 'Sage'];
+for (const k of KINDS) if (!TEXTE.some((t) => t.kind === k)) fail('Lesestube: no ' + k);
+if (TEXTE.filter((t) => t.kind === 'Gedicht').some((t) => !t.by)) fail('Lesestube: a poem needs its author (by)');
 TEXTE.forEach((t) => {
   const words = t.text.split(/\s+/).filter((x) => /[a-zäöüß0-9]/i.test(x)).length;
   if (words < 60 || words > 120) fail(`Lesestube ${t.id}: ${words} words`);
-  if (!t.title || !['Fabel', 'Sachtext', 'Witz', 'Sprichwort'].includes(t.kind)) fail(`Lesestube ${t.id}: title or kind`);
-  if (/["']/.test(t.text + t.title)) fail(`Lesestube ${t.id}: use German quotes „…“ and ’`);
+  if (!t.title || !KINDS.includes(t.kind)) fail(`Lesestube ${t.id}: title or kind`);
+  if (/["']/.test(t.text + t.title + (t.by || ''))) fail(`Lesestube ${t.id}: use German quotes „…“ and ’`);
   if (!Array.isArray(t.qs) || t.qs.length !== 3) fail(`Lesestube ${t.id}: needs 3 questions`);
   (t.qs || []).forEach((q, i) => {
     if (!q.q || !Array.isArray(q.o) || q.o.length < 3) fail(`Lesestube ${t.id} q${i}: at least 3 options`);

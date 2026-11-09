@@ -493,7 +493,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .colcalc .inp.dig { height: 58px; font-size: 32px; border-radius: 12px; }
 .colcalc .inp.carry { width: 32px; height: 32px; font-size: 18px; border-width: 3px; border-radius: 8px; justify-self: center; }
 /* Lesestube and Duell */
-.readcard p { font-size: 20px; line-height: 1.5; }
+.readcard p { font-size: 20px; line-height: 1.5; white-space: pre-line; }
+.readcard p.by { font-size: 16px; color: var(--ink-soft); margin-top: 8px; }
 .nameinput { width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 20px; color: var(--ink); background: #fff; }
 .nameinput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
 /* market */
