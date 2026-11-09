@@ -11,19 +11,21 @@
     kornkammer: MK.MODES.kornkammer,
     wetterstation: MK.MODES.wetterstation,
     kompass: MK.MODES.kompass,
+    wiese: MK.MODES.wiese,
+    frueher: MK.MODES.frueher,
     freunde: MK.MODES.freunde,
     jahrmarkt: MJ.MODE,
     sinne: MK.MODES.sinne,
     verkehr: MK.MODES.verkehr,
   };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'sinne', 'verkehr'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
       { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
       { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde'] },
-      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass', 'sinne', 'verkehr'] },
+      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher', 'sinne', 'verkehr'] },
     ] },
   ];
   let mode = 'math';

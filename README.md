@@ -34,6 +34,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 | 🌾 Die Kornkammer | Sachkunde: Weizen, Roggen, Gerste, Hafer, Mais (Ähre, Rispe, Kolben), Teile der Getreidepflanze mit Zeichenschule, vom Korn zum Brot, Verwendung, Wertschätzung von Lebensmitteln |
 | 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
+| 🌼 Die Wiese | Sachkunde: acht Wiesenpflanzen als Bild und nach Merkmalen, Stockwerke der Wiese (Bild, Tiere zuordnen, ordnen), Entwicklung von Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Wiese schützen, mit allen Sinnen |
+| 🕰️ Früher und heute | Sachkunde: Geräte und Leben auf dem Land früher und heute, Zeitleiste, Sprachen, Feste und Essen aus aller Welt (Dilemma-Karten ohne falsche Antwort), Nachschlagen und „Kann das stimmen?“ |
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
 | 👁️ Die fünf Sinne | Sachkunde: Sinnesorgane und Sinne, Auge und Ohr mit Zeichenschule, Sinne schützen, Hilfen für Menschen mit Behinderung (Blindenschrift, Führhund, Gebärdensprache, Hörgerät, Rampe), Nein zu Rauchen, Alkohol und fremden Medikamenten – Dilemma-Karten zum Nein sagen; Kartenfeld „Sinnestäuschung“ (erst vermuten, dann Ergebnis) |
 | 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
@@ -68,6 +70,7 @@ src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop nacherz
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
+src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
