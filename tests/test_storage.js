@@ -393,7 +393,89 @@ async function stampCases() {
     check(p.text().includes('Stempel verdient insgesamt') && p.text().includes('123'), 'parent area shows stamps earned in total');
   }
 }
-reloadCases().then(saveCodeCases).then(stampCases).then(() => {
+// 14. Schulgarten: growth by the (injected) clock, harvest, bed 4, old saves, reload
+function gardenCases() {
+  const DAY = 864e5, T = Date.UTC(2026, 10, 9, 8);
+  const skip = { setup: { done: false, skipped: true, at: 'x' } };
+  { // an old save without garden/materials loads with four empty beds
+    const p = open({ [META]: JSON.stringify(Object.assign({ runs: 3, wins: 1, stamps: 7 }, skip)) }); const m = p.w.__mq.meta;
+    check(m.garden.beds.length === 4 && m.garden.beds.every((b) => b.crop === null && b.plantedAt === 0) && JSON.stringify(m.materials) === '{}' && m.stamps === 7 && p.errors.length === 0, 'old save without garden loads with four empty beds and no materials');
+    check(!p.$('.gardencard'), 'title shows no garden card when nothing is ripe');
+    const p2 = open({ [META]: JSON.stringify(Object.assign({ garden: { beds: [{ crop: 'mais', plantedAt: 1 }, 'x', { crop: 'hafer', plantedAt: 'y' }, { crop: 'weizen', plantedAt: 5 }, { crop: 'roggen', plantedAt: 1 }] }, materials: { hafer: -1, weizen: 2 } }, skip)) });
+    const m2 = p2.w.__mq.meta;
+    check(m2.garden.beds.length === 4 && m2.garden.beds.slice(0, 3).every((b) => b.crop === null) && m2.garden.beds[3].crop === 'weizen' && JSON.stringify(m2.materials) === '{"weizen":2}', 'broken beds and materials fall back to defaults, good ones are kept');
+  }
+  { // planting, growth phases, a planted bed survives a reload
+    const p = open({ [META]: JSON.stringify(skip) }); p.w.__mq.now = T;
+    p.click('#garden');
+    check(p.text().includes('Beete wachsen auch, wenn du nicht spielst.') && p.d.querySelectorAll('[data-plant]').length === 3 && p.d.querySelectorAll('.bed.locked').length === 1, 'garden shows three free beds and bed 4 locked');
+    p.click('[data-plant="0"]'); p.click('.overlay [data-crop="weizen"]');
+    const m = p.w.__mq.meta;
+    check(m.garden.beds[0].crop === 'weizen' && m.garden.beds[0].plantedAt === T && p.text().includes('Heute gesät'), 'planting weizen stores the crop and the time');
+    const p2 = open(p.dump());
+    check(p2.w.__mq.meta.garden.beds[0].crop === 'weizen' && p2.w.__mq.meta.garden.beds[0].plantedAt === T, 'a planted bed survives a reload');
+    const phase = (days) => { p2.w.__mq.now = T + days * DAY; p2.w.__mq.screenTitle(); p2.click('#garden'); return p2.$('.bed').textContent; };
+    check(phase(1).includes('Gesät') && phase(1).includes('Tag 1 von 7'), 'day 1: sown');
+    check(phase(2).includes('Keimling') && phase(4.9).includes('Tag 4 von 7'), 'day 2 to 4: sprout');
+    check(phase(5).includes('Ähre') && phase(5).includes('Tag 5 von 7') && !p2.$('[data-harvest]'), 'day 5: ear, nothing to harvest yet');
+    check(phase(7).includes('Reif') && !!p2.$('[data-harvest="0"]'), 'day 7: ripe');
+    check(phase(400).includes('Reif') && phase(-3).includes('Heute gesät'), 'a ripe bed never withers, a clock set back does no harm');
+    check(!/Stunde|\d+:\d\d/.test(phase(3)), 'no hours or countdown');
+    p2.w.__mq.now = T + 8 * DAY; p2.w.__mq.screenTitle();
+    check(p2.$('.gardencard') && p2.$('.gardencard').textContent.includes('Dein Weizen ist reif.'), 'title shows a card when something is ripe');
+    // harvest: question first, then 4 stamps, the crop and the Ährenkranz
+    const m2 = p2.w.__mq.meta; m2.stamps = 0; m2.stampsTotal = 0; m2.progressAt = '';
+    p2.click('#harvest'); p2.click('[data-harvest="0"]');
+    check(!!p2.$('.overlay .question') && p2.d.querySelectorAll('.overlay .opt').length === 3 && m2.stamps === 0, 'harvest asks a question about the plant first');
+    const ans = p2.w.eval('MK.GARDEN_POOL').find((e) => e.q === p2.$('.overlay .question').textContent);
+    const right = [...p2.d.querySelectorAll('.overlay .opt')].find((o) => o.textContent === ans.o[ans.a]);
+    check(!!ans && ['weizen', 'getreide'].includes(ans.crop), 'the question is about weizen or grain');
+    p2.click(right);
+    check(m2.stamps === 4 && m2.stampsTotal === 4 && m2.materials.weizen === 1 && m2.owned['outfit-aehrenkranz'] === true && !!m2.progressAt && m2.garden.beds[0].crop === null, 'harvest pays 4 stamps, counts the crop and unlocks the Ährenkranz');
+    check(p2.text().includes('Richtig') && p2.text().includes('+4 🏷') && p2.text().includes('Ährenkranz'), 'harvest shows the result');
+    p2.click('#hnext');
+    const p3 = open(p2.dump());
+    check(p3.w.__mq.meta.materials.weizen === 1 && p3.w.__mq.meta.stamps === 4 && !p3.$('.gardencard'), 'harvest is saved and the title card is gone');
+  }
+  { // a wrong answer still harvests; bed 4 opens after winning the Kartoffel-Werkstatt
+    const beds = [{ crop: 'hafer', plantedAt: T - 9 * DAY }, { crop: null, plantedAt: 0 }, { crop: null, plantedAt: 0 }, { crop: 'roggen', plantedAt: T - 9 * DAY }];
+    const p = open({ [META]: JSON.stringify(Object.assign({ garden: { beds }, owned: { 'outfit-aehrenkranz': true } }, skip)) }); p.w.__mq.now = T; const m = p.w.__mq.meta;
+    p.click('#garden');
+    check(!p.$('[data-harvest="3"]') && !!p.$('.bed.locked'), 'bed 4 stays locked and cannot be harvested without a Kartoffel win');
+    p.click('[data-harvest="0"]');
+    const ans = p.w.eval('MK.GARDEN_POOL').find((e) => e.q === p.$('.overlay .question').textContent);
+    p.click([...p.d.querySelectorAll('.overlay .opt')].find((o) => o.textContent !== ans.o[ans.a]));
+    check(m.stamps === 4 && m.materials.hafer === 1 && p.text().includes('Richtig wäre') && !p.text().includes('erste Ernte'), 'a wrong answer still harvests and shows the right answer');
+    m.owned['beet-4'] = true; p.click('#hnext');
+    check(!p.$('.bed.locked') && !!p.$('[data-harvest="3"]'), 'bed 4 opens once the Kartoffel-Werkstatt is won');
+  }
+  { // merging a save code keeps the larger harvest count and fills only empty beds
+    const inc = open({ [META]: JSON.stringify(Object.assign({ materials: { weizen: 4, hafer: 1 }, garden: { beds: [{ crop: 'roggen', plantedAt: 9 }, { crop: 'hafer', plantedAt: 9 }] } }, skip)) }).w.__mq.meta;
+    const p = open({ [META]: JSON.stringify(Object.assign({ materials: { weizen: 1, hafer: 3 }, garden: { beds: [{ crop: 'weizen', plantedAt: 5 }] } }, skip)) });
+    const m = p.w.__mq.mergeMeta(p.w.__mq.meta, JSON.parse(JSON.stringify(inc)));
+    check(m.materials.weizen === 4 && m.materials.hafer === 3 && m.garden.beds[0].crop === 'weizen' && m.garden.beds[1].crop === 'hafer' && m.garden.beds[2].crop === null, 'merging keeps the larger harvest count and fills only empty beds');
+  }
+}
+// winning the Kartoffel-Werkstatt opens bed 4 (other modes don't)
+async function gardenWinCases() {
+  for (const g of ['math', 'kartoffel']) {
+    const p = open({ [META]: JSON.stringify({ setup: { done: false, skipped: true, at: 'x' } }) });
+    p.click(`[data-new="${g}"]`); p.click('.choice'); p.click('#go');
+    p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p.$('.node.open'));
+    const r = p.w.__mq.run; r.world = p.w.eval(`MK.MODES.${g} ? MK.MODES.${g}.worlds : 3`); r.floor = 8; r.node.enemy.boss = true; r.node.enemy.hp = 1;
+    if (p.$('#tutok')) p.click('#tutok');
+    p.click('.atk[data-i="0"]'); if (p.$('#tutok')) p.click('#tutok');
+    const t = p.w.__task;
+    if (t.kind === 'num') { [...p.d.querySelectorAll('.inp')].forEach((el, i) => { el.click(); for (const ch of String(t.answers[i])) p.click(`.numpad [data-k="${ch}"]`); }); p.click('.numpad [data-k="ok"]'); }
+    else if (t.kind === 'choice' || t.kind === 'parts') p.click(p.d.querySelectorAll('.opt')[t.options.indexOf(t.answer)]);
+    else if (t.kind === 'parts-find') p.click([...p.d.querySelectorAll('.plant [data-part]')].find((x) => x.dataset.part === t.part));
+    else { for (const id of t.order) p.click(`.oitem[data-id="${id}"]`); p.click('#ocheck'); }
+    p.click('#next'); await sleep(1600); p.click('#next');
+    check(p.text().includes('Sieg') && !!p.w.__mq.meta.owned['beet-4'] === (g === 'kartoffel'), `winning ${g} ${g === 'kartoffel' ? 'opens' : 'does not open'} bed 4`);
+  }
+}
+
+reloadCases().then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });

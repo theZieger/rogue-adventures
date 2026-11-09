@@ -518,6 +518,37 @@ const MK = (() => {
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
+  // Schulgarten (Sachkunde LB 3): crops for the beds and the question asked at harvest time.
+  // `top` is the name of growth phase 2; questions with crop 'getreide' are asked for every grain.
+  const CROPS = {
+    kartoffel: { name: 'Kartoffel', ripe: 'Deine Kartoffeln sind reif.', put: 'Gesetzt', top: 'Blüte', desc: 'Die Knollen wachsen unter der Erde.' },
+    weizen: { name: 'Weizen', ripe: 'Dein Weizen ist reif.', put: 'Gesät', top: 'Ähre', desc: 'Aus Weizenmehl backt man Brötchen.' },
+    roggen: { name: 'Roggen', ripe: 'Dein Roggen ist reif.', put: 'Gesät', top: 'Ähre', desc: 'Aus Roggenmehl backt man dunkles Brot.' },
+    hafer: { name: 'Hafer', ripe: 'Dein Hafer ist reif.', put: 'Gesät', top: 'Rispe', desc: 'Aus Hafer macht man Haferflocken.' },
+  };
+  const GARDEN_POOL = [
+    { id: 'gk1', crop: 'kartoffel', q: 'Welchen Teil der Kartoffelpflanze essen wir?', o: ['Die Knollen', 'Die Beeren', 'Die Blüten'], a: 0 },
+    { id: 'gk2', crop: 'kartoffel', q: 'Wo wachsen die neuen Kartoffeln?', o: ['Unter der Erde', 'An den Blättern', 'In der Blüte'], a: 0 },
+    { id: 'gk3', crop: 'kartoffel', q: 'Darf man die grünen Beeren der Kartoffelpflanze essen?', o: ['Nein, sie sind giftig.', 'Ja, sie sind süß.', 'Ja, aber nur im Winter.'], a: 0 },
+    { id: 'gk4', crop: 'kartoffel', q: 'Was setzt man im Frühjahr in die Erde, damit eine Kartoffelpflanze wächst?', o: ['Eine Saatkartoffel', 'Ein Getreidekorn', 'Eine Beere'], a: 0 },
+    { id: 'gw1', crop: 'weizen', q: 'Was backt man oft aus Weizenmehl?', o: ['Brötchen', 'Haferflocken', 'Pommes'], a: 0 },
+    { id: 'gw2', crop: 'weizen', q: 'Wie heißt der Teil oben am Weizen, in dem die Körner sitzen?', o: ['Die Ähre', 'Die Knolle', 'Die Wurzel'], a: 0 },
+    { id: 'gw3', crop: 'weizen', q: 'Was wird in der Mühle zu Mehl gemahlen?', o: ['Die Körner', 'Die Halme', 'Die Wurzeln'], a: 0 },
+    { id: 'gr1', crop: 'roggen', q: 'Was backt man oft aus Roggenmehl?', o: ['Dunkles Brot', 'Haferflocken', 'Pudding'], a: 0 },
+    { id: 'gr2', crop: 'roggen', q: 'Welches Getreide hat den längsten Halm?', o: ['Roggen', 'Weizen', 'Hafer'], a: 0 },
+    { id: 'gr3', crop: 'roggen', q: 'Wie heißen die langen, feinen Borsten an der Roggenähre?', o: ['Grannen', 'Wurzeln', 'Knollen'], a: 0 },
+    { id: 'gh1', crop: 'hafer', q: 'Was macht man aus Hafer?', o: ['Haferflocken', 'Zucker', 'Pommes'], a: 0 },
+    { id: 'gh2', crop: 'hafer', q: 'Beim Hafer hängen die Körner locker an feinen Stielen. Wie heißt das?', o: ['Rispe', 'Ähre', 'Knolle'], a: 0 },
+    { id: 'gh3', crop: 'hafer', q: 'Welches Tier frisst gern Hafer?', o: ['Das Pferd', 'Der Fuchs', 'Die Katze'], a: 0 },
+    { id: 'gg1', crop: 'getreide', q: 'Zu welchen Pflanzen gehört das Getreide?', o: ['Zu den Gräsern', 'Zu den Bäumen', 'Zu den Pilzen'], a: 0 },
+    { id: 'gg2', crop: 'getreide', q: 'Wie heißt der Stängel beim Getreide?', o: ['Halm', 'Stamm', 'Ast'], a: 0 },
+    { id: 'gg3', crop: 'getreide', q: 'Was sät man auf das Feld, damit neues Getreide wächst?', o: ['Körner', 'Knollen', 'Beeren'], a: 0 },
+  ];
+  function gardenQuestion(crop) {
+    const e = pick(GARDEN_POOL.filter((x) => x.crop === crop || (crop !== 'kartoffel' && x.crop === 'getreide')));
+    return { q: e.q, options: shuffle(e.o.slice()), answer: e.o[e.a], qid: e.id };
+  }
+
   const MODES = {
     ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
       order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
@@ -525,6 +556,6 @@ const MK = (() => {
       order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' }] },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, generate, record, shuffle, pick, rnd };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd };
 })();
 if (typeof module !== 'undefined') module.exports = MK;
