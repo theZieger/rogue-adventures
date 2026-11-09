@@ -114,6 +114,16 @@ async function reloadCases() {
   check(m.stats.math && m.stats.math.add && typeof m.stats.math.add.c === 'number', 'stats are stored per mode and task type');
 }
 
+// 8. A save from before the Kirchenjahr unit loads, and a Kirchenjahr adventure continues after reopening
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.kirchenjahr;
+  const p1 = open({ [META]: JSON.stringify(old) });
+  check(p1.errors.length === 0 && p1.w.__mq.meta.stats.kirchenjahr && p1.w.__mq.meta.stats.kirchenjahr.rf.t === 0, 'old save without Kirchenjahr stats loads with empty stats');
+  p1.click('[data-new="kirchenjahr"]'); p1.click('.choice'); p1.click('#go'); p1.click('.node.open');
+  const p2 = open(p1.dump());
+  check(!!p2.dump().mathquest_run_kirchenjahr && !!p2.$('[data-cont="kirchenjahr"]'), 'Kirchenjahr adventure is saved and can be continued');
+}
+
 reloadCases().then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

@@ -3,14 +3,15 @@
   const MODES = {
     math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
     ethik: MK.MODES.ethik,
+    kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
   };
-  const MODE_KEYS = ['math', 'ethik', 'kartoffel'];
+  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', modes: ['math'] },
-      { subject: 'Ethik', modes: ['ethik'] },
+      { subject: 'Ethik', modes: ['ethik', 'kirchenjahr'] },
       { subject: 'Sachkunde', modes: ['kartoffel'] },
     ] },
   ];
@@ -643,7 +644,7 @@
   }
   function screenParent() {
     const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return `<div class="card parent-stats" style="margin-bottom:12px"><h3>${MODES[m].icon} ${MODES[m].title}</h3><table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table></div>`; }).join('');
-    const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = MK.L_POOL.find((p) => p.id === id) || MK.K_POOL.find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
+    const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = Object.values(MK.MODES).flatMap((c) => c.pool).find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
     const settings = `<div class="card parent-stats" style="margin-bottom:12px"><h3>🎛️ Was soll geübt werden?</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.</p>${MODE_KEYS.map((m) => `<h4 style="margin:10px 0 4px">${MODES[m].icon} ${MODES[m].title}</h4><div class="toggles">${Object.keys(MODES[m].modules).map((k) => { const on = !offList(m).includes(k); return `<button class="toggle ${on ? 'on' : ''}" data-m="${m}" data-k="${k}" aria-pressed="${on}">${on ? '✔' : '✖'} ${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</button>`; }).join('')}</div>`).join('')}<p id="tmsg" class="muted" role="status" style="color:var(--red);min-height:1em;margin:6px 0 0"></p></div>`;
     const soundCard = `<div class="card parent-stats" style="margin-bottom:12px"><h3>Töne</h3><p class="muted" style="color:var(--ink-soft);margin:4px 0 8px">Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</p><button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button></div>`;
     render(`<div class="screen">${topbar('Elternbereich')}<div class="scroll">${settings}${soundCard}${tables}<div class="card parent-stats" style="margin-bottom:12px"><h3>Wissensfragen mit Schwierigkeiten</h3>${weakFacts || '<p class="muted" style="color:var(--ink-soft)">Noch keine – oder noch nicht genug gespielt.</p>'}</div>
