@@ -437,7 +437,7 @@ async function weeklyCases() {
     const p0 = startMathFight({ now: W49 }); const g = p0.w.__mq.weeklyGoals()[0];
     const d = p0.dump(); const r = JSON.parse(d[RUN]); r.hero.attacks[0].mod = g.mod; d[RUN] = JSON.stringify(r);
     const p = open(d, { now: W49 }); p.click('[data-cont="math"]');
-    const m = p.w.__mq.meta;
+    const m = p.w.__mq.meta; p.w.__mq.run.node.enemy.hp = 9999; // the fight must outlast three answers
     answer(p, true);
     check(m.weekly.week === '2026-W49' && m.weekly.progress[0] === 1 && same(m.weekly.tally['math:' + g.mod], { c: 1, t: 1 }), 'a right answer of the goal type counts');
     p.click('#next'); await sleep(2200); answer(p, false);
