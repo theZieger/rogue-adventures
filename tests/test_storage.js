@@ -28,6 +28,7 @@ const META = 'mathquest_meta_v2';
 // start a math adventure and enter the first fight
 function startMathFight() {
   const p = open();
+  p.click('#later');
   p.click('[data-new="math"]');
   p.click('.choice'); p.click('#go');
   const fight = [...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p.$('.node.open');
@@ -72,6 +73,7 @@ function startMathFight() {
 {
   for (const bad of ['{"stats":null}', '{"stats":{"math":5},"dex":[1],"knowSeq":"x"}', 'not json', '[]']) {
     const p = open({ [META]: bad, [RUN]: '{"hero":null}' });
+    if (p.$('#later')) p.click('#later');
     check(!!p.$('[data-new="math"]') && p.errors.length === 0, 'starts with damaged progress data ' + bad);
     check(!p.$('[data-cont="math"]'), 'ignores a damaged saved adventure (' + bad + ')');
   }
@@ -109,9 +111,81 @@ async function reloadCases() {
 
 // 7. Stats are kept per mode and per task type
 {
-  const p = open();
+  const p = open(); p.click('#later');
   const m = p.w.__mq.meta;
   check(m.stats.math && m.stats.math.add && typeof m.stats.math.add.c === 'number', 'stats are stored per mode and task type');
+}
+
+// 8. Setup dialog: shown on first start only; old saves get the new fields with defaults
+{
+  const p1 = open();
+  check(!!p1.$('#later') && !!p1.$('#setpin') && !!p1.$('#setload') && !p1.$('[data-new]'), 'setup dialog shows on the first start');
+  p1.click('#later');
+  check(!!p1.$('[data-new="math"]') && !!p1.$('#parents'), '"Später" leads to the title with a parent button');
+  const m = p1.w.__mq.meta;
+  check(m.setup.skipped === true && m.setup.done === false && !!m.setup.at && m.pin === '', '"Später" is saved, no PIN');
+  const p2 = open(p1.dump());
+  check(!p2.$('#later') && !!p2.$('[data-new="math"]'), 'setup dialog does not come back after "Später"');
+  p2.click('#parents');
+  check(p2.text().includes('Elternbereich') && p2.text().includes('Noch keine PIN'), 'without PIN the parent area opens directly and says so');
+  check(['practice', 'progress', 'save', 'appsec'].every((s) => p2.$('[data-jump="' + s + '"]') && p2.$('#p-' + s)), 'parent area has the four sections with jump bar');
+
+  const old = { runs: 4, wins: 1, dex: { Sumpfbrocken: { world: 1 } }, sound: false };
+  const p3 = open({ [META]: JSON.stringify(old) });
+  const m3 = p3.w.__mq.meta;
+  check(m3.runs === 4 && m3.sound === false && m3.pin === '' && m3.setup.done === false && m3.storage.persisted === false && m3.storage.warnedAt === '', 'old save loads, new fields get defaults');
+  check(!!p3.$('#later'), 'old save sees the setup dialog once');
+  const p4 = open({ [META]: JSON.stringify({ setup: { done: 'x', skipped: true }, pin: 5, storage: [] }) });
+  const m4 = p4.w.__mq.meta;
+  check(m4.setup.done === false && m4.setup.skipped === true && m4.setup.at === '' && m4.pin === '' && m4.storage.persisted === false && p4.errors.length === 0, 'wrong-typed setup/pin/storage fall back to defaults');
+}
+
+// 9. PIN: set twice, wrong PIN, pause after three tries, parental gate
+const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${ch}"]`); };
+{
+  const p1 = open();
+  p1.click('#setpin');
+  typePin(p1, '1234'); typePin(p1, '4321');
+  check(p1.text().includes('verschieden') && !p1.w.__mq.meta.pin, 'two different PINs are not saved');
+  typePin(p1, '2468'); typePin(p1, '2468');
+  const m = p1.w.__mq.meta;
+  check(!!m.pin && m.pin !== '2468' && !JSON.stringify(p1.dump()).includes('2468') && m.setup.done === true, 'PIN is saved hashed, setup done');
+  check(!!p1.$('[data-new="math"]'), 'after setting the PIN the title opens');
+
+  const p2 = open(p1.dump());
+  check(!p2.$('#later'), 'setup dialog does not come back after setting a PIN');
+  p2.click('#parents');
+  check(!!p2.$('#cval') && !p2.$('#p-practice'), 'parent button asks for the PIN');
+  typePin(p2, '1111');
+  check(p2.text().includes('Falsche PIN') && !p2.$('#p-practice'), 'wrong PIN is rejected');
+  typePin(p2, '2468');
+  check(!!p2.$('#p-practice'), 'right PIN opens the parent area');
+
+  const p3 = open(p1.dump());
+  for (let i = 0; i < 5; i++) p3.click('#logo');
+  check(!!p3.$('#cval') && !p3.$('#p-practice'), '5 taps on the title also ask for the PIN');
+  typePin(p3, '0000'); typePin(p3, '0000'); typePin(p3, '0000');
+  check(p3.text().includes('30 Sekunden') && p3.$('.numpad [data-k="2"]').disabled, 'three wrong PINs pause the numpad');
+  typePin(p3, '2468');
+  check(!p3.$('#p-practice'), 'the right PIN does nothing during the pause');
+
+  const p4 = open(p1.dump());
+  p4.click('#parents'); p4.click('#forgot');
+  const task = () => p4.$('.codetask').textContent.match(/(\d+) · (\d+)/);
+  let [, a, b] = task();
+  typePin(p4, String(+a * +b + 1)); p4.click('.numpad [data-k="ok"]');
+  check(p4.text().includes('stimmt nicht') && !!p4.$('.codetask'), 'wrong gate answer gives a new task');
+  [, a, b] = task();
+  check(+a >= 10 && +a <= 99 && +b >= 10 && +b <= 99, 'gate multiplies two two-digit numbers');
+  typePin(p4, String(+a * +b)); p4.click('.numpad [data-k="ok"]');
+  check(p4.text().includes('PIN festlegen'), 'right gate answer leads to choosing a new PIN');
+  typePin(p4, '1357'); typePin(p4, '1357');
+  check(!!p4.$('#p-practice'), 'after the new PIN the parent area opens');
+  const p5 = open(p4.dump());
+  p5.click('#parents'); typePin(p5, '1357');
+  check(!!p5.$('#p-practice'), 'the new PIN works after reopening');
+  p5.click('#pdel');
+  check(p5.w.__mq.meta.pin === '' && p5.text().includes('Noch keine PIN'), 'PIN can be removed in the parent area');
 }
 
 reloadCases().then(() => {
