@@ -192,6 +192,14 @@ const MONART = (() => {
       ${eyes(60, 56, 11, 6, 'normal')}
       <path d="M60 62 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
       <circle cx="94" cy="92" r="11" fill="#FFC93C" ${S(2)}/><circle cx="94" cy="92" r="3" fill="${OUT}"/><path d="M94 103 L82 110 L86 117 L98 108" fill="#FFF3C4" ${S(1.5)}/>`,
+    friends: (c, g, d, l) => `
+      <path d="M8 112 Q10 80 36 80 Q56 80 58 100 L58 112 Z" fill="#E86A5A" ${S()}/><path d="M62 112 L62 100 Q64 80 84 80 Q110 80 112 112 Z" fill="#3FA0A0" ${S()}/>
+      <path d="M50 96 Q60 106 70 96" fill="none" stroke="#F5C9A0" stroke-width="7" stroke-linecap="round"/><path d="M50 96 Q60 106 70 96" fill="none" ${S(2)}/><path d="M57 101 L63 101" stroke="#FFC93C" stroke-width="3" stroke-linecap="round"/>
+      <path d="M14 46 Q10 70 18 78 M58 46 Q62 70 54 78" fill="none" stroke="#7A4A2A" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="36" cy="50" r="22" fill="#F5C9A0" ${S()}/><path d="M14 48 Q14 26 36 26 Q58 26 58 48 Q48 36 36 36 Q24 36 14 48 Z" fill="#7A4A2A" ${S()}/>
+      <circle cx="84" cy="50" r="22" fill="#E8B48A" ${S()}/><path d="M62 46 Q62 26 84 26 Q106 26 106 46 Q100 40 92 42 Q88 34 80 40 Q70 38 62 46 Z" fill="#E0B84A" ${S()}/>
+      ${eyes(36, 52, 8, 4.5, 'happy')}${mouth.smile(36, 62, 6)}
+      ${eyes(84, 52, 8, 4.5, 'normal')}${mouth.grin(84, 62, 7)}`,
     muellerin: (c, g, d, l) => `
       <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#8D6E63" ${S()}/><path d="M42 80 L44 108 L76 108 L78 80 Q60 88 42 80 Z" fill="#F5F0E6" ${S(2)}/>
       <circle cx="60" cy="54" r="28" fill="#F5C9A0" ${S()}/>
@@ -258,7 +266,7 @@ const MONART = (() => {
     const d = shade(color, -0.3);
     const defs = `<defs><radialGradient id="${id}" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="${shade(color, 0.35)}"/><stop offset=".6" stop-color="${color}"/><stop offset="1" stop-color="${shade(color, -0.25)}"/></radialGradient><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="${shade(color, 0.6)}"/></linearGradient></defs>`;
     const aura = evo >= 1 ? `<circle cx="60" cy="62" r="56" fill="${shade(color, 0.5)}" opacity=".18"/><circle cx="60" cy="62" r="56" fill="none" stroke="${shade(color, 0.5)}" stroke-width="2" opacity=".5"/>` : '';
-    const crown = evo >= 2 && !['king', 'luther', 'merchant'].includes(shape) ? `<path d="M40 22 L46 6 L54 18 L60 2 L66 18 L74 6 L80 22 Z" fill="#FFC93C" ${S(2)}/><circle cx="60" cy="4" r="2.5" fill="#FF6E8E"/>` : '';
+    const crown = evo >= 2 && !['king', 'luther', 'merchant', 'friends'].includes(shape) ? `<path d="M40 22 L46 6 L54 18 L60 2 L66 18 L74 6 L80 22 Z" fill="#FFC93C" ${S(2)}/><circle cx="60" cy="4" r="2.5" fill="#FF6E8E"/>` : '';
     const sparkle = evo >= 1 ? `<path d="M12 18 L14 24 L20 26 L14 28 L12 34 L10 28 L4 26 L10 24 Z" fill="#FFC93C"/>` : '';
     const body = (SHAPES[shape] || SHAPES.blob)(color, g, d, null);
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true">${defs}${aura}${body}${crown}${sparkle}</svg>`;

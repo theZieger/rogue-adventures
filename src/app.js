@@ -10,15 +10,16 @@
     kornkammer: MK.MODES.kornkammer,
     wetterstation: MK.MODES.wetterstation,
     kompass: MK.MODES.kompass,
+    freunde: MK.MODES.freunde,
     jahrmarkt: MJ.MODE,
   };
-  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'jahrmarkt'];
+  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', modes: ['math', 'jahrmarkt'] },
       { subject: 'Deutsch', modes: ['woerterwerkstatt', 'satzbaustelle'] },
-      { subject: 'Ethik', modes: ['ethik', 'kirchenjahr'] },
+      { subject: 'Ethik', modes: ['ethik', 'kirchenjahr', 'freunde'] },
       { subject: 'Sachkunde', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
     ] },
   ];
@@ -741,11 +742,13 @@
 
   /* ---------- Event ---------- */
   function screenEvent(resumeOpt) {
-    const EV = CFG().events; if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = rnd(0, EV.length - 1); saveAll(); }
-    const ev = run.node ? EV[run.node.ev] : pick(EV);
-    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p></div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
+    // run.node.ev indexes the whole list, so new events are only ever appended; w = only in that world
+    const EV = CFG().events; const ids = EV.map((_, i) => i).filter((i) => !EV[i].w || EV[i].w === run.world);
+    if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = pick(ids); saveAll(); }
+    const ev = run.node ? EV[run.node.ev] : EV[pick(ids)];
+    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p>${ev.dilemma ? '<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>' : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
     const runOpt = (i) => { const o = ev.opts[i]; if (!o) return screenEvent();
-      if (!o.task) { applyEffect(o.effect); showEffect(ev.title); return; }
+      if (!o.task) { applyEffect(ev.dilemma ? ev.reward : o.effect); showEffect(ev.title, o); return; }
       if (run.node) { run.node.opt = i; saveAll(); }
       const mod = o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, tierFor(mod), { g: o.g });
       render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
@@ -764,9 +767,9 @@
     if (!lines.length) lines.push('Nichts passiert.');
     nodeDone(); saveAll(); return lines;
   }
-  function showEffect(title) {
+  function showEffect(title, opt) {
     const lines = (run.node && run.node.lines) || [];
-    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${opt && opt.then ? `<p>${esc(opt.then)}</p><p><b>Denk mal nach:</b> ${esc(opt.think)}</p>` : ''}${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
     $('#next').onclick = advance;
   }
 
