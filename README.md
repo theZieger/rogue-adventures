@@ -29,8 +29,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🕯️ Das Kirchenjahr | Ethik, 2 Welten: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion – Welt 2: Fastenzeit, Symbole, Karwoche und Ostern, Himmelfahrt, Pfingsten, Taufe, feste und bewegliche Feste, sorbische Bräuche |
 | 🤝 Gute Freunde | Ethik: Freundschaft, wahre und falsche Freunde, Versprechen und Geheimnisse, Streitregeln, Kompromiss, Schlichter, Goldene Regel, Mobbing mit Worten, Wahrheit – Dilemma-Karten als Ereignisse ohne falsche Antwort |
-| ✏️ Wörterwerkstatt | Deutsch, Richtig schreiben: doppelte Mitlaute/ck/tz, Verlängern (d/t, g/k, b/p), silbentrennendes h, Groß oder klein, zusammengesetzte Wörter mit Artikel, Wörterbuch-Reihenfolge, wörtliche Rede |
-| 🏗️ Satzbaustelle | Deutsch, Sprache untersuchen: Wortarten, Zeitformen (Präsens/Präteritum), Steigerung mit „als“/„wie“, Subjekt und Prädikat, Umstellprobe, Oberbegriffe, Teekesselwörter |
+| ✏️ Wörterwerkstatt | Deutsch, Richtig schreiben: doppelte Mitlaute/ck/tz, Verlängern (d/t, g/k, b/p), silbentrennendes h, Groß oder klein (Stufe 2: Gefühle und Wörter mit Begleiter im Satz), zusammengesetzte Wörter mit Artikel, Wörterbuch-Reihenfolge, wörtliche Rede, Wortfamilie (Stufe 2: Vor- und Nachsilben), Worttrennung am Zeilenende, Komma und Doppelpunkt |
+| 🏗️ Satzbaustelle | Deutsch, Sprache untersuchen: Wortarten, Zeitformen (Präsens/Präteritum), Steigerung mit „als“/„wie“, Subjekt und Prädikat, Umstellprobe, Oberbegriffe, Teekesselwörter, Ersatzprobe (Stufe 2 rückwärts), Weglassprobe, Personalpronomen in Einzahl und Mehrzahl, Redensarten und Sprichwörter mit Herkunft |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 | 🌾 Die Kornkammer | Sachkunde: Weizen, Roggen, Gerste, Hafer, Mais (Ähre, Rispe, Kolben), Teile der Getreidepflanze mit Zeichenschule, vom Korn zum Brot, Verwendung, Wertschätzung von Lebensmitteln |
 | 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
@@ -66,7 +66,7 @@ src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontr
 src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/jahrmarkt.js   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
 src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
-src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop nacherzählt, Sachtexte, Witze, Sprichwörter)
+src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
