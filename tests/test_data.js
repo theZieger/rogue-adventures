@@ -1,4 +1,4 @@
-// Cross-checks the game data of all three modes: events, items, topics, shapes, attacks, enemy moves.
+// Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
 require('../src/sachkunde.js'); // registers the Sachkunde units in MK.MODES
@@ -9,6 +9,7 @@ const shapes = new Set(MONART.shapes);
 
 const modes = {
   math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, moves: MQ.ENEMY_MOVES, pool: null },
+  bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, worldAttacks: MQ.BAU.WORLD_ATTACKS, pool: null },
 };
 for (const [k, cfg] of Object.entries(MK.MODES)) modes[k] = cfg;
 modes.jahrmarkt = require('../src/jahrmarkt.js').MODE;
@@ -78,6 +79,24 @@ for (const [mode, cfg] of Object.entries(modes)) {
     }
   }
 }
+
+// Lesestube texts: 60–120 words, three questions with one right answer each
+const TEXTE = require('../src/texte.js');
+if (TEXTE.length < 12) fail('Lesestube: fewer than 12 texts');
+for (const k of ['Fabel', 'Sachtext', 'Witz', 'Sprichwort']) if (!TEXTE.some((t) => t.kind === k)) fail('Lesestube: no ' + k);
+TEXTE.forEach((t) => {
+  const words = t.text.split(/\s+/).filter((x) => /[a-zäöüß0-9]/i.test(x)).length;
+  if (words < 60 || words > 120) fail(`Lesestube ${t.id}: ${words} words`);
+  if (!t.title || !['Fabel', 'Sachtext', 'Witz', 'Sprichwort'].includes(t.kind)) fail(`Lesestube ${t.id}: title or kind`);
+  if (/["']/.test(t.text + t.title)) fail(`Lesestube ${t.id}: use German quotes „…“ and ’`);
+  if (!Array.isArray(t.qs) || t.qs.length !== 3) fail(`Lesestube ${t.id}: needs 3 questions`);
+  (t.qs || []).forEach((q, i) => {
+    if (!q.q || !Array.isArray(q.o) || q.o.length < 3) fail(`Lesestube ${t.id} q${i}: at least 3 options`);
+    else if (new Set(q.o).size !== q.o.length) fail(`Lesestube ${t.id} q${i}: duplicate option`);
+    if (!Number.isInteger(q.a) || !q.o || !q.o[q.a]) fail(`Lesestube ${t.id} q${i}: answer index`);
+  });
+});
+TEXTE.map((t) => t.id).filter((x, i, a) => a.indexOf(x) !== i).forEach((x) => fail('Lesestube: duplicate id ' + x));
 
 // the monster book and saved runs identify enemies by name, heroes by id
 const enemyNames = [], heroIds = [];

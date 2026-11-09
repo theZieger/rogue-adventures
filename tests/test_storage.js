@@ -376,6 +376,8 @@ async function saveCodeCases() {
   check(same(m.know.q1, { c: 3, t: 4, ws: 0, last: 15 }) && same(m.know.q2, b.know.q2) && same(m.know.q3, a.know.q3), 'merge: knowledge questions add up, newer state wins');
   check(m.pin === 'h1abc' && m.sound === true && same(m.off, { math: ['grid'] }) && m.setup.done === true, 'merge: a device without PIN takes the settings from the code');
   check(m.progressAt === b.progressAt && m.backupAt === a.backupAt && m.seenNews === a.seenNews, 'merge: last win is the newer one, backup date stays from this device');
+  const mm = open().w.__mq.mergeMeta(mk({ materials: { erz: 2, stein: 1 } }), mk({ materials: { erz: 1, stein: 5, holz: 3 } }));
+  check(same(mm.materials, { erz: 2, stein: 5, holz: 3 }), 'merge: materials take the larger amount per kind');
   const m2 = open().w.__mq.mergeMeta(Object.assign(a, { pin: 'h1own' }), b);
   check(m2.pin === 'h1own' && m2.sound === false && same(m2.off, {}), 'merge: a device with PIN keeps its settings');
   check(same(a.stats.math.add, { c: 5, t: 6, hist: [1, 1] }), 'merge does not change its inputs');
@@ -532,6 +534,53 @@ function gardenCases() {
     check(m.materials.weizen === 4 && m.materials.hafer === 3 && m.garden.beds[0].crop === 'weizen' && m.garden.beds[1].crop === 'hafer' && m.garden.beds[2].crop === null, 'merging keeps the larger harvest count and fills only empty beds');
   }
 }
+const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
+// 20. Step 17: new task types and the Lesestube keep old saves working
+{
+  const p = open({ [META]: JSON.stringify({ runs: 2, stats: { math: { add: { c: 3, t: 4, hist: [1] } } } }) });
+  const st = p.w.__mq.meta.stats.math;
+  check(st.add.c === 3 && st.sadd && st.sadd.t === 0 && st.ssub && st.ssub.t === 0, 'old save gets empty statistics for the written methods');
+  // a run saved before the Lesestube existed (map without it) still loads
+  const old = { mode: 'satzbaustelle', world: 1, floor: 2, map: p.w.eval('MQ.makeMap(1)'), hero: { id: p.w.eval('MK.MODES.satzbaustelle.starters[0].id'), evo: 0, level: 1, xp: 0, hp: 50, maxHp: 65, attacks: p.w.eval('MK.MODES.satzbaustelle.starters[0].attacks') }, items: [], tiers: {}, path: [0], shield: false };
+  const p2 = open({ [META]: JSON.stringify(SKIPPED), mathquest_run_satzbaustelle: JSON.stringify(old) });
+  p2.click('[data-cont="satzbaustelle"]');
+  check(!!p2.$('.wmap') && p2.errors.length === 0, 'an adventure saved before the Lesestube existed continues');
+  // new Deutsch maps have exactly one Lesestube, math maps none
+  const p3 = open({ [META]: JSON.stringify(SKIPPED) });
+  p3.click('[data-new="woerterwerkstatt"]'); p3.click('#go');
+  check(p3.w.__mq.run.map.flat().filter((n) => n.t === 'lesen').length === 1, 'a Wörterwerkstatt map has one Lesestube');
+  const p4 = open({ [META]: JSON.stringify(SKIPPED) });
+  p4.click('[data-new="math"]'); p4.click('.choice'); p4.click('#go');
+  check(!p4.w.__mq.run.map.flat().some((n) => n.t === 'lesen'), 'a Zahlenquest map has no Lesestube');
+}
+// 21. Lesestube: reading, three questions, reload in the middle keeps text and question number
+async function readCases() {
+  const p = open({ [META]: JSON.stringify(Object.assign({ seenTut: { 'battle:intro2': true } }, SKIPPED)) });
+  p.click('[data-new="satzbaustelle"]'); p.click('#go');
+  const r = p.w.__mq.run; const f = r.map.findIndex((fl) => fl.some((n) => n.t === 'lesen'));
+  r.floor = f + 1; r.path = r.map.slice(0, f).map(() => 0); if (f > 0) r.map[f - 1][0].n = [r.map[f].findIndex((n) => n.t === 'lesen')];
+  p.w.__mq.screenMap();
+  p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Lesestube'));
+  const text = p.w.eval('TEXTE')[p.w.__mq.run.node.text];
+  check(!!p.$('.readcard') && p.text().includes(text.title), 'the Lesestube shows a text first');
+  p.click('#next');
+  check(p.text().includes('Zeilenspringer') && p.text().includes('Frage 1 von 3'), 'then the reading enemy and question 1');
+  const ask = (right) => { p.click('#rq'); if (p.$('#tutok')) p.click('#tutok'); const t = p.w.__task; const i = t.options.indexOf(t.answer); p.click(p.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); };
+  ask(true);
+  check(text.qs[0].q === p.w.__task.q, 'question 1 belongs to the text');
+  const p2 = open(p.dump()); p2.click('[data-cont="satzbaustelle"]');
+  check(p2.text().includes('Frage 2 von 3') && p2.w.__mq.run.node.text === p.w.__mq.run.node.text, 'reload keeps the text and goes on with question 2');
+  p2.click('#rtext'); check(!!p2.$('.overlay .readcard'), 'the text can be read again'); p2.click('.overlay #tutok');
+  const q = (right) => { p2.click('#rq'); const t = p2.w.__task; const i = t.options.indexOf(t.answer); p2.click(p2.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); p2.click('#next'); };
+  const hp = p2.w.__mq.run.hero.hp; q(false); await sleep(1900);
+  check(p2.w.__mq.run.hero.hp < hp, 'a wrong answer gives the reading enemy a free hit');
+  q(true);
+  check(!!p2.$('#next') && !p2.$('#rq'), 'after three questions the reading lesson ends');
+  p2.click('#next');
+  check(p2.text().includes('2 von 3 Fragen richtig') && p2.w.__mq.run.node.done, 'result shows the right answers, node is done');
+  const tries = Object.values(p2.w.__mq.meta.stats.satzbaustelle).reduce((n, s) => n + s.t, 0);
+  check(tries === 0, 'reading questions do not change the task statistics');
+}
 // winning the Kartoffel-Werkstatt opens bed 4 (other modes don't)
 async function gardenWinCases() {
   for (const g of ['math', 'kartoffel']) {
@@ -596,7 +645,8 @@ async function gardenWinCases() {
 }
 
 // 18. Weekly goals, weekly boss, weekly report
-const W48 = '2026-12-23T10:00:00', W49 = '2027-01-27T10:00:00'; // Mathe goal in Zahlenquest: 2026-W52 the weekly boss, 2027-W04 right answers
+// weeks whose maths goal is in Zahlenquest (the seed also picks Die Baustelle): W48 the weekly boss, W49 right answers
+const W48 = '2026-12-23T10:00:00', W49 = '2027-01-27T10:00:00';
 async function weeklyCases() {
   { // same week key → same goals on two devices; one goal per subject, only enabled task types
     const a = open(null, { now: W49 }), b = open(null, { now: W49 });
@@ -687,7 +737,72 @@ async function weeklyCases() {
     check(open().w.__mq.mergeMeta(mk(Object.assign({}, wa, { week: '2026-W48' })), mk(wb)).weekly.week === '2027-W04', 'merge: the newer week wins');
   }
 }
-// 20. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
+// 22. Materials and owned things: defaults, damaged values, the Bergwerk fills them and survives a reload
+{
+  const p0 = open({ [META]: JSON.stringify({ runs: 2, wins: 0 }) });
+  check(JSON.stringify(p0.w.__mq.meta.materials) === '{}' && JSON.stringify(p0.w.__mq.meta.owned) === '{}', 'old save gets empty materials and owned');
+  for (const bad of [[], 'x', 7]) {
+    const p = open({ [META]: JSON.stringify({ materials: bad, owned: bad }) });
+    check(JSON.stringify(p.w.__mq.meta.materials) === '{}' && JSON.stringify(p.w.__mq.meta.owned) === '{}' && p.errors.length === 0, 'wrong-typed materials/owned fall back to {} (' + JSON.stringify(bad) + ')');
+  }
+  const p1 = open({ [META]: JSON.stringify({ materials: { erz: 'viel', stein: 4, holz: -1, ernte: 2.5 }, owned: { 'map-w1-winter': true } }) });
+  check(JSON.stringify(p1.w.__mq.meta.materials) === '{"stein":4}' && p1.w.__mq.meta.owned['map-w1-winter'] === true, 'only whole, non-negative amounts are kept');
+
+  const p = open(); p.click('#later'); p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+  const r = p.w.__mq.run; r.map[0][0].t = 'bergwerk'; p.w.__mq.screenMap();
+  p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Bergwerk'));
+  check(p.d.querySelectorAll('.mblock.covered:not([disabled])').length === 12, 'Bergwerk shows 12 covered blocks');
+  const real = p.w.Math.random; let first = true; p.w.Math.random = () => (first ? (first = false, 0.1) : real());
+  p.click('.mblock[data-i="5"]'); p.w.Math.random = real;
+  if (p.$('#tutok')) p.click('#tutok');
+  const asked = p.$('.expr').textContent;
+  const p2 = open(p.dump()); p2.click('[data-cont="math"]'); if (p2.$('#tutok')) p2.click('#tutok');
+  check(p2.$('.expr') && p2.$('.expr').textContent === asked, 'reopening inside the Bergwerk shows the same block task (' + asked + ')');
+  const solve = (q, right) => { const ans = q.w.__task.answers.map((a) => (right ? a : a + 1)); const inps = [...q.d.querySelectorAll('.inp')];
+    ans.forEach((a, i) => { inps[i].click(); for (const ch of String(a)) q.click(`.numpad [data-k="${ch}"]`); }); q.click('.numpad [data-k="ok"]'); };
+  solve(p2, true);
+  const m = p2.w.__mq.meta;
+  check(m.materials.erz === 1 && m.owned['top-disc-eisen'] === true && p2.w.__mq.run.node.mine.cells[5] === 'erz', 'remainder 0 gives ore, the first ore unlocks the iron disc');
+  check(m.stats.math.rest.t === 1 && m.stats.math.rest.c === 1, 'Bergwerk answers count as division with remainder');
+  check(!!m.progressAt, 'a find in the Bergwerk counts as progress for the backup reminder');
+  p2.click('#next');
+  check(p2.d.querySelectorAll('.mblock.covered:not([disabled])').length === 11 && p2.text().includes('Noch 2 Blöcke'), 'back at the mine: one block open, two to go');
+  p2.click('.mblock.covered'); if (p2.$('#tutok')) p2.click('#tutok'); solve(p2, false); p2.click('#next');
+  check(p2.w.__mq.run.node.mine.got[1] === 'leer' && (m.materials.stein || 0) + m.materials.erz === 1, 'a wrong answer crumbles the block, nothing is added');
+  p2.click('.mblock.covered'); solve(p2, true); p2.click('#next');
+  const total = (m.materials.stein || 0) + m.materials.erz;
+  check(total === 2 && !p2.$('.mblock.covered:not([disabled])') && p2.text().includes('Ausbeute') && p2.text().includes('Eisenscheibe'), 'after three blocks the haul is shown');
+  const p3 = open(p2.dump()); p3.click('[data-cont="math"]');
+  check(!!p3.$('#next') && p3.text().includes('Ausbeute'), 'reopening after the third block shows the haul, no extra blocks');
+  p3.click('#next');
+  const m3 = p3.w.__mq.meta;
+  check(p3.w.__mq.run.floor === 2 && !!p3.$('.wmap') && m3.materials.erz + (m3.materials.stein || 0) === 2 && m3.owned['top-disc-eisen'] === true, 'leaving the Bergwerk keeps the materials');
+
+  let mines = 0, maps = 0;
+  for (let i = 0; i < 30; i++) { const q = open(p3.dump()); q.click('[data-new="math"]'); q.click('.overlay #yes'); q.click('.choice'); q.click('#go'); const fl = q.w.__mq.run.map.flat(); maps++; mines += fl.filter((n) => n.t === 'bergwerk').length; if (fl.filter((n) => n.t === 'bergwerk').length > 1) check(false, 'at most one Bergwerk per world'); }
+  check(mines >= 20 && mines <= maps, 'about one Bergwerk per world map (' + mines + ' in ' + maps + ')');
+  const off = open({ [META]: JSON.stringify({ setup: { skipped: true }, off: { math: ['rest'] } }) });
+  let any = 0; for (let i = 0; i < 10; i++) { off.click('[data-new="math"]'); if (off.$('.overlay #yes')) off.click('.overlay #yes'); off.click('.choice'); off.click('#go'); any += off.w.__mq.run.map.flat().filter((n) => n.t === 'bergwerk').length; off.w.__mq.screenTitle(); }
+  check(any === 0, 'no Bergwerk when division with remainder is switched off');
+}
+
+// 23. Die Baustelle: new unit on the title, adventure starts, stats exist for old saves
+{
+  const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { math: {} } }) });
+  check(!!p.$('[data-new="bau"]') && p.text().includes('Die Baustelle'), 'title lists Die Baustelle under Mathe');
+  const st = p.w.__mq.meta.stats.bau;
+  check(['wz', 'fq', 'netz', 'koerper', 'band', 'lage', 'umfang'].every((k) => st[k] && st[k].t === 0), 'old save gains stats for the Baustelle');
+  p.click('[data-new="bau"]'); p.click('#go');
+  p.click([...p.d.querySelectorAll('.node.open')][0]);
+  const saved = p.dump();
+  check(!!saved.mathquest_run_bau, 'Baustelle adventure is saved under its own key');
+  const p2 = open(saved);
+  check(!!p2.$('[data-cont="bau"]') && !!p2.$('[data-new="math"]') && !p2.$('[data-cont="math"]'), 'Baustelle adventure does not touch Zahlenquest');
+  p2.click('[data-cont="bau"]');
+  check(!!p2.$('#fe') && p2.errors.length === 0, 'Baustelle fight continues after reopening');
+}
+
+// 24. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
 {
   const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.jahrmarkt;
   const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
@@ -699,7 +814,7 @@ async function weeklyCases() {
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
 }
 
-reloadCases().then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(() => {
+reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });

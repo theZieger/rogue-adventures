@@ -23,8 +23,9 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 
 | Modus | Inhalt |
 |---|---|
-| 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
+| 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, schriftliches Addieren und Subtrahieren (Welt 3, Ergänzungsverfahren) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
 | 🎪 Der Jahrmarkt | Mathe, Größen und Daten: Uhrzeit auf die Minute und Zeitspannen (Uhr als Bild), m/cm/km, g/kg mit Waage und Stützpunkten, Glücksrad (sicher, möglich, unmöglich, wahrscheinlicher), Kombinationen zählen, Säulendiagramm, Sachaufgaben mit „3 € 50 ct“ – 2 Welten |
+| 🏗️ Die Baustelle | Raum und Form: Würfel zählen nach Bauplan, Quader ergänzen, Würfelnetze, Körper erkennen, Bandornamente, parallel oder senkrecht, Umfang – 2 Welten. Dazu in Zahlenquest und Baustelle je Welt ein ⛏️ Bergwerk: Teilen mit Rest, ohne Rest gibt es Erz, sonst Stein |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🕯️ Das Kirchenjahr | Ethik, 2 Welten: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion – Welt 2: Fastenzeit, Symbole, Karwoche und Ostern, Himmelfahrt, Pfingsten, Taufe, feste und bewegliche Feste, sorbische Bräuche |
 | 🤝 Gute Freunde | Ethik: Freundschaft, wahre und falsche Freunde, Versprechen und Geheimnisse, Streitregeln, Kompromiss, Schlichter, Goldene Regel, Mobbing mit Worten, Wahrheit – Dilemma-Karten als Ereignisse ohne falsche Antwort |
@@ -35,6 +36,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
 
+- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff.
+- Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
 - Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
@@ -56,6 +59,7 @@ src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontr
 src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/jahrmarkt.js   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
 src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
+src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop nacherzählt, Sachtexte, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/monsters.js    Handgezeichnete SVG-Monster

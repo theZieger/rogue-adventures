@@ -1,0 +1,103 @@
+// Lesestube: short texts (60–120 words) with three questions each; the answer at index a is the right one.
+// Fables are retold in our own words after Aesop (public domain). tests/test_data.js checks the format.
+const TEXTE = [
+  { id: 'rabe', kind: 'Fabel', title: 'Der Fuchs und der Rabe',
+    text: 'Ein Rabe hatte ein Stück Käse gefunden. Er setzte sich damit auf einen hohen Ast, um es in Ruhe zu fressen. Da kam ein Fuchs vorbei. Er roch den Käse und wollte ihn haben. „Was für ein schöner Vogel du bist!“, rief der Fuchs nach oben. „Deine Federn glänzen so schwarz. Wenn deine Stimme genauso schön ist, bist du der König aller Vögel.“ Der Rabe freute sich über das Lob. Er öffnete den Schnabel, um laut zu krächzen. Da fiel der Käse hinunter. Der Fuchs schnappte ihn und lief davon. Wer jedem Lob glaubt, wird leicht hereingelegt.',
+    qs: [
+      { q: 'Was hatte der Rabe gefunden?', o: ['Ein Stück Käse', 'Ein Stück Brot', 'Eine Nuss'], a: 0 },
+      { q: 'Warum lobte der Fuchs den Raben?', o: ['Er wollte den Käse haben.', 'Er wollte ein Lied hören.', 'Er suchte einen Freund.'], a: 0 },
+      { q: 'Was will die Fabel sagen?', o: ['Wer jedem Lob glaubt, wird leicht hereingelegt.', 'Raben können gut singen.', 'Käse schmeckt auf einem Baum am besten.'], a: 0 },
+    ] },
+  { id: 'grille', kind: 'Fabel', title: 'Die Ameise und die Grille',
+    text: 'Den ganzen Sommer lang sang die Grille auf der Wiese. Die Ameise dagegen schleppte jeden Tag Körner in ihren Bau. „Warum arbeitest du so viel?“, fragte die Grille. „Es ist doch warm, und es gibt genug zu essen.“ Die Ameise antwortete: „Ich sammle Vorräte für den Winter.“ Dann kam der Winter. Schnee lag auf der Wiese, und die Grille fand nichts mehr zu essen. Hungrig klopfte sie bei der Ameise an. „Was hast du im Sommer gemacht?“, fragte die Ameise. „Ich habe gesungen“, sagte die Grille. Die Ameise gab ihr ein paar Körner ab. Im nächsten Sommer sammelte auch die Grille Vorräte.',
+    qs: [
+      { q: 'Was tat die Ameise im Sommer?', o: ['Sie sammelte Körner für den Winter.', 'Sie sang auf der Wiese.', 'Sie schlief in ihrem Bau.'], a: 0 },
+      { q: 'Warum klopfte die Grille im Winter bei der Ameise an?', o: ['Sie hatte Hunger.', 'Sie wollte ein Lied vorsingen.', 'Sie suchte ihre Geige.'], a: 0 },
+      { q: 'Was lernt man aus der Fabel?', o: ['Es ist klug, an später zu denken.', 'Singen macht satt.', 'Im Winter ist die Wiese grün.'], a: 0 },
+    ] },
+  { id: 'maus', kind: 'Fabel', title: 'Der Löwe und die Maus',
+    text: 'Ein Löwe schlief im Schatten eines Baumes. Eine Maus lief über seine Pfote und weckte ihn. Der Löwe packte sie. „Lass mich frei“, bat die Maus. „Vielleicht kann ich dir eines Tages helfen.“ Der Löwe lachte. Wie sollte ihm eine so kleine Maus helfen? Trotzdem ließ er sie laufen. Einige Wochen später geriet der Löwe in ein Netz, das Jäger aufgespannt hatten. Er brüllte laut, aber er kam nicht frei. Die Maus hörte ihn. Sie lief herbei und nagte so lange an den Seilen, bis der Löwe frei war. Auch die Kleinen können den Großen helfen.',
+    qs: [
+      { q: 'Wodurch wachte der Löwe auf?', o: ['Die Maus lief über seine Pfote.', 'Ein Jäger rief laut.', 'Es fing an zu regnen.'], a: 0 },
+      { q: 'Warum lachte der Löwe über die Maus?', o: ['Er glaubte nicht, dass sie ihm helfen kann.', 'Sie hatte einen Witz erzählt.', 'Sie war in ein Netz gefallen.'], a: 0 },
+      { q: 'Wie befreite die Maus den Löwen?', o: ['Sie nagte die Seile durch.', 'Sie holte andere Löwen.', 'Sie lief zu den Jägern.'], a: 0 },
+    ] },
+  { id: 'wettlauf', kind: 'Fabel', title: 'Der Hase und die Schildkröte',
+    text: 'Der Hase lachte die Schildkröte aus, weil sie so langsam war. Da sagte die Schildkröte: „Lass uns um die Wette laufen. Wer zuerst an der großen Eiche ist, hat gewonnen.“ Der Hase rannte los und war bald weit vorn. Weil er sicher war, dass er gewinnt, legte er sich ins Gras und schlief ein. Die Schildkröte lief langsam, aber sie blieb kein einziges Mal stehen. Als der Hase aufwachte, sah er sie schon an der Eiche ankommen. So schnell er auch rannte, er kam zu spät. Wer sich zu sicher ist, kann trotzdem verlieren.',
+    qs: [
+      { q: 'Wo war das Ziel?', o: ['An der großen Eiche', 'Am Bach', 'Am Bau des Hasen'], a: 0 },
+      { q: 'Warum verlor der Hase?', o: ['Er schlief unterwegs ein.', 'Er hatte sich verlaufen.', 'Er konnte nicht so schnell laufen.'], a: 0 },
+      { q: 'Wie lief die Schildkröte?', o: ['Langsam, aber ohne Pause', 'Schneller als der Hase', 'Mit vielen Pausen'], a: 0 },
+    ] },
+  { id: 'trauben', kind: 'Fabel', title: 'Der Fuchs und die Trauben',
+    text: 'An einem heißen Tag kam ein hungriger Fuchs an einem Weinberg vorbei. Hoch oben an einer Rebe hingen dicke, blaue Trauben. „Die hole ich mir“, dachte der Fuchs. Er sprang hoch, aber er erreichte sie nicht. Er nahm Anlauf und sprang noch einmal. Wieder kam er nicht heran. Er versuchte es viele Male, bis ihm die Beine wehtaten. Schließlich gab er auf. Im Weggehen sagte er laut: „Die Trauben sind ja noch ganz sauer. Die will ich gar nicht.“ Manche tun so, als wollten sie etwas nicht, nur weil sie es nicht bekommen können.',
+    qs: [
+      { q: 'Warum bekam der Fuchs die Trauben nicht?', o: ['Sie hingen zu hoch.', 'Ein Bauer passte auf.', 'Sie waren schon gepflückt.'], a: 0 },
+      { q: 'Was sagte der Fuchs beim Weggehen?', o: ['Die Trauben sind noch sauer.', 'Morgen komme ich wieder.', 'Ich hole eine Leiter.'], a: 0 },
+      { q: 'Was will die Fabel zeigen?', o: ['Manche tun so, als wollten sie etwas nicht, wenn sie es nicht bekommen.', 'Füchse fressen keine Trauben.', 'Wer hoch springt, bekommt alles.'], a: 0 },
+    ] },
+  { id: 'hund', kind: 'Fabel', title: 'Der Hund auf der Brücke',
+    text: 'Ein Hund hatte beim Metzger ein großes Stück Fleisch bekommen. Er trug es im Maul nach Hause. Sein Weg führte über eine schmale Brücke. Unten floss ein ruhiger Bach. Als der Hund hinunterschaute, sah er im Wasser einen Hund mit einem Stück Fleisch. Er merkte nicht, dass es sein eigenes Spiegelbild war. „Das Stück dort ist größer als meins“, dachte er. „Das will ich auch haben.“ Er schnappte danach und öffnete dabei das Maul. Sein Fleisch fiel ins Wasser und versank. Am Ende hatte er gar nichts mehr. Wer zu gierig ist, verliert oft auch das, was er schon hat.',
+    qs: [
+      { q: 'Was sah der Hund im Wasser?', o: ['Sein Spiegelbild', 'Einen Fisch', 'Den Metzger'], a: 0 },
+      { q: 'Warum fiel das Fleisch ins Wasser?', o: ['Er öffnete das Maul, um zu schnappen.', 'Die Brücke wackelte.', 'Ein Vogel stieß ihn an.'], a: 0 },
+      { q: 'Was bedeutet die Fabel?', o: ['Wer zu gierig ist, verliert auch, was er schon hat.', 'Hunde schwimmen gern.', 'Fleisch muss man vor dem Essen waschen.'], a: 0 },
+    ] },
+  { id: 'sonne', kind: 'Fabel', title: 'Der Wind und die Sonne',
+    text: 'Der Nordwind und die Sonne stritten, wer von beiden stärker sei. Da sahen sie einen Wanderer mit einem Mantel. „Wer ihm den Mantel auszieht, hat gewonnen“, sagte die Sonne. Der Wind fing an. Er blies kalt und heftig. Doch je stärker er blies, desto fester hielt der Wanderer seinen Mantel. Schließlich gab der Wind auf. Nun schien die Sonne. Sie schickte ihre warmen Strahlen auf die Erde. Dem Wanderer wurde es heiß. Er knöpfte den Mantel auf und zog ihn schließlich ganz aus. Mit Freundlichkeit erreicht man oft mehr als mit Gewalt.',
+    qs: [
+      { q: 'Worüber stritten der Wind und die Sonne?', o: ['Wer stärker ist', 'Wer schöner ist', 'Wer früher aufsteht'], a: 0 },
+      { q: 'Was tat der Wanderer, als der Wind blies?', o: ['Er hielt seinen Mantel fest.', 'Er zog den Mantel aus.', 'Er legte sich schlafen.'], a: 0 },
+      { q: 'Wer gewann den Streit?', o: ['Die Sonne', 'Der Wind', 'Der Wanderer'], a: 0 },
+    ] },
+  { id: 'igel', kind: 'Sachtext', title: 'Der Igel',
+    text: 'Igel sind Säugetiere. Auf ihrem Rücken tragen sie etwa 7000 Stacheln. Bei Gefahr rollen sie sich zu einer stacheligen Kugel zusammen. Tagsüber schlafen Igel in einem Versteck, zum Beispiel unter einer Hecke oder in einem Laubhaufen. Erst in der Dämmerung gehen sie auf Futtersuche. Sie fressen Käfer, Regenwürmer, Raupen und Schnecken. Im Herbst fressen sie sich ein dickes Fettpolster an. Wenn es kalt wird, bauen sie sich ein Nest aus Laub und halten Winterschlaf. Dabei atmen sie sehr langsam, und ihr Herz schlägt nur noch selten. Erst im Frühling wachen sie wieder auf.',
+    qs: [
+      { q: 'Was tut ein Igel bei Gefahr?', o: ['Er rollt sich zu einer Kugel zusammen.', 'Er klettert auf einen Baum.', 'Er gräbt sich ein.'], a: 0 },
+      { q: 'Wann suchen Igel ihr Futter?', o: ['In der Dämmerung', 'Am Mittag', 'Nur im Winter'], a: 0 },
+      { q: 'Wozu brauchen Igel das Fettpolster?', o: ['Für den Winterschlaf', 'Zum Schwimmen', 'Damit die Stacheln wachsen'], a: 0 },
+    ] },
+  { id: 'biene', kind: 'Sachtext', title: 'Die Honigbiene',
+    text: 'In einem Bienenstock leben im Sommer bis zu 50 000 Bienen. Es gibt nur eine Königin. Sie legt die Eier. Die meisten Bienen sind Arbeiterinnen. Sie putzen die Waben, füttern die Larven und bewachen den Eingang. Die älteren Arbeiterinnen fliegen hinaus und sammeln Nektar und Blütenstaub. Aus dem Nektar machen die Bienen Honig. Hat eine Biene viele Blüten gefunden, fliegt sie zurück in den Stock und tanzt. Mit diesem Tanz zeigt sie den anderen, in welcher Richtung die Blüten liegen. Beim Sammeln tragen die Bienen Blütenstaub von Blüte zu Blüte. So helfen sie den Pflanzen, Früchte zu bilden.',
+    qs: [
+      { q: 'Wer legt im Bienenstock die Eier?', o: ['Die Königin', 'Die Arbeiterinnen', 'Der Imker'], a: 0 },
+      { q: 'Woraus machen Bienen Honig?', o: ['Aus Nektar', 'Aus Wasser', 'Aus Blättern'], a: 0 },
+      { q: 'Was zeigt eine Biene mit ihrem Tanz?', o: ['In welcher Richtung die Blüten liegen', 'Dass sie müde ist', 'Dass es bald regnet'], a: 0 },
+    ] },
+  { id: 'maulwurf', kind: 'Sachtext', title: 'Der Maulwurf',
+    text: 'Der Maulwurf lebt fast immer unter der Erde. Mit seinen breiten Vorderpfoten gräbt er lange Gänge. Die Erde, die dabei übrig bleibt, schiebt er nach oben. So entstehen die Maulwurfshügel auf Wiesen und in Gärten. Der Maulwurf kann sehr schlecht sehen. Dafür hört und riecht er gut. Mit den feinen Haaren an seiner Nase spürt er jede Bewegung im Boden. Er frisst vor allem Regenwürmer und Insektenlarven. Jeden Tag braucht er etwa halb so viel Futter, wie er selbst wiegt. Deshalb ist er fast immer auf der Suche. Der Maulwurf steht unter Naturschutz.',
+    qs: [
+      { q: 'Wie entstehen Maulwurfshügel?', o: ['Der Maulwurf schiebt Erde nach oben.', 'Der Regen spült Erde zusammen.', 'Der Gärtner schüttet sie auf.'], a: 0 },
+      { q: 'Womit spürt der Maulwurf Bewegungen im Boden?', o: ['Mit den Haaren an seiner Nase', 'Mit seinen Augen', 'Mit seinem Schwanz'], a: 0 },
+      { q: 'Was frisst der Maulwurf vor allem?', o: ['Regenwürmer und Insektenlarven', 'Möhren und Kartoffeln', 'Gras und Blätter'], a: 0 },
+    ] },
+  { id: 'tausend', kind: 'Witz', title: 'Der Tausendfüßer',
+    text: 'Paul kommt aus der Schule nach Hause. Seine Mutter fragt: „Wie war es heute?“ „Gut“, sagt Paul. „Wir hatten Sachkunde. Frau Lehmann hat gefragt, wie viele Beine eine Spinne hat.“ „Und, wusstest du es?“ „Ja, acht. Dann hat sie gefragt, wie viele Beine ein Käfer hat.“ „Und?“ „Sechs. Zum Schluss wollte sie wissen, warum ein Tausendfüßer nie pünktlich zur Schule kommt.“ Die Mutter ist gespannt: „Was hast du gesagt?“ Paul grinst: „Bis der alle Schuhe zugebunden hat, ist die Schule schon wieder aus.“',
+    qs: [
+      { q: 'Wie viele Beine hat eine Spinne?', o: ['Acht', 'Sechs', 'Tausend'], a: 0 },
+      { q: 'Welches Fach hatte Paul?', o: ['Sachkunde', 'Mathe', 'Sport'], a: 0 },
+      { q: 'Warum kommt der Tausendfüßer laut Paul zu spät?', o: ['Er braucht lange für alle Schuhe.', 'Er verläuft sich immer.', 'Er schläft zu lange.'], a: 0 },
+    ] },
+  { id: 'giraffe', kind: 'Witz', title: 'Im Zoo',
+    text: 'Die Klasse 3b macht einen Ausflug in den Zoo. Vor dem Gehege der Giraffen bleibt Lena stehen. „Warum haben Giraffen so einen langen Hals?“, fragt sie. Herr Kraus, der Lehrer, erklärt: „Damit sie an die Blätter oben in den Bäumen kommen. Dort finden sie ihr Futter.“ Lena überlegt eine Weile. Dann fragt sie: „Und warum sind die Bäume so hoch?“ Herr Kraus will gerade antworten, da ruft Tim von hinten: „Na, damit die Giraffen einen langen Hals brauchen!“ Die ganze Klasse lacht.',
+    qs: [
+      { q: 'Wo ist die Klasse?', o: ['Im Zoo', 'Im Wald', 'Im Museum'], a: 0 },
+      { q: 'Wozu braucht die Giraffe laut Herrn Kraus den langen Hals?', o: ['Damit sie an die Blätter oben kommt.', 'Damit sie schneller laufen kann.', 'Damit sie gut schwimmen kann.'], a: 0 },
+      { q: 'Was ist an Tims Antwort lustig?', o: ['Er dreht die Erklärung einfach um.', 'Er kennt die Giraffe mit Namen.', 'Er hat die Frage nicht gehört.'], a: 0 },
+    ] },
+  { id: 'apfel', kind: 'Sprichwort', title: 'Der Apfel fällt nicht weit vom Stamm',
+    text: '„Der Apfel fällt nicht weit vom Stamm.“ Das sagt man, wenn ein Kind etwas genauso macht wie seine Mutter oder sein Vater. Stell dir einen Apfelbaum vor. Wenn ein reifer Apfel herunterfällt, landet er meistens nah beim Baum. So ähnlich ist es in Familien. Kinder lernen viel von ihren Eltern und werden ihnen in manchem ähnlich. Ein Beispiel: Jonas’ Vater spielt seit vielen Jahren Fußball. Jetzt spielt auch Jonas in einem Verein und schießt die meisten Tore. Seine Oma lacht und sagt: „Der Apfel fällt eben nicht weit vom Stamm.“',
+    qs: [
+      { q: 'Wo landet ein reifer Apfel meistens?', o: ['Nah beim Baum', 'Weit weg auf der Straße', 'Im Nachbargarten'], a: 0 },
+      { q: 'Was bedeutet das Sprichwort?', o: ['Kinder sind ihren Eltern oft ähnlich.', 'Äpfel soll man vom Boden aufheben.', 'Man soll nicht auf Bäume klettern.'], a: 0 },
+      { q: 'Was macht Jonas wie sein Vater?', o: ['Er spielt Fußball.', 'Er pflückt Äpfel.', 'Er backt Kuchen.'], a: 0 },
+    ] },
+  { id: 'grube', kind: 'Sprichwort', title: 'Wer anderen eine Grube gräbt',
+    text: '„Wer anderen eine Grube gräbt, fällt selbst hinein.“ Dieses Sprichwort steht schon in der Bibel. Es bedeutet: Wer einem anderen schaden will, dem passiert am Ende oft selbst etwas Schlimmes. Ein Beispiel: Max will seine Schwester Mia ärgern. Er versteckt ihre Turnschuhe im Keller, damit sie zu spät zum Sport kommt. Dabei legt er seinen eigenen Turnbeutel ab und vergisst ihn dort. Am Morgen findet Mia ihre Schuhe schnell, denn sie hat Max beim Verstecken gesehen. Sie geht pünktlich los. Max dagegen sucht lange nach seinem Turnbeutel und kommt zu spät.',
+    qs: [
+      { q: 'Was wollte Max tun?', o: ['Seine Schwester ärgern', 'Den Keller aufräumen', 'Mit Mia Sport machen'], a: 0 },
+      { q: 'Wer kam am Ende zu spät?', o: ['Max', 'Mia', 'Beide'], a: 0 },
+      { q: 'Was bedeutet das Sprichwort?', o: ['Wer anderen schaden will, dem passiert oft selbst etwas.', 'Man soll keine Löcher in den Garten graben.', 'Turnschuhe gehören in den Keller.'], a: 0 },
+    ] },
+];
+if (typeof module !== 'undefined') module.exports = TEXTE;

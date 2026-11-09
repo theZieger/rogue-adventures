@@ -21,9 +21,14 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
 - Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
 - Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.
+- Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.
+- Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.
 - Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.
 - Schulgarten: Pflanze Kartoffeln, Weizen, Roggen oder Hafer. Nach 7 Tagen erntest du und bekommst Stempel.
 - Drei neue Sachkunde-Abenteuer: „Die Kornkammer“, „Die Wetterstation“ mit Forscherlabor und „Kompass und Karte“ mit Schatzkarte.
+- Duell zu zweit: Zwei Kinder rechnen oder rätseln abwechselnd an einem Gerät gegeneinander.
+- Lesestube in Deutsch und Ethik: Lies eine Fabel, einen Sachtext oder einen Witz und beantworte drei Fragen.
+- Zahlenquest Welt 3: schriftlich addieren und subtrahieren, mit Feldern für den Übertrag.
 - Wochenaufgabe: jede Woche ein Ziel pro Fach. Wer alle schafft, bekommt 10 Stempel und einen Stern.
 - Auf der Karte wartet ein Wochenboss. Eltern finden im Elternbereich einen Wochenbericht zum Kopieren.
 - Zahlenquest: Kämpfe bringen Münzen. Auf dem Markt bezahlst du passend, ab Welt 2 rechnest du das Rückgeld aus.

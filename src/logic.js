@@ -16,6 +16,9 @@ const MQ = (() => {
     rest: { name: 'Teilen mit Rest', icon: '🧺', maxTier: 2, worldCap: [1, 2, 2], dmg: 16 },
     rund: { name: 'Runden', icon: '🎯', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
     dopp: { name: 'Verdoppeln und Halbieren', icon: '🪞', maxTier: 2, worldCap: [1, 2, 2], dmg: 10 },
+    // worldCap 0 = not offered in that world (written methods only in world 3)
+    sadd: { name: 'Schriftlich addieren', icon: '📝', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
+    ssub: { name: 'Schriftlich subtrahieren', icon: '🗒️', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
     // practised at the market, never an attack
     geld: { name: 'Geld', icon: '🪙', maxTier: 2, worldCap: [1, 2, 2], dmg: 0, shop: true },
   };
@@ -140,10 +143,12 @@ const MQ = (() => {
     a = rnd(2, 10); b = rnd(2, 10);
     return pick([() => task(`? · ${a} = ${a * b}`, [b], { reverse: true }), () => task(`${a} · ? = ${a * b}`, [b], { reverse: true }), () => task(`${a * b} : ${a} = ?`, [b])])();
   }
-  function genRest(t) {
+  // zero: the division goes up (remainder 0) – the Bergwerk needs those for ore
+  function genRest(t, zero) {
     // the quotient stays within the Einmaleins (at most 10)
     const hi = t === 1 ? 50 : 99; let n, d;
-    do { d = rnd(2, 9); n = rnd(10, hi); } while (n % d === 0 || n < 2 * d || n > 10 * d + d - 1);
+    if (zero) do { d = rnd(2, 9); n = d * rnd(2, 10); } while (n < 10 || n > hi);
+    else do { d = rnd(2, 9); n = rnd(10, hi); } while (n % d === 0 || n < 2 * d || n > 10 * d + d - 1);
     return task(`${n} : ${d} = ?`, [Math.floor(n / d), n % d], { rest: true, labels: ['Ergebnis', 'Rest'] });
   }
   function genRund(t) {
@@ -155,6 +160,29 @@ const MQ = (() => {
   function genDopp(t) {
     if (Math.random() < 0.5) { const n = t === 1 ? rnd(6, 49) : rnd(51, 499); return task(`${n}`, [2 * n], { ask: 'Verdopple die Zahl.' }); }
     const n = 2 * (t === 1 ? rnd(6, 49) : rnd(51, 499)); return task(`${n}`, [n / 2], { ask: 'Halbiere die Zahl.' });
+  }
+  // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
+  // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
+  function columns(op, rows) {
+    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : rows[0] - rows[1];
+    const w = Math.max(...rows.concat(res).map((n) => String(n).length));
+    const dig = (n, i) => Math.floor(n / 10 ** (w - 1 - i)) % 10;
+    const carry = Array(w).fill(0);
+    for (let i = w - 1; i > 0; i--) carry[i - 1] = op === '+' ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10) : (dig(rows[0], i) < dig(rows[1], i) + carry[i] ? 1 : 0);
+    return task(`${rows.join(op === '+' ? ' + ' : ' − ')} = ?`, [res], { col: { op, rows, carry, w } });
+  }
+  const carries = (t) => t.col.carry.filter(Boolean).length;
+  function genSadd(t) {
+    let tk;
+    do tk = t === 1 ? columns('+', [rnd(100, 899), rnd(10, 899)]) : columns('+', [rnd(100, 599), rnd(10, 399), rnd(10, 299)]);
+    while (tk.answers[0] > 999 || !carries(tk));
+    return tk;
+  }
+  function genSsub(t) {
+    let tk;
+    // tier 1: one Übertrag, tier 2: two (often with a zero in the minuend)
+    do { const a = rnd(200, 999); tk = columns('−', [a, rnd(10, a - 10)]); } while (tk.answers[0] < 10 || carries(tk) !== t);
+    return tk;
   }
   // money is always shown as „3 € 50 ct“, never with a comma
   function euro(c) { const e = Math.floor(c / 100), ct = c % 100; return e ? `${e} €${ct ? ` ${String(ct).padStart(2, '0')} ct` : ''}` : `${ct} ct`; }
@@ -169,7 +197,7 @@ const MQ = (() => {
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: genRest, rund: genRund, dopp: genDopp, geld: genGeld }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, geld: genGeld }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -239,6 +267,16 @@ const MQ = (() => {
       2: { title: 'Rückgeld ausrechnen', steps: ['Du darfst auch mehr Geld hinlegen. Dann bekommst du Rückgeld.', 'Beispiel: Der Trank kostet 1 € 20 ct. Du gibst 2 €.', 'Von 1 € 20 ct bis 2 € fehlen 80 ct. Du bekommst 0 € und 80 ct zurück.', 'Zum Prüfen rechnest du plus: 1 € 20 ct + 80 ct = 2 €.'] },
     },
   });
+  Object.assign(TUT, {
+    sadd: {
+      1: { title: 'Schriftlich addieren', steps: ['Die Zahlen stehen genau untereinander: Einer unter Einer, Zehner unter Zehner, Hunderter unter Hunderter. Du rechnest von rechts nach links.', '358 + 274: Einer 8 + 4 = 12. Schreibe 2. Die 1 kommt als Übertrag in das kleine Feld der Zehnerspalte.', 'Zehner: 1 + 5 + 7 = 13. Schreibe 3, Übertrag 1 in die Hunderterspalte.', 'Hunderter: 1 + 3 + 2 = 6. Schreibe 6. Ergebnis: 632.'] },
+      2: { title: 'Drei Zahlen schriftlich addieren', steps: ['Alle drei Zahlen stehen stellengerecht untereinander. Du rechnest von rechts nach links.', '246 + 135 + 89: Einer 6 + 5 + 9 = 20. Schreibe 0, Übertrag 2.', 'Zehner: 2 + 4 + 3 + 8 = 17. Schreibe 7, Übertrag 1.', 'Hunderter: 1 + 2 + 1 = 4. Schreibe 4. Ergebnis: 470.'] },
+    },
+    ssub: {
+      1: { title: 'Schriftlich subtrahieren', steps: ['Die kleinere Zahl steht stellengerecht unter der größeren. Du rechnest von rechts nach links und ergänzt von unten nach oben.', '742 − 318: Einer: 8 plus wie viel ist 2? Das geht nicht, also bis 12: 8 + 4 = 12. Schreibe 4, Übertrag 1 in die Zehnerspalte.', 'Zehner: 1 + 1 = 2. 2 plus wie viel ist 4? 2 + 2 = 4. Schreibe 2.', 'Hunderter: 3 plus wie viel ist 7? 3 + 4 = 7. Schreibe 4. Ergebnis: 424.'] },
+      2: { title: 'Subtrahieren mit zwei Überträgen', steps: ['Ist die untere Zahl größer als die obere Ziffer, ergänzt du bis zur Zahl über 10 und schreibst 1 als Übertrag in die nächste Spalte.', '503 − 276: Einer: 6 + 7 = 13. Schreibe 7, Übertrag 1.', 'Zehner: 7 + 1 = 8. 8 plus wie viel ist 0? Das geht nicht, also bis 10: 8 + 2 = 10. Schreibe 2, Übertrag 1.', 'Hunderter: 2 + 1 = 3. 3 + 2 = 5. Schreibe 2. Ergebnis: 227.'] },
+    },
+  });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
@@ -256,7 +294,7 @@ const MQ = (() => {
     { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
       attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Flügelschlag', mod: 'seq' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller' };
 
   const ENEMIES = {
     1: {
@@ -396,6 +434,237 @@ const MQ = (() => {
     return map;
   }
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES };
+  /* ---------- Die Baustelle (Raum und Form) ----------
+     Task pictures are built here as SVG strings, so the tests can check them without a browser. */
+  const BAU_MODULES = {
+    wz: { name: 'Würfel zählen', icon: '🧊', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    fq: { name: 'Quader ergänzen', icon: '📦', maxTier: 2, worldCap: [1, 2], dmg: 14 },
+    netz: { name: 'Würfelnetze', icon: '🎲', maxTier: 1, worldCap: [1, 1], dmg: 16 },
+    koerper: { name: 'Körper erkennen', icon: '🔺', maxTier: 1, worldCap: [1, 1], dmg: 10 },
+    band: { name: 'Bandornamente', icon: '🔁', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    lage: { name: 'Parallel oder senkrecht', icon: '📐', maxTier: 1, worldCap: [1, 1], dmg: 10 },
+    umfang: { name: 'Umfang', icon: '📏', maxTier: 2, worldCap: [1, 2], dmg: 14 },
+  };
+  const INK = '#1C2541', LINE = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
+  const svgFig = (x, y, w, h, body, label) => `<svg viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
+  const sum = (a) => a.reduce((s, x) => s + x, 0);
+
+  // isometric view from the front right: x = column (to the right), y = row (to the front), z = up
+  const iso = (x, y, z) => `${(x - y) * 12},${(x + y) * 7 - z * 14}`;
+  function boxFaces(x, y, z, dx, dy, dz, fills, attrs) {
+    const X = x + dx, Y = y + dy, Z = z + dz;
+    return [[[x, y, Z], [X, y, Z], [X, Y, Z], [x, Y, Z]], [[x, Y, z], [X, Y, z], [X, Y, Z], [x, Y, Z]], [[X, y, z], [X, Y, z], [X, Y, Z], [X, y, Z]]]
+      .map((f, i) => `<polygon points="${f.map((p) => iso(...p)).join(' ')}" fill="${fills ? fills[i] : 'none'}" ${attrs || LINE}/>`).join('');
+  }
+  const BRICK = ['#F6A36B', '#D9653B', '#B54E2A'];
+  // full: height of the complete Quader, drawn as a dashed outline
+  function isoView(plan, full) {
+    const rows = plan.length, cols = plan[0].length, top = full || Math.max(...plan.flat());
+    const cubes = []; plan.forEach((row, r) => row.forEach((n, c) => { for (let z = 0; z < n; z++) cubes.push([c, r, z]); }));
+    // back to front, so nearer cubes cover farther ones
+    cubes.sort((a, b) => sum(a) - sum(b) || a[2] - b[2]);
+    const body = cubes.map(([x, y, z]) => boxFaces(x, y, z, 1, 1, 1, BRICK)).join('') + (full ? boxFaces(0, 0, 0, cols, rows, full, null, `stroke="${INK}" stroke-width="1.5" stroke-dasharray="4 3"`) : '');
+    return svgFig(-rows * 12 - 2, -top * 14 - 2, (rows + cols) * 12 + 4, (rows + cols) * 7 + top * 14 + 4, body, 'Gebäude aus Würfeln');
+  }
+  function planView(plan) {
+    const S = 24, rows = plan.length, cols = plan[0].length;
+    const cells = plan.map((row, r) => row.map((n, c) => `<rect x="${c * S}" y="${r * S}" width="${S}" height="${S}" fill="${n ? '#FFF3C4' : '#fff'}" ${LINE}/><text x="${c * S + S / 2}" y="${r * S + 17}" text-anchor="middle" font-size="15" font-weight="700" fill="${INK}">${n}</text>`).join('')).join('');
+    return svgFig(-2, -2, cols * S + 4, rows * S + 18, `${cells}<text x="${cols * S / 2}" y="${rows * S + 14}" text-anchor="middle" font-size="11" fill="${INK}">vorne</text>`, 'Bauplan von oben');
+  }
+  const figPair = (plan, full) => `<figure>${planView(plan)}<figcaption>Bauplan</figcaption></figure><figure>${isoView(plan, full)}<figcaption>Ansicht</figcaption></figure>`;
+
+  function genWz(t) {
+    let plan;
+    do { const [rows, cols] = t === 1 ? pick([[2, 2], [2, 3]]) : pick([[3, 3], [2, 3], [3, 2]]); plan = Array.from({ length: rows }, () => Array.from({ length: cols }, () => (t === 1 ? rnd(1, 3) : rnd(0, 4)))); }
+    while (plan.flat().filter((n) => !n).length > 2 || plan[0].every((n) => !n) || plan.every((row) => !row[0]));
+    return task('', [sum(plan.flat())], { svg: figPair(plan), ask: 'Wie viele Würfel sind es zusammen?', plan, sig: JSON.stringify(plan) });
+  }
+  function genFq(t) {
+    const [rows, cols] = t === 1 ? pick([[2, 2], [2, 3]]) : pick([[2, 3], [3, 3]]); const full = t === 1 ? 2 : 3; let plan;
+    do plan = Array.from({ length: rows }, () => Array.from({ length: cols }, () => rnd(0, full))); while (sum(plan.flat()) < 2 || rows * cols * full - sum(plan.flat()) < 2);
+    return task('', [rows * cols * full - sum(plan.flat())], { svg: figPair(plan, full), ask: `Der Quader soll ${cols} Würfel lang, ${rows} breit und ${full} hoch werden. Wie viele Würfel fehlen?`, plan, full, sig: JSON.stringify(plan) });
+  }
+
+  // the 11 nets of a cube; rows separated by |, # is a square
+  const NETS = ['#...|####|#...', '#...|####|.#..', '#...|####|..#.', '#...|####|...#', '.#..|####|.#..', '.#..|####|..#.',
+    '##..|.###|.#..', '##..|.###|..#.', '##..|.###|...#', '##..|.##.|..##', '###..|..###'];
+  const parseNet = (s) => s.split('|').flatMap((row, r) => [...row].map((ch, c) => (ch === '#' ? [r, c] : null)).filter(Boolean));
+  const normCells = (cells) => { const r0 = Math.min(...cells.map((p) => p[0])), c0 = Math.min(...cells.map((p) => p[1])); return cells.map(([r, c]) => [r - r0, c - c0]).sort((a, b) => a[0] - b[0] || a[1] - b[1]); };
+  const SYM = [([r, c]) => [r, c], ([r, c]) => [c, -r], ([r, c]) => [-r, -c], ([r, c]) => [-c, r], ([r, c]) => [r, -c], ([r, c]) => [-c, -r], ([r, c]) => [-r, c], ([r, c]) => [c, r]];
+  // same shape after turning or flipping → same key
+  const shapeKey = (cells) => SYM.map((f) => JSON.stringify(normCells(cells.map(f)))).sort()[0];
+  // Fold the squares around the first one like rolling a die: n is where the square ends up on the cube,
+  // u and v are the grid's right and down directions on it. A net uses each of the 6 sides exactly once.
+  function cubeNet(cells) {
+    if (cells.length !== 6) return false;
+    const key = ([r, c]) => r + ',' + c, at = new Set(cells.map(key)), neg = (a) => a.map((x) => -x);
+    const frames = new Map([[key(cells[0]), { n: [0, 0, -1], u: [1, 0, 0], v: [0, 1, 0] }]]); const queue = [cells[0]];
+    const roll = [[0, 1, (f) => ({ n: f.u, u: neg(f.n), v: f.v })], [0, -1, (f) => ({ n: neg(f.u), u: f.n, v: f.v })], [1, 0, (f) => ({ n: f.v, u: f.u, v: neg(f.n) })], [-1, 0, (f) => ({ n: neg(f.v), u: f.u, v: f.n })]];
+    while (queue.length) { const [r, c] = queue.shift(); const f = frames.get(key([r, c]));
+      for (const [dr, dc, g] of roll) { const k = key([r + dr, c + dc]); if (at.has(k) && !frames.has(k)) { frames.set(k, g(f)); queue.push([r + dr, c + dc]); } } }
+    return frames.size === 6 && new Set([...frames.values()].map((f) => f.n.join())).size === 6;
+  }
+  const connected = (cells) => { const key = ([r, c]) => r + ',' + c, at = new Set(cells.map(key)), seen = new Set([key(cells[0])]), q = [cells[0]];
+    while (q.length) { const [r, c] = q.pop(); for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (at.has(key(p)) && !seen.has(key(p))) { seen.add(key(p)); q.push(p); } } return seen.size === cells.length; };
+  // a real net with one square moved: looks close, but does not fold
+  function almostNet() {
+    for (;;) {
+      const net = parseNet(pick(NETS)); const i = rnd(0, 5); const rest = net.filter((_, j) => j !== i); if (!connected(rest)) continue;
+      const free = []; for (const [r, c] of rest) for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (!net.some((q) => q[0] === p[0] && q[1] === p[1])) free.push(p);
+      const shape = rest.concat([pick(free)]); if (!cubeNet(shape)) return normCells(shape);
+    }
+  }
+  function netSVG(cells, size) {
+    const S = 14, h = Math.max(...cells.map((p) => p[0])) + 1, w = Math.max(...cells.map((p) => p[1])) + 1, ox = (size - w) * S / 2, oy = (size - h) * S / 2;
+    return svgFig(-2, -2, size * S + 4, size * S + 4, cells.map(([r, c]) => `<rect x="${ox + c * S}" y="${oy + r * S}" width="${S}" height="${S}" fill="#F4C542" ${LINE}/>`).join(''), 'Netz aus 6 Quadraten');
+  }
+  function genNetz() {
+    const net = normCells(parseNet(pick(NETS)).map(pick(SYM))); const nets = [net]; const keys = new Set([shapeKey(net)]);
+    while (nets.length < 3) { const n = almostNet(); if (!keys.has(shapeKey(n))) { keys.add(shapeKey(n)); nets.push(normCells(n.map(pick(SYM)))); } }
+    const size = Math.max(...nets.flat().map((p) => Math.max(...p))) + 1; const order = shuffle([0, 1, 2]);
+    const options = order.map((i) => netSVG(nets[i], size));
+    return { kind: 'choice', q: 'Welches Netz lässt sich zu einem Würfel falten?', options, answer: options[order.indexOf(0)], nets: order.map((i) => nets[i]), svgOpts: true, why: 'Dieses Netz lässt sich falten:', sig: shapeKey(net) };
+  }
+
+  const SOLIDS = { wuerfel: ['Würfel', 'den'], quader: ['Quader', 'den'], kugel: ['Kugel', 'die'], pyramide: ['Pyramide', 'die'], kegel: ['Kegel', 'den'], zylinder: ['Zylinder', 'den'] };
+  const SOLID_FILL = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
+  const solidSVG = (id) => {
+    const D = `fill="none" stroke="${INK}" stroke-width="1.5" stroke-dasharray="3 3"`;
+    const body = {
+      wuerfel: () => `<g transform="translate(36 40) scale(1.6)">${boxFaces(0, 0, 0, 1, 1, 1, SOLID_FILL)}</g>`,
+      quader: () => `<g transform="translate(26 38) scale(1.05)">${boxFaces(0, 0, 0, 3, 1, 1.4, SOLID_FILL)}</g>`,
+      kugel: () => `<circle cx="36" cy="30" r="24" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M12 30 a24 8 0 0 0 48 0" fill="none" ${LINE}/><path d="M12 30 a24 8 0 0 1 48 0" ${D}/>`,
+      zylinder: () => `<path d="M16 12 v34 a20 7 0 0 0 40 0 v-34" fill="${SOLID_FILL[1]}" ${LINE}/><ellipse cx="36" cy="12" rx="20" ry="7" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
+      kegel: () => `<path d="M36 4 L16 46 a20 7 0 0 0 40 0 Z" fill="${SOLID_FILL[1]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
+      pyramide: () => `<path d="M38 4 L12 46 L44 54 Z" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M38 4 L44 54 L62 42 Z" fill="${SOLID_FILL[2]}" ${LINE}/><path d="M12 46 L30 36 L62 42 M38 4 L30 36" ${D}/>`,
+    }[id]();
+    return svgFig(0, 0, 72, 60, body, 'Körper');
+  };
+  function genKoerper() {
+    const ids = Object.keys(SOLIDS); const id = pick(ids); const shown = shuffle([id].concat(shuffle(ids.filter((k) => k !== id)).slice(0, 2)));
+    if (Math.random() < 0.5) { const options = shown.map((k) => SOLIDS[k][0]); return { kind: 'choice', q: 'Wie heißt dieser Körper?', pic: solidSVG(id), options, answer: SOLIDS[id][0], solid: id, shown, cols: 1, sig: 'n' + id }; }
+    const options = shown.map(solidSVG);
+    return { kind: 'choice', q: `Tippe auf ${SOLIDS[id][1]} ${SOLIDS[id][0]}.`, options, answer: solidSVG(id), solid: id, shown, svgOpts: true, why: `So sieht ${SOLIDS[id][1].replace('den', 'der')} ${SOLIDS[id][0]} aus:`, sig: 'p' + id };
+  }
+
+  // a tile is [shape, turn in degrees, colour]
+  const TILE_COL = ['#E4572E', '#3FA0FF', '#4FB04F', '#F4C542'];
+  const TILE = {
+    dreieck: (col) => `<path d="M10 3 L17 17 L3 17 Z" fill="${col}"/>`,
+    quadrat: (col) => `<rect x="4" y="4" width="12" height="12" fill="${col}"/>`,
+    kreis: (col) => `<circle cx="10" cy="10" r="7" fill="${col}"/>`,
+    bogen: (col) => `<path d="M3 15 A7 7 0 0 1 17 15 Z" fill="${col}"/>`,
+  };
+  const tileSVG = ([shape, rot, col], x) => `<g transform="translate(${x} 0) rotate(${rot} 10 10)" ${LINE}>${TILE[shape](TILE_COL[col])}</g>`;
+  const tileKey = (t) => t.join();
+  function genBand(t) {
+    let alpha, seq;
+    // tier 1: different shapes and colours; tier 2: one shape that is turned (like a real band ornament)
+    do {
+      if (t === 1) { const shapes = shuffle(['dreieck', 'quadrat', 'kreis']); const cols = shuffle([0, 1, 2, 3]); alpha = [0, 1, 2].map((i) => [shapes[i], 0, cols[i]]); }
+      else { const shape = pick(['dreieck', 'bogen']); const col = rnd(0, 3); alpha = shuffle([0, 90, 180, 270]).map((r) => [shape, r, col]); }
+      const p = t === 1 ? rnd(2, 3) : rnd(3, 4); seq = Array.from({ length: p }, () => pick(alpha));
+    } while (new Set(seq.map(tileKey)).size < 2 || (seq.length === 4 && tileKey(seq[0]) === tileKey(seq[2]) && tileKey(seq[1]) === tileKey(seq[3])));
+    const p = seq.length, shown = 2 * p + rnd(0, p - 1); const next = [seq[shown % p], seq[(shown + 1) % p]];
+    const used = alpha.filter((a) => seq.some((s) => tileKey(s) === tileKey(a)));
+    const pairs = []; for (const a of used) for (const b of used) pairs.push([a, b]);
+    const wrong = shuffle(pairs.filter((pr) => pr.map(tileKey).join('|') !== next.map(tileKey).join('|'))).slice(0, 2);
+    const pairSVG = (pr) => svgFig(-2, -2, 48, 24, pr.map((tl, i) => tileSVG(tl, i * 24)).join(''), 'zwei Teile des Musters');
+    const options = shuffle([next].concat(wrong)).map(pairSVG);
+    const band = Array.from({ length: shown }, (_, i) => tileSVG(seq[i % p], i * 22)).join('') + [0, 1].map((i) => `<rect x="${(shown + i) * 22 + 1}" y="1" width="18" height="18" rx="3" fill="#fff" stroke="${INK}" stroke-dasharray="3 2"/><text x="${(shown + i) * 22 + 10}" y="15" text-anchor="middle" font-size="13" font-weight="700" fill="${INK}">?</text>`).join('');
+    const w = (shown + 2) * 22;
+    return { kind: 'choice', q: 'Wie geht das Muster weiter?', pic: svgFig(-4, -6, w + 6, 32, `<path d="M-2 -4 H${w} M-2 23 H${w}" stroke="${INK}" stroke-width="1.5"/>${band}`, 'Bandornament'), options, answer: pairSVG(next), seq, shown, next, svgOpts: true, why: 'So geht es weiter:', sig: seq.map(tileKey).join('|') };
+  }
+
+  const LAGE = { parallel: 'parallel', senkrecht: 'senkrecht', keins: 'weder noch' };
+  function genLage() {
+    const kind = pick(Object.keys(LAGE)); const a = pick([0, 30, 45, 60, 90, 120, 135, 150]);
+    const b = a + (kind === 'parallel' ? 0 : kind === 'senkrecht' ? 90 : pick([30, 45, 60, 120, 135, 150]));
+    const dir = (deg) => [Math.cos(deg * Math.PI / 180), -Math.sin(deg * Math.PI / 180)];
+    const seg = ([cx, cy], deg, col) => { const [dx, dy] = dir(deg); const f = (v) => Math.round(v * 10) / 10; return `<line x1="${f(cx - dx * 30)}" y1="${f(cy - dy * 30)}" x2="${f(cx + dx * 30)}" y2="${f(cy + dy * 30)}" stroke="${col}" stroke-width="4" stroke-linecap="round"/>`; };
+    let c1 = [0, 0], c2;
+    if (kind === 'parallel') { const [nx, ny] = dir(a + 90), d = pick([-1, 1]) * rnd(14, 20); c1 = [-nx * d / 2, -ny * d / 2]; c2 = [nx * d / 2, ny * d / 2]; }
+    else { const [ax, ay] = dir(a), [bx, by] = dir(b), t = pick([-12, 0, 12]), s = pick([-12, 0, 12]); c2 = [ax * t + bx * s, ay * t + by * s]; }
+    return { kind: 'choice', q: 'Wie liegen die rote und die blaue Linie zueinander?', pic: svgFig(-56, -56, 112, 112, seg(c1, a, '#3FA0FF') + seg(c2, b, '#E4572E'), 'zwei Linien'), options: Object.values(LAGE), answer: LAGE[kind], angles: [a, b], cols: 1, sig: kind + a + ',' + b, why: { parallel: 'Die Linien sind überall gleich weit voneinander entfernt.', senkrecht: 'Die Linien treffen sich in einem rechten Winkel.', keins: 'Sie treffen sich schräg, nicht im rechten Winkel.' }[kind] };
+  }
+
+  // squares on a grid; the perimeter is the number of square sides that border the outside
+  const edges = (cells) => { const at = new Set(cells.map((p) => p.join())); const out = [];
+    for (const [r, c] of cells) for (const [dr, dc, x1, y1, x2, y2] of [[-1, 0, 0, 0, 1, 0], [1, 0, 0, 1, 1, 1], [0, -1, 0, 0, 0, 1], [0, 1, 1, 0, 1, 1]]) if (!at.has([r + dr, c + dc].join())) out.push([c + x1, r + y1, c + x2, r + y2]);
+    return out; };
+  // an empty square enclosed by the shape would count twice as edge, so shapes with holes are not used
+  const hasHole = (cells) => { const at = new Set(cells.map((p) => p.join())); const seen = new Set(['-1,-1']); const q = [[-1, -1]];
+    while (q.length) { const [r, c] = q.pop(); for (const p of [[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]) if (p[0] >= -1 && p[0] <= 6 && p[1] >= -1 && p[1] <= 6 && !at.has(p.join()) && !seen.has(p.join())) { seen.add(p.join()); q.push(p); } }
+    return seen.size + cells.length < 64; };
+  function genUmfang(t) {
+    let cells;
+    if (t === 1) { const w = rnd(2, 5), h = rnd(1, 3); cells = []; for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) cells.push([r, c]); }
+    else do { cells = [[rnd(1, 3), rnd(1, 3)]]; const n = rnd(5, 7);
+      while (cells.length < n) { const [r, c] = pick(cells); const p = pick([[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]); if (p[0] >= 0 && p[0] <= 4 && p[1] >= 0 && p[1] <= 5 && !cells.some((q) => q.join() === p.join())) cells.push(p); }
+      cells = normCells(cells); } while (hasHole(cells));
+    const S = 16, H = Math.max(...cells.map((p) => p[0])) + 3, W = Math.max(...cells.map((p) => p[1])) + 3; const shift = cells.map(([r, c]) => [r + 1, c + 1]);
+    let grid = ''; for (let i = 0; i <= W; i++) grid += `<path d="M${i * S} 0 V${H * S}" stroke="#C9D3E8"/>`; for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * S} H${W * S}" stroke="#C9D3E8"/>`;
+    const fill = shift.map(([r, c]) => `<rect x="${c * S}" y="${r * S}" width="${S}" height="${S}" fill="#FFE08A"/>`).join('');
+    const border = edges(shift).map(([x1, y1, x2, y2]) => `<path d="M${x1 * S} ${y1 * S} L${x2 * S} ${y2 * S}" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`).join('');
+    return task('', [edges(cells).length], { svg: svgFig(-2, -2, W * S + 4, H * S + 4, grid + fill + border, 'Fläche auf Kästchenpapier'), ask: 'Wie lang ist der Umfang? Zähle die Kästchenseiten am Rand.', cells, sig: JSON.stringify(cells) });
+  }
+
+  function bauGenerate(mod, tier) {
+    tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
+    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang }[mod](tier);
+    if (!tk.kind) tk.kind = 'num';
+    if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
+    // one tutorial per task type
+    return Object.assign(tk, { mod, tier, group: mod + ':1' });
+  }
+  const BAU_TUT = {
+    'wz:1': { title: 'Würfel zählen', steps: ['Der Bauplan zeigt das Gebäude von oben. Die Zahl in einem Feld sagt, wie viele Würfel dort übereinander stehen.', 'Bauplan mit 2, 1, 3 und 1: Rechne 2 + 1 + 3 + 1.', 'Das Gebäude hat 7 Würfel.'] },
+    'fq:1': { title: 'Quader ergänzen', steps: ['Im vollen Quader stehen in jedem Feld gleich viele Würfel übereinander. Die gestrichelte Linie zeigt ihn.', 'Quader 2 lang, 2 breit, 3 hoch. Bauplan 3, 1, 2, 3: Es fehlen 0 + 2 + 1 + 0 Würfel.', 'Es fehlen 3 Würfel.'] },
+    'netz:1': { title: 'Würfelnetze', steps: ['Ein Würfelnetz hat 6 Quadrate. Beim Falten wird jedes Quadrat eine Seite des Würfels. Keine zwei dürfen auf derselben Seite landen.', 'Eine Reihe aus 4 Quadraten mit einem Quadrat oben und einem unten lässt sich immer falten.', 'Eine Reihe aus 5 Quadraten lässt sich nie falten: Das erste und das fünfte Quadrat landen aufeinander.'] },
+    'koerper:1': { title: 'Körper erkennen', steps: ['Würfel: 6 gleich große Quadrate als Flächen. Quader: auch 6 Flächen, aber nicht alle gleich groß.', 'Kugel: rund, ohne Ecken und Kanten. Zylinder: oben und unten ein Kreis.', 'Kegel: unten ein Kreis, oben eine Spitze. Pyramide: unten ein Viereck, oben eine Spitze.'] },
+    'band:1': { title: 'Bandornamente', steps: ['Ein Bandornament ist ein Muster, das sich immer wiederholt.', 'Suche das Stück, das sich wiederholt: ▲ ● ● ▲ ● ● ▲ … Das Stück ist ▲ ● ●.', 'Nach dem letzten ▲ kommen ● ●. Also geht es mit ● ● weiter.'] },
+    'lage:1': { title: 'Parallel oder senkrecht', steps: ['Parallel: Die Linien sind überall gleich weit voneinander entfernt und treffen sich nie.', 'Senkrecht: Die Linien treffen sich in einem rechten Winkel. Prüfe ihn mit der Ecke eines Blatts Papier.', 'Beispiel Tür: Die linke und die rechte Kante sind parallel. Die obere und die linke Kante stehen senkrecht zueinander.', 'Treffen sich die Linien schräg, dann ist es weder noch.'] },
+    'umfang:1': { title: 'Umfang', steps: ['Der Umfang ist der Weg einmal ganz um die Fläche herum.', 'Zähle jede Kästchenseite am Rand. Starte an einer Ecke und fahre mit dem Finger herum.', 'Rechteck 3 Kästchen lang und 2 hoch: 3 + 2 + 3 + 2 = 10. Der Umfang ist 10 Kästchenseiten.'] },
+  };
+  const BAU = {
+    MODULES: BAU_MODULES, TUT: BAU_TUT, generate: bauGenerate, NETS, parseNet, cubeNet, shapeKey, edges, hasHole, SOLIDS, LAGE,
+    STARTERS: [{ id: 'biber', type: 'wasser', shape: 'beaver', names: ['Dammbiber', 'Brückenbiber', 'Brückenbiber'], hp: 75, desc: 'Ein Biber mit Bauhelm. Misst jeden Stamm aus, bevor er ihn zersägt.', perk: 'tank',
+      attacks: [{ name: 'Ziegelstapel', mod: 'wz' }, { name: 'Bauklotzwurf', mod: 'koerper' }, { name: 'Lotschnur', mod: 'lage' }, { name: 'Zollstock', mod: 'umfang' }] }],
+    WORLD_ATTACKS: { 2: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] },
+    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock' },
+    ENEMIES: {
+      1: {
+        normal: [
+          { name: 'Mörtelbatzen', type: 'normal', shape: 'blob', hp: 24, atk: 3 },
+          { name: 'Schweißfunke', type: 'feuer', shape: 'flame', hp: 22, atk: 4 },
+          { name: 'Schotterhaufen', type: 'normal', shape: 'rock', hp: 30, atk: 3 },
+          { name: 'Pfützenmolch', type: 'wasser', shape: 'newt', hp: 26, atk: 4 },
+        ],
+        elite: { name: 'Brennnesselwall', type: 'pflanze', shape: 'vine', hp: 45, atk: 5 },
+        boss: { name: 'Mischtrommel', acc: 'die Mischtrommel', type: 'normal', shape: 'rock', hp: 70, atk: 6, boss: true },
+      },
+      2: {
+        normal: [
+          { name: 'Kabelnatter', type: 'feuer', shape: 'newt', hp: 42, atk: 5 },
+          { name: 'Staubfahne', type: 'normal', shape: 'ghost', hp: 40, atk: 6 },
+          { name: 'Dachmarder', type: 'normal', shape: 'fox', hp: 44, atk: 5 },
+          { name: 'Efeuranke', type: 'pflanze', shape: 'vine', hp: 38, atk: 6 },
+        ],
+        elite: { name: 'Rostkäfer', type: 'feuer', shape: 'beetle', hp: 70, atk: 8 },
+        boss: { name: 'Abrissbirne', acc: 'die Abrissbirne', type: 'normal', shape: 'blob', hp: 110, atk: 9, boss: true },
+      },
+    },
+    MOVES: ['Mörtelspritzer', 'Schotterregen', 'Rempler', 'Kabelschlag', 'Funkenregen', 'Rostbiss'],
+    EVENTS: [
+      { title: 'Der Kran', text: 'Die Kranführerin hat Ziegel gestapelt und will wissen, wie viele es sind. Für die richtige Zahl gibt sie dir einen Trank.', opts: [{ label: 'Würfel zählen', task: 'wz', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Der Bauzaun', text: 'Am Bauzaun fehlt ein bemaltes Brett. Wer das Muster fortsetzt, bekommt vom Maler einen Schild.', opts: [{ label: 'Muster fortsetzen', task: 'band', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Lieber nicht', effect: {} }] },
+      { title: 'Die Kartons', text: 'Ein Lieferwagen bringt flache Kartons. Der Fahrer fragt, welcher sich zu einem Würfel falten lässt.', opts: [{ label: 'Netz aussuchen', task: 'netz', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Die Holzkiste', text: 'In der Werkstatt steht eine Kiste mit Holzkörpern. Der Schreiner fragt nach einem Namen und verrät dir dafür eine Eselsbrücke.', opts: [{ label: 'Antworten', task: 'koerper', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Die Randsteine', text: 'Ein Pflasterer legt Randsteine um einen Platz. Er fragt, wie lang der Rand wird.', opts: [{ label: 'Umfang zählen', task: 'umfang', win: { item: 'grosstrank' }, lose: { hp: -8 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Die Mittagspause', text: 'Die Bauleute machen Pause und teilen ihre Brote mit dir.', opts: [{ label: 'Mitessen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+    ],
+  };
+
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;
