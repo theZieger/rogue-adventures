@@ -67,7 +67,7 @@ Run-Speicherstände mit, deshalb gehört **alles Persistente in meta oder die Ru
 | `stamps` | `number` | `0` | 03 | Stempel-Guthaben |
 | `stampsTotal` | `number` | `0` | 03 | je verdient (für Belohnungen nach Taten) |
 | `stampCard` | `{ [yyyy-Www]: 1 \| 2 }` | `{}` | 03/04 | 1 = in der Woche gespielt, 2 = Wochenaufgabe geschafft |
-| `weekly` | `{ week: string, progress: number[], done: bool }` | `{week:'',progress:[],done:false}` | 04 | Fortschritt der aktuellen Woche |
+| `weekly` | `{ week: string, progress: number[], done: bool, beaten: {[mode]: bool}, tally: {...} }` | `{week:'',progress:[],done:false,beaten:{},tally:{}}` | 04 | Fortschritt der aktuellen Woche; `beaten` = Wochenboss je Einheit besiegt, `tally` = geübte Aufgabenarten dieser Woche für den Wochenbericht |
 | `owned` | `{ [id]: true }` | `{}` | 05+ | gekaufte/erspielte Dinge (Kleidung, Helden, Karten, Kreiselteile, Möbel) |
 | `worn` | `{ [heroId]: outfitId }` | `{}` | 05 | angezogene Kleidung je Held |
 | `garden` | `{ beds: [{ crop: string \| null, plantedAt: number }] }` | 4 Beete, leer | 09 | Schulgarten |
@@ -161,8 +161,8 @@ mehr unbemerkt verloren.
 - Tests: Verdienregeln, Kartenwoche, Kauf zieht ab und schaltet frei, alter Spielstand hat 0.
 
 ### 04 Wochenaufgabe, Wochenboss, Wochenbericht (hängt von 03 ab)
-- Drei Ziele pro ISO-Woche, eins je Fach der aktuellen Klasse, deterministisch aus dem Wochenschlüssel, nur aus
-  eingeschalteten Aufgabenarten. Zieltypen: „N richtige Aufgaben der Art X“ (N = 15–25), „ein Abenteuer in Y
+- Ein Ziel je Fach der aktuellen Klasse pro ISO-Woche (mit Deutsch also vier Ziele; Texte sagen „alle Ziele“, nicht
+  „drei“), deterministisch aus dem Wochenschlüssel, nur aus eingeschalteten Aufgabenarten. Zieltypen: „N richtige Aufgaben der Art X“ (N = 15–25), „ein Abenteuer in Y
   gewinnen“, „N Elitegegner in Y besiegen“ (N = 2–3), „den Wochenboss in Y besiegen“. Fortschritt in `meta.weekly`;
   Wochenwechsel setzt zurück (nichts wird abgezogen, alte Woche bleibt in `stampCard`).
 - Alle drei fertig → `stampCard[woche] = 2`, 10 Stempel, kurze Karte „Wochenaufgabe geschafft“ (ein Satz, kein

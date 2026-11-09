@@ -214,6 +214,7 @@ p { margin: 8px 0; }
 .task .question .blank { display: inline-block; border-bottom: 4px solid var(--blue); padding: 0 6px; color: var(--blue); }
 .options { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .options.two { grid-template-columns: 1fr 1fr; }
+.options.sentence { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 8px; font-weight: 700; font-size: 22px; }
 .opt { min-height: 56px; border: 3px solid var(--ink); border-radius: 16px; background: var(--card); color: var(--ink); font-weight: 700; font-size: 19px; padding: 8px 14px; box-shadow: var(--shadow); cursor: pointer; text-align: center; line-height: 1.25; }
 .opt:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
 .opt.right { background: #CDEFD3; outline: 4px solid var(--green); }
@@ -433,4 +434,16 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .kkitem.locked .mon { opacity: .55; }
 .kkitem .mon { width: 84px; height: 84px; }
 .kkitem .desc { font-size: 15px; color: var(--ink-soft); }
-.chip.soon { background: var(--ink); }
+.gardencard { display: flex; align-items: center; gap: 12px; border: 3px solid var(--green); }
+.gardencard p { flex: 1; margin: 0; font-weight: 700; }
+.beds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bed { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 18px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; box-shadow: var(--shadow); }
+.bed.ripe { border-color: var(--green); box-shadow: 0 0 0 3px var(--green), var(--shadow); }
+.bed.locked { background: var(--card2); }
+.bed .plant-art { width: 96px; height: 96px; }
+.bedart { width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.bedname { font-family: var(--hand); font-size: 26px; line-height: 1.1; }
+.beddesc { font-size: 15px; color: var(--ink-soft); font-weight: 700; }
+.bed .btn.small { margin-top: auto; width: 100%; }
+.cropchoice .plant-art { width: 72px; height: 72px; flex: none; }
+.modal .question { font-size: 22px; font-weight: 700; line-height: 1.35; }

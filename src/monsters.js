@@ -183,6 +183,32 @@ const MONART = (() => {
       <path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" stroke="#D9B35E" stroke-width="7" stroke-linecap="round"/><path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" ${S(2)}/>
       <path d="M44 102 L42 114 M76 102 L78 114" fill="none" ${S(5)}/>
       ${eyes(60, 62, 14, 8, 'normal')}${mouth.grin(60, 82, 12)}`,
+    pencil: (c, g, d, l) => `
+      <path d="M40 34 L60 4 L80 34 Z" fill="#F2D2A0" ${S()}/><path d="M53 15 L60 4 L67 15 Z" fill="#3A3A3A"/>
+      <rect x="40" y="34" width="40" height="62" fill="${g.body}" ${S()}/><path d="M53 34 L53 96 M67 34 L67 96" fill="none" stroke="${d}" stroke-width="2"/>
+      <rect x="38" y="96" width="44" height="9" fill="#B8BEC8" ${S(2)}/><rect x="40" y="105" width="40" height="11" rx="4" fill="#FF8FA8" ${S(2)}/>
+      <path d="M40 66 L22 78 M80 66 L98 78" fill="none" ${S(4)}/>
+      ${eyes(60, 54, 10, 6, 'normal')}${mouth.smile(60, 74, 7)}`,
+    eraser: (c, g, d, l) => `
+      <path d="M12 52 L34 30 L108 30 L108 88 L86 110 L12 110 Z" fill="${d}" ${S()}/>
+      <rect x="12" y="52" width="74" height="58" rx="6" fill="${g.body}" ${S()}/><rect x="12" y="52" width="30" height="58" rx="6" fill="${g.inner}" ${S()}/>
+      <circle cx="100" cy="114" r="3" fill="${g.inner}" ${S(1.5)}/><circle cx="110" cy="106" r="2.5" fill="${g.inner}" ${S(1.5)}/>
+      ${eyes(62, 74, 11, 7, 'angry')}${mouth.fangs(62, 94, 10)}`,
+    notebook: (c, g, d, l) => `
+      <path d="M22 14 L84 14 L98 28 L98 106 L22 106 Z" fill="${g.body}" ${S()}/><path d="M84 14 L84 28 L98 28 Z" fill="${g.inner}" ${S(2)}/>
+      <rect x="34" y="68" width="52" height="28" rx="3" fill="#FFFFFF" ${S(2)}/><path d="M40 78 L80 78 M40 87 L72 87" fill="none" stroke="#8FA3C8" stroke-width="2"/>
+      <path d="M30 14 L30 106" fill="none" stroke="${d}" stroke-width="3"/>
+      ${eyes(60, 44, 13, 7, 'angry')}${mouth.flat(60, 60, 7)}`,
+    ruler: (c, g, d, l) => `
+      <rect x="6" y="40" width="108" height="46" rx="6" fill="${g.body}" ${S()}/>
+      <path d="M16 40 L16 52 M26 40 L26 47 M36 40 L36 52 M46 40 L46 47 M74 40 L74 47 M84 40 L84 52 M94 40 L94 47 M104 40 L104 52" fill="none" ${S(2)}/>
+      <path d="M30 86 L26 106 M90 86 L94 106" fill="none" ${S(5)}/>
+      ${highlight(30, 74, 10, 4)}
+      ${eyes(60, 60, 13, 7, 'normal')}${mouth.smile(60, 74, 8)}`,
+    letter: (c, g, d, l) => `
+      <path d="M18 108 L48 12 L72 12 L102 108 L80 108 L73 86 L47 86 L40 108 Z M54 76 L66 76 L60 58 Z" fill="${g.body}" fill-rule="evenodd" ${S()}/>
+      <path d="M48 12 L72 12 L76 24 L44 24 Z" fill="${g.inner}" opacity=".7"/>
+      ${eyes(60, 38, 9, 6, 'angry')}${mouth.flat(60, 50, 5)}`,
   };
 
   // where clothes sit on each hero shape: head top [x, y, scale], eyes [cx, cy, gap, r] as in eyes(), neck [x, y, width], school bag [x, y]
@@ -194,6 +220,18 @@ const MONART = (() => {
     potato: { top: [60, 35, 1.25], eyes: [60, 62, 14, 8], neck: [60, 99, 70], pack: [20, 64] },
     luther: { top: [60, 28, 1.1], eyes: [60, 54, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
     kuesterin: { top: [60, 30, 1.1], eyes: [60, 54, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
+    pencil: { top: [60, 24, 0.75], eyes: [60, 54, 10, 6], neck: [60, 86, 44], pack: [32, 72] },
+    ruler: { top: [60, 42, 1.1], eyes: [60, 60, 13, 7], neck: [60, 84, 64], pack: [22, 44] },
+    // the pair of friends: the left one wears it
+    friends: { top: [36, 30, 0.8], eyes: [36, 52, 8, 4.5], neck: [36, 77, 34], pack: [14, 96] },
+    // seen from the side with one eye: gap 0 draws a single lens
+    horse: { top: [32, 23, 0.6], eyes: [30, 28, 0, 5], neck: [47, 58, 24], pack: [92, 58] },
+    // these three have a hat of their own: the piece sits on its brim and covers it
+    schaustellerin: { top: [60, 34, 1.3], eyes: [60, 56, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
+    beaver: { top: [60, 40, 1.35], eyes: [60, 60, 14, 7], neck: [60, 101, 52], pack: [20, 68] },
+    muellerin: { top: [60, 25, 1.1], eyes: [60, 56, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
+    wetterwart: { top: [60, 44, 1.4], eyes: [60, 58, 11, 6], neck: [60, 83, 46], pack: [24, 86] },
+    kartenzeichnerin: { top: [60, 27, 1.1], eyes: [60, 54, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
   };
   const at = (p, body) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
   const STRAW = '#E8C25A';
@@ -202,7 +240,8 @@ const MONART = (() => {
     strohhut: { head: true, front: (f) => at(f.top, `<path d="M-18 -2 Q-19 -24 0 -24 Q19 -24 18 -2 Z" fill="${STRAW}" ${S(2.2)}/><path d="M-18.5 -8 L18.5 -8 L18 -2 L-18 -2 Z" fill="#D9453B"/><ellipse cx="0" cy="-1" rx="38" ry="8" fill="${STRAW}" ${S(2.2)}/><path d="M-30 -1 Q0 6 30 -1" fill="none" stroke="#C99A2E" stroke-width="2"/>`) },
     krone: { head: true, front: (f) => at(f.top, `<path d="M-20 0 L-23 -20 L-11 -9 L0 -26 L11 -9 L23 -20 L20 0 Z" fill="#FFC93C" ${S(2.2)}/><circle cx="0" cy="-8" r="3.5" fill="#3FA0FF"/><circle cx="-12" cy="-4" r="2.5" fill="#FF6E8E"/><circle cx="12" cy="-4" r="2.5" fill="#FF6E8E"/>`) },
     aehrenkranz: { head: true, front: (f) => at(f.top, `<path d="M-32 4 Q0 -18 32 4" fill="none" stroke="#7A9A3A" stroke-width="4" stroke-linecap="round"/>${[-28, -20, -11, -2, 7, 16, 25].map((x) => { const y = -0.0105 * x * x - 5; return `<ellipse cx="${x}" cy="${y}" rx="3.6" ry="7" fill="#E3B341" ${S(1.6)} transform="rotate(${x * 2} ${x} ${y})"/>`; }).join('')}`) },
-    brille: { front: (f) => { const [cx, cy, gap, r] = f.eyes; const R = r * 1.5; return `<circle cx="${cx - gap}" cy="${cy}" r="${R}" fill="#BFE3FF" fill-opacity=".25" ${S(3)}/><circle cx="${cx + gap}" cy="${cy}" r="${R}" fill="#BFE3FF" fill-opacity=".25" ${S(3)}/><path d="M${cx - gap + R} ${cy} Q${cx} ${cy - r} ${cx + gap - R} ${cy}" fill="none" ${S(3)}/>`; } },
+    brille: { front: (f) => { const [cx, cy, gap, r] = f.eyes; const lens = (x) => `<circle cx="${x}" cy="${cy}" r="${r * 1.5}" fill="#BFE3FF" fill-opacity=".25" ${S(3)}/>`;
+      return gap ? `${lens(cx - gap)}${lens(cx + gap)}<path d="M${cx - gap + r * 1.5} ${cy} Q${cx} ${cy - r} ${cx + gap - r * 1.5} ${cy}" fill="none" ${S(3)}/>` : lens(cx); } },
     schal: { front: (f) => { const [x, y, w] = f.neck, h = w / 2; return `<path d="M${x + h * 0.3} ${y} l4 24 l12 -3 l-6 -21 Z" fill="#D9453B" ${S(2)}/><path d="M${x - h} ${y - 5} Q${x} ${y + 5} ${x + h} ${y - 5} L${x + h} ${y + 3} Q${x} ${y + 13} ${x - h} ${y + 3} Z" fill="#D9453B" ${S(2)}/><path d="M${x - h * 0.6} ${y + 1} Q${x} ${y + 8} ${x + h * 0.6} ${y + 1}" fill="none" stroke="#FFF3C4" stroke-width="2.5" stroke-linecap="round"/>`; } },
     ranzen: { back: (f) => { const [x, y] = f.pack; return `<rect x="${x - 17}" y="${y - 20}" width="30" height="38" rx="7" fill="#3B7DD8" ${S(2.2)}/><path d="M${x - 17} ${y - 8} Q${x - 2} ${y} ${x + 13} ${y - 8}" fill="none" ${S(2)}/><rect x="${x - 6}" y="${y - 4}" width="8" height="7" rx="2" fill="#FFC93C" ${S(1.5)}/>`; },
       front: (f) => { const [x, y] = f.pack; return `<path d="M${x + 4} ${y - 18} Q${x + 14} ${y} ${x + 8} ${y + 18}" fill="none" stroke="#2A5DAA" stroke-width="6" stroke-linecap="round"/><path d="M${x + 4} ${y - 18} Q${x + 14} ${y} ${x + 8} ${y + 18}" fill="none" stroke="#1C2541" stroke-width="1.5" stroke-dasharray="3 3"/>`; } },
