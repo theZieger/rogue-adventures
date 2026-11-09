@@ -60,6 +60,30 @@ for(let i=0;i<300;i++){ const a=K.generate('woerterwerkstatt','abc',1,{},i); con
   const u=K.generate('satzbaustelle','umstell',1,{},i); const s=K.SAETZE.find(x=>'um_'+x.parts.join(' ')===u.qid); de(s&&u.order.map(id=>u.items.find(x=>x.id===id).text)[1]===s.parts[1]&&u.items[0].text!==s.parts[0],'umstell wrong '+u.qid); }
 for(const m of ['woerterwerkstatt','satzbaustelle']) for(const mod of Object.keys(K.MODES[m].modules)) de(K.MODES[m].pool.some(e=>e.mod===mod)||['abc','umstell'].includes(mod),'no tasks for '+mod);
 console.log('deutsch words and sentences',total);
+// Deutsch, step 23: Wortfamilie, Ableitungen, Trennung, Komma, Großschreibung im Satz, Ersatz-/Weglassprobe, Pronomen, Redensarten
+const plain=(w)=>w.toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u');
+W.familien.forEach(([stem,word,fam,other])=>{ de(Array.isArray(fam)&&fam.length>=3&&Array.isArray(other)&&other.length>=2,'familie needs 3 members and 2 others: '+word);
+  fam.forEach(f=>de(plain(f).includes(plain(stem)),'family word without stem '+stem+': '+f)); other.forEach(o=>de(!fam.includes(o)&&o!==word,'other word is in the family: '+o)); });
+pairs('nachsilben',W.nachsilben,4); W.nachsilben.forEach(([w,r,f1,f2])=>{ de(new Set([r,f1,f2]).size===3,'nachsilben not distinct: '+w); const n=ARTS.includes(art(r));
+  de([f1,f2].every(f=>ARTS.includes(art(f))===n&&(!n||art(f)===art(r))),'nachsilben wrong forms must look like the answer: '+w);
+  de(n?/(ung|heit|keit)$/.test(r):/(lich|ig|bar)$/.test(r),'nachsilben suffix: '+r); });
+pairs('vorsilben',W.vorsilben,4); W.vorsilben.forEach(([q,r,f1,f2])=>{ de((q.match(/___/g)||[]).length===1,'vorsilben needs one ___: '+q); de(/^(ver|be|ent|vor)/.test(r)&&new Set([r,f1,f2]).size===3,'vorsilben answer/prefix: '+r); });
+pairs('trennung',W.trennung,3); W.trennung.forEach(t=>{ de(t.every(x=>(x.match(/-/g)||[]).length===1&&x.replace('-','')===t[0].replace('-','')),'trennung needs one dash in the same word: '+t[0]); de(new Set(t).size===3,'trennung not distinct: '+t[0]); });
+W.aufzaehlung.forEach(x=>de(x.split(' und ').length===2&&x.includes(', ')&&!x.includes(', und')&&x.endsWith('.'),'aufzaehlung format: '+x));
+W.aberdenn.forEach(x=>de((x.match(/,/g)||[]).length===1&&/, (aber|denn) /.test(x),'aberdenn needs one comma before aber/denn: '+x));
+W.grosssaetze.forEach(x=>{ const m=x.match(/\[([A-ZÄÖÜ][a-zäöüß]+)\]/g)||[]; de(m.length===1&&!x.startsWith('['),'grosssaetze needs one [Nomen] not at the start: '+x);
+  de(x.split(' ').slice(1).filter(w=>!w.includes('[')&&/^[a-zäöüß]/.test(w)).length>=2,'grosssaetze needs two small words: '+x); });
+const PRON=['er','sie','es','wir','ihr','sie (Mehrzahl)']; pairs('ersatz',W.ersatz,3); W.ersatz.forEach(([ng,r,p])=>de(PRON.includes(p)&&!/\.$/.test(r),'ersatz pronoun: '+ng));
+PRON.forEach(p=>de(W.ersatz.some(x=>x[2]===p),'ersatz has no '+p));
+W.weglassen.forEach(x=>{ const raw=x.split('|').map(y=>y.trim()); const i=raw.findIndex(y=>y.startsWith('['));
+  de(raw.filter(y=>y.startsWith('[')).length===1&&i>0&&raw.length>=4&&new Set(raw).size===raw.length,'weglassen needs one [part], not the first: '+x); });
+W.personen.forEach(v=>de(/^[a-zäöü]+en$/.test(v)&&!/[sßztd]en$/.test(v),'personen needs a regular verb: '+v));
+de(W.redensarten.length>=25,'at least 25 Redensarten'); pairs('redensarten',W.redensarten.map(x=>x.slice(0,4)),4);
+W.redensarten.forEach(x=>{ de(x.length===5&&typeof x[4]==='string'&&new Set(x.slice(1,4)).size===3,'redensart: '+x[0]); });
+for(let i=0;i<300;i++){ const q=K.generate('satzbaustelle','ersatz',2,{},i); const e=W.ersatz.find(x=>q.qid==='eb_'+x[0]);
+  q.options.filter(o=>o!==q.answer).forEach(o=>de(W.ersatz.find(x=>x[0][0].toUpperCase()+x[0].slice(1)===o)[2]!==e[2],'ersatz tier 2: distractor with the same pronoun '+o));
+  const g=K.generate('woerterwerkstatt','gross',2,{},i); de(g.q.includes(g.answer)&&g.group==='gross:2','gross tier 2: '+g.qid);
+  const s=K.generate('woerterwerkstatt','stamm',1,{},i); de(s.group==='stamm:1'&&s.qid.startsWith('wf_'),'stamm tier 1 asks families '+s.qid); }
 
 // every generated choice has exactly one correct option
 for(const [mode,cfg] of Object.entries(K.MODES)) for(const mod of Object.keys(cfg.modules)) for(let i=0;i<300;i++){ const q=K.generate(mode,mod,1,{},++seq);
