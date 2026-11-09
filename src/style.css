@@ -426,6 +426,19 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .choice.reward .btn { margin-top: 8px; }
 .rwprev { width: 96px; height: 96px; flex: none; border-radius: 18px; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 30px; }
 .rwhave { margin-top: 8px; font-weight: 700; color: #1E7A34; }
+.topbar .mon.tbhero { display: inline-block; width: 40px; height: 40px; vertical-align: middle; margin: -6px 4px -6px -4px; }
+.kkcard .mon { width: 140px; height: 140px; margin: 0 auto; }
+.kkcard .name, .kkitem .name { font-family: var(--hand); font-size: 26px; line-height: 1.1; }
+.kkpick { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.kkhero { width: 64px; height: 64px; padding: 4px; border-radius: 16px; border: 3px solid var(--ink); background: var(--card); cursor: pointer; }
+.kkhero.on { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold); }
+.kkhero .mon { width: 100%; height: 100%; }
+.kkgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.kkitem { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 22px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; box-shadow: var(--shadow); }
+.kkitem.on { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold), var(--shadow); }
+.kkitem.locked .mon { opacity: .55; }
+.kkitem .mon { width: 84px; height: 84px; }
+.kkitem .desc { font-size: 15px; color: var(--ink-soft); }
 .weekcard { display: block; width: 100%; text-align: left; border: 3px solid var(--ink); font: inherit; cursor: pointer; }
 .weekline { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 18px; }
 .weekline span { font-size: 15px; color: var(--ink-soft); }

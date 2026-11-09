@@ -106,5 +106,21 @@ for (const cfg of Object.values(modes)) {
 }
 for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) list.filter((x, i) => list.indexOf(x) !== i).forEach((x) => fail(`duplicate ${what}: ${x}`));
 
+// Kleiderkammer: every hero shape can wear every piece, and the result is well-formed SVG with the piece drawn
+{
+  const { JSDOM } = require('jsdom');
+  const parser = new (new JSDOM('').window.DOMParser)();
+  const dressable = new Set(MONART.dressable);
+  for (const cfg of Object.values(modes)) for (const s of cfg.starters) if (!dressable.has(s.shape)) fail(`hero ${s.id}: shape ${s.shape} has no clothing position`);
+  for (const shape of MONART.dressable) for (const o of MONART.outfits) for (const evo of [0, 2]) {
+    const bare = MONART.monsterSVG(shape, '#4FC96A', evo).replace(/mg\d+/g, ''), svg = MONART.monsterSVG(shape, '#4FC96A', evo, '', o);
+    const doc = parser.parseFromString(svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '), 'image/svg+xml');
+    if (doc.getElementsByTagName('parsererror').length || doc.documentElement.nodeName !== 'svg' || /NaN|undefined/.test(svg)) fail(`${shape} with ${o} (evo ${evo}): broken SVG`);
+    if (svg.replace(/mg\d+/g, '') === bare) fail(`${shape} with ${o}: piece not drawn`);
+  }
+  const enemy = MONART.shapes.find((s) => !dressable.has(s));
+  if (MONART.monsterSVG(enemy, '#4FC96A', 0, '', 'krone').replace(/mg\d+/g, '') !== MONART.monsterSVG(enemy, '#4FC96A', 0).replace(/mg\d+/g, '')) fail('enemies must not wear clothes');
+}
+
 console.log('data fails', fails.length);
 if (fails.length) { console.log(fails.join('\n')); process.exit(1); }

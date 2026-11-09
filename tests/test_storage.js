@@ -454,6 +454,52 @@ async function stampCases() {
     check(p.text().includes('Stempel verdient insgesamt') && p.text().includes('123'), 'parent area shows stamps earned in total');
   }
 }
+// 25. Kleiderkammer: buying, wearing, conditions, old saves
+function wardrobeCases() {
+  const skip = { setup: { done: false, skipped: true, at: 'x' } };
+  { // an old save without worn/owned loads; earned pieces show their condition
+    const p = open({ [META]: JSON.stringify(Object.assign({ runs: 3, wins: 0, stamps: 20 }, skip)) }); const m = p.w.__mq.meta;
+    check(JSON.stringify(m.worn) === '{}' && JSON.stringify(m.owned) === '{}' && p.errors.length === 0, 'old save without worn/owned loads with nothing worn');
+    p.click('#stamps'); p.click('#kk');
+    check(p.text().includes('Kleiderkammer') && p.text().includes('Kleidung ändert nichts am Kampf.') && p.d.querySelectorAll('.kkitem').length === 6, 'Kleiderkammer opens from the Stempelheft with six pieces');
+    check(!p.$('[data-hero="kauz"]') && p.$('[data-hero="fuchs"]') && p.$('[data-hero="knolli"]'), 'hero picker lists the heroes of all units, not locked ones');
+    check(!p.$('[data-wear="ranzen"]') && p.text().includes('0 von 4') && !p.$('[data-wear="krone"]') && p.text().includes('Schulgarten') && !p.$('[data-wear="aehrenkranz"]'), 'Ranzen, Krone and Ährenkranz are locked with their condition');
+    check(p.$('[data-buy="schal"]') && !p.$('[data-buy="schal"]').disabled && p.$('[data-buy="strohhut"]') && !p.$('[data-buy="strohhut"]').disabled, 'pieces with a price can be bought');
+    p.click('[data-hero="baer"]');
+    p.click('[data-buy="strohhut"]'); p.click('.overlay #no');
+    check(m.stamps === 20 && !m.owned['outfit-strohhut'], '"Zurück" in the buy dialog buys nothing');
+    p.click('[data-buy="strohhut"]'); p.click('.overlay #yes');
+    check(m.stamps === 5 && m.owned['outfit-strohhut'] === true && m.worn.baer === 'strohhut' && !!m.progressAt && p.$('[data-off="strohhut"]'), 'buying the straw hat costs 15 stamps and puts it on the chosen hero');
+    check(p.$('[data-buy="schal"]').disabled, 'with 5 stamps the scarf stays locked');
+    p.click('[data-hero="fuchs"]'); p.click('[data-wear="strohhut"]');
+    check(m.worn.fuchs === 'strohhut' && m.worn.baer === 'strohhut', 'a bought piece can be worn by several heroes');
+    p.click('[data-off="strohhut"]');
+    check(!m.worn.fuchs && m.worn.baer === 'strohhut', '"Ablegen" takes it off this hero only');
+    // dressed hero shows on the starter screen, in the map top bar and in battle
+    const q = open(p.dump()); q.click('[data-new="math"]');
+    const hat = (el) => !!el && el.innerHTML.includes('#E8C25A');
+    check(hat(q.$('.choice[data-id="baer"]')) && !hat(q.$('.choice[data-id="fuchs"]')), 'starter screen shows the outfit');
+    q.click('.choice[data-id="baer"]'); q.click('#go');
+    check(hat(q.$('.topbar')), 'map top bar shows the dressed hero');
+    q.click([...q.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || q.$('.node.open'));
+    check(hat(q.$('#fh')) && !hat(q.$('#fe')), 'battle shows the outfit on the hero, never on the enemy');
+  }
+  { // earned pieces: 4 gold weeks → Ranzen, a won adventure → Krone, owned flag from the garden → Ährenkranz
+    const p = open({ [META]: JSON.stringify(Object.assign({ wins: 1, stampCard: { '2026-W40': 2, '2026-W41': 2, '2026-W42': 1, '2026-W43': 2, '2026-W44': 2 }, owned: { 'outfit-aehrenkranz': true } }, skip)) });
+    p.w.__mq.screenWardrobe('knolli');
+    check(p.$('[data-wear="ranzen"]') && p.$('[data-wear="krone"]') && p.$('[data-wear="aehrenkranz"]'), 'earned pieces can be worn without stamps');
+    p.click('[data-wear="krone"]'); p.click('[data-wear="ranzen"]');
+    check(p.w.__mq.meta.worn.knolli === 'ranzen', 'one piece per hero at a time');
+  }
+  { // wrong-typed or unknown worn entries do not break loading; a piece that is not owned is not drawn
+    const p = open({ [META]: JSON.stringify(Object.assign({ worn: { baer: 7, fuchs: 'gibt-es-nicht', kroete: 'brille' } }, skip)) });
+    check(JSON.stringify(p.w.__mq.meta.worn) === '{"fuchs":"gibt-es-nicht","kroete":"brille"}' && p.errors.length === 0, 'wrong-typed worn entries are dropped on load');
+    p.click('[data-new="math"]');
+    check(!p.$('.choice[data-id="kroete"]').innerHTML.includes('#BFE3FF'), 'a worn piece that is not owned is not shown');
+    const q = open({ [META]: JSON.stringify({ worn: [1] }) });
+    check(JSON.stringify(q.w.__mq.meta.worn) === '{}' && q.errors.length === 0, 'worn of the wrong type falls back to empty');
+  }
+}
 // 14. Deutsch: a save from before the subject existed gets stats for it; a Deutsch adventure continues after reopening
 {
   const old = { runs: 2, stats: { math: {}, ethik: {}, kirchenjahr: {}, kartoffel: {} }, setup: { done: false, skipped: true, at: '' } };
@@ -816,7 +862,7 @@ async function weeklyCases() {
   p2.click('[data-cont="jahrmarkt"]');
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
 }
-// 25. Werkbank, pantry and Meine Hütte (step 13)
+// 26. Werkbank, pantry and Meine Hütte (step 13)
 {
   const p0 = open({ [META]: JSON.stringify({ runs: 4, wins: 1, stamps: 3, setup: { skipped: true } }) }); const m0 = p0.w.__mq.meta;
   check(Array.isArray(m0.pantry) && m0.pantry.length === 0 && m0.hut.rooms === 1 && m0.hut.items.length === 0 && m0.stamps === 3, 'old save without pantry and hut loads with an empty pantry and one room');
@@ -901,7 +947,7 @@ async function weeklyCases() {
   p2.click('#next'); check(p2.text().includes('+2 Holz für die Werkbank'), 'the wood is shown');
 }
 
-reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(() => {
+reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
