@@ -12,6 +12,7 @@ css = (SRC / "style.css").read_text(encoding="utf-8")
 logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
 woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
+sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
 app = (SRC / "app.js").read_text(encoding="utf-8")
@@ -95,6 +96,9 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {know}
+</script>
+<script>
+{sach}
 </script>
 <script>
 {mon}

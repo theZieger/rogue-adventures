@@ -7,16 +7,19 @@
     kartoffel: MK.MODES.kartoffel,
     woerterwerkstatt: MK.MODES.woerterwerkstatt,
     satzbaustelle: MK.MODES.satzbaustelle,
+    kornkammer: MK.MODES.kornkammer,
+    wetterstation: MK.MODES.wetterstation,
+    kompass: MK.MODES.kompass,
     freunde: MK.MODES.freunde,
   };
-  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'freunde'];
+  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', modes: ['math'] },
       { subject: 'Deutsch', modes: ['woerterwerkstatt', 'satzbaustelle'] },
       { subject: 'Ethik', modes: ['ethik', 'kirchenjahr', 'freunde'] },
-      { subject: 'Sachkunde', modes: ['kartoffel'] },
+      { subject: 'Sachkunde', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
     ] },
   ];
   let mode = 'math';
@@ -264,20 +267,25 @@
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
     if (task.kind === 'choice') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div>${task.pic || ''}<div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options ${task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}${task.inline ? '<span aria-hidden="true">.</span>' : ''}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
       if (opts.hint) strikeWrongOption();
     } else if (task.kind === 'parts') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ highlight: task.part })}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${plantOf(task.plant).svg({ highlight: task.part })}<div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options two">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Das ist: ${esc(task.answer)}`); }; });
       if (opts.hint) strikeWrongOption();
     } else if (task.kind === 'parts-find') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
-      const pp = MK.PARTS.find((p) => p.id === task.part);
-      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf den Teil in der Pflanze.</p>${opts.hint && pp ? `<p class="center hintline">🌉 Tipp: Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.</p>` : ''}`;
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${plantOf(task.plant).svg({ clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      const pp = plantOf(task.plant).parts.find((p) => p.id === task.part);
+      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf ${task.plant === 'kreislauf' ? 'die Stelle im Bild' : 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? `<p class="center hintline">🌉 Tipp: ${esc(pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`)}</p>` : ''}`;
       container.querySelectorAll('[data-part]').forEach((g) => { g.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); g.onclick(); } }; g.onclick = () => { if (locked) return; const ok = g.dataset.part === task.part; g.classList.add(ok ? 'hit-part' : 'miss-part'); if (!ok) { const el = container.querySelector('[data-part="' + task.part + '"]'); if (el) el.classList.add('reveal'); } finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`); }; });
+    } else if (task.kind === 'karte') {
+      const goal = task.target.join('-');
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${MS.mapSVG({ start: task.start, neben: task.neben, scale: task.scale, clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? '<p class="center hintline">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>' : ''}`;
+      container.querySelectorAll('[data-cell]').forEach((c) => { c.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); c.onclick(); } }; c.onclick = () => { if (locked) return; const ok = c.dataset.cell === goal; c.classList.add(ok ? 'hit' : 'miss'); if (!ok) container.querySelector(`[data-cell="${goal}"]`).classList.add('reveal'); finish(ok, 'Der Schatz liegt auf dem gelben Feld.'); }; });
     } else if (task.kind === 'order') {
       const chosen = opts.hint ? [task.order[0]] : []; const fixed = chosen.length;
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><p class="ohelp">Tippe der Reihe nach. Nochmal tippen nimmt es wieder heraus.</p><div id="fb" role="status" aria-live="polite"></div></div>`;
@@ -312,6 +320,9 @@
   }
   const PART_STEP = { mutterknolle: 1, wurzeln: 2, auslaeufer: 3, tochterknollen: 3, staengel: 4, blaetter: 5, bluete: 6, beere: 6 };
   const DRAW_STEPS = ['Zeichne die Erdlinie und darunter die Mutterknolle.', 'Zeichne die Wurzeln nach unten.', 'Zeichne die Ausläufer zur Seite und daran die Tochterknollen.', 'Zeichne den Stängel nach oben mit Seitentrieben.', 'Zeichne die Blätter an die Triebe.', 'Zeichne oben die Blüten und eine kleine Beere.'];
+  // labelled pictures: the potato here, cereal plant and water cycle in sachkunde.js
+  const POTATO = { svg: potatoSVG, parts: MK.PARTS, steps: DRAW_STEPS, qid: 'p_', note: 'teile' };
+  const plantOf = (k) => (k && MS.PLANTS[k]) || POTATO;
 
   /* ---------- Screens ---------- */
   const GEAR = '<svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.4 3.35"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="3.2"/></svg>';
@@ -428,7 +439,7 @@
   // short: for the QR code, without answer history and running adventures
   function saveData(short) {
     const m = JSON.parse(JSON.stringify(meta)); const runs = {};
-    // never-practised task types are left out; normMeta adds them back with empty stats
+    // unpractised task types are left out too: loading fills them in again with empty stats
     if (short) for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (st.t) st.hist = []; else delete g[k]; }
     else for (const g of MODE_KEYS) { const r = load(KEY_RUN_FOR(g), null); if (r) runs[g] = r; }
     return { v: 1, at: new Date().toISOString(), meta: m, runs };
@@ -517,10 +528,13 @@
       if (swap && swapOn) run.items.push('stern');
       meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
-  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; } return m;
+  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
+    // one special node per world on floors 3–6 instead of an event or treasure (a fight if the map has none)
+    const sw = CFG().swap; if (sw) { const on = (t) => m.slice(2, 6).flat().filter((n) => n.t === t); const c = on(sw.from).length ? on(sw.from) : on('fight'); if (c.length) pick(c).t = sw.to; }
+    return m;
   }
 
-  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'] };
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'] };
   function screenMap() {
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
@@ -582,6 +596,8 @@
     else if (type === 'rest') screenRest();
     else if (type === 'treasure') screenTreasure();
     else if (type === 'school') screenSchool(1);
+    else if (type === 'labor') screenLabor();
+    else if (type === 'karte') screenKarte();
   }
   function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
@@ -792,16 +808,53 @@
 
   /* ---------- Zeichenschule ---------- */
   function screenSchool(step) {
-    if (step > 6) { render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${potatoSVG({})}</div></div><div class="bottom"><button class="btn" id="go">Los!</button></div></div>`); $('#go').onclick = () => schoolCheck(MK.shuffle(MK.PARTS.map((p) => p.id)), 0); return; }
-    render(`<div class="screen">${topbar(`✏️ Zeichenschule ${step} / 6`)}<div class="scroll"><div class="card"><h3>Schritt ${step}</h3><p>${esc(DRAW_STEPS[step - 1])}</p>${potatoSVG({ step, labels: true })}<p class="muted" style="color:var(--ink-soft)">Zeichne mit auf Papier. Die Namen stehen dabei.</p></div></div><div class="bottom"><div class="row">${step > 1 ? `<button class="btn secondary" id="prev">Zurück</button>` : ''}<button class="btn" id="next">${step < 6 ? 'Nächster Schritt' : 'Zum Merk-Check'}</button></div></div></div>`);
+    const P = plantOf(CFG().school); const n = P.steps.length;
+    if (step > n) { render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${P.svg({})}</div></div><div class="bottom"><button class="btn" id="go">Los!</button></div></div>`); $('#go').onclick = () => schoolCheck(MK.shuffle(P.parts.map((p) => p.id)), 0); return; }
+    render(`<div class="screen">${topbar(`✏️ Zeichenschule ${step} / ${n}`)}<div class="scroll"><div class="card"><h3>Schritt ${step}</h3><p>${esc(P.steps[step - 1])}</p>${P.svg({ step, labels: true })}<p class="muted" style="color:var(--ink-soft)">Zeichne mit auf Papier. Die Namen stehen dabei.</p></div></div><div class="bottom"><div class="row">${step > 1 ? `<button class="btn secondary" id="prev">Zurück</button>` : ''}<button class="btn" id="next">${step < n ? 'Nächster Schritt' : 'Zum Merk-Check'}</button></div></div></div>`);
     $('#next').onclick = () => screenSchool(step + 1); if ($('#prev')) $('#prev').onclick = () => screenSchool(step - 1);
   }
   function schoolCheck(ids, i) {
     if (i >= ids.length) { const m = gainXp(20); nodeDone(); saveAll(); render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check bestanden</h2><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
-    const part = MK.PARTS.find((p) => p.id === ids[i]); const others = MK.shuffle(MK.PARTS.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name);
-    const t = { kind: 'parts', mod: 'parts', tier: 1, group: 'parts:1', note: 'teile', q: 'Wie heißt der leuchtende Teil?', part: part.id, options: MK.shuffle(others.concat([part.name])), answer: part.name, qid: 'p_' + part.id };
+    const P = plantOf(CFG().school); const part = P.parts.find((p) => p.id === ids[i]); const others = MK.shuffle(P.parts.filter((p) => p.id !== part.id)).slice(0, 3).map((p) => p.name);
+    const t = { kind: 'parts', mod: 'parts', tier: 1, group: 'parts:1', note: P.note, q: 'Wie heißt der leuchtende Teil?', part: part.id, options: MK.shuffle(others.concat([part.name])), answer: part.name, qid: P.qid + part.id, plant: P === POTATO ? undefined : CFG().school };
     render(`<div class="screen">${topbar(`✏️ Merk-Check ${i + 1} / ${ids.length}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Merk-Check', onResult: (ok) => { recordAnswer('parts', ok, t); saveAll(); } }, () => schoolCheck(ids, i + 1)));
+  }
+
+  /* ---------- Forscherlabor: guess first, then the result; a wrong guess costs nothing ---------- */
+  function screenLabor() {
+    const n = run.node; if (!isObj(n.lab) || !Array.isArray(n.lab.list)) { n.lab = { list: MS.laborSet(), i: 0, right: 0, guess: null }; saveAll(); }
+    const L = n.lab; if (L.i >= L.list.length) return laborEnd();
+    const ex = L.list[L.i]; const guessed = Number.isInteger(L.guess); const ok = L.guess === ex.a;
+    const result = guessed ? `<p class="labres"><b>${ok ? 'Deine Vermutung stimmt.' : `Du hast „${esc(ex.opts[L.guess])}“ vermutet.`}</b> Ergebnis: ${esc(ex.opts[ex.a])}.</p><div class="notecard"><div class="eyebrow">Notiz</div>${esc(ex.note)}</div>` : '<p>Was vermutest du? Tippe auf deine Vermutung.</p>';
+    render(`<div class="screen">${topbar('🔬 Forscherlabor')}<div class="scroll"><div class="card labor"><div class="eyebrow">Versuch ${L.i + 1} von ${L.list.length}</div><h3>${esc(ex.q)}</h3>${(guessed && ex.after) || ex.pic || ''}${result}</div></div>
+      <div class="bottom">${guessed ? '<button class="btn" id="next">Weiter</button>' : `<div class="options ${ex.opts.length === 2 ? 'two' : ''}">${ex.opts.map((o, i) => `<button class="opt guess" data-i="${i}">${esc(o)}</button>`).join('')}</div>`}</div></div>`);
+    if (guessed) { $('#next').onclick = () => { L.i++; L.guess = null; saveAll(); screenLabor(); }; return; }
+    app.querySelectorAll('.opt.guess').forEach((b) => { b.onclick = () => { L.guess = +b.dataset.i; if (L.guess === ex.a) { L.right++; SFX.right(); } saveAll(); screenLabor(); }; });
+  }
+  // same reward level as an event
+  function laborEnd() {
+    const L = run.node.lab; const m = gainXp(20); nodeDone(); saveAll();
+    render(`<div class="screen">${topbar('🔬 Forscherlabor')}<div class="scroll"><div class="card"><h2>Deine Notizkarte</h2><p>${L.right} von ${L.list.length} Vermutungen ${L.right === 1 ? 'hat' : 'haben'} gestimmt.</p><div class="notecard">${L.list.map((x) => `<div>• ${esc(x.note)}</div>`).join('')}</div><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    $('#next').onclick = advance;
+  }
+
+  /* ---------- Schatzkarte: instead of a treasure; found = chest, two misses = a berry ---------- */
+  function screenKarte() {
+    const n = run.node; if (!enabledMods().includes('karte') || n.found) return screenTreasure();
+    if (!isObj(n.hunt)) n.hunt = { tries: 0, task: null };
+    if (!isObj(n.hunt.task)) { n.hunt.task = makeTask('karte', tierFor('karte')); saveAll(); }
+    const t = n.hunt.task;
+    render(`<div class="screen">${topbar('🗺️ Schatzkarte')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: `Versuch ${n.hunt.tries + 1} von 2`, onResult: (ok) => {
+      recordAnswer('karte', ok, t);
+      if (ok) n.found = true; else { n.hunt.tries++; n.hunt.task = null; if (n.hunt.tries >= 2) { run.items.push('beere'); nodeDone(); } }
+      saveAll();
+    } }, (ok) => {
+      if (ok || !n.done) return screenKarte();
+      render(`<div class="screen">${topbar('🗺️ Schatzkarte')}<div class="scroll"><div class="card center"><h2>Der Schatz bleibt versteckt</h2><p>Unter einem Busch findest du ${ITEMS.beere.icon} eine Beere.</p></div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+      $('#next').onclick = advance;
+    }));
   }
 
   /* ---------- End screens ---------- */
