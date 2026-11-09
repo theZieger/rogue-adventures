@@ -1,4 +1,4 @@
-const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const know={};let seq=0;const fails=[];
+const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const know={};let seq=0;const fails=[];
 for(const [mode,cfg] of Object.entries(K.MODES)){ for(const mod of Object.keys(cfg.modules)){ for(let t=1;t<=cfg.modules[mod].maxTier;t++){ for(let i=0;i<400;i++){ const q=K.generate(mode,mod,t,know,++seq);
  if(q.kind==='choice'||q.kind==='parts'){ if(!q.options.includes(q.answer)) fails.push(JSON.stringify(q)); if(new Set(q.options).size!==q.options.length) fails.push('dup '+q.q); }
  if(q.kind==='order'){ const ids=q.items.map(x=>x.id), texts=q.items.map(x=>x.text);
@@ -238,6 +238,24 @@ for(const c of Object.keys(K.CROPS)){ if(K.GARDEN_POOL.filter(e=>e.crop===c).len
       if(mod==='reihe'){ const list=(t===1?E.tage:E.monate).map(x=>x[0]); const txt=q.order.map(id=>q.items.find(x=>x.id===id).text);
         if(q.items.length!==4||txt.some((x,i)=>i&&list.indexOf(x)<list.indexOf(txt[i-1]))||txt.some(x=>!list.includes(x))) fail('order '+txt); }
       if(!cfg.tut[q.group]||!cfg.notes[q.note]) fail('tut/note '+q.group+' '+q.note); } } }
+// Musik: enough questions, every topic has a note, every picture task has exactly one fitting answer
+{ const mu=K.MODES.musik; const f=(m)=>fails.push('musik: '+m);
+  if(mu.pool.length<70) f('only '+mu.pool.length+' questions');
+  for(const g of ['notenwerte','takt','schluessel','familien','begriffe','komponisten','laender']) if(!mu.notes[g]) f('no note '+g);
+  if(new Set(MU.KOMP.map(k=>k.year)).size!==MU.KOMP.length||MU.KOMP.some((k,i)=>i&&k.year<=MU.KOMP[i-1].year)) f('composers not ordered by birth year');
+  for(const k of MU.KOMP) if(!mu.notes.komponisten.lines.some(l=>l.includes(k.text)&&l.includes(String(k.year)))) f('birth year not in the note: '+k.text);
+  for(const i of MU.INSTR) if(!MU.FAM[i.fam]||!mu.notes.familien.lines.some(l=>l.startsWith(MU.FAM[i.fam])&&l.includes(i.name))) f('instrument not in its family note: '+i.name);
+  for(let i=0;i<500;i++){
+    for(const t of [1,2]){ const b=MU.makeBar(t); const len=b.top*2, sum=b.items.reduce((a,x)=>a+x.v,0);
+      if(sum!==len||![1,2,4].includes(b.gap.v)||b.items.length<2||(t===1&&(b.top===4||b.items.some(x=>x.rest)))) f('bar '+JSON.stringify(b)); }
+    const q=K.generate('musik','takt',1+(i%2),{},++seq); if(q.kind==='choice'&&q.bar){ const want={1:'Achtelnote',2:'Viertelnote',4:'Halbe Note'}[q.bar.top*2-q.bar.items.reduce((a,v,j)=>j===q.bar.gap?a:a+v,0)]; if(q.answer!==want||q.options.length!==3) f('takt answer '+q.qid); }
+    const n=K.generate('musik','noten',2,{},++seq); if(n.kind!=='num'||!Number.isInteger(n.answers[0])||n.answers[0]<1||n.answers[0]!==n.beats.reduce((a,b)=>a+b,0)/n.unit) f('noten tier 2 '+n.qid);
+    const t1=K.generate('musik','ton',1,{},++seq); if(t1.step!==undefined&&MU.TONES[t1.step]!==t1.answer) f('ton name '+t1.qid);
+    const t2=K.generate('musik','ton',2,{},++seq); if(t2.svgOpts&&(t2.options.length!==3||t2.options.filter(o=>o===t2.answer).length!==1||!t2.q.endsWith(' '+MU.TONES[t2.step]+'.'))) f('ton find '+t2.qid);
+    for(const mod of Object.keys(mu.modules)) for(let t=1;t<=mu.modules[mod].maxTier;t++){ const q=K.generate('musik',mod,t,{},++seq);
+      if(q.kind==='choice'&&(q.options.length<2||q.options.filter(o=>o===q.answer).length!==1)) f('not exactly one correct '+q.qid);
+      if(/[0-9],[0-9]/.test((q.q||'')+(q.fig||'')+(q.options||[]).join('|'))) f('comma number '+q.qid); } }
+  for(const x of MU.INSTR) for(let i=0;i<20;i++){ const q=K.generate('musik','instr',2,{},++seq); if(q.qid==='mhow_'+x.id&&q.answer!==MU.HOW[x.fam]) f('how '+x.id); } }
 const ids=Object.values(K.MODES).flatMap(c=>c.pool.map(p=>p.id)).concat(K.GARDEN_POOL.map(p=>p.id)); const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
 console.log('knowledge fails',fails.length,'duplicate ids',dup.length,'questions',Object.keys(know).length);
 if(fails.length||dup.length){ console.log(fails.slice(0,20), dup); process.exit(1); }

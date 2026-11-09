@@ -41,6 +41,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
 | 👁️ Die fünf Sinne | Sachkunde: Sinnesorgane und Sinne, Auge und Ohr mit Zeichenschule, Sinne schützen, Hilfen für Menschen mit Behinderung (Blindenschrift, Führhund, Gebärdensprache, Hörgerät, Rampe), Nein zu Rauchen, Alkohol und fremden Medikamenten – Dilemma-Karten zum Nein sagen; Kartenfeld „Sinnestäuschung“ (erst vermuten, dann Ergebnis) |
 | 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
+| 🎻 Der Konzertsaal | Musik, nur zum Anschauen (keine Töne): Notenwerte und Pausen (Bilder, in Stufe 2 rechnen), Takt ergänzen (2/4, 3/4, Stufe 2 auch 4/4 mit Pausen), Tonhöhen c bis c im Violinschlüssel, Instrumente und ihre Familien, wie der Ton entsteht, piano/forte/crescendo, Komponisten (Bach, Mozart, Beethoven, Robert und Clara Schumann, Wagner) mit Reihenfolge nach Geburtsjahr, Instrumente und Tänze anderer Länder |
 
 - Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff.
 - Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
@@ -74,6 +75,7 @@ src/knowledge.js   Wissensinhalte Ethik, Kartoffel, Deutsch und Englisch (Fragen
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
 src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
+src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
