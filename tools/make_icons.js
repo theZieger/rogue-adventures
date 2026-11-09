@@ -14,11 +14,12 @@ const BG_TOP = '#2A3A73';
 const BG_BOT = '#141B33';
 const FOX = '#FF6A3D';
 
-// Fox artwork occupies roughly x 0..120, y 0..116 of its 120x120 viewBox.
+// Sonnenfuchs (stage 3) without its own sparkles (the icon draws its stars), zoomed 1.1× around the head
+// so it reads at small sizes; the artwork then spans roughly x 0..120, y 0..120 of its 120x120 viewBox.
 function fox() {
-  return MONART.monsterSVG('fox', FOX, 2, '')
-    .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')
-    .replace(/<circle cx="60" cy="62" r="56"[^>]*\/>/g, ''); // drop evo aura ring
+  const art = MONART.render('fox', FOX, 2, '', { plain: true, id: 'icon' })
+    .replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  return `<g transform="translate(-6 -4.4) scale(1.1)">${art}</g>`;
 }
 
 function stars(s) {
@@ -55,8 +56,8 @@ const ICONS = [
   ['icon-512.png', 512, { radius: 0.22, scale: 0.80, stars: true }],
   // "maskable": full bleed; Android crops to circle/squircle. Safe zone is the
   // central 80 % circle – the fox is sized to fill it so it looks big.
-  ['maskable-192.png', 192, { radius: 0, scale: 0.68, stars: true }],
-  ['maskable-512.png', 512, { radius: 0, scale: 0.68, stars: true }],
+  ['maskable-192.png', 192, { radius: 0, scale: 0.6, stars: true }],
+  ['maskable-512.png', 512, { radius: 0, scale: 0.6, stars: true }],
   // iOS/iPadOS: full-bleed square, the system applies its own rounded mask
   ['apple-touch-icon.png', 180, { radius: 0, scale: 0.84, stars: true }],
   // browser tab favicons
@@ -150,7 +151,7 @@ async function makeScreenshots(browser) {
     await p.screenshot({ path: path.join(dir, `${form}-1-start.png`) });
     await p.click('[data-new="math"]'); await p.click('.choice[data-id]'); await p.click('#go'); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(dir, `${form}-2-karte.png`) });
-    const nodes = await p.$$('.floor.current .node'); let t = nodes[0];
+    const nodes = await p.$$('.node.open'); let t = nodes[0];
     for (const n of nodes) if (await n.getAttribute('aria-label') === 'Kampf') t = n;
     await t.click(); await p.waitForTimeout(500);
     if (await p.$('#tutok')) await p.click('#tutok');

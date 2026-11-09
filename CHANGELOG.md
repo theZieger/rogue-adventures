@@ -11,6 +11,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Neu
 - Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar.
 
+### Verbessert
+- Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.
+
 ## 2026-11-08
 
 ### Neu

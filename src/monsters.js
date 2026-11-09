@@ -836,8 +836,8 @@ const MONART = (() => {
     let back = '', front = '';
     if (elite) back = `<path d="${burst(60, 64, 44, 60, 12)}" fill="#C2263F" opacity=".22"/><path d="${burst(60, 64, 44, 60, 12)}" fill="none" stroke="#E0304A" stroke-width="2" stroke-linejoin="round" opacity=".55"/>`;
     if (boss) back = `<circle cx="60" cy="62" r="58" fill="#FFC93C" opacity=".14"/><path d="${spikes(60, 62, 30, 60, -90, 270, 16)}" fill="#FFC93C" opacity=".22"/>`;
-    if (hero && e === 1) front = spark(12, 22, 5) + spark(106, 30, 3.5);
-    if (hero && e === 2) front = spark(10, 20, 6) + spark(110, 26, 4.5) + spark(16, 96, 3.5) + spark(106, 92, 4);
+    if (hero && e === 1 && !opts.plain) front = spark(12, 22, 5) + spark(106, 30, 3.5);
+    if (hero && e === 2 && !opts.plain) front = spark(10, 20, 6) + spark(110, 26, 4.5) + spark(16, 96, 3.5) + spark(106, 92, 4);
     const tf = k === 1 ? '' : ` transform="translate(${f1(60 * (1 - k))} ${f1(116 * (1 - k))}) scale(${k})"`;
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><defs>${defs.join('')}</defs>${back}<g${tf}>${body}</g>${front}</svg>`;
   }
