@@ -19,7 +19,7 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
-let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0, mines=0;
+let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0, mines=0, arenas=0;
 const cents=(x)=>{ const m=x.trim().match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); if(!m) throw new Error('not money: '+x); return (+(m[1]||0))*100+(+(m[2]||0)); };
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 let colTasks=0, readNodes=0, crafted=false, fromPantry=false;
@@ -89,7 +89,7 @@ async function solveTask(forceWrong){
 }
 async function solveKnow(forceWrong){
   const t=w.__task; if(!t) throw new Error('no task');
-  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf($('.jm')?JM.solve($('.task').innerHTML, t.options, w.eval('MJ').REF):t.answer); if(idx<0) throw new Error('choice not solvable: '+$('.task').textContent); if(forceWrong) idx=(idx+1)%t.options.length; click(opts[idx]); }
+  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf($('.jm')?JM.solve($('.task').innerHTML, t.options, w.eval('MJ').REF):t.answer); if(idx<0) throw new Error('choice not solvable: '+$('.task').textContent); if(forceWrong) idx=opts.findIndex((o,i)=>i!==idx&&!o.disabled); click(opts[idx]); }
   else if(t.kind==='parts-find'){ const parts=$$('.plant [data-part]'); let el=parts.find(x=>x.dataset.part===t.part); if(forceWrong) el=parts.find(x=>x.dataset.part!==t.part); click(el); }
   else if(t.kind==='karte'){ let cell=t.target.join('-'); if(forceWrong) cell=$$('[data-cell]').map(x=>x.dataset.cell).find(c=>c!==cell); click($('[data-cell="'+cell+'"]')); }
   else if(t.kind==='order'){ let order=t.order.slice();
@@ -127,10 +127,13 @@ async function step(){
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); if(!fromPantry){ fromPantry=true; if(!w.__mq.run.items.includes('schild')||w.__mq.meta.pantry.length) throw new Error('pantry not taken into the adventure'); } return; }
   if($('.node.open')){ const nodes=$$('.node.open');
     const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
-    // steer towards a Forscherlabor/Schatzkarte/Bergwerk further up, so the bot plays them whatever the seed – unless that costs the weekly boss
-    { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(['labor','karte','bergwerk'].includes(nd.t)||nd.n.some(j=>leads(f+1,j))); };
-      const boss=(f,i)=>r.map[f][i].t==='weekboss'||r.map[f][i].n.some(j=>r.map[f+1]&&r.map[f+1][j]&&boss(f+1,j)); const toBoss=nodes.filter(n=>boss(r.floor-1,+n.dataset.n));
-      const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)&&(!toBoss.length||toBoss.includes(n))); if(way){ click(way); return; } }
+    // steer towards a Forscherlabor/Schatzkarte/Bergwerk or the Kreisel-Arena further up, so the bot plays them whatever the seed –
+    // never at the cost of the weekly boss or the Lesestube; in even worlds the arena goes first, as it often shares floors with the Bergwerk
+    { const r=w.__mq.run; const reach=(ts,f,i)=>{ const nd=r.map[f]&&r.map[f][i]; return !!nd&&(ts.includes(nd.t)||nd.n.some(j=>reach(ts,f+1,j))); };
+      let pool=nodes; for(const t of ['weekboss','lesen']){ const k=pool.filter(n=>reach([t],r.floor-1,+n.dataset.n)); if(k.length) pool=k; }
+      const goals=[['labor','karte','bergwerk'],['arena']]; if(r.world%2===0) goals.reverse();
+      for(const ts of goals){ const ways=pool.filter(n=>reach(ts,r.floor-1,+n.dataset.n)); const way=ways.find(n=>n.classList.contains('markt'))||ways[0];
+        if(way){ if(way.classList.contains('weekboss')) weekbossFights++; if(way.classList.contains('lesen')) readNodes++; click(way); return; } } }
     // head for the Lesestube and the weekly boss when the path can still reach them; the market only when it lies on that way
     { const r=w.__mq.run; const reach=(t,f,i)=>r.map[f][i].t===t||r.map[f][i].n.some(j=>r.map[f+1]&&r.map[f+1][j]&&reach(t,f+1,j));
       const leads=(t)=>nodes.filter(n=>reach(t,r.floor-1,+n.dataset.n)); const toRead=leads('lesen'), toBoss=leads('weekboss');
@@ -145,6 +148,7 @@ async function step(){
   if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
   if($('.mblock.covered:not([disabled])')){ if(!$('.mblock.open')) mines++; const b=$$('.mblock.covered:not([disabled])'); click(b[Math.floor(Math.random()*b.length)]); return; }
   if($('.market')){ await shop(); return; }
+  if($('#topend')) arenas++;
   if($('#next')){ click($('#next')); return; }
   if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
   if($('#train')){ rests++; click(Math.random()<0.5?$('#train'):$('#heal')); return; }
@@ -163,7 +167,7 @@ async function step(){
     for(let w=0; w<6 && !$('.mblock')&&!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')&&!$('.opt')&&!$('[data-cell]'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
-  console.log({steps,colTasks,readNodes,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,markets,bought,mines,materials:m.materials,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
+  console.log({steps,colTasks,readNodes,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,markets,bought,mines,arenas,materials:m.materials,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
@@ -178,6 +182,7 @@ async function step(){
   if(!crafted){ console.error('PLAYTEST FAIL: never used the Werkbank'); process.exit(1); }
   if(W3&&colTasks<4){ console.error('PLAYTEST FAIL: only '+colTasks+' written tasks in world 3'); process.exit(1); }
   if(['woerterwerkstatt','satzbaustelle','ethik','kirchenjahr'].includes(mode)&&readNodes<RUNS){ console.error('PLAYTEST FAIL: Lesestube not played'); process.exit(1); }
+  if(mode==='math'&&!W3&&!arenas){ console.error('PLAYTEST FAIL: never played the Kreisel-Arena'); process.exit(1); }
   if(mode==='math'&&!W3&&!bought){ console.error('PLAYTEST FAIL: never bought anything at a market'); process.exit(1); }
   if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }
 })().catch(e=>{console.error('PLAYTEST FAIL',e.message); console.log(errors); process.exit(1);});

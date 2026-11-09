@@ -320,6 +320,28 @@ const MONART = (() => {
     const body = (SHAPES[shape] || SHAPES.blob)(color, g, d, null);
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true">${defs}${aura}${o && o.back ? o.back(fit) : ''}${body}${o ? o.front(fit) : ''}${crown}${sparkle}</svg>`;
   }
-  return { monsterSVG, shapes: Object.keys(SHAPES), shade, outfits: Object.keys(OUTFIT), dressable: Object.keys(FIT) };
+  // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
+  // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS
+  const DISC = { leicht: ['#E8C38A', 5], schwer: ['#9A6A45', 10], eisen: ['#A3ABB8', 8] };
+  const around = (n, f) => Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
+  const pt = (r, a) => `${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}`;
+  const TIP = {
+    stahl: `<path d="M50 70 L70 70 L60 102 Z" fill="#B8C0CC" ${S(3)}/>`,
+    gummi: `<path d="M50 70 L70 70 L66 94 Q60 103 54 94 Z" fill="#3A3D4A" ${S(3)}/>`,
+    kugel: `<path d="M52 70 L68 70 L63 88 L57 88 Z" fill="#B8C0CC" ${S(3)}/><circle cx="60" cy="95" r="7" fill="#E4E9F0" ${S(3)}/><circle cx="57.5" cy="92.5" r="2" fill="#fff"/>`,
+  };
+  const RING = {
+    zahn: '<circle r="30" fill="none" stroke="#5A6070" stroke-width="8" stroke-dasharray="6 4"/>',
+    welle: `<path d="M${around(48, (a) => pt(30 + 3.5 * Math.sin(8 * a), a) + ' L').slice(0, -2)}Z" fill="none" stroke="#2E86AB" stroke-width="6"/>`,
+    flamme: around(10, (a) => `<path d="M${pt(24, a - 0.2)} L${pt(42, a + 0.12)} L${pt(24, a + 0.25)} Z" fill="#FF8A3D" stroke="#C8401A" stroke-width="2"/>`),
+  };
+  function topSVG(color, parts, cls) {
+    const [fill, th] = DISC[parts.disc] || DISC.leicht; const dark = shade(fill, -0.3);
+    return `<svg class="mon top ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><g transform="translate(0 14)">${TIP[parts.tip] || TIP.stahl}
+      <ellipse cx="60" cy="${66 + th}" rx="44" ry="15" fill="${dark}" ${S(3)}/><rect x="16" y="66" width="88" height="${th}" fill="${dark}"/><path d="M16 66v${th}M104 66v${th}" ${S(3)}/>
+      <g transform="translate(60 66) scale(1 .34)"><g class="spin"><circle r="44" fill="${fill}" stroke="#1C2541" stroke-width="6"/>${around(4, (a) => `<circle cx="${pt(37, a).replace(' ', '" cy="')}" r="3.5" fill="${dark}"/>`)}${RING[parts.ring] || RING.zahn}<circle r="15" fill="${color}" stroke="#1C2541" stroke-width="5"/><circle cx="10" r="4" fill="#fff" opacity=".7"/></g></g>
+      <rect x="54" y="30" width="12" height="34" rx="5" fill="${color}" ${S(3)}/><ellipse cx="60" cy="30" rx="9" ry="4" fill="${shade(color, 0.35)}" ${S(2.5)}/></g></svg>`;
+  }
+  return { monsterSVG, topSVG, shapes: Object.keys(SHAPES), shade, outfits: Object.keys(OUTFIT), dressable: Object.keys(FIT) };
 })();
 if (typeof module !== 'undefined') module.exports = MONART;

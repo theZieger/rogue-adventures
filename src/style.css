@@ -101,7 +101,7 @@ p { margin: 8px 0; }
 @media (max-width: 359px) { .wmap .node { width: 60px; height: 60px; font-size: 19px; } .wmap .node small { font-size: 9.5px; } }
 
 /* Battle */
-.arena { flex: 1 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "eplate esprite" "gap gap" "hsprite hplate"; gap: 4px 10px; padding: 8px 14px 4px; align-items: end; }
+.screen > .arena { flex: 1 0 auto; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr auto; grid-template-areas: "eplate esprite" "gap gap" "hsprite hplate"; gap: 4px 10px; padding: 8px 14px 4px; align-items: end; }
 .plate { background: var(--card); color: var(--ink); border: 3px solid var(--ink); border-radius: 14px; padding: 6px 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .plate.enemy { grid-area: eplate; align-self: start; }
 .plate.hero { grid-area: hplate; }
@@ -275,7 +275,7 @@ p { margin: 8px 0; }
 }
 /* Phone held sideways: arena as one row, task and keypad side by side */
 @media (max-height: 500px) and (orientation: landscape) {
-  .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 8px; padding: 4px 14px 0; align-items: center; }
+  .screen > .arena { flex: none; grid-template-columns: 48px 1fr 48px 1fr; grid-template-rows: auto; grid-template-areas: "hsprite hplate esprite eplate"; gap: 8px; padding: 4px 14px 0; align-items: center; }
   .sprite .mon { width: 48px; height: 48px; } .sprite .ground { display: none; }
   .plate { padding: 3px 8px; gap: 1px; } .plate .name { font-size: 16px; } .plateline, .plate .xpbar { display: none; } .plate .hpbar { height: 10px; } .plate .hptext { font-size: 12px; }
   .log { min-height: 32px; font-size: 18px; padding: 4px 10px; margin: 4px 14px; }
@@ -531,6 +531,23 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .mblock.covered:disabled { opacity: .6; }
 .mblock small { font-size: 14px; font-weight: 700; }
 @media (max-height: 720px) { .task .figure svg { height: 96px; } .task .figure figure:first-child svg { height: 72px; } .options.pics .opt svg { height: 60px; } }
+/* Kreisel: the squashed disc face turns around its centre; a top without Schwung lies on its side */
+.mon.top.live .spin { animation: topspin .7s linear infinite; transform-origin: 0 0; }
+@keyframes topspin { to { transform: rotate(360deg); } }
+.mon.top.fallen, .sprite .mon.top.fallen { transform: rotate(-72deg) translate(-8px, 16px); }
+@media (prefers-reduced-motion: reduce) { .mon.top.live .spin { animation: none; } }
+.topgrid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.topgrid .kkitem { padding: 8px 4px; border-radius: 18px; }
+.topgrid .kkitem .mon { width: 72px; height: 72px; }
+.topgrid .name { font-size: 19px; }
+.topgrid .btn.small { padding-left: 6px; padding-right: 6px; font-size: 15px; }
+.partval { font-weight: 800; font-size: 15px; }
+.topvals { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 14px; font-weight: 800; }
+.toprule { margin: 8px 0 0; font-size: 14px; text-align: center; }
+.wmap .node.arena small { white-space: normal; line-height: 1; text-align: center; }
+.sprite .mon.top { animation: none; }
+.toptext { margin: 2px 0 10px; font-size: 16px; }
+.card > .mon.top { display: block; width: 120px; height: 120px; margin: 0 auto; }
 .task .story { font-size: 21px; font-weight: 700; line-height: 1.4; margin: 10px 0; }
 .hutroom { width: 100%; height: auto; display: block; border: 3px solid var(--ink); border-radius: 18px; background: #E9D3A8; }
 .rwprev.furn { background: #E9D3A8; padding: 6px; box-sizing: border-box; }

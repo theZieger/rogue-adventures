@@ -343,6 +343,13 @@ const MQ = (() => {
 
   // market prices in cents
   const PRICES = { trank: 120, beere: 60, schild: 205, keks: 85, lupe: 150, engel: 300 };
+  // Kreisel parts: each changes one number (tip: Wucht, ring: Panzer, disc: Schwung). The first of each row is the starter part,
+  // the others are owned['top-<slot>-<id>']: bought (price), found in a chest of that world (chest), or from the first ore (mine).
+  const TOP_PARTS = {
+    tip: [{ id: 'stahl', name: 'Stahlspitze', val: 5 }, { id: 'gummi', name: 'Gummispitze', val: 6, price: 8 }, { id: 'kugel', name: 'Kugelspitze', val: 7, chest: 3 }],
+    ring: [{ id: 'zahn', name: 'Zahnring', val: 1 }, { id: 'welle', name: 'Wellenring', val: 2, price: 12 }, { id: 'flamme', name: 'Flammenring', val: 3, chest: 2 }],
+    disc: [{ id: 'leicht', name: 'Leichte Scheibe', val: 20 }, { id: 'schwer', name: 'Schwere Scheibe', val: 24, price: 10 }, { id: 'eisen', name: 'Eisenscheibe', val: 28, mine: true }],
+  };
 
   const EVENTS = [
     { title: 'Die Brücke', text: 'Ein alter Troll bewacht eine Brücke. „Löse mein Rätsel, dann darfst du rüber und bekommst einen Trank!“', opts: [{ label: 'Rätsel lösen', task: 'riddle', win: { item: 'trank' }, lose: { hp: -8 } }, { label: 'Umweg nehmen (−5 LP)', effect: { hp: -5 } }] },
@@ -666,6 +673,6 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;
