@@ -100,11 +100,12 @@ async function step(){
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
   if($('.node.open')){ const nodes=$$('.node.open');
     const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
-    // steer towards a Forscherlabor/Schatzkarte/Bergwerk further up, so the bot plays them whatever the seed
-    { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(['labor','karte','bergwerk'].includes(nd.t)||nd.n.some(j=>leads(f+1,j))); };
-      const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)); if(way){ click(way); return; } }
     // head for the weekly boss whenever the path can still reach it
     const r=w.__mq.run; const reach=(f,i)=>r.map[f][i].t==='weekboss'||r.map[f][i].n.some(j=>r.map[f+1]&&r.map[f+1][j]&&reach(f+1,j));
+    const bossOk=(n)=>reach(r.floor-1,+n.dataset.n)||!nodes.some(x=>reach(r.floor-1,+x.dataset.n));
+    // steer towards a Forscherlabor/Schatzkarte/Bergwerk further up, so the bot plays them whatever the seed – unless that costs the weekly boss
+    { const memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(['labor','karte','bergwerk'].includes(nd.t)||nd.n.some(j=>leads(f+1,j))); };
+      const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)&&bossOk(n)); if(way){ click(way); return; } }
     // the market is taken whenever that does not cost the way to the weekly boss
     const mk=nodes.find(n=>n.getAttribute('aria-label')==='Markt'); if(mk&&(reach(r.floor-1,+mk.dataset.n)||!nodes.some(n=>reach(r.floor-1,+n.dataset.n)))){ click(mk); return; }
     const toBoss=nodes.find(n=>reach(r.floor-1,+n.dataset.n)); if(toBoss){ if(toBoss.classList.contains('weekboss')) weekbossFights++; click(toBoss); return; }
