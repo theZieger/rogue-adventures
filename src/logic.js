@@ -319,6 +319,12 @@ const MQ = (() => {
     for (let k = isoWeek(d); ; d.setDate(d.getDate() + 7), k = isoWeek(d)) { out.push(k); if (k === end) return out; }
   }
 
+  // mulberry32 over an FNV hash of the key: the same week key gives the same weekly goals on every device
+  function seeded(key) {
+    let a = 2166136261; for (const c of String(key)) a = Math.imul(a ^ c.charCodeAt(0), 16777619);
+    return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+
   /* ---------- Map ----------
      Node: { t: type, c: lane 0–3, n: [indexes on the next floor] }.
      Rules: floor 1 fights, no elite before floor 3, rest only on floors 4–5 and as the camp before the boss (floor 7),
@@ -603,6 +609,6 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, seeded, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;

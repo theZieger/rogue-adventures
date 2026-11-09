@@ -5,7 +5,9 @@ const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'
 const SEED=+(process.env.SEED||20261108);
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
-const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); } });
+// a fixed day too: 2026-W48 has the weekly boss as its maths goal, so the bot can finish a goal in a math run
+const NOW=Date.parse(process.env.NOW||'2026-11-25T10:00:00');
+const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
@@ -13,7 +15,7 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
-let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, mines=0;
+let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, mines=0;
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 async function solveTask(forceWrong){
   const inps=$$('.inp'); if(!inps.length) return false;
@@ -86,6 +88,9 @@ async function step(){
     // steer towards a Forscherlabor/Schatzkarte/Bergwerk further up, so the bot plays them whatever the seed
     { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(['labor','karte','bergwerk'].includes(nd.t)||nd.n.some(j=>leads(f+1,j))); };
       const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)); if(way){ click(way); return; } }
+    // head for the weekly boss whenever the path can still reach it
+    const r=w.__mq.run; const reach=(f,i)=>r.map[f][i].t==='weekboss'||r.map[f][i].n.some(j=>r.map[f+1]&&r.map[f+1][j]&&reach(f+1,j));
+    const toBoss=nodes.find(n=>reach(r.floor-1,+n.dataset.n)); if(toBoss){ if(toBoss.classList.contains('weekboss')) weekbossFights++; click(toBoss); return; }
     const pref=['school','treasure','event','rest','elite','fight','boss']; let chosen=null; for(const p of pref){ chosen=nodes.find(n=>n.getAttribute('aria-label')===({school:'Zeichenschule',treasure:'Schatz',event:'Ereignis',rest:'Rast',elite:'Elite',fight:'Kampf',boss:'Boss'}[p])); if(chosen&&Math.random()<0.6) break; }
     click(chosen||nodes[0]); return; }
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
@@ -115,10 +120,13 @@ async function step(){
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
+  const goals=w.__mq.weeklyGoals(); const done=goals.filter((g,i)=>(m.weekly.progress[i]||0)>=g.n).length;
+  console.log('weekly', m.weekly.week, 'boss fights', weekbossFights, 'goals done', done, JSON.stringify(m.weekly.progress));
   if(mode==='wetterstation'&&!labs){ console.error('PLAYTEST FAIL: the bot never reached the Forscherlabor'); process.exit(1); }
   if(mode==='kompass'&&!maps){ console.error('PLAYTEST FAIL: the bot never reached the Schatzkarte'); process.exit(1); }
   if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }
   if(['math','bau'].includes(mode)&&!mines){ console.error('PLAYTEST FAIL: never reached the Bergwerk'); process.exit(1); }
+  if(mode==='math'&&RUNS>1&&(!weekbossFights||!m.weekly.beaten.includes('math')||!done)){ console.error('PLAYTEST FAIL: the bot did not beat the weekly boss and finish a weekly goal'); process.exit(1); }
   if(dilemmas!==consequences){ console.error('PLAYTEST FAIL: a dilemma choice showed no consequence'); process.exit(1); }
   if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }
 })().catch(e=>{console.error('PLAYTEST FAIL',e.message); console.log(errors); process.exit(1);});
