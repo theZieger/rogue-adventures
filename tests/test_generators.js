@@ -29,6 +29,9 @@ for(const mod of M.MODULE_KEYS){ for(let t=1;t<=M.MODULES[mod].maxTier;t++){ con
       check(a%to===0&&Math.abs(a-n)<to/2+1&&(n%to>=to/2?a>n:a<n)&&a>0,'rund',tk); if(t===1) check(to===10,'rund1 Zehner',tk); if(t===2) check(to===100,'rund2 Hunderter',tk); }
     if(mod==='dopp'){ const n=+tk.text, a=tk.answers[0];
       check(tk.ask.includes('Verdopple')?a===2*n:n%2===0&&2*a===n,'dopp',tk); check(Math.max(n,a)<(t===1?100:1000),'dopp range',tk); }
+    if(mod==='geld'){ const cents=(x)=>{ const m=x.match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); return m?(+(m[1]||0))*100+(+(m[2]||0)):NaN; }; const [e,c]=tk.answers; check(c<100&&tk.money&&tk.labels.length===2,'geld answer € ct',tk);
+      if(t===1){ const parts=tk.text.split(' + ').map(cents); check(parts.length>=2&&parts.every(v=>M.COINS.includes(v)),'geld coins',tk); check(parts.reduce((a,b)=>a+b,0)===e*100+c,'geld coin sum',tk); }
+      else { const [p,q]=tk.text.split(' − ').map(cents); check(p>q&&p-q===e*100+c&&[200,500,1000].includes(p),'geld change',tk); } }
     if(mod==='riddle'){ const lo=tk.digits===3?100:10, hi=tk.digits===3?999:99;
       check(tk.text.split('\n').length>=2,'cluecount',tk); check(tk.answers[0]>=lo&&tk.answers[0]<=hi,'riddlerange',tk); }
     if(mod==='seq'){ const s=tk.seq.concat(tk.answers); const d1=s[1]-s[0],d2=s[2]-s[1]; if(t<4){ check(s.every((v,i)=>i===0||v-s[i-1]===d1),'seqstep',tk);} else { check(s.every((v,i)=>i===0||v-s[i-1]===(i%2===1?d1:d2)),'altseq',tk);} if(t<=2) check(s.every(v=>v>0&&v<100),'w1seq',tk); }
@@ -107,6 +110,9 @@ for(let t=1;t<=3;t++) for(let i=0;i<400;i++){ const tk=M.generate('riddle',t); c
 }
 for(const mod of M.MODULE_KEYS){ const tk=M.generate(mod,1); console.log(mod, JSON.stringify(tk)); }
 console.log(JSON.stringify(M.generate('riddle',2)), JSON.stringify(M.generate('riddle',3)));
+// money is written „3 € 50 ct“, never with a comma
+for(const [c,t] of [[350,'3 € 50 ct'],[205,'2 € 05 ct'],[300,'3 €'],[60,'60 ct'],[0,'0 ct'],[1000,'10 €']]) check(M.euro(c)===t,'euro '+c,M.euro(c));
+check(Object.keys(M.PRICES).every(k=>M.ITEMS[k]&&Number.isInteger(M.PRICES[k])),'market prices are whole cents of real items',M.PRICES);
 // path map rules (see makeMap in src/logic.js)
 const quiet = ['rest', 'treasure', 'elite', 'event'];
 for (let i = 0; i < 3000; i++) {
