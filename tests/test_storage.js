@@ -643,6 +643,9 @@ async function gardenWinCases() {
     else { for (const id of t.order) p.click(`.oitem[data-id="${id}"]`); p.click('#ocheck'); }
     p.click('#next'); await sleep(1600); p.click('#next');
     check(p.text().includes('Sieg') && !!p.w.__mq.meta.owned['beet-4'] === (g === 'kartoffel'), `winning ${g} ${g === 'kartoffel' ? 'opens' : 'does not open'} bed 4`);
+    // step 13: Kartoffel fights give wood (3 for the boss), a win across all three worlds of Zahlenquest gives the Dachfenster
+    check((p.w.__mq.meta.materials.holz || 0) === (g === 'kartoffel' ? 3 : 0), `winning the boss fight in ${g} gives ${g === 'kartoffel' ? '3' : 'no'} wood`);
+    check(!!p.w.__mq.meta.owned['hut-dachfenster'] === (g === 'math') && p.text().includes('Dachfenster') === (g === 'math'), `winning ${g} ${g === 'math' ? 'gives' : 'does not give'} the Dachfenster`);
   }
 }
 
@@ -858,6 +861,90 @@ async function weeklyCases() {
   check(!!p2.dump().mathquest_run_jahrmarkt && !!p2.$('[data-cont="jahrmarkt"]'), 'Jahrmarkt adventure is saved and can be continued');
   p2.click('[data-cont="jahrmarkt"]');
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
+}
+// 26. Werkbank, pantry and Meine Hütte (step 13)
+{
+  const p0 = open({ [META]: JSON.stringify({ runs: 4, wins: 1, stamps: 3, setup: { skipped: true } }) }); const m0 = p0.w.__mq.meta;
+  check(Array.isArray(m0.pantry) && m0.pantry.length === 0 && m0.hut.rooms === 1 && m0.hut.items.length === 0 && m0.stamps === 3, 'old save without pantry and hut loads with an empty pantry and one room');
+  for (const bad of [{ pantry: 'trank', hut: [] }, { pantry: ['trank', 'gold', 7, 'schild', 'keks', 'trank'], hut: { rooms: 'zwei', items: 'bett' } }, { pantry: null, hut: { rooms: 9, items: ['hut-bett', 3] } }]) {
+    const m = open({ [META]: JSON.stringify(bad) }).w.__mq.meta;
+    check(m.pantry.every((it) => ['trank', 'schild', 'keks'].includes(it)) && m.pantry.length <= 3 && [1, 2].includes(m.hut.rooms) && m.hut.items.every((x) => typeof x === 'string'), 'damaged pantry/hut values are cleaned (' + JSON.stringify(bad) + ')');
+  }
+  check(JSON.stringify(open({ [META]: JSON.stringify({ pantry: ['trank', 'gold', 'schild', 'keks', 'trank'], hut: { rooms: 9, items: ['hut-bett', 3] } }) }).w.__mq.meta.pantry) === '["trank","schild","keks"]', 'unknown items are dropped, the pantry keeps at most three');
+
+  // every recipe asks a · b with the numbers in its text, and costs only known materials
+  const R = p0.w.__mq.RECIPES;
+  check(R.length === 9 && R.filter((r) => r.id.startsWith('hut-')).length === 5 && R.every((r) => { const q = r.q(4, 7); return q.includes('4') && q.includes('7') && q.endsWith('?') && Object.keys(r.need).every((k) => ['holz', 'stein', 'erz', 'kartoffel', 'weizen', 'roggen', 'hafer'].includes(k)); }), 'nine recipes (four items, five pieces of furniture) with both numbers in the question');
+
+  const crafted = (p, right) => { const t = p.w.__task; check(t.answers[0] === (() => { const n = p.$('.story').textContent.match(/\d+/g).map(Number); return n[0] * n[1]; })(), 'the answer is the product of the two numbers in the text'); p.$('.inp').click(); for (const ch of String(t.answers[0] + (right ? 0 : 1))) p.click(`.numpad [data-k="${ch}"]`); p.click('.numpad [data-k="ok"]'); p.click('#next'); };
+  const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, materials: { holz: 3, erz: 1, hafer: 1 } }) }); const m = p.w.__mq.meta;
+  p.click('#stamps');
+  check(p.text().includes('Werkbank') && p.text().includes('Im Lager: 3 Holz, 1 Erz und 1 Hafer') && p.text().includes('Im Vorrat: 0 von 3'), 'the Werkbank in the Stempelheft shows the stock and the pantry');
+  check(!p.$('[data-craft="schild"]').disabled && !p.$('[data-craft="trank"]').disabled && p.$('[data-craft="grosstrank"]').disabled && p.$('[data-craft="hut-bett"]').disabled && p.text().includes('Es fehlt: 2 Holz, 2 Roggen'), 'only recipes with enough materials can be built; missing ones are named');
+  p.click('[data-craft="schild"]');
+  check(!!p.$('.story') && p.$('.story').textContent.includes('Nägel'), 'building asks a word problem first');
+  crafted(p, false);
+  check(m.materials.holz === 3 && m.materials.erz === 1 && m.pantry.length === 0 && p.text().includes('Nicht gebaut') && m.stats.math.mul.t === 1 && m.stats.math.mul.c === 0, 'a wrong answer builds nothing and uses no materials');
+  p.click('#next'); p.click('[data-craft="schild"]'); crafted(p, true);
+  check(m.materials.holz === 1 && m.materials.erz === 0 && JSON.stringify(m.pantry) === '["schild"]' && p.text().includes('Gebaut: Schild') && m.stats.math.mul.c === 1 && !!m.progressAt, 'a right answer uses 2 Holz and 1 Erz and puts the Schild into the pantry');
+  const p2 = open(p.dump()); const m2 = p2.w.__mq.meta;
+  check(JSON.stringify(m2.pantry) === '["schild"]' && m2.materials.holz === 1, 'pantry and materials survive a reload');
+  check(p2.w.__mq.craft(R.find((r) => r.id === 'schild')) === false && JSON.stringify(m2.pantry) === '["schild"]' && m2.materials.holz === 1, 'nothing is built when materials are missing');
+  m2.materials = { holz: 20, hafer: 20, kartoffel: 5, roggen: 5, erz: 5, stein: 5 };
+  check(['trank', 'keks'].every((id) => p2.w.__mq.craft(R.find((r) => r.id === id))) && p2.w.__mq.craft(R.find((r) => r.id === 'trank')) === false && m2.pantry.length === 3 && m2.materials.hafer === 19, 'the pantry holds three things, a fourth is not built');
+  p2.click('#stamps'); check(p2.$('[data-craft="trank"]').disabled && p2.text().includes('Der Vorrat ist voll.'), 'a full pantry is shown');
+  check(p2.w.__mq.craft(R.find((r) => r.id === 'hut-tisch')) && m2.owned['hut-tisch'] && m2.materials.holz === 14 && m2.materials.kartoffel === 4 && p2.w.__mq.craft(R.find((r) => r.id === 'hut-tisch')) === false, 'furniture is built once and lands in owned');
+
+  // the pantry goes into the next adventure (after the starting Trank) and is emptied
+  p2.w.__mq.screenTitle(); p2.click('[data-new="math"]');
+  check(p2.text().includes('Aus deinem Vorrat kommt mit: 🛡️ Schild, 🧪 Trank, 🌶️ Chilischote'), 'hero selection shows what comes from the pantry');
+  p2.click('.choice[data-id]'); p2.click('#go');
+  // (a recommended hero or a swapped attack adds a Fleißbienchen behind)
+  check(JSON.stringify(p2.w.__mq.run.items.slice(0, 4)) === '["trank","schild","trank","keks"]' && p2.w.__mq.run.items.slice(4).every((x) => x === 'stern') && m2.pantry.length === 0, 'the pantry is added to run.items and emptied');
+  const p3 = open(p2.dump());
+  check(p3.w.__mq.meta.pantry.length === 0 && JSON.parse(p3.dump()[RUN]).items.length === p2.w.__mq.run.items.length, 'after a reload the pantry stays empty and the adventure keeps the items');
+}
+{ // the hut: renders from an old save, furniture, shelf numbers, second room, moving furniture
+  const p = open({ [META]: JSON.stringify({ runs: 1, setup: { skipped: true } }) });
+  p.click('#hut');
+  check(!!p.$('svg.hutroom') && p.d.querySelectorAll('svg.hutroom').length === 1 && p.text().includes('Noch ist deine Hütte leer') && p.$('svg.hutroom').getAttribute('aria-label') === 'Das Zimmer ist leer' && p.errors.length === 0, 'the hut opens from an old save without hut field');
+  p.click('#garden'); check(p.text().includes('Beete wachsen'), 'the hut has a button to the Schulgarten');
+  const p2 = open({ [META]: JSON.stringify({ setup: { skipped: true }, stamps: 31, materials: { stein: 11 }, dex: { A: {}, B: {} }, know: { q1: { c: 1, t: 1 } }, owned: { 'hut-regal': true, 'hut-bett': true, 'top-disc-eisen': true, 'map-w1-winter': true } }) }); const m = p2.w.__mq.meta;
+  p2.click('#hut');
+  check(p2.$('svg.hutroom').getAttribute('aria-label') === 'Im Zimmer: Regal mit Monsterbuch, Bett' && p2.text().includes('Im Regal: 2 im Monsterbuch, 1 Kreiselteile, 1 Notizkarten'), 'built furniture stands in the hut, the shelf counts Monsterbuch, Kreisel parts and note cards');
+  check(!p2.$('[data-move]') && p2.text().includes('30 Stempel und 12 Stein'), 'one room: nothing to move, the second room is offered');
+  p2.click('#bench'); check(!!p2.$('#werkbank'), 'the hut leads to the Werkbank');
+  check(p2.$('[data-buy="hut-zimmer2"]').disabled && p2.text().includes('Holen · 30 🏷️ + 12 Stein') && p2.text().includes('Dachfenster'), 'the Stempelheft lists the hut rewards; 11 stone are not enough');
+  m.materials.stein = 12; p2.click('#back'); p2.click('#stamps'); p2.click('[data-buy="hut-zimmer2"]');
+  check(p2.$('.overlay').textContent.includes('30 Stempel und 12 Stein'), 'the purchase names stamps and stone');
+  p2.click('.overlay #yes');
+  check(m.hut.rooms === 2 && m.stamps === 1 && m.materials.stein === 0 && !m.owned['hut-zimmer2'] && !p2.$('[data-buy="hut-zimmer2"]'), 'buying the second room takes 30 stamps and 12 stone');
+  p2.click('#back'); p2.click('#hut');
+  check(p2.d.querySelectorAll('svg.hutroom').length === 2 && p2.d.querySelectorAll('[data-move]').length === 2, 'two rooms, both pieces can be moved');
+  p2.click('[data-move="hut-bett"]');
+  const rooms = p2.d.querySelectorAll('svg.hutroom');
+  check(JSON.stringify(m.hut.items) === '["hut-bett"]' && rooms[1].getAttribute('aria-label') === 'Im Zimmer: Bett' && rooms[0].getAttribute('aria-label') === 'Im Zimmer: Regal mit Monsterbuch', 'the bed moves into the second room');
+  const p3 = open(p2.dump()); p3.click('#hut');
+  check(p3.w.__mq.meta.hut.rooms === 2 && p3.d.querySelectorAll('svg.hutroom')[1].getAttribute('aria-label') === 'Im Zimmer: Bett', 'rooms and furniture places survive a reload');
+  p3.click('[data-move="hut-bett"]'); check(p3.w.__mq.meta.hut.items.length === 0, 'and it can move back');
+  // merging: more rooms win, moved furniture is united, the fuller pantry wins
+  const inc = open({ [META]: JSON.stringify({ hut: { rooms: 2, items: ['hut-tisch'] }, pantry: ['trank', 'schild'] }) }).w.__mq.meta;
+  const dev = open({ [META]: JSON.stringify({ hut: { rooms: 1, items: ['hut-bett'] }, pantry: ['keks'] }) });
+  const mm = dev.w.__mq.mergeMeta(dev.w.__mq.meta, JSON.parse(JSON.stringify(inc)));
+  check(mm.hut.rooms === 2 && JSON.stringify(mm.hut.items) === '["hut-bett","hut-tisch"]' && JSON.stringify(mm.pantry) === '["trank","schild"]', 'merging keeps more rooms, unites moved furniture and takes the fuller pantry');
+  const mm2 = dev.w.__mq.mergeMeta(JSON.parse(JSON.stringify(inc)), dev.w.__mq.meta);
+  check(mm2.hut.rooms === 2 && JSON.stringify(mm2.pantry) === '["trank","schild"]', 'the device keeps its fuller pantry');
+}
+{ // Der Holzplatz: wood for a right answer; the event list only grows at the end
+  const p = startMathFight(); const EV = p.w.eval('MQ.EVENTS'); const i = EV.length - 1;
+  check(EV[i].title === 'Der Holzplatz' && EV[0].title === 'Die Brücke', 'Der Holzplatz is appended to the Zahlenquest events');
+  const saved = p.dump(); const run = JSON.parse(saved[RUN]); run.node = { type: 'event', ev: i }; saved[RUN] = JSON.stringify(run);
+  const p2 = open(saved); p2.click('[data-cont="math"]');
+  check(p2.text().includes('Der Holzplatz') && p2.text().includes('Werkbank'), 'the Holzplatz event opens');
+  p2.click('.bottom .btn[data-i="0"]'); if (p2.$('#tutok')) p2.click('#tutok');
+  const t = p2.w.__task; p2.$('.inp').click(); for (const ch of String(t.answers[0])) p2.click(`.numpad [data-k="${ch}"]`); p2.click('.numpad [data-k="ok"]');
+  check(p2.w.__mq.meta.materials.holz === 2, 'a right answer at the Holzplatz gives 2 Holz');
+  p2.click('#next'); check(p2.text().includes('+2 Holz für die Werkbank'), 'the wood is shown');
 }
 
 // 27. Kreisel: part values, old saves, buying and fitting, one arena per world, resume mid-duel, win and loss, chest parts

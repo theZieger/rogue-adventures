@@ -44,7 +44,7 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} } });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
@@ -61,17 +61,20 @@
     for (const k of Object.keys(m.materials)) if (!Number.isInteger(m.materials[k]) || m.materials[k] < 0) delete m.materials[k];
     for (const [h, o] of Object.entries(m.worn)) if (typeof o !== 'string') delete m.worn[h];
     for (const k of ['stamps', 'stampsTotal']) m[k] = Number.isFinite(m[k]) ? Math.max(0, Math.floor(m[k])) : 0;
-    for (const k of ['setup', 'storage', 'weekly']) { const d = defaultMeta()[k]; m[k] = Object.assign({}, m[k]); for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f] || Array.isArray(m[k][f]) !== Array.isArray(d[f])) m[k][f] = d[f]; }
+    for (const k of ['setup', 'storage', 'weekly', 'hut']) { const d = defaultMeta()[k]; m[k] = Object.assign({}, m[k]); for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f] || Array.isArray(m[k][f]) !== Array.isArray(d[f])) m[k][f] = d[f]; }
     const wk = m.weekly; if (!isObj(wk.tally)) wk.tally = {}; wk.progress = wk.progress.map((n) => (Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0)); wk.beaten = wk.beaten.filter((x) => typeof x === 'string');
     for (const [k, v] of Object.entries(wk.tally)) if (!okStat(Object.assign({ hist: [] }, v))) delete wk.tally[k];
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
+    m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
+    m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
     m.garden = { beds: defaultMeta().garden.beds.map((d, i) => { const b = beds[i]; return isObj(b) && MK.CROPS[b.crop] && Number.isFinite(b.plantedAt) ? { crop: b.crop, plantedAt: b.plantedAt } : d; }) };
     return m;
   }
+  const PANTRY_MAX = 3;
   const okStat = (v) => isObj(v) && Number.isFinite(v.c) && Number.isFinite(v.t) && Array.isArray(v.hist);
   let meta = normMeta(load(KEY_META, null));
   (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
@@ -128,6 +131,7 @@
   }
   /* ---------- Stamps ---------- */
   const giveStamps = (n) => { meta.stamps += n; meta.stampsTotal += n; return n; };
+  const addMat = (k, n) => { meta.materials[k] = (meta.materials[k] || 0) + n; meta.progressAt = new Date().toISOString(); };
   // 1 stamp per 10 right answers in this adventure, paid at the end of every fight (won or lost)
   const payAnswers = () => { const n = Math.floor((run.right || 0) / 10); run.right = (run.right || 0) - n * 10; return giveStamps(n); };
   const markWeek = () => { const k = MQ.isoWeek(new Date()); if (!(meta.stampCard[k] >= 1)) meta.stampCard[k] = 1; };
@@ -136,7 +140,11 @@
     { id: 'map-w2-herbst', name: 'Herbstkarte', desc: 'Welt 2 in Zahlenquest bekommt einen braunen Hintergrund.', price: 25, world: 2, bg: '#57341F' },
     { id: 'map-w3-wald', name: 'Waldkarte', desc: 'Welt 3 in Zahlenquest bekommt einen dunkelgrünen Hintergrund.', price: 25, world: 3, bg: '#1D4A33' },
     { id: 'hero-kauz', name: 'Steinkauz', desc: 'Ein vierter Held für Zahlenquest. Er übt Einmaleins, Nachbarzahlen, Rätsel und Folgen.', price: 40, hero: 'kauz' },
+    { id: 'hut-zimmer2', name: 'Zweites Zimmer', desc: 'Deine Hütte wird größer. Möbel kannst du dann ins zweite Zimmer stellen.', price: 30, stein: 12, icon: '🏠', has: () => meta.hut.rooms >= 2, get: () => { meta.hut.rooms = 2; } },
+    { id: 'hut-dachfenster', name: 'Dachfenster', desc: 'Gewinne Zahlenquest einmal durch alle drei Welten, dann bekommt deine Hütte ein rundes Dachfenster.', icon: '☀️' },
   ];
+  const owns = (r) => (r.has ? r.has() : !!meta.owned[r.id]);
+  const canBuy = (r) => meta.stamps >= r.price && (meta.materials.stein || 0) >= (r.stein || 0);
   const heroLocked = (s) => REWARDS.some((r) => r.hero === s.id && !meta.owned[r.id]);
   /* ---------- Kleiderkammer ---------- */
   // bought pieces live in owned['outfit-<id>']; the others are earned and checked live, so old saves get them too
@@ -280,6 +288,7 @@
       else if (task.grid) { const g = task.grid; let cells = ''; for (let r = 0; r < g.size; r++) for (let c = 0; c < g.size; c++) { const isS = r === g.sr && c === g.sc, isT = r === g.tr && c === g.tc; cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`; } body = `<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${arrow('r')} +${g.stepR}</span><span>${arrow('l')} −${g.stepR}</span><span>${arrow('d')} +${g.stepD}</span><span>${arrow('u')} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`; }
       else if (C) body = colHtml(C, task.text);
       else if (task.svg) body = `<div class="figure">${task.svg}</div><div class="prompt">${esc(task.ask)}</div>`;
+      else if (task.story) body = `<p class="story">${esc(task.story)}</p>`;
       else if (task.ask) body = `<div class="expr">${esc(task.text)}</div><div class="prompt">${esc(task.ask)}</div>`;
       else body = `<div class="expr">${esc(task.text)}</div>`;
       let inputs = '';
@@ -429,8 +438,9 @@
         ${weeklyCard()}
         ${gradeTabs()}${gardenCard()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
-        <div class="row"><button class="btn ghost" id="garden">Schulgarten</button><button class="btn ghost" id="duel">Duell zu zweit</button></div>
-        <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
+        <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
+        <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
+        <div class="row"><button class="btn ghost" id="feedback">Idee senden</button></div>
         <p class="center muted">Gespielt: ${meta.runs} · Gewonnen: ${meta.wins}</p>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
@@ -439,10 +449,10 @@
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
-    $('#stamps').onclick = $('#stampsTop').onclick = screenStamps;
+    $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
     $('#news').onclick = screenNews;
     $('#duel').onclick = () => screenDuel([]);
-    $('#garden').onclick = screenGarden; if ($('#harvest')) $('#harvest').onclick = screenGarden;
+    $('#hut').onclick = screenHut; $('#garden').onclick = screenGarden; if ($('#harvest')) $('#harvest').onclick = screenGarden;
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
@@ -585,6 +595,9 @@
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
     for (const [k, v] of Object.entries(inc.materials)) m.materials[k] = Math.max(m.materials[k] || 0, v);
     m.garden.beds.forEach((b, i) => { if (!b.crop) m.garden.beds[i] = inc.garden.beds[i]; });
+    // the fuller pantry, not both: a code exported from this device would otherwise double what is in it
+    if (inc.pantry.length > m.pantry.length) m.pantry = inc.pantry.slice();
+    m.hut.rooms = Math.max(m.hut.rooms, inc.hut.rooms); m.hut.items = [...new Set(m.hut.items.concat(inc.hut.items))];
     const dw = m.weekly, iw = inc.weekly;
     if (iw.week > dw.week) m.weekly = JSON.parse(JSON.stringify(iw));
     else if (iw.week === dw.week) {
@@ -636,16 +649,17 @@
       ${S.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
       ${CFG().starters.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
       <div id="swapbox"></div>
+      ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
     $('#back').onclick = screenTitle;
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
       run.map = makeMapFor(1);
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
-      meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
+      meta.pantry = []; meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
     // one special node per world on floors 3–6 instead of an event or treasure (a fight if the map has none)
@@ -874,6 +888,7 @@
     else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
     const coins = marketOn() ? (e.boss ? rnd(40, 60) : e.elite ? rnd(20, 40) : rnd(6, 16)) * 5 : 0; run.coins += coins;
+    const wood = mode === 'kartoffel' ? (e.boss ? 3 : 1) : 0; if (wood) addMat('holz', wood);
     // the Monsterbuch stamps were given when the enemy appeared, they are only shown here
     const stamps = payAnswers() + (e.boss ? giveStamps(5) : 0) + (e.fresh ? 2 : 0);
     if (!(e.boss && run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
@@ -882,7 +897,7 @@
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${heroSVG(heroSpec(), run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
@@ -1010,6 +1025,7 @@
     if (eff.coins) { run.coins = Math.max(0, run.coins + eff.coins); lines.push(`🪙 ${eff.coins > 0 ? '+' : '−'}${euro(Math.abs(eff.coins))}`); }
     if (eff.maxhp) { run.hero.maxHp += eff.maxhp; heal(eff.maxhp); lines.push(`💪 +${eff.maxhp} maximale Lebenspunkte`); }
     if (eff.item) { run.items.push(eff.item); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
+    if (eff.holz) { addMat('holz', eff.holz); lines.push(`🪵 +${eff.holz} Holz für die Werkbank`); }
     if (eff.xp) { const m = gainXp(eff.xp); lines.push(`⭐ +${eff.xp} XP`); lines.push(...m); }
     if (!lines.length) lines.push('Nichts passiert.');
     nodeDone(); saveAll(); return lines;
@@ -1092,7 +1108,7 @@
     ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Bergwerk', onResult: (ok) => {
       const k = !ok ? 'leer' : t.answers[1] === 0 ? 'erz' : 'stein';
       mn.cells[i] = k; mn.got.push(k); delete mn.task; mineRecord(ok, t);
-      if (k !== 'leer') { meta.materials[k] = (meta.materials[k] || 0) + 1; meta.progressAt = new Date().toISOString(); }
+      if (k !== 'leer') addMat(k, 1);
       if (k === 'erz' && !meta.owned['top-disc-eisen']) { meta.owned['top-disc-eisen'] = true; mn.disc = true; }
       saveAll();
     } }, screenMine));
@@ -1205,9 +1221,10 @@
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
-    meta.wins++; giveStamps(10); weeklyStep('win'); meta.progressAt = new Date().toISOString(); if (mode === 'kartoffel') meta.owned['beet-4'] = true; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
+    meta.wins++; giveStamps(10); weeklyStep('win'); meta.progressAt = new Date().toISOString(); if (mode === 'kartoffel') meta.owned['beet-4'] = true;
+    const roof = CFG().worlds >= 3 && !meta.owned['hut-dachfenster']; if (roof) meta.owned['hut-dachfenster'] = true; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
-    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}${roof ? '<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>' : ''}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenDex() {
@@ -1215,11 +1232,11 @@
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
   }
-  function screenStamps() {
+  function screenStamps(jump) {
     const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
     const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', gespielt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
-    const row = (r) => { const has = meta.owned[r.id]; const prev = r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
-      return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${has ? '<div class="rwhave">✔ Schon geholt</div>' : `<button class="btn small" data-buy="${r.id}" ${meta.stamps < r.price ? 'disabled' : ''}>Holen · ${r.price} 🏷️</button>`}</div></div>`; };
+    const row = (r) => { const prev = r.icon ? `<div class="rwprev" aria-hidden="true">${r.icon}</div>` : r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
+      return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${owns(r) ? '<div class="rwhave">✔ Schon geholt</div>' : r.price ? `<button class="btn small" data-buy="${r.id}" ${canBuy(r) ? '' : 'disabled'}>Holen · ${r.price} 🏷️${r.stein ? ` + ${r.stein} Stein` : ''}</button>` : ''}</div></div>`; };
     render(`<div class="screen">${topbar('Stempelheft')}<div class="scroll"><div class="stack">
       <div class="card center"><div class="stampbal">🏷️ ${meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenaufgabe: 10.</p></div>
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
@@ -1227,14 +1244,107 @@
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', 'strohhut')}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
       <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
       ${REWARDS.map(row).join('')}
+      ${benchHtml()}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
     $('#kk').onclick = () => screenWardrobe();
     $('#kb').onclick = () => screenTop();
+    app.querySelectorAll('[data-craft]').forEach((b) => { b.onclick = () => screenCraft(b.dataset.craft); });
+    if (jump && $('#werkbank').scrollIntoView) $('#werkbank').scrollIntoView();
     app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
-      const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel. Danach hast du noch ${meta.stamps - r.price}.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+      const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel${r.stein ? ` und ${r.stein} Stein` : ''}. Danach hast du noch ${meta.stamps - r.price} Stempel.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
-      $('#yes', ov).onclick = () => { if (!meta.owned[r.id] && meta.stamps >= r.price) { meta.stamps -= r.price; meta.owned[r.id] = true; meta.progressAt = new Date().toISOString(); saveAll(); } screenStamps(); }; }; });
+      $('#yes', ov).onclick = () => { if (!owns(r) && canBuy(r)) { meta.stamps -= r.price; if (r.stein) meta.materials.stein -= r.stein; if (r.get) r.get(); else meta.owned[r.id] = true; meta.progressAt = new Date().toISOString(); saveAll(); } screenStamps(); }; }; });
+  }
+
+  /* ---------- Werkbank ---------- */
+  // the question is about the thing being built (a · b); the cost stays small and fixed, because a bed gives one crop a week
+  const RECIPES = [
+    { id: 'trank', need: { hafer: 1, holz: 1 }, q: (a, b) => `Für den Trank kochst du Haferbrei in ${a} Töpfen. In jeden Topf kommen ${b} Löffel Hafer. Wie viele Löffel Hafer brauchst du?` },
+    { id: 'grosstrank', need: { hafer: 2, kartoffel: 1, holz: 1 }, q: (a, b) => `Der große Trank kocht ${a} Stunden lang. In jeder Stunde rührst du ${b}-mal um. Wie oft rührst du um?` },
+    { id: 'schild', need: { holz: 2, erz: 1 }, q: (a, b) => `Der Schild hat ${a} Bretter. Jedes Brett schlägst du mit ${b} Nägeln fest. Wie viele Nägel brauchst du?` },
+    { id: 'keks', need: { roggen: 1, holz: 1 }, q: (a, b) => `Der Chilibauer tauscht eine Chilischote gegen Roggen. Zum Trocknen hängen bei ihm ${a} Schnüre mit je ${b} Schoten. Wie viele Schoten hängen da?` },
+    { id: 'hut-tisch', place: 'Tisch', name: 'Tisch mit Erntekorb', desc: 'Auf dem Tisch steht ein Korb mit deiner Ernte.', need: { holz: 4, kartoffel: 1 }, q: (a, b) => `Im Erntekorb liegen ${a} Reihen Kartoffeln mit je ${b} Stück. Wie viele Kartoffeln liegen im Korb?` },
+    { id: 'hut-regal', place: 'Regal', name: 'Regal mit Monsterbuch', desc: 'Im Regal siehst du, wie viele Monster, Kreiselteile und Notizkarten du hast.', need: { holz: 4, stein: 1 }, q: (a, b) => `Das Regal hat ${a} Bretter. Auf jedes Brett passen ${b} Bücher. Wie viele Bücher passen ins Regal?` },
+    { id: 'hut-haken', place: 'Haken', name: 'Wandhaken für den Kreisel', desc: 'Ein Haken aus Eisen. Daran hängt dein Kreisel, sobald du Kreiselteile hast.', need: { erz: 1, holz: 1 }, q: (a, b) => `Den Haken legst du ${a}-mal ins Feuer. Nach jedem Mal schlägst du ${b}-mal mit dem Hammer darauf. Wie oft schlägst du insgesamt?` },
+    { id: 'hut-bett', place: 'Bett', name: 'Bett', desc: 'Ein Holzbett mit einer Matratze aus Roggenstroh.', need: { holz: 5, roggen: 2 }, q: (a, b) => `Für die Matratze stopfst du ${a} Säcke mit je ${b} Armen voll Roggenstroh. Wie viele Arme voll Stroh sind das?` },
+    { id: 'hut-fenster', place: 'Fenster', name: 'Fenster', desc: 'Ein Fenster mit einer Fensterbank aus Stein.', need: { holz: 2, stein: 2 }, q: (a, b) => `Das Fenster hat ${a} Reihen mit je ${b} kleinen Scheiben. Wie viele Scheiben hat das Fenster?` },
+  ];
+  const MATS = ['holz', 'stein', 'erz'].concat(Object.keys(MK.CROPS));
+  const matName = (k) => (MK.CROPS[k] ? MK.CROPS[k].name : { holz: 'Holz', stein: 'Stein', erz: 'Erz' }[k]);
+  const andList = (a) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1] : a[0] || '');
+  const isFurn = (r) => r.id.startsWith('hut-');
+  const rName = (r) => r.name || ITEMS[r.id].name;
+  const missing = (r) => Object.entries(r.need).filter(([k, n]) => (meta.materials[k] || 0) < n).map(([k, n]) => `${n - (meta.materials[k] || 0)} ${matName(k)}`);
+  const craftable = (r) => !missing(r).length && (isFurn(r) ? !meta.owned[r.id] : meta.pantry.length < PANTRY_MAX);
+  function craft(r) {
+    if (!craftable(r)) return false;
+    for (const [k, n] of Object.entries(r.need)) meta.materials[k] -= n;
+    if (isFurn(r)) meta.owned[r.id] = true; else meta.pantry.push(r.id);
+    meta.progressAt = new Date().toISOString(); return true;
+  }
+  function benchHtml() {
+    const stock = MATS.filter((k) => meta.materials[k]).map((k) => `${meta.materials[k]} ${matName(k)}`);
+    const row = (r) => { const miss = missing(r); const prev = isFurn(r) ? furnPreview(r.id) : `<div class="rwprev" aria-hidden="true">${ITEMS[r.id].icon}</div>`;
+      const state = isFurn(r) && meta.owned[r.id] ? '<div class="rwhave">✔ Steht in deiner Hütte</div>'
+        : `<button class="btn small" data-craft="${r.id}" ${craftable(r) ? '' : 'disabled'}>Bauen</button>${miss.length ? `<div class="desc">Es fehlt: ${miss.join(', ')}</div>` : !isFurn(r) && !craftable(r) ? '<div class="desc">Der Vorrat ist voll.</div>' : ''}`;
+      return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(rName(r))}</div><div class="desc">${esc(isFurn(r) ? r.desc : ITEMS[r.id].desc)}</div><div class="desc">Braucht ${andList(Object.entries(r.need).map(([k, n]) => `${n} ${matName(k)}`))}</div>${state}</div></div>`; };
+    return `<h2 id="werkbank">Werkbank</h2>
+      <div class="card"><p>Im Lager: ${stock.length ? andList(stock) : 'noch nichts'}.</p><p>Im Vorrat: ${meta.pantry.length} von ${PANTRY_MAX}${meta.pantry.length ? ` (${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')})` : ''}. Der Vorrat kommt ins nächste Abenteuer mit.</p>
+      <p class="pnote">Holz gibt es auf dem Holzplatz in Zahlenquest und für jeden Sieg in der Kartoffel-Werkstatt. Erz und Stein findest du im Bergwerk, Ernte im Schulgarten. Vor dem Bauen löst du eine Aufgabe.</p></div>
+      <h3>Für dein nächstes Abenteuer</h3>
+      ${RECIPES.filter((r) => !isFurn(r)).map(row).join('')}
+      <h3>Für deine Hütte</h3>${RECIPES.filter(isFurn).map(row).join('')}`;
+  }
+  function screenCraft(id) {
+    const r = RECIPES.find((x) => x.id === id); if (!r || !craftable(r)) return screenStamps(true);
+    const a = rnd(2, 6), b = rnd(3, 9); const t = { kind: 'num', mod: 'mul', tier: 1, group: 'mul:1', story: r.q(a, b), answers: [a * b] };
+    render(`<div class="screen">${topbar('Werkbank')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+    let made = false;
+    // counts as Einmaleins practice in Zahlenquest, without changing its levels (like the Bergwerk in other units)
+    runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: rName(r), onResult: (ok) => { const s = meta.stats.math.mul; s.t++; if (ok) s.c++; markWeek(); made = ok && craft(r); saveAll(); } }, () => {
+      render(`<div class="screen">${topbar('Werkbank')}<div class="scroll"><div class="card center">${made ? `<h2>Gebaut: ${esc(rName(r))}</h2>${isFurn(r) ? `${furnPreview(r.id)}<p>Das steht jetzt in deiner Hütte.</p>` : `<p style="font-size:48px;margin:0" aria-hidden="true">${ITEMS[r.id].icon}</p><p>Das liegt jetzt im Vorrat und kommt ins nächste Abenteuer mit.</p>`}`
+        : '<h2>Nicht gebaut</h2><p>Die Rechnung hat nicht gestimmt. Deine Zutaten bleiben im Lager. Du kannst es mit neuen Zahlen wieder versuchen.</p>'}</div></div>
+        <div class="bottom"><div class="row"><button class="btn${made && isFurn(r) ? ' secondary' : ''}" id="next">Zur Werkbank</button>${made && isFurn(r) ? '<button class="btn" id="hut">Zur Hütte</button>' : ''}</div></div></div>`);
+      $('#next').onclick = () => screenStamps(true); if ($('#hut')) $('#hut').onclick = screenHut;
+    });
+  }
+
+  /* ---------- Meine Hütte ---------- */
+  // furniture is drawn in room coordinates (viewBox 0 0 360 290); box = its place, also used to crop the preview
+  const FURN = {
+    'hut-fenster': { box: [32, 82, 98, 78], art: () => '<rect x="40" y="88" width="80" height="62" fill="#9FD3F5" stroke="#6B4423" stroke-width="6"/><path d="M80 88v62M40 108h80M40 129h80" stroke="#6B4423" stroke-width="4"/><rect x="34" y="148" width="92" height="9" rx="2" fill="#9AA0A8" stroke="#1C2541" stroke-width="2"/>' },
+    'hut-haken': { box: [148, 82, 56, 74], art: (n) => `<rect x="166" y="88" width="20" height="10" rx="2" fill="#6E747C" stroke="#1C2541" stroke-width="2"/><path d="M176 98v16q0 9-8 9" fill="none" stroke="#4A4F57" stroke-width="5" stroke-linecap="round"/>${n.tops ? MONART.topSVG(TYPES.feuer.color, meta.top).replace('<svg ', '<svg x="152" y="104" width="48" height="48" ') : ''}` },
+    'hut-regal': { box: [234, 68, 112, 168], art: (n) => `<rect x="240" y="74" width="98" height="158" fill="#A9764A" stroke="#1C2541" stroke-width="3"/>${[114, 156, 198].map((y) => `<rect x="240" y="${y}" width="98" height="7" fill="#7A4E2D"/>`).join('')}
+      <rect x="252" y="84" width="20" height="30" rx="2" fill="#E8483B" stroke="#1C2541" stroke-width="2"/><rect x="274" y="88" width="10" height="26" fill="#3FA0FF" stroke="#1C2541" stroke-width="2"/><text x="318" y="108" text-anchor="middle" font-size="22" font-weight="700" fill="#FFF7E6">${n.dex}</text>
+      <path d="M252 134h24l-12 17z" fill="#FFC93C" stroke="#1C2541" stroke-width="2" stroke-linejoin="round"/><rect x="261" y="127" width="6" height="7" fill="#1C2541"/><text x="318" y="150" text-anchor="middle" font-size="22" font-weight="700" fill="#FFF7E6">${n.tops}</text>
+      <rect x="250" y="170" width="30" height="22" rx="2" fill="#FFF7E6" stroke="#1C2541" stroke-width="2"/><path d="M255 177h20M255 184h14" stroke="#8A8FA3" stroke-width="2"/><text x="318" y="192" text-anchor="middle" font-size="22" font-weight="700" fill="#FFF7E6">${n.notes}</text>` },
+    'hut-bett': { box: [10, 190, 128, 86], art: () => '<rect x="16" y="196" width="16" height="74" rx="3" fill="#7A4E2D" stroke="#1C2541" stroke-width="3"/><rect x="28" y="224" width="104" height="18" rx="4" fill="#F4ECD8" stroke="#1C2541" stroke-width="2"/><ellipse cx="48" cy="223" rx="15" ry="8" fill="#fff" stroke="#1C2541" stroke-width="2"/><rect x="64" y="218" width="68" height="26" rx="5" fill="#3FA0FF" stroke="#1C2541" stroke-width="3"/><rect x="16" y="240" width="118" height="20" rx="3" fill="#A9764A" stroke="#1C2541" stroke-width="3"/><path d="M24 260v12M126 260v12" stroke="#1C2541" stroke-width="5"/>' },
+    'hut-tisch': { box: [144, 160, 92, 118], art: () => '<path d="M166 186h52l-6 28h-40z" fill="#C8964E" stroke="#1C2541" stroke-width="3" stroke-linejoin="round"/><ellipse cx="180" cy="186" rx="9" ry="6" fill="#D9B26A" stroke="#8A6A30" stroke-width="2"/><ellipse cx="197" cy="184" rx="9" ry="6" fill="#D9B26A" stroke="#8A6A30" stroke-width="2"/><path d="M210 186l4-16" stroke="#A67C1A" stroke-width="3"/><ellipse cx="214" cy="168" rx="3.5" ry="7" fill="#E3B341" stroke="#A67C1A" stroke-width="1.5"/><rect x="150" y="214" width="84" height="11" rx="3" fill="#A9764A" stroke="#1C2541" stroke-width="3"/><path d="M160 225v48M224 225v48" stroke="#7A4E2D" stroke-width="8"/>' },
+  };
+  const ROOF = '<circle cx="180" cy="28" r="14" fill="#9FD3F5" stroke="#6B4423" stroke-width="5"/><path d="M166 28h28M180 14v28" stroke="#6B4423" stroke-width="3"/>';
+  const shelfNums = () => ({ dex: Object.keys(meta.dex).length, tops: Object.keys(meta.owned).filter((k) => k.startsWith('top-')).length, notes: Object.keys(meta.know).length });
+  const furnPreview = (id) => { const [x, y, w, h] = FURN[id].box; return `<svg class="rwprev furn" viewBox="${x} ${y} ${w} ${h}" aria-hidden="true">${FURN[id].art(shelfNums())}</svg>`; };
+  // room 1 shows a dashed place for every piece not built yet; hut.items are the pieces moved to room 2
+  function hutSVG(room) {
+    const n = shelfNums(); const here = Object.keys(FURN).filter((id) => meta.owned[id] && (room === 2) === (meta.hut.rooms >= 2 && meta.hut.items.includes(id)));
+    const gaps = room === 1 ? Object.keys(FURN).filter((id) => !meta.owned[id]) : [];
+    const label = here.length ? 'Im Zimmer: ' + here.map((id) => RECIPES.find((r) => r.id === id).name).join(', ') : 'Das Zimmer ist leer';
+    return `<svg class="hutroom" viewBox="0 0 360 290" role="img" aria-label="${esc(label)}"><polygon points="0,48 180,4 360,48" fill="#6B4423"/><rect y="48" width="360" height="182" fill="#E9D3A8"/>${[60, 120, 180, 240, 300].map((x) => `<path d="M${x} 48v182" stroke="#D4B985" stroke-width="2"/>`).join('')}<rect y="230" width="360" height="60" fill="#A9764A"/><path d="M0 230h360" stroke="#7A4E2D" stroke-width="4"/>
+      ${room === 1 && meta.owned['hut-dachfenster'] ? ROOF : ''}${gaps.map((id) => { const [x, y, w, h] = FURN[id].box; return `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="10" fill="none" stroke="#8A6A30" stroke-width="2.5" stroke-dasharray="7 6"/><text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" font-size="15" font-weight="700" fill="#7A5A2A">${RECIPES.find((r) => r.id === id).place}</text>`; }).join('')}${here.map((id) => FURN[id].art(n)).join('')}</svg>`;
+  }
+  function screenHut() {
+    const two = meta.hut.rooms >= 2; const n = shelfNums(); const built = Object.keys(FURN).filter((id) => meta.owned[id]);
+    const name = (id) => RECIPES.find((r) => r.id === id).name;
+    render(`<div class="screen">${topbar('Meine Hütte')}<div class="scroll"><div class="stack">
+      ${two ? '<h3>Erstes Zimmer</h3>' : ''}${hutSVG(1)}${two ? `<h3>Zweites Zimmer</h3>${hutSVG(2)}` : ''}
+      <div class="card">${built.length ? '' : '<p>Noch ist deine Hütte leer. Möbel baust du an der Werkbank im Stempelheft.</p>'}${meta.owned['hut-regal'] ? `<p>Im Regal: ${n.dex} im Monsterbuch, ${n.tops} Kreiselteile, ${n.notes} Notizkarten.</p>` : ''}
+      ${built.length && built.length < 5 ? '<p class="pnote">Die gestrichelten Plätze warten noch auf Möbel von der Werkbank.</p>' : ''}${two ? '' : '<p class="pnote">Ein zweites Zimmer gibt es im Stempelheft für 30 Stempel und 12 Stein.</p>'}${meta.owned['hut-dachfenster'] ? '' : '<p class="pnote">Wer Zahlenquest durch alle drei Welten gewinnt, bekommt ein Dachfenster.</p>'}</div>
+      <div class="row"><button class="btn ghost" id="bench">Zur Werkbank</button><button class="btn ghost" id="garden">Schulgarten</button></div>
+      ${two && built.length ? `<div class="card"><h3>Umräumen</h3><div class="stack">${built.map((id) => `<button class="btn small secondary" data-move="${id}">${esc(name(id))} ins ${meta.hut.items.includes(id) ? 'erste' : 'zweite'} Zimmer</button>`).join('')}</div></div>` : ''}
+      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    $('#back').onclick = screenTitle; $('#bench').onclick = () => screenStamps(true); $('#garden').onclick = screenGarden;
+    app.querySelectorAll('[data-move]').forEach((b) => { b.onclick = () => { const id = b.dataset.move; const h = meta.hut; h.items = h.items.includes(id) ? h.items.filter((x) => x !== id) : h.items.concat(id); saveAll(); screenHut(); }; });
   }
   function screenWardrobe(heroId) {
     const heroes = MODE_KEYS.flatMap((m) => MODES[m].starters).filter((s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i);
@@ -1250,7 +1360,7 @@
       <div class="kkgrid">${OUTFITS.map(tile).join('')}</div>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     const wear = (id) => { if (id) meta.worn[hero.id] = id; else delete meta.worn[hero.id]; saveAll(); screenWardrobe(hero.id); };
-    $('#back').onclick = screenStamps;
+    $('#back').onclick = () => screenStamps();
     app.querySelectorAll('[data-hero]').forEach((b) => { b.onclick = () => screenWardrobe(b.dataset.hero); });
     app.querySelectorAll('[data-wear]').forEach((b) => { b.onclick = () => wear(b.dataset.wear); });
     app.querySelectorAll('[data-off]').forEach((b) => { b.onclick = () => wear(null); });
@@ -1542,5 +1652,5 @@
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop };
+  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();

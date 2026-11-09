@@ -22,7 +22,7 @@ function click(el){ if(!el) throw new Error('no element to click: '+text().slice
 let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0, mines=0, arenas=0;
 const cents=(x)=>{ const m=x.trim().match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); if(!m) throw new Error('not money: '+x); return (+(m[1]||0))*100+(+(m[2]||0)); };
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
-let colTasks=0, readNodes=0;
+let colTasks=0, readNodes=0, crafted=false, fromPantry=false;
 // written methods: work result and carries out column by column from the numbers on screen
 async function solveColumns(forceWrong){
   const label=$('.colcalc').getAttribute('aria-label'); const m=label.match(/^(\d+) ([+−]) (\d+)(?: \+ (\d+))?$/); if(!m) throw new Error('column task not parsed '+label);
@@ -47,6 +47,7 @@ async function solveTask(forceWrong){
   // Baustelle: recount from the task data (plan heights, squares of the shape)
   if(T&&T.plan){ const n=T.plan.flat().reduce((a,b)=>a+b,0); answers=[T.full?T.plan.length*T.plan[0].length*T.full-n:n]; }
   else if(T&&T.cells){ const at=new Set(T.cells.map(p=>p.join())); answers=[T.cells.reduce((n,[r,c])=>n+[[r+1,c],[r-1,c],[r,c+1],[r,c-1]].filter(q=>!at.has(q.join())).length,0)]; }
+  else if($('.story')){ const n=$('.story').textContent.match(/\d+/g).map(Number); answers=[n[0]*n[1]]; } // Werkbank: a · b from the text
   else if($('.jm')) answers=JM.solve(task.innerHTML, null, w.eval('MJ').REF);
   else if(expr){ const s=expr.textContent; let m;
     if(/€|ct/.test(s)){ const v=s.includes(' − ')?s.split(' − ').map(cents).reduce((a,b)=>a-b):s.split(' + ').map(cents).reduce((a,b)=>a+b); answers=[Math.floor(v/100),v%100]; }
@@ -118,8 +119,12 @@ async function step(){
   if(await closeModal()) return;
   if($('#later')){ click($('#later')); return; }
   const tx=text();
+  // once per playtest: build a Schild at the Werkbank (materials seeded) and look into the hut; the Schild must come along into the adventure
+  if($('[data-new]')&&!$('.choice')&&!$('.wmap')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
+    click($('#stamps')); click($('[data-craft="schild"]')); await solveTask(false); if(!text().includes('Gebaut: Schild')) throw new Error('Werkbank did not build: '+text().slice(0,200)); click($('#next')); click($('#back'));
+    click($('#hut')); if(!$('svg.hutroom')) throw new Error('hut did not open'); click($('#back')); return; }
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
-  if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
+  if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); if(!fromPantry){ fromPantry=true; if(!w.__mq.run.items.includes('schild')||w.__mq.meta.pantry.length) throw new Error('pantry not taken into the adventure'); } return; }
   if($('.node.open')){ const nodes=$$('.node.open');
     const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
     // steer towards a Forscherlabor/Schatzkarte/Bergwerk or the Kreisel-Arena further up, so the bot plays them whatever the seed –
@@ -174,6 +179,7 @@ async function step(){
   if(['math','bau'].includes(mode)&&!W3&&!mines){ console.error('PLAYTEST FAIL: never reached the Bergwerk'); process.exit(1); }
   if(mode==='math'&&RUNS>1&&(!weekbossFights||!m.weekly.beaten.includes('math')||!done)){ console.error('PLAYTEST FAIL: the bot did not beat the weekly boss and finish a weekly goal'); process.exit(1); }
   if(dilemmas!==consequences){ console.error('PLAYTEST FAIL: a dilemma choice showed no consequence'); process.exit(1); }
+  if(!crafted){ console.error('PLAYTEST FAIL: never used the Werkbank'); process.exit(1); }
   if(W3&&colTasks<4){ console.error('PLAYTEST FAIL: only '+colTasks+' written tasks in world 3'); process.exit(1); }
   if(['woerterwerkstatt','satzbaustelle','ethik','kirchenjahr'].includes(mode)&&readNodes<RUNS){ console.error('PLAYTEST FAIL: Lesestube not played'); process.exit(1); }
   if(mode==='math'&&!W3&&!arenas){ console.error('PLAYTEST FAIL: never played the Kreisel-Arena'); process.exit(1); }
