@@ -13,14 +13,17 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
-let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, rests=0, treasures=0, eliteRewards=0;
+let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, rests=0, treasures=0, eliteRewards=0, mines=0;
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 async function solveTask(forceWrong){
   const inps=$$('.inp'); if(!inps.length) return false;
   const task=$('.task'); const t=task.textContent;
   let answers=null;
-  const expr=$('.expr'); const M=w.eval('MQ');
-  if(expr){ const s=expr.textContent; let m;
+  const expr=$('.expr'); const M=w.eval('MQ'); const T=w.__task;
+  // Baustelle: recount from the task data (plan heights, squares of the shape)
+  if(T&&T.plan){ const n=T.plan.flat().reduce((a,b)=>a+b,0); answers=[T.full?T.plan.length*T.plan[0].length*T.full-n:n]; }
+  else if(T&&T.cells){ const at=new Set(T.cells.map(p=>p.join())); answers=[T.cells.reduce((n,[r,c])=>n+[[r+1,c],[r-1,c],[r,c+1],[r,c-1]].filter(q=>!at.has(q.join())).length,0)]; }
+  else if(expr){ const s=expr.textContent; let m;
     if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) − \? = (\d+)$/)) answers=[+m[1]-m[2]];
@@ -73,11 +76,15 @@ async function step(){
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
   if($('.node.open')){ const nodes=$$('.node.open');
+    // head for the Bergwerk whenever the path still leads there
+    const R=w.__mq.run; const leads=(f,i)=>R.map[f][i].t==='bergwerk'||R.map[f][i].n.some(j=>R.map[f+1]&&leads(f+1,j));
+    const toMine=nodes.filter(n=>leads(R.floor-1,+n.dataset.n)); if(toMine.length){ click(toMine[0]); return; }
     const pref=['school','treasure','event','rest','elite','fight','boss']; let chosen=null; for(const p of pref){ chosen=nodes.find(n=>n.getAttribute('aria-label')===({school:'Zeichenschule',treasure:'Schatz',event:'Ereignis',rest:'Rast',elite:'Elite',fight:'Kampf',boss:'Boss'}[p])); if(chosen&&Math.random()<0.6) break; }
     click(chosen||nodes[0]); return; }
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
   if($('.opt')||$('.oitem')||$('.plant.clickable')){ await solveKnow(Math.random()>ACC); return; }
   if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
+  if($('.mblock.covered:not([disabled])')){ if(!$('.mblock.open')) mines++; const b=$$('.mblock.covered:not([disabled])'); click(b[Math.floor(Math.random()*b.length)]); return; }
   if($('#next')){ click($('#next')); return; }
   if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
   if($('#train')){ rests++; click(Math.random()<0.5?$('#train'):$('#heal')); return; }
@@ -92,13 +99,14 @@ async function step(){
   let steps=0; let ends=0;
   while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; click($('#again')); }
     // battle pauses (up to ~2 s between actions): wait until something is clickable again
-    for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay'); w++) await sleep(500);
+    for(let w=0; w<6 && !$('.mblock')&&!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
-  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,eliteRewards,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
+  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,rests,treasures,eliteRewards,mines,materials:m.materials,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
   if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }
+  if(['math','bau'].includes(mode)&&!mines){ console.error('PLAYTEST FAIL: never reached the Bergwerk'); process.exit(1); }
   if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }
 })().catch(e=>{console.error('PLAYTEST FAIL',e.message); console.log(errors); process.exit(1);});

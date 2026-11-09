@@ -17,6 +17,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.
 - Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
 - Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.
+- Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.
+- Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.

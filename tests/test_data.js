@@ -1,4 +1,4 @@
-// Cross-checks the game data of all three modes: events, items, topics, shapes, attacks, enemy moves.
+// Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
 const MONART = require('../src/monsters.js');
@@ -8,6 +8,7 @@ const shapes = new Set(MONART.shapes);
 
 const modes = {
   math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, moves: MQ.ENEMY_MOVES, pool: null },
+  bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, worldAttacks: MQ.BAU.WORLD_ATTACKS, pool: null },
 };
 for (const [k, cfg] of Object.entries(MK.MODES)) modes[k] = cfg;
 

@@ -1,16 +1,17 @@
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
   const MODES = {
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
+    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Muster und Umfang', mine: true },
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
   };
-  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
-      { subject: 'Mathe', modes: ['math'] },
+      { subject: 'Mathe', modes: ['math', 'bau'] },
       { subject: 'Ethik', modes: ['ethik', 'kirchenjahr'] },
       { subject: 'Sachkunde', modes: ['kartoffel'] },
     ] },
@@ -35,7 +36,7 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, backupAt: '', progressAt: '' });
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, backupAt: '', progressAt: '', owned: {}, materials: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
@@ -45,7 +46,8 @@
   function normMeta(raw) {
     const m = defaultMeta();
     if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
-    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter']) if (!isObj(m[k])) m[k] = {};
+    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter', 'owned', 'materials']) if (!isObj(m[k])) m[k] = {};
+    for (const k of Object.keys(m.materials)) if (!Number.isInteger(m.materials[k]) || m.materials[k] < 0) delete m.materials[k];
     for (const k of ['setup', 'storage']) { const d = defaultMeta()[k]; for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f]) m[k][f] = d[f]; }
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
@@ -105,6 +107,7 @@
     let t, sig;
     for (let i = 0; i < 12; i++) {
       if (mode === 'math') { t = MQ.generate(mod, tier, opts); t.kind = 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
+      else if (mode === 'bau') { t = MQ.BAU.generate(mod, tier); sig = t.sig; }
       else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, opts && opts.g ? { g: opts.g } : undefined); sig = t.qid; }
       if (!rec.includes(sig)) break;
     }
@@ -155,7 +158,8 @@
   }
 
   /* ---------- Tutorials ---------- */
-  function tutFor(group) { if (mode === 'math') { const [mod, tier] = group.split(':'); return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]); } const t = CFG().tut[group]; const M = MODULES_OF()[group.split(':')[0]]; return Object.assign({ icon: M ? M.icon : '📖' }, t); }
+  // maths tutorials also serve the Bergwerk's division tasks in other units
+  function tutFor(group) { const [mod, tier] = group.split(':'); const t = CFG().tut && CFG().tut[group]; if (!t) return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]); const M = MODULES_OF()[mod]; return Object.assign({ icon: M ? M.icon : '📖' }, t); }
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
@@ -168,7 +172,7 @@
   function runTask(task, opts, done) {
     opts = opts || {}; window.__task = task;
     if (task.kind !== 'num') return runChoiceTask(task, opts, done);
-    const mod = task.mod; const nAns = task.answers.length; const MODULES = MODULES_OF();
+    const mod = task.mod; const nAns = task.answers.length; const M = MODULES_OF()[mod] || MQ.MODULES[mod];
     const values = Array(nAns).fill(''); let active = 0; let locked = false;
     const container = opts.container; const bottom = opts.bottom;
     const labelsFor = () => task.nb ? [`${task.nb} davor`, `${task.nb} danach`] : task.seq ? ['', '', ''] : [''];
@@ -178,6 +182,7 @@
       else if (task.seq) body = `<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
       else if (task.nb) body = `<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
       else if (task.grid) { const g = task.grid; let cells = ''; for (let r = 0; r < g.size; r++) for (let c = 0; c < g.size; c++) { const isS = r === g.sr && c === g.sc, isT = r === g.tr && c === g.tc; cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`; } body = `<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${arrow('r')} +${g.stepR}</span><span>${arrow('l')} −${g.stepR}</span><span>${arrow('d')} +${g.stepD}</span><span>${arrow('u')} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`; }
+      else if (task.svg) body = `<div class="figure">${task.svg}</div><div class="prompt">${esc(task.ask)}</div>`;
       else if (task.ask) body = `<div class="expr">${esc(task.text)}</div><div class="prompt">${esc(task.ask)}</div>`;
       else body = `<div class="expr">${esc(task.text)}</div>`;
       let inputs = '';
@@ -185,7 +190,7 @@
       else if (task.labels) inputs = `<div class="nbline">${task.labels.map((l, i) => `<div class="inpgroup"><div class="inp" data-i="${i}"></div><span>${esc(l)}</span></div>`).join('')}</div>`;
       else inputs = `<div class="inputs">${task.answers.map((_, i) => `<div class="inp" data-i="${i}"></div>`).join('')}</div>`;
       const a0 = task.answers[0]; const lo = Math.max(0, a0 - 1 - Math.floor(Math.random() * 3)); const hint = opts.hint ? `<div class="hintline">🌉 Tipp: ${task.answers.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>` : '';
-      return `<div class="task"><div class="head">${MODULES[mod].icon} ${MODULES[mod].name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      return `<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
     }
     container.innerHTML = cardHtml();
     bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
@@ -242,9 +247,12 @@
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
     if (task.kind === 'choice') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
-      bottom.innerHTML = `<div class="options ${task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
-      bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
+      // svgOpts: the options are pictures (generated markup, not player text)
+      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div>${task.pic ? `<div class="figure">${task.pic}</div>` : ''}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      bottom.innerHTML = `<div class="options ${task.svgOpts ? 'pics' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}"${task.svgOpts ? ` aria-label="Bild ${i + 1}">${o}` : `>${esc(o)}`}</button>`).join('')}</div>`;
+      bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong');
+        if (task.svgOpts) { finish(ok, `${esc(task.why)}<span class="fbpic">${task.answer}</span>`); return; }
+        finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
       if (opts.hint) strikeWrongOption();
     } else if (task.kind === 'parts') {
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${potatoSVG({ highlight: task.part })}<div id="fb" role="status" aria-live="polite"></div></div>`;
@@ -435,6 +443,7 @@
     for (const g of MODE_KEYS) for (const [k, st] of Object.entries(m.stats[g])) { st.c += inc.stats[g][k].c; st.t += inc.stats[g][k].t; }
     for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
+    if (isObj(inc.materials)) for (const [id, v] of Object.entries(inc.materials)) if (Number.isInteger(v) && v > (m.materials[id] || 0)) m.materials[id] = v;
     // a device without PIN was not set up yet, so it takes the settings from the code
     if (!dev.pin && inc.pin) for (const k of ['off', 'sound', 'grade', 'pin', 'setup']) m[k] = inc[k];
     return m;
@@ -488,10 +497,12 @@
       if (swap && swapOn) run.items.push('stern');
       meta.lastStarter[mode] = sel; meta.runs++; saveAll(); screenMap(); };
   }
-  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; } return m;
+  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
+    const chests = m.flat().filter((n) => n.t === 'treasure'); if (CFG().mine && chests.length && !offList('math').includes('rest')) pick(chests).t = 'bergwerk';
+    return m;
   }
 
-  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'] };
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], bergwerk: ['⛏️', 'Bergwerk'] };
   function screenMap() {
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
@@ -552,6 +563,7 @@
     else if (type === 'rest') screenRest();
     else if (type === 'treasure') screenTreasure();
     else if (type === 'school') screenSchool(1);
+    else if (type === 'bergwerk') screenMine();
   }
   function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
@@ -753,6 +765,44 @@
     render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten – dafür gibt es einen 🧪 Trank</button></div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
     $('#skip').onclick = () => { run.items.push('trank'); saveAll(); advance(); };
+  }
+
+  /* ---------- Bergwerk ---------- */
+  // 12 covered blocks, three per visit. Each block is a division with remainder: no remainder means ore, otherwise stone,
+  // a wrong answer crumbles the block. The haul goes to meta.materials; the first ore ever unlocks the iron disc for the spinning top.
+  const MINE_PICKS = 3, MINE_LABEL = { erz: 'Erz', stein: 'Stein', leer: 'leer' };
+  const blockSVG = (k) => `<svg viewBox="0 0 40 40" aria-hidden="true">${k === 'leer' ? '<rect x="3" y="3" width="34" height="34" rx="6" fill="none" stroke="#7A6A5A" stroke-width="2" stroke-dasharray="4 3"/><path d="M10 32 l4 -4 l4 4 Z M22 33 l5 -6 l5 6 Z" fill="#9AA0A8"/>'
+    : `<rect x="3" y="3" width="34" height="34" rx="6" fill="${k ? '#9AA0A8' : '#7A5A3A'}" stroke="#1C2541" stroke-width="2"/>${!k ? '<path d="M9 12 L16 18 L14 27 M27 7 L24 16 L32 22 M20 30 L26 34" fill="none" stroke="#4A3422" stroke-width="2"/>'
+    : k === 'erz' ? '<circle cx="13" cy="14" r="4" fill="#C8582A"/><circle cx="26" cy="22" r="5" fill="#C8582A"/><circle cx="15" cy="28" r="3" fill="#E8A15A"/><circle cx="28" cy="11" r="2.5" fill="#E8A15A"/>'
+    : '<path d="M9 14 L15 12 M22 27 L30 25 M12 28 L16 30" stroke="#6E747C" stroke-width="2.5" stroke-linecap="round"/>'}`}</svg>`;
+  function mineRecord(ok, t) {
+    if (mode === 'math') return recordAnswer('rest', ok, t);
+    const s = meta.stats.math.rest; s.t++; if (ok) s.c++; // other units count it as practice in Zahlenquest, without changing its levels
+  }
+  function screenMine() {
+    const n = run.node; if (!isObj(n.mine) || !Array.isArray(n.mine.cells) || !Array.isArray(n.mine.got)) { n.mine = { cells: Array(12).fill(''), got: [] }; saveAll(); }
+    const mn = n.mine; if (isObj(mn.task) && isObj(mn.task.t)) return mineTask(mn);
+    const left = MINE_PICKS - mn.got.length; const haul = (k) => mn.got.filter((x) => x === k).length;
+    render(`<div class="screen">${topbar('⛏️ Bergwerk')}<div class="scroll"><div class="card"><p style="margin-top:0">Schlag ${MINE_PICKS} Blöcke auf. In jedem steckt eine Aufgabe zum Teilen mit Rest. Geht sie ohne Rest auf, findest du Erz, sonst Stein.</p>
+      <div class="mine">${mn.cells.map((k, i) => `<button class="mblock ${k ? 'open' : 'covered'}" data-i="${i}" ${k || !left ? 'disabled' : ''} aria-label="${k ? MINE_LABEL[k] : 'Block ' + (i + 1)}">${blockSVG(k)}${k ? `<small>${MINE_LABEL[k]}</small>` : ''}</button>`).join('')}</div>
+      <p class="center">${left ? `Noch ${left} ${left === 1 ? 'Block' : 'Blöcke'}.` : `Ausbeute: ${haul('erz')} Erz, ${haul('stein')} Stein.`}</p>${!left && mn.disc ? '<p class="center"><b>Aus deinem ersten Erz wird eine Eisenscheibe für den Kreisel.</b></p>' : ''}
+      <p class="center muted" style="color:var(--ink-soft)">Im Lager: ${meta.materials.erz || 0} Erz, ${meta.materials.stein || 0} Stein</p></div></div>
+      <div class="bottom">${left ? '<p class="center muted" style="margin:6px 0">Tippe auf einen Block.</p>' : '<button class="btn" id="next">Weiter</button>'}</div></div>`);
+    app.querySelectorAll('.mblock.covered:not([disabled])').forEach((b) => { b.onclick = () => {
+      const zero = Math.random() < 0.4; const t = MQ.generate('rest', mode === 'math' ? tierFor('rest') : Math.min(2, run.world), { zero });
+      t.kind = 'num'; t.group = 'rest:' + t.tier; mn.task = { i: +b.dataset.i, t }; saveAll(); mineTask(mn); }; });
+    if (!left) $('#next').onclick = () => { nodeDone(); saveAll(); advance(); };
+  }
+  function mineTask(mn) {
+    const { i, t } = mn.task;
+    render(`<div class="screen">${topbar(`⛏️ Block ${mn.got.length + 1} / ${MINE_PICKS}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Bergwerk', onResult: (ok) => {
+      const k = !ok ? 'leer' : t.answers[1] === 0 ? 'erz' : 'stein';
+      mn.cells[i] = k; mn.got.push(k); delete mn.task; mineRecord(ok, t);
+      if (k !== 'leer') { meta.materials[k] = (meta.materials[k] || 0) + 1; meta.progressAt = new Date().toISOString(); }
+      if (k === 'erz' && !meta.owned['top-disc-eisen']) { meta.owned['top-disc-eisen'] = true; mn.disc = true; }
+      saveAll();
+    } }, screenMine));
   }
 
   /* ---------- Zeichenschule ---------- */

@@ -173,6 +173,17 @@ const MONART = (() => {
       <path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" stroke="#D9B35E" stroke-width="7" stroke-linecap="round"/><path d="M14 70 Q0 74 8 86 M106 70 Q120 74 112 86" fill="none" ${S(2)}/>
       <path d="M44 102 L42 114 M76 102 L78 114" fill="none" ${S(5)}/>
       ${eyes(60, 62, 14, 8, 'normal')}${mouth.grin(60, 82, 12)}`,
+    beaver: (c, g, d, l) => `
+      <path d="M86 96 Q118 100 112 74 Q104 64 88 78 Z" fill="${d}" ${S()}/><path d="M94 82 L108 80 M92 90 L108 90" fill="none" stroke="${g.inner}" stroke-width="2"/>
+      <circle cx="30" cy="44" r="10" fill="${g.body}" ${S()}/><circle cx="90" cy="44" r="10" fill="${g.body}" ${S()}/>
+      <ellipse cx="60" cy="72" rx="38" ry="36" fill="${g.body}" ${S()}/>
+      ${highlight(42, 56, 9, 5)}
+      <ellipse cx="60" cy="86" rx="20" ry="14" fill="${g.inner}"/>
+      <path d="M30 40 Q60 2 90 40 Z" fill="#FFC93C" ${S()}/><path d="M60 14 L60 38" ${S(2.5)}/><path d="M22 40 L98 40" ${S(5)}/>
+      <ellipse cx="60" cy="76" rx="7" ry="5" fill="${OUT}"/>
+      <rect x="53" y="84" width="7" height="10" rx="1" fill="#fff" ${S(2)}/><rect x="60" y="84" width="7" height="10" rx="1" fill="#fff" ${S(2)}/>
+      ${eyes(60, 60, 14, 7, 'normal')}
+      <path d="M32 102 L28 112 M88 102 L92 112" fill="none" ${S(4)}/>`,
   };
 
   function monsterSVG(shape, color, evo, cls) {
