@@ -185,17 +185,42 @@ const MONART = (() => {
       ${eyes(60, 62, 14, 8, 'normal')}${mouth.grin(60, 82, 12)}`,
   };
 
-  function monsterSVG(shape, color, evo, cls) {
+  // where clothes sit on each hero shape: head top [x, y, scale], eyes [cx, cy, gap, r] as in eyes(), neck [x, y, width], school bag [x, y]
+  const FIT = {
+    fox: { top: [60, 42, 1.2], eyes: [60, 64, 13, 8], neck: [60, 101, 50], pack: [20, 66] },
+    toad: { top: [60, 33, 1.3], eyes: [60, 44, 22, 9], neck: [60, 98, 66], pack: [20, 72] },
+    bear: { top: [60, 35, 1.2], eyes: [60, 58, 14, 7], neck: [60, 95, 62], pack: [20, 64] },
+    owl: { top: [60, 32, 1.2], eyes: [60, 56, 15, 8], neck: [60, 76, 72], pack: [20, 66] },
+    potato: { top: [60, 35, 1.25], eyes: [60, 62, 14, 8], neck: [60, 99, 70], pack: [20, 64] },
+    luther: { top: [60, 28, 1.1], eyes: [60, 54, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
+    kuesterin: { top: [60, 30, 1.1], eyes: [60, 54, 11, 6], neck: [60, 81, 46], pack: [24, 84] },
+  };
+  const at = (p, body) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
+  const STRAW = '#E8C25A';
+  // drawn around (0, 0) = top of the head, about 60 wide
+  const OUTFIT = {
+    strohhut: { head: true, front: (f) => at(f.top, `<path d="M-18 -2 Q-19 -24 0 -24 Q19 -24 18 -2 Z" fill="${STRAW}" ${S(2.2)}/><path d="M-18.5 -8 L18.5 -8 L18 -2 L-18 -2 Z" fill="#D9453B"/><ellipse cx="0" cy="-1" rx="38" ry="8" fill="${STRAW}" ${S(2.2)}/><path d="M-30 -1 Q0 6 30 -1" fill="none" stroke="#C99A2E" stroke-width="2"/>`) },
+    krone: { head: true, front: (f) => at(f.top, `<path d="M-20 0 L-23 -20 L-11 -9 L0 -26 L11 -9 L23 -20 L20 0 Z" fill="#FFC93C" ${S(2.2)}/><circle cx="0" cy="-8" r="3.5" fill="#3FA0FF"/><circle cx="-12" cy="-4" r="2.5" fill="#FF6E8E"/><circle cx="12" cy="-4" r="2.5" fill="#FF6E8E"/>`) },
+    aehrenkranz: { head: true, front: (f) => at(f.top, `<path d="M-32 4 Q0 -18 32 4" fill="none" stroke="#7A9A3A" stroke-width="4" stroke-linecap="round"/>${[-28, -20, -11, -2, 7, 16, 25].map((x) => { const y = -0.0105 * x * x - 5; return `<ellipse cx="${x}" cy="${y}" rx="3.6" ry="7" fill="#E3B341" ${S(1.6)} transform="rotate(${x * 2} ${x} ${y})"/>`; }).join('')}`) },
+    brille: { front: (f) => { const [cx, cy, gap, r] = f.eyes; const R = r * 1.5; return `<circle cx="${cx - gap}" cy="${cy}" r="${R}" fill="#BFE3FF" fill-opacity=".25" ${S(3)}/><circle cx="${cx + gap}" cy="${cy}" r="${R}" fill="#BFE3FF" fill-opacity=".25" ${S(3)}/><path d="M${cx - gap + R} ${cy} Q${cx} ${cy - r} ${cx + gap - R} ${cy}" fill="none" ${S(3)}/>`; } },
+    schal: { front: (f) => { const [x, y, w] = f.neck, h = w / 2; return `<path d="M${x + h * 0.3} ${y} l4 24 l12 -3 l-6 -21 Z" fill="#D9453B" ${S(2)}/><path d="M${x - h} ${y - 5} Q${x} ${y + 5} ${x + h} ${y - 5} L${x + h} ${y + 3} Q${x} ${y + 13} ${x - h} ${y + 3} Z" fill="#D9453B" ${S(2)}/><path d="M${x - h * 0.6} ${y + 1} Q${x} ${y + 8} ${x + h * 0.6} ${y + 1}" fill="none" stroke="#FFF3C4" stroke-width="2.5" stroke-linecap="round"/>`; } },
+    ranzen: { back: (f) => { const [x, y] = f.pack; return `<rect x="${x - 17}" y="${y - 20}" width="30" height="38" rx="7" fill="#3B7DD8" ${S(2.2)}/><path d="M${x - 17} ${y - 8} Q${x - 2} ${y} ${x + 13} ${y - 8}" fill="none" ${S(2)}/><rect x="${x - 6}" y="${y - 4}" width="8" height="7" rx="2" fill="#FFC93C" ${S(1.5)}/>`; },
+      front: (f) => { const [x, y] = f.pack; return `<path d="M${x + 4} ${y - 18} Q${x + 14} ${y} ${x + 8} ${y + 18}" fill="none" stroke="#2A5DAA" stroke-width="6" stroke-linecap="round"/><path d="M${x + 4} ${y - 18} Q${x + 14} ${y} ${x + 8} ${y + 18}" fill="none" stroke="#1C2541" stroke-width="1.5" stroke-dasharray="3 3"/>`; } },
+  };
+
+  // outfit: optional clothing id; only hero shapes listed in FIT can wear it
+  function monsterSVG(shape, color, evo, cls, outfit) {
     const id = 'mg' + (uid++);
     const g = { body: `url(#${id})`, inner: shade(color, 0.55), flame: shade(color, 0.3), ghost: `url(#${id}g)` };
     const d = shade(color, -0.3);
     const defs = `<defs><radialGradient id="${id}" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="${shade(color, 0.35)}"/><stop offset=".6" stop-color="${color}"/><stop offset="1" stop-color="${shade(color, -0.25)}"/></radialGradient><linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="${shade(color, 0.6)}"/></linearGradient></defs>`;
     const aura = evo >= 1 ? `<circle cx="60" cy="62" r="56" fill="${shade(color, 0.5)}" opacity=".18"/><circle cx="60" cy="62" r="56" fill="none" stroke="${shade(color, 0.5)}" stroke-width="2" opacity=".5"/>` : '';
-    const crown = evo >= 2 && !['king', 'luther', 'merchant'].includes(shape) ? `<path d="M40 22 L46 6 L54 18 L60 2 L66 18 L74 6 L80 22 Z" fill="#FFC93C" ${S(2)}/><circle cx="60" cy="4" r="2.5" fill="#FF6E8E"/>` : '';
+    const fit = FIT[shape], o = fit && OUTFIT[outfit];
+    const crown = evo >= 2 && !(o && o.head) && !['king', 'luther', 'merchant'].includes(shape) ? `<path d="M40 22 L46 6 L54 18 L60 2 L66 18 L74 6 L80 22 Z" fill="#FFC93C" ${S(2)}/><circle cx="60" cy="4" r="2.5" fill="#FF6E8E"/>` : '';
     const sparkle = evo >= 1 ? `<path d="M12 18 L14 24 L20 26 L14 28 L12 34 L10 28 L4 26 L10 24 Z" fill="#FFC93C"/>` : '';
     const body = (SHAPES[shape] || SHAPES.blob)(color, g, d, null);
-    return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true">${defs}${aura}${body}${crown}${sparkle}</svg>`;
+    return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true">${defs}${aura}${o && o.back ? o.back(fit) : ''}${body}${o ? o.front(fit) : ''}${crown}${sparkle}</svg>`;
   }
-  return { monsterSVG, shapes: Object.keys(SHAPES), shade };
+  return { monsterSVG, shapes: Object.keys(SHAPES), shade, outfits: Object.keys(OUTFIT), dressable: Object.keys(FIT) };
 })();
 if (typeof module !== 'undefined') module.exports = MONART;
