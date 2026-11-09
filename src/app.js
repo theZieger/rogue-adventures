@@ -18,10 +18,10 @@
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
-      { subject: 'Mathe', modes: ['math', 'bau', 'jahrmarkt'] },
-      { subject: 'Deutsch', modes: ['woerterwerkstatt', 'satzbaustelle'] },
-      { subject: 'Ethik', modes: ['ethik', 'kirchenjahr', 'freunde'] },
-      { subject: 'Sachkunde', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
+      { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
+      { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
+      { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde'] },
+      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
     ] },
   ];
   let mode = 'math';
@@ -436,7 +436,7 @@
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${weeklyCard()}
-        ${gradeTabs()}${gardenCard()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
+        ${gradeTabs()}${gardenCard()}<div class="subjects">${curGrade().subjects.map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Spiel' : 'Spiele'}`}</span></button>`; }).join('')}</div>
         <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
         <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
         <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
@@ -446,8 +446,7 @@
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
     $('#parents').onclick = () => askPin(screenParent);
     if ($('#warnx')) { const seen = () => { meta.storage.warnedAt = new Date().toISOString(); saveAll(); }; $('#warnx').onclick = () => { seen(); screenTitle(); }; $('#warnp').onclick = () => { seen(); askPin(() => screenParent('save')); }; }
-    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
-    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
+    app.querySelectorAll('[data-sub]').forEach((b) => { b.onclick = () => screenSubject(curGrade().subjects[+b.dataset.sub]); });
     $('#dex').onclick = screenDex;
     $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
     $('#news').onclick = screenNews;
@@ -458,6 +457,13 @@
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
     $('#weekly').onclick = screenWeekly;
     showWeeklyNews();
+  }
+  const subjectOf = (m) => curGrade().subjects.find((sub) => sub.modes.includes(m));
+  function screenSubject(sub) {
+    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenSubject(sub); }; });
+    app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
+    $('#back').onclick = screenTitle;
   }
   const goalCount = (g, i) => Math.min(g.n, weekly().progress[i] || 0);
   function weeklyCard() {
@@ -651,7 +657,7 @@
       <div id="swapbox"></div>
       ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
-    $('#back').onclick = screenTitle;
+    $('#back').onclick = () => screenSubject(subjectOf(mode));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
     $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
@@ -1652,5 +1658,5 @@
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, subjectOf, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();

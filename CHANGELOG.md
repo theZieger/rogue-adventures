@@ -17,6 +17,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Eltern legen beim ersten Start eine PIN fest. Der Knopf „Eltern“ öffnet den neu geordneten Elternbereich mit Wochenbericht.
 - Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
 - Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen.
+- Die Startseite ordnet die Spiele nach Fächern: Fach antippen, dann Spiel wählen.
 
 ## 2026-11-08
 

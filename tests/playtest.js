@@ -120,9 +120,10 @@ async function step(){
   if($('#later')){ click($('#later')); return; }
   const tx=text();
   // once per playtest: build a Schild at the Werkbank (materials seeded) and look into the hut; the Schild must come along into the adventure
-  if($('[data-new]')&&!$('.choice')&&!$('.wmap')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
+  if($('[data-sub]')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
     click($('#stamps')); click($('[data-craft="schild"]')); await solveTask(false); if(!text().includes('Gebaut: Schild')) throw new Error('Werkbank did not build: '+text().slice(0,200)); click($('#next')); click($('#back'));
     click($('#hut')); if(!$('svg.hutroom')) throw new Error('hut did not open'); click($('#back')); return; }
+  if($('[data-sub]')&&!$('.wmap')) { const sub=w.__mq.subjectOf(process.env.MODE||'math'); click($$('[data-sub]').find(b=>b.textContent.includes(sub.subject))); return; }
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); if(!fromPantry){ fromPantry=true; if(!w.__mq.run.items.includes('schild')||w.__mq.meta.pantry.length) throw new Error('pantry not taken into the adventure'); } return; }
   if($('.node.open')){ const nodes=$$('.node.open');

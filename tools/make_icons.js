@@ -141,7 +141,7 @@ async function makeScreenshots(browser) {
     const p = await ctx.newPage();
     await p.goto(game); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(dir, `${form}-1-start.png`) });
-    await p.click('[data-new="math"]'); await p.click('.choice[data-id]'); await p.click('#go'); await p.waitForTimeout(400);
+    await p.click('[data-sub="0"]'); await p.click('[data-new="math"]'); await p.click('.choice[data-id]'); await p.click('#go'); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(dir, `${form}-2-karte.png`) });
     const nodes = await p.$$('.floor.current .node'); let t = nodes[0];
     for (const n of nodes) if (await n.getAttribute('aria-label') === 'Kampf') t = n;

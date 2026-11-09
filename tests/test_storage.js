@@ -21,7 +21,11 @@ function open(storage, opts) {
     },
   });
   const w = dom.window, d = w.document;
-  const $ = (s) => d.querySelector(s);
+  // tests were written for one title screen: a game's button sits on its subject screen, so open that from the
+  // title first, and a title button looked for on a subject screen means going back
+  const $ = (s) => d.querySelector(s) || toGame(s) || toTitle(s);
+  const toTitle = (s) => { if (!d.querySelector('[data-new]') || !d.querySelector('#back')) return null; d.querySelector('#back').click(); return d.querySelector(s); };
+  const toGame = (s) => { const m = /data-(?:new|cont)="(\w+)"/.exec(s); const sub = m && d.querySelector('[data-sub]') && w.__mq.subjectOf(m[1]); if (!sub) return null; d.querySelectorAll('[data-sub]')[[...d.querySelectorAll('[data-sub]')].findIndex((b) => b.textContent.includes(sub.subject))].click(); return d.querySelector(s); };
   const click = (s) => { const el = typeof s === 'string' ? $(s) : s; if (!el) throw new Error('missing ' + s + ' on: ' + d.body.textContent.slice(0, 200)); el.click(); };
   const dump = () => Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)]));
   const text = () => $('#app').textContent;
@@ -126,11 +130,11 @@ async function reloadCases() {
   const p1 = open();
   check(!!p1.$('#later') && !!p1.$('#setpin') && !!p1.$('#setload') && !p1.$('[data-new]'), 'setup dialog shows on the first start');
   p1.click('#later');
-  check(!!p1.$('[data-new="math"]') && !!p1.$('#parents'), '"Später" leads to the title with a parent button');
+  check(!!p1.$('[data-sub]') && !!p1.$('#parents'), '"Später" leads to the title with a parent button');
   const m = p1.w.__mq.meta;
   check(m.setup.skipped === true && m.setup.done === false && !!m.setup.at && m.pin === '', '"Später" is saved, no PIN');
   const p2 = open(p1.dump());
-  check(!p2.$('#later') && !!p2.$('[data-new="math"]'), 'setup dialog does not come back after "Später"');
+  check(!p2.$('#later') && !!p2.$('[data-sub]'), 'setup dialog does not come back after "Später"');
   p2.click('#parents');
   check(p2.text().includes('Elternbereich') && p2.text().includes('Noch keine PIN'), 'without PIN the parent area opens directly and says so');
   check(['practice', 'progress', 'save', 'appsec'].every((s) => p2.$('[data-jump="' + s + '"]') && p2.$('#p-' + s)), 'parent area has the four sections with jump bar');
