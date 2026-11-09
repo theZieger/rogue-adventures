@@ -704,8 +704,8 @@ async function weeklyCases() {
   { // same week key → same goals on two devices; one goal per subject, only enabled task types
     const a = open(null, { now: W49 }), b = open(null, { now: W49 });
     const ga = a.w.__mq.weeklyGoals(), gb = b.w.__mq.weeklyGoals();
-    check(ga.length === 4 && same(ga, gb), 'two devices show the same goals in the same week');
-    check(same(ga.map((g) => g.subject), ['Mathe', 'Deutsch', 'Ethik', 'Sachkunde']), 'one goal per subject of the grade');
+    check(ga.length === 5 && same(ga, gb), 'two devices show the same goals in the same week');
+    check(same(ga.map((g) => g.subject), ['Mathe', 'Deutsch', 'Ethik', 'Sachkunde', 'Musik']), 'one goal per subject of the grade');
     check(ga.every((g) => (g.kind === 'right' ? g.n >= 15 && g.n <= 25 : g.kind === 'elite' ? g.n >= 2 && g.n <= 3 : g.n === 1)), 'goal sizes: 15–25 right answers, 2–3 elites, one win or weekly boss');
     check(ga[0].kind === 'right' && ga[0].m === 'math', 'this week has a right-answers goal in maths');
     const c = open(null, { now: '2027-02-03T10:00:00' });
@@ -718,7 +718,7 @@ async function weeklyCases() {
     const p = open(null, { now: W49 }); p.click('#later');
     check(!!p.$('#weekly') && p.$('#weekly').textContent.includes('Diese Woche') && p.$('#weekly').textContent.includes('Neue Aufgaben am Montag') && !!p.$('#weekly .bar'), 'title shows the card "Diese Woche" with a bar');
     p.click('#weekly');
-    check(p.text().includes('Wochenaufgabe') && p.d.querySelectorAll('.goal').length === 4 && p.text().includes('0 von') && p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'), 'goal screen lists one goal per subject with whole-number progress');
+    check(p.text().includes('Wochenaufgabe') && p.d.querySelectorAll('.goal').length === 5 && p.text().includes('0 von') && p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'), 'goal screen lists one goal per subject with whole-number progress');
   }
   { // right answers count for the goal of their task type; all three goals → 10 stamps, gold week, one card
     const p0 = startMathFight({ now: W49 }); const g = p0.w.__mq.weeklyGoals()[0];
@@ -740,7 +740,7 @@ async function weeklyCases() {
     const p2 = open(p.dump(), { now: W49 });
     check(p2.w.__mq.meta.weekly.done && p2.$('#weekly').textContent.includes('Wochenaufgabe geschafft'), 'a finished week is saved and shown on the title');
     p2.click('#parents');
-    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes('Wochenziele: 4 von 4 erledigt'), 'parent area shows the weekly report');
+    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes('Wochenziele: 5 von 5 erledigt'), 'parent area shows the weekly report');
     const lines = p2.$('#wtext').value.split('\n');
     check(lines.length >= 3 && lines.length <= 5 && lines[0] === 'Lernquest, Woche 4' && lines.some((l) => l.startsWith('Geübt')) && !/Steinkauz|Moosbär/.test(p2.$('#wtext').value), 'report text has three to five lines and no names: ' + JSON.stringify(lines));
     p2.click('#wcopy');
@@ -1062,6 +1062,23 @@ function topCases() {
     const p3 = chest(p2c.dump(), 3);
     check(p3.w.__mq.meta.owned['top-tip-kugel'] === true && p3.text().includes('Kugelspitze'), 'a chest in world 3 holds the Kugelspitze');
   }
+}
+
+// 25. Musik: an old save gains the Konzertsaal stats; a run reloaded in the middle of a number task keeps it
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.musik;
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && p1.w.__mq.meta.stats.musik && Object.values(p1.w.__mq.meta.stats.musik).every((s) => s.t === 0), 'old save without Musik stats loads with empty stats');
+  check([...p1.w.document.querySelectorAll('[data-sub]')].some((b) => b.textContent.includes('Musik')), 'the title shows the subject Musik');
+  p1.click('[data-new="musik"]'); p1.click('.choice'); p1.click('#go');
+  const r = p1.w.__mq.run; check(r.mode === 'musik' && r.hero.id === 'dirigentin', 'a Konzertsaal adventure starts with the Dirigentin');
+  r.tiers.noten = 2; r.map[0][0].t = 'fight'; p1.w.__mq.screenMap(); p1.click('.node.open');
+  const tut = () => { const ok = p1.$('.overlay #tutok'); if (ok) ok.click(); };
+  tut(); p1.click('.atk[data-i="0"]'); tut();
+  const task = p1.w.__task;
+  check(p1.errors.length === 0 && task && task.kind === 'num' && !!p1.$('.mus') && !!p1.$('.inp'), 'Notenwerte on tier 2 asks for a number');
+  const p2 = open(p1.dump()); p2.click('[data-cont="musik"]'); const ok2 = p2.$('.overlay #tutok'); if (ok2) ok2.click();
+  check(p2.errors.length === 0 && !!p2.$('.atk') && p2.w.__mq.run.mode === 'musik', 'reloading a Konzertsaal fight continues it');
 }
 
 reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(() => {
