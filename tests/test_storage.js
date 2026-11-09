@@ -376,6 +376,8 @@ async function saveCodeCases() {
   check(same(m.know.q1, { c: 3, t: 4, ws: 0, last: 15 }) && same(m.know.q2, b.know.q2) && same(m.know.q3, a.know.q3), 'merge: knowledge questions add up, newer state wins');
   check(m.pin === 'h1abc' && m.sound === true && same(m.off, { math: ['grid'] }) && m.setup.done === true, 'merge: a device without PIN takes the settings from the code');
   check(m.progressAt === b.progressAt && m.backupAt === a.backupAt && m.seenNews === a.seenNews, 'merge: last win is the newer one, backup date stays from this device');
+  const mm = open().w.__mq.mergeMeta(mk({ materials: { erz: 2, stein: 1 } }), mk({ materials: { erz: 1, stein: 5, holz: 3 } }));
+  check(same(mm.materials, { erz: 2, stein: 5, holz: 3 }), 'merge: materials take the larger amount per kind');
   const m2 = open().w.__mq.mergeMeta(Object.assign(a, { pin: 'h1own' }), b);
   check(m2.pin === 'h1own' && m2.sound === false && same(m2.off, {}), 'merge: a device with PIN keeps its settings');
   check(same(a.stats.math.add, { c: 5, t: 6, hist: [1, 1] }), 'merge does not change its inputs');
@@ -643,7 +645,8 @@ async function gardenWinCases() {
 }
 
 // 18. Weekly goals, weekly boss, weekly report
-const W48 = '2026-11-25T10:00:00', W49 = '2026-12-02T10:00:00'; // maths goal: W48 the weekly boss, W49 right answers
+// weeks whose maths goal is in Zahlenquest (the seed also picks Die Baustelle): W48 the weekly boss, W49 right answers
+const W48 = '2026-12-23T10:00:00', W49 = '2027-01-27T10:00:00';
 async function weeklyCases() {
   { // same week key → same goals on two devices; one goal per subject, only enabled task types
     const a = open(null, { now: W49 }), b = open(null, { now: W49 });
@@ -670,13 +673,13 @@ async function weeklyCases() {
     const p = open(d, { now: W49 }); p.click('[data-cont="math"]');
     const m = p.w.__mq.meta; p.w.__mq.run.node.enemy.hp = 9999; // the fight must outlast three answers
     answer(p, true);
-    check(m.weekly.week === '2026-W49' && m.weekly.progress[0] === 1 && same(m.weekly.tally['math:' + g.mod], { c: 1, t: 1 }), 'a right answer of the goal type counts');
+    check(m.weekly.week === '2027-W04' && m.weekly.progress[0] === 1 && same(m.weekly.tally['math:' + g.mod], { c: 1, t: 1 }), 'a right answer of the goal type counts');
     p.click('#next'); await sleep(2200); answer(p, false);
     check(m.weekly.progress[0] === 1 && same(m.weekly.tally['math:' + g.mod], { c: 1, t: 2 }), 'a wrong answer counts for the report only');
     p.click('#next'); await sleep(2200);
     const goals = p.w.__mq.weeklyGoals(); m.weekly.progress = goals.map((x, i) => (i ? x.n : x.n - 1)); const st = m.stamps;
     answer(p, true);
-    check(m.weekly.done && m.stampCard['2026-W49'] === 2 && m.stamps === st + 10 && m.stampsTotal >= 10 && !!m.progressAt, 'all goals: gold week on the stamp card, 10 stamps, progress date');
+    check(m.weekly.done && m.stampCard['2027-W04'] === 2 && m.stamps === st + 10 && m.stampsTotal >= 10 && !!m.progressAt, 'all goals: gold week on the stamp card, 10 stamps, progress date');
     p.w.__mq.screenMap();
     check(!!p.$('.overlay') && p.$('.overlay').textContent.includes('Wochenaufgabe geschafft') && p.$('.overlay').textContent.includes('+10'), 'a short card "Wochenaufgabe geschafft" shows once');
     p.click('.overlay #tutok'); p.w.__mq.screenMap();
@@ -686,12 +689,12 @@ async function weeklyCases() {
     p2.click('#parents');
     check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes('Wochenziele: 4 von 4 erledigt'), 'parent area shows the weekly report');
     const lines = p2.$('#wtext').value.split('\n');
-    check(lines.length >= 3 && lines.length <= 5 && lines[0] === 'Lernquest, Woche 49' && lines.some((l) => l.startsWith('Geübt')) && !/Steinkauz|Moosbär/.test(p2.$('#wtext').value), 'report text has three to five lines and no names: ' + JSON.stringify(lines));
+    check(lines.length >= 3 && lines.length <= 5 && lines[0] === 'Lernquest, Woche 4' && lines.some((l) => l.startsWith('Geübt')) && !/Steinkauz|Moosbär/.test(p2.$('#wtext').value), 'report text has three to five lines and no names: ' + JSON.stringify(lines));
     p2.click('#wcopy');
     check(p2.$('#wmsg').textContent.includes('markiert') && p2.d.activeElement === p2.$('#wtext'), 'without clipboard the report text is marked for copying');
     // next week: fresh goals, nothing taken away
-    const p3 = open(p2.dump(), { now: '2026-12-09T10:00:00' }); const m3 = p3.w.__mq.meta;
-    check(m3.weekly.week === '2026-W50' && m3.weekly.progress.length === 0 && !m3.weekly.done && same(m3.weekly.tally, {}) && m3.stampCard['2026-W49'] === 2 && m3.stamps === p2.w.__mq.meta.stamps, 'a new week starts fresh and takes nothing away');
+    const p3 = open(p2.dump(), { now: '2027-02-03T10:00:00' }); const m3 = p3.w.__mq.meta;
+    check(m3.weekly.week === '2027-W05' && m3.weekly.progress.length === 0 && !m3.weekly.done && same(m3.weekly.tally, {}) && m3.stampCard['2027-W04'] === 2 && m3.stamps === p2.w.__mq.meta.stamps, 'a new week starts fresh and takes nothing away');
   }
   { // weekly boss: a node on floor 5 or 6 once per adventure, 25 % more HP, fixed weak spot, elite reward, counts for the goal
     let p, r;
@@ -719,11 +722,11 @@ async function weeklyCases() {
   }
   { // old saves and broken weekly data load with defaults; merging keeps the best of the week
     const o = open({ [META]: JSON.stringify({ runs: 2, setup: { done: false, skipped: true, at: 'x' } }) }, { now: W49 });
-    check(o.errors.length === 0 && o.w.__mq.meta.weekly.week === '2026-W49' && same(o.w.__mq.meta.weekly.progress, []) && !!o.$('#weekly'), 'old save without weekly data loads with defaults');
+    check(o.errors.length === 0 && o.w.__mq.meta.weekly.week === '2027-W04' && same(o.w.__mq.meta.weekly.progress, []) && !!o.$('#weekly'), 'old save without weekly data loads with defaults');
     const b = open({ [META]: JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, weekly: { week: 5, progress: ['x', 3.7, -2], done: 'ja', beaten: [1, 'math'], tally: { 'math:add': { c: 1, t: 2 }, bad: 7 } } }) }, { now: W49 });
     const bw = b.w.__mq.meta.weekly;
-    check(b.errors.length === 0 && bw.week === '2026-W49' && bw.done === false, 'wrong-typed weekly data falls back to defaults');
-    const raw = open().w.__mq.meta; raw.weekly = { week: '2026-W49', progress: ['x', 3.7, -2], done: false, beaten: [1, 'math'], tally: { 'math:add': { c: 1, t: 2 }, bad: 7 } };
+    check(b.errors.length === 0 && bw.week === '2027-W04' && bw.done === false, 'wrong-typed weekly data falls back to defaults');
+    const raw = open().w.__mq.meta; raw.weekly = { week: '2027-W04', progress: ['x', 3.7, -2], done: false, beaten: [1, 'math'], tally: { 'math:add': { c: 1, t: 2 }, bad: 7 } };
     const n = open({ [META]: JSON.stringify(raw) }, { now: W49 }).w.__mq.meta.weekly;
     check(same(n.progress, [0, 3, 0]) && same(n.beaten, ['math']) && same(n.tally, { 'math:add': { c: 1, t: 2 } }), 'weekly fields are cleaned up when loading');
     const base = open().w.__mq.meta; const mk = (wk) => Object.assign(JSON.parse(JSON.stringify(base)), { weekly: wk });
@@ -734,6 +737,71 @@ async function weeklyCases() {
     check(open().w.__mq.mergeMeta(mk(Object.assign({}, wa, { week: '2026-W48' })), mk(wb)).weekly.week === '2026-W49', 'merge: the newer week wins');
   }
 }
+// 22. Materials and owned things: defaults, damaged values, the Bergwerk fills them and survives a reload
+{
+  const p0 = open({ [META]: JSON.stringify({ runs: 2, wins: 0 }) });
+  check(JSON.stringify(p0.w.__mq.meta.materials) === '{}' && JSON.stringify(p0.w.__mq.meta.owned) === '{}', 'old save gets empty materials and owned');
+  for (const bad of [[], 'x', 7]) {
+    const p = open({ [META]: JSON.stringify({ materials: bad, owned: bad }) });
+    check(JSON.stringify(p.w.__mq.meta.materials) === '{}' && JSON.stringify(p.w.__mq.meta.owned) === '{}' && p.errors.length === 0, 'wrong-typed materials/owned fall back to {} (' + JSON.stringify(bad) + ')');
+  }
+  const p1 = open({ [META]: JSON.stringify({ materials: { erz: 'viel', stein: 4, holz: -1, ernte: 2.5 }, owned: { 'map-w1-winter': true } }) });
+  check(JSON.stringify(p1.w.__mq.meta.materials) === '{"stein":4}' && p1.w.__mq.meta.owned['map-w1-winter'] === true, 'only whole, non-negative amounts are kept');
+
+  const p = open(); p.click('#later'); p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+  const r = p.w.__mq.run; r.map[0][0].t = 'bergwerk'; p.w.__mq.screenMap();
+  p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Bergwerk'));
+  check(p.d.querySelectorAll('.mblock.covered:not([disabled])').length === 12, 'Bergwerk shows 12 covered blocks');
+  const real = p.w.Math.random; let first = true; p.w.Math.random = () => (first ? (first = false, 0.1) : real());
+  p.click('.mblock[data-i="5"]'); p.w.Math.random = real;
+  if (p.$('#tutok')) p.click('#tutok');
+  const asked = p.$('.expr').textContent;
+  const p2 = open(p.dump()); p2.click('[data-cont="math"]'); if (p2.$('#tutok')) p2.click('#tutok');
+  check(p2.$('.expr') && p2.$('.expr').textContent === asked, 'reopening inside the Bergwerk shows the same block task (' + asked + ')');
+  const solve = (q, right) => { const ans = q.w.__task.answers.map((a) => (right ? a : a + 1)); const inps = [...q.d.querySelectorAll('.inp')];
+    ans.forEach((a, i) => { inps[i].click(); for (const ch of String(a)) q.click(`.numpad [data-k="${ch}"]`); }); q.click('.numpad [data-k="ok"]'); };
+  solve(p2, true);
+  const m = p2.w.__mq.meta;
+  check(m.materials.erz === 1 && m.owned['top-disc-eisen'] === true && p2.w.__mq.run.node.mine.cells[5] === 'erz', 'remainder 0 gives ore, the first ore unlocks the iron disc');
+  check(m.stats.math.rest.t === 1 && m.stats.math.rest.c === 1, 'Bergwerk answers count as division with remainder');
+  check(!!m.progressAt, 'a find in the Bergwerk counts as progress for the backup reminder');
+  p2.click('#next');
+  check(p2.d.querySelectorAll('.mblock.covered:not([disabled])').length === 11 && p2.text().includes('Noch 2 Blöcke'), 'back at the mine: one block open, two to go');
+  p2.click('.mblock.covered'); if (p2.$('#tutok')) p2.click('#tutok'); solve(p2, false); p2.click('#next');
+  check(p2.w.__mq.run.node.mine.got[1] === 'leer' && (m.materials.stein || 0) + m.materials.erz === 1, 'a wrong answer crumbles the block, nothing is added');
+  p2.click('.mblock.covered'); solve(p2, true); p2.click('#next');
+  const total = (m.materials.stein || 0) + m.materials.erz;
+  check(total === 2 && !p2.$('.mblock.covered:not([disabled])') && p2.text().includes('Ausbeute') && p2.text().includes('Eisenscheibe'), 'after three blocks the haul is shown');
+  const p3 = open(p2.dump()); p3.click('[data-cont="math"]');
+  check(!!p3.$('#next') && p3.text().includes('Ausbeute'), 'reopening after the third block shows the haul, no extra blocks');
+  p3.click('#next');
+  const m3 = p3.w.__mq.meta;
+  check(p3.w.__mq.run.floor === 2 && !!p3.$('.wmap') && m3.materials.erz + (m3.materials.stein || 0) === 2 && m3.owned['top-disc-eisen'] === true, 'leaving the Bergwerk keeps the materials');
+
+  let mines = 0, maps = 0;
+  for (let i = 0; i < 30; i++) { const q = open(p3.dump()); q.click('[data-new="math"]'); q.click('.overlay #yes'); q.click('.choice'); q.click('#go'); const fl = q.w.__mq.run.map.flat(); maps++; mines += fl.filter((n) => n.t === 'bergwerk').length; if (fl.filter((n) => n.t === 'bergwerk').length > 1) check(false, 'at most one Bergwerk per world'); }
+  check(mines >= 20 && mines <= maps, 'about one Bergwerk per world map (' + mines + ' in ' + maps + ')');
+  const off = open({ [META]: JSON.stringify({ setup: { skipped: true }, off: { math: ['rest'] } }) });
+  let any = 0; for (let i = 0; i < 10; i++) { off.click('[data-new="math"]'); if (off.$('.overlay #yes')) off.click('.overlay #yes'); off.click('.choice'); off.click('#go'); any += off.w.__mq.run.map.flat().filter((n) => n.t === 'bergwerk').length; off.w.__mq.screenTitle(); }
+  check(any === 0, 'no Bergwerk when division with remainder is switched off');
+}
+
+// 23. Die Baustelle: new unit on the title, adventure starts, stats exist for old saves
+{
+  const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { math: {} } }) });
+  check(!!p.$('[data-new="bau"]') && p.text().includes('Die Baustelle'), 'title lists Die Baustelle under Mathe');
+  const st = p.w.__mq.meta.stats.bau;
+  check(['wz', 'fq', 'netz', 'koerper', 'band', 'lage', 'umfang'].every((k) => st[k] && st[k].t === 0), 'old save gains stats for the Baustelle');
+  p.click('[data-new="bau"]'); p.click('#go');
+  p.click([...p.d.querySelectorAll('.node.open')][0]);
+  const saved = p.dump();
+  check(!!saved.mathquest_run_bau, 'Baustelle adventure is saved under its own key');
+  const p2 = open(saved);
+  check(!!p2.$('[data-cont="bau"]') && !!p2.$('[data-new="math"]') && !p2.$('[data-cont="math"]'), 'Baustelle adventure does not touch Zahlenquest');
+  p2.click('[data-cont="bau"]');
+  check(!!p2.$('#fe') && p2.errors.length === 0, 'Baustelle fight continues after reopening');
+}
+
 reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

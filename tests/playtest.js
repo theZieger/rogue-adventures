@@ -8,8 +8,8 @@ const W3=process.env.W3==='1';
 const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(3), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Funkenbiss',mod:'add'},{name:'Flammenstoß',mod:'sub'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
-// a fixed day too: 2026-W48 has the weekly boss as its maths goal, so the bot can finish a goal in a math run
-const NOW=Date.parse(process.env.NOW||'2026-11-25T10:00:00');
+// a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
+const NOW=Date.parse(process.env.NOW||'2026-12-23T10:00:00');
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
@@ -18,7 +18,7 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
-let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0;
+let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0, mines=0;
 const cents=(x)=>{ const m=x.trim().match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); if(!m) throw new Error('not money: '+x); return (+(m[1]||0))*100+(+(m[2]||0)); };
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 let colTasks=0, readNodes=0;
@@ -42,8 +42,11 @@ async function solveTask(forceWrong){
   if($('.colcalc')) return solveColumns(forceWrong);
   const task=$('.task'); const t=task.textContent;
   let answers=null;
-  const expr=$('.expr'); const M=w.eval('MQ');
-  if(expr){ const s=expr.textContent; let m;
+  const expr=$('.expr'); const M=w.eval('MQ'); const T=w.__task;
+  // Baustelle: recount from the task data (plan heights, squares of the shape)
+  if(T&&T.plan){ const n=T.plan.flat().reduce((a,b)=>a+b,0); answers=[T.full?T.plan.length*T.plan[0].length*T.full-n:n]; }
+  else if(T&&T.cells){ const at=new Set(T.cells.map(p=>p.join())); answers=[T.cells.reduce((n,[r,c])=>n+[[r+1,c],[r-1,c],[r,c+1],[r,c-1]].filter(q=>!at.has(q.join())).length,0)]; }
+  else if(expr){ const s=expr.textContent; let m;
     if(/€|ct/.test(s)){ const v=s.includes(' − ')?s.split(' − ').map(cents).reduce((a,b)=>a-b):s.split(' + ').map(cents).reduce((a,b)=>a+b); answers=[Math.floor(v/100),v%100]; }
     else if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
@@ -117,9 +120,10 @@ async function step(){
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
   if($('.node.open')){ const nodes=$$('.node.open');
     const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
-    // steer towards a Forscherlabor/Schatzkarte further up, so the bot plays them whatever the seed
-    { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(nd.t==='labor'||nd.t==='karte'||nd.n.some(j=>leads(f+1,j))); };
-      const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)); if(way){ click(way); return; } }
+    // steer towards a Forscherlabor/Schatzkarte/Bergwerk further up, so the bot plays them whatever the seed – unless that costs the weekly boss
+    { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(['labor','karte','bergwerk'].includes(nd.t)||nd.n.some(j=>leads(f+1,j))); };
+      const boss=(f,i)=>r.map[f][i].t==='weekboss'||r.map[f][i].n.some(j=>r.map[f+1]&&r.map[f+1][j]&&boss(f+1,j)); const toBoss=nodes.filter(n=>boss(r.floor-1,+n.dataset.n));
+      const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)&&(!toBoss.length||toBoss.includes(n))); if(way){ click(way); return; } }
     // head for the Lesestube and the weekly boss when the path can still reach them; the market only when it lies on that way
     { const r=w.__mq.run; const reach=(t,f,i)=>r.map[f][i].t===t||r.map[f][i].n.some(j=>r.map[f+1]&&r.map[f+1][j]&&reach(t,f+1,j));
       const leads=(t)=>nodes.filter(n=>reach(t,r.floor-1,+n.dataset.n)); const toRead=leads('lesen'), toBoss=leads('weekboss');
@@ -132,6 +136,7 @@ async function step(){
   if($('.opt.guess')){ const g=$$('.opt.guess'); click(g[Math.floor(Math.random()*g.length)]); return; } // Forscherlabor: any guess is fine
   if($('.opt')||$('.oitem')||$('.plant.clickable')||$('.kmap.clickable')){ await solveKnow(Math.random()>ACC); return; }
   if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
+  if($('.mblock.covered:not([disabled])')){ if(!$('.mblock.open')) mines++; const b=$$('.mblock.covered:not([disabled])'); click(b[Math.floor(Math.random()*b.length)]); return; }
   if($('.market')){ await shop(); return; }
   if($('#next')){ click($('#next')); return; }
   if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
@@ -148,10 +153,10 @@ async function step(){
   let steps=0; let ends=0;
   while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; click($('#again')); }
     // battle pauses (up to ~2 s between actions): wait until something is clickable again
-    for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')&&!$('.opt')&&!$('[data-cell]'); w++) await sleep(500);
+    for(let w=0; w<6 && !$('.mblock')&&!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')&&!$('.opt')&&!$('[data-cell]'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
-  console.log({steps,colTasks,readNodes,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,markets,bought,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
+  console.log({steps,colTasks,readNodes,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,markets,bought,mines,materials:m.materials,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
@@ -160,6 +165,7 @@ async function step(){
   if(mode==='wetterstation'&&!labs){ console.error('PLAYTEST FAIL: the bot never reached the Forscherlabor'); process.exit(1); }
   if(mode==='kompass'&&!maps){ console.error('PLAYTEST FAIL: the bot never reached the Schatzkarte'); process.exit(1); }
   if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }
+  if(['math','bau'].includes(mode)&&!W3&&!mines){ console.error('PLAYTEST FAIL: never reached the Bergwerk'); process.exit(1); }
   if(mode==='math'&&RUNS>1&&(!weekbossFights||!m.weekly.beaten.includes('math')||!done)){ console.error('PLAYTEST FAIL: the bot did not beat the weekly boss and finish a weekly goal'); process.exit(1); }
   if(dilemmas!==consequences){ console.error('PLAYTEST FAIL: a dilemma choice showed no consequence'); process.exit(1); }
   if(W3&&colTasks<4){ console.error('PLAYTEST FAIL: only '+colTasks+' written tasks in world 3'); process.exit(1); }

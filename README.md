@@ -24,6 +24,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | Modus | Inhalt |
 |---|---|
 | 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, schriftliches Addieren und Subtrahieren (Welt 3, Ergänzungsverfahren) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
+| 🏗️ Die Baustelle | Raum und Form: Würfel zählen nach Bauplan, Quader ergänzen, Würfelnetze, Körper erkennen, Bandornamente, parallel oder senkrecht, Umfang – 2 Welten. Dazu in Zahlenquest und Baustelle je Welt ein ⛏️ Bergwerk: Teilen mit Rest, ohne Rest gibt es Erz, sonst Stein |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🕯️ Das Kirchenjahr | Ethik, 2 Welten: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion – Welt 2: Fastenzeit, Symbole, Karwoche und Ostern, Himmelfahrt, Pfingsten, Taufe, feste und bewegliche Feste, sorbische Bräuche |
 | 🤝 Gute Freunde | Ethik: Freundschaft, wahre und falsche Freunde, Versprechen und Geheimnisse, Streitregeln, Kompromiss, Schlichter, Goldene Regel, Mobbing mit Worten, Wahrheit – Dilemma-Karten als Ereignisse ohne falsche Antwort |
