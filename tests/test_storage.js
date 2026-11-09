@@ -9,11 +9,15 @@ const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8')
 let fails = 0;
 const check = (cond, msg) => { if (!cond) { fails++; console.log('FAIL', msg); } else console.log('ok  ', msg); };
 
-function open(storage) {
-  const errors = [];
+// opts.url: page address (e.g. with #lade=); opts.zip: give the page the compression streams jsdom lacks
+function open(storage, opts) {
+  const errors = []; opts = opts || {};
   const dom = new JSDOM(html, {
-    runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/',
-    beforeParse(w) { for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message)); },
+    runScripts: 'dangerously', pretendToBeVisual: true, url: opts.url || 'https://example.com/',
+    beforeParse(w) {
+      for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message));
+      if (opts.zip) Object.assign(w, { CompressionStream, DecompressionStream, Response, TextEncoder });
+    },
   });
   const w = dom.window, d = w.document;
   const $ = (s) => d.querySelector(s);
@@ -188,7 +192,121 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   check(p5.w.__mq.meta.pin === '' && p5.text().includes('Noch keine PIN'), 'PIN can be removed in the parent area');
 }
 
-reloadCases().then(() => {
+// 10. Save code: export, import (replace/merge), broken codes, link import, backup reminder
+const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
+const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await sleep(10); return fn(); };
+async function exportCode(p) {
+  p.click('#parents'); p.click('#pexport');
+  await until(() => p.$('#pcode'));
+  return p.$('#pcode').value;
+}
+async function saveCodeCases() {
+  // source device: an adventure in progress plus some progress
+  const src = startMathFight();
+  Object.assign(src.w.__mq.meta, { wins: 2, bestWorld: 2, dex: { Sumpfbrocken: { world: 1 }, 'Glaspanzer': { world: 2 } }, know: { l1: { c: 1, t: 2, ws: 1, last: 4 } }, knowSeq: 4, progressAt: '2026-11-01T10:00:00.000Z' });
+  src.w.__mq.meta.stats.math.add = { c: 7, t: 9, hist: [1, 0, 1] };
+  src.w.__mq.screenTitle();
+  check(!!src.$('#parents .dot'), 'a win that was never saved puts a dot on the parent button');
+  const code = await exportCode(src);
+  check(code.startsWith('LQ0.'), 'without compression in the browser the code starts with LQ0.');
+  check(!!src.$('#pout svg.qr') && src.text().includes('2 Siege') && src.text().includes('Laufende Abenteuer: Zahlenquest'), 'export shows a QR code and the summary');
+  check(!!src.w.__mq.meta.backupAt && Date.now() - Date.parse(src.w.__mq.meta.backupAt) < 60000, 'export remembers when it was saved');
+  src.w.__mq.screenTitle();
+  check(!src.$('#parents .dot'), 'after saving the dot is gone');
+  const saved = src.dump();
+
+  // replace on a fresh device via the setup dialog
+  const dst = open();
+  dst.click('#setload');
+  check(dst.d.activeElement === dst.$('#pcodein'), '"Spielstand laden" in the setup dialog leads to the code field');
+  dst.$('#pcodein').value = code; dst.click('#preplace');
+  await until(() => dst.$('.overlay #yes'));
+  dst.click('.overlay #yes');
+  const got = dst.dump();
+  check(same(JSON.parse(got[META]), JSON.parse(saved[META])) && same(JSON.parse(got[RUN]), JSON.parse(saved[RUN])), 'export then replace gives the same save, including the running adventure');
+  check(!!dst.$('[data-cont="math"]') && !dst.$('#later'), 'after loading the title opens with the adventure');
+  dst.click('[data-cont="math"]');
+  check(!!dst.$('#fe') && dst.errors.length === 0, 'the loaded adventure can be continued');
+
+  // broken codes are rejected with a message and change nothing
+  const bad = open(saved);
+  bad.click('#parents');
+  for (const c of ['', 'hallo', 'LQ0.abc!!', 'LQ1.' + code.slice(4), code.slice(0, -12), 'LQ0.' + Buffer.from('{"v":1}').toString('base64url'), 'LQ0.' + Buffer.from('[1,2]').toString('base64url')]) {
+    bad.$('#pcodein').value = c; bad.$('#pimsg').textContent = ''; bad.click('#pmerge');
+    await until(() => bad.$('#pimsg').textContent);
+    check(bad.$('#pimsg').textContent.includes('Code') && same(bad.dump(), saved), 'broken code is rejected with a message: ' + JSON.stringify(c.slice(0, 20)));
+  }
+
+  // compressed codes (LQ1.) where the browser can compress
+  const z = open(saved, { zip: true });
+  const zcode = await z.w.__mq.packSave({ v: 1, at: '2026-11-09T08:00:00.000Z', meta: JSON.parse(saved[META]), runs: { math: JSON.parse(saved[RUN]) } });
+  check(zcode.startsWith('LQ1.') && zcode.length < code.length, 'with compression the code starts with LQ1. and is shorter (' + zcode.length + ' vs ' + code.length + ')');
+  const back = await z.w.__mq.unpackSave(zcode);
+  check(same(back.meta, JSON.parse(saved[META])) && same(back.runs.math, JSON.parse(saved[RUN])), 'LQ1. code reads back to the same save');
+  const old = open(saved); old.click('#parents');
+  old.$('#pcodein').value = zcode; old.click('#pmerge');
+  await until(() => old.$('#pimsg').textContent);
+  check(old.$('#pimsg').textContent.includes('Browser'), 'a browser without decompression explains why it cannot read LQ1.');
+
+  // link import on a fresh device: dialog, hash removed, merge takes the adventure
+  const link = open(null, { url: 'https://example.com/#lade=' + code });
+  await until(() => link.$('.overlay #imerge'));
+  check(link.$('.overlay').textContent.includes('Spielstand gefunden') && link.$('.overlay').textContent.includes('2 Siege'), 'opening the link shows "Spielstand gefunden" with the summary');
+  check(link.w.location.hash === '' && link.w.location.href === 'https://example.com/', 'the code is removed from the address');
+  link.click('.overlay #imerge');
+  const lm = link.w.__mq.meta;
+  check(!!link.dump()[RUN] && lm.wins === 2 && lm.setup.skipped && !!link.$('[data-cont="math"]'), 'merging into a fresh device takes the adventure and skips the setup dialog');
+  const no = open(null, { url: 'https://example.com/#lade=' + code });
+  await until(() => no.$('.overlay #ino'));
+  no.click('.overlay #ino');
+  check(!no.$('.overlay') && !no.dump()[META] && !!no.$('#later'), '"Nicht laden" changes nothing');
+  const broken = open(saved, { url: 'https://example.com/#lade=LQ0.kaputt' });
+  await until(() => broken.$('.overlay #iok'));
+  check(broken.$('.overlay').textContent.includes('nicht geladen') && same(broken.dump(), saved), 'a broken link shows a message and changes nothing');
+
+  // merge keeps the adventure of this device; with a PIN the parents must confirm
+  const own = startMathFight(); const ownRun = own.dump()[RUN];
+  const pinned = JSON.parse(own.dump()[META]); pinned.pin = 'h1test';
+  const dev = open({ [META]: JSON.stringify(pinned), [RUN]: ownRun }, { url: 'https://example.com/#lade=' + code });
+  await until(() => dev.$('.overlay #imerge'));
+  dev.click('.overlay #imerge');
+  check(!!dev.$('#cval') && dev.w.__mq.meta.wins === 0, 'with a PIN, loading from a link asks for the PIN first');
+
+  const keep = open(own.dump()); keep.click('#parents');
+  keep.$('#pcodein').value = code; keep.click('#pmerge');
+  await until(() => keep.$('[data-cont]'));
+  check(keep.dump()[RUN] === ownRun && keep.w.__mq.meta.wins === 2, 'merge keeps the adventure of this device and takes the wins from the code');
+
+  // merge rules
+  const base = open().w.__mq.meta;
+  const mk = (o) => Object.assign(JSON.parse(JSON.stringify(base)), o);
+  const a = mk({ runs: 3, wins: 1, bestWorld: 2, knowSeq: 10, dex: { A: { world: 1 } }, seenTut: { 'math:add': true }, evoUnlocked: { x: 1 }, know: { q1: { c: 1, t: 2, ws: 1, last: 9 }, q3: { c: 0, t: 1, ws: 1, last: 2 } }, sound: false, grade: 3, progressAt: '2026-10-01T00:00:00.000Z', backupAt: '2026-10-02T00:00:00.000Z', seenNews: '2026-11-09' });
+  a.stats.math.add = { c: 5, t: 6, hist: [1, 1] };
+  const b = mk({ runs: 5, wins: 0, bestWorld: 1, knowSeq: 20, dex: { B: { world: 2 }, A: { world: 3 } }, seenTut: { 'ethik:rf': true }, know: { q1: { c: 2, t: 2, ws: 0, last: 15 }, q2: { c: 1, t: 1, ws: 0, last: 3 } }, sound: true, off: { math: ['grid'] }, pin: 'h1abc', setup: { done: true, skipped: false, at: 'x' }, progressAt: '2026-11-01T00:00:00.000Z', backupAt: '2026-11-02T00:00:00.000Z' });
+  b.stats.math.add = { c: 2, t: 3, hist: [0] }; b.stats.ethik.rf = { c: 4, t: 4, hist: [1] };
+  const m = open().w.__mq.mergeMeta(a, b);
+  check(m.runs === 5 && m.wins === 1 && m.bestWorld === 2 && m.knowSeq === 20, 'merge: counters take the maximum');
+  check(same(m.dex, { A: { world: 1 }, B: { world: 2 } }) && m.seenTut['math:add'] && m.seenTut['ethik:rf'] && m.evoUnlocked.x === 1, 'merge: monster book and seen explanations are combined');
+  check(m.stats.math.add.c === 7 && m.stats.math.add.t === 9 && same(m.stats.math.add.hist, [1, 1]) && m.stats.ethik.rf.c === 4, 'merge: right/total are added, recent answers stay from this device');
+  check(same(m.know.q1, { c: 3, t: 4, ws: 0, last: 15 }) && same(m.know.q2, b.know.q2) && same(m.know.q3, a.know.q3), 'merge: knowledge questions add up, newer state wins');
+  check(m.pin === 'h1abc' && m.sound === true && same(m.off, { math: ['grid'] }) && m.setup.done === true, 'merge: a device without PIN takes the settings from the code');
+  check(m.progressAt === b.progressAt && m.backupAt === a.backupAt && m.seenNews === a.seenNews, 'merge: last win is the newer one, backup date stays from this device');
+  const m2 = open().w.__mq.mergeMeta(Object.assign(a, { pin: 'h1own' }), b);
+  check(m2.pin === 'h1own' && m2.sound === false && same(m2.off, {}), 'merge: a device with PIN keeps its settings');
+  check(same(a.stats.math.add, { c: 5, t: 6, hist: [1, 1] }), 'merge does not change its inputs');
+
+  // backup reminder
+  const day = 864e5, iso = (t) => new Date(t).toISOString();
+  const dot = (o) => { const p = open({ [META]: JSON.stringify(Object.assign({ setup: { done: false, skipped: true, at: '' } }, o)) }); return !!p.$('#parents .dot'); };
+  check(!dot({}) && !dot({ wins: 3 }), 'no reminder without a new win');
+  check(dot({ progressAt: iso(Date.now() - 40 * day), backupAt: iso(Date.now() - 50 * day) }), 'reminder when the last backup is older than 30 days and a win came after it');
+  check(!dot({ progressAt: iso(Date.now() - day), backupAt: iso(Date.now() - 10 * day) }), 'no reminder within 30 days of a backup');
+  check(!dot({ progressAt: iso(Date.now() - 50 * day), backupAt: iso(Date.now() - 40 * day) }), 'no reminder when nothing was won since the backup');
+  const o = open({ [META]: JSON.stringify({ runs: 1 }) }).w.__mq.meta;
+  check(o.backupAt === '' && o.progressAt === '', 'old save loads with empty backup and win dates');
+}
+
+reloadCases().then(saveCodeCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });

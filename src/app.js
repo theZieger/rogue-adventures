@@ -34,25 +34,27 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' } });
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, backupAt: '', progressAt: '' });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
     Zweifelgeist: 'Der Zweifler', Vergessgeist: 'Der Vergessliche', Verwechsler: 'Der Verwechsler', Schwindelgeist: 'Der Schwindler', 'Strenger Richter': 'Der strenge Richter',
     'Blubberrätsel': 'Tiefseerätsel', Rankenrechnen: 'Honigrechnung', Schattenschnitt: 'Rückwärtsgang', Sternenmal: 'Malmühle', 'Geheimrätsel': 'Zifferncode', Reihenrausch: 'Treppenlauf', Tintenfass: 'Druckerpresse', 'Wörterwirbel': 'Rezeptbuch' };
-  function loadMeta() {
-    const m = defaultMeta(); const raw = load(KEY_META, null);
+  // also checks progress that comes in from a save code
+  function normMeta(raw) {
+    const m = defaultMeta();
     if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
     for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter']) if (!isObj(m[k])) m[k] = {};
     for (const k of ['setup', 'storage']) { const d = defaultMeta()[k]; for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f]) m[k][f] = d[f]; }
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
+    for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
+    if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
     return m;
   }
-  let meta = loadMeta();
-  (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
   const okStat = (v) => isObj(v) && Number.isFinite(v.c) && Number.isFinite(v.t) && Array.isArray(v.hist);
-  for (const m of MODE_KEYS) { if (!isObj(meta.stats[m])) meta.stats[m] = emptyStats(m); for (const k of Object.keys(MODES[m].modules)) if (!okStat(meta.stats[m][k])) meta.stats[m][k] = { c: 0, t: 0, hist: [] }; }
-  if (!Number.isFinite(meta.knowSeq)) meta.knowSeq = 0;
+  let meta = normMeta(load(KEY_META, null));
+  (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
+  meta = normMeta(meta);
   let run = null;
   const curGrade = () => CURRICULUM.find((g) => g.grade === meta.grade) || CURRICULUM[0];
   const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
@@ -293,7 +295,7 @@
   const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
   function screenTitle() {
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
-    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="parentbtn" id="parents">${GEAR} Eltern</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
@@ -321,7 +323,7 @@
       <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
       <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div></div></div>`);
     $('#setpin').onclick = () => setPin(screenTitle, screenSetup);
-    $('#setload').onclick = () => screenParent('save', screenSetup);
+    $('#setload').onclick = () => screenParent('load', screenSetup);
     $('#later').onclick = () => { setupDone('skipped'); screenTitle(); };
   }
   // a parental gate, not encryption: four digits are guessed quickly anyway, the hash only keeps the PIN out of plain sight
@@ -386,6 +388,75 @@
     render(`<div class="screen">${topbar('Was ist neu?')}<div class="scroll"><div class="stack">${NEWS.map((e) => `<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? ' <span class="newbadge">Neu!</span>' : ''}</h3>${e.groups.map((g) => `<h4>${GROUP_ICON[g.title] || '📌'} ${esc(g.title)}</h4><ul>${g.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>`).join('')}</div>`).join('') || '<p>Noch keine Einträge.</p>'}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     if (NEWS.length) { meta.seenNews = NEWS[0].date; saveAll(); }
     $('#back').onclick = screenTitle;
+  }
+
+  /* ---------- Save code: export, import, merge ---------- */
+  const SITE = 'https://thezieger.github.io/rogue-adventures/';
+  const b64 = (bin) => btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const viaStream = (bytes, stream) => new Response(new Response(bytes).body.pipeThrough(stream));
+  const canZip = (S) => typeof S === 'function' && typeof Response === 'function' && typeof TextEncoder === 'function';
+  // a won adventure (and later a purchase) since the last export, which was more than 30 days ago
+  const backupDue = () => !!meta.progressAt && meta.progressAt > meta.backupAt && !(Date.now() - Date.parse(meta.backupAt) < 30 * 864e5);
+  // short: for the QR code, without answer history and running adventures
+  function saveData(short) {
+    const m = JSON.parse(JSON.stringify(meta)); const runs = {};
+    if (short) for (const g of Object.values(m.stats)) for (const st of Object.values(g)) st.hist = [];
+    else for (const g of MODE_KEYS) { const r = load(KEY_RUN_FOR(g), null); if (r) runs[g] = r; }
+    return { v: 1, at: new Date().toISOString(), meta: m, runs };
+  }
+  async function packSave(data) {
+    const json = JSON.stringify(data);
+    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(json), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ1.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
+    return 'LQ0.' + b64(unescape(encodeURIComponent(json)));
+  }
+  // accepts the code or the whole link; rejects with a message for parents
+  async function unpackSave(text) {
+    const bad = new Error('Das ist kein vollständiger Lernquest-Code. Bitte den ganzen Code kopieren und einfügen.');
+    const m = /^LQ([01])\.([A-Za-z0-9_-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
+    if (!m) throw bad;
+    if (m[1] === '1' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
+    let d;
+    try {
+      const bin = atob(m[2].replace(/-/g, '+').replace(/_/g, '/'));
+      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(Uint8Array.from(bin, (c) => c.charCodeAt(0)), new DecompressionStream('deflate-raw')).text());
+    } catch (e) { throw bad; }
+    if (!isObj(d) || d.v !== 1 || !isObj(d.meta)) throw bad;
+    return { at: typeof d.at === 'string' ? d.at : '', meta: normMeta(d.meta), runs: isObj(d.runs) ? d.runs : {} };
+  }
+  const okKnow = (q) => isObj(q) && Number.isFinite(q.c) && Number.isFinite(q.t);
+  // dev = this device, inc = from the code (both normalised): nothing that was reached on either device gets lost
+  function mergeMeta(dev, inc) {
+    const m = JSON.parse(JSON.stringify(dev));
+    for (const k of ['runs', 'wins', 'bestWorld', 'knowSeq', 'stamps', 'stampsTotal']) if (Number.isFinite(inc[k])) m[k] = Math.max(Number.isFinite(m[k]) ? m[k] : 0, inc[k]);
+    for (const k of ['dex', 'owned', 'seenTut', 'evoUnlocked', 'stampCard']) if (isObj(inc[k])) { if (!isObj(m[k])) m[k] = {}; for (const [id, v] of Object.entries(inc[k])) m[k][id] = !(id in m[k]) ? v : k === 'stampCard' ? Math.max(m[k][id], v) : m[k][id]; }
+    for (const g of MODE_KEYS) for (const [k, st] of Object.entries(m.stats[g])) { st.c += inc.stats[g][k].c; st.t += inc.stats[g][k].t; }
+    for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
+    if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
+    // a device without PIN was not set up yet, so it takes the settings from the code
+    if (!dev.pin && inc.pin) for (const k of ['off', 'sound', 'grade', 'pin', 'setup']) m[k] = inc[k];
+    return m;
+  }
+  function applySave(s, how) {
+    meta = how === 'replace' ? s.meta : mergeMeta(meta, s.meta);
+    for (const g of MODE_KEYS) { const r = s.runs[g]; if (how === 'replace') { if (isObj(r)) save(KEY_RUN_FOR(g), r); else clear(KEY_RUN_FOR(g)); } else if (isObj(r) && !loadRun(g)) save(KEY_RUN_FOR(g), r); }
+    run = null; saveAll();
+    if (!meta.setup.done && !meta.setup.skipped) setupDone('skipped'); // loading a save replaces the setup dialog
+    screenTitle();
+  }
+  function summaryHtml(s) {
+    const open = MODE_KEYS.filter((g) => isObj(s.runs[g])).map((g) => MODES[g].title); const d = new Date(s.at);
+    return `<ul class="sumlist">${[Number.isFinite(s.meta.stamps) ? `🏷 ${s.meta.stamps} Stempel` : '', `${s.meta.wins} ${s.meta.wins === 1 ? 'Sieg' : 'Siege'}`, `${Object.keys(s.meta.dex).length} im Monsterbuch`,
+      open.length ? `Laufende Abenteuer: ${open.join(', ')}` : 'Kein laufendes Abenteuer', isNaN(d) ? '' : `Gesichert am ${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`].filter(Boolean).map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  }
+  function askImport(s) {
+    const ov = modal(`<h2>Spielstand gefunden</h2>${summaryHtml(s)}<p>Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.</p><div class="stack"><button class="btn" id="imerge">Zusammenlegen</button><button class="btn secondary" id="ireplace">Ersetzen</button><button class="btn secondary" id="ino">Nicht laden</button></div>`);
+    const go = (how) => () => { ov.remove(); askPin(() => applySave(s, how)); };
+    $('#imerge', ov).onclick = go('merge'); $('#ireplace', ov).onclick = go('replace'); $('#ino', ov).onclick = () => ov.remove();
+  }
+  function importFromLink() {
+    const h = location.hash; if (!h.startsWith('#lade=')) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* file:// in some browsers */ }
+    unpackSave(h).then(askImport, (e) => { const ov = modal(`<h2>Spielstand nicht geladen</h2><p>${esc(e.message)}</p><button class="btn" id="iok">OK</button>`); $('#iok', ov).onclick = () => ov.remove(); });
   }
 
   function screenStarter() {
@@ -703,7 +774,7 @@
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
-    meta.wins++; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
+    meta.wins++; meta.progressAt = new Date().toISOString(); const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
     render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p><p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
@@ -733,7 +804,9 @@
       ${tables}
       ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}
       <h2 class="psec" id="p-save">Spielstand</h2>
-      ${card('Sichern und laden', note('Bald: den Spielstand als Code sichern und auf einem anderen Gerät laden.'))}
+      ${backupDue() ? `<div class="card warncard" id="pwarn"><p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>` : ''}
+      ${card('Spielstand sichern', `${note('Der Code enthält den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)}
+      <div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.')}`)}</div>
       ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Spielen. Als App auf dem Startbildschirm ist er sicherer.'))}
       <button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button>
       <h2 class="psec" id="p-appsec">App</h2>
@@ -746,6 +819,7 @@
     const go = (id) => { const el = $('#p-' + id); if (el) scroller.scrollTop = el.offsetTop - scroller.offsetTop - 8; };
     app.querySelectorAll('[data-jump]').forEach((b) => { b.onclick = () => go(b.dataset.jump); });
     if (jump) go(jump);
+    if (jump === 'load') $('#pcodein').focus({ preventScroll: true });
     $('#back').onclick = () => back();
     const keepScroll = (fn) => () => { const y = scroller.scrollTop; fn(); $('.scroll').scrollTop = y; };
     $('#rtut').onclick = keepScroll(() => { meta.seenTut = {}; saveAll(); again(); });
@@ -755,6 +829,24 @@
     $('#psound').onclick = keepScroll(() => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     const newPin = () => setPin(() => again('appsec'), () => again('appsec'));
     for (const id of ['pnew', 'pset', 'pchange']) if ($('#' + id)) $('#' + id).onclick = newPin;
+    $('#pexport').onclick = async () => {
+      meta.backupAt = new Date().toISOString(); saveAll(); if ($('#pwarn')) $('#pwarn').remove();
+      const full = saveData(false); const code = await packSave(full); const link = (c) => SITE + '#lade=' + c;
+      let qr = QR.svg(link(code), 'QR-Code mit dem Spielstand'), short = false;
+      if (!qr) { qr = QR.svg(link(await packSave(saveData(true))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
+      $('#pout').innerHTML = `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
+        ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer, den ganzen Spielstand gibt es nur mit dem Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte den Code benutzen.')}`;
+      $('#pcopy').onclick = () => { const say = (t) => { $('#pcmsg').textContent = t; }; const mark = () => { $('#pcode').focus(); $('#pcode').select(); say('Der Code ist markiert. Bitte jetzt kopieren.'); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(() => say('Kopiert.'), mark); else mark(); };
+      if ($('#pshare')) $('#pshare').onclick = () => navigator.share({ title: 'Lernquest-Spielstand', text: link(code) }).catch(() => { });
+    };
+    const readCode = async (how) => {
+      let s; try { s = await unpackSave($('#pcodein').value); } catch (e) { $('#pimsg').textContent = e.message; return; }
+      if (how === 'merge') return applySave(s, how);
+      const ov = modal(`<h2>Alles ersetzen?</h2>${summaryHtml(s)}<p>Alles auf diesem Gerät wird durch diesen Spielstand ersetzt.</p><div class="stack"><button class="btn" id="yes">Ja, ersetzen</button><button class="btn secondary" id="no">Abbrechen</button></div>`);
+      $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => applySave(s, how);
+    };
+    $('#pmerge').onclick = () => readCode('merge'); $('#preplace').onclick = () => readCode('replace');
     if ($('#pdel')) $('#pdel').onclick = () => { meta.pin = ''; saveAll(); again('appsec'); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = keepScroll(() => { meta.grade = +b.dataset.grade; saveAll(); again(); }); });
     app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
@@ -798,5 +890,6 @@
 
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
-  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle };
+  importFromLink();
+  window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta };
 })();
