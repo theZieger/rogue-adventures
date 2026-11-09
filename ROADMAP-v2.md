@@ -67,7 +67,7 @@ Run-Speicherstände mit, deshalb gehört **alles Persistente in meta oder die Ru
 | `stamps` | `number` | `0` | 03 | Stempel-Guthaben |
 | `stampsTotal` | `number` | `0` | 03 | je verdient (für Belohnungen nach Taten) |
 | `stampCard` | `{ [yyyy-Www]: 1 \| 2 }` | `{}` | 03/04 | 1 = in der Woche gespielt, 2 = Wochenaufgabe geschafft |
-| `weekly` | `{ week: string, progress: number[], done: bool }` | `{week:'',progress:[],done:false}` | 04 | Fortschritt der aktuellen Woche |
+| `weekly` | `{ week: string, progress: number[], done: bool, beaten: {[mode]: bool}, tally: {...} }` | `{week:'',progress:[],done:false,beaten:{},tally:{}}` | 04 | Fortschritt der aktuellen Woche; `beaten` = Wochenboss je Einheit besiegt, `tally` = geübte Aufgabenarten dieser Woche für den Wochenbericht |
 | `owned` | `{ [id]: true }` | `{}` | 05+ | gekaufte/erspielte Dinge (Kleidung, Helden, Karten, Kreiselteile, Möbel) |
 | `worn` | `{ [heroId]: outfitId }` | `{}` | 05 | angezogene Kleidung je Held |
 | `garden` | `{ beds: [{ crop: string \| null, plantedAt: number }] }` | 4 Beete, leer | 09 | Schulgarten |
