@@ -160,7 +160,7 @@ async function step(){
     // steer towards a Forscherlabor/Schatzkarte/Bergwerk or the Kreisel-Arena further up, so the bot plays them whatever the seed –
     // never at the cost of the weekly boss or the Lesestube; in even worlds the arena goes first, as it often shares floors with the Bergwerk
     { const r=w.__mq.run; const reach=(ts,f,i)=>{ const nd=r.map[f]&&r.map[f][i]; return !!nd&&(ts.includes(nd.t)||nd.n.some(j=>reach(ts,f+1,j))); };
-      let pool=nodes; for(const t of ['weekboss','lesen']){ const k=pool.filter(n=>reach([t],r.floor-1,+n.dataset.n)); if(k.length) pool=k; }
+      let pool=nodes; for(const t of ['lesen','weekboss']){ const k=pool.filter(n=>reach([t],r.floor-1,+n.dataset.n)); if(k.length) pool=k; }
       const goals=[['labor','karte','bergwerk'],['arena']]; if(r.world%2===0) goals.reverse();
       for(const ts of goals){ const ways=pool.filter(n=>reach(ts,r.floor-1,+n.dataset.n)); const way=ways.find(n=>n.classList.contains('markt'))||ways[0];
         if(way){ if(way.classList.contains('weekboss')) weekbossFights++; if(way.classList.contains('lesen')) readNodes++; click(way); return; } } }
