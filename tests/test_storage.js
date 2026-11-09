@@ -218,6 +218,60 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   check(!!p2.dump().mathquest_run_kirchenjahr && !!p2.$('[data-cont="kirchenjahr"]'), 'Kirchenjahr adventure is saved and can be continued');
 }
 
+// 19. Markt: coins in the run, one market per world, paying, change, reload inside the market
+{
+  const skip = { setup: { done: false, skipped: true, at: 'x' } };
+  const p1 = startMathFight(); const r0 = p1.w.__mq.run;
+  check(r0.coins === 100, 'a new Zahlenquest adventure starts with 1 € in the purse');
+  const markets = r0.map.flatMap((fl, f) => fl.filter((n) => n.t === 'markt').map(() => f));
+  check(markets.length === 1 && markets[0] >= 2 && markets[0] <= 5, 'exactly one market per world, on floors 3–6');
+  { // an adventure saved before coins existed loads with an empty purse
+    const saved = p1.dump(); const r = JSON.parse(saved[RUN]); delete r.coins; r.map.forEach((fl) => fl.forEach((n) => { if (n.t === 'markt') n.t = 'event'; })); saved[RUN] = JSON.stringify(r);
+    const p = open(saved); p.click('[data-cont="math"]');
+    check(p.errors.length === 0 && p.w.__mq.run.coins === 0 && !!p.$('#fe'), 'old adventure without coins continues with 0 ct');
+  }
+  { // parents switch „Geld“ off: no market in new maps, no coins on the map
+    const p = open({ [META]: JSON.stringify(Object.assign({ off: { math: ['geld'] } }, skip)) });
+    p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+    check(!p.w.__mq.run.map.flat().some((n) => n.t === 'markt') && !p.text().includes('🪙'), 'with „Geld“ switched off there is no market and no purse');
+    const k = open({ [META]: JSON.stringify(skip) }); k.click('[data-new="kartoffel"]'); k.click('.choice'); k.click('#go');
+    check(!k.w.__mq.run.map.flat().some((n) => n.t === 'markt'), 'other subjects have no market');
+  }
+  // stand in front of the market with a fixed purse and offers, then reopen the app
+  const atMarket = (world, coins) => { const saved = p1.dump(); const r = JSON.parse(saved[RUN]); const f = r.map.findIndex((fl) => fl.some((n) => n.t === 'markt'));
+    r.world = world; r.floor = f + 1; r.path = r.map.slice(0, f + 1).map((fl, k) => (k === f ? fl.findIndex((n) => n.t === 'markt') : 0)); r.coins = coins;
+    r.node = { type: 'markt', offers: ['beere', 'trank', 'engel'], sold: [] }; saved[RUN] = JSON.stringify(r);
+    const p = open(saved); p.click('[data-cont="math"]'); if (p.$('#tutok')) p.click('#tutok'); return p; };
+  const coin = (p, v) => p.click(`.coins .coin[data-v="${v}"]`);
+  const offer = (p, i) => p.click(`.offer[data-i="${i}"]`);
+  const stat = (p) => p.w.__mq.meta.stats.math.geld;
+  {
+    const p = atMarket(1, 150);
+    check(!!p.$('.market') && p.errors.length === 0 && p.$('#purse').textContent === '1 € 50 ct' && [...p.d.querySelectorAll('.offer .name')].map((x) => x.textContent).join() === 'Beere,Trank,Schutzengel', 'a saved run inside the market reopens with the same offers and purse');
+    offer(p, 2); check(p.$('#pay').disabled && p.d.querySelectorAll('.coins .coin:not([disabled])').length === 0 && p.text().includes('reicht dein Geld noch nicht'), 'no purchase without enough money');
+    offer(p, 0); coin(p, 50); p.click('#pay');
+    check(p.w.__mq.run.coins === 150 && !p.$('.offer.sold') && stat(p).t === 1 && stat(p).c === 0 && p.text().includes('Das sind 50 ct'), 'paying the wrong amount gives the money back and counts as a try');
+    offer(p, 0); coin(p, 100);
+    check(p.$('.coins .coin[data-v="100"]').disabled && !p.$('.coins .coin[data-v="50"]').disabled, 'coins worth more than what is left in the purse are greyed out');
+    p.click('#counter .coin'); check(!p.$('#counter .coin') && !p.$('.coins .coin[data-v="100"]').disabled, 'tapping a coin on the counter takes it back');
+    coin(p, 20); coin(p, 20); coin(p, 10); coin(p, 10); p.click('#pay');
+    const r = p.w.__mq.run;
+    check(r.coins === 90 && r.items.filter((x) => x === 'beere').length === 2 && !!p.$('.offer.sold[data-i="0"]') && stat(p).c === 1 && stat(p).t === 2, 'paying exactly buys the berry plus a bonus berry');
+    const p2 = open(p.dump()); p2.click('[data-cont="math"]');
+    check(!!p2.$('.offer.sold[data-i="0"]') && p2.w.__mq.run.coins === 90, 'after reopening the bought item stays sold and the purse stays the same');
+    p2.click('#leave'); check(!!p2.$('.wmap') && p2.w.__mq.run.floor === r.floor + 1, 'leaving the market moves on');
+  }
+  {
+    const p = atMarket(2, 300); offer(p, 1); coin(p, 200); p.click('#pay'); if (p.$('#tutok')) p.click('#tutok');
+    const answer = (e, c) => { const inps = p.d.querySelectorAll('.inp'); inps[0].click(); for (const ch of String(e)) p.click(`.numpad [data-k="${ch}"]`); inps[1].click(); for (const ch of String(c)) p.click(`.numpad [data-k="${ch}"]`); p.click('.numpad [data-k="ok"]'); };
+    check(p.$('.expr').textContent === '2 € − 1 € 20 ct' && p.d.querySelectorAll('.inp').length === 2, 'overpaying in world 2 asks for the change in € and ct');
+    answer(0, 70); check(p.text().includes('Richtig wäre: 80 ct'), 'a wrong change answer shows the right amount without a comma'); p.click('#next');
+    check(!!p.$('.market') && p.w.__mq.run.coins === 300 && !p.$('.offer.sold') && stat(p).t === 1, 'wrong change: money back, nothing bought, the try counts');
+    offer(p, 1); coin(p, 200); p.click('#pay'); answer(0, 80); p.click('#next');
+    check(p.w.__mq.run.coins === 180 && !!p.$('.offer.sold[data-i="1"]') && p.w.__mq.run.items.filter((x) => x === 'beere').length === 0 && stat(p).c === 1, 'right change buys the potion (no bonus berry in world 2)');
+  }
+}
+
 // 12. Save code: export, import (replace/merge), broken codes, link import, backup reminder
 const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
 const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await sleep(10); return fn(); };
@@ -541,7 +595,7 @@ async function gardenWinCases() {
   check(p2.errors.length === 0 && !!p2.dump().mathquest_run_freunde && !!p2.$('[data-cont="freunde"]'), 'Gute Freunde adventure is saved and can be continued');
 }
 
-// 17. Weekly goals, weekly boss, weekly report
+// 18. Weekly goals, weekly boss, weekly report
 const W48 = '2026-11-25T10:00:00', W49 = '2026-12-02T10:00:00'; // maths goal: W48 the weekly boss, W49 right answers
 async function weeklyCases() {
   { // same week key → same goals on two devices; one goal per subject, only enabled task types
