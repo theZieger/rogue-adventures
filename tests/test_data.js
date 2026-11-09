@@ -55,7 +55,7 @@ for (const [mode, cfg] of Object.entries(modes)) {
     ms.forEach((m) => { if (!mods.has(m)) fail(`${mode} ${name}: unknown module ${m}`); });
     if (new Set(list.map((a) => a.name)).size !== list.length) fail(`${mode} ${name}: attack names not distinct`);
   }
-  for (const m of mods) if (!cfg.extra[m]) fail(`${mode}: no extra attack name for module ${m}`);
+  for (const m of mods) if (!cfg.extra[m] && !cfg.modules[m].shop) fail(`${mode}: no extra attack name for module ${m}`);
 
   if (!Array.isArray(cfg.moves) || !cfg.moves.length || cfg.moves.some((x) => typeof x !== 'string' || !x.trim())) fail(`${mode}: moves list empty or invalid`);
 
