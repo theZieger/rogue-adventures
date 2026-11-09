@@ -5,13 +5,14 @@ const MJ = (() => {
 
   // Lehrplan Mathematik Klasse 3: Größen und Messen, Daten und Zufall
   const MODULES = {
-    uhr: { name: 'Uhrturm', icon: '🕰️', maxTier: 4, worldCap: [2, 4], dmg: 12 },
+    uhr: { name: 'Uhrturm', icon: '🕰️', maxTier: 5, worldCap: [2, 5], dmg: 12 },
     laenge: { name: 'Messlatte', icon: '📏', maxTier: 3, worldCap: [2, 3], dmg: 12 },
     masse: { name: 'Waage', icon: '⚖️', maxTier: 3, worldCap: [2, 3], dmg: 12 },
     rad: { name: 'Glücksrad', icon: '🎲', maxTier: 3, worldCap: [2, 3], dmg: 10 },
     los: { name: 'Losbude', icon: '🎟️', maxTier: 2, worldCap: [1, 2], dmg: 14 },
     tafel: { name: 'Schautafel', icon: '📊', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     sach: { name: 'Sachaufgaben', icon: '🎪', maxTier: 3, worldCap: [2, 3], dmg: 16 },
+    fahrplan: { name: 'Fahrplan', icon: '🚂', maxTier: 2, worldCap: [1, 2], dmg: 12 },
   };
 
   /* ---------- Units and formats (never a comma number) ---------- */
@@ -66,6 +67,19 @@ const MJ = (() => {
     const rects = bars.map((b, i) => { const x = x0 + i * w + w * 0.2; return `<rect class="jm-bar" data-label="${b.label}" data-value="${b.value}" x="${x.toFixed(1)}" y="${Y(b.value)}" width="${(w * 0.6).toFixed(1)}" height="${y0 - Y(b.value)}" fill="${cols[i]}" stroke="${OUT}" stroke-width="1.5"/><text x="${(x + w * 0.3).toFixed(1)}" y="${y0 + 15}" text-anchor="middle" font-size="11" fill="${OUT}">${b.label}</text>`; }).join('');
     return `<svg class="jm-fig jm-wide" viewBox="0 0 320 162" role="img" aria-label="Säulendiagramm: ${title}"><text x="${x0}" y="11" font-size="12" font-weight="700" fill="${OUT}">${title}</text>${grid}${rects}</svg>`;
   }
+  // the same data with lying bars
+  function barhSVG(title, bars, step, top) {
+    const x0 = 84, W = 222, y0 = 22, row = 28, X = (v) => x0 + (v / top) * W, y1 = y0 + bars.length * row; let grid = '';
+    for (let v = 0; v <= top; v += step) grid += `<line x1="${X(v)}" y1="${y0 - 4}" x2="${X(v)}" y2="${y1}" stroke="${v ? '#B8C2D9' : OUT}" stroke-width="${v ? 1 : 2}"/><text x="${X(v)}" y="${y1 + 14}" text-anchor="middle" font-size="11" fill="${OUT}">${v}</text>`;
+    const cols = ['#3F7FE0', '#E8453C', '#3DAA55', '#F5A623'];
+    const rects = bars.map((b, i) => { const y = y0 + i * row + 5; return `<rect class="jm-bar" data-label="${b.label}" data-value="${b.value}" x="${x0}" y="${y}" width="${(X(b.value) - x0).toFixed(1)}" height="${row - 10}" fill="${cols[i]}" stroke="${OUT}" stroke-width="1.5"/><text x="${x0 - 6}" y="${y + 13}" text-anchor="end" font-size="11" fill="${OUT}">${b.label}</text>`; }).join('');
+    return `<svg class="jm-fig jm-wide" viewBox="0 0 320 ${y1 + 20}" role="img" aria-label="Balkendiagramm: ${title}"><text x="${x0}" y="11" font-size="12" font-weight="700" fill="${OUT}">${title}</text>${grid}${rects}</svg>`;
+  }
+  // Fahrplan: one row per stop, one column per train; times without „Uhr“ like on a real timetable
+  function planTable(stops, times) {
+    const head = `<tr><th>Haltestelle</th>${times.map((_, b) => `<th>Bahn ${b + 1}</th>`).join('')}</tr>`;
+    return `<table class="jm-plan"><caption>Fahrplan der Jahrmarktbahn</caption>${head}${stops.map((st, i) => `<tr><th>${st}</th>${times.map((col) => `<td>${tm(col[i]).replace('\u00a0Uhr', '')}</td>`).join('')}</tr>`).join('')}</table>`;
+  }
 
   /* ---------- Task builders ---------- */
   // number task: question (and drawing) come as ready HTML in `fig`; answers are typed on the keypad
@@ -93,6 +107,7 @@ const MJ = (() => {
       if (t === 1) m = pick([0, 15, 30, 45]); else if (t === 2) m = 5 * rnd(0, 11); else do { m = rnd(1, 59); } while (m % 5 === 0);
       return num('clock', 'Wie spät ist es auf der Turmuhr?', clockSVG(h, m), [h, m], ['Stunden', 'Minuten'], `${h}:${pad(m)} Uhr`);
     }
+    if (t === 5) return genSek();
     const k = rnd(0, 2);
     if (k === 0) {
       const s = 5 * rnd(108, 228), d = 5 * rnd(3, 11);
@@ -104,6 +119,18 @@ const MJ = (() => {
     }
     const n = rnd(2, 7);
     return num('quarter', `Das Kettenkarussell dreht sich ${n} Viertelstunden lang. Wie viele Minuten sind das?`, '', [15 * n], ['Minuten'], `${15 * n} Minuten`);
+  }
+  const sec = (s) => { const m = Math.floor(s / 60), r = s % 60; const ms = m ? `${m} ${m === 1 ? 'Minute' : 'Minuten'}` : '', rs = r ? `${r} ${r === 1 ? 'Sekunde' : 'Sekunden'}` : ''; return [ms, rs].filter(Boolean).join(' '); };
+  function genSek() {
+    const [a, b] = shuffle(NAMES);
+    return pick([
+      () => { const n = rnd(1, 5); return num('sec', `${n} ${n === 1 ? 'Minute' : 'Minuten'} = ? Sekunden`, '', [60 * n], ['Sekunden'], `${60 * n} Sekunden`); },
+      () => { let s; do s = rnd(65, 295); while (s % 60 === 0); return num('secsplit', `${pick(['Die Achterbahn', 'Das Riesenrad', 'Der Kettenflieger'])} fährt ${s} Sekunden. Das sind ? Minuten und ? Sekunden.`, '', [Math.floor(s / 60), s % 60], ['Minuten', 'Sekunden'], sec(s)); },
+      () => { const m = rnd(1, 4), r = rnd(2, 59); return num('secjoin', `Eine Runde im Autoscooter dauert ${m} ${m === 1 ? 'Minute' : 'Minuten'} und ${r} Sekunden. Wie viele Sekunden sind das?`, '', [60 * m + r], ['Sekunden'], `${60 * m + r} Sekunden`); },
+      () => { const x = rnd(35, 110), y = x + rnd(5, 40); return num('secdiff', `Beim Sackhüpfen braucht ${a} ${sec(x)}. ${b} braucht ${sec(y)}. Wie viele Sekunden ist ${a} schneller?`, '', [y - x], ['Sekunden'], `${y - x} Sekunden`); },
+      // minute-exact time span over the full hour
+      () => { const s = rnd(14 * 60 + 35, 18 * 60 + 55), d = rnd(6, 49); return num('span', `Die Geisterbahn fährt um ${tm(s)} los und kommt um ${tm(s + d)} wieder an. Wie viele Minuten dauert die Fahrt?`, '', [d], ['Minuten'], `${d} Minuten`); },
+    ])();
   }
   const THINGS = ['Zuckerstange', 'Lakritzschnecke', 'Brezel', 'Lebkuchenstange'];
   function genLaenge(t) {
@@ -213,11 +240,33 @@ const MJ = (() => {
   function genTafel(t) {
     const C = pick(CHARTS); const step = t === 1 ? pick([2, 5, 10]) : 10, top = step * (t === 1 ? rnd(6, 10) : 10), unit = t === 1 ? step : 5;
     let vals; do { vals = C.bars.map(() => unit * rnd(1, top / unit)); } while (new Set(vals).size < vals.length || (t === 2 && vals.every((v) => v % 10 === 0)));
-    const bars = C.bars.map((b, i) => ({ label: b[0], value: vals[i] })); const svg = chartSVG(C.title, bars, step, top);
+    const bars = C.bars.map((b, i) => ({ label: b[0], value: vals[i] })); const svg = (t === 2 && Math.random() < 0.5 ? barhSVG : chartSVG)(C.title, bars, step, top);
     const [i, j] = shuffle([0, 1, 2, 3]); const [hi, lo] = vals[i] > vals[j] ? [i, j] : [j, i];
     if (t === 1 || Math.random() < 0.2) { const k = t === 2 ? vals.findIndex((v) => v % 10) : i; return num('bar', C.read(C.bars[k][1]), svg, [vals[k]], null, `${vals[k]}`); }
     if (Math.random() < 0.5) return num('bar', C.diff(C.bars[hi][1], C.bars[lo][1]), svg, [vals[hi] - vals[lo]], null, `${vals[hi]} − ${vals[lo]} = ${vals[hi] - vals[lo]}`);
     return num('bar', C.sum(C.bars[i][1], C.bars[j][1]), svg, [vals[i] + vals[j]], null, `${vals[i]} + ${vals[j]} = ${vals[i] + vals[j]}`);
+  }
+  // stop name, „an der …“/„am …“, „von der …“/„vom …“, „zur …“/„zum …“
+  const STOPS = { Eingang: ['am Eingang', 'vom Eingang', 'zum Eingang'], Losbude: ['an der Losbude', 'von der Losbude', 'zur Losbude'], Karussell: ['am Karussell', 'vom Karussell', 'zum Karussell'],
+    Geisterbahn: ['an der Geisterbahn', 'von der Geisterbahn', 'zur Geisterbahn'], Autoscooter: ['am Autoscooter', 'vom Autoscooter', 'zum Autoscooter'], Riesenrad: ['am Riesenrad', 'vom Riesenrad', 'zum Riesenrad'] };
+  function genFahrplan(t) {
+    const stops = ['Eingang'].concat(shuffle(['Losbude', 'Karussell', 'Geisterbahn', 'Autoscooter']).slice(0, 2), ['Riesenrad']);
+    // tier 1 stays inside one hour; tier 2 crosses the full hour
+    const legs = [0, 1, 2].map(() => rnd(3, t === 1 ? 8 : 12)), every = t === 1 ? pick([10, 15]) : pick([15, 20, 30]);
+    const first = 60 * rnd(14, 16) + (t === 1 ? 0 : 5 * rnd(1, 9));
+    const times = [0, 1, 2].map((b) => stops.map((_, i) => first + b * every + legs.slice(0, i).reduce((x, y) => x + y, 0)));
+    const table = planTable(stops, times);
+    const dur = () => { let i, j; do { i = rnd(0, 2); j = rnd(i + 1, 3); } while (t === 1 ? false : Math.floor(times[0][i] / 60) === Math.floor(times[0][j] / 60) && Math.random() < 0.7);
+      return num('plan_dur', `Wie viele Minuten dauert die Fahrt ${STOPS[stops[i]][1]} ${STOPS[stops[j]][2]}?`, table, [times[0][j] - times[0][i]], ['Minuten'], `${times[0][j] - times[0][i]} Minuten`); };
+    if (t === 1 && Math.random() < 0.5) {
+      const b = rnd(0, 2), i = rnd(0, 2); const right = times[b][i]; const wrong = [...new Set([times[b][i + 1], times[(b + 1) % 3][i], times[(b + 2) % 3][i], times[b][i ? i - 1 : 3]])].filter((x) => x !== right);
+      const options = shuffle([right].concat(shuffle(wrong).slice(0, 2))).map(tm);
+      return choice('plan_dep', `Wann fährt Bahn ${b + 1} ${STOPS[stops[i]][0]} ab?`, table, options, tm(right), `In der Spalte „Bahn ${b + 1}“ in der Zeile „${stops[i]}“ steht ${tm(right).replace('\u00a0Uhr', '')}.`, stops.join() + times.flat().join());
+    }
+    if (t === 1 || Math.random() < 0.4) return dur();
+    // the latest train that still arrives in time
+    const k = rnd(0, 2), goal = times[k][3] + rnd(0, every - 1); const options = ['Bahn 1', 'Bahn 2', 'Bahn 3'];
+    return choice('plan_late', `Du willst um ${tm(goal)} am Riesenrad sein. Mit welcher Bahn fährst du am spätesten los und kommst trotzdem pünktlich an?`, table, options, options[k], `Bahn ${k + 1} ist um ${tm(times[k][3])} am Riesenrad${k < 2 ? `, Bahn ${k + 2} erst um ${tm(times[k + 1][3])}` : ''}.`, stops.join() + times.flat().join() + goal);
   }
   const SNACKS = [['Eine Zuckerwatte', 'eine Zuckerwatte'], ['Ein Liebesapfel', 'einen Liebesapfel'], ['Eine Tüte gebrannte Mandeln', 'eine Tüte gebrannte Mandeln'], ['Ein Lebkuchenherz', 'ein Lebkuchenherz'], ['Eine Bratwurst', 'eine Bratwurst'], ['Ein Becher Kinderpunsch', 'einen Becher Kinderpunsch']];
   function genSach(t) {
@@ -242,7 +291,7 @@ const MJ = (() => {
       () => { const p = 10 * rnd(15, 45), n = 2, pay = 10; return num('m_change', `${who} kauft ${n} Lebkuchenherzen für je ${euro(p)} und bezahlt mit ${pay} €. Wie viel Rückgeld bekommt ${who}?`, '', money(pay * 100 - n * p), ['€', 'ct'], euro(pay * 100 - n * p)); },
     ])();
   }
-  const GEN = { uhr: genUhr, laenge: genLaenge, masse: genMasse, rad: genRad, los: genLos, tafel: genTafel, sach: genSach };
+  const GEN = { uhr: genUhr, laenge: genLaenge, masse: genMasse, rad: genRad, los: genLos, tafel: genTafel, sach: genSach, fahrplan: genFahrplan };
   function generate(mod, tier) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
     const tk = GEN[mod](tier); tk.mod = mod; tk.tier = tier; return tk;
@@ -255,6 +304,7 @@ const MJ = (() => {
       2: { title: 'Uhrzeit in 5-Minuten-Schritten', steps: ['Von einer Zahl zur nächsten sind es 5 Minuten.', 'Zähle in 5er-Schritten: Der lange Zeiger auf der 1 heißt 5 Minuten, auf der 2 heißt 10 Minuten, auf der 7 heißt 35 Minuten.', 'Beispiel: Der kurze Zeiger steht zwischen 8 und 9, der lange auf der 4. Es ist 8 Uhr und 20 Minuten.'] },
       3: { title: 'Uhrzeit auf die Minute', steps: ['Zwischen zwei Zahlen liegen 5 Striche. Jeder Strich ist eine Minute.', 'Zähle bis zur letzten Zahl in 5er-Schritten, dann die Striche einzeln weiter.', 'Beispiel: Der lange Zeiger steht 2 Striche hinter der 4. Das sind 20 + 2 = 22 Minuten.'] },
       4: { title: 'Zeitspannen', steps: ['Eine Stunde hat 60 Minuten. Eine Viertelstunde sind 15 Minuten, eine halbe Stunde 30, eine Dreiviertelstunde 45.', 'Von 14:50 Uhr bis 15:15 Uhr: Bis 15:00 Uhr sind es 10 Minuten, dann noch 15. Zusammen 25 Minuten.', 'Beginn 16:40 Uhr, Dauer 45 Minuten: Bis 17:00 Uhr sind es 20 Minuten, dann noch 25. Ende 17:25 Uhr.'] },
+      5: { title: 'Sekunden', steps: ['1 Minute hat 60 Sekunden. Eine Sekunde dauert etwa so lange, wie du brauchst, um „einundzwanzig“ zu sagen.', '90 Sekunden = 60 Sekunden + 30 Sekunden = 1 Minute und 30 Sekunden.', '2 Minuten und 15 Sekunden = 120 Sekunden + 15 Sekunden = 135 Sekunden.', 'Wer weniger Sekunden braucht, ist schneller: 75 Sekunden und 58 Sekunden, 75 − 58 = 17. Der Unterschied ist 17 Sekunden.'] },
     },
     laenge: {
       1: { title: 'Meter und Zentimeter', steps: ['1 m = 100 cm. Ein halber Meter, ½ m, sind 50 cm.', '3 m sind 3 · 100 cm = 300 cm. Umgekehrt: 400 cm sind 4 m.', 'Am Lineal liegt der Gegenstand bei 0 an. Lies ab, wo er endet.'] },
@@ -277,7 +327,11 @@ const MJ = (() => {
     },
     tafel: {
       1: { title: 'Säulendiagramm lesen', steps: ['Unter jeder Säule steht, wofür sie steht.', 'Geh vom oberen Ende der Säule waagerecht nach links zur Zahl.', 'Beispiel: Die Säule vom Riesenrad endet auf der Linie bei 30. Das Riesenrad hatte 30 Fahrten.'] },
-      2: { title: 'Mit dem Diagramm rechnen', steps: ['Endet eine Säule zwischen zwei Linien, liegt ihr Wert genau in der Mitte: Zwischen 20 und 30 liegt 25.', '„Wie viele mehr“: Ziehe den kleineren Wert vom größeren ab, zum Beispiel 45 − 30 = 15.', '„Zusammen“: Rechne beide Werte plus, zum Beispiel 45 + 30 = 75.'] },
+      2: { title: 'Mit dem Diagramm rechnen', steps: ['Im Balkendiagramm liegen die Säulen waagerecht und heißen Balken. Vom Ende des Balkens gehst du senkrecht nach unten zur Zahl.', 'Endet eine Säule oder ein Balken zwischen zwei Linien, liegt ihr Wert genau in der Mitte: Zwischen 20 und 30 liegt 25.', '„Wie viele mehr“: Ziehe den kleineren Wert vom größeren ab, zum Beispiel 45 − 30 = 15.', '„Zusammen“: Rechne beide Werte plus, zum Beispiel 45 + 30 = 75.'] },
+    },
+    fahrplan: {
+      1: { title: 'Fahrplan lesen', steps: ['Im Fahrplan steht jede Haltestelle in einer Zeile und jede Bahn in einer Spalte.', 'Abfahrt von Bahn 2 an der Losbude: Suche die Spalte „Bahn 2“ und gehe nach unten bis zur Zeile „Losbude“. Dort steht zum Beispiel 14:22.', 'Fahrzeit: Fährt die Bahn um 14:05 am Eingang ab und ist um 14:21 am Riesenrad, dauert die Fahrt 21 − 5 = 16 Minuten.'] },
+      2: { title: 'Die richtige Bahn finden', steps: ['Über die volle Stunde rechnest du in zwei Schritten: Von 14:52 bis 15:00 sind es 8 Minuten, bis 15:07 noch 7. Zusammen 15 Minuten.', 'Du willst um 15:10 am Riesenrad sein. Schau in die Zeile „Riesenrad“: Bahn 2 ist um 15:04 da, Bahn 3 erst um 15:24.', 'Bahn 3 kommt zu spät. Also nimmst du Bahn 2.'] },
     },
     sach: {
       1: { title: 'Sachaufgaben', steps: ['Lies die Aufgabe genau. Was weißt du, und was ist gefragt?', 'Beispiel: Eine Fahrt kostet 3 €. Wie viel kosten 4 Fahrten? Du rechnest 4 · 3 € = 12 €.', 'Schreib nur die Zahl in das Feld. Die Einheit steht darunter.'] },
@@ -293,7 +347,7 @@ const MJ = (() => {
     { id: 'schaustellerin', type: 'normal', shape: 'schaustellerin', names: ['Die Schaustellerin', 'Die Schaustellerin', 'Die Schaustellerin'], hp: 65, desc: 'Ihr gehört die Losbude. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Drehscheibe', mod: 'rad' }, { name: 'Lostrommel', mod: 'los' }, { name: 'Preistafel', mod: 'tafel' }, { name: 'Wechselgeld', mod: 'sach' }] },
   ];
-  const EXTRA = { uhr: 'Pendelschlag', laenge: 'Zollstock', masse: 'Sandsack', rad: 'Drehpfeil', los: 'Glückslos', tafel: 'Säulenblick', sach: 'Kassenbon' };
+  const EXTRA = { uhr: 'Pendelschlag', laenge: 'Zollstock', masse: 'Sandsack', rad: 'Drehpfeil', los: 'Glückslos', tafel: 'Säulenblick', sach: 'Kassenbon', fahrplan: 'Fahrkarte' };
   const ENEMIES = {
     1: {
       normal: [
@@ -324,10 +378,11 @@ const MJ = (() => {
     { title: 'Der Obststand', text: 'Die Obsthändlerin wiegt Äpfel und Kürbisse. Hilf ihr beim Wiegen, dann leiht sie dir einen Schild.', opts: [{ label: 'Helfen', task: 'masse', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Ablehnen', effect: {} }] },
     { title: 'Das Glücksrad', text: 'Am Glücksrad darf jeder einmal raten. Wer richtig rät, bekommt eine Eselsbrücke.', opts: [{ label: 'Raten', task: 'rad', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Kasse', text: 'An der Kasse vom Kettenkarussell ist viel los. Hilf beim Rechnen, dann darfst du einmal umsonst mitfahren.', opts: [{ label: 'Mitrechnen', task: 'sach', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Die Haltestelle', text: 'An der Haltestelle der Jahrmarktbahn hängt ein Fahrplan. Der Schaffner fragt nach einer Zeit aus dem Plan. Wer sie findet, bekommt einen Trank.', opts: [{ label: 'Fahrplan lesen', task: 'fahrplan', win: { item: 'trank' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Bank am Riesenrad', text: 'Neben dem Riesenrad steht eine Bank im Schatten. Du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
-  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Längen, Gewichte, Zufall und Sachaufgaben' };
-  return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
+  return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG, barhSVG };
 })();
 if (typeof module !== 'undefined') module.exports = MJ;
