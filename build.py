@@ -12,6 +12,7 @@ css = (SRC / "style.css").read_text(encoding="utf-8")
 logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
+qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
 app = (SRC / "app.js").read_text(encoding="utf-8")
 manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
 sw_src = (SRC / "sw.js").read_text(encoding="utf-8")
@@ -93,6 +94,9 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {mon}
+</script>
+<script>
+{qr}
 </script>
 <script>
 const CHANGELOG = {changelog_js};
