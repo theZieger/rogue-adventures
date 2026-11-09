@@ -37,6 +37,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
 | 🌼 Die Wiese | Sachkunde: acht Wiesenpflanzen als Bild und nach Merkmalen, Stockwerke der Wiese (Bild, Tiere zuordnen, ordnen), Entwicklung von Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Wiese schützen, mit allen Sinnen |
 | 🕰️ Früher und heute | Sachkunde: Geräte und Leben auf dem Land früher und heute, Zeitleiste, Sprachen, Feste und Essen aus aller Welt (Dilemma-Karten ohne falsche Antwort), Nachschlagen und „Kann das stimmen?“ |
+| 🫖 Die Teestube | Englisch, Wortschatz: Englisch → Deutsch und umgekehrt, Zahlen als Wort (bis 20, Stufe 2 bis 100), Farben am Farbfleck, „Was passt nicht?“ – Themen nach Lehrplan Englisch Klasse 3 |
+| 🚌 Der Doppeldecker | Englisch, Sätze und Wendungen: Lückensatz, „Was bedeutet das?“, Wochentage (Stufe 2: Monate) ordnen, Frage und Antwort |
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
 | 👁️ Die fünf Sinne | Sachkunde: Sinnesorgane und Sinne, Auge und Ohr mit Zeichenschule, Sinne schützen, Hilfen für Menschen mit Behinderung (Blindenschrift, Führhund, Gebärdensprache, Hörgerät, Rampe), Nein zu Rauchen, Alkohol und fremden Medikamenten – Dilemma-Karten zum Nein sagen; Kartenfeld „Sinnestäuschung“ (erst vermuten, dann Ergebnis) |
 | 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
@@ -68,8 +70,9 @@ src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontr
 src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/jahrmarkt.js   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
 src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
+src/english.js     Wörter und Sätze für Englisch – hier können Eltern Wörter der Klasse ergänzen (Aufbau im Dateikopf)
 src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
-src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
+src/knowledge.js   Wissensinhalte Ethik, Kartoffel, Deutsch und Englisch (Fragen, Notizkarten, Tutorials)
 src/ethik.js       Ethik-Einheit Ich, wir und die Welt (Fragen, Drei Welten, Dilemma-Karten)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
@@ -107,7 +110,7 @@ Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
 - Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Auge, Ohr und Fahrrad: `EYE_PARTS`, `EAR_PARTS`, `BIKE_PARTS` in `src/sachkunde2.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
 - Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.js`; Dilemma-Karten in `F_EVENTS`; Ich, wir und die Welt in `src/ethik.js` (`POOL`, Dinge für Drei Welten in `DINGE`, Dilemma-Karten in `EVENTS`)
-- Deutsch-Wörter und -Sätze: `src/woerter.js` (danach `npm run build && npm test`)
+- Deutsch-Wörter und -Sätze: `src/woerter.js`, Englisch: `src/english.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
 - Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
 

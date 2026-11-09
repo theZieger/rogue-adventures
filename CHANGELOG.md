@@ -9,7 +9,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
-- Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr, Gute Freunde und „Ich, wir und die Welt“ (Ethik), Kornkammer, Wetterstation, Kompass, Die Wiese, Früher und heute, Die fünf Sinne und Sicher im Verkehr (Sachkunde) – und die neuen Fächer Deutsch und Musik. Die Startseite ordnet sie nach Fächern.
+- Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr, Gute Freunde und „Ich, wir und die Welt“ (Ethik), Kornkammer, Wetterstation, Kompass, Die Wiese, Früher und heute, Die fünf Sinne und Sicher im Verkehr (Sachkunde) – und die neuen Fächer Deutsch, Englisch und Musik. Die Startseite ordnet sie nach Fächern.
 - Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.
 - Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.
 - Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs.

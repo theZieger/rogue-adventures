@@ -1017,6 +1017,146 @@ const MK = (() => {
     { title: 'Der Trinkbrunnen', text: 'Am Trinkbrunnen im Flur machst du eine Pause.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
+  /* ---------- ENGLISCH: Die Teestube und Der Doppeldecker (Wörter und Sätze in english.js) ---------- */
+  const E = typeof ENG !== 'undefined' ? ENG : require('./english.js');
+  // every theme as [[English, German], …]; numbers, colours, days and months count as themes for „Was passt nicht?“
+  const EN_THEMES = Object.assign({}, E.woerter, { Farben: E.farben, Zahlen: E.zahlen.filter((z) => z[2] <= 20), Wochentage: E.tage, Monate: E.monate });
+  // themes that share words in a child's head (school is a place in town, a bus drives through it)
+  const EN_NEAR = ['Schule|In der Stadt', 'Hobbys|In der Stadt', 'Verkehrsmittel|In der Stadt', 'Essen und Trinken|Tiere'];
+  const near = (a, b) => EN_NEAR.includes(a + '|' + b) || EN_NEAR.includes(b + '|' + a);
+  const others = (list, x, n) => shuffle(list.filter((y) => y !== x)).slice(0, n);
+  const T_POOL = [];
+  // numbers have their own task, so the translation tasks leave them out
+  Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([, list]) => list.forEach(([en, de]) => {
+    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0 });
+    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', q: `Wie heißt „${de}“ auf Englisch?`, o: [en].concat(others(list.map((x) => x[0]), en, 2)), a: 0 });
+  }));
+  const NUM = Object.fromEntries(E.zahlen.map(([en, , n]) => [n, en]));
+  // 21 to 99 follow the English pattern: tens, hyphen, ones (forty-two)
+  const numWord = (n) => NUM[n] || NUM[n - (n % 10)] + '-' + NUM[n % 10];
+  function zahlTask(tier, know, seq) {
+    let n;
+    if (tier >= 2) n = Math.random() < 0.3 ? pick([30, 40, 50, 60, 70, 80, 90, 100]) : rnd(2, 9) * 10 + rnd(1, 9);
+    else n = weightedPick(E.zahlen.filter((z) => z[2] <= 20).map((z) => ({ id: 'enz_' + z[2], n: z[2] })), know, seq).n;
+    return { kind: 'num', mod: 'zahl', tier, group: 'zahl:' + tier, note: 'zahlen', text: numWord(n), ask: 'Schreibe die Zahl mit Ziffern.', answers: [n], qid: 'enz_' + n };
+  }
+  const swatch = (hex) => `<div class="figure"><svg viewBox="0 0 160 110" aria-label="Farbfleck"><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="${hex}" stroke="#FFF7E6" stroke-width="5" stroke-linejoin="round"/><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="none" stroke="#1C2541" stroke-width="2"/></svg></div>`;
+  function farbeTask(know, seq) {
+    const c = weightedPick(E.farben.map((f) => ({ id: 'enf_' + f[0], f })), know, seq).f;
+    return { kind: 'choice', mod: 'farbe', tier: 1, group: 'farbe:1', note: 'farben', q: 'Welche Farbe ist das? Tippe auf das englische Wort.', pic: swatch(c[2]), options: shuffle([c[0]].concat(others(E.farben.map((f) => f[0]), c[0], 2))), answer: c[0], why: `${c[0]} heißt ${c[1]}.`, qid: 'enf_' + c[0], cols: 1 };
+  }
+  function oddTask() {
+    const names = Object.keys(EN_THEMES); const a = pick(names.filter((t) => EN_THEMES[t].length >= 3)); const b = pick(names.filter((t) => t !== a && !near(a, t)));
+    const three = shuffle(EN_THEMES[a]).slice(0, 3).map((x) => x[0]); const odd = pick(EN_THEMES[b])[0];
+    return { kind: 'choice', mod: 'odd', tier: 1, group: 'odd:1', note: 'odd', q: 'Welches Wort passt nicht zu den anderen?', options: shuffle(three.concat([odd])), answer: odd, why: `„${odd}“ gehört zum Thema ${b}, die anderen zum Thema ${a}.`, qid: 'eno_' + three.concat([odd]).sort().join('_'), cols: 2 };
+  }
+  function reiheTask(tier) {
+    const months = tier >= 2; const list = months ? E.monate : E.tage;
+    const idx = shuffle(list.map((_, i) => i)).slice(0, 4).sort((x, y) => x - y); const items = idx.map((i) => ({ id: (months ? 'm' : 'd') + i, text: list[i][0] }));
+    return { kind: 'order', mod: 'reihe', tier, group: 'reihe:' + tier, note: 'reihe', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''),
+      q: months ? `Tippe die Monate der Reihe nach an. Das Jahr beginnt mit ${E.monate[0][0]}.` : `Tippe die Wochentage der Reihe nach an. Die Woche beginnt mit ${E.tage[0][0]}.` };
+  }
+  const groupsOf = (list, n) => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n).map((x) => `${x[0]} – ${x[1]}`).join(', '));
+  const T_NOTES = {
+    woerter: { title: 'Englische Wörter', lines: ['Im Englischen gibt es nur einen Artikel: the. the dog – der Hund, the cat – die Katze.', 'Manche Wörter klingen fast wie im Deutschen: house – das Haus, apple – der Apfel.', 'Sprich das Wort leise auf Englisch und denk an das Bild dazu.'] },
+    zahlen: { title: 'Zahlen', lines: ['13 bis 19 enden auf -teen: thirteen, fourteen, fifteen.', 'Die Zehner enden auf -ty: twenty, thirty, forty. 100 heißt one hundred.', 'Bei 21 bis 99 kommt zuerst der Zehner, dann der Einer: forty-two = 42.'] },
+    farben: { title: 'Farben', lines: groupsOf(E.farben, 4) },
+    odd: { title: 'Was passt nicht?', lines: ['Drei Wörter gehören zu einem Thema, eines nicht.', 'Übersetze jedes Wort im Kopf: dog – Hund, cat – Katze, pig – Schwein, red – rot.', 'Hund, Katze und Schwein sind Tiere. Rot ist eine Farbe.'] },
+  };
+  const T_MODULES = {
+    en_de: { name: 'Englisch → Deutsch', icon: '🔤', maxTier: 1, worldCap: [1], dmg: 12 },
+    de_en: { name: 'Deutsch → Englisch', icon: '🔁', maxTier: 1, worldCap: [1], dmg: 12 },
+    zahl: { name: 'Zahlen', icon: '🔢', maxTier: 2, worldCap: [2], dmg: 14 },
+    farbe: { name: 'Farben', icon: '🎨', maxTier: 1, worldCap: [1], dmg: 10 },
+    odd: { name: 'Was passt nicht?', icon: '🧺', maxTier: 1, worldCap: [1], dmg: 14 },
+  };
+  const T_TUT = {
+    'en_de:1': { title: 'Englisch → Deutsch', steps: ['Ein englisches Wort steht da.', 'Welches deutsche Wort bedeutet dasselbe?', 'Beispiel: „dog“ heißt „der Hund“.', 'Tippe auf das deutsche Wort.'] },
+    'de_en:1': { title: 'Deutsch → Englisch', steps: ['Ein deutsches Wort steht da.', 'Wie heißt es auf Englisch?', 'Beispiel: „die Katze“ heißt „cat“.', 'Tippe auf das englische Wort.'] },
+    'zahl:1': { title: 'Zahlen bis 20', steps: ['Eine Zahl steht als englisches Wort da.', 'Lies das Wort und tippe die Zahl mit dem Ziffernblock ein.', 'Beispiel: fourteen. four ist 4, -teen heißt zehn dazu, also 14.', 'Prüfe mit ✓.'] },
+    'zahl:2': { title: 'Zahlen bis 100', steps: ['Jetzt kommen Zahlen bis 100.', 'Die Zehner enden auf -ty: forty ist 40.', 'Zuerst kommt der Zehner, dann der Einer: forty-two ist 42. Im Deutschen ist es umgekehrt: zweiundvierzig.', 'Tippe die Zahl ein und prüfe mit ✓.'] },
+    'farbe:1': { title: 'Farben', steps: ['Du siehst einen Farbfleck.', 'Wie heißt die Farbe auf Englisch?', 'Beispiel: Der Fleck ist rot. Rot heißt red.', 'Tippe auf das englische Wort.'] },
+    'odd:1': { title: 'Was passt nicht?', steps: ['Vier englische Wörter. Drei gehören zu einem Thema.', 'Übersetze jedes Wort im Kopf.', 'Beispiel: dog, cat, red, pig. Hund, Katze und Schwein sind Tiere, rot ist eine Farbe. Also passt red nicht.', 'Tippe auf das Wort, das nicht passt.'] },
+  };
+  const T_STARTERS = [
+    { id: 'teapot', type: 'wasser', shape: 'teapot', names: ['Teapot', 'Teapot', 'Teapot'], hp: 70, desc: 'Eine Teekanne aus weißem Porzellan mit blauem Muster. Jede richtige Antwort heilt sie um 3 Lebenspunkte.', perk: 'heal',
+      attacks: [{ name: 'Teesieb', mod: 'en_de' }, { name: 'Dampfstrahl', mod: 'de_en' }, { name: 'Würfelzucker', mod: 'zahl' }, { name: 'Teewärmer', mod: 'farbe' }] },
+  ];
+  const T_EXTRA = { en_de: 'Teesieb', de_en: 'Dampfstrahl', zahl: 'Würfelzucker', farbe: 'Teewärmer', odd: 'Kuchenetagere' };
+  const T_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Die Möwe', type: 'wasser', shape: 'moewe', hp: 26, atk: 3 },
+        { name: 'Der Teefleck', type: 'wasser', shape: 'teefleck', hp: 24, atk: 4 },
+        { name: 'Der Umklappschirm', type: 'normal', shape: 'umklappschirm', hp: 28, atk: 3 },
+        { name: 'Die Bulldogge', type: 'normal', shape: 'bulldogge', hp: 30, atk: 4 },
+      ],
+      elite: { name: 'Der Pfeifkessel', type: 'feuer', shape: 'pfeifkessel', hp: 45, atk: 5 },
+      boss: { name: 'Der Wappenlöwe', acc: 'den Wappenlöwen', type: 'feuer', shape: 'wappenloewe', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const T_MOVES = ['Pommesraub', 'Teespritzer', 'Schirmhieb', 'Kesseldampf', 'Knurren', 'Sprühregen'];
+  const T_EVENTS = [
+    { title: 'Der Markt am Hafen', text: 'Eine Obsthändlerin zeigt auf ihre Kisten und fragt nach einem englischen Wort. Für die richtige Antwort gibt sie dir einen Trank.', opts: [{ label: 'Antworten', task: 'en_de', win: { item: 'trank' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Maler am Kai', text: 'Ein Maler mischt Farben für ein Bild vom Hafen. Sagst du ihm die Farbe auf Englisch, schenkt er dir einen Schild.', opts: [{ label: 'Helfen', task: 'farbe', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Kuchenstand', text: 'Am Kuchenstand steht der Preis als englisches Zahlwort. Liest du ihn richtig, bekommst du ein Fleißbienchen.', opts: [{ label: 'Lesen', task: 'zahl', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Brief aus England', text: 'Deine Brieffreundin Emily schreibt dir. Ein Wort im Brief kennst du noch nicht. Findest du es heraus, legt sie dir eine Eselsbrücke bei.', opts: [{ label: 'Lesen', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Später lesen', effect: {} }] },
+    { title: 'Die Teestunde', text: 'Um fünf Uhr gibt es in der Teestube Tee und Scones. Du setzt dich an einen Tisch am Fenster.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
+  const D_POOL = [];
+  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', q: s, o: [r, f1, f2], a: 0 }));
+  // wrong meanings come first from sentences that start like the right one (I have got …), so the words matter
+  E.saetze.forEach(([en, de]) => {
+    const first = en.split(' ')[0]; const like = shuffle(E.saetze.filter((x) => x[0] !== en && x[0].split(' ')[0] === first)); const rest = shuffle(E.saetze.filter((x) => x[0] !== en && !like.includes(x)));
+    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0 });
+  });
+  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0 }));
+  const D_NOTES = {
+    luecke: { title: 'Lückensätze', lines: ['Lies den ganzen Satz, bevor du wählst.', 'Vor a, e, i, o, u steht an statt a: an apple, an egg, aber a banana.', 'I am, you are, he is, she is: I am nine. My name is Tom.'] },
+    saetze: { title: 'Sätze verstehen', lines: ['Englische Sätze übersetzt man nicht Wort für Wort.', 'I have got a dog. heißt: Ich habe einen Hund.', 'Let’s … heißt: Lasst uns … Let’s play a game. – Lasst uns ein Spiel spielen.'] },
+    fragen: { title: 'Fragen und Antworten', lines: ['Die Antwort passt zum Fragewort.', 'How old …? – I am nine. What’s your name? – My name is Tom.', 'Can you …? – Yes, I can. Do you …? – Yes, I do.'] },
+    reihe: { title: 'Wochentage und Monate', lines: ['Die Woche: ' + E.tage.map((x) => x[0]).join(', ') + '.', 'Das Jahr: ' + E.monate.map((x) => x[0]).join(', ') + '.', 'Wochentage und Monate schreibt man im Englischen groß.'] },
+  };
+  const D_MODULES = {
+    luecke: { name: 'Lückensatz', icon: '✏️', maxTier: 1, worldCap: [1], dmg: 12 },
+    bedeutung: { name: 'Was bedeutet das?', icon: '💬', maxTier: 1, worldCap: [1], dmg: 12 },
+    reihe: { name: 'Wochentage und Monate', icon: '📅', maxTier: 2, worldCap: [2], dmg: 16 },
+    frage: { name: 'Frage und Antwort', icon: '❓', maxTier: 1, worldCap: [1], dmg: 12 },
+  };
+  const D_TUT = {
+    'luecke:1': { title: 'Lückensatz', steps: ['Im englischen Satz fehlt ein Wort (___).', 'Lies den Satz mit jedem Wort einmal leise durch.', 'Beispiel: Sit ___, please. Mit „down“ heißt es: Setzt euch bitte hin.', 'Tippe auf das Wort, das in die Lücke passt.'] },
+    'bedeutung:1': { title: 'Was bedeutet das?', steps: ['Ein englischer Satz steht da.', 'Welcher deutsche Satz sagt dasselbe?', 'Beispiel: „Open your books.“ heißt „Öffnet eure Bücher.“', 'Tippe auf den deutschen Satz.'] },
+    'reihe:1': { title: 'Wochentage', steps: ['Vier Wochentage sollen in die richtige Reihenfolge.', 'Die Woche beginnt mit Monday (Montag) und endet mit Sunday (Sonntag).', 'Beispiel: Friday, Monday, Wednesday → Monday, Wednesday, Friday.', 'Tippe die Tage der Reihe nach an. Nochmal tippen nimmt einen Tag wieder heraus.'] },
+    'reihe:2': { title: 'Monate', steps: ['Vier Monate sollen in die richtige Reihenfolge.', 'Das Jahr beginnt mit January (Januar) und endet mit December (Dezember).', 'Beispiel: May, January, March → January, March, May.', 'Tippe die Monate der Reihe nach an. Nochmal tippen nimmt einen Monat wieder heraus.'] },
+    'frage:1': { title: 'Frage und Antwort', steps: ['Eine englische Frage steht da und darunter drei Antworten.', 'Achte auf das Fragewort: How old? Wie alt? What? Was? Where? Wo?', 'Beispiel: How old are you? Die Antwort sagt ein Alter: I am nine.', 'Tippe auf die Antwort, die passt.'] },
+  };
+  const D_STARTERS = [
+    { id: 'bigred', type: 'feuer', shape: 'bus', names: ['Big Red', 'Big Red', 'Big Red'], hp: 80, desc: 'Ein roter Doppeldeckerbus mit 72 Sitzplätzen. Hält viel aus.', perk: 'tank',
+      attacks: [{ name: 'Fahrkarte', mod: 'luecke' }, { name: 'Durchsage', mod: 'bedeutung' }, { name: 'Fahrplan', mod: 'reihe' }, { name: 'Klingelknopf', mod: 'frage' }] },
+  ];
+  const D_EXTRA = { luecke: 'Fahrkarte', bedeutung: 'Durchsage', reihe: 'Fahrplan', frage: 'Klingelknopf' };
+  const D_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Die Taube', type: 'normal', shape: 'taube', hp: 26, atk: 3 },
+        { name: 'Die Telefonzelle', type: 'normal', shape: 'telefonzelle', hp: 30, atk: 3 },
+        { name: 'Die Ampel', type: 'feuer', shape: 'ampel', hp: 24, atk: 4 },
+        { name: 'Die Hecke', type: 'pflanze', shape: 'hecke', hp: 28, atk: 4 },
+      ],
+      elite: { name: 'Die Zugbrücke', type: 'wasser', shape: 'zugbruecke', hp: 45, atk: 5 },
+      boss: { name: 'Der Uhrturm', acc: 'den Uhrturm', type: 'normal', shape: 'uhrturm', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const D_MOVES = ['Gurren', 'Dauerklingeln', 'Rotlicht', 'Zweigpeitsche', 'Glockenschlag', 'Brückenhub'];
+  const D_EVENTS = [
+    { title: 'Die Bushaltestelle', text: 'An der Haltestelle fragt dich ein Junge etwas auf Englisch. Antwortest du passend, teilt er seinen Trank mit dir.', opts: [{ label: 'Antworten', task: 'frage', win: { item: 'trank' }, lose: { hp: -5 } }, { label: 'Weiterfahren', effect: {} }] },
+    { title: 'Der Fahrplan', text: 'Am Fahrplan sind die Tage durcheinandergeraten. Ordnest du sie, schenkt dir die Busfahrerin einen Schild.', opts: [{ label: 'Ordnen', task: 'reihe', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weiterfahren', effect: {} }] },
+    { title: 'Die Durchsage', text: 'Der Busfahrer sagt etwas durch. Verstehst du es, bekommst du einen Schutzengel.', opts: [{ label: 'Zuhören', task: 'bedeutung', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Aus dem Fenster schauen', effect: {} }] },
+    { title: 'Das Museum', text: 'Im Museum fehlt auf einem Schild ein Wort. Die Wärterin gibt dir eine Eselsbrücke, wenn du es findest.', opts: [{ label: 'Helfen', task: 'luecke', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Das Oberdeck', text: 'Oben im Bus ist ganz vorn ein Platz frei. Von hier siehst du die ganze Stadt.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
   /* ---------- Spaced repetition selection ---------- */
   function weightedPick(items, know, seqNow) {
     const w = items.map((it) => { const k = know[it.id]; if (!k) return 4; let x = 1 + k.ws * 3; if (k.t > 0 && k.c / k.t < 0.6) x += 2; if (seqNow - (k.last || 0) < 3) x *= 0.15; return x; });
@@ -1095,8 +1235,12 @@ const MK = (() => {
       order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
     woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
     satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
+    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
+      gen: (mod, tier, know, seq) => (mod === 'zahl' ? zahlTask(tier, know, seq) : mod === 'farbe' ? farbeTask(know, seq) : mod === 'odd' ? oddTask() : null) },
+    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
+      gen: (mod, tier) => (mod === 'reihe' ? reiheTask(tier) : null) },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

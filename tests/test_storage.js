@@ -521,6 +521,26 @@ function wardrobeCases() {
   }
 }
 
+// 14b. Englisch: a save from before the subject existed gets stats for it; an Englisch adventure continues after reopening
+{
+  const old = { runs: 2, stats: { math: {}, woerterwerkstatt: {} }, setup: { done: false, skipped: true, at: '' } };
+  const p1 = open({ [META]: JSON.stringify(old) });
+  const m = p1.w.__mq.meta;
+  check(m.runs === 2 && m.stats.teestube.zahl.t === 0 && m.stats.doppeldecker.reihe.t === 0 && p1.errors.length === 0, 'old save gets stats for the Englisch units');
+  p1.click('#parents');
+  check(Object.keys(p1.w.eval('MK.MODES.teestube.modules')).concat(Object.keys(p1.w.eval('MK.MODES.doppeldecker.modules'))).every((k) => p1.$('.toggle[data-m="' + (p1.w.eval('MK.MODES.teestube.modules')[k] ? 'teestube' : 'doppeldecker') + '"][data-k="' + k + '"]')) && p1.text().includes('Was passt nicht?') && p1.text().includes('Wochentage und Monate'), 'parent area has toggles and statistics for every Englisch task type');
+  for (const mode of ['teestube', 'doppeldecker']) {
+    const p1 = open({ [META]: JSON.stringify(old) });
+    p1.click('[data-new="' + mode + '"]'); p1.click('.choice'); p1.click('#go');
+    check(!p1.w.__mq.run.map.flat().some((n) => n.t === 'lesen'), mode + ' map has no Lesestube');
+    p1.click([...p1.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf') || p1.$('.node.open'));
+    const enemy = p1.$('.plate.enemy .name').textContent;
+    const p2 = open(p1.dump());
+    p2.click('[data-cont="' + mode + '"]');
+    check(!!p2.$('#fe') && p2.$('.plate.enemy .name').textContent === enemy && p2.errors.length === 0, mode + ' adventure continues the same fight after reopening');
+  }
+}
+
 // 15. Schulgarten: growth by the (injected) clock, harvest, bed 4, old saves, reload
 function gardenCases() {
   const DAY = 864e5, T = Date.UTC(2026, 10, 9, 8);
@@ -759,7 +779,7 @@ async function weeklyCases() {
     const ga = a.w.__mq.weeklyGoals(), gb = b.w.__mq.weeklyGoals();
     const t = open(null, { now: W49 }); t.click('#later'); const subs = [...t.d.querySelectorAll('[data-sub]')].map((b) => b.textContent); // the subjects of the grade, from the title tiles
     check(ga.length === subs.length && same(ga, gb), 'two devices show the same goals in the same week');
-    check(ga.map((g) => g.subject).every((x, i) => subs[i].includes(x)) && ga[0].subject === 'Mathe', 'one goal per subject of the grade');
+    check(ga.map((g) => g.subject).every((x, i) => subs[i].includes(x)) && ga[0].subject === 'Mathe' && ga.some((g) => g.subject === 'Englisch'), 'one goal per subject of the grade');
     check(ga.every((g) => (g.kind === 'right' ? g.n >= 15 && g.n <= 25 : g.kind === 'elite' ? g.n >= 2 && g.n <= 3 : g.n === 1)), 'goal sizes: 15–25 right answers, 2–3 elites, one win or weekly boss');
     check(ga[0].kind === 'right' && ga[0].m === 'math', 'this week has a right-answers goal in maths');
     const c = open(null, { now: '2027-02-03T10:00:00' });

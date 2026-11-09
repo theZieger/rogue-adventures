@@ -14,13 +14,15 @@
     wiese: MK.MODES.wiese,
     frueher: MK.MODES.frueher,
     freunde: MK.MODES.freunde,
+    teestube: MK.MODES.teestube,
+    doppeldecker: MK.MODES.doppeldecker,
     ichwelt: MK.MODES.ichwelt,
     jahrmarkt: MJ.MODE,
     sinne: MK.MODES.sinne,
     verkehr: MK.MODES.verkehr,
     musik: MK.MODES.musik,
   };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
@@ -29,6 +31,7 @@
       { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde', 'ichwelt'] },
       { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher', 'sinne', 'verkehr'] },
       { subject: 'Musik', icon: '🎵', modes: ['musik'] },
+      { subject: 'Englisch', icon: '💬', modes: ['teestube', 'doppeldecker'] },
     ] },
   ];
   let mode = 'math';

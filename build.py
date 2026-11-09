@@ -12,6 +12,7 @@ css = (SRC / "style.css").read_text(encoding="utf-8")
 logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
 fair = strip_exports((SRC / "jahrmarkt.js").read_text(encoding="utf-8"), "MJ")
 woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
+english = strip_exports((SRC / "english.js").read_text(encoding="utf-8"), "ENG")
 texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
@@ -72,8 +73,8 @@ html = f"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lernquest – Mathe, Deutsch, Ethik und Sachkunde</title>
-<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 3): Mathe, Deutsch, Ethik und Sachkunde. Funktioniert offline.">
+<title>Lernquest – Mathe, Deutsch, Englisch, Ethik und Sachkunde</title>
+<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 3): Mathe, Deutsch, Englisch, Ethik und Sachkunde. Funktioniert offline.">
 <meta name="theme-color" content="#1C2541">
 <meta name="color-scheme" content="dark">
 <meta name="format-detection" content="telephone=no">
@@ -104,6 +105,7 @@ html = f"""<!DOCTYPE html>
 <script>
 {fair}
 {woerter}
+{english}
 </script>
 <script>
 {texte}
