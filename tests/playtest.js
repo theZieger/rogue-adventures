@@ -80,6 +80,9 @@ async function step(){
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
   if($('.node.open')){ const nodes=$$('.node.open');
     const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
+    // steer towards a Forscherlabor/Schatzkarte further up, so the bot plays them whatever the seed
+    { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(nd.t==='labor'||nd.t==='karte'||nd.n.some(j=>leads(f+1,j))); };
+      const way=nodes.find(n=>leads(r.floor-1,+n.dataset.n)); if(way){ click(way); return; } }
     const pref=['school','treasure','event','rest','elite','fight','boss']; let chosen=null; for(const p of pref){ chosen=nodes.find(n=>n.getAttribute('aria-label')===({school:'Zeichenschule',treasure:'Schatz',event:'Ereignis',rest:'Rast',elite:'Elite',fight:'Kampf',boss:'Boss'}[p])); if(chosen&&Math.random()<0.6) break; }
     click(chosen||nodes[0]); return; }
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
