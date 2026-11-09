@@ -534,6 +534,53 @@ function gardenCases() {
     check(m.materials.weizen === 4 && m.materials.hafer === 3 && m.garden.beds[0].crop === 'weizen' && m.garden.beds[1].crop === 'hafer' && m.garden.beds[2].crop === null, 'merging keeps the larger harvest count and fills only empty beds');
   }
 }
+const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
+// 20. Step 17: new task types and the Lesestube keep old saves working
+{
+  const p = open({ [META]: JSON.stringify({ runs: 2, stats: { math: { add: { c: 3, t: 4, hist: [1] } } } }) });
+  const st = p.w.__mq.meta.stats.math;
+  check(st.add.c === 3 && st.sadd && st.sadd.t === 0 && st.ssub && st.ssub.t === 0, 'old save gets empty statistics for the written methods');
+  // a run saved before the Lesestube existed (map without it) still loads
+  const old = { mode: 'satzbaustelle', world: 1, floor: 2, map: p.w.eval('MQ.makeMap(1)'), hero: { id: p.w.eval('MK.MODES.satzbaustelle.starters[0].id'), evo: 0, level: 1, xp: 0, hp: 50, maxHp: 65, attacks: p.w.eval('MK.MODES.satzbaustelle.starters[0].attacks') }, items: [], tiers: {}, path: [0], shield: false };
+  const p2 = open({ [META]: JSON.stringify(SKIPPED), mathquest_run_satzbaustelle: JSON.stringify(old) });
+  p2.click('[data-cont="satzbaustelle"]');
+  check(!!p2.$('.wmap') && p2.errors.length === 0, 'an adventure saved before the Lesestube existed continues');
+  // new Deutsch maps have exactly one Lesestube, math maps none
+  const p3 = open({ [META]: JSON.stringify(SKIPPED) });
+  p3.click('[data-new="woerterwerkstatt"]'); p3.click('#go');
+  check(p3.w.__mq.run.map.flat().filter((n) => n.t === 'lesen').length === 1, 'a Wörterwerkstatt map has one Lesestube');
+  const p4 = open({ [META]: JSON.stringify(SKIPPED) });
+  p4.click('[data-new="math"]'); p4.click('.choice'); p4.click('#go');
+  check(!p4.w.__mq.run.map.flat().some((n) => n.t === 'lesen'), 'a Zahlenquest map has no Lesestube');
+}
+// 21. Lesestube: reading, three questions, reload in the middle keeps text and question number
+async function readCases() {
+  const p = open({ [META]: JSON.stringify(Object.assign({ seenTut: { 'battle:intro2': true } }, SKIPPED)) });
+  p.click('[data-new="satzbaustelle"]'); p.click('#go');
+  const r = p.w.__mq.run; const f = r.map.findIndex((fl) => fl.some((n) => n.t === 'lesen'));
+  r.floor = f + 1; r.path = r.map.slice(0, f).map(() => 0); if (f > 0) r.map[f - 1][0].n = [r.map[f].findIndex((n) => n.t === 'lesen')];
+  p.w.__mq.screenMap();
+  p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Lesestube'));
+  const text = p.w.eval('TEXTE')[p.w.__mq.run.node.text];
+  check(!!p.$('.readcard') && p.text().includes(text.title), 'the Lesestube shows a text first');
+  p.click('#next');
+  check(p.text().includes('Zeilenspringer') && p.text().includes('Frage 1 von 3'), 'then the reading enemy and question 1');
+  const ask = (right) => { p.click('#rq'); if (p.$('#tutok')) p.click('#tutok'); const t = p.w.__task; const i = t.options.indexOf(t.answer); p.click(p.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); };
+  ask(true);
+  check(text.qs[0].q === p.w.__task.q, 'question 1 belongs to the text');
+  const p2 = open(p.dump()); p2.click('[data-cont="satzbaustelle"]');
+  check(p2.text().includes('Frage 2 von 3') && p2.w.__mq.run.node.text === p.w.__mq.run.node.text, 'reload keeps the text and goes on with question 2');
+  p2.click('#rtext'); check(!!p2.$('.overlay .readcard'), 'the text can be read again'); p2.click('.overlay #tutok');
+  const q = (right) => { p2.click('#rq'); const t = p2.w.__task; const i = t.options.indexOf(t.answer); p2.click(p2.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); p2.click('#next'); };
+  const hp = p2.w.__mq.run.hero.hp; q(false); await sleep(1900);
+  check(p2.w.__mq.run.hero.hp < hp, 'a wrong answer gives the reading enemy a free hit');
+  q(true);
+  check(!!p2.$('#next') && !p2.$('#rq'), 'after three questions the reading lesson ends');
+  p2.click('#next');
+  check(p2.text().includes('2 von 3 Fragen richtig') && p2.w.__mq.run.node.done, 'result shows the right answers, node is done');
+  const tries = Object.values(p2.w.__mq.meta.stats.satzbaustelle).reduce((n, s) => n + s.t, 0);
+  check(tries === 0, 'reading questions do not change the task statistics');
+}
 // winning the Kartoffel-Werkstatt opens bed 4 (other modes don't)
 async function gardenWinCases() {
   for (const g of ['math', 'kartoffel']) {
@@ -690,7 +737,7 @@ async function weeklyCases() {
     check(open().w.__mq.mergeMeta(mk(Object.assign({}, wa, { week: '2026-W48' })), mk(wb)).weekly.week === '2026-W49', 'merge: the newer week wins');
   }
 }
-// 20. Materials and owned things: defaults, damaged values, the Bergwerk fills them and survives a reload
+// 22. Materials and owned things: defaults, damaged values, the Bergwerk fills them and survives a reload
 {
   const p0 = open({ [META]: JSON.stringify({ runs: 2, wins: 0 }) });
   check(JSON.stringify(p0.w.__mq.meta.materials) === '{}' && JSON.stringify(p0.w.__mq.meta.owned) === '{}', 'old save gets empty materials and owned');
@@ -739,7 +786,7 @@ async function weeklyCases() {
   check(any === 0, 'no Bergwerk when division with remainder is switched off');
 }
 
-// 21. Die Baustelle: new unit on the title, adventure starts, stats exist for old saves
+// 23. Die Baustelle: new unit on the title, adventure starts, stats exist for old saves
 {
   const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { math: {} } }) });
   check(!!p.$('[data-new="bau"]') && p.text().includes('Die Baustelle'), 'title lists Die Baustelle under Mathe');
@@ -755,7 +802,7 @@ async function weeklyCases() {
   check(!!p2.$('#fe') && p2.errors.length === 0, 'Baustelle fight continues after reopening');
 }
 
-reloadCases().then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(() => {
+reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
