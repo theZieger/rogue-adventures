@@ -12,6 +12,10 @@ const MQ = (() => {
     seq: { name: 'Zahlenfolgen', icon: '🔢', maxTier: 4, worldCap: [2, 3, 4], dmg: 14 },
     nb: { name: 'Nachbarzahlen', icon: '↔️', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
     grid: { name: 'Zahlengitter', icon: '🧩', maxTier: 3, worldCap: [1, 2, 3], dmg: 16 },
+    div: { name: 'Teilen', icon: '➗', maxTier: 3, worldCap: [1, 2, 3], dmg: 14 },
+    rest: { name: 'Teilen mit Rest', icon: '🧺', maxTier: 2, worldCap: [1, 2, 2], dmg: 16 },
+    rund: { name: 'Runden', icon: '🎯', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
+    dopp: { name: 'Verdoppeln und Halbieren', icon: '🪞', maxTier: 2, worldCap: [1, 2, 2], dmg: 10 },
   };
   const MODULE_KEYS = Object.keys(MODULES);
 
@@ -126,11 +130,35 @@ const MQ = (() => {
     const value = base + (tr - sr) * stepD + (tc - sc) * stepR;
     return task('', [value], { grid: { size, sr, sc, tr, tc, base, stepR, stepD } });
   }
+  function genDiv(t) {
+    let a, b;
+    // tier 1 is world 1: dividends stay under 100
+    if (t === 1) { do { a = rnd(2, 10); b = rnd(2, 10); } while (a * b >= 100); return task(`${a * b} : ${a} = ?`, [b]); }
+    if (t === 2) { a = rnd(2, 9); b = rnd(2, 9) * 10; return task(`${a * b} : ${a} = ?`, [b]); }
+    a = rnd(2, 10); b = rnd(2, 10);
+    return pick([() => task(`? · ${a} = ${a * b}`, [b], { reverse: true }), () => task(`${a} · ? = ${a * b}`, [b], { reverse: true }), () => task(`${a * b} : ${a} = ?`, [b])])();
+  }
+  function genRest(t) {
+    // the quotient stays within the Einmaleins (at most 10)
+    const hi = t === 1 ? 50 : 99; let n, d;
+    do { d = rnd(2, 9); n = rnd(10, hi); } while (n % d === 0 || n < 2 * d || n > 10 * d + d - 1);
+    return task(`${n} : ${d} = ?`, [Math.floor(n / d), n % d], { rest: true, labels: ['Ergebnis', 'Rest'] });
+  }
+  function genRund(t) {
+    const to = t === 1 ? 10 : t === 2 ? 100 : pick([10, 100]);
+    // n ≤ 94 (world 1) or ≤ 949 keeps the rounded number under 100 or 1000
+    let n; do { n = to === 10 && t === 1 ? rnd(11, 94) : rnd(101, to === 10 ? 994 : 949); } while (n % to === 0);
+    return task(`${n}`, [Math.round(n / to) * to], { ask: `Runde auf ${to === 10 ? 'Zehner' : 'Hunderter'}.` });
+  }
+  function genDopp(t) {
+    if (Math.random() < 0.5) { const n = t === 1 ? rnd(6, 49) : rnd(51, 499); return task(`${n}`, [2 * n], { ask: 'Verdopple die Zahl.' }); }
+    const n = 2 * (t === 1 ? rnd(6, 49) : rnd(51, 499)); return task(`${n}`, [n / 2], { ask: 'Halbiere die Zahl.' });
+  }
   function task(text, answers, extra) { return Object.assign({ text, answers }, extra || {}); }
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite) }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: genRest, rund: genRund, dopp: genDopp }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -176,6 +204,26 @@ const MQ = (() => {
       3: { title: 'Zahlengitter mit 100er-Schritten', steps: ['Jetzt sind die Schritte zehnmal so groß: nach rechts + 10, nach links − 10, nach unten + 100, nach oben − 100.', 'Beispiel: Start 420, ein Feld nach rechts (430), dann eins nach unten (530).', 'Das Zielfeld ist 530.'] },
     },
   };
+  Object.assign(TUT, {
+    div: {
+      1: { title: 'Teilen', steps: ['Teilen ist die Umkehraufgabe vom Malnehmen.', '42 : 6 = ?: Wie oft passt die 6 in 42?', 'Du weißt 7 · 6 = 42. Also 42 : 6 = 7.'] },
+      2: { title: 'Teilen mit Zehnerzahlen', steps: ['Lass die Null erst weg und rechne mit dem Einmaleins.', '240 : 6: Rechne 24 : 6 = 4.', '24 Zehner : 6 = 4 Zehner. Also 240 : 6 = 40.'] },
+      3: { title: 'Aufgabenfamilien', steps: ['Mal- und Geteiltaufgaben gehören zusammen: 7 · 8 = 56, 8 · 7 = 56, 56 : 7 = 8, 56 : 8 = 7.', '? · 7 = 56: Die fehlende Zahl findest du mit der Umkehraufgabe 56 : 7.', '56 : 7 = 8. Also ? = 8.'] },
+    },
+    rest: {
+      1: { title: 'Teilen mit Rest', steps: ['Manchmal geht das Teilen nicht auf. Was übrig bleibt, ist der Rest.', '23 : 4: Die 4 passt 5-mal in 23, denn 5 · 4 = 20.', 'Von 20 bis 23 sind es 3. Also 23 : 4 = 5 Rest 3.'] },
+      2: { title: 'Teilen mit Rest bis 100', steps: ['Suche die größte Malaufgabe, die noch hineinpasst. Der Rest ist immer kleiner als die Zahl, durch die du teilst.', '68 : 9: 7 · 9 = 63 passt, 8 · 9 = 72 ist zu groß.', 'Von 63 bis 68 sind es 5. Also 68 : 9 = 7 Rest 5.'] },
+    },
+    rund: {
+      1: { title: 'Runden auf Zehner', steps: ['Schau auf den Einer.', 'Bei 0, 1, 2, 3 oder 4 rundest du ab. Bei 5, 6, 7, 8 oder 9 rundest du auf.', '67: Der Einer ist 7, also aufrunden. 67 wird zu 70.'] },
+      2: { title: 'Runden auf Hunderter', steps: ['Schau auf den Zehner.', 'Bei 0, 1, 2, 3 oder 4 rundest du ab. Bei 5, 6, 7, 8 oder 9 rundest du auf.', '348: Der Zehner ist 4, also abrunden. 348 wird zu 300.'] },
+      3: { title: 'Zehner oder Hunderter', steps: ['Lies genau, worauf du runden sollst.', 'Auf Zehner: Schau auf den Einer. 452 wird zu 450.', 'Auf Hunderter: Schau auf den Zehner. 452 wird zu 500.'] },
+    },
+    dopp: {
+      1: { title: 'Verdoppeln und Halbieren', steps: ['Verdoppeln heißt: die Zahl zweimal nehmen. Halbieren heißt: in zwei gleiche Teile teilen.', 'Das Doppelte von 34: 30 + 30 = 60, 4 + 4 = 8. Zusammen 68.', 'Die Hälfte von 74: 74 = 60 + 14. Die Hälfte von 60 ist 30, von 14 ist 7. Zusammen 37.'] },
+      2: { title: 'Verdoppeln und Halbieren bis 1000', steps: ['Zerlege die Zahl in Hunderter, Zehner und Einer.', 'Das Doppelte von 236: 400 + 60 + 12 = 472.', 'Die Hälfte von 470: 400 + 70. Die Hälfte von 400 ist 200, von 70 ist 35. Zusammen 235.'] },
+    },
+  });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
@@ -188,9 +236,9 @@ const MQ = (() => {
     { id: 'kroete', type: 'wasser', shape: 'toad', names: ['Wellenkröte', 'Strudelkröte', 'Ozeankröte'], hp: 80, desc: 'Hält viel aus. Hat die meisten Lebenspunkte.', perk: 'tank',
       attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
     { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Jede richtige Antwort heilt ihn um 3 Lebenspunkte.', perk: 'heal',
-      attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Moosgitter', mod: 'grid' }] },
+      attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Wabenteilung', mod: 'div' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag' };
 
   const ENEMIES = {
     1: {
