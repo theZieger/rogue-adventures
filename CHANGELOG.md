@@ -9,17 +9,13 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
-- Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr, Gute Freunde und „Ich, wir und die Welt“ (Ethik), Kornkammer, Wetterstation, Kompass, Die Wiese, Früher und heute, Die fünf Sinne und Sicher im Verkehr (Sachkunde) – und die neuen Fächer Deutsch, Englisch und Musik. Die Startseite ordnet sie nach Fächern.
-- Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.
-- Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.
-- Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs.
-- Deutsch: Wortfamilien, Trennen am Zeilenende, Kommas, Ersatz- und Weglassprobe, Pronomen und Redensarten. In der Lesestube gibt es Gedichte, ein Rezept und eine Sage aus Sachsen.
+- Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.
+- Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit.
 
 ### Verbessert
-- Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.
-- Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.
-- Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
-- Mehr Mathe: Bruchteile, Zahlenmauern, Punkt vor Strich, schriftliches Rechnen, Flächeninhalt, Spiegelbilder, Vierecke, Fahrpläne und Sekunden.
+- Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).
+- Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.
+- Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen.
 
 ### Behoben
 - Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole.

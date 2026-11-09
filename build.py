@@ -73,8 +73,8 @@ html = f"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lernquest – Mathe, Deutsch, Englisch, Ethik und Sachkunde</title>
-<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 3): Mathe, Deutsch, Englisch, Ethik und Sachkunde. Funktioniert offline.">
+<title>Lernquest – Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde</title>
+<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 3): Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde. Funktioniert offline.">
 <meta name="theme-color" content="#1C2541">
 <meta name="color-scheme" content="dark">
 <meta name="format-detection" content="telephone=no">
