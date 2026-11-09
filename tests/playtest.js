@@ -5,8 +5,8 @@ const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'
 const SEED=+(process.env.SEED||20261108);
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
-// a fixed day too: 2026-W48 has the weekly boss as its maths goal, so the bot can finish a goal in a math run
-const NOW=Date.parse(process.env.NOW||'2026-11-25T10:00:00');
+// a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
+const NOW=Date.parse(process.env.NOW||'2026-12-23T10:00:00');
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
