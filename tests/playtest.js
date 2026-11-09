@@ -6,7 +6,7 @@ const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'
 const SEED=+(process.env.SEED||20261108);
 // W3=1: continue a Zahlenquest adventure in world 3 whose hero has the written methods as attacks
 const W3=process.env.W3==='1';
-const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(3), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Funkenbiss',mod:'add'},{name:'Flammenstoß',mod:'sub'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
+const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(3), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Lawine',mod:'smul'},{name:'Halbmond',mod:'bruch'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
@@ -27,10 +27,10 @@ async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySel
 let colTasks=0, readNodes=0, crafted=false, fromPantry=false;
 // written methods: work result and carries out column by column from the numbers on screen
 async function solveColumns(forceWrong){
-  const label=$('.colcalc').getAttribute('aria-label'); const m=label.match(/^(\d+) ([+−]) (\d+)(?: \+ (\d+))?$/); if(!m) throw new Error('column task not parsed '+label);
-  const rows=[+m[1],+m[3]].concat(m[4]?[+m[4]]:[]); const add=m[2]==='+'; const res=add?rows.reduce((a,b)=>a+b):rows[0]-rows[1];
+  const label=$('.colcalc').getAttribute('aria-label'); const m=label.match(/^(\d+) ([+−·]) (\d+)(?: \+ (\d+))?$/); if(!m) throw new Error('column task not parsed '+label);
+  const rows=[+m[1],+m[3]].concat(m[4]?[+m[4]]:[]); const add=m[2]==='+', mul=m[2]==='·'; const res=add?rows.reduce((a,b)=>a+b):mul?rows[0]*rows[1]:rows[0]-rows[1];
   const w=$$('.colcalc .inp.dig').length; const dig=(n,i)=>Math.floor(n/10**(w-1-i))%10; const carry=Array(w).fill(0);
-  for(let i=w-1;i>0;i--) carry[i-1]=add?Math.floor((rows.reduce((s,n)=>s+dig(n,i),0)+carry[i])/10):(dig(rows[0],i)<dig(rows[1],i)+carry[i]?1:0);
+  for(let i=w-1;i>0;i--) carry[i-1]=add?Math.floor((rows.reduce((s,n)=>s+dig(n,i),0)+carry[i])/10):mul?Math.floor((dig(rows[0],i)*rows[1]+carry[i])/10):(dig(rows[0],i)<dig(rows[1],i)+carry[i]?1:0);
   const type=(i,ch)=>{ click($('.colcalc .inp[data-i="'+i+'"]')); click($('.numpad [data-k="'+ch+'"]')); };
   carry.forEach((c,i)=>{ if(c) type(w+i,c); });
   const s=String(forceWrong?res+1:res); [...s].forEach((ch,k)=>type(w-s.length+k,ch));
@@ -52,8 +52,17 @@ async function solveTask(forceWrong){
   else if(T&&T.cells){ const at=new Set(T.cells.map(p=>p.join())); answers=[T.cells.reduce((n,[r,c])=>n+[[r+1,c],[r-1,c],[r,c+1],[r,c-1]].filter(q=>!at.has(q.join())).length,0)]; }
   else if($('.story')){ const n=$('.story').textContent.match(/\d+/g).map(Number); answers=[n[0]*n[1]]; } // Werkbank: a · b from the text
   else if($('.jm')) answers=JM.solve(task.innerHTML, null, w.eval('MJ').REF);
+  else if($('.numword')){ const wd=$('.numword').textContent; const n=[...Array(1000).keys()].find(k=>k&&M.numWord(k)===wd); if(!n) throw new Error('unknown number word '+wd); answers=[n]; }
+  else if($('svg.mauer')){ const v=$$('svg.mauer [data-v]').map(g=>g.dataset.v); const k=v.indexOf('?'); const n=v.map(Number);
+    // Zahlenmauer: bottom 0–2, middle 3–4, top 5; Rechendreieck: inner 0–2, outer 3 = 0+1, 4 = 1+2, 5 = 0+2
+    const rules=$('svg.mauer [data-tri]')?[[3,0,1],[4,1,2],[5,0,2]]:[[3,0,1],[4,1,2],[5,3,4]]; const r=rules.find(x=>x.includes(k)); answers=[r[0]===k?n[r[1]]+n[r[2]]:n[r[0]]-n[r[1]===k?r[2]:r[1]]]; }
   else if(expr){ const s=expr.textContent; let m;
-    if(/€|ct/.test(s)){ const v=s.includes(' − ')?s.split(' − ').map(cents).reduce((a,b)=>a-b):s.split(' + ').map(cents).reduce((a,b)=>a+b); answers=[Math.floor(v/100),v%100]; }
+    const FR={'½':[1,2],'¼':[1,4],'¾':[3,4],'⅓':[1,3]}, UNIT={'m cm':100,'h min':60,'kg g':1000,'km m':1000}, dot=(a,o,b)=>o==='·'?a*b:a/b;
+    if(m=s.match(/^(\d+) ([+−·:]) (\d+) ([+−·:]) (\d+) = \?$/)){ const pt=(o)=>'·:'.includes(o); const [a,b,c]=[+m[1],+m[3],+m[5]]; answers=[pt(m[2])?(m[4]==='+'?dot(a,m[2],b)+c:dot(a,m[2],b)-c):(m[2]==='+'?a+dot(b,m[4],c):a-dot(b,m[4],c))]; }
+    else if(m=s.match(/^([½¼¾⅓]) von (\d+) = \?$/)) answers=[+m[2]/FR[m[1]][1]*FR[m[1]][0]];
+    else if(m=s.match(/^([½¼¾]) (\w+) = \? (\w+)$/)) answers=[UNIT[m[2]+' '+m[3]]/FR[m[1]][1]*FR[m[1]][0]];
+    else if(/^(\d [HZE] ?){3}= \?$/.test(s)){ const g=(u)=>+s.match(new RegExp('(\\d) '+u))[1]; answers=[100*g('H')+10*g('Z')+g('E')]; }
+    else if(/€|ct/.test(s)){ const v=s.includes(' − ')?s.split(' − ').map(cents).reduce((a,b)=>a-b):s.split(' + ').map(cents).reduce((a,b)=>a+b); answers=[Math.floor(v/100),v%100]; }
     else if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) − \? = (\d+)$/)) answers=[+m[1]-m[2]];
@@ -62,7 +71,7 @@ async function solveTask(forceWrong){
     else if(m=s.match(/^(\d+) : (\d+) = \?$/)) answers=inps.length===2?[Math.floor(m[1]/m[2]),m[1]%m[2]]:[+m[1]/m[2]];
     else if(/^\d+$/.test(s)){ const n=+s, ask=$('.prompt').textContent;
       if(ask.includes('Runde')){ const to=ask.includes('Hunderter')?100:10; answers=[Math.round(n/to)*to]; }
-      else if(ask.includes('Verdopple')) answers=[2*n]; else if(ask.includes('Halbiere')) answers=[n/2]; }
+      else if(ask.includes('Verdopple')) answers=[2*n]; else if(ask.includes('Quersumme')) answers=[[...s].reduce((a,c)=>a+ +c,0)]; else if(ask.includes('Halbiere')) answers=[n/2]; }
   } else if($('.clues')){ const clues=$$('.clues div').map(x=>x.textContent); const dg=M.digits; const res=[];
     for(let x=10;x<=999;x++){ const dd=dg(x); if(clues.join('').includes('Hunderter')? x<100 : x>=100) continue; let ok=true; for(const c of clues){ let m;
       if(m=c.match(/Einer ist (\d+)-mal so groß wie mein Zehner/)) ok=ok&&dd.z>0&&dd.e===+m[1]*dd.z;
@@ -90,9 +99,16 @@ async function solveTask(forceWrong){
   if(good) correctAnswers++; else wrongAnswers++;
   click($('#next')); return true;
 }
+// Zahlenquest choices (Teilbarkeit, Stellenwerte): worked out from the question and the buttons on screen
+function mathChoice(t){ const q=$('.question').textContent, opts=$$('.opt').map(b=>b.textContent); let m, a=null;
+  if(m=q.match(/^Ist (\d+) durch (\d+) teilbar\?$/)) a=+m[1]%+m[2]===0?'ja':'nein';
+  else if(m=q.match(/^Welche Zahl ist durch (\d+) teilbar\?$/)) a=opts.find(o=>+o%+m[1]===0);
+  else if(m=q.match(/^(\d+) = \? H \? Z \? E$/)) a=opts.find(o=>{ const d=o.match(/\d+/g).map(Number); return 100*d[0]+10*d[1]+d[2]===+m[1]; });
+  else return null;
+  if(a!==t.answer) throw new Error('bot and game disagree on '+q); return a; }
 async function solveKnow(forceWrong){
   const t=w.__task; if(!t) throw new Error('no task');
-  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf($('.jm')?JM.solve($('.task').innerHTML, t.options, w.eval('MJ').REF):t.answer); if(idx<0) throw new Error('choice not solvable: '+$('.task').textContent); if(forceWrong) idx=opts.findIndex((o,i)=>i!==idx&&!o.disabled); click(opts[idx]); }
+  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf($('.jm')?JM.solve($('.task').innerHTML, t.options, w.eval('MJ').REF):mathChoice(t)||t.answer); if(idx<0) throw new Error('choice not solvable: '+$('.task').textContent); if(forceWrong) idx=opts.findIndex((o,i)=>i!==idx&&!o.disabled); click(opts[idx]); }
   else if(t.kind==='parts-find'){ const parts=$$('.plant [data-part]'); let el=parts.find(x=>x.dataset.part===t.part); if(forceWrong) el=parts.find(x=>x.dataset.part!==t.part); click(el); }
   else if(t.kind==='karte'){ let cell=t.target.join('-'); if(forceWrong) cell=$$('[data-cell]').map(x=>x.dataset.cell).find(c=>c!==cell); click($('[data-cell="'+cell+'"]')); }
   else if(t.kind==='order'){ let order=t.order.slice();

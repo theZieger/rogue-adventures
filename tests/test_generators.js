@@ -11,14 +11,15 @@ const evalExpr=(txt,ans)=>{
 };
 for(const mod of M.MODULE_KEYS){ for(let t=1;t<=M.MODULES[mod].maxTier;t++){ const tiers={};
   for(let i=0;i<2000;i++){ const tk=M.generate(mod,t,{elite:i%2===0});
-    check(tk.answers.every(a=>Number.isInteger(a)&&a>=0&&a<=999),'range',tk);
+    if(tk.kind==='choice') check(tk.options.filter(o=>o===tk.answer).length===1&&new Set(tk.options).size===tk.options.length&&tk.q===tk.text,'choice: exactly one right option',tk);
+    else check(tk.answers.every(a=>Number.isInteger(a)&&a>=0&&a<=999),'range',tk);
     if(['add','sub','mul'].includes(mod)){ check(evalExpr(tk.text,tk.answers)===true,'arith',tk);
       if(mod==='add'&&t<=2) check(tk.answers[0]<100,'w1add',tk);
       if(mod==='sub'&&t===2){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a%10<b,'crossing',tk);}
       if(mod==='sub'&&t===1){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a%10>=b,'sub1 no ten-crossing',tk); check(b>=2&&a-b>=2,'sub1 not trivial',tk); }
       if(mod==='mul'&&t===1){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a>=2&&b>=2,'mul1 no factor 1',tk); } }
     // world 1 promise (README: "Welt 1 unter 100"): every number shown or asked stays under 100
-    if(t<=M.MODULES[mod].worldCap[0]){ const nums=(tk.text.match(/\d+/g)||[]).map(Number).concat(tk.answers, tk.seq||[], tk.n!=null?[tk.n]:[]);
+    if(t<=M.MODULES[mod].worldCap[0]){ const nums=(tk.text.match(/\d+/g)||[]).map(Number).concat(tk.answers||[], tk.seq||[], tk.n!=null?[tk.n]:[]);
       if(tk.grid){ const g=tk.grid; for(let r=0;r<3;r++)for(let c=0;c<3;c++) nums.push(g.base+(r-g.sr)*g.stepD+(c-g.sc)*g.stepR); }
       check(nums.every(v=>v<100),'world1 <100',tk); }
     if(mod==='div'){ let m; const ok=(m=tk.text.match(/^(\d+) : (\d+) = \?$/))?(+m[2])*tk.answers[0]===+m[1]:(m=tk.text.match(/^\? · (\d+) = (\d+)$/)||tk.text.match(/^(\d+) · \? = (\d+)$/))?(+m[1])*tk.answers[0]===+m[2]:false;
@@ -209,6 +210,63 @@ for (const mod of ['sadd', 'ssub']) {
     const n = c.carry.filter(Boolean).length;
     if (mod === 'sadd') { check(n >= 1 && c.rows.length === t + 1, 'sadd summands and carry', tk); }
     else check(c.rows.length === 2 && n === t, 'ssub carries per tier', tk);
+  }
+}
+// step 21: written multiplication, divisibility, number walls, fractions of, Punkt vor Strich, number words
+{
+  const cap = M.MODULES.smul.worldCap; check(cap[0] === 0 && cap[1] === 0 && cap[2] > 0, 'smul only in world 3', cap);
+  for (let t = 1; t <= 2; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate('smul', t); const c = tk.col; const [a, b] = c.rows; const r = tk.answers[0];
+    check(c.op === '·' && tk.text === `${a} · ${b} = ?` && r === a * b && a >= 100 && a <= 999 && b >= 2 && b <= 9 && r <= 999 && c.w === 3, 'smul task', tk);
+    const d = (n, k) => Math.floor(n / 10 ** k) % 10; let carry = 0; const want = [];
+    for (let k = 0; k < 3; k++) { const v = d(a, k) * b + carry; check(v % 10 === d(r, k), 'smul digit', tk); carry = Math.floor(v / 10); want.unshift(carry); }
+    check(carry === 0 && JSON.stringify(want.slice(1).concat(0)) === JSON.stringify(c.carry), 'smul carries', tk);
+    check(t === 1 ? c.carry.every((x) => !x) : c.carry.some(Boolean), 'smul carry per tier', tk);
+  }
+  const qs = (n) => String(n).split('').reduce((s, x) => s + +x, 0);
+  // the rules the tutorial teaches, checked against real division
+  const rule = { 2: (n) => n % 10 % 2 === 0, 5: (n) => [0, 5].includes(n % 10), 10: (n) => n % 10 === 0, 100: (n) => n % 100 === 0, 3: (n) => qs(n) % 3 === 0, 9: (n) => qs(n) % 9 === 0 };
+  for (let n = 1; n <= 999; n++) for (const [k, f] of Object.entries(rule)) check(f(n) === (n % k === 0), 'divisibility rule ' + k, n);
+  const seen = { ja: 0, nein: 0 };
+  for (let t = 1; t <= 3; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate('teilbar', t); let m;
+    if (tk.kind !== 'choice') { check(t === 3 && tk.ask.includes('Quersumme') && /^\d{3}$/.test(tk.text) && tk.answers[0] === qs(+tk.text), 'quersumme', tk); continue; }
+    if ((m = tk.q.match(/^Ist (\d+) durch (\d+) teilbar\?$/))) { check(tk.answer === (+m[1] % +m[2] === 0 ? 'ja' : 'nein') && tk.options.join() === 'ja,nein', 'teilbar ja/nein', tk); seen[tk.answer]++;
+      check((t === 3 ? [3, 9, 100] : [2, 5, 10]).includes(+m[2]) && (t === 1 ? +m[1] < 100 : +m[1] >= 100 && +m[1] <= 999), 'teilbar range', tk); }
+    else { m = tk.q.match(/^Welche Zahl ist durch (\d+) teilbar\?$/); check(t === 2 && m && tk.options.filter((o) => +o % +m[1] === 0).length === 1 && +tk.answer % +m[1] === 0, 'teilbar: exactly one divisible', tk); }
+  }
+  check(seen.ja > 500 && seen.nein > 500, 'teilbar asks ja and nein', seen);
+  for (let t = 1; t <= 3; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate('mauer', t); const v = [...tk.svg.matchAll(/data-v="(\?|\d+)"/g)].map((x) => x[1]); const miss = v.indexOf('?');
+    check(v.filter((x) => x === '?').length === 1, 'mauer: one stone missing', tk);
+    // fill in the answer and check every rule, so the missing stone has exactly this one value
+    const n = v.map((x) => (x === '?' ? tk.answers[0] : +x));
+    if (t < 3) { check(n.length === 6 && n[3] === n[0] + n[1] && n[4] === n[1] + n[2] && n[5] === n[3] + n[4] && n.every((x) => x >= 2 && x <= (t === 1 ? 99 : 999)), 'zahlenmauer', tk);
+      if (t === 1) check(miss <= 4, 'mauer1: bottom or middle', tk); }
+    else check(n.length === 6 && n[3] === n[0] + n[1] && n[4] === n[1] + n[2] && n[5] === n[0] + n[2] && n.every((x) => x >= 2 && x <= 999), 'rechendreieck', tk);
+  }
+  const FR = { '½': 1 / 2, '¼': 1 / 4, '¾': 3 / 4, '⅓': 1 / 3 }; const UNIT = { 'm cm': 100, 'h min': 60, 'kg g': 1000, 'km m': 1000 };
+  for (let t = 1; t <= 3; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate('bruch', t); let m;
+    if ((m = tk.text.match(/^([½¼¾⅓]) von (\d+) = \?$/))) { check(t < 3 && Math.abs(FR[m[1]] * +m[2] - tk.answers[0]) < 1e-9 && (t === 2 || ['½', '¼'].includes(m[1])) && tk.ask.includes(`(${m[1]})`), 'bruch', tk); }
+    else { m = tk.text.match(/^([½¼¾]) (\w+) = \? (\w+)$/); check(t === 3 && m && UNIT[m[2] + ' ' + m[3]] && FR[m[1]] * UNIT[m[2] + ' ' + m[3]] === tk.answers[0], 'bruch size', tk); }
+  }
+  for (let t = 1; t <= 2; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate('vorrang', t); const m = tk.text.match(/^(\d+) ([+−·:]) (\d+) ([+−·:]) (\d+) = \?$/);
+    if (!m) { check(false, 'vorrang form', tk); continue; }
+    const pt = (o) => o === '·' || o === ':'; check(pt(m[2]) !== pt(m[4]), 'vorrang: one dot and one dash', tk);
+    const dot = (a, o, b) => (o === '·' ? a * b : a / b); const res = pt(m[2]) ? (m[4] === '+' ? dot(+m[1], m[2], +m[3]) + +m[5] : dot(+m[1], m[2], +m[3]) - +m[5]) : (m[2] === '+' ? +m[1] + dot(+m[3], m[4], +m[5]) : +m[1] - dot(+m[3], m[4], +m[5]));
+    check(res === tk.answers[0] && Number.isInteger(res), 'vorrang result', tk);
+    if (t === 2) check([m[1], m[3], m[5]].filter((x) => +x % 10 === 0).length >= 2, 'vorrang2 tens', tk);
+  }
+  for (const [n, wd] of [[13, 'dreizehn'], [16, 'sechzehn'], [17, 'siebzehn'], [21, 'einundzwanzig'], [30, 'dreißig'], [48, 'achtundvierzig'], [57, 'siebenundfünfzig'], [66, 'sechsundsechzig'], [70, 'siebzig'], [100, 'einhundert'], [101, 'einhunderteins'], [111, 'einhundertelf'], [212, 'zweihundertzwölf'], [348, 'dreihundertachtundvierzig'], [601, 'sechshunderteins'], [771, 'siebenhunderteinundsiebzig'], [990, 'neunhundertneunzig'], [1000, 'eintausend']]) check(M.numWord(n) === wd, 'numWord ' + n, M.numWord(n));
+  check(new Set(Array.from({ length: 999 }, (_, i) => M.numWord(i + 1))).size === 999, 'number words are unique');
+  for (let t = 1; t <= 3; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate('zahlwort', t);
+    if (t < 3) { check(tk.word && M.numWord(tk.answers[0]) === tk.text && (t === 1 ? tk.answers[0] < 100 : tk.answers[0] > 100), 'zahlwort', tk); continue; }
+    const pv = (s) => { const g = (u) => +(s.match(new RegExp('(\\d) ' + u)) || [0, NaN])[1]; return 100 * g('H') + 10 * g('Z') + g('E'); };
+    if (tk.kind === 'choice') { const n = +tk.q.match(/^(\d+) = \? H \? Z \? E$/)[1]; check(tk.options.filter((o) => pv(o) === n).length === 1 && pv(tk.answer) === n && tk.options.length === 3, 'stellenwert choice', tk); }
+    else check(pv(tk.text) === tk.answers[0], 'stellenwert', tk);
   }
 }
 console.log(M.makeMap(1).map((r) => r.map((n) => n.t).join('/')).join(' | '));

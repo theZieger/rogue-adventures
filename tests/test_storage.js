@@ -603,6 +603,26 @@ const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
   p4.click('[data-new="math"]'); p4.click('.choice'); p4.click('#go');
   check(!p4.w.__mq.run.map.flat().some((n) => n.t === 'lesen'), 'a Zahlenquest map has no Lesestube');
 }
+// 22. Step 21: six new Zahlenquest task types; old saves and old heroes keep working, choice tasks run in a fight
+{
+  const NEW = ['smul', 'teilbar', 'mauer', 'bruch', 'vorrang', 'zahlwort'];
+  const p = open({ [META]: JSON.stringify(Object.assign({ runs: 2, stats: { math: { add: { c: 3, t: 4, hist: [1] } } }, off: { math: ['seq'] } }, SKIPPED)) });
+  const m = p.w.__mq.meta;
+  check(m.stats.math.add.c === 3 && NEW.every((k) => m.stats.math[k] && m.stats.math[k].t === 0 && Array.isArray(m.stats.math[k].hist)) && m.off.math.join() === 'seq', 'old save gets empty statistics for the six new task types and keeps its switches');
+  const p2 = open(p.dump()); for (let i = 0; i < 5; i++) p2.click('#logo');
+  check(['Schriftlich multiplizieren', 'Teilbarkeit', 'Zahlenmauern', 'Bruchteile', 'Punkt vor Strich', 'Zahlwörter und Stellenwerte'].every((n) => p2.text().includes(n)), 'parent area lists the new task types');
+  // a Kröte adventure saved while she still had Nachbarflut (nb) continues; the first attack is Teilbarkeit
+  const p3 = startMathFight(); const d = p3.dump(); const r = JSON.parse(d[RUN]);
+  r.hero.id = 'kroete'; r.hero.attacks = [{ name: 'Kornsieb', mod: 'teilbar' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }]; d[RUN] = JSON.stringify(r);
+  const p4 = open(d); p4.click('[data-cont="math"]');
+  check(p4.text().includes('Nachbarflut') && p4.errors.length === 0, 'an adventure saved with the old Kröte attacks continues');
+  // a choice task (Teilbarkeit) as an attack: answered by tapping, counted in the statistics
+  if (p4.$('#tutok')) p4.click('#tutok'); p4.click('.atk[data-i="0"]'); if (p4.$('#tutok')) p4.click('#tutok');
+  const t = p4.w.__task; const btn = [...p4.d.querySelectorAll('.opt')].find((b) => b.textContent === t.answer);
+  check(t.kind === 'choice' && !!btn, 'Teilbarkeit shows answer buttons');
+  btn.click();
+  check(!!p4.$('.feedback.good') && p4.w.__mq.meta.stats.math.teilbar.c === 1 && p4.errors.length === 0, 'a right Teilbarkeit answer counts');
+}
 // 21. Lesestube: reading, three questions, reload in the middle keeps text and question number
 async function readCases() {
   const p = open({ [META]: JSON.stringify(Object.assign({ seenTut: { 'battle:intro2': true } }, SKIPPED)) });

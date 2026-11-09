@@ -23,7 +23,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 
 | Modus | Inhalt |
 |---|---|
-| 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, schriftliches Addieren und Subtrahieren (Welt 3, Ergänzungsverfahren) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
+| 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, Teilbarkeit und Quersumme, Zahlenmauern und Rechendreiecke, Bruchteile (auch von Größen), Punkt vor Strich, Zahlwörter und Stellenwerttafel, schriftliches Addieren, Subtrahieren (Ergänzungsverfahren) und Multiplizieren (Welt 3) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
 | 🎪 Der Jahrmarkt | Mathe, Größen und Daten: Uhrzeit auf die Minute und Zeitspannen (Uhr als Bild), m/cm/km, g/kg mit Waage und Stützpunkten, Sekunden, Fahrplan lesen, Glücksrad (sicher, möglich, unmöglich, wahrscheinlicher), Kombinationen zählen, Säulen- und Balkendiagramm, Sachaufgaben mit „3 € 50 ct“ – 2 Welten |
 | 🏗️ Die Baustelle | Raum und Form: Würfel zählen nach Bauplan, Quader ergänzen, Würfel- und Quadernetze, Körper erkennen, Bandornamente, parallel oder senkrecht, Umfang und Flächeninhalt, Achsensymmetrie, gespiegelt/gedreht/verschoben, Drei- und Vierecke – 2 Welten. Dazu in Zahlenquest und Baustelle je Welt ein ⛏️ Bergwerk: Teilen mit Rest, ohne Rest gibt es Erz, sonst Stein |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |

@@ -13,13 +13,12 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.
 - Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.
 - Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs.
-- Baustelle und Jahrmarkt: Flächeninhalt, Spiegelbilder, Drei- und Vierecke, Quadernetze, Fahrpläne, Balkendiagramme und Sekunden.
 
 ### Verbessert
 - Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.
 - Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.
 - Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
-- Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen.
+- Mehr Mathe: Bruchteile, Zahlenmauern, Punkt vor Strich, schriftliches Rechnen, Flächeninhalt, Spiegelbilder, Vierecke, Fahrpläne und Sekunden.
 
 ### Behoben
 - Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole.
