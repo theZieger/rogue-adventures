@@ -199,6 +199,10 @@ p { margin: 8px 0; }
 @media (prefers-reduced-motion: reduce) { .shake, .pop, .hurt { animation: none; } .hpbar i { transition: none; } }
 
 .mon { display: block; }
+.evo-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.evo-row .mon { width: 104px; height: 104px; flex: none; }
+.evo-row .mon.before { width: 80px; height: 80px; opacity: .75; }
+.evo-row span { font-size: 28px; color: var(--ink-soft); }
 .xpbar { height: 10px; background: rgba(0,0,0,.35); border-radius: 999px; overflow: hidden; width: 100%; }
 .xpbar i { display: block; height: 100%; background: var(--blue); }
 .center { text-align: center; }

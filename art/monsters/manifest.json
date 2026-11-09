@@ -1,0 +1,262 @@
+{
+ "ablasshaendler-boss": {
+  "raw": "5b3ed0b22fdb18b6",
+  "out": "05bec8bd0a75112b",
+  "config": "14e1c93b1e80bcea"
+ },
+ "ackerteufel": {
+  "raw": "17575babf1cd7879",
+  "out": "cbc3fd2f291eaec1",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bear-0": {
+  "raw": "bb75a2dc19e753aa",
+  "out": "ca948e8b5eabb4bd",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bear-1": {
+  "raw": "960167f03158f76a",
+  "out": "b5c2e00cc763804a",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bear-2": {
+  "raw": "00b9dfdf86e9802a",
+  "out": "59bc583338b8a1a7",
+  "config": "14e1c93b1e80bcea"
+ },
+ "blattfresser": {
+  "raw": "d8f8c56442755745",
+  "out": "3bb6cd95528c81d6",
+  "config": "14e1c93b1e80bcea"
+ },
+ "blattlaus": {
+  "raw": "5e3d694985be5871",
+  "out": "5e474a59f2d7043a",
+  "config": "14e1c93b1e80bcea"
+ },
+ "dornenigel-elite": {
+  "raw": "b5338ec54408ec9b",
+  "out": "1be3b03bec9250f9",
+  "config": "14e1c93b1e80bcea"
+ },
+ "drahtwurm": {
+  "raw": "8c4c4d7e3dcb99ce",
+  "out": "9f7fb58dab4a8664",
+  "config": "14e1c93b1e80bcea"
+ },
+ "dschungelbrueller": {
+  "raw": "d235e91bc90e98f6",
+  "out": "7a760de97f4e2470",
+  "config": "14e1c93b1e80bcea"
+ },
+ "eierhaufen": {
+  "raw": "644136a3705caaab",
+  "out": "15eb7dac5d1fadfe",
+  "config": "14e1c93b1e80bcea"
+ },
+ "faeulewolke": {
+  "raw": "5192fda3024edecb",
+  "out": "09da7fd96beaf05e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "fox-0": {
+  "raw": "2eda9c0e20776487",
+  "out": "f09e6a697ddfdda3",
+  "config": "14e1c93b1e80bcea"
+ },
+ "fox-1": {
+  "raw": "3e9e6fe256e16c7b",
+  "out": "0f3781b95a601f1d",
+  "config": "14e1c93b1e80bcea"
+ },
+ "fox-2": {
+  "raw": "0c9d1f07e8b9e2b5",
+  "out": "2fcec539b9adfb5a",
+  "config": "14e1c93b1e80bcea"
+ },
+ "frostblitz": {
+  "raw": "962371237f05fd2a",
+  "out": "253d767fe5ebc1e8",
+  "config": "14e1c93b1e80bcea"
+ },
+ "glaspanzer-elite": {
+  "raw": "dbd5d2e3ced25330",
+  "out": "d1bd19350293149a",
+  "config": "14e1c93b1e80bcea"
+ },
+ "hagelwolke": {
+  "raw": "6a902fdcbc8c3536",
+  "out": "a527df074ae31395",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kaeferkoenigin-boss": {
+  "raw": "49b84a5be9b93131",
+  "out": "26d7ae1e899cb843",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kaeferlarve-elite": {
+  "raw": "98fd0258e1254664",
+  "out": "ca09b0dd6e00c928",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kartoffelkaefer-boss": {
+  "raw": "2f56b951dea61724",
+  "out": "4b370ce6363b2c9e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "krabbelstein": {
+  "raw": "37a64f42273f941e",
+  "out": "ed80fa22f3bf071b",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lavamolch": {
+  "raw": "6338fcb841d01ad1",
+  "out": "8cf50d274ba9471f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "luther-0": {
+  "raw": "68d5386e016fec35",
+  "out": "a83805b9f5f6e23b",
+  "config": "14e1c93b1e80bcea"
+ },
+ "luther-1": {
+  "raw": "4347f65367092496",
+  "out": "8bfd00736bd79053",
+  "config": "14e1c93b1e80bcea"
+ },
+ "luther-2": {
+  "raw": "6dbd1313127a452d",
+  "out": "1cbc017d3e15a261",
+  "config": "14e1c93b1e80bcea"
+ },
+ "magmagolem": {
+  "raw": "faa01e972158d6cc",
+  "out": "d36c81e2e5fce32f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "moorschlund-boss": {
+  "raw": "add30730135a4bde",
+  "out": "f5fa50ad13615bb0",
+  "config": "14e1c93b1e80bcea"
+ },
+ "nachtschwinge": {
+  "raw": "a1973b5ff7ef5c48",
+  "out": "8cc79c9628cd2264",
+  "config": "14e1c93b1e80bcea"
+ },
+ "nebelqualle": {
+  "raw": "3b85d182dcc5e5fc",
+  "out": "c71a1999d791a622",
+  "config": "14e1c93b1e80bcea"
+ },
+ "ofenwurm-boss": {
+  "raw": "67176550665ab11f",
+  "out": "14beecdc763bd7e8",
+  "config": "14e1c93b1e80bcea"
+ },
+ "potato-0": {
+  "raw": "9d4de286447de56d",
+  "out": "97a1da07e51f7462",
+  "config": "14e1c93b1e80bcea"
+ },
+ "potato-1": {
+  "raw": "adfe76db37c6c54d",
+  "out": "e3232828966fedff",
+  "config": "14e1c93b1e80bcea"
+ },
+ "potato-2": {
+  "raw": "0c27acddbc97bb57",
+  "out": "a1666aaf8deee874",
+  "config": "14e1c93b1e80bcea"
+ },
+ "ranklerin": {
+  "raw": "b4061962da01fa37",
+  "out": "1535d6ae45a55069",
+  "config": "14e1c93b1e80bcea"
+ },
+ "rechenkoenig-boss": {
+  "raw": "fdf0fdc07c678e28",
+  "out": "e502ca9b6968eea6",
+  "config": "14e1c93b1e80bcea"
+ },
+ "regenwicht": {
+  "raw": "43696a50dee5374b",
+  "out": "51386acf9130630d",
+  "config": "14e1c93b1e80bcea"
+ },
+ "richter-elite": {
+  "raw": "0a4b86cba6ab780f",
+  "out": "e633bde1497438bb",
+  "config": "14e1c93b1e80bcea"
+ },
+ "riesenlarve-elite": {
+  "raw": "d78725ff93b94ddf",
+  "out": "70d4230272250309",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schattenwolf": {
+  "raw": "6199cc6ea003aff2",
+  "out": "e9b9fdf29ee72164",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schwindler": {
+  "raw": "957640b10c7a9e19",
+  "out": "f9cdd48a4f675f0e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "streichholzkopf": {
+  "raw": "06854e1b9af23b30",
+  "out": "81856b83cc3a041e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "sturmreiter-elite": {
+  "raw": "30c0209409f56801",
+  "out": "e0bb8034d33f2d16",
+  "config": "14e1c93b1e80bcea"
+ },
+ "sumpfbrocken": {
+  "raw": "2067b74509dcc583",
+  "out": "267ba73e2ed29f06",
+  "config": "14e1c93b1e80bcea"
+ },
+ "toad-0": {
+  "raw": "5d7de3f236f49599",
+  "out": "69125b3aa190a662",
+  "config": "14e1c93b1e80bcea"
+ },
+ "toad-1": {
+  "raw": "99a25d29a1edccc3",
+  "out": "8704381fbb523956",
+  "config": "14e1c93b1e80bcea"
+ },
+ "toad-2": {
+  "raw": "6f998f36c8cc40dc",
+  "out": "ff2b3a0fb397368b",
+  "config": "14e1c93b1e80bcea"
+ },
+ "vergesslicher": {
+  "raw": "183cf69e6dd609a2",
+  "out": "1413b99404147203",
+  "config": "14e1c93b1e80bcea"
+ },
+ "verwechsler": {
+  "raw": "df9ec88d067cea3c",
+  "out": "77b79b308c51ed8f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "wuehlmaus": {
+  "raw": "329469546abf93c6",
+  "out": "c71f29ac57cd4895",
+  "config": "14e1c93b1e80bcea"
+ },
+ "zweifler": {
+  "raw": "3e0f1877b6e2c519",
+  "out": "300e2ef7f6ee5512",
+  "config": "14e1c93b1e80bcea"
+ },
+ "zweifler-enemy": {
+  "raw": "c87027a39d3af2d4",
+  "out": "ddc0ffd40f48b6ee",
+  "config": "14e1c93b1e80bcea"
+ }
+}
