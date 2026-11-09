@@ -551,6 +551,7 @@ const MQ = (() => {
     tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
     const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang }[mod](tier);
     if (!tk.kind) tk.kind = 'num';
+    if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
     // one tutorial per task type
     return Object.assign(tk, { mod, tier, group: mod + ':1' });
   }
