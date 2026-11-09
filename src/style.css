@@ -371,3 +371,30 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .fbmsg { min-height: 1em; margin: 6px 0 0; font-weight: 700; color: var(--ink); }
 .fbmsg a { color: var(--blue); }
 .row .btn.small { white-space: nowrap; }
+
+/* ---------- Eltern: title button, setup, PIN, parent area ---------- */
+.soundbtn { right: auto; left: 12px; }
+.parentbtn { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; min-height: 46px; padding: 0 14px; border-radius: 999px; border: 2px solid rgba(255,255,255,.45); background: rgba(255,255,255,.08); color: var(--paper-ink); font-weight: 700; font-size: 17px; cursor: pointer; }
+.parentbtn .gear { width: 20px; height: 20px; }
+.setup .hero h1 { font-size: 40px; }
+.setup .card p { margin: 6px 0; }
+.hintsmall, .pnote { font-size: 15px; color: var(--ink-soft); margin: 4px 0 8px; }
+.hintsmall { margin-top: 12px; }
+.warncard { position: relative; border: 3px solid var(--gold); }
+.warncard p { margin: 0 34px 10px 0; font-size: 17px; }
+.warnx { position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); font-size: 20px; cursor: pointer; }
+.codecard { text-align: center; }
+.codecard p { margin: 0 0 10px; font-weight: 700; }
+.codetask { font-size: 38px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 4px 0 10px; }
+.codeval { display: flex; justify-content: center; gap: 14px; min-height: 64px; align-items: center; }
+.codeval i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--ink); }
+.codeval i.on { background: var(--ink); }
+.codeval.plain { margin: 0 auto; width: 140px; border: 4px solid var(--blue); border-radius: 16px; background: #fff; font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cmsg { min-height: 1.4em; color: #A42020; }
+.linkbtn { border: 0; background: none; color: var(--ink); text-decoration: underline; font-size: 17px; min-height: 44px; padding: 0 8px; cursor: pointer; }
+.numpad button:disabled { opacity: .45; cursor: default; }
+.jumpbar { display: flex; gap: 6px; padding: 8px 12px; background: var(--bg2); border-bottom: 3px solid rgba(255,255,255,.08); overflow-x: auto; flex: none; }
+.jumpbar button { flex: 1 0 auto; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4); background: transparent; color: var(--paper-ink); font-weight: 700; font-size: 16px; cursor: pointer; }
+.psec { margin-top: 10px; color: var(--gold); }
+.parent-stats .grades { justify-content: flex-start; margin-top: 6px; }
+.parent-stats .gradechip { color: var(--ink); border-color: var(--ink-soft); }
