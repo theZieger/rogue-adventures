@@ -14,6 +14,11 @@
   "out": "cbc3fd2f291eaec1",
   "config": "14e1c93b1e80bcea"
  },
+ "ampel": {
+  "raw": "8d6d8199401c5683",
+  "out": "7a2c39deff41ca65",
+  "config": "14e1c93b1e80bcea"
+ },
  "ausrufer-boss": {
   "raw": "936e621de3f2485d",
   "out": "6b54b1521984584e",
@@ -82,6 +87,26 @@
  "buchstabendreher-enemy": {
   "raw": "f057e9d18d48e0e4",
   "out": "da87e0b3d039e7fa",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bulldogge": {
+  "raw": "d2be33efa14d0593",
+  "out": "d5dd1689e517eb08",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bus-0": {
+  "raw": "6559d9fab163a7c7",
+  "out": "0db91863145d8d7c",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bus-1": {
+  "raw": "280a6b29c667c3b2",
+  "out": "cddda6ae67e2dc46",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bus-2": {
+  "raw": "229ddfa41ab138b4",
+  "out": "154871315d6238ef",
   "config": "14e1c93b1e80bcea"
  },
  "dornengestruepp": {
@@ -227,6 +252,11 @@
  "haudenlukas-elite": {
   "raw": "ff9c2f2d717ca5b8",
   "out": "254bf97af4ff23ca",
+  "config": "14e1c93b1e80bcea"
+ },
+ "hecke": {
+  "raw": "6d913fb93e33f253",
+  "out": "ce57c486ff7ab741",
   "config": "14e1c93b1e80bcea"
  },
  "herrdergeisterbahn-boss": {
@@ -419,6 +449,11 @@
   "out": "141d3172ab08452f",
   "config": "14e1c93b1e80bcea"
  },
+ "moewe": {
+  "raw": "4e8d57c22c2d3469",
+  "out": "000449031fee7121",
+  "config": "14e1c93b1e80bcea"
+ },
  "moorschlund-boss": {
   "raw": "add30730135a4bde",
   "out": "f5fa50ad13615bb0",
@@ -522,6 +557,11 @@
  "pencil-2": {
   "raw": "66b0ecd5b2e8233a",
   "out": "4039d28c39fcb5aa",
+  "config": "14e1c93b1e80bcea"
+ },
+ "pfeifkessel-elite": {
+  "raw": "653784e82bbbdc75",
+  "out": "0b19727d77e5abdf",
   "config": "14e1c93b1e80bcea"
  },
  "pfuetzenmolch": {
@@ -699,6 +739,36 @@
   "out": "267ba73e2ed29f06",
   "config": "14e1c93b1e80bcea"
  },
+ "taube": {
+  "raw": "c0a84c1ce2cbcd69",
+  "out": "4e0044d7e4baadd3",
+  "config": "14e1c93b1e80bcea"
+ },
+ "teapot-0": {
+  "raw": "b4ecef6060c747e4",
+  "out": "acf3c72f6c72e860",
+  "config": "14e1c93b1e80bcea"
+ },
+ "teapot-1": {
+  "raw": "2729a7f677302345",
+  "out": "8d7f65914d644a3c",
+  "config": "14e1c93b1e80bcea"
+ },
+ "teapot-2": {
+  "raw": "a0748a9c2487af56",
+  "out": "fcd4dca3f5a41fde",
+  "config": "14e1c93b1e80bcea"
+ },
+ "teefleck": {
+  "raw": "d2f92ef0ef41ac7f",
+  "out": "ffc86e6cb4733a91",
+  "config": "14e1c93b1e80bcea"
+ },
+ "telefonzelle": {
+  "raw": "287a3878a6a51786",
+  "out": "d10cbae021f41775",
+  "config": "14e1c93b1e80bcea"
+ },
  "toad-0": {
   "raw": "5d7de3f236f49599",
   "out": "69125b3aa190a662",
@@ -714,6 +784,16 @@
   "out": "ff2b3a0fb397368b",
   "config": "14e1c93b1e80bcea"
  },
+ "uhrturm-boss": {
+  "raw": "d58138156fb5ce10",
+  "out": "e30d702c4b589dff",
+  "config": "14e1c93b1e80bcea"
+ },
+ "umklappschirm": {
+  "raw": "a106ac871aa4d39f",
+  "out": "8df5d4bde7fc65f6",
+  "config": "14e1c93b1e80bcea"
+ },
  "unwetter-boss": {
   "raw": "f73853ca83c0fc1a",
   "out": "103f16a3f5482e65",
@@ -727,6 +807,11 @@
  "verwechsler": {
   "raw": "df9ec88d067cea3c",
   "out": "77b79b308c51ed8f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "wappenloewe-boss": {
+  "raw": "e12b143816acebc5",
+  "out": "c30eba7a03340e7f",
   "config": "14e1c93b1e80bcea"
  },
  "wetterwart-0": {
@@ -772,6 +857,11 @@
  "zerrbild": {
   "raw": "5b62c51a348f06c3",
   "out": "4a02b16000c7fb4d",
+  "config": "14e1c93b1e80bcea"
+ },
+ "zugbruecke-elite": {
+  "raw": "03c3a2994d22e12f",
+  "out": "8a8d7904d337197d",
   "config": "14e1c93b1e80bcea"
  },
  "zugluft": {
