@@ -331,6 +331,27 @@ async function saveCodeCases() {
   check(o.backupAt === '' && o.progressAt === '', 'old save loads with empty backup and win dates');
 }
 
+// 13. Kirchenjahr Teil 2 and Gute Freunde: an old save without Gute Freunde stats loads, a Kirchenjahr adventure
+// started in world 1 continues in world 1, and Gute Freunde adventures are saved
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.freunde;
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && p1.w.__mq.meta.stats.freunde && p1.w.__mq.meta.stats.freunde.def.t === 0, 'old save without Gute Freunde stats loads with empty stats');
+  p1.click('[data-new="kirchenjahr"]'); p1.click('.choice'); p1.click('#go'); p1.click('.node.open');
+  const saved = p1.dump(); const r = JSON.parse(saved.mathquest_run_kirchenjahr); r.node = null; saved.mathquest_run_kirchenjahr = JSON.stringify(r);
+  check(r.world === 1, 'Kirchenjahr adventure starts in world 1');
+  const p2 = open(saved);
+  check(/Weiter \(Welt 1\)/.test(p2.$('[data-cont="kirchenjahr"]').textContent), 'title shows the world of a running Kirchenjahr adventure');
+  p2.click('[data-cont="kirchenjahr"]');
+  check(p2.errors.length === 0 && p2.w.__mq.run.world === 1 && !!p2.$('.node.open'), 'Kirchenjahr adventure from world 1 continues on the map');
+}
+{
+  const p1 = open(); if (p1.$('#later')) p1.click('#later');
+  p1.click('[data-new="freunde"]'); p1.click('.choice'); p1.click('#go'); p1.click('.node.open');
+  const p2 = open(p1.dump());
+  check(p2.errors.length === 0 && !!p2.dump().mathquest_run_freunde && !!p2.$('[data-cont="freunde"]'), 'Gute Freunde adventure is saved and can be continued');
+}
+
 reloadCases().then(saveCodeCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

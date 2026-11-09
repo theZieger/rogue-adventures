@@ -15,6 +15,15 @@ for (const [mode, cfg] of Object.entries(modes)) {
   const mods = new Set(Object.keys(cfg.modules));
   const topics = cfg.pool ? new Set(cfg.pool.map((e) => e.g)) : new Set();
 
+  cfg.events.forEach((ev) => {
+    if (ev.w !== undefined && !(cfg.worlds >= ev.w)) fail(`${mode} event „${ev.title}“: world ${ev.w} does not exist`);
+    // dilemma cards: no task, no wrong answer, one reward for every choice, each choice explained
+    if (ev.dilemma) {
+      if (!ev.reward || ev.reward.hp < 0 || (ev.reward.item && !MQ.ITEMS[ev.reward.item])) fail(`${mode} dilemma „${ev.title}“: needs a reward without penalty`);
+      if (ev.opts.length < 2 || ev.opts.length > 3) fail(`${mode} dilemma „${ev.title}“: needs 2 or 3 options`);
+      ev.opts.forEach((o, i) => { if (o.task || o.effect || !o.label || !o.then || !o.think) fail(`${mode} dilemma „${ev.title}“ option ${i}: needs label, consequence and question, no task or own effect`); });
+    }
+  });
   cfg.events.forEach((ev) => ev.opts.forEach((o, i) => {
     const tag = `${mode} event „${ev.title}“ option ${i}`;
     if (o.task && o.task !== 'any' && !mods.has(o.task)) fail(`${tag}: unknown task ${o.task}`);
@@ -22,6 +31,7 @@ for (const [mode, cfg] of Object.entries(modes)) {
     if (o.g !== undefined) {
       if (!o.task) fail(`${tag}: g without task`);
       if (!topics.has(o.g)) fail(`${tag}: unknown topic g=${o.g}`);
+      if (cfg.byWorld && !cfg.pool.some((e) => e.g === o.g && (!ev.w || (e.w || 1) === ev.w))) fail(`${tag}: topic g=${o.g} has no questions in world ${ev.w}`);
       if (o.task && o.task !== 'any' && !cfg.pool.some((e) => e.mod === o.task && e.g === o.g)) fail(`${tag}: no ${o.task} question with g=${o.g}`);
     }
   }));
@@ -54,7 +64,8 @@ for (const [mode, cfg] of Object.entries(modes)) {
     for (const m of mods) {
       const own = new Set(cfg.pool.filter((e) => e.mod === m).map((e) => e.g));
       for (const g of own) for (let i = 0; i < 60; i++) {
-        const q = MK.generate(mode, m, 1, {}, ++seq, { g });
+        const world = cfg.pool.find((e) => e.g === g).w || 1;
+        const q = MK.generate(mode, m, 1, {}, ++seq, { g, world });
         if (q.kind === 'order') continue; // order tasks (ord, grow, story) have no topic filter
         const e = cfg.pool.find((x) => x.id === q.qid);
         if (!e || e.g !== g) { fail(`${mode}/${m}: generate with g=${g} returned ${q.qid}`); break; }

@@ -457,13 +457,14 @@ const MK = (() => {
     'rf:1': { title: 'Richtig oder falsch', steps: ['Lies den Satz genau.', 'Stimmt er mit dem, was du über Kirche, Bibel und Kirchenjahr weißt? Dann „Richtig“.', 'Ist etwas vertauscht oder falsch? Dann „Falsch“.'] },
     'mc:1': { title: 'Wähle aus', steps: ['Lies die Frage. Nur eine Antwort stimmt.', 'Bei Konflikten fragst du: Streite ich mit anderen (äußerer Konflikt) oder bin ich mit mir selbst uneins (innerer Konflikt)?', 'Tippe auf die richtige Antwort.'] },
     'lt:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Lies den Satz mit jedem Wort einmal durch.', 'Tippe auf das Wort, das passt.'] },
-    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter wie Buße, Symbol, Altar, Evangelium, Advent, Ethik und Religion.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
-    'ord:1': { title: 'Reihenfolge', steps: ['Vier Teile sind durcheinander: Zehn Gebote oder Weihnachtsgeschichte.', 'Tippe sie in der richtigen Reihenfolge an: Was kommt zuerst?', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
+    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter wie Buße, Symbol, Altar, Evangelium, Advent, Auferstehung, Pate und Prozession.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
+    'ord:1': { title: 'Reihenfolge', steps: ['Vier Teile sind durcheinander: Zehn Gebote, Weihnachtsgeschichte oder Feste im Kirchenjahr.', 'Tippe sie in der richtigen Reihenfolge an: Was kommt zuerst?', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
   };
   const KJ_STARTERS = [
-    { id: 'kuesterin', type: 'normal', shape: 'kuesterin', names: ['Die Küsterin', 'Die Küsterin', 'Die Küsterin'], hp: 70, desc: 'Sie schließt die Kirche auf, läutet die Glocken und zündet die Kerzen an.', perk: 'none',
+    { id: 'kuesterin', type: 'normal', shape: 'kuesterin', names: ['Die Küsterin', 'Die Oberküsterin', 'Die Oberküsterin'], hp: 70, desc: 'Sie schließt die Kirche auf, läutet die Glocken und zündet die Kerzen an.', perk: 'none',
       attacks: [{ name: 'Schlüsselbund', mod: 'rf' }, { name: 'Glockenseil', mod: 'mc' }, { name: 'Kerzenlicht', mod: 'lt' }, { name: 'Gesangbuch', mod: 'def' }] },
   ];
+  const KJ_WORLD_ATTACKS = { 2: [{ name: 'Palmzweig', mod: 'rf' }, { name: 'Osterkerze', mod: 'mc' }, { name: 'Taufschale', mod: 'def' }, { name: 'Kirchenkalender', mod: 'ord' }] };
   const KJ_EXTRA = { rf: 'Turmuhr', mc: 'Liedtafel', lt: 'Lesepult', def: 'Altarbibel', ord: 'Adventskranz' };
   const KJ_ENEMIES = {
     1: {
@@ -476,8 +477,18 @@ const MK = (() => {
       elite: { name: 'Der Kerzenlöscher', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
       boss: { name: 'Die längste Nacht', acc: 'die längste Nacht', type: 'wasser', shape: 'ghost', hp: 70, atk: 6, boss: true },
     },
+    2: {
+      normal: [
+        { name: 'Der Spätfrost', type: 'wasser', shape: 'drop', hp: 42, atk: 5 },
+        { name: 'Die Naschkatze', type: 'normal', shape: 'fox', hp: 40, atk: 6 },
+        { name: 'Der Märzsturm', type: 'normal', shape: 'bat', hp: 44, atk: 5 },
+        { name: 'Der Morgenmuffel', type: 'pflanze', shape: 'blob', hp: 38, atk: 6 },
+      ],
+      elite: { name: 'Die Mauer', type: 'normal', shape: 'rock', hp: 70, atk: 8 },
+      boss: { name: 'Der alte Winter', acc: 'den alten Winter', type: 'wasser', shape: 'bear', hp: 110, atk: 9, boss: true },
+    },
   };
-  const KJ_MOVES = ['Streitwort', 'Neidblick', 'Nebelwand', 'Windstoß', 'Kalter Hauch', 'Dunkelheit'];
+  const KJ_MOVES = ['Streitwort', 'Neidblick', 'Nebelwand', 'Windstoß', 'Kalter Hauch', 'Dunkelheit', 'Graupelschauer', 'Frostbiss'];
   const KJ_EVENTS = [
     { title: 'Der Pausenhof', text: 'Zwei Kinder streiten um ein Springseil. Hilf ihnen mit einer Frage zu Konflikten, dann leihen sie dir einen Schild.', opts: [{ label: 'Helfen', task: 'mc', g: 'konflikt', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Weggabelung', text: 'Du willst beide Wege gehen und kannst dich nicht entscheiden: ein innerer Konflikt. Eine Frage hilft dir.', opts: [{ label: 'Nachdenken', task: 'mc', g: 'konflikt', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Ausruhen (+5 LP)', effect: { hp: 5 } }] },
@@ -486,6 +497,282 @@ const MK = (() => {
     { title: 'Die Krippe', text: 'In der Kirche steht eine Krippe mit Figuren. Ein Mädchen fragt dich nach der Weihnachtsgeschichte.', opts: [{ label: 'Antworten', task: 'any', g: 'weihnachten', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Die Steintafeln', text: 'Im Klassenzimmer hängt ein Plakat mit den Zehn Geboten. Die Lehrerin gibt dir eine Chilischote, wenn du ihre Frage beantwortest.', opts: [{ label: 'Antworten', task: 'any', g: 'gebote', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Weihnachtsmarkt', text: 'Am Stand gibt es warmen Tee. Du kannst dich aufwärmen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+    { w: 2, title: 'Die Osterreiter', text: 'Festlich geschmückte Pferde kommen ins Dorf, die Reiter singen. Eine Frau am Wegrand fragt dich nach dem Osterreiten.', opts: [{ label: 'Antworten', task: 'any', g: 'sorben', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { w: 2, title: 'Das Taufbecken', text: 'In der Kirche wird heute ein Baby getauft. Die Patin stellt dir eine Frage zur Taufe und schenkt dir einen Schutzengel.', opts: [{ label: 'Antworten', task: 'any', g: 'taufe', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { w: 2, title: 'Der Kirchenkalender', text: 'Im Gemeindehaus hängt ein Kalender mit allen Festen des Jahres. Der Pfarrer fragt dich, welches Fest wann ist.', opts: [{ label: 'Antworten', task: 'any', g: 'festkreis', win: { item: 'lupe' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { w: 2, title: 'Das Osterfeuer', text: 'Am Abend brennt ein großes Osterfeuer. Du kannst dich wärmen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
+  // Teil 2 (Welt 2): Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran, alle anderen nur in Welt 1
+  Object.assign(KJ_NOTES, {
+    fastenzeit: { title: 'Fastenzeit', lines: ['Am Rosenmontag feiern viele Menschen Fasching oder Karneval, mit Umzügen und Verkleidung.', 'Am Aschermittwoch danach beginnt die Fastenzeit. In katholischen Kirchen bekommen die Menschen ein Kreuz aus Asche auf die Stirn.', 'Die Fastenzeit dauert 40 Tage bis Ostern. Die Sonntage werden nicht mitgezählt.', 'Sie erinnert an die 40 Tage, die Jesus nach der Bibel in der Wüste verbrachte.', 'Viele Menschen verzichten in dieser Zeit auf etwas, zum Beispiel auf Süßigkeiten oder Fernsehen.', 'Verzichten schafft Zeit zum Nachdenken: Was ist mir wirklich wichtig? Wem kann ich helfen?'] },
+    symbole: { title: 'Symbole', lines: ['Ein Zeichen sagt etwas ganz Bestimmtes, zum Beispiel ein Verkehrsschild oder ein Pfeil.', 'Ein Symbol steht für etwas, das man nicht sehen kann, zum Beispiel Hoffnung, Freundschaft oder Gott.', 'Regenbogen: Die Bibel erzählt, dass Gott ihn Noah nach der großen Flut als Zeichen seines Versprechens zeigte. Er steht für Hoffnung und Frieden.', 'Weg: Er steht für das Leben. Man geht Schritt für Schritt, manchmal bergauf, manchmal an einer Kreuzung.', 'Wasser: Ohne Wasser gibt es kein Leben. Es macht sauber. Bei der Taufe ist es ein Zeichen für neues Leben.', 'Brot: Es macht satt und wird geteilt. Es steht für Leben und Gemeinschaft.', 'Tür: Sie steht für einen Eingang, ein Willkommen und einen neuen Anfang.', 'Brücke: Sie verbindet, was getrennt ist. Sie steht für Versöhnung und Freundschaft.'] },
+    ostern: { title: 'Karwoche und Ostern', lines: ['Die Karwoche ist die Woche vor Ostern. „Kar“ ist ein altes Wort für Trauer.', 'Palmsonntag: Jesus zieht in Jerusalem ein. Die Menschen jubeln ihm mit Palmzweigen zu.', 'Gründonnerstag: Jesus feiert mit seinen Jüngern das letzte Abendmahl. Er teilt Brot und Wein.', 'Karfreitag: Jesus stirbt am Kreuz.', 'Ostersonntag: Christen glauben, dass Jesus von den Toten auferstanden ist.', 'Ostern ist das höchste und wichtigste Fest der Christen. Die Osterkerze ist ein Zeichen für das Licht und das neue Leben.'] },
+    himmelfahrt: { title: 'Christi Himmelfahrt', lines: ['Christi Himmelfahrt ist 40 Tage nach Ostern, immer an einem Donnerstag.', 'Christen glauben, dass Jesus an diesem Tag zu Gott in den Himmel zurückgekehrt ist.', 'Die Bibel erzählt: Vorher versprach Jesus seinen Jüngern, dass sie den Heiligen Geist bekommen.', 'In ganz Deutschland ist Himmelfahrt ein Feiertag.'] },
+    pfingsten: { title: 'Pfingsten', lines: ['Pfingsten ist 50 Tage nach Ostern. Das Wort kommt aus dem Griechischen und heißt „der fünfzigste Tag“.', 'Die Bibel erzählt: Die Jünger saßen zusammen. Es kam ein Brausen wie von einem Sturm, und Flammen wie aus Feuer erschienen über ihnen.', 'Christen glauben, dass Gott ihnen so den Heiligen Geist geschickt hat. Er gab ihnen Mut.', 'Die Jünger erzählten in vielen Sprachen von Jesus, und alle verstanden sie. Viele Menschen ließen sich taufen.', 'Darum nennt man Pfingsten den „Geburtstag der Kirche“.', 'Zeichen für den Heiligen Geist sind die Taube, das Feuer und der Wind.'] },
+    taufe: { title: 'Die Taufe', lines: ['Mit der Taufe wird ein Mensch in die Gemeinschaft der Christen aufgenommen.', 'Der Pfarrer oder die Pfarrerin gießt Wasser über den Kopf und sagt: „Ich taufe dich im Namen des Vaters und des Sohnes und des Heiligen Geistes.“', 'Getauft wird am Taufbecken in der Kirche. Oft werden Babys getauft, aber auch Kinder und Erwachsene.', 'Die Paten versprechen, dem Kind im Leben und im Glauben zu helfen.', 'Die Taufkerze wird an der Osterkerze angezündet.', 'Die Bibel erzählt: Jesus wurde von Johannes im Fluss Jordan getauft.'] },
+    festkreis: { title: 'Feste im Kirchenjahr', lines: ['Das Kirchenjahr beginnt am 1. Advent und hat zwei große Festkreise: den Weihnachtsfestkreis und den Osterfestkreis.', 'Feste Feste sind jedes Jahr am selben Datum: Heiligabend am 24. Dezember, Weihnachten am 25. und 26. Dezember, der Reformationstag am 31. Oktober.', 'Bewegliche Feste wandern im Kalender. Ostern ist am ersten Sonntag nach dem ersten Vollmond im Frühling, also zwischen dem 22. März und dem 25. April.', 'Nach Ostern richten sich auch Aschermittwoch, Karfreitag, Himmelfahrt, Pfingsten und Fronleichnam.'] },
+    sorben: { title: 'Ostern bei den Sorben', lines: ['Die Sorben sind ein kleines Volk in der Lausitz, in Sachsen und Brandenburg. Sie haben eine eigene Sprache.', 'Osterreiten: Am Ostersonntag reiten katholische Sorben in schwarzen Anzügen und mit Zylinder auf geschmückten Pferden von Dorf zu Dorf. Sie singen und erzählen so von der Auferstehung.', 'Bekannt sind auch die sorbischen Ostereier, die mit feinen Mustern verziert werden.', 'Saatreiten: In Ostritz in der Oberlausitz reiten am Ostersonntag Reiter um die Felder und bitten um Segen für die Saat.', 'Fronleichnam ist ein katholisches Fest 60 Tage nach Ostern, mit einer Prozession durch den Ort. In einigen sorbischen Gemeinden bei Bautzen ist an diesem Tag schulfrei.', 'Mariä Himmelfahrt am 15. August ist ein wichtiges Fest der katholischen Sorben. Katholische Christen glauben, dass Maria, die Mutter von Jesus, in den Himmel aufgenommen wurde.'] },
+  });
+  const KJ_OSTERWEG = [
+    { id: 'k1', text: 'Aschermittwoch: Die Fastenzeit beginnt.' },
+    { id: 'k2', text: 'Palmsonntag: Jesus zieht in Jerusalem ein.' },
+    { id: 'k3', text: 'Gründonnerstag: Jesus feiert mit seinen Jüngern das letzte Abendmahl.' },
+    { id: 'k4', text: 'Karfreitag: Jesus stirbt am Kreuz.' },
+    { id: 'k5', text: 'Ostersonntag: Christen feiern die Auferstehung.' },
+    { id: 'k6', text: 'Christi Himmelfahrt: 40 Tage nach Ostern.' },
+    { id: 'k7', text: 'Pfingsten: 50 Tage nach Ostern.' },
+  ];
+  const KJ_JAHR = [
+    { id: 'j1', text: '1. Advent: Beginn des Kirchenjahrs' },
+    { id: 'j2', text: 'Weihnachten: die Geburt von Jesus' },
+    { id: 'j3', text: 'Aschermittwoch: Beginn der Fastenzeit' },
+    { id: 'j4', text: 'Ostern: die Auferstehung' },
+    { id: 'j5', text: 'Pfingsten: der Geburtstag der Kirche' },
+    { id: 'j6', text: 'Buß- und Bettag im November' },
+  ];
+  const FEST = 'Ein festes Fest', BEWEGLICH = 'Ein bewegliches Fest';
+  KJ_POOL.push(
+    // Fastenzeit
+    { id: 'kj2rf1', w: 2, mod: 'rf', g: 'fastenzeit', q: 'Am Aschermittwoch beginnt die Fastenzeit.', a: true },
+    { id: 'kj2rf2', w: 2, mod: 'rf', g: 'fastenzeit', q: 'Die Fastenzeit dauert 10 Tage.', a: false, why: 'Sie dauert 40 Tage, die Sonntage nicht mitgezählt.' },
+    { id: 'kj2rf3', w: 2, mod: 'rf', g: 'fastenzeit', q: 'Der Rosenmontag ist nach dem Aschermittwoch.', a: false, why: 'Der Rosenmontag ist vorher, zwei Tage vor dem Aschermittwoch.' },
+    { id: 'kj2mc1', w: 2, mod: 'mc', g: 'fastenzeit', q: 'Woran erinnern die 40 Tage der Fastenzeit?', o: ['An die 40 Tage, die Jesus in der Wüste verbrachte', 'An 40 Geschenke zu Weihnachten', 'An 40 Kerzen in der Kirche'], a: 0 },
+    { id: 'kj2mc2', w: 2, mod: 'mc', g: 'fastenzeit', q: 'Was bekommen katholische Christen am Aschermittwoch auf die Stirn?', o: ['Ein Kreuz aus Asche', 'Einen Stern aus Glitzer', 'Einen Tropfen Öl'], a: 0 },
+    { id: 'kj2mc3', w: 2, mod: 'mc', g: 'fastenzeit', q: 'Was machen viele Menschen in der Fastenzeit?', o: ['Sie verzichten bewusst auf etwas, zum Beispiel auf Süßigkeiten', 'Sie essen besonders viel Kuchen', 'Sie schmücken einen Tannenbaum'], a: 0 },
+    { id: 'kj2lt1', w: 2, mod: 'lt', g: 'fastenzeit', q: 'Am ___ feiern viele Menschen Fasching mit Umzügen.', o: ['Rosenmontag', 'Karfreitag', 'Heiligabend'], a: 0 },
+    { id: 'kj2lt2', w: 2, mod: 'lt', g: 'fastenzeit', q: 'Die Fastenzeit endet an ___.', o: ['Ostern', 'Weihnachten', 'Pfingsten'], a: 0 },
+    { id: 'kj2def1', w: 2, mod: 'def', g: 'fastenzeit', q: 'Was bedeutet „verzichten“?', o: ['Freiwillig auf etwas nicht zugreifen, das man mag', 'Etwas verschenken, das man nicht mag', 'Etwas ganz schnell aufessen'], a: 0 },
+    { id: 'kj2def2', w: 2, mod: 'def', g: 'fastenzeit', q: 'Wozu dient der Verzicht in der Fastenzeit?', o: ['Zum Nachdenken, was wirklich wichtig ist, und um an andere zu denken', 'Damit man an Ostern keinen Hunger hat', 'Damit die Geschäfte schließen können'], a: 0 },
+    // Symbole
+    { id: 'kj2rf4', w: 2, mod: 'rf', g: 'symbole', q: 'Ein Verkehrsschild ist ein Zeichen mit einer festen Bedeutung.', a: true },
+    { id: 'kj2rf5', w: 2, mod: 'rf', g: 'symbole', q: 'Ein Symbol kann für etwas stehen, das man nicht sehen kann, zum Beispiel Hoffnung.', a: true },
+    { id: 'kj2rf6', w: 2, mod: 'rf', g: 'symbole', q: 'Die Brücke ist ein Symbol für Streit und Trennung.', a: false, why: 'Die Brücke verbindet. Sie steht für Versöhnung und Freundschaft.' },
+    { id: 'kj2rf7', w: 2, mod: 'rf', g: 'symbole', q: 'Nach der Bibel zeigte Gott Noah nach der großen Flut einen Regenbogen.', a: true },
+    { id: 'kj2mc4', w: 2, mod: 'mc', g: 'symbole', q: 'Wofür steht der Regenbogen in der Geschichte von Noah?', o: ['Für Gottes Versprechen, für Hoffnung und Frieden', 'Für schlechtes Wetter', 'Für einen Streit'], a: 0 },
+    { id: 'kj2mc5', w: 2, mod: 'mc', g: 'symbole', q: 'Welches Symbol steht für einen Eingang und einen neuen Anfang?', o: ['Die Tür', 'Das Brot', 'Der Regenbogen'], a: 0 },
+    { id: 'kj2mc6', w: 2, mod: 'mc', g: 'symbole', q: 'Welches Symbol gehört besonders zur Taufe?', o: ['Das Wasser', 'Die Brücke', 'Die Tür'], a: 0 },
+    { id: 'kj2mc7', w: 2, mod: 'mc', g: 'symbole', q: 'Welches Symbol steht für das Leben, das man Schritt für Schritt geht?', o: ['Der Weg', 'Das Brot', 'Das Wasser'], a: 0 },
+    { id: 'kj2mc8', w: 2, mod: 'mc', g: 'symbole', q: 'Wofür steht das Brot als Symbol?', o: ['Für Leben und Gemeinschaft, weil es satt macht und geteilt wird', 'Für Krieg', 'Für Dunkelheit'], a: 0 },
+    { id: 'kj2lt3', w: 2, mod: 'lt', g: 'symbole', q: 'Eine ___ verbindet, was getrennt ist. Sie steht für Versöhnung.', o: ['Brücke', 'Mauer', 'Tür'], a: 0 },
+    { id: 'kj2lt4', w: 2, mod: 'lt', g: 'symbole', q: 'Ohne ___ gibt es kein Leben. Es macht auch sauber.', o: ['Wasser', 'Brot', 'Licht'], a: 0 },
+    { id: 'kj2def3', w: 2, mod: 'def', g: 'symbole', q: 'Was ist der Unterschied zwischen Zeichen und Symbol?', o: ['Ein Zeichen sagt etwas Bestimmtes, ein Symbol steht für etwas Unsichtbares wie Hoffnung', 'Es gibt keinen Unterschied', 'Ein Symbol ist immer ein Verkehrsschild'], a: 0 },
+    // Karwoche und Ostern
+    { id: 'kj2rf8', w: 2, mod: 'rf', g: 'ostern', q: 'Ostern ist das höchste Fest der Christen.', a: true },
+    { id: 'kj2rf9', w: 2, mod: 'rf', g: 'ostern', q: 'Am Karfreitag feiern Christen die Auferstehung von Jesus.', a: false, why: 'Am Karfreitag denken sie an den Tod von Jesus am Kreuz. Die Auferstehung feiern sie am Ostersonntag.' },
+    { id: 'kj2rf10', w: 2, mod: 'rf', g: 'ostern', q: 'Die Karwoche ist die Woche vor Ostern.', a: true },
+    { id: 'kj2mc9', w: 2, mod: 'mc', g: 'ostern', q: 'Was feierte Jesus am Gründonnerstag mit seinen Jüngern?', o: ['Das letzte Abendmahl', 'Seinen Geburtstag', 'Die Taufe im Jordan'], a: 0 },
+    { id: 'kj2mc10', w: 2, mod: 'mc', g: 'ostern', q: 'Womit jubelten die Menschen Jesus am Palmsonntag zu?', o: ['Mit Palmzweigen', 'Mit Laternen', 'Mit Tannenzweigen'], a: 0 },
+    { id: 'kj2mc11', w: 2, mod: 'mc', g: 'ostern', q: 'Was feiern Christen an Ostern?', o: ['Dass Jesus von den Toten auferstanden ist', 'Die Geburt von Jesus', 'Den Beginn der Fastenzeit'], a: 0 },
+    { id: 'kj2mc12', w: 2, mod: 'mc', g: 'ostern', q: 'Welches Fest ist das wichtigste der Christen?', o: ['Ostern', 'Weihnachten', 'Rosenmontag'], a: 0 },
+    { id: 'kj2lt5', w: 2, mod: 'lt', g: 'ostern', q: 'Am ___ stirbt Jesus am Kreuz.', o: ['Karfreitag', 'Palmsonntag', 'Ostersonntag'], a: 0 },
+    { id: 'kj2lt6', w: 2, mod: 'lt', g: 'ostern', q: 'Die ___ ist ein Zeichen für das Licht und das neue Leben an Ostern.', o: ['Osterkerze', 'Adventskerze', 'Taschenlampe'], a: 0 },
+    { id: 'kj2def4', w: 2, mod: 'def', g: 'ostern', q: 'Was bedeutet „Auferstehung“?', o: ['Christen glauben: Jesus ist nach seinem Tod wieder lebendig geworden', 'Morgens früh aufstehen', 'Auf einen Berg steigen'], a: 0 },
+    { id: 'kj2def5', w: 2, mod: 'def', g: 'ostern', q: 'Was bedeutet das alte Wort „Kar“ in Karwoche und Karfreitag?', o: ['Trauer', 'Freude', 'Frühling'], a: 0 },
+    // Himmelfahrt
+    { id: 'kj2rf11', w: 2, mod: 'rf', g: 'himmelfahrt', q: 'Christi Himmelfahrt ist immer an einem Donnerstag.', a: true },
+    { id: 'kj2rf12', w: 2, mod: 'rf', g: 'himmelfahrt', q: 'Christi Himmelfahrt ist 10 Tage nach Ostern.', a: false, why: 'Himmelfahrt ist 40 Tage nach Ostern.' },
+    { id: 'kj2mc13', w: 2, mod: 'mc', g: 'himmelfahrt', q: 'Was glauben Christen über Christi Himmelfahrt?', o: ['Jesus ist zu Gott in den Himmel zurückgekehrt', 'Jesus wurde geboren', 'Jesus wurde getauft'], a: 0 },
+    { id: 'kj2mc14', w: 2, mod: 'mc', g: 'himmelfahrt', q: 'Wie viele Tage nach Ostern ist Christi Himmelfahrt?', o: ['40', '50', '7'], a: 0 },
+    { id: 'kj2lt7', w: 2, mod: 'lt', g: 'himmelfahrt', q: 'Christi Himmelfahrt ist immer an einem ___.', o: ['Donnerstag', 'Montag', 'Samstag'], a: 0 },
+    { id: 'kj2def6', w: 2, mod: 'def', g: 'himmelfahrt', q: 'Was ist Christi Himmelfahrt?', o: ['Das Fest, an dem Christen an die Rückkehr von Jesus zu Gott denken', 'Ein Ausflug mit dem Flugzeug', 'Der erste Tag der Fastenzeit'], a: 0 },
+    // Pfingsten
+    { id: 'kj2rf13', w: 2, mod: 'rf', g: 'pfingsten', q: 'Pfingsten nennt man auch den „Geburtstag der Kirche“.', a: true },
+    { id: 'kj2rf14', w: 2, mod: 'rf', g: 'pfingsten', q: 'Pfingsten ist vor Ostern.', a: false, why: 'Pfingsten ist 50 Tage nach Ostern.' },
+    { id: 'kj2rf15', w: 2, mod: 'rf', g: 'pfingsten', q: 'Die Taube ist ein Zeichen für den Heiligen Geist.', a: true },
+    { id: 'kj2mc15', w: 2, mod: 'mc', g: 'pfingsten', q: 'Wie viele Tage nach Ostern ist Pfingsten?', o: ['50', '40', '100'], a: 0 },
+    { id: 'kj2mc16', w: 2, mod: 'mc', g: 'pfingsten', q: 'Warum heißt Pfingsten „Geburtstag der Kirche“?', o: ['Weil die Jünger von Jesus erzählten und sich viele Menschen taufen ließen', 'Weil an Pfingsten die erste Kirche gebaut wurde', 'Weil Jesus an Pfingsten geboren wurde'], a: 0 },
+    { id: 'kj2mc17', w: 2, mod: 'mc', g: 'pfingsten', q: 'Wen schickte Gott nach dem Glauben der Christen an Pfingsten zu den Jüngern?', o: ['Den Heiligen Geist', 'Einen König', 'Die Hirten'], a: 0 },
+    { id: 'kj2lt8', w: 2, mod: 'lt', g: 'pfingsten', q: 'Feuer, Wind und die ___ sind Zeichen für den Heiligen Geist.', o: ['Taube', 'Krippe', 'Palme'], a: 0 },
+    { id: 'kj2def7', w: 2, mod: 'def', g: 'pfingsten', q: 'Was bedeutet das Wort „Pfingsten“?', o: ['Der fünfzigste Tag', 'Der erste Tag', 'Der heilige Wald'], a: 0 },
+    // Taufe
+    { id: 'kj2rf16', w: 2, mod: 'rf', g: 'taufe', q: 'Bei der Taufe wird ein Mensch in die Gemeinschaft der Christen aufgenommen.', a: true },
+    { id: 'kj2rf17', w: 2, mod: 'rf', g: 'taufe', q: 'Taufen darf man nur Babys.', a: false, why: 'Auch Kinder und Erwachsene können getauft werden.' },
+    { id: 'kj2mc18', w: 2, mod: 'mc', g: 'taufe', q: 'Womit wird getauft?', o: ['Mit Wasser', 'Mit Sand', 'Mit Asche'], a: 0 },
+    { id: 'kj2mc19', w: 2, mod: 'mc', g: 'taufe', q: 'Wer taufte Jesus nach der Bibel im Jordan?', o: ['Johannes', 'Mose', 'Petrus'], a: 0 },
+    { id: 'kj2mc20', w: 2, mod: 'mc', g: 'taufe', q: 'An welcher Kerze wird die Taufkerze angezündet?', o: ['An der Osterkerze', 'An der Geburtstagskerze', 'An der Adventskerze'], a: 0 },
+    { id: 'kj2lt9', w: 2, mod: 'lt', g: 'taufe', q: 'Die ___ versprechen, dem Kind im Leben und im Glauben zu helfen.', o: ['Paten', 'Nachbarn', 'Lehrer'], a: 0 },
+    { id: 'kj2def8', w: 2, mod: 'def', g: 'taufe', q: 'Was ist ein Pate oder eine Patin?', o: ['Ein Mensch, der verspricht, dem Täufling im Leben und im Glauben zu helfen', 'Der Mensch, der die Orgel spielt', 'Ein Kind, das getauft wird'], a: 0 },
+    // Feste und bewegliche Feste
+    { id: 'kj2rf18', w: 2, mod: 'rf', g: 'festkreis', q: 'Weihnachten ist jedes Jahr am selben Datum.', a: true },
+    { id: 'kj2rf19', w: 2, mod: 'rf', g: 'festkreis', q: 'Ostern ist jedes Jahr am selben Datum.', a: false, why: 'Ostern ist ein bewegliches Fest: am ersten Sonntag nach dem ersten Vollmond im Frühling.' },
+    { id: 'kj2mc21', w: 2, mod: 'mc', g: 'festkreis', q: 'Ist Heiligabend ein festes oder ein bewegliches Fest?', o: [FEST, BEWEGLICH], a: 0 },
+    { id: 'kj2mc22', w: 2, mod: 'mc', g: 'festkreis', q: 'Ist Pfingsten ein festes oder ein bewegliches Fest?', o: [BEWEGLICH, FEST], a: 0 },
+    { id: 'kj2mc23', w: 2, mod: 'mc', g: 'festkreis', q: 'Ist der Reformationstag am 31. Oktober ein festes oder ein bewegliches Fest?', o: [FEST, BEWEGLICH], a: 0 },
+    { id: 'kj2mc24', w: 2, mod: 'mc', g: 'festkreis', q: 'Ist Christi Himmelfahrt ein festes oder ein bewegliches Fest?', o: [BEWEGLICH, FEST], a: 0 },
+    { id: 'kj2mc25', w: 2, mod: 'mc', g: 'festkreis', q: 'Wann ist Ostern?', o: ['Am ersten Sonntag nach dem ersten Vollmond im Frühling', 'Immer am 1. April', 'Immer am letzten Tag im Mai'], a: 0 },
+    { id: 'kj2lt10', w: 2, mod: 'lt', g: 'festkreis', q: 'Das Kirchenjahr hat zwei große Festkreise: den Weihnachtsfestkreis und den ___.', o: ['Osterfestkreis', 'Sommerfestkreis', 'Geburtstagskreis'], a: 0 },
+    { id: 'kj2def9', w: 2, mod: 'def', g: 'festkreis', q: 'Was ist ein bewegliches Fest?', o: ['Ein Fest, das jedes Jahr an einem anderen Datum ist', 'Ein Fest, bei dem alle tanzen', 'Ein Fest, das immer am selben Tag ist'], a: 0 },
+    // Sorben
+    { id: 'kj2rf20', w: 2, mod: 'rf', g: 'sorben', q: 'Beim Osterreiten reiten katholische Sorben am Ostersonntag von Dorf zu Dorf.', a: true },
+    { id: 'kj2rf21', w: 2, mod: 'rf', g: 'sorben', q: 'Die Sorben leben an der Ostsee.', a: false, why: 'Die Sorben leben in der Lausitz, in Sachsen und Brandenburg.' },
+    { id: 'kj2mc26', w: 2, mod: 'mc', g: 'sorben', q: 'Wovon erzählen die Osterreiter mit ihren Liedern?', o: ['Von der Auferstehung von Jesus', 'Von der Geburt von Jesus', 'Vom Ende der Ferien'], a: 0 },
+    { id: 'kj2mc27', w: 2, mod: 'mc', g: 'sorben', q: 'Wo leben die Sorben?', o: ['In der Lausitz', 'In den Alpen', 'Auf einer Insel'], a: 0 },
+    { id: 'kj2mc28', w: 2, mod: 'mc', g: 'sorben', q: 'Worum bitten die Reiter beim Saatreiten in Ostritz?', o: ['Um Segen für die Saat auf den Feldern', 'Um neue Pferde', 'Um schönes Wetter für den Urlaub'], a: 0 },
+    { id: 'kj2mc29', w: 2, mod: 'mc', g: 'sorben', q: 'Wann ist Mariä Himmelfahrt?', o: ['Am 15. August', 'Am 24. Dezember', 'Am 31. Oktober'], a: 0 },
+    { id: 'kj2lt11', w: 2, mod: 'lt', g: 'sorben', q: 'An ___ ziehen katholische Christen in einer Prozession durch den Ort.', o: ['Fronleichnam', 'Rosenmontag', 'Heiligabend'], a: 0 },
+    { id: 'kj2lt12', w: 2, mod: 'lt', g: 'sorben', q: 'Die Sorben haben eine eigene ___.', o: ['Sprache', 'Sonne', 'Uhrzeit'], a: 0 },
+    { id: 'kj2def10', w: 2, mod: 'def', g: 'sorben', q: 'Was ist eine Prozession?', o: ['Ein feierlicher Umzug von Gläubigen, oft mit Fahnen, Gebeten und Liedern', 'Ein Pferderennen um einen Preis', 'Ein Gottesdienst ohne Musik'], a: 0 },
+    { id: 'kj2def11', w: 2, mod: 'def', g: 'sorben', q: 'Wer sind die Sorben?', o: ['Ein kleines Volk in der Lausitz mit eigener Sprache', 'Ein Orden von Mönchen', 'Die Jünger von Jesus'], a: 0 },
+  );
+
+  /* ---------- ETHIK: Gute Freunde ---------- */
+  const F_NOTES = {
+    freundschaft: { title: 'Freundschaft', lines: ['Freunde findet man, wenn man auf andere zugeht: fragen, mitspielen, zuhören.', 'Ein guter Freund hält zu dir, hilft dir, hört dir zu und freut sich mit dir.', 'Freunde können verschieden sein: Freundschaft gibt es auch zwischen Jung und Alt, zum Beispiel mit der Oma oder dem Nachbarn.', 'Auch Mensch und Tier können Freunde sein. Ein Tier braucht dafür Futter, Pflege und Zeit.'] },
+    echt: { title: 'Wahre und falsche Freundschaft', lines: ['Ein wahrer Freund mag dich so, wie du bist.', 'Er sagt dir auch ehrlich, wenn ihm etwas nicht gefällt, und bleibt trotzdem dein Freund.', 'Ein falscher Freund ist nur nett, wenn er etwas von dir haben will, zum Beispiel Süßigkeiten oder Spielsachen.', 'Ein falscher Freund überredet dich zu Dingen, die du nicht willst, oder lacht hinter deinem Rücken über dich.'] },
+    versprechen: { title: 'Versprechen und Geheimnisse', lines: ['Ein Versprechen hält man. Dann können sich andere auf dich verlassen.', 'Kannst du ein Versprechen nicht halten, sag es früh und ehrlich.', 'Gute Geheimnisse machen Freude, zum Beispiel ein Geschenk für Mama. Sie werden bald gelüftet.', 'Schlechte Geheimnisse machen Angst oder Bauchweh. Die darfst du einem Erwachsenen erzählen, dem du vertraust, auch wenn du versprochen hast zu schweigen. Das ist kein Petzen.'] },
+    streit: { title: 'Streitregeln', lines: ['Streit gibt es in jeder Freundschaft. Wichtig ist, wie man ihn löst.', '1. Ruhig werden: tief durchatmen, Abstand nehmen.', '2. Jeder erzählt, was passiert ist. Die anderen hören zu und unterbrechen nicht.', '3. Sagen, wie es mir geht: „Ich bin traurig, weil …“ statt „Du bist doof!“', '4. Gemeinsam Lösungen suchen und eine wählen, mit der beide leben können.', 'Ein Kompromiss heißt: Jeder gibt ein Stück nach, damit beide zufrieden sind.', 'Ein Schlichter oder eine Schlichterin hilft beim Streit. Er hört beiden zu, hält zu keinem und hilft, eine Lösung zu finden.'] },
+    goldene: { title: 'Die Goldene Regel', lines: ['„Behandle andere so, wie du selbst behandelt werden möchtest.“', 'Oder: „Was du nicht willst, dass man dir tu, das füg auch keinem andern zu.“', 'Die Goldene Regel gibt es in vielen Religionen und Kulturen auf der ganzen Welt.', 'Frag dich vorher: Wie würde es mir gehen, wenn jemand das mit mir macht?'] },
+    mobbing: { title: 'Mobbing mit Worten', lines: ['Mobbing heißt: Ein Kind wird immer wieder und mit Absicht geärgert, ausgelacht oder ausgeschlossen.', 'Auch Worte können sehr wehtun: Schimpfwörter, Auslachen, Gerüchte, gemeine Nachrichten.', 'Wer gemobbt wird, ist nicht schuld daran.', 'Hol dir Hilfe bei einem Erwachsenen, dem du vertraust: Eltern, Lehrerin, Lehrer oder Hortnerin. Das ist kein Petzen.', 'Wer zusieht, kann helfen: nicht mitlachen, zu dem Kind halten und einem Erwachsenen Bescheid sagen.'] },
+    wahrheit: { title: 'Wahrheit', lines: ['Wer die Wahrheit sagt, dem kann man vertrauen.', 'Eine Lüge ist eine Aussage, von der man weiß, dass sie falsch ist, und die andere täuschen soll.', 'Eine Halbwahrheit erzählt nur einen Teil und lässt das Wichtige weg. Auch sie täuscht.', 'Eine Notlüge soll jemanden schonen oder aus einer Klemme helfen. Ob sie in Ordnung ist, darüber kann man nachdenken.', 'Vertrauen wächst langsam. Wer oft lügt, verliert es schnell.'] },
+  };
+  const F_SCHLICHTEN = [
+    { id: 's1', text: 'Ruhig werden und tief durchatmen.' },
+    { id: 's2', text: 'Jeder erzählt, was passiert ist. Die anderen hören zu.' },
+    { id: 's3', text: 'Jeder sagt, wie es ihm geht.' },
+    { id: 's4', text: 'Gemeinsam Lösungen sammeln.' },
+    { id: 's5', text: 'Eine Lösung wählen, mit der beide leben können.' },
+    { id: 's6', text: 'Sich die Hand geben und sich daran halten.' },
+  ];
+  const GOLD = 'Behandle andere so, wie du selbst behandelt werden möchtest.';
+  const F_POOL = [
+    // Freundschaft
+    { id: 'gfrf1', mod: 'rf', g: 'freundschaft', q: 'Auch ein Kind und ein alter Mensch können Freunde sein.', a: true },
+    { id: 'gfrf2', mod: 'rf', g: 'freundschaft', q: 'Ein Haustier braucht Futter, Pflege und Zeit.', a: true },
+    { id: 'gfrf3', mod: 'rf', g: 'freundschaft', q: 'Freunde müssen immer genau dasselbe mögen.', a: false, why: 'Freunde können verschieden sein und trotzdem zusammenhalten.' },
+    { id: 'gfmc1', mod: 'mc', g: 'freundschaft', q: 'Ein neues Kind steht allein auf dem Schulhof. Wie kann eine Freundschaft beginnen?', o: ['Hingehen und fragen, ob es mitspielen möchte', 'Es nicht beachten', 'Über seine Kleidung lachen'], a: 0 },
+    { id: 'gfmc2', mod: 'mc', g: 'freundschaft', q: 'Was macht ein guter Freund?', o: ['Er hört zu und hilft dir', 'Er nimmt dir dein Pausenbrot weg', 'Er erzählt deine Geheimnisse herum'], a: 0 },
+    { id: 'gfmc3', mod: 'mc', g: 'freundschaft', q: 'Was braucht eine Freundschaft mit einem Tier?', o: ['Pflege, Futter und Zeit', 'Nur ein schönes Halsband', 'Gar nichts'], a: 0 },
+    { id: 'gflt1', mod: 'lt', g: 'freundschaft', q: 'Freunde findet man, wenn man auf andere ___.', o: ['zugeht', 'wartet', 'schimpft'], a: 0 },
+    { id: 'gflt2', mod: 'lt', g: 'freundschaft', q: 'Freundschaft zwischen Jung und ___ gibt es auch, zum Beispiel mit der Oma.', o: ['Alt', 'Klein', 'Schnell'], a: 0 },
+    { id: 'gfdef1', mod: 'def', g: 'freundschaft', q: 'Was ist Freundschaft?', o: ['Zwei oder mehr mögen sich, halten zusammen und helfen einander', 'Man sitzt nur zufällig nebeneinander', 'Einer bestimmt, der andere muss gehorchen'], a: 0 },
+    // Wahre und falsche Freundschaft
+    { id: 'gfrf4', mod: 'rf', g: 'echt', q: 'Ein wahrer Freund mag dich so, wie du bist.', a: true },
+    { id: 'gfrf5', mod: 'rf', g: 'echt', q: 'Ein wahrer Freund ist nur nett, wenn du ihm Süßigkeiten gibst.', a: false, why: 'So verhält sich ein falscher Freund. Ein wahrer Freund mag dich auch ohne Geschenke.' },
+    { id: 'gfrf6', mod: 'rf', g: 'echt', q: 'Ein wahrer Freund darf dir ehrlich sagen, wenn ihm etwas nicht gefällt.', a: true },
+    { id: 'gfmc4', mod: 'mc', g: 'echt', q: 'Tom spielt nur mit Lena, wenn sie ihm ihre Sticker schenkt. Was für ein Freund ist Tom?', o: ['Ein falscher Freund', 'Ein wahrer Freund'], a: 0 },
+    { id: 'gfmc5', mod: 'mc', g: 'echt', q: 'Mira tröstet Ben, als sein Hamster gestorben ist. Was für eine Freundin ist Mira?', o: ['Eine wahre Freundin', 'Eine falsche Freundin'], a: 0 },
+    { id: 'gfmc6', mod: 'mc', g: 'echt', q: 'Jan lacht mit den anderen hinter Paulas Rücken über sie. Was für ein Freund ist Jan?', o: ['Ein falscher Freund', 'Ein wahrer Freund'], a: 0 },
+    { id: 'gfmc7', mod: 'mc', g: 'echt', q: 'Woran erkennst du einen falschen Freund?', o: ['Er will dich zu Dingen überreden, die du nicht willst', 'Er hilft dir bei den Hausaufgaben', 'Er besucht dich, wenn du krank bist'], a: 0 },
+    { id: 'gflt3', mod: 'lt', g: 'echt', q: 'Ein ___ Freund hält auch in schweren Zeiten zu dir.', o: ['wahrer', 'falscher', 'fremder'], a: 0 },
+    { id: 'gfdef2', mod: 'def', g: 'echt', q: 'Was ist ein falscher Freund?', o: ['Jemand, der nur nett ist, wenn er etwas von dir will', 'Jemand, der dir ehrlich die Meinung sagt', 'Jemand, der in einer anderen Stadt wohnt'], a: 0 },
+    // Versprechen und Geheimnisse
+    { id: 'gfrf7', mod: 'rf', g: 'versprechen', q: 'Ein Geheimnis, das dir Angst macht, darfst du einem Erwachsenen erzählen, dem du vertraust.', a: true },
+    { id: 'gfrf8', mod: 'rf', g: 'versprechen', q: 'Wer ein Versprechen hält, auf den kann man sich verlassen.', a: true },
+    { id: 'gfrf9', mod: 'rf', g: 'versprechen', q: 'Wer einem Erwachsenen von einem schlechten Geheimnis erzählt, petzt.', a: false, why: 'Hilfe holen ist kein Petzen. Schlechte Geheimnisse darf man immer erzählen.' },
+    { id: 'gfmc8', mod: 'mc', g: 'versprechen', q: 'Welches Geheimnis ist ein gutes Geheimnis?', o: ['Wir basteln heimlich ein Geschenk für Papas Geburtstag', 'Ein größeres Kind droht dir und sagt, du darfst es niemandem erzählen', 'Jemand hat dir wehgetan und sagt, du sollst schweigen'], a: 0 },
+    { id: 'gfmc9', mod: 'mc', g: 'versprechen', q: 'Du hast versprochen zu helfen, aber du wirst krank. Was tust du?', o: ['Früh Bescheid sagen und es ehrlich erklären', 'Einfach nichts sagen', 'Behaupten, du hättest nie etwas versprochen'], a: 0 },
+    { id: 'gflt4', mod: 'lt', g: 'versprechen', q: 'Ein Geheimnis, das Bauchweh macht, ist ein ___ Geheimnis.', o: ['schlechtes', 'gutes', 'lustiges'], a: 0 },
+    { id: 'gflt5', mod: 'lt', g: 'versprechen', q: 'Ein Versprechen ___ man.', o: ['hält', 'vergisst', 'verkauft'], a: 0 },
+    { id: 'gfdef3', mod: 'def', g: 'versprechen', q: 'Was ist ein Versprechen?', o: ['Man sagt fest zu, dass man etwas tun wird', 'Man spricht ein Wort falsch aus', 'Man erzählt ein Geheimnis weiter'], a: 0 },
+    // Streitregeln, Kompromiss, Schlichter
+    { id: 'gfrf10', mod: 'rf', g: 'streit', q: 'Bei einem Kompromiss gibt jeder ein Stück nach.', a: true },
+    { id: 'gfrf11', mod: 'rf', g: 'streit', q: 'Ein Schlichter hält immer zu seinem besten Freund.', a: false, why: 'Ein Schlichter hält zu keinem. Er hört beiden zu und hilft bei der Lösung.' },
+    { id: 'gfrf12', mod: 'rf', g: 'streit', q: 'Beim Streiten hilft es, erst einmal ruhig zu werden.', a: true },
+    { id: 'gfrf13', mod: 'rf', g: 'streit', q: 'Wenn der andere erzählt, darf man ihn ruhig unterbrechen.', a: false, why: 'Eine Streitregel heißt: zuhören und nicht unterbrechen.' },
+    { id: 'gfmc10', mod: 'mc', g: 'streit', q: 'Emma und Noah wollen beide auf die Schaukel. Welche Lösung ist ein Kompromiss?', o: ['Jeder schaukelt abwechselnd fünf Minuten', 'Emma schaukelt die ganze Pause', 'Keiner darf schaukeln, und beide sind sauer'], a: 0 },
+    { id: 'gfmc11', mod: 'mc', g: 'streit', q: 'Welcher Satz passt zu den Streitregeln?', o: ['„Ich bin traurig, weil du mein Bild zerknüllt hast.“', '„Du bist doof!“', '„Mit dir rede ich nie wieder!“'], a: 0 },
+    { id: 'gfmc12', mod: 'mc', g: 'streit', q: 'Was macht ein Schlichter?', o: ['Er hört beiden zu und hilft, eine Lösung zu finden', 'Er bestimmt, wer recht hat, und bestraft den anderen', 'Er streitet mit'], a: 0 },
+    { id: 'gfmc13', mod: 'mc', g: 'streit', q: 'Was ist der erste Schritt, wenn ein Streit losgeht?', o: ['Ruhig werden und tief durchatmen', 'Sofort laut schreien', 'Weglaufen und nie wieder reden'], a: 0 },
+    { id: 'gflt6', mod: 'lt', g: 'streit', q: 'Wenn jeder ein Stück nachgibt, nennt man das einen ___.', o: ['Kompromiss', 'Wettkampf', 'Zufall'], a: 0 },
+    { id: 'gflt7', mod: 'lt', g: 'streit', q: 'Ein ___ hilft zwei Kindern, ihren Streit zu lösen.', o: ['Schlichter', 'Zuschauer', 'Schiedsrichterpfiff'], a: 0 },
+    { id: 'gflt8', mod: 'lt', g: 'streit', q: 'Wenn der andere erzählt, höre ich zu und ___ nicht.', o: ['unterbreche', 'atme', 'sitze'], a: 0 },
+    { id: 'gfdef4', mod: 'def', g: 'streit', q: 'Was ist ein Kompromiss?', o: ['Eine Lösung, bei der jeder ein Stück nachgibt, damit beide zufrieden sind', 'Wenn einer gewinnt und der andere verliert', 'Ein anderes Wort für Streit'], a: 0 },
+    { id: 'gfdef5', mod: 'def', g: 'streit', q: 'Was ist ein Schlichter?', o: ['Jemand, der beim Streit hilft, beiden zuhört und zu keinem hält', 'Jemand, der einen Streit anfängt', 'Jemand, der beim Streit nur zuschaut'], a: 0 },
+    { id: 'gfdef6', mod: 'def', g: 'streit', q: 'Was ist eine Ich-Botschaft?', o: ['Ich sage, wie es mir geht: „Ich bin wütend, weil …“', 'Ich sage, was der andere falsch gemacht hat: „Du bist schuld!“', 'Ich schreibe meinen Namen auf einen Zettel'], a: 0 },
+    // Goldene Regel
+    { id: 'gfrf14', mod: 'rf', g: 'goldene', q: 'Die Goldene Regel heißt: Behandle andere so, wie du selbst behandelt werden möchtest.', a: true },
+    { id: 'gfrf15', mod: 'rf', g: 'goldene', q: 'Die Goldene Regel gibt es nur in einem einzigen Land.', a: false, why: 'Es gibt sie in vielen Religionen und Kulturen auf der ganzen Welt.' },
+    { id: 'gfmc14', mod: 'mc', g: 'goldene', q: 'Wie heißt die Goldene Regel?', o: [GOLD, 'Wer zuerst kommt, mahlt zuerst.', 'Der Stärkere bestimmt.'], a: 0 },
+    { id: 'gfmc15', mod: 'mc', g: 'goldene', q: 'Lukas möchte nicht ausgelacht werden. Was sagt die Goldene Regel?', o: ['Dann soll er auch andere nicht auslachen', 'Dann darf er die anderen zuerst auslachen', 'Das hat nichts miteinander zu tun'], a: 0 },
+    { id: 'gfmc16', mod: 'mc', g: 'goldene', q: 'Welcher Spruch meint dasselbe wie die Goldene Regel?', o: ['Was du nicht willst, dass man dir tu, das füg auch keinem andern zu.', 'Morgenstund hat Gold im Mund.', 'Reden ist Silber, Schweigen ist Gold.'], a: 0 },
+    { id: 'gflt9', mod: 'lt', g: 'goldene', q: 'Was du nicht willst, dass man dir tu, das füg auch keinem ___ zu.', o: ['andern', 'Freund', 'Tier'], a: 0 },
+    { id: 'gflt10', mod: 'lt', g: 'goldene', q: 'Behandle andere so, wie du selbst ___ werden möchtest.', o: ['behandelt', 'gerufen', 'gesehen'], a: 0 },
+    { id: 'gfdef7', mod: 'def', g: 'goldene', q: 'Was ist die Goldene Regel?', o: ['Eine Regel für alle: Behandle andere so, wie du behandelt werden möchtest', 'Eine Regel, wie man Gold findet', 'Die wichtigste Regel beim Fußball'], a: 0 },
+    // Mobbing mit Worten
+    { id: 'gfrf16', mod: 'rf', g: 'mobbing', q: 'Wer gemobbt wird, ist selbst schuld.', a: false, why: 'Wer gemobbt wird, ist nie schuld daran.' },
+    { id: 'gfrf17', mod: 'rf', g: 'mobbing', q: 'Auch Worte und Gerüchte können sehr wehtun.', a: true },
+    { id: 'gfrf18', mod: 'rf', g: 'mobbing', q: 'Wer gemobbt wird, soll sich Hilfe bei einem Erwachsenen holen.', a: true },
+    { id: 'gfmc17', mod: 'mc', g: 'mobbing', q: 'Was ist Mobbing mit Worten?', o: ['Ein Kind wird immer wieder mit Absicht beschimpft oder ausgelacht', 'Zwei Kinder streiten einmal um einen Ball', 'Ein Kind sagt seine ehrliche Meinung'], a: 0 },
+    { id: 'gfmc18', mod: 'mc', g: 'mobbing', q: 'Du siehst, wie ein Kind jeden Tag ausgelacht wird. Was hilft?', o: ['Nicht mitlachen und einem Erwachsenen Bescheid sagen', 'Mitlachen, damit man selbst dazugehört', 'So tun, als hätte man nichts gesehen'], a: 0 },
+    { id: 'gflt11', mod: 'lt', g: 'mobbing', q: 'Hol dir Hilfe bei einem ___, dem du vertraust.', o: ['Erwachsenen', 'Fremden', 'Kuscheltier'], a: 0 },
+    { id: 'gfdef8', mod: 'def', g: 'mobbing', q: 'Was ist ein Gerücht?', o: ['Etwas, das herumerzählt wird, obwohl niemand weiß, ob es stimmt', 'Ein starker Geruch', 'Eine Nachricht von der Lehrerin'], a: 0 },
+    // Wahrheit
+    { id: 'gfrf19', mod: 'rf', g: 'wahrheit', q: 'Wer oft lügt, dem vertraut man bald nicht mehr.', a: true },
+    { id: 'gfrf20', mod: 'rf', g: 'wahrheit', q: 'Eine Halbwahrheit ist immer ganz ehrlich.', a: false, why: 'Eine Halbwahrheit lässt das Wichtige weg und täuscht dadurch.' },
+    { id: 'gfmc19', mod: 'mc', g: 'wahrheit', q: 'Mama fragt, ob Max seine Hausaufgaben gemacht hat. Max sagt: „Mathe habe ich gemacht.“ Deutsch hat er nicht gemacht. Was ist das?', o: ['Eine Halbwahrheit', 'Die ganze Wahrheit', 'Ein Versprechen'], a: 0 },
+    { id: 'gfmc20', mod: 'mc', g: 'wahrheit', q: 'Oma strickt Sophie einen kratzigen Pulli. Sophie sagt: „Der ist schön.“ Wie nennt man so eine Lüge, die jemanden schonen soll?', o: ['Eine Notlüge', 'Ein Gerücht', 'Ein Kompromiss'], a: 0 },
+    { id: 'gfmc21', mod: 'mc', g: 'wahrheit', q: 'Was wächst, wenn man immer die Wahrheit sagt?', o: ['Das Vertrauen', 'Der Streit', 'Die Angst'], a: 0 },
+    { id: 'gflt12', mod: 'lt', g: 'wahrheit', q: 'Wer die Wahrheit sagt, dem kann man ___.', o: ['vertrauen', 'misstrauen', 'drohen'], a: 0 },
+    { id: 'gfdef9', mod: 'def', g: 'wahrheit', q: 'Was ist eine Notlüge?', o: ['Eine Lüge, die jemanden schonen oder aus einer Klemme helfen soll', 'Ein Anruf bei der Feuerwehr', 'Die ganze Wahrheit'], a: 0 },
+    { id: 'gfdef10', mod: 'def', g: 'wahrheit', q: 'Was ist eine Halbwahrheit?', o: ['Man erzählt nur einen Teil und lässt das Wichtige weg', 'Man sagt alles ganz genau', 'Man flüstert die Wahrheit'], a: 0 },
+    { id: 'gfdef11', mod: 'def', g: 'wahrheit', q: 'Was bedeutet „Vertrauen“?', o: ['Sich darauf verlassen, dass jemand ehrlich ist und zu einem hält', 'Jemandem etwas wegnehmen', 'Sich vor jemandem verstecken'], a: 0 },
+  ];
+  const F_TUT = {
+    'rf:1': { title: 'Richtig oder falsch', steps: ['Lies den Satz genau.', 'Stimmt er mit dem, was du über Freundschaft, Streitregeln und Wahrheit gelernt hast? Dann „Richtig“.', 'Ist etwas vertauscht oder falsch? Dann „Falsch“.'] },
+    'mc:1': { title: 'Wähle aus', steps: ['Lies die Frage. Nur eine Antwort stimmt.', 'Bei Geschichten fragst du dich: Wie verhält sich ein wahrer Freund? Was sagen die Streitregeln?', 'Tippe auf die richtige Antwort.'] },
+    'lt:1': { title: 'Lückentext', steps: ['Im Satz fehlt ein Wort (___).', 'Lies den Satz mit jedem Wort einmal durch.', 'Tippe auf das Wort, das passt.'] },
+    'def:1': { title: 'Begriffe', steps: ['Hier geht es um wichtige Wörter wie Kompromiss, Schlichter, Goldene Regel, Gerücht, Notlüge und Vertrauen.', 'Überlege, was das Wort bedeutet.', 'Tippe auf die richtige Erklärung.'] },
+    'ord:1': { title: 'Reihenfolge', steps: ['Vier Schritte, wie man einen Streit löst, sind durcheinander.', 'Tippe sie in der richtigen Reihenfolge an: Was kommt zuerst?', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
+  };
+  const F_STARTERS = [
+    { id: 'hofbande', type: 'normal', shape: 'friends', names: ['Die Hofbande', 'Die Hofbande', 'Die Hofbande'], hp: 70, desc: 'Ida und Ole, Nachbarskinder und seit dem Kindergarten befreundet. Sie streiten manchmal und vertragen sich wieder.', perk: 'none',
+      attacks: [{ name: 'Ehrenwort', mod: 'rf' }, { name: 'Handschlag', mod: 'mc' }, { name: 'Zettelpost', mod: 'lt' }, { name: 'Klassenregel', mod: 'def' }] },
+  ];
+  const F_EXTRA = { rf: 'Offenes Ohr', mc: 'Freundschaftsband', lt: 'Brieffreundschaft', def: 'Friedensbank', ord: 'Streitschlichtung' };
+  const F_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Der Zankapfel', type: 'feuer', shape: 'drop', hp: 26, atk: 3 },
+        { name: 'Der Neidwurm', type: 'pflanze', shape: 'newt', hp: 28, atk: 4 },
+        { name: 'Die Flunkerei', type: 'wasser', shape: 'jelly', hp: 24, atk: 4 },
+        { name: 'Der Großtuer', type: 'normal', shape: 'toad', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Das Gerücht', type: 'normal', shape: 'ghost', hp: 45, atk: 5 },
+      boss: { name: 'Der Keil', acc: 'den Keil', type: 'normal', shape: 'rock', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const F_MOVES = ['Stichelei', 'Prahlerei', 'Getuschel', 'Türknallen', 'Schmollblick', 'Halbwahrheit'];
+  // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung (reward)
+  const F_EVENTS = [
+    { title: 'Das verratene Geheimnis', dilemma: true, reward: { hp: 5 }, text: 'Deine Freundin Nele hat dir erzählt, dass sie in Tim verliebt ist. Jetzt fragt Tim dich, ob Nele ihn mag.', opts: [
+      { label: 'Ich sage: „Frag sie selbst.“', then: 'Tim ist enttäuscht, aber Nele kann selbst entscheiden, was sie erzählt.', think: 'Wann darf man ein Geheimnis weitererzählen und wann nicht?' },
+      { label: 'Ich erzähle es Tim.', then: 'Tim grinst. Nele erfährt davon und ist traurig, weil sie dir vertraut hat.', think: 'Wie würdest du dich fühlen, wenn jemand dein Geheimnis verrät?' },
+      { label: 'Ich sage Nele, dass Tim gefragt hat.', then: 'Nele ist froh, dass sie es von dir weiß. Sie überlegt, was sie Tim sagen will.', think: 'Was macht eine gute Freundin aus?' } ] },
+    { title: 'Das neue Kind', dilemma: true, reward: { hp: 5 }, text: 'Im Fußballspiel fehlt ein Spieler. Ein neues Kind schaut zu. Dein bester Freund sagt: „Die kennen wir nicht, die nehmen wir nicht.“', opts: [
+      { label: 'Ich frage das neue Kind, ob es mitspielt.', then: 'Das neue Kind strahlt. Dein Freund murrt erst, dann spielt es richtig gut mit.', think: 'Wie hast du dich an deinem ersten Tag an einem neuen Ort gefühlt?' },
+      { label: 'Ich höre auf meinen Freund.', then: 'Ihr spielt zu fünft weiter. Das neue Kind geht allein zur Bank.', think: 'Was hätte das neue Kind sich gewünscht?' },
+      { label: 'Ich rede erst mit meinem Freund.', then: 'Dein Freund sagt: „Na gut, aber nur heute.“ Am Ende fragt er selbst, ob es morgen wieder mitspielt.', think: 'Wie kann man einen Freund umstimmen, ohne zu streiten?' } ] },
+    { title: 'Die Gruppennachricht', dilemma: true, reward: { hp: 5 }, text: 'Auf dem Tablet deiner großen Schwester siehst du eine Gruppennachricht. Ein Kind aus deiner Klasse wird dort jeden Tag ausgelacht.', opts: [
+      { label: 'Hol dir Hilfe bei einem Erwachsenen.', then: 'Du zeigst es deinen Eltern. Sie sprechen mit der Lehrerin, und die Klasse redet darüber.', think: 'Warum ist Hilfe holen kein Petzen?' },
+      { label: 'Ich frage das Kind, wie es ihm geht.', then: 'Das Kind ist froh, dass jemand fragt. Ihr beschließt, es gemeinsam einem Erwachsenen zu erzählen.', think: 'Was kann ein einziges freundliches Wort bewirken?' },
+      { label: 'Ich tue so, als hätte ich nichts gesehen.', then: 'Das Auslachen geht weiter. Du musst noch oft daran denken.', think: 'Was hätte das Kind gebraucht? Wem könntest du es noch erzählen?' } ] },
+    { title: 'Das zerbrochene Lineal', dilemma: true, reward: { hp: 5 }, text: 'Du hast aus Versehen das Lineal deines Freundes zerbrochen. Er hat es noch nicht gemerkt.', opts: [
+      { label: 'Ich sage es ihm sofort.', then: 'Er ist erst sauer. Dann sagt er: „Gut, dass du es gesagt hast.“ Du bringst ihm morgen ein neues mit.', think: 'Warum fällt die Wahrheit manchmal so schwer?' },
+      { label: 'Ich lege es zurück und sage nichts.', then: 'Später findet er es. Er weiß nicht, wer es war, und schaut alle misstrauisch an.', think: 'Was passiert mit dem Vertrauen, wenn etwas verschwiegen wird?' },
+      { label: 'Ich kaufe heimlich ein neues.', then: 'Er hat wieder ein Lineal, aber du hast ein ungutes Gefühl im Bauch.', think: 'Ist das Problem jetzt gelöst? Was fehlt noch?' } ] },
+    { title: 'Der Pulli von Oma', dilemma: true, reward: { hp: 5 }, text: 'Oma hat dir einen Pulli gestrickt. Er kratzt, und die Farbe gefällt dir nicht. Oma fragt: „Gefällt er dir?“', opts: [
+      { label: '„Ja, er ist schön!“', then: 'Oma freut sich und strickt dir gleich noch einen.', think: 'Ist eine Notlüge in Ordnung, wenn sie jemanden schont?' },
+      { label: '„Er kratzt leider.“', then: 'Oma ist kurz traurig. Dann sagt sie: „Das nächste Mal nehme ich weichere Wolle.“', think: 'Wie kann man ehrlich sein, ohne zu verletzen?' },
+      { label: '„Danke, dass du dir so viel Mühe gemacht hast.“', then: 'Oma lächelt. Du hast etwas Wahres gesagt, ohne über den Pulli zu reden.', think: 'Ist das ehrlich? Oder eine Halbwahrheit?' } ] },
+    { title: 'Die Einladung', dilemma: true, reward: { hp: 5 }, text: 'Du hast deinem Freund versprochen, am Samstag mit ihm Rad zu fahren. Jetzt lädt dich ein anderes Kind zum Kino ein, am selben Tag.', opts: [
+      { label: 'Ich halte mein Versprechen.', then: 'Ihr habt einen schönen Tag. Dein Freund weiß, dass er sich auf dich verlassen kann.', think: 'Warum sind Versprechen wichtig?' },
+      { label: 'Ich gehe ins Kino.', then: 'Der Film ist spannend. Dein Freund wartet am Samstag vergeblich und ist enttäuscht.', think: 'Wie hättest du das besser lösen können?' },
+      { label: 'Ich frage, ob wir alle zusammen etwas machen.', then: 'Ihr fahrt am Samstag Rad und geht am Sonntag zu dritt ins Kino.', think: 'Ist das ein Kompromiss? Wer hat dabei nachgegeben?' } ] },
+    { title: 'Der Streit um die Schaukel', dilemma: true, reward: { hp: 5 }, text: 'Zwei Kinder aus deiner Klasse streiten laut um die Schaukel. Eins fängt an zu weinen.', opts: [
+      { label: 'Ich biete an zu schlichten.', then: 'Beide erzählen nacheinander. Am Ende schaukelt jedes Kind abwechselnd fünf Minuten.', think: 'Warum darf ein Schlichter zu keinem halten?' },
+      { label: 'Ich hole die Pausenaufsicht.', then: 'Die Lehrerin kommt und hilft den beiden, sich zu einigen.', think: 'Wann ist es gut, einen Erwachsenen zu holen?' },
+      { label: 'Ich halte mich raus.', then: 'Der Streit geht weiter, bis die Pause vorbei ist. Keiner hat geschaukelt.', think: 'Was hätten die beiden gebraucht?' } ] },
+    { title: 'Die Angeberei', dilemma: true, reward: { hp: 5 }, text: 'Ein Kind erzählt jeden Tag, wie toll seine Sachen sind, und lacht über deine alte Federtasche. Die anderen lachen mit.', opts: [
+      { label: 'Ich sage ruhig: „Das tut mir weh.“', then: 'Es wird still. Das Kind murmelt: „War nicht so gemeint.“', think: 'Was ist eine Ich-Botschaft, und warum hilft sie?' },
+      { label: 'Ich lache über seine Schuhe.', then: 'Jetzt lachen alle über das andere Kind. Ihr seid beide traurig.', think: 'Was sagt die Goldene Regel dazu?' },
+      { label: 'Hol dir Hilfe bei einem Erwachsenen.', then: 'Die Lehrerin spricht mit der Klasse darüber, dass Auslachen wehtut. Es wird besser.', think: 'Wem kannst du erzählen, wenn dich etwas immer wieder ärgert?' } ] },
+    { title: 'Der Hund vom Nachbarn', dilemma: true, reward: { hp: 5 }, text: 'Der alte Herr Krause von nebenan kann nicht mehr gut laufen. Sein Hund Bello will raus. Du wolltest eigentlich spielen.', opts: [
+      { label: 'Ich frage meine Eltern und gehe mit Bello.', then: 'Herr Krause freut sich. Bello wedelt, und du hast einen neuen Freund, oder sogar zwei.', think: 'Können ein Kind, ein alter Mensch und ein Tier Freunde sein?' },
+      { label: 'Ich spiele lieber.', then: 'Du hast Spaß beim Spielen. Herr Krause findet später jemand anderen, der hilft.', think: 'Muss man immer helfen? Wie kann man freundlich Nein sagen?' },
+      { label: 'Ich lade meine Freunde zum Gassigehen ein.', then: 'Ihr geht zu dritt mit Bello zum Park und spielt dort weiter.', think: 'Wie lassen sich Helfen und Spielen verbinden?' } ] },
+    { title: 'Die Freundschaftsbank', text: 'Auf dem Schulhof steht eine Bank. Wer dort sitzt, sucht jemanden zum Spielen. Die Hortnerin fragt dich etwas über Freundschaft.', opts: [{ label: 'Antworten', task: 'any', g: 'freundschaft', win: { item: 'trank' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Klassenrat', text: 'Im Klassenrat sammelt ihr Streitregeln für ein Plakat. Wer eine Frage richtig beantwortet, bekommt einen Schild.', opts: [{ label: 'Mitmachen', task: 'any', g: 'streit', win: { item: 'schild' }, lose: { xp: 5 } }, { label: 'Zuhören (+5 LP)', effect: { hp: 5 } }] },
   ];
 
   /* ---------- Spaced repetition selection ---------- */
@@ -495,10 +782,13 @@ const MK = (() => {
     for (let i = 0; i < items.length; i++) { r -= w[i]; if (r <= 0) return items[i]; }
     return items[items.length - 1];
   }
-  // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls
+  // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
+  // { world }: in Modi mit byWorld kommen nur Fragen und Reihenfolgen dieser Welt dran (w fehlt = Welt 1)
   function generate(mode, mod, tier, know, seqNow, opts) {
-    const pool = MODES[mode].pool;
-    if (mod === 'ord') { const o = pick(MODES[mode].order); const idx = shuffle(o.items.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => o.items[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: o.note, q: o.q, items, order: items.map((x) => x.id), display: shuffle(items), qid: o.qid + idx.join('') }; }
+    const cfg = MODES[mode]; const world = (opts && opts.world) || 1;
+    const inWorld = (p) => !cfg.byWorld || (p.w || 1) === world;
+    const pool = cfg.pool.filter(inWorld);
+    if (mod === 'ord') { const o = pick(cfg.order.filter(inWorld)); const idx = shuffle(o.items.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => o.items[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: o.note, q: o.q, items, order: items.map((x) => x.id), display: shuffle(items), qid: o.qid + idx.join('') }; }
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
     let cands = pool.filter((p) => p.mod === mod);
@@ -521,10 +811,13 @@ const MK = (() => {
   const MODES = {
     ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
       order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
-    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 1, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Buß- und Bettag, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten',
-      order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' }] },
+    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
+      order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' },
+        { w: 2, items: KJ_OSTERWEG, note: 'ostern', q: 'Tippe die Tage in der Reihenfolge an, in der sie im Jahr kommen.', qid: 'kjo_' }, { w: 2, items: KJ_JAHR, note: 'festkreis', q: 'Tippe die Feste in der Reihenfolge des Kirchenjahrs an: Es beginnt mit dem 1. Advent.', qid: 'kjj_' }] },
+    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
+      order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, generate, record, shuffle, pick, rnd };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, generate, record, shuffle, pick, rnd };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

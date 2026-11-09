@@ -9,7 +9,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-09
 
 ### Neu
-- Neues Ethik-Abenteuer „Das Kirchenjahr“: Buß- und Bettag, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten.
+- Neues Ethik-Abenteuer „Das Kirchenjahr“ in zwei Welten: von Buß- und Bettag bis Weihnachten und von der Fastenzeit bis Pfingsten.
+- Neues Ethik-Abenteuer „Gute Freunde“: Streitregeln, Goldene Regel, Wahrheit und Karten, bei denen es kein Richtig oder Falsch gibt.
 - Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
 - Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.
 - Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.
