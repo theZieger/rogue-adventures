@@ -13,6 +13,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Verbessert
 - Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.
+- Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich.
 
 ## 2026-11-08
 
