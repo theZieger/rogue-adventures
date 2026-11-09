@@ -12,7 +12,12 @@ const META = 'mathquest_meta_v2';
 function open(storage) {
   const errors = [];
   const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(w) { for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message)); } });
-  const w = dom.window, d = w.document; const $ = (s) => d.querySelector(s);
+  const w = dom.window, d = w.document;
+  // tests were written for one title screen: a game's button sits on its subject screen, so open that from the
+  // title first, and a title button looked for on a subject screen means going back
+  const $ = (s) => d.querySelector(s) || toGame(s) || toTitle(s);
+  const toTitle = (s) => { if (!d.querySelector('[data-new]') || !d.querySelector('#back')) return null; d.querySelector('#back').click(); return d.querySelector(s); };
+  const toGame = (s) => { const m = /data-(?:new|cont)="(\w+)"/.exec(s); const sub = m && d.querySelector('[data-sub]') && w.__mq.subjectOf(m[1]); if (!sub) return null; d.querySelectorAll('[data-sub]')[[...d.querySelectorAll('[data-sub]')].findIndex((b) => b.textContent.includes(sub.subject))].click(); return d.querySelector(s); };
   const click = (s) => { const el = typeof s === 'string' ? $(s) : s; if (!el) throw new Error('missing ' + s + ' on: ' + d.body.textContent.slice(0, 200)); el.click(); };
   const dump = () => Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)]));
   return { w, d, $, click, dump, text: () => $('#app').textContent, errors };
