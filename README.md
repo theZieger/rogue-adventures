@@ -34,6 +34,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 | 🌾 Die Kornkammer | Sachkunde: Weizen, Roggen, Gerste, Hafer, Mais (Ähre, Rispe, Kolben), Teile der Getreidepflanze mit Zeichenschule, vom Korn zum Brot, Verwendung, Wertschätzung von Lebensmitteln |
 | 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
+| 🌼 Die Wiese | Sachkunde: acht Wiesenpflanzen als Bild und nach Merkmalen, Stockwerke der Wiese (Bild, Tiere zuordnen, ordnen), Entwicklung von Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Wiese schützen, mit allen Sinnen |
+| 🕰️ Früher und heute | Sachkunde: Geräte und Leben auf dem Land früher und heute, Zeitleiste, Sprachen, Feste und Essen aus aller Welt (Dilemma-Karten ohne falsche Antwort), Nachschlagen und „Kann das stimmen?“ |
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
 | 🎻 Der Konzertsaal | Musik, nur zum Anschauen (keine Töne): Notenwerte und Pausen (Bilder, in Stufe 2 rechnen), Takt ergänzen (2/4, 3/4, Stufe 2 auch 4/4 mit Pausen), Tonhöhen c bis c im Violinschlüssel, Instrumente und ihre Familien, wie der Ton entsteht, piano/forte/crescendo, Komponisten (Bach, Mozart, Beethoven, Robert und Clara Schumann, Wagner) mit Reihenfolge nach Geburtsjahr, Instrumente und Tänze anderer Länder |
 
@@ -66,6 +68,7 @@ src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Le
 src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop nacherzählt, Sachtexte, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
+src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
 src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes

@@ -675,9 +675,9 @@ async function gardenWinCases() {
 
 // 16. Sachkunde units: an old save gains their stats; reopening in the Forscherlabor or on the Schatzkarte keeps the state
 {
-  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); for (const m of ['kornkammer', 'wetterstation', 'kompass']) delete old.stats[m];
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); for (const m of ['kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher']) delete old.stats[m];
   const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
-  check(p1.errors.length === 0 && ['kornkammer', 'wetterstation', 'kompass'].every((m) => p1.w.__mq.meta.stats[m] && Object.values(p1.w.__mq.meta.stats[m]).every((s) => s.t === 0)), 'old save without Sachkunde stats loads with empty stats');
+  check(p1.errors.length === 0 && ['kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher'].every((m) => p1.w.__mq.meta.stats[m] && Object.values(p1.w.__mq.meta.stats[m]).every((s) => s.t === 0)), 'old save without Sachkunde stats loads with empty stats');
   // enter a node of the given type from the first floor of a new adventure
   const enter = (p, mode, type) => { p.click(`[data-new="${mode}"]`); const y = p.$('.overlay #yes'); if (y) y.click(); p.click('.choice'); p.click('#go'); p.w.__mq.run.map[0][0].t = type; p.w.__mq.screenMap(); p.click('.node.open'); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); };
   enter(p1, 'wetterstation', 'labor');
