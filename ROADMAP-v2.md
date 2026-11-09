@@ -161,8 +161,8 @@ mehr unbemerkt verloren.
 - Tests: Verdienregeln, Kartenwoche, Kauf zieht ab und schaltet frei, alter Spielstand hat 0.
 
 ### 04 Wochenaufgabe, Wochenboss, Wochenbericht (hängt von 03 ab)
-- Drei Ziele pro ISO-Woche, eins je Fach der aktuellen Klasse, deterministisch aus dem Wochenschlüssel, nur aus
-  eingeschalteten Aufgabenarten. Zieltypen: „N richtige Aufgaben der Art X“ (N = 15–25), „ein Abenteuer in Y
+- Ein Ziel je Fach der aktuellen Klasse pro ISO-Woche (mit Deutsch also vier Ziele; Texte sagen „alle Ziele“, nicht
+  „drei“), deterministisch aus dem Wochenschlüssel, nur aus eingeschalteten Aufgabenarten. Zieltypen: „N richtige Aufgaben der Art X“ (N = 15–25), „ein Abenteuer in Y
   gewinnen“, „N Elitegegner in Y besiegen“ (N = 2–3), „den Wochenboss in Y besiegen“. Fortschritt in `meta.weekly`;
   Wochenwechsel setzt zurück (nichts wird abgezogen, alte Woche bleibt in `stampCard`).
 - Alle drei fertig → `stampCard[woche] = 2`, 10 Stempel, kurze Karte „Wochenaufgabe geschafft“ (ein Satz, kein
