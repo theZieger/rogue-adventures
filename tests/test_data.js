@@ -4,6 +4,7 @@ const MK = require('../src/knowledge.js');
 require('../src/sachkunde.js'); // registers the Sachkunde units in MK.MODES
 require('../src/sachkunde2.js');
 require('../src/sachkunde3.js');
+require('../src/ethik.js');
 require('../src/musik.js'); // registers Der Konzertsaal in MK.MODES
 const MONART = require('../src/monsters.js');
 const fails = [];
