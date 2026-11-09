@@ -64,7 +64,12 @@ async function solveKnow(forceWrong){
   const t=w.__task; if(!t) throw new Error('no task');
   if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf(t.answer); if(forceWrong) idx=(idx+1)%t.options.length; click(opts[idx]); }
   else if(t.kind==='parts-find'){ const parts=$$('.plant [data-part]'); let el=parts.find(x=>x.dataset.part===t.part); if(forceWrong) el=parts.find(x=>x.dataset.part!==t.part); click(el); }
-  else if(t.kind==='order'){ let order=t.order.slice(); if(forceWrong) order=[order[1],order[0]].concat(order.slice(2)); for(const id of order){ click($('.oitem[data-id="'+id+'"]')); } if($('#ocheck').disabled) throw new Error('check disabled'); click($('#ocheck')); }
+  else if(t.kind==='order'){ let order=t.order.slice();
+    // Deutsch: work the order out from what is on screen, not from the task object
+    const shown=$$('.oitem').map(b=>({id:b.dataset.id,text:b.textContent.trim()}));
+    if(t.mod==='abc') order=shown.slice().sort((a,b)=>a.text.slice(0,3).toLowerCase()<b.text.slice(0,3).toLowerCase()?-1:1).map(x=>x.id);
+    if(t.mod==='umstell'){ const sentence=$('.question').textContent.match(/„(.+)\.“/)[1].toLowerCase(); const parts=shown.slice().sort((a,b)=>sentence.indexOf(a.text.toLowerCase())-sentence.indexOf(b.text.toLowerCase())); order=[parts[2],parts[1],parts[0]].map(x=>x.id); }
+    if(order.join()!==t.order.join()) throw new Error('bot and game disagree on '+t.qid); if(forceWrong) order=[order[1],order[0]].concat(order.slice(2)); for(const id of order){ click($('.oitem[data-id="'+id+'"]')); } if($('#ocheck').disabled) throw new Error('check disabled'); click($('#ocheck')); }
   const fb=$('.feedback'); if(!fb) throw new Error('no feedback (know) '+t.kind);
   const good=fb.classList.contains('good'); if(forceWrong&&good) throw new Error('wrong marked good '+t.kind); if(!forceWrong&&!good) throw new Error('correct marked bad '+t.kind+' '+JSON.stringify(t));
   if(good) correctAnswers++; else wrongAnswers++; click($('#next'));

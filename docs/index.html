@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="77fe4bf620f5">
+<meta name="app-version" content="3564c70913f9">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -270,6 +270,7 @@ p { margin: 8px 0; }
 .task .question .blank { display: inline-block; border-bottom: 4px solid var(--blue); padding: 0 6px; color: var(--blue); }
 .options { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .options.two { grid-template-columns: 1fr 1fr; }
+.options.sentence { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 8px; font-weight: 700; font-size: 22px; }
 .opt { min-height: 56px; border: 3px solid var(--ink); border-radius: 16px; background: var(--card); color: var(--ink); font-weight: 700; font-size: 19px; padding: 8px 14px; box-shadow: var(--shadow); cursor: pointer; text-align: center; line-height: 1.25; }
 .opt:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
 .opt.right { background: #CDEFD3; outline: 4px solid var(--green); }
@@ -460,6 +461,22 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .sumlist { margin: 10px 0; padding-left: 22px; font-size: 17px; }
 .qrbox { margin: 12px auto 6px; max-width: 320px; }
 .qr { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+/* Stamps */
+.stampbtn { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); left: 66px; z-index: 2; min-height: 46px; padding: 0 14px; border-radius: 999px; border: 2px solid rgba(255,255,255,.45); background: rgba(255,255,255,.08); color: var(--paper-ink); font-weight: 700; font-size: 18px; cursor: pointer; }
+.stampgain { font-weight: 800; font-size: 24px; color: #8A5A00; }
+.stampbal { font-family: var(--hand); font-size: 48px; line-height: 1.1; }
+.wkgrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 8px; }
+.wk { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card2); border-radius: 8px; font-size: 18px; font-weight: 800; line-height: 1; }
+.wk.done { background: #DDF5E2; border-color: var(--green); color: #1E7A34; }
+.wk.gold { background: #FFF1B8; border-color: var(--gold); color: #A86A00; }
+.wk.now { outline: 3px solid var(--ink); outline-offset: 1px; }
+.choice.reward, .choice.locked { cursor: default; }
+.choice.reward:active, .choice.locked:active { transform: none; box-shadow: var(--shadow); }
+.choice.locked { opacity: .75; }
+.choice.reward .btn { margin-top: 8px; }
+.rwprev { width: 96px; height: 96px; flex: none; border-radius: 18px; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 30px; }
+.rwhave { margin-top: 8px; font-weight: 700; color: #1E7A34; }
 
 /* Baustelle pictures and the Bergwerk */
 .task .figure { display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin: 8px 0 6px; }
@@ -728,6 +745,9 @@ const MQ = (() => {
       attacks: [{ name: 'Wasserschwall', mod: 'add' }, { name: 'Strudelzug', mod: 'sub' }, { name: 'Tiefseerätsel', mod: 'riddle' }, { name: 'Nachbarflut', mod: 'nb' }] },
     { id: 'baer', type: 'pflanze', shape: 'bear', names: ['Moosbär', 'Waldbär', 'Urwaldbär'], hp: 70, desc: 'Ruhig und stark. Jede richtige Antwort heilt ihn um 3 Lebenspunkte.', perk: 'heal',
       attacks: [{ name: 'Blätterhieb', mod: 'add' }, { name: 'Wurzelriss', mod: 'sub' }, { name: 'Honigrechnung', mod: 'mul' }, { name: 'Wabenteilung', mod: 'div' }] },
+    // unlocked in the Stempelheft; practises the task types the other three heroes have least
+    { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
+      attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Flügelschlag', mod: 'seq' }] },
   ];
   const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag' };
 
@@ -788,6 +808,22 @@ const MQ = (() => {
     { title: 'Der Bienenstock', text: 'Vor einem Bienenstock summt es. Die Bienen fliegen in einer Zahlenreihe ein und aus. Setze die Reihe fort, dann bekommst du ein Fleißbienchen.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Lieber Abstand halten', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
   ];
+
+  /* ---------- Calendar weeks ---------- */
+  // ISO 8601: weeks start on Monday, week 1 holds the year's first Thursday. Keys look like "2026-W46".
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const y = d.getUTCFullYear(); const w = Math.ceil(((d - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+    return y + '-W' + String(w).padStart(2, '0');
+  }
+  // school year on the stamp card: ISO week 36 to week 30 of the next year; in the summer gap the year that just ended
+  function schoolWeeks(date) {
+    const [y, w] = isoWeek(date).split('-W').map(Number); const start = w >= 36 ? y : y - 1;
+    const jan4 = new Date(start, 0, 4); const d = new Date(start, 0, 4 - ((jan4.getDay() || 7) - 1) + 35 * 7);
+    const out = []; const end = (start + 1) + '-W30';
+    for (let k = isoWeek(d); ; d.setDate(d.getDate() + 7), k = isoWeek(d)) { out.push(k); if (k === end) return out; }
+  }
 
   /* ---------- Map ----------
      Node: { t: type, c: lane 0–3, n: [indexes on the next floor] }.
@@ -1072,8 +1108,189 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, isoWeek, schoolWeeks, BAU };
 })();
+
+</script>
+<script>
+/*
+  Wörter und Sätze für das Fach Deutsch (Wörterwerkstatt und Satzbaustelle).
+  Eltern können hier die Lernwörter der Klasse ergänzen: eine Zeile kopieren, ändern, speichern,
+  dann `npm run build`. `npm test` prüft, ob jede Zeile die Felder hat, die ihre Aufgabe braucht.
+
+  Regeln für alle Listen:
+  - Nomen immer mit Artikel schreiben: 'der Hund'.
+  - Texte in einfachen Anführungszeichen; ein Apostroph im Text ginge kaputt, also keinen verwenden.
+  - Nur echte deutsche Wörter, keine Markennamen.
+
+  WÖRTERWERKSTATT (Richtig schreiben)
+  doppel       [richtig, falsch]                 doppelter Mitlaut, ck oder tz nach kurzem Selbstlaut
+  verlaengern  [Wort, verlängert mit Silbenstrich] das Wort endet auf d/t, g/k oder b/p; gefragt wird der letzte Buchstabe
+  dehnungsh    [richtig, falsch, in Silben]      silbentrennendes h
+  zusammen     [Teil 1, Teil 2, zusammengesetzt] alle drei mit Artikel; der Artikel kommt vom letzten Teil
+  abc          'Wort'                            für die Wörterbuch-Reihenfolge; die ersten drei Buchstaben ohne ä, ö, ü, ß
+  rede         [Begleitsatz mit Doppelpunkt, Rede mit Satzzeichen]
+
+  SATZBAUSTELLE (Sprache untersuchen)
+  nomen, verben, adjektive, pronomen   Wortarten; die Nomen werden auch für „Groß oder klein“ und „Artikel“ benutzt
+  zeitformen   [Präsens, Präteritum, falsche Form, die Kinder oft schreiben]
+  steigerung   [Grundstufe, Mehrstufe, Meiststufe]
+  vergleiche   [Satz mit ___ als Lücke, 'als' oder 'wie']
+  saetze       'Teil | Teil | Teil': Satzglieder durch | getrennt, so geschrieben, wie sie mitten im Satz stehen
+               (klein, außer Nomen und Namen). Das Subjekt steht in [eckigen Klammern], das Prädikat ist immer
+               der zweite Teil. Sätze mit drei Teilen beginnen mit dem Subjekt und enden mit einer Orts- oder
+               Zeitangabe – aus ihnen kommt auch die Umstellprobe.
+  oberbegriffe { Oberbegriff: [mindestens drei Wörter] } – jedes Wort darf nur zu einem Oberbegriff passen
+  teekessel    [Wort mit Artikel, Bedeutung 1, Bedeutung 2]
+*/
+const MW = {
+  doppel: [
+    ['die Sonne', 'die Sone'], ['die Mutter', 'die Muter'], ['der Teller', 'der Teler'], ['der Kamm', 'der Kam'],
+    ['der Himmel', 'der Himel'], ['das Wasser', 'das Waser'], ['der Koffer', 'der Kofer'], ['die Puppe', 'die Pupe'],
+    ['die Tasse', 'die Tase'], ['die Brille', 'die Brile'], ['schwimmen', 'schwimen'], ['rennen', 'renen'],
+    ['das Bett', 'das Bet'], ['die Klasse', 'die Klase'], ['der Schlitten', 'der Schliten'], ['die Nuss', 'die Nus'],
+    ['der Zucker', 'der Zukker'], ['die Decke', 'die Deke'], ['die Glocke', 'die Gloke'], ['die Jacke', 'die Jakke'],
+    ['der Rücken', 'der Rüken'], ['backen', 'baken'], ['dick', 'dik'], ['der Stock', 'der Stok'],
+    ['die Katze', 'die Kazze'], ['die Mütze', 'die Müze'], ['der Platz', 'der Plaz'], ['die Pfütze', 'die Pfüze'],
+    ['sitzen', 'sizen'], ['der Blitz', 'der Bliz'], ['putzen', 'puzzen'], ['der Schatz', 'der Schaz'],
+    ['das Netz', 'das Nez'], ['die Hitze', 'die Hize'],
+  ],
+  verlaengern: [
+    ['der Hund', 'die Hun-de'], ['der Wald', 'die Wäl-der'], ['das Kind', 'die Kin-der'], ['das Bild', 'die Bil-der'],
+    ['das Pferd', 'die Pfer-de'], ['das Rad', 'die Rä-der'], ['der Mund', 'die Mün-der'], ['der Freund', 'die Freun-de'],
+    ['das Hemd', 'die Hem-den'], ['der Hut', 'die Hü-te'], ['das Brot', 'die Bro-te'], ['das Zelt', 'die Zel-te'],
+    ['das Boot', 'die Boo-te'], ['das Wort', 'die Wör-ter'], ['bunt', 'die bun-ten Stifte'], ['kalt', 'der kal-te Wind'],
+    ['der Berg', 'die Ber-ge'], ['der Zug', 'die Zü-ge'], ['der Weg', 'die We-ge'], ['der Tag', 'die Ta-ge'],
+    ['der Zwerg', 'die Zwer-ge'], ['klug', 'die klu-ge Eule'], ['der Schrank', 'die Schrän-ke'], ['das Geschenk', 'die Ge-schen-ke'],
+    ['krank', 'das kran-ke Kind'], ['stark', 'der star-ke Wind'], ['der Korb', 'die Kör-be'], ['der Dieb', 'die Die-be'],
+    ['gelb', 'der gel-be Ball'], ['lieb', 'der lie-be Hund'], ['das Kalb', 'die Käl-ber'], ['das Werk', 'die Wer-ke'],
+  ],
+  dehnungsh: [
+    ['gehen', 'geen', 'ge-hen'], ['sehen', 'seen', 'se-hen'], ['stehen', 'steen', 'ste-hen'], ['drehen', 'dreen', 'dre-hen'],
+    ['nähen', 'näen', 'nä-hen'], ['ruhen', 'ruen', 'ru-hen'], ['ziehen', 'zieen', 'zie-hen'], ['blühen', 'blüen', 'blü-hen'],
+    ['die Kühe', 'die Küe', 'die Kü-he'], ['die Ruhe', 'die Rue', 'die Ru-he'], ['die Mühe', 'die Müe', 'die Mü-he'],
+    ['die Reihe', 'die Reie', 'die Rei-he'], ['die Höhe', 'die Höe', 'die Hö-he'], ['früher', 'früer', 'frü-her'],
+    ['der Schuh', 'der Schu', 'die Schu-he'], ['die Kuh', 'die Ku', 'die Kü-he'], ['das Reh', 'das Re', 'die Re-he'],
+    ['der Floh', 'der Flo', 'die Flö-he'], ['froh', 'fro', 'die fro-hen Kinder'], ['früh', 'frü', 'frü-her'], ['der Zeh', 'der Ze', 'die Ze-hen'],
+  ],
+  zusammen: [
+    ['die Schule', 'der Hof', 'der Schulhof'], ['das Haus', 'die Tür', 'die Haustür'], ['der Apfel', 'der Baum', 'der Apfelbaum'],
+    ['die Hand', 'der Schuh', 'der Handschuh'], ['der Schnee', 'der Mann', 'der Schneemann'], ['das Fenster', 'die Bank', 'die Fensterbank'],
+    ['der Sand', 'die Burg', 'die Sandburg'], ['der Garten', 'das Tor', 'das Gartentor'], ['die Blume', 'der Topf', 'der Blumentopf'],
+    ['das Wasser', 'die Flasche', 'die Wasserflasche'], ['die Sonne', 'der Schirm', 'der Sonnenschirm'], ['das Heft', 'der Umschlag', 'der Heftumschlag'],
+    ['die Tafel', 'der Schwamm', 'der Tafelschwamm'], ['der Ball', 'das Spiel', 'das Ballspiel'], ['die Tasche', 'die Lampe', 'die Taschenlampe'],
+    ['das Zimmer', 'die Pflanze', 'die Zimmerpflanze'], ['der Regen', 'der Bogen', 'der Regenbogen'], ['die Nacht', 'das Hemd', 'das Nachthemd'],
+  ],
+  abc: [
+    'Ameise', 'Apfel', 'Affe', 'Anker', 'Ast', 'Baum', 'Ball', 'Banane', 'Bach', 'Berg', 'Birne', 'Blatt', 'Brot', 'Brief',
+    'Dach', 'Dose', 'Dorf', 'Ente', 'Eimer', 'Esel', 'Fisch', 'Fenster', 'Fuchs', 'Gabel', 'Garten', 'Gans', 'Glas',
+    'Hase', 'Haus', 'Hund', 'Heft', 'Igel', 'Insel', 'Kamm', 'Katze', 'Kerze', 'Kind', 'Kiste', 'Korb', 'Lampe', 'Laub',
+    'Leiter', 'Maus', 'Mond', 'Nase', 'Nest', 'Ofen', 'Pinsel', 'Rabe', 'Rose', 'Sand', 'Sonne', 'Tisch', 'Turm', 'Uhr',
+    'Vogel', 'Wolke', 'Zelt', 'Zug',
+  ],
+  rede: [
+    ['Mia sagt:', 'Ich komme mit.'], ['Der Lehrer fragt:', 'Wer hat das Heft gefunden?'], ['Tom ruft:', 'Der Bus kommt!'],
+    ['Oma fragt:', 'Hast du Hunger?'], ['Lena flüstert:', 'Ich weiß die Antwort.'], ['Papa sagt:', 'Wir gehen in den Park.'],
+    ['Die Lehrerin bittet:', 'Schreibt das Datum auf.'], ['Ben antwortet:', 'Das Wort heißt Lineal.'], ['Ida ruft:', 'Schau mal, ein Regenbogen!'],
+    ['Mama fragt:', 'Wo ist dein Turnbeutel?'], ['Der Hausmeister sagt:', 'Die Tür bleibt heute zu.'], ['Emil fragt:', 'Darf ich mitspielen?'],
+    ['Opa erzählt:', 'Früher bin ich zu Fuß zur Schule gegangen.'], ['Frau Weber sagt:', 'Heute lesen wir eine Geschichte.'],
+    ['Noah ruft:', 'Ich habe gewonnen!'], ['Jule fragt:', 'Leihst du mir deinen Radiergummi?'],
+  ],
+
+  nomen: [
+    'der Hund', 'die Katze', 'das Buch', 'der Bleistift', 'die Schule', 'der Baum', 'die Blume', 'das Fenster', 'der Tisch',
+    'die Tasche', 'das Lineal', 'der Radiergummi', 'die Lehrerin', 'der Garten', 'die Straße', 'das Fahrrad', 'der Apfel',
+    'die Wolke', 'das Brot', 'der Vogel', 'die Brücke', 'das Zimmer', 'der Schnee', 'die Uhr', 'das Pferd', 'die Ameise', 'der Turm',
+  ],
+  verben: [
+    'laufen', 'schreiben', 'lesen', 'malen', 'singen', 'springen', 'schwimmen', 'rechnen', 'spielen', 'lachen',
+    'basteln', 'turnen', 'kochen', 'träumen', 'flüstern', 'bauen', 'tanzen', 'klettern', 'fragen', 'schlafen',
+  ],
+  adjektive: [
+    'groß', 'klein', 'schnell', 'langsam', 'bunt', 'leise', 'warm', 'kalt', 'fröhlich', 'traurig',
+    'mutig', 'hell', 'dunkel', 'weich', 'hart', 'süß', 'sauer', 'spitz', 'frisch', 'müde',
+  ],
+  pronomen: ['ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr'],
+  zeitformen: [
+    ['er läuft', 'er lief', 'er laufte'], ['sie singt', 'sie sang', 'sie singte'], ['ich gehe', 'ich ging', 'ich gehte'],
+    ['er schreibt', 'er schrieb', 'er schreibte'], ['sie liest', 'sie las', 'sie leste'], ['wir fahren', 'wir fuhren', 'wir fahrten'],
+    ['du siehst', 'du sahst', 'du sehtest'], ['er kommt', 'er kam', 'er kommte'], ['sie trinkt', 'sie trank', 'sie trinkte'],
+    ['ich esse', 'ich aß', 'ich esste'], ['er schläft', 'er schlief', 'er schlafte'], ['sie ruft', 'sie rief', 'sie rufte'],
+    ['er findet', 'er fand', 'er findete'], ['wir springen', 'wir sprangen', 'wir springten'], ['ich schwimme', 'ich schwamm', 'ich schwimmte'],
+    ['sie gibt', 'sie gab', 'sie gebte'], ['er nimmt', 'er nahm', 'er nehmte'], ['ich sitze', 'ich saß', 'ich sitzte'],
+    ['er hilft', 'er half', 'er helfte'], ['sie bringt', 'sie brachte', 'sie bringte'], ['ich denke', 'ich dachte', 'ich denkte'],
+    ['er fliegt', 'er flog', 'er fliegte'],
+  ],
+  steigerung: [
+    ['groß', 'größer', 'am größten'], ['klein', 'kleiner', 'am kleinsten'], ['schnell', 'schneller', 'am schnellsten'],
+    ['langsam', 'langsamer', 'am langsamsten'], ['alt', 'älter', 'am ältesten'], ['jung', 'jünger', 'am jüngsten'],
+    ['warm', 'wärmer', 'am wärmsten'], ['kalt', 'kälter', 'am kältesten'], ['lang', 'länger', 'am längsten'],
+    ['kurz', 'kürzer', 'am kürzesten'], ['hoch', 'höher', 'am höchsten'], ['gut', 'besser', 'am besten'],
+    ['viel', 'mehr', 'am meisten'], ['laut', 'lauter', 'am lautesten'], ['leise', 'leiser', 'am leisesten'],
+    ['stark', 'stärker', 'am stärksten'], ['hell', 'heller', 'am hellsten'], ['süß', 'süßer', 'am süßesten'],
+  ],
+  vergleiche: [
+    ['Der Elefant ist schwerer ___ die Maus.', 'als'], ['Mein Bleistift ist so lang ___ dein Bleistift.', 'wie'],
+    ['Der Turm ist höher ___ das Haus.', 'als'], ['Lea rennt so schnell ___ Ben.', 'wie'],
+    ['Im Sommer ist es wärmer ___ im Winter.', 'als'], ['Das Heft ist dünner ___ das Buch.', 'als'],
+    ['Meine Tasche ist so schwer ___ deine.', 'wie'], ['Die Schnecke ist langsamer ___ der Hase.', 'als'],
+    ['Opa ist älter ___ Papa.', 'als'], ['Der Mond ist so rund ___ ein Ball.', 'wie'],
+    ['Heute ist es so kalt ___ gestern.', 'wie'], ['Das Lineal ist länger ___ der Radiergummi.', 'als'],
+    ['Der Löwe brüllt lauter ___ die Katze.', 'als'], ['Ida ist so groß ___ ihre Schwester.', 'wie'],
+    ['Die Suppe ist heißer ___ der Tee.', 'als'], ['Der Bach ist nicht so breit ___ der Fluss.', 'wie'],
+  ],
+  saetze: [
+    '[der Hund] | schläft | im Korb', '[Mia] | malt | im Garten', '[die Katze] | klettert | auf den Baum',
+    '[wir] | turnen | in der Halle', '[der Bus] | hält | an der Schule', '[Oma] | backt | am Sonntag',
+    '[die Vögel] | singen | am Morgen', '[Ben] | liest | im Bett', '[der Wind] | weht | über das Feld',
+    '[die Kinder] | spielen | auf dem Hof', '[Paul] | schwimmt | im See', '[die Lehrerin] | schreibt | an die Tafel',
+    '[der Zug] | fährt | um acht Uhr', '[ich] | rechne | im Heft', '[die Sonne] | scheint | durch das Fenster',
+    '[Lena] | wohnt | in Dresden',
+    'am Morgen | packt | [Lena] | ihre Tasche', '[der Hausmeister] | repariert | heute | die Tür',
+    'im Herbst | fallen | [die Blätter] | von den Bäumen', '[Tim] | schenkt | seiner Mutter | eine Blume',
+    'nach der Schule | spielen | [die Kinder] | Fußball', '[der Bäcker] | backt | jeden Morgen | frische Brötchen',
+    'gestern | fand | [Emma] | einen Schlüssel', '[meine Schwester] | baut | im Sand | eine Burg',
+    'in der Pause | essen | [wir] | unser Brot', '[der Igel] | sucht | im Laub | nach Käfern',
+    'heute | schreiben | [die Kinder] | einen Brief', '[der Hund] | holt | den Ball | aus dem Wasser',
+  ],
+  oberbegriffe: {
+    Obst: ['Apfel', 'Birne', 'Kirsche', 'Pflaume', 'Banane'],
+    Gemüse: ['Möhre', 'Gurke', 'Kohl', 'Erbse', 'Zwiebel'],
+    Möbel: ['Tisch', 'Stuhl', 'Schrank', 'Bett', 'Regal'],
+    Werkzeuge: ['Hammer', 'Säge', 'Zange', 'Schraubenzieher', 'Bohrer'],
+    Fahrzeuge: ['Auto', 'Bus', 'Fahrrad', 'Zug', 'Traktor'],
+    Musikinstrumente: ['Geige', 'Trommel', 'Flöte', 'Gitarre', 'Klavier'],
+    Kleidung: ['Hose', 'Jacke', 'Pullover', 'Mütze', 'Kleid'],
+    Blumen: ['Rose', 'Tulpe', 'Nelke', 'Sonnenblume', 'Gänseblümchen'],
+    Vögel: ['Amsel', 'Spatz', 'Meise', 'Taube', 'Storch'],
+    Schulsachen: ['Heft', 'Lineal', 'Füller', 'Radiergummi', 'Spitzer'],
+    Getränke: ['Wasser', 'Milch', 'Saft', 'Tee', 'Kakao'],
+    Körperteile: ['Arm', 'Bein', 'Kopf', 'Bauch', 'Knie'],
+    Bäume: ['Eiche', 'Buche', 'Linde', 'Tanne', 'Birke'],
+    Wetter: ['Regen', 'Schnee', 'Nebel', 'Wind', 'Hagel'],
+  },
+  teekessel: [
+    ['die Bank', 'Darauf sitzt man im Park.', 'Dort bringt man sein Geld hin.'],
+    ['das Schloss', 'Darin hat früher ein König gewohnt.', 'Damit schließt man eine Tür ab.'],
+    ['die Maus', 'Das Tier frisst gern Körner.', 'Damit klickt man am Computer.'],
+    ['die Birne', 'Das ist ein Obst.', 'Sie leuchtet in der Lampe.'],
+    ['der Hahn', 'Er kräht am Morgen.', 'Aus ihm kommt in der Küche das Wasser.'],
+    ['der Nagel', 'Man schlägt ihn mit dem Hammer in die Wand.', 'Er wächst an deinem Finger.'],
+    ['der Schimmel', 'Das ist ein weißes Pferd.', 'Er wächst auf altem Brot.'],
+    ['das Blatt', 'Es wächst am Baum.', 'Darauf schreibt man.'],
+    ['der Strauß', 'Der große Vogel kann nicht fliegen.', 'So nennt man viele Blumen zusammen.'],
+    ['der Flügel', 'Damit fliegt ein Vogel.', 'Das ist ein großes Klavier.'],
+    ['der Zug', 'Er fährt auf Schienen.', 'Den macht man beim Schach mit einer Figur.'],
+    ['die Decke', 'Damit deckt man sich im Bett zu.', 'Sie ist oben im Zimmer.'],
+    ['die Mutter', 'Sie ist die Mama.', 'Sie wird auf eine Schraube gedreht.'],
+    ['der Ball', 'Mit ihm spielt man Fußball.', 'Dort tanzen viele Menschen in festlichen Kleidern.'],
+    ['das Pony', 'Das ist ein kleines Pferd.', 'So heißen die kurzen Haare über der Stirn.'],
+    ['der Läufer', 'Er rennt bei einem Wettlauf.', 'Das ist ein langer, schmaler Teppich.'],
+    ['die Schlange', 'Das Tier hat keine Beine.', 'Viele Menschen warten hintereinander.'],
+    ['das Gericht', 'Dort entscheidet ein Richter.', 'Das isst man zum Mittag.'],
+    ['die Kette', 'Sie hängt um den Hals.', 'Sie treibt das Fahrrad an.'],
+  ],
+};
 
 </script>
 <script>
@@ -1567,6 +1784,184 @@ const MK = (() => {
     { title: 'Der Weihnachtsmarkt', text: 'Am Stand gibt es warmen Tee. Du kannst dich aufwärmen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
+  /* ---------- DEUTSCH: Wörterwerkstatt und Satzbaustelle (Wortlisten in woerter.js) ---------- */
+  const W = typeof MW !== 'undefined' ? MW : require('./woerter.js');
+  const cap = (s) => s[0].toUpperCase() + s.slice(1);
+  const noun = (w) => w.slice(w.indexOf(' ') + 1);
+  const ARTS = ['der', 'die', 'das'];
+  // a task's ids come from its words, so adding words to woerter.js keeps the learning history of the others
+  const W_POOL = [];
+  W.doppel.forEach(([r, f]) => W_POOL.push({ id: 'dk_' + r, mod: 'doppel', g: 'doppel', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0,
+    why: /ck/.test(r) ? 'Nach einem kurzen Selbstlaut schreibt man ck, nie kk.' : /tz/.test(r) ? 'Nach einem kurzen Selbstlaut schreibt man tz, nie zz.' : 'Nach einem kurzen Selbstlaut hört man einen Mitlaut, schreibt ihn aber doppelt.' }));
+  const PAIR = { d: 't', t: 'd', g: 'k', k: 'g', b: 'p', p: 'b' };
+  W.verlaengern.forEach(([w, l]) => { const x = w.slice(-1); W_POOL.push({ id: 'vl_' + w, mod: 'verl', g: 'verl', q: `Welcher Buchstabe fehlt? ${w.slice(0, -1)}___`, o: [x, PAIR[x]], a: 0, why: `Verlängert: ${l}`, tip: `Verlängere das Wort: ${l}` }); });
+  W.dehnungsh.forEach(([r, f, s]) => W_POOL.push({ id: 'dh_' + r, mod: 'dehn', g: 'dehn', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0, why: `In Silben: ${s}` }));
+  W.nomen.forEach((n) => W_POOL.push({ id: 'gk_' + n, mod: 'gross', g: 'gross', q: 'Welches Wort schreibt man groß?', o: [noun(n).toLowerCase(), pick(W.verben), pick(W.adjektive)], a: 0, why: `${n} ist ein Nomen. Nomen schreibt man groß.` }));
+  W.zusammen.forEach(([t1, t2, z]) => {
+    const n = noun(z); const art = z.split(' ')[0]; const rest = ARTS.filter((x) => x !== art); const why = `Der Artikel kommt vom letzten Teil: ${t2}.`;
+    W_POOL.push({ id: 'zs_' + z, mod: 'zus', g: 'zus', q: `${t1} + ${t2} = ?`, o: [z].concat(rest.map((x) => x + ' ' + n)), a: 0, why });
+    W_POOL.push({ id: 'za_' + z, mod: 'zus', g: 'zus', q: `Welcher Artikel passt? ___ ${n}`, o: [art].concat(rest), a: 0, why });
+  });
+  W.rede.forEach(([b, r]) => { const words = r.split(' '); const wrong = [`„${b} ${r}“`, `„${b}“ ${r}`, `${b} „${words.slice(0, -1).join(' ')}“ ${words[words.length - 1]}`];
+    W_POOL.push({ id: 'wr_' + r, mod: 'rede', g: 'rede', q: 'Wo stehen die Anführungszeichen richtig?', o: [`${b} „${r}“`].concat(shuffle(wrong).slice(0, 2)), a: 0, why: 'Nur das, was jemand sagt, steht in Anführungszeichen.' }); });
+  // dictionary order only needs the first three letters; woerter.js keeps those free of umlauts
+  const abcKey = (w) => w.slice(0, 3).toLowerCase();
+  function abcTask() {
+    const first = pick(W.abc)[0]; const same = W.abc.filter((w) => w[0] === first);
+    const from = shuffle(same.length >= 4 && Math.random() < 0.5 ? same : W.abc); const words = [];
+    for (const w of from.concat(shuffle(W.abc))) if (words.length < 4 && !words.some((x) => abcKey(x) === abcKey(w))) words.push(w);
+    words.sort((a, b) => (abcKey(a) < abcKey(b) ? -1 : 1));
+    const items = words.map((w) => ({ id: 'w_' + w, text: w }));
+    return { kind: 'order', mod: 'abc', tier: 1, group: 'abc:1', note: 'abc', q: 'Tippe die Wörter so an, wie sie im Wörterbuch stehen.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'abc_' + words.join('_') };
+  }
+  const W_NOTES = {
+    doppel: { title: 'Doppelte Mitlaute, ck und tz', lines: ['Nach einem kurzen Selbstlaut (a, e, i, o, u, ä, ö, ü) folgen zwei Mitlaute.', 'Hörst du nur einen Mitlaut, schreibst du ihn doppelt: die Sonne, die Tasse.', 'Statt kk schreibt man ck: die Jacke. Statt zz schreibt man tz: die Katze.'] },
+    verl: { title: 'Verlängern', lines: ['Am Wortende klingen d und t, g und k, b und p gleich.', 'Verlängere das Wort, dann hörst du den Unterschied: der Hund, die Hun-de.', 'Bei Adjektiven hilft ein Nomen dahinter: gelb, der gel-be Ball.'] },
+    dehn: { title: 'Silbentrennendes h', lines: ['Manchmal steht zwischen zwei Silben ein h: ge-hen, die Kü-he.', 'Man hört es kaum. Sprich das Wort deutlich in Silben.', 'Bei Wörtern mit einer Silbe hilft Verlängern: der Schuh, die Schu-he.'] },
+    gross: { title: 'Großschreibung', lines: ['Nomen schreibt man groß: der Hund, die Tasche.', 'Vor ein Nomen passt ein Artikel: der, die oder das.', 'Verben (laufen) und Adjektive (bunt) schreibt man klein.'] },
+    zus: { title: 'Zusammengesetzte Wörter', lines: ['Aus zwei Nomen wird ein neues Wort: die Schule + der Hof = der Schulhof.', 'Der Artikel richtet sich nach dem letzten Teil.'] },
+    abc: { title: 'Wörterbuch', lines: ['Im Wörterbuch stehen die Wörter nach dem ABC.', 'Ist der erste Buchstabe gleich, entscheidet der zweite, dann der dritte: Bach, Ball, Banane, Baum.'] },
+    rede: { title: 'Wörtliche Rede', lines: ['Was jemand sagt, steht in Anführungszeichen: „…“.', 'Der Begleitsatz sagt, wer spricht. Danach steht ein Doppelpunkt.', 'Das Satzzeichen der Rede steht vor dem schließenden Anführungszeichen: Mia sagt: „Ich komme mit.“'] },
+  };
+  const W_MODULES = {
+    doppel: { name: 'Doppelt, ck, tz', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
+    verl: { name: 'Verlängern', icon: '↔️', maxTier: 1, worldCap: [1], dmg: 12 },
+    dehn: { name: 'Silbentrennendes h', icon: '🔡', maxTier: 1, worldCap: [1], dmg: 12 },
+    gross: { name: 'Groß oder klein', icon: '🔠', maxTier: 1, worldCap: [1], dmg: 10 },
+    zus: { name: 'Zusammengesetzte Wörter', icon: '🧩', maxTier: 1, worldCap: [1], dmg: 12 },
+    abc: { name: 'Wörterbuch', icon: '📖', maxTier: 1, worldCap: [1], dmg: 16 },
+    rede: { name: 'Wörtliche Rede', icon: '💬', maxTier: 1, worldCap: [1], dmg: 14 },
+  };
+  const W_TUT = {
+    'doppel:1': { title: 'Doppelt, ck, tz', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort langsam. Ist der Selbstlaut kurz, folgt ein doppelter Mitlaut, ck oder tz.', 'Beispiel: „die Sonne“ oder „die Sone“? Das o ist kurz, also: die Sonne.', 'Tippe auf das richtige Wort.'] },
+    'verl:1': { title: 'Verlängern', steps: ['Am Ende fehlt ein Buchstabe: d oder t, g oder k, b oder p.', 'Verlängere das Wort, dann hörst du ihn.', 'Beispiel: der Hun_ → die Hun-de. Man hört ein d, also: der Hund.', 'Tippe auf den fehlenden Buchstaben.'] },
+    'dehn:1': { title: 'Silbentrennendes h', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort in Silben. Gehört zwischen die Silben ein h?', 'Beispiel: „gehen“ oder „geen“? In Silben: ge-hen, also mit h.', 'Bei Wörtern mit einer Silbe verlängerst du: der Schuh, die Schu-he.'] },
+    'gross:1': { title: 'Groß oder klein', steps: ['Drei Wörter, alle kleingeschrieben. Eines davon ist ein Nomen.', 'Probe: Passt der, die oder das davor?', 'Beispiel: hund, laufen, bunt. „Der Hund“ passt, also schreibt man Hund groß.', 'Tippe auf das Wort, das großgeschrieben wird.'] },
+    'zus:1': { title: 'Zusammengesetzte Wörter', steps: ['Zwei Nomen werden zu einem Wort.', 'Der Artikel kommt immer vom letzten Teil.', 'Beispiel: die Schule + der Hof = der Schulhof, weil es „der Hof“ heißt.', 'Tippe auf die Antwort mit dem richtigen Artikel.'] },
+    'abc:1': { title: 'Wörterbuch', steps: ['Vier Wörter sollen in die Reihenfolge wie im Wörterbuch.', 'Schau auf den ersten Buchstaben. Ist er gleich, schau auf den zweiten, dann auf den dritten.', 'Beispiel: Baum, Bach, Ball → Bach (c), Ball (l), Baum (u).', 'Tippe die Wörter der Reihe nach an. Nochmal tippen nimmt ein Wort wieder heraus.'] },
+    'rede:1': { title: 'Wörtliche Rede', steps: ['Jemand sagt etwas. Wo gehören die Anführungszeichen hin?', 'Nur das Gesagte steht in „…“. Davor steht der Begleitsatz mit Doppelpunkt.', 'Beispiel: Mia sagt: „Ich komme mit.“', 'Tippe auf den richtig geschriebenen Satz.'] },
+  };
+  const W_STARTERS = [
+    { id: 'graphit', type: 'normal', shape: 'pencil', names: ['Graphit', 'Graphit', 'Graphit'], hp: 65, desc: 'Ein Bleistift mit frisch gespitzter Mine. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
+      attacks: [{ name: 'Doppelstrich', mod: 'doppel' }, { name: 'Silbenbogen', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Daumenregister', mod: 'abc' }] },
+  ];
+  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen' };
+  const W_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Der Buchstabendreher', type: 'normal', shape: 'letter', hp: 26, atk: 3 },
+        { name: 'Das Eselsohr', type: 'normal', shape: 'notebook', hp: 24, atk: 4 },
+        { name: 'Der Stummel', type: 'feuer', shape: 'pencil', hp: 28, atk: 4 },
+        { name: 'Die Kritzelei', type: 'wasser', shape: 'blob', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Der Radierer', type: 'pflanze', shape: 'eraser', hp: 45, atk: 5 },
+      boss: { name: 'Der Fehlerteufel', acc: 'den Fehlerteufel', type: 'feuer', shape: 'flame', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const W_MOVES = ['Buchstabentausch', 'Eselsohrknick', 'Radierspur', 'Kringel am Rand', 'Spitzerspäne', 'Zeilensprung'];
+  const W_EVENTS = [
+    { title: 'Die Schulbibliothek', text: 'Die Bibliothekarin stellt neue Bücher ins Regal. Hilfst du ihr bei der Reihenfolge, schenkt sie dir einen Trank.', opts: [{ label: 'Helfen', task: 'abc', win: { item: 'trank' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Das Diktat', text: 'Auf dem Lehrertisch liegt ein Diktat. Findest du das richtig geschriebene Wort, bekommst du einen Schild.', opts: [{ label: 'Nachsehen', task: 'any', win: { item: 'schild' }, lose: { hp: -6 } }, { label: 'Liegen lassen', effect: {} }] },
+    { title: 'Der Briefträger', text: 'Der Briefträger hat eine Postkarte mit einem Fehler. Hilfst du ihm, verrät er dir eine Eselsbrücke.', opts: [{ label: 'Helfen', task: 'any', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Vorlesetag', text: 'In der Aula liest die vierte Klasse vor. Wer eine Frage zur wörtlichen Rede beantwortet, bekommt 20 XP.', opts: [{ label: 'Mitmachen', task: 'rede', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Zuhören (+5 LP)', effect: { hp: 5 } }] },
+    { title: 'Die Hofpause', text: 'Es klingelt zur großen Pause. Du setzt dich auf eine Bank und isst dein Brot.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
+  const S_POOL = [];
+  const KLASSEN = ['Nomen', 'Verb', 'Adjektiv', 'Pronomen', 'Artikel'];
+  const wortart = (id, q, k) => S_POOL.push({ id, mod: 'wortart', g: 'wortart', q, o: [k].concat(shuffle(KLASSEN.filter((x) => x !== k)).slice(0, 2)), a: 0 });
+  W.nomen.forEach((n) => wortart('wa_' + n, `Welche Wortart ist „${noun(n)}“?`, 'Nomen'));
+  W.verben.forEach((w) => wortart('wa_' + w, `Welche Wortart ist „${w}“?`, 'Verb'));
+  W.adjektive.forEach((w) => wortart('wa_' + w, `Welche Wortart ist „${w}“?`, 'Adjektiv'));
+  W.pronomen.forEach((w) => wortart('wa_' + w, `Welche Wortart ist „${w}“?`, 'Pronomen'));
+  // articles are asked with a noun, alone „das“ could also be a pronoun
+  [['der', ['der']], ['die', ['die']], ['das', ['das']], ['ein', ['der', 'das']], ['eine', ['die']]].forEach(([a, of]) => {
+    const n = noun(pick(W.nomen.filter((x) => of.includes(x.split(' ')[0])))); wortart('wa_art_' + a, `Welche Wortart ist „${a}“ in „${a} ${n}“?`, 'Artikel');
+  });
+  W.zeitformen.forEach(([p, t, f]) => {
+    S_POOL.push(Math.random() < 0.5 ? { id: 'zt_' + p, mod: 'zeit', g: 'zeit', q: `Setze ins Präteritum: „${p}“`, o: [t, f, p], a: 0 } : { id: 'zt_' + p, mod: 'zeit', g: 'zeit', q: `Setze ins Präsens: „${t}“`, o: [p, t, f], a: 0 });
+    const past = Math.random() < 0.5; S_POOL.push({ id: 'zb_' + p, mod: 'zeit', g: 'zeit', q: `In welcher Zeitform steht „${past ? t : p}“?`, o: past ? ['Präteritum', 'Präsens'] : ['Präsens', 'Präteritum'], a: 0 });
+  });
+  const STUFEN = ['Grundstufe', 'Mehrstufe', 'Meiststufe'];
+  W.steigerung.forEach((s) => {
+    const k = Math.floor(Math.random() * 3); const o = [s[k]].concat(s.filter((_, i) => i !== k));
+    S_POOL.push({ id: 'st_' + s[0], mod: 'steig', g: 'steig', q: k === 0 ? `Wie heißt die Grundstufe von „${s[2]}“?` : `Wie heißt die ${STUFEN[k]} von „${s[0]}“?`, o, a: 0 });
+    const j = Math.floor(Math.random() * 3); S_POOL.push({ id: 'ss_' + s[0], mod: 'steig', g: 'steig', q: `Welche Stufe ist „${s[j]}“?`, o: [STUFEN[j]].concat(STUFEN.filter((_, i) => i !== j)), a: 0 });
+  });
+  W.vergleiche.forEach(([q, x]) => S_POOL.push({ id: 'vg_' + q, mod: 'steig', g: 'steig', q: `Als oder wie? ${q}`, o: [x, x === 'als' ? 'wie' : 'als'], a: 0, why: x === 'als' ? 'Nach der Mehrstufe steht „als“.' : 'Nach „so“ und der Grundstufe steht „wie“.' }));
+  // '[Subjekt] | Prädikat | …' → parts as written mid-sentence, subject index; the predicate is always the second part
+  const SAETZE = W.saetze.map((s) => { const raw = s.split('|').map((x) => x.trim()); return { parts: raw.map((x) => x.replace(/^\[|\]$/g, '')), s: raw.findIndex((x) => x.startsWith('[')) }; });
+  SAETZE.forEach(({ parts, s }) => {
+    const shown = [cap(parts[0])].concat(parts.slice(1)); const key = parts.join(' ');
+    S_POOL.push({ id: 'sg_s_' + key, mod: 'satzglied', g: 'satzglied', q: 'Tippe auf das Subjekt. Frage: Wer oder was?', o: shown, a: s, inline: true });
+    S_POOL.push({ id: 'sg_p_' + key, mod: 'satzglied', g: 'satzglied', q: 'Tippe auf das Prädikat. Frage: Was tut jemand?', o: shown, a: 1, inline: true });
+  });
+  // three parts starting with the subject: the only other order with the verb second puts the last part first
+  const UMSTELL = SAETZE.filter((x) => x.parts.length === 3 && x.s === 0).map((x) => x.parts);
+  function umstellTask() {
+    const parts = pick(UMSTELL); const items = [2, 1, 0].map((i) => ({ id: 'u' + i, text: parts[i] }));
+    return { kind: 'order', mod: 'umstell', tier: 1, group: 'umstell:1', note: 'umstell', q: `Stelle den Satz um: „${cap(parts.join(' '))}.“ Tippe die Satzglieder in der neuen Reihenfolge an.`, items, order: items.map((x) => x.id), display: shuffle(items), qid: 'um_' + parts.join(' ') };
+  }
+  const OB = Object.keys(W.oberbegriffe);
+  OB.forEach((o) => {
+    const ws = W.oberbegriffe[o]; const rest = shuffle(OB.filter((x) => x !== o)).slice(0, 2);
+    S_POOL.push({ id: 'ob_' + o, mod: 'ober', g: 'ober', q: `Welcher Oberbegriff passt zu: ${shuffle(ws).slice(0, 3).join(', ')}?`, o: [o].concat(rest), a: 0 });
+    S_POOL.push({ id: 'og_' + o, mod: 'ober', g: 'ober', q: `Welches Wort gehört zu „${o}“?`, o: [pick(ws)].concat(rest.map((x) => pick(W.oberbegriffe[x]))), a: 0 });
+  });
+  W.teekessel.forEach(([w, b1, b2]) => S_POOL.push({ id: 'tk_' + w, mod: 'teekessel', g: 'teekessel', q: `Welches Wort passt zu beiden Sätzen? ${b1} ${b2}`, o: [w].concat(shuffle(W.teekessel.filter((x) => x[0] !== w)).slice(0, 2).map((x) => x[0])), a: 0 }));
+  const S_NOTES = {
+    wortart: { title: 'Wortarten', lines: ['Nomen sind Namen für Menschen, Tiere und Dinge: der Hund, die Schule.', 'Verben sagen, was jemand tut: laufen, lesen.', 'Adjektive sagen, wie etwas ist: groß, bunt.', 'Pronomen stehen für ein Nomen: ich, du, er, sie, es, wir, ihr.', 'Artikel begleiten ein Nomen: der, die, das, ein, eine.'] },
+    zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.'] },
+    steig: { title: 'Steigerung', lines: ['Grundstufe: groß. Mehrstufe: größer. Meiststufe: am größten.', 'Nach der Mehrstufe vergleicht man mit „als“: Der Turm ist höher als das Haus.', 'Mit „so“ und der Grundstufe vergleicht man mit „wie“: Lea ist so groß wie Ben.'] },
+    satzglied: { title: 'Subjekt und Prädikat', lines: ['Das Prädikat ist das Verb im Satz. Es sagt, was jemand tut: Der Hund schläft.', 'Das Subjekt findest du mit der Frage „Wer oder was?“: Wer schläft? Der Hund.', 'Im Aussagesatz steht das Prädikat an zweiter Stelle.'] },
+    umstell: { title: 'Umstellprobe', lines: ['Satzglieder sind Wörter, die beim Umstellen zusammenbleiben.', 'Der Hund | schläft | im Korb. Umgestellt: Im Korb | schläft | der Hund.', 'Das Prädikat bleibt an zweiter Stelle.'] },
+    ober: { title: 'Oberbegriffe', lines: ['Ein Oberbegriff fasst Wörter zusammen: Apfel, Birne und Kirsche sind Obst.', 'Hammer, Säge und Zange sind Werkzeuge.'] },
+    teekessel: { title: 'Teekesselwörter', lines: ['Ein Wort kann zwei Bedeutungen haben: die Bank im Park und die Bank für Geld.', 'Man schreibt und spricht beide gleich.'] },
+  };
+  const S_MODULES = {
+    wortart: { name: 'Wortarten', icon: '🏷️', maxTier: 1, worldCap: [1], dmg: 12 },
+    zeit: { name: 'Zeitformen', icon: '⏳', maxTier: 1, worldCap: [1], dmg: 12 },
+    steig: { name: 'Steigerung', icon: '📶', maxTier: 1, worldCap: [1], dmg: 12 },
+    satzglied: { name: 'Subjekt und Prädikat', icon: '🎯', maxTier: 1, worldCap: [1], dmg: 14 },
+    umstell: { name: 'Umstellprobe', icon: '🔀', maxTier: 1, worldCap: [1], dmg: 16 },
+    ober: { name: 'Oberbegriffe', icon: '🗂️', maxTier: 1, worldCap: [1], dmg: 10 },
+    teekessel: { name: 'Teekesselwörter', icon: '🫖', maxTier: 1, worldCap: [1], dmg: 12 },
+  };
+  const S_TUT = {
+    'wortart:1': { title: 'Wortarten', steps: ['Zu welcher Wortart gehört das Wort?', 'Nomen: der Hund. Verb: laufen. Adjektiv: bunt. Pronomen: er. Artikel: der, ein.', 'Beispiel: „schnell“. Wie ist etwas? Schnell. Also ein Adjektiv.', 'Tippe auf die richtige Wortart.'] },
+    'zeit:1': { title: 'Zeitformen', steps: ['Präsens heißt: Es passiert jetzt. Präteritum heißt: Es ist schon passiert.', 'Setze „heute“ oder „gestern“ davor und hör, was passt.', 'Beispiel: „er lief“. Gestern lief er, also Präteritum.', 'Tippe auf die richtige Antwort.'] },
+    'steig:1': { title: 'Steigerung', steps: ['Adjektive kann man steigern: Grundstufe, Mehrstufe, Meiststufe.', 'Beispiel: klein, kleiner, am kleinsten.', 'Nach der Mehrstufe steht „als“: kleiner als. Nach „so“ und der Grundstufe steht „wie“: so klein wie.', 'Tippe auf die richtige Antwort.'] },
+    'satzglied:1': { title: 'Subjekt und Prädikat', steps: ['Das Prädikat ist das Verb. Es sagt, was jemand tut.', 'Das Subjekt findest du mit der Frage „Wer oder was?“.', 'Beispiel: Der Hund schläft im Korb. Wer schläft? Der Hund ist das Subjekt. Schläft ist das Prädikat.', 'Tippe im Satz auf das gesuchte Satzglied.'] },
+    'umstell:1': { title: 'Umstellprobe', steps: ['Ein Satz hat drei Satzglieder. Stelle sie so um, dass ein neuer Satz entsteht.', 'Ein anderes Satzglied kommt nach vorn. Das Prädikat bleibt an zweiter Stelle.', 'Beispiel: der Hund | schläft | im Korb wird zu: im Korb | schläft | der Hund.', 'Tippe die Satzglieder in der neuen Reihenfolge an.'] },
+    'ober:1': { title: 'Oberbegriffe', steps: ['Ein Oberbegriff fasst viele Wörter zusammen.', 'Beispiel: Apfel, Birne, Kirsche gehören zum Oberbegriff Obst.', 'Manchmal ist der Oberbegriff gegeben, dann suchst du ein Wort, das dazugehört.', 'Tippe auf die richtige Antwort.'] },
+    'teekessel:1': { title: 'Teekesselwörter', steps: ['Ein Teekesselwort hat zwei Bedeutungen und wird gleich geschrieben.', 'Lies beide Sätze. Welches Wort passt zu beiden?', 'Beispiel: Darauf sitzt man im Park. Dort bringt man Geld hin. Das Wort ist: die Bank.', 'Tippe auf das Wort.'] },
+  };
+  const S_STARTERS = [
+    { id: 'elle', type: 'wasser', shape: 'ruler', names: ['Elle', 'Elle', 'Elle'], hp: 80, desc: 'Ein Holzlineal, 30 Zentimeter lang. Hält viel aus.', perk: 'tank',
+      attacks: [{ name: 'Farbmarker', mod: 'wortart' }, { name: 'Fragetest', mod: 'satzglied' }, { name: 'Umstellschub', mod: 'umstell' }, { name: 'Sortierkasten', mod: 'ober' }] },
+  ];
+  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn' };
+  const S_ENEMIES = {
+    1: {
+      normal: [
+        { name: 'Der Satzverdreher', type: 'normal', shape: 'letter', hp: 26, atk: 3 },
+        { name: 'Der Wortsalat', type: 'pflanze', shape: 'blob', hp: 28, atk: 4 },
+        { name: 'Das Knickheft', type: 'wasser', shape: 'notebook', hp: 24, atk: 4 },
+        { name: 'Der Punktdieb', type: 'normal', shape: 'ghost', hp: 30, atk: 3 },
+      ],
+      elite: { name: 'Der Spitzer', type: 'normal', shape: 'rock', hp: 45, atk: 5 },
+      boss: { name: 'Der Rotstift', acc: 'den Rotstift', type: 'feuer', shape: 'pencil', hp: 70, atk: 6, boss: true },
+    },
+  };
+  const S_MOVES = ['Satzverdrehung', 'Punktklau', 'Wortsalat', 'Scherenschnitt', 'Kommaregen', 'Rotstiftstrich'];
+  const S_EVENTS = [
+    { title: 'Die Klassenzeitung', text: 'Die Klassenzeitung sucht einen Satz für die Titelseite. Hilfst du, gibt es einen Trank.', opts: [{ label: 'Helfen', task: 'any', win: { item: 'trank' }, lose: { hp: -6 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Fundkiste', text: 'Der Hausmeister räumt die Fundkiste auf und braucht einen Oberbegriff für jedes Fach. Für deine Hilfe gibt er dir einen Schild.', opts: [{ label: 'Helfen', task: 'ober', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Die Vorlesestunde', text: 'Frau Weber liest eine Geschichte vor und stellt danach eine Frage. Wer sie beantwortet, bekommt einen Schutzengel.', opts: [{ label: 'Antworten', task: 'any', win: { item: 'engel' }, lose: { xp: 5 } }, { label: 'Weiterlesen', effect: {} }] },
+    { title: 'Das Rätselheft', text: 'Im Rätselheft fehlt ein Teekesselwort. Findest du es, bekommst du ein Fleißbienchen.', opts: [{ label: 'Rätseln', task: 'teekessel', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Zuklappen', effect: {} }] },
+    { title: 'Der Trinkbrunnen', text: 'Am Trinkbrunnen im Flur machst du eine Pause.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
+  ];
+
   /* ---------- Spaced repetition selection ---------- */
   function weightedPick(items, know, seqNow) {
     const w = items.map((it) => { const k = know[it.id]; if (!k) return 4; let x = 1 + k.ws * 3; if (k.t > 0 && k.c / k.t < 0.6) x += 2; if (seqNow - (k.last || 0) < 3) x *= 0.15; return x; });
@@ -1577,6 +1972,8 @@ const MK = (() => {
   // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls
   function generate(mode, mod, tier, know, seqNow, opts) {
     const pool = MODES[mode].pool;
+    if (mod === 'abc') return abcTask();
+    if (mod === 'umstell') return umstellTask();
     if (mod === 'ord') { const o = pick(MODES[mode].order); const idx = shuffle(o.items.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => o.items[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: o.note, q: o.q, items, order: items.map((x) => x.id), display: shuffle(items), qid: o.qid + idx.join('') }; }
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
@@ -1591,9 +1988,9 @@ const MK = (() => {
       return { kind: 'parts', mod, tier: 1, group: 'parts:1', note: 'teile', q: e.q, part: part.id, options, answer: part.name, qid: e.id };
     }
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
-    // mc, lt, def, ground
-    const correct = e.o[e.a]; const options = shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options, answer: correct, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    // inline: the options are the parts of a sentence and keep their order
+    const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
+    return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options, answer: correct, why: e.why || '', tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
@@ -1602,9 +1999,11 @@ const MK = (() => {
       order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
     kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 1, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Buß- und Bettag, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten',
       order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' }] },
+    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wörterbuch, wörtliche Rede' },
+    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Oberbegriffe' },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, generate, record, shuffle, pick, rnd };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, W, SAETZE, generate, record, shuffle, pick, rnd };
 })();
 
 </script>
@@ -1666,6 +2065,16 @@ const MONART = (() => {
       <ellipse cx="60" cy="74" rx="6" ry="4" fill="${OUT}"/>${mouth.smile(60, 82, 8)}
       ${eyes(60, 58, 14, 7, 'normal')}
       <path d="M22 96 L30 108 M38 100 L42 112 M98 96 L90 108 M82 100 L78 112" fill="none" ${S(3)}/>`,
+    owl: (c, g, d, l) => `
+      <path d="M32 44 L24 12 L50 32 Z M88 44 L96 12 L70 32 Z" fill="${d}" ${S()}/>
+      <ellipse cx="60" cy="68" rx="40" ry="40" fill="${g.body}" ${S()}/>
+      <path d="M24 64 Q12 90 34 106 Q30 84 40 68 Z M96 64 Q108 90 86 106 Q90 84 80 68 Z" fill="${d}" ${S()}/>
+      <ellipse cx="60" cy="90" rx="20" ry="15" fill="${g.inner}"/>
+      <path d="M50 84 q4 4 8 0 M62 84 q4 4 8 0 M56 94 q4 4 8 0" fill="none" stroke="${d}" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="45" cy="56" r="15" fill="${g.inner}" ${S(2)}/><circle cx="75" cy="56" r="15" fill="${g.inner}" ${S(2)}/>
+      ${eyes(60, 56, 15, 8, 'normal')}
+      <path d="M55 66 L65 66 L60 76 Z" fill="#FF9F2E" ${S(2)}/>
+      <path d="M48 106 L44 114 M54 107 L54 115 M66 107 L66 115 M72 106 L76 114" fill="none" ${S(3.5)}/>`,
     blob: (c, g, d, l) => `
       <path d="M16 74 Q10 30 54 24 Q100 22 104 70 Q104 100 60 102 Q18 102 16 74 Z" fill="${g.body}" ${S()}/>
       <path d="M30 30 Q20 24 26 14 M60 22 Q60 10 70 12 M90 34 Q96 24 104 30" fill="none" ${S(3)}/>
@@ -1795,6 +2204,32 @@ const MONART = (() => {
       <rect x="53" y="84" width="7" height="10" rx="1" fill="#fff" ${S(2)}/><rect x="60" y="84" width="7" height="10" rx="1" fill="#fff" ${S(2)}/>
       ${eyes(60, 60, 14, 7, 'normal')}
       <path d="M32 102 L28 112 M88 102 L92 112" fill="none" ${S(4)}/>`,
+    pencil: (c, g, d, l) => `
+      <path d="M40 34 L60 4 L80 34 Z" fill="#F2D2A0" ${S()}/><path d="M53 15 L60 4 L67 15 Z" fill="#3A3A3A"/>
+      <rect x="40" y="34" width="40" height="62" fill="${g.body}" ${S()}/><path d="M53 34 L53 96 M67 34 L67 96" fill="none" stroke="${d}" stroke-width="2"/>
+      <rect x="38" y="96" width="44" height="9" fill="#B8BEC8" ${S(2)}/><rect x="40" y="105" width="40" height="11" rx="4" fill="#FF8FA8" ${S(2)}/>
+      <path d="M40 66 L22 78 M80 66 L98 78" fill="none" ${S(4)}/>
+      ${eyes(60, 54, 10, 6, 'normal')}${mouth.smile(60, 74, 7)}`,
+    eraser: (c, g, d, l) => `
+      <path d="M12 52 L34 30 L108 30 L108 88 L86 110 L12 110 Z" fill="${d}" ${S()}/>
+      <rect x="12" y="52" width="74" height="58" rx="6" fill="${g.body}" ${S()}/><rect x="12" y="52" width="30" height="58" rx="6" fill="${g.inner}" ${S()}/>
+      <circle cx="100" cy="114" r="3" fill="${g.inner}" ${S(1.5)}/><circle cx="110" cy="106" r="2.5" fill="${g.inner}" ${S(1.5)}/>
+      ${eyes(62, 74, 11, 7, 'angry')}${mouth.fangs(62, 94, 10)}`,
+    notebook: (c, g, d, l) => `
+      <path d="M22 14 L84 14 L98 28 L98 106 L22 106 Z" fill="${g.body}" ${S()}/><path d="M84 14 L84 28 L98 28 Z" fill="${g.inner}" ${S(2)}/>
+      <rect x="34" y="68" width="52" height="28" rx="3" fill="#FFFFFF" ${S(2)}/><path d="M40 78 L80 78 M40 87 L72 87" fill="none" stroke="#8FA3C8" stroke-width="2"/>
+      <path d="M30 14 L30 106" fill="none" stroke="${d}" stroke-width="3"/>
+      ${eyes(60, 44, 13, 7, 'angry')}${mouth.flat(60, 60, 7)}`,
+    ruler: (c, g, d, l) => `
+      <rect x="6" y="40" width="108" height="46" rx="6" fill="${g.body}" ${S()}/>
+      <path d="M16 40 L16 52 M26 40 L26 47 M36 40 L36 52 M46 40 L46 47 M74 40 L74 47 M84 40 L84 52 M94 40 L94 47 M104 40 L104 52" fill="none" ${S(2)}/>
+      <path d="M30 86 L26 106 M90 86 L94 106" fill="none" ${S(5)}/>
+      ${highlight(30, 74, 10, 4)}
+      ${eyes(60, 60, 13, 7, 'normal')}${mouth.smile(60, 74, 8)}`,
+    letter: (c, g, d, l) => `
+      <path d="M18 108 L48 12 L72 12 L102 108 L80 108 L73 86 L47 86 L40 108 Z M54 76 L66 76 L60 58 Z" fill="${g.body}" fill-rule="evenodd" ${S()}/>
+      <path d="M48 12 L72 12 L76 24 L44 24 Z" fill="${g.inner}" opacity=".7"/>
+      ${eyes(60, 38, 9, 6, 'angry')}${mouth.flat(60, 50, 5)}`,
   };
 
   function monsterSVG(shape, color, evo, cls) {
@@ -1899,7 +2334,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neues Ethik-Abenteuer „Das Kirchenjahr“: Buß- und Bettag, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten.", "Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.", "Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.", "Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.", "Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.", "Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.", "Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.", "Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.", "Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.", "Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.", "Lernquest bittet den Browser, den Spielstand aufzuheben. In Safari erinnert einmal im Monat ein Hinweis daran."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.", "Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.", "Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.", "Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.", "Stempelheft: Stempel 🏷️ für richtige Aufgaben, Bosse, Siege und neue Monster. Die Stempelkarte zeigt jede Schulwoche, in der du gespielt hast.", "Mit Stempeln holst du neue Kartenfarben in Zahlenquest und den Steinkauz als vierten Helden.", "Neues Ethik-Abenteuer „Das Kirchenjahr“: Buß- und Bettag, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten.", "Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.", "Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.", "Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.", "Neue Mathe-Einheit „Die Baustelle“: Würfelgebäude, Würfelnetze, Körper, Muster, Linien und Umfang.", "Neu auf der Karte: das Bergwerk. Wer richtig teilt, findet Erz und Stein.", "Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.", "Lernquest bittet den Browser, den Spielstand aufzuheben. In Safari erinnert einmal im Monat ein Hinweis daran."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -1910,12 +2345,15 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
+    woerterwerkstatt: MK.MODES.woerterwerkstatt,
+    satzbaustelle: MK.MODES.satzbaustelle,
   };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
       { subject: 'Mathe', modes: ['math', 'bau'] },
+      { subject: 'Deutsch', modes: ['woerterwerkstatt', 'satzbaustelle'] },
       { subject: 'Ethik', modes: ['ethik', 'kirchenjahr'] },
       { subject: 'Sachkunde', modes: ['kartoffel'] },
     ] },
@@ -1940,7 +2378,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, backupAt: '', progressAt: '', owned: {}, materials: {} });
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, backupAt: '', progressAt: '', materials: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
@@ -1950,8 +2388,9 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   function normMeta(raw) {
     const m = defaultMeta();
     if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
-    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter', 'owned', 'materials']) if (!isObj(m[k])) m[k] = {};
+    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter', 'stampCard', 'owned', 'materials']) if (!isObj(m[k])) m[k] = {};
     for (const k of Object.keys(m.materials)) if (!Number.isInteger(m.materials[k]) || m.materials[k] < 0) delete m.materials[k];
+    for (const k of ['stamps', 'stampsTotal']) m[k] = Number.isFinite(m[k]) ? Math.max(0, Math.floor(m[k])) : 0;
     for (const k of ['setup', 'storage']) { const d = defaultMeta()[k]; for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f]) m[k][f] = d[f]; }
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
@@ -1999,12 +2438,25 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(run.world, M.worldCap.length) - 1]); };
   function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), run.tiers[mod] || 1)); }
   function recordAnswer(mod, ok, task) {
-    const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
+    const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; if (ok && run) run.right = (run.right || 0) + 1; markWeek(); s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
     if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
     const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
     // capped at the current world, otherwise the next world would start at its hardest tier
     if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
   }
+  /* ---------- Stamps ---------- */
+  const giveStamps = (n) => { meta.stamps += n; meta.stampsTotal += n; return n; };
+  // 1 stamp per 10 right answers in this adventure, paid at the end of every fight (won or lost)
+  const payAnswers = () => { const n = Math.floor((run.right || 0) / 10); run.right = (run.right || 0) - n * 10; return giveStamps(n); };
+  const markWeek = () => { const k = MQ.isoWeek(new Date()); if (!(meta.stampCard[k] >= 1)) meta.stampCard[k] = 1; };
+  const REWARDS = [
+    { id: 'map-w1-winter', name: 'Winterkarte', desc: 'Welt 1 in Zahlenquest bekommt einen eisblauen Hintergrund.', price: 25, world: 1, bg: '#24496E' },
+    { id: 'map-w2-herbst', name: 'Herbstkarte', desc: 'Welt 2 in Zahlenquest bekommt einen braunen Hintergrund.', price: 25, world: 2, bg: '#57341F' },
+    { id: 'map-w3-wald', name: 'Waldkarte', desc: 'Welt 3 in Zahlenquest bekommt einen dunkelgrünen Hintergrund.', price: 25, world: 3, bg: '#1D4A33' },
+    { id: 'hero-kauz', name: 'Steinkauz', desc: 'Ein vierter Held für Zahlenquest. Er übt Einmaleins, Nachbarzahlen, Rätsel und Folgen.', price: 40, hero: 'kauz' },
+  ];
+  const heroLocked = (s) => REWARDS.some((r) => r.hero === s.id && !meta.owned[r.id]);
+  const stampLine = (n) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
   function weakestModule() { let best = null, bestAcc = 2; for (const k of enabledMods()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
   function makeTask(mod, tier, opts) {
     run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
@@ -2142,7 +2594,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod]; let locked = false;
     const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
     // with two options crossing one out gives the answer away, so show the notes instead
-    const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
+    const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', task.tip ? `<div class="hintline">🌉 Tipp: ${esc(task.tip)}</div>` : n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
       locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
       if (opts.onResult) opts.onResult(ok);
@@ -2153,7 +2605,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     if (task.kind === 'choice') {
       // svgOpts: the options are pictures (generated markup, not player text)
       container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div>${task.pic ? `<div class="figure">${task.pic}</div>` : ''}<div id="fb" role="status" aria-live="polite"></div></div>`;
-      bottom.innerHTML = `<div class="options ${task.svgOpts ? 'pics' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}"${task.svgOpts ? ` aria-label="Bild ${i + 1}">${o}` : `>${esc(o)}`}</button>`).join('')}</div>`;
+      bottom.innerHTML = `<div class="options ${task.svgOpts ? 'pics' : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}"${task.svgOpts ? ` aria-label="Bild ${i + 1}">${o}` : `>${esc(o)}`}</button>`).join('')}${task.inline ? '<span aria-hidden="true">.</span>' : ''}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong');
         if (task.svgOpts) { finish(ok, `${esc(task.why)}<span class="fbpic">${task.answer}</span>`); return; }
         finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
@@ -2210,11 +2662,11 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
   function screenTitle() {
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
-    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
-        <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
+        <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
         <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
         <p class="center muted">Gespielt: ${meta.runs} · Gewonnen: ${meta.wins}</p>
       </div></div></div>`);
@@ -2224,6 +2676,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
+    $('#stamps').onclick = $('#stampsTop').onclick = screenStamps;
     $('#news').onclick = screenNews;
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
@@ -2315,7 +2768,8 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   // short: for the QR code, without answer history and running adventures
   function saveData(short) {
     const m = JSON.parse(JSON.stringify(meta)); const runs = {};
-    if (short) for (const g of Object.values(m.stats)) for (const st of Object.values(g)) st.hist = [];
+    // task types never practised come back empty on import (normMeta), so the QR code can leave them out
+    if (short) for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (st.t) st.hist = []; else delete g[k]; }
     else for (const g of MODE_KEYS) { const r = load(KEY_RUN_FOR(g), null); if (r) runs[g] = r; }
     return { v: 1, at: new Date().toISOString(), meta: m, runs };
   }
@@ -2378,7 +2832,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   function screenStarter() {
     let sel = CFG().starters.length === 1 ? CFG().starters[0].id : null;
     // recommend the monster whose attacks were practised least (and not the one played last time)
-    const S = CFG().starters; const last = meta.lastStarter[mode];
+    const S = CFG().starters.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
     const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0);
     const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
     // offer to swap the most practised attack for a task type that was hardly practised yet
@@ -2389,7 +2843,8 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
       box.innerHTML = swap ? `<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" aria-pressed="${swapOn}"><div class="meta"><div class="name">🎯 Neues üben: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name} (schon oft geübt) bekommst du die Attacke „${esc(CFG().extra[swap.to])}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>` : '';
       if (swap) $('#swap').onclick = () => { swapOn = !swapOn; paintSwap(); }; };
     render(`<div class="screen">${topbar(CFG().starters.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
-      ${CFG().starters.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${S.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${CFG().starters.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
       <div id="swapbox"></div>
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
     $('#back').onclick = screenTitle;
@@ -2399,7 +2854,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
-      meta.lastStarter[mode] = sel; meta.runs++; saveAll(); screenMap(); };
+      meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
     const chests = m.flat().filter((n) => n.t === 'treasure'); if (CFG().mine && chests.length && !offList('math').includes('rest')) pick(chests).t = 'bergwerk';
@@ -2420,7 +2875,8 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     const nodes = run.map.map((fl, f) => fl.map((nd, i) => { const isOpen = f === run.floor - 1 && open.includes(i); const taken = run.path[f] === i && f < run.floor - 1;
       const cls = isOpen ? 'open' : taken ? 'taken' : f < run.floor - 1 ? 'past' : live[f].has(i) ? 'future' : 'dead';
       return `<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}" ${isOpen ? '' : 'tabindex="-1" disabled'} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`; }).join('')).join('');
-    render(`<div class="screen">${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
+    const look = mode === 'math' && REWARDS.find((r) => r.world === run.world && meta.owned[r.id]);
+    render(`<div class="screen"${look ? ` style="background:${look.bg}"` : ''}>${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
       <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
@@ -2475,7 +2931,8 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   function startBattle(spec, hard) {
     // extra HP offsets weak-spot damage, so fights stay about as long
     const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
-    const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weak: pickWeak() };
+    const fresh = !meta.dex[spec.name]; if (fresh) giveStamps(2);
+    const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weak: pickWeak() };
     meta.dex[spec.name] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
     const b = { enemy, log: `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
@@ -2583,7 +3040,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); b.taken = dmg; h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
     const angel = run.items.indexOf('engel');
     if (h.hp <= 0 && angel >= 0) { run.items.splice(angel, 1); h.hp = Math.round(h.maxHp * 0.5); b.log += ` – aber ${ITEMS.engel.icon} der Schutzengel rettet dich! ❤️ ${h.hp}`; b.logCls = 'crit'; }
-    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b);
+    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) { b.stamps = payAnswers(); endRun(); } else saveAll(); renderBattle(b);
     if (b.taken) { $('#fh').classList.add('hurt'); fx('#fh', '−' + b.taken); SFX.hurt(); } else { fx('#fh', '🛡️', 'shield'); SFX.block(); }
     if (h.hp <= 0) setTimeout(() => screenGameOver(b), 1600);
   }
@@ -2596,12 +3053,14 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
     else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
+    // the Monsterbuch stamps were given when the enemy appeared, they are only shown here
+    const stamps = payAnswers() + (e.boss ? giveStamps(5) : 0) + (e.fresh ? 2 : 0);
     if (!(e.boss && run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
     if (e.elite && run.node) { run.node.enemy = null; run.node.reward = true; } else nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
@@ -2727,19 +3186,35 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   function screenGameOver(b) {
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null; setTimeout(SFX.lose, 200);
-    render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p><p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p>${stampLine(b.stamps)}<p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
-    meta.wins++; meta.progressAt = new Date().toISOString(); const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
+    meta.wins++; giveStamps(10); meta.progressAt = new Date().toISOString(); const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
-    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p><p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenDex() {
     const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push(EN[w].elite); all.push(EN[w].boss); } }
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
+  }
+  function screenStamps() {
+    const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
+    const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', gespielt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
+    const row = (r) => { const has = meta.owned[r.id]; const prev = r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
+      return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${has ? '<div class="rwhave">✔ Schon geholt</div>' : `<button class="btn small" data-buy="${r.id}" ${meta.stamps < r.price ? 'disabled' : ''}>Holen · ${r.price} 🏷️</button>`}</div></div>`; };
+    render(`<div class="screen">${topbar('Stempelheft')}<div class="scroll"><div class="stack">
+      <div class="card center"><div class="stampbal">🏷️ ${meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10.</p></div>
+      <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt.</p><div class="wkgrid">${cells}</div></div>
+      <h2 id="rewards">Belohnungen</h2>${REWARDS.map(row).join('')}
+      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    $('#back').onclick = screenTitle;
+    app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
+      const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel. Danach hast du noch ${meta.stamps - r.price}.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+      $('#no', ov).onclick = () => ov.remove();
+      $('#yes', ov).onclick = () => { if (!meta.owned[r.id] && meta.stamps >= r.price) { meta.stamps -= r.price; meta.owned[r.id] = true; meta.progressAt = new Date().toISOString(); saveAll(); } screenStamps(); }; }; });
   }
   function screenParent(jump, back) {
     back = typeof back === 'function' ? back : screenTitle;
@@ -2758,6 +3233,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
       ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
       <h2 class="psec" id="p-progress">Fortschritt</h2>
+      ${card('Stempel', `<div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>`)}
       ${tables}
       ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}
       <h2 class="psec" id="p-save">Spielstand</h2>
@@ -2855,7 +3331,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '77fe4bf620f5';
+  const BUILD = '3564c70913f9';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

@@ -128,5 +128,12 @@ for (let i = 0; i < 3000; i++) {
   }));
   m.forEach((fl, f) => { if (reached[f].size !== fl.length) bad('unreachable node'); });
 }
+
+// ISO 8601 calendar weeks and the school-year stamp card
+for (const [d, k] of [['2026-11-09', '2026-W46'], ['2026-11-15', '2026-W46'], ['2026-11-16', '2026-W47'], ['2021-01-03', '2020-W53'], ['2024-12-30', '2025-W01'], ['2026-01-01', '2026-W01'], ['2027-01-01', '2026-W53'], ['2027-01-04', '2027-W01'], ['2010-01-03', '2009-W53']]) {
+  const [y, m, day] = d.split('-').map(Number); check(M.isoWeek(new Date(y, m - 1, day)) === k, 'isoWeek ' + d + ' → ' + k, M.isoWeek(new Date(y, m - 1, day)));
+}
+{ const a = M.schoolWeeks(new Date(2026, 10, 9)); check(a.length === 48 && a[0] === '2026-W36' && a[47] === '2027-W30' && new Set(a).size === 48, 'school year 2026/27 has 48 weeks', [a.length, a[0], a[a.length - 1]]);
+  const b = M.schoolWeeks(new Date(2026, 7, 1)); check(b.length === 47 && b[0] === '2025-W36' && b[46] === '2026-W30', 'summer gap shows the year that just ended', [b.length, b[0]]); }
 console.log(M.makeMap(1).map((r) => r.map((n) => n.t).join('/')).join(' | '));
 console.log('fails',fails.length); if(fails.length){ console.log(fails.slice(0,10).join('\n')); process.exit(1); }
