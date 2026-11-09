@@ -38,7 +38,7 @@
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
-    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, backupAt: '', progressAt: '' });
+    setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, backupAt: '', progressAt: '' });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   // Saves must always load: missing/wrong-typed fields fall back to defaults, old names map to new ones.
   const RENAMES = { Flummibatz: 'Sumpfbrocken', Tropfling: 'Regenwicht', 'Zündi': 'Streichholzkopf', 'Großglibber': 'Moorschlund', Flatterfledi: 'Nachtschwinge', 'Kristallkäfer': 'Glaspanzer', Aschendrache: 'Ofenwurm', Sturmgeist: 'Sturmreiter',
@@ -48,7 +48,8 @@
   function normMeta(raw) {
     const m = defaultMeta();
     if (isObj(raw)) for (const k of Object.keys(m)) if (raw[k] != null && typeof raw[k] === typeof m[k] && Array.isArray(raw[k]) === Array.isArray(m[k])) m[k] = raw[k];
-    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter']) if (!isObj(m[k])) m[k] = {};
+    for (const k of ['dex', 'seenTut', 'stats', 'know', 'evoUnlocked', 'off', 'lastStarter', 'stampCard', 'owned']) if (!isObj(m[k])) m[k] = {};
+    for (const k of ['stamps', 'stampsTotal']) m[k] = Number.isFinite(m[k]) ? Math.max(0, Math.floor(m[k])) : 0;
     for (const k of ['setup', 'storage']) { const d = defaultMeta()[k]; for (const f of Object.keys(d)) if (typeof m[k][f] !== typeof d[f]) m[k][f] = d[f]; }
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
@@ -96,12 +97,25 @@
   const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(run.world, M.worldCap.length) - 1]); };
   function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), run.tiers[mod] || 1)); }
   function recordAnswer(mod, ok, task) {
-    const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
+    const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; if (ok && run) run.right = (run.right || 0) + 1; markWeek(); s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
     if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
     const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
     // capped at the current world, otherwise the next world would start at its hardest tier
     if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
   }
+  /* ---------- Stamps ---------- */
+  const giveStamps = (n) => { meta.stamps += n; meta.stampsTotal += n; return n; };
+  // 1 stamp per 10 right answers in this adventure, paid at the end of every fight (won or lost)
+  const payAnswers = () => { const n = Math.floor((run.right || 0) / 10); run.right = (run.right || 0) - n * 10; return giveStamps(n); };
+  const markWeek = () => { const k = MQ.isoWeek(new Date()); if (!(meta.stampCard[k] >= 1)) meta.stampCard[k] = 1; };
+  const REWARDS = [
+    { id: 'map-w1-winter', name: 'Winterkarte', desc: 'Welt 1 in Zahlenquest bekommt einen eisblauen Hintergrund.', price: 25, world: 1, bg: '#24496E' },
+    { id: 'map-w2-herbst', name: 'Herbstkarte', desc: 'Welt 2 in Zahlenquest bekommt einen braunen Hintergrund.', price: 25, world: 2, bg: '#57341F' },
+    { id: 'map-w3-wald', name: 'Waldkarte', desc: 'Welt 3 in Zahlenquest bekommt einen dunkelgrünen Hintergrund.', price: 25, world: 3, bg: '#1D4A33' },
+    { id: 'hero-kauz', name: 'Steinkauz', desc: 'Ein vierter Held für Zahlenquest. Er übt Einmaleins, Nachbarzahlen, Rätsel und Folgen.', price: 40, hero: 'kauz' },
+  ];
+  const heroLocked = (s) => REWARDS.some((r) => r.hero === s.id && !meta.owned[r.id]);
+  const stampLine = (n) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
   function weakestModule() { let best = null, bestAcc = 2; for (const k of enabledMods()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
   function makeTask(mod, tier, opts) {
     run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
@@ -301,11 +315,11 @@
   const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
   function screenTitle() {
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
-    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+    render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
-        <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
+        <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
         <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
         <p class="center muted">Gespielt: ${meta.runs} · Gewonnen: ${meta.wins}</p>
       </div></div></div>`);
@@ -315,6 +329,7 @@
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenTitle(); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
+    $('#stamps').onclick = $('#stampsTop').onclick = screenStamps;
     $('#news').onclick = screenNews;
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
@@ -468,7 +483,7 @@
   function screenStarter() {
     let sel = CFG().starters.length === 1 ? CFG().starters[0].id : null;
     // recommend the monster whose attacks were practised least (and not the one played last time)
-    const S = CFG().starters; const last = meta.lastStarter[mode];
+    const S = CFG().starters.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
     const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0);
     const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
     // offer to swap the most practised attack for a task type that was hardly practised yet
@@ -479,7 +494,8 @@
       box.innerHTML = swap ? `<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" aria-pressed="${swapOn}"><div class="meta"><div class="name">🎯 Neues üben: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name} (schon oft geübt) bekommst du die Attacke „${esc(CFG().extra[swap.to])}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>` : '';
       if (swap) $('#swap').onclick = () => { swapOn = !swapOn; paintSwap(); }; };
     render(`<div class="screen">${topbar(CFG().starters.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
-      ${CFG().starters.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${S.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${monsterSVG(s.shape, TYPES[s.type].color, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${CFG().starters.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
       <div id="swapbox"></div>
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
     $('#back').onclick = screenTitle;
@@ -489,7 +505,7 @@
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
-      meta.lastStarter[mode] = sel; meta.runs++; saveAll(); screenMap(); };
+      meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; } return m;
   }
@@ -508,7 +524,8 @@
     const nodes = run.map.map((fl, f) => fl.map((nd, i) => { const isOpen = f === run.floor - 1 && open.includes(i); const taken = run.path[f] === i && f < run.floor - 1;
       const cls = isOpen ? 'open' : taken ? 'taken' : f < run.floor - 1 ? 'past' : live[f].has(i) ? 'future' : 'dead';
       return `<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}" ${isOpen ? '' : 'tabindex="-1" disabled'} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`; }).join('')).join('');
-    render(`<div class="screen">${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
+    const look = mode === 'math' && REWARDS.find((r) => r.world === run.world && meta.owned[r.id]);
+    render(`<div class="screen"${look ? ` style="background:${look.bg}"` : ''}>${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
       <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
@@ -562,7 +579,8 @@
   function startBattle(spec, hard) {
     // extra HP offsets weak-spot damage, so fights stay about as long
     const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
-    const enemy = { name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weak: pickWeak() };
+    const fresh = !meta.dex[spec.name]; if (fresh) giveStamps(2);
+    const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weak: pickWeak() };
     meta.dex[spec.name] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
     const b = { enemy, log: `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
@@ -670,7 +688,7 @@
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); b.taken = dmg; h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
     const angel = run.items.indexOf('engel');
     if (h.hp <= 0 && angel >= 0) { run.items.splice(angel, 1); h.hp = Math.round(h.maxHp * 0.5); b.log += ` – aber ${ITEMS.engel.icon} der Schutzengel rettet dich! ❤️ ${h.hp}`; b.logCls = 'crit'; }
-    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) endRun(); else saveAll(); renderBattle(b);
+    b.phase = h.hp <= 0 ? 'over' : 'choose'; if (h.hp <= 0) { b.stamps = payAnswers(); endRun(); } else saveAll(); renderBattle(b);
     if (b.taken) { $('#fh').classList.add('hurt'); fx('#fh', '−' + b.taken); SFX.hurt(); } else { fx('#fh', '🛡️', 'shield'); SFX.block(); }
     if (h.hp <= 0) setTimeout(() => screenGameOver(b), 1600);
   }
@@ -683,12 +701,14 @@
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
     else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
+    // the Monsterbuch stamps were given when the enemy appeared, they are only shown here
+    const stamps = payAnswers() + (e.boss ? giveStamps(5) : 0) + (e.fresh ? 2 : 0);
     if (!(e.boss && run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
     if (e.elite && run.node) { run.node.enemy = null; run.node.reward = true; } else nodeDone();
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
@@ -776,19 +796,35 @@
   function screenGameOver(b) {
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null; setTimeout(SFX.lose, 200);
-    render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p><p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p>${stampLine(b.stamps)}<p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenVictory() {
-    meta.wins++; meta.progressAt = new Date().toISOString(); const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
+    meta.wins++; giveStamps(10); meta.progressAt = new Date().toISOString(); const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
-    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p><p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${monsterSVG(spec.shape, TYPES[spec.type].color, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
   }
   function screenDex() {
     const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push(EN[w].elite); all.push(EN[w].boss); } }
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, e.boss ? 1 : 0) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
+  }
+  function screenStamps() {
+    const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
+    const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', gespielt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
+    const row = (r) => { const has = meta.owned[r.id]; const prev = r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
+      return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${has ? '<div class="rwhave">✔ Schon geholt</div>' : `<button class="btn small" data-buy="${r.id}" ${meta.stamps < r.price ? 'disabled' : ''}>Holen · ${r.price} 🏷️</button>`}</div></div>`; };
+    render(`<div class="screen">${topbar('Stempelheft')}<div class="scroll"><div class="stack">
+      <div class="card center"><div class="stampbal">🏷️ ${meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10.</p></div>
+      <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt.</p><div class="wkgrid">${cells}</div></div>
+      <h2 id="rewards">Belohnungen</h2>${REWARDS.map(row).join('')}
+      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    $('#back').onclick = screenTitle;
+    app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
+      const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel. Danach hast du noch ${meta.stamps - r.price}.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+      $('#no', ov).onclick = () => ov.remove();
+      $('#yes', ov).onclick = () => { if (!meta.owned[r.id] && meta.stamps >= r.price) { meta.stamps -= r.price; meta.owned[r.id] = true; meta.progressAt = new Date().toISOString(); saveAll(); } screenStamps(); }; }; });
   }
   function screenParent(jump, back) {
     back = typeof back === 'function' ? back : screenTitle;
@@ -807,6 +843,7 @@
       ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
       <h2 class="psec" id="p-progress">Fortschritt</h2>
+      ${card('Stempel', `<div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>`)}
       ${tables}
       ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}
       <h2 class="psec" id="p-save">Spielstand</h2>

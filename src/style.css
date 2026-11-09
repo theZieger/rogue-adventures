@@ -405,3 +405,19 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .sumlist { margin: 10px 0; padding-left: 22px; font-size: 17px; }
 .qrbox { margin: 12px auto 6px; max-width: 320px; }
 .qr { display: block; width: 100%; height: auto; border-radius: 8px; }
+
+/* Stamps */
+.stampbtn { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); left: 66px; z-index: 2; min-height: 46px; padding: 0 14px; border-radius: 999px; border: 2px solid rgba(255,255,255,.45); background: rgba(255,255,255,.08); color: var(--paper-ink); font-weight: 700; font-size: 18px; cursor: pointer; }
+.stampgain { font-weight: 800; font-size: 24px; color: #8A5A00; }
+.stampbal { font-family: var(--hand); font-size: 48px; line-height: 1.1; }
+.wkgrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 8px; }
+.wk { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 2px solid var(--card2); border-radius: 8px; font-size: 18px; font-weight: 800; line-height: 1; }
+.wk.done { background: #DDF5E2; border-color: var(--green); color: #1E7A34; }
+.wk.gold { background: #FFF1B8; border-color: var(--gold); color: #A86A00; }
+.wk.now { outline: 3px solid var(--ink); outline-offset: 1px; }
+.choice.reward, .choice.locked { cursor: default; }
+.choice.reward:active, .choice.locked:active { transform: none; box-shadow: var(--shadow); }
+.choice.locked { opacity: .75; }
+.choice.reward .btn { margin-top: 8px; }
+.rwprev { width: 96px; height: 96px; flex: none; border-radius: 18px; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 30px; }
+.rwhave { margin-top: 8px; font-weight: 700; color: #1E7A34; }
