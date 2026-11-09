@@ -20,6 +20,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.
 - Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen.
 
+### Behoben
+- Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole.
+
 ## 2026-11-08
 
 ### Neu

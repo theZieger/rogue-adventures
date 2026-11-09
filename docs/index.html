@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="27c8fb33b81c">
+<meta name="app-version" content="8eeb9d0fbf35">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -4527,10 +4527,9 @@ const MONART = (() => {
     s += `<circle cx="49" cy="72" r="1" fill="#8A6A4A"/><circle cx="46" cy="75" r="1" fill="#8A6A4A"/><circle cx="71" cy="72" r="1" fill="#8A6A4A"/><circle cx="74" cy="75" r="1" fill="#8A6A4A"/>`;
     s += pair(60, 54, 11, 6, { iris: e === 2 ? '#6B8E3A' : null, brow: e ? 'up' : null, bw: 2.4 });
     // hard hat with a ridge; the foreman's has a lamp
-    s += `<path d="M32 42 Q30 16 60 15 Q90 16 88 42 Z" ${F(hat)}/><path d="M54 16 Q60 14 66 16 L66 41 L54 41 Z" fill="#E0A52A" opacity=".8"/><path d="M54 16 L54 41 M66 16 L66 41" fill="none" stroke="${OUT}" stroke-width="1.6"/>`;
-    s += `<path d="M24 42 Q60 36 96 42 Q99 47 92 47 L28 47 Q21 47 24 42 Z" ${F(hat)}/>`;
-    s += shine(42, 24, 6, 3, -25);
-    if (e === 2) s += `<rect x="52" y="22" width="16" height="11" rx="4" ${F('#5A6070', 2)}/><circle cx="60" cy="27.5" r="4" fill="#FFF3B0" ${S(1.6)}/><path d="M46 20 L40 14 M74 20 L80 14 M60 16 L60 8" stroke="#FFE066" stroke-width="2.4" stroke-linecap="round"/>`;
+    if (!o.bare) s += `<path d="M32 42 Q30 16 60 15 Q90 16 88 42 Z" ${F(hat)}/><path d="M54 16 Q60 14 66 16 L66 41 L54 41 Z" fill="#E0A52A" opacity=".8"/><path d="M54 16 L54 41 M66 16 L66 41" fill="none" stroke="${OUT}" stroke-width="1.6"/>`;
+    if (!o.bare) s += `<path d="M24 42 Q60 36 96 42 Q99 47 92 47 L28 47 Q21 47 24 42 Z" ${F(hat)}/>` + shine(42, 24, 6, 3, -25);
+    if (e === 2 && !o.bare) s += `<rect x="52" y="22" width="16" height="11" rx="4" ${F('#5A6070', 2)}/><circle cx="60" cy="27.5" r="4" fill="#FFF3B0" ${S(1.6)}/><path d="M46 20 L40 14 M74 20 L80 14 M60 16 L60 8" stroke="#FFE066" stroke-width="2.4" stroke-linecap="round"/>`;
     if (e === 0) s += blush(60, 66, 21, 4);
     return s;
   }
@@ -4802,11 +4801,11 @@ const MONART = (() => {
     s += `<circle cx="36" cy="64" r="2.6" ${F(e ? gold : '#E0304A', 1.4)}/><circle cx="84" cy="64" r="2.6" ${F(e ? gold : '#E0304A', 1.4)}/>`;
     s += shine(47, 50, 6, 3.5, -20);
     // straw boater: flat crown, red band, wide brim
-    s += `<path d="M44 34 L45 21 Q60 18 75 21 L76 34 Z" ${F(straw)}/><path d="M44.5 27 Q60 24 75.5 27 L76 33 Q60 30 44 33 Z" fill="#D9343F"/>`;
-    s += `<ellipse cx="60" cy="21" rx="15" ry="3" ${F('#F7E3A0', 2)}/>`;
-    s += `<path d="M24 36 Q60 26 96 36 Q98 40 90 40 Q60 34 30 40 Q22 40 24 36 Z" ${F(straw)}/><path d="M32 36 Q60 30 88 36" fill="none" stroke="#C99A2E" stroke-width="1.4"/>`;
-    if (e >= 1) s += `<g transform="translate(72 29)">${[0, 72, 144, 216, 288].map((r) => `<ellipse cx="0" cy="-3.6" rx="2.6" ry="3.6" ${F('#FFFFFF', 1.4)} transform="rotate(${r})"/>`).join('')}<circle r="2" ${F(gold, 1.2)}/></g>`;
-    if (e === 2) s += `<path d="M78 28 Q88 18 86 8 Q82 16 76 20 Z" ${F('#3B8FE0', 1.8)}/>`;
+    if (!o.bare) s += `<path d="M44 34 L45 21 Q60 18 75 21 L76 34 Z" ${F(straw)}/><path d="M44.5 27 Q60 24 75.5 27 L76 33 Q60 30 44 33 Z" fill="#D9343F"/>`;
+    if (!o.bare) s += `<ellipse cx="60" cy="21" rx="15" ry="3" ${F('#F7E3A0', 2)}/>`;
+    if (!o.bare) s += `<path d="M24 36 Q60 26 96 36 Q98 40 90 40 Q60 34 30 40 Q22 40 24 36 Z" ${F(straw)}/><path d="M32 36 Q60 30 88 36" fill="none" stroke="#C99A2E" stroke-width="1.4"/>`;
+    if (e >= 1 && !o.bare) s += `<g transform="translate(72 29)">${[0, 72, 144, 216, 288].map((r) => `<ellipse cx="0" cy="-3.6" rx="2.6" ry="3.6" ${F('#FFFFFF', 1.4)} transform="rotate(${r})"/>`).join('')}<circle r="2" ${F(gold, 1.2)}/></g>`;
+    if (e === 2 && !o.bare) s += `<path d="M78 28 Q88 18 86 8 Q82 16 76 20 Z" ${F('#3B8FE0', 1.8)}/>`;
     s += pair(60, 57, 11, 5.5, { iris: '#4E8A3A', brow: 'up', bw: 2.4, dir: [0.15, 0.1] });
     s += `<path d="M60 61 Q58 67 61 68" ${N(2.2)}/>${M.grin(60, 72, 7)}`;
     s += blush(60, 67, 17, 4);
@@ -5810,8 +5809,8 @@ const MONART = (() => {
     s += `<ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
     s += `<path d="M36 52 Q34 62 38 66 L39 54 Z M84 52 Q86 62 82 66 L81 54 Z" ${F('#D9D9E3', 2)}/>`;
     // sou'wester rain hat
-    s += `<path d="M34 46 Q32 20 60 18 Q88 20 86 46 Z" ${F(hat)}/><path d="M42 26 Q50 21 58 21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".45"/>`;
-    s += `<path d="M14 50 Q60 30 106 50 Q110 58 100 58 Q60 42 20 58 Q10 58 14 50 Z" ${F(hat)}/><path d="M24 52 Q60 38 96 52" fill="none" stroke="#D99A1E" stroke-width="1.8" stroke-linecap="round"/>`;
+    if (!o.bare) s += `<path d="M34 46 Q32 20 60 18 Q88 20 86 46 Z" ${F(hat)}/><path d="M42 26 Q50 21 58 21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".45"/>`;
+    if (!o.bare) s += `<path d="M14 50 Q60 30 106 50 Q110 58 100 58 Q60 42 20 58 Q10 58 14 50 Z" ${F(hat)}/><path d="M24 52 Q60 38 96 52" fill="none" stroke="#D99A1E" stroke-width="1.8" stroke-linecap="round"/>`;
     s += shine(47, 62, 5, 3, -20);
     s += pair(60, 61, 11, 5.5, { brow: 'up', bw: 2.4, browColor: '#8A8A9A', dir: [0.2, 0.1] });
     s += `<path d="M60 64 Q57 70 61 71" ${N(2.2)}/>`;
@@ -6123,6 +6122,7 @@ const MONART = (() => {
 
   // where clothes sit on each hero (drawing coordinates before the stage scaling): head top [x, y, scale],
   // eyes [cx, cy, gap, r] (gap 0 = one eye seen from the side), neck [x, y, width], school bag [x, y]
+  const OWN_HAT = ['beaver', 'wetterwart', 'schaustellerin'];
   const FIT = {
     fox: { top: [60, 42, 1.2], eyes: [60, 62, 15, 7.5], neck: [60, 101, 50], pack: [20, 66] },
     toad: { top: [60, 44, 1.3], eyes: [60, 54, 22, 9], neck: [60, 98, 66], pack: [20, 72] },
@@ -6130,15 +6130,15 @@ const MONART = (() => {
     potato: { top: [60, 35, 1.25], eyes: [60, 60, 14, 8], neck: [60, 99, 70], pack: [20, 64] },
     luther: { top: [60, 28, 1.1], eyes: [60, 55, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
     owl: { top: [60, 31, 1.2], eyes: [60, 56, 14, 9], neck: [60, 80, 50], pack: [20, 74] },
-    beaver: { top: [60, 30, 1.2], eyes: [60, 54, 11, 6], neck: [60, 80, 48], pack: [22, 84] },
+    beaver: { top: [60, 38, 1.15], eyes: [60, 54, 11, 6], neck: [60, 80, 48], pack: [22, 84] },
     horse: { top: [91, 24, 0.62], eyes: [90, 34, 0, 5], neck: [76, 52, 22], pack: [36, 64] },
-    schaustellerin: { top: [60, 37, 1], eyes: [60, 57, 11, 5.5], neck: [60, 82, 40], pack: [24, 92] },
+    schaustellerin: { top: [60, 36, 1.05], eyes: [60, 57, 11, 5.5], neck: [60, 82, 40], pack: [24, 92] },
     kuesterin: { top: [60, 30, 1], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
-    friends: { top: [40, 41, 0.7], eyes: [40, 60, 7, 4.5], neck: [40, 79, 30], pack: [16, 92] },
+    friends: [{ top: [40, 42, 0.8], eyes: [40, 60, 7, 4.5], neck: [40, 79, 30], pack: [16, 92] }, { top: [80, 40, 0.8], eyes: [80, 60, 7, 4.5], neck: [80, 79, 30] }],
     pencil: { top: [60, 17, 0.75], eyes: [60, 55, 10, 6.5], neck: [60, 76, 44], pack: [28, 70] },
     ruler: { top: [60, 18, 0.75], eyes: [60, 38, 9, 6], neck: [60, 58, 46], pack: [30, 70] },
     muellerin: { top: [60, 28, 1.1], eyes: [60, 58, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
-    wetterwart: { top: [60, 32, 1.15], eyes: [60, 61, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
+    wetterwart: { top: [60, 35, 1.1], eyes: [60, 61, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
     kartenzeichnerin: { top: [60, 30, 1.1], eyes: [60, 58, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
   };
   const at = (p, body) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
@@ -6169,7 +6169,7 @@ const MONART = (() => {
     const elite = !hero && !!opts.elite, boss = !hero && (!!opts.boss || (!opts.elite && evo >= 1));
     LW = elite || boss ? 3 : 2.5; CLASSIC = CLASSIC_SHAPES.includes(shape);
     const P = { c: color };
-    const body = SHAPES[shape](P, { evo: e, elite, boss }, C);
+    const body = SHAPES[shape](P, { evo: e, elite, boss, bare: !!opts.bare }, C);
     LW = 2.5; CLASSIC = false;
     // heroes grow with each stage; normal enemies are a bit smaller than elites and bosses
     const k = hero ? [0.8, 0.9, 1][e] : elite || boss ? 1 : 0.88;
@@ -6194,22 +6194,25 @@ const MONART = (() => {
   }
   // clothes go on top of the drawing (baked or live), scaled like the hero's stage
   function dress(svg, shape, evo, outfit) {
-    const fit = FIT[shape], o = fit && OUTFIT[outfit];
+    const o = FIT[shape] && OUTFIT[outfit];
     if (!o) return svg;
+    // the friends both wear the piece; only the first carries the school bag
+    const fits = [].concat(FIT[shape]).slice(0, o.back ? 1 : undefined);
     const k = [0.8, 0.9, 1][Math.max(0, Math.min(2, evo || 0))];
-    const g = (body) => `<g transform="translate(${f1(60 * (1 - k))} ${f1(116 * (1 - k))}) scale(${k})">${body}</g>`;
-    if (o.back) svg = svg.replace(/^(<svg[^>]*>)/, `$1${g(o.back(fit))}`);
-    return svg.replace(/<\/svg>$/, `${g(o.front(fit))}</svg>`);
+    const g = (f) => `<g transform="translate(${f1(60 * (1 - k))} ${f1(116 * (1 - k))}) scale(${k})">${fits.map(f).join('')}</g>`;
+    if (o.back) svg = svg.replace(/^(<svg[^>]*>)/, `$1${g(o.back)}`);
+    return svg.replace(/<\/svg>$/, `${g(o.front)}</svg>`);
   }
   // opts: { elite, boss } for enemies, { outfit } for heroes
   function monsterSVG(shape, color, evo, cls, opts) {
     opts = opts || {};
-    if (BAKED) {
+    const bare = !!(OUTFIT[opts.outfit] && OUTFIT[opts.outfit].head && OWN_HAT.includes(shape));
+    if (BAKED && !bare) {
       const k = bakedKey(shape, evo, cls, opts), mirrored = /\benemy\b/.test(cls || '') && BAKED[k + '-enemy'] ? k + '-enemy' : k, svg = BAKED[mirrored];
       // ids are "m-<key>__…" in the file; make them unique per copy on the page
       if (svg) return dress(svg.replace('<svg', `<svg class="mon ${cls || ''}"`).split(`m-${mirrored}__`).join(`m-${mirrored}-${uid++}__`), shape, evo, opts.outfit);
     }
-    return dress(render(shape, color, evo, cls, opts), shape, evo, opts.outfit);
+    return dress(render(shape, color, evo, cls, { ...opts, bare }), shape, evo, opts.outfit);
   }
   // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
   // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS
@@ -6324,7 +6327,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch. Die Startseite ordnet sie nach Fächern.", "Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.", "Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.", "Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs."]}, {"title": "Verbessert", "items": ["Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.", "Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.", "Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.", "Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch. Die Startseite ordnet sie nach Fächern.", "Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.", "Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.", "Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs."]}, {"title": "Verbessert", "items": ["Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.", "Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.", "Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.", "Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -8004,7 +8007,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '27c8fb33b81c';
+  const BUILD = '8eeb9d0fbf35';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
