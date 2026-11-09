@@ -217,6 +217,30 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   check(!!p2.dump().mathquest_run_kirchenjahr && !!p2.$('[data-cont="kirchenjahr"]'), 'Kirchenjahr adventure is saved and can be continued');
 }
 
+// 11b. Sachkunde units: an old save gains their stats; reopening in the Forscherlabor or on the Schatzkarte keeps the state
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); for (const m of ['kornkammer', 'wetterstation', 'kompass']) delete old.stats[m];
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && ['kornkammer', 'wetterstation', 'kompass'].every((m) => p1.w.__mq.meta.stats[m] && Object.values(p1.w.__mq.meta.stats[m]).every((s) => s.t === 0)), 'old save without Sachkunde stats loads with empty stats');
+  // enter a node of the given type from the first floor of a new adventure
+  const enter = (p, mode, type) => { p.click(`[data-new="${mode}"]`); const y = p.$('.overlay #yes'); if (y) y.click(); p.click('.choice'); p.click('#go'); p.w.__mq.run.map[0][0].t = type; p.w.__mq.screenMap(); p.click('.node.open'); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); };
+  enter(p1, 'wetterstation', 'labor');
+  p1.click('.opt.guess'); p1.click('#next');
+  const q2 = p1.$('.labor h3').textContent;
+  const p2 = open(p1.dump()); p2.click('[data-cont="wetterstation"]');
+  check(p2.errors.length === 0 && p2.text().includes('Versuch 2 von 5') && p2.$('.labor h3').textContent === q2, 'reopening the Forscherlabor continues with the same experiment');
+  for (let i = 0; i < 4; i++) { p2.click('.opt.guess'); p2.click('#next'); }
+  check(p2.text().includes('Notizkarte') && p2.w.__mq.run.node.done === true, 'after five experiments the Forscherlabor shows the note card and is done');
+  const p3 = open(p2.dump()); enter(p3, 'kompass', 'karte');
+  const t = p3.w.__task; const wrong = [...p3.d.querySelectorAll('[data-cell]')].find((c) => c.dataset.cell !== t.target.join('-'));
+  wrong.dispatchEvent(new p3.w.MouseEvent('click', { bubbles: true }));
+  const p4 = open(p3.dump()); p4.click('[data-cont="kompass"]'); const ok4 = p4.$('.overlay #tutok'); if (ok4) ok4.click();
+  check(p4.errors.length === 0 && p4.text().includes('Versuch 2 von 2') && !!p4.$('[data-cell]'), 'a wrong tap on the Schatzkarte stays counted after reopening');
+  const t4 = p4.w.__task; p4.$(`[data-cell="${t4.target.join('-')}"]`).dispatchEvent(new p4.w.MouseEvent('click', { bubbles: true }));
+  const p5 = open(p4.dump()); p5.click('[data-cont="kompass"]');
+  check(p5.errors.length === 0 && p5.text().includes('Truhe'), 'a found treasure opens the chest after reopening');
+}
+
 // 12. Save code: export, import (replace/merge), broken codes, link import, backup reminder
 const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
 const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await sleep(10); return fn(); };
