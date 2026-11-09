@@ -188,6 +188,21 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   check(p5.w.__mq.meta.pin === '' && p5.text().includes('Noch keine PIN'), 'PIN can be removed in the parent area');
 }
 
+// 10. A save from before division/rounding gains the new task types with empty stats; its adventure keeps loading
+{
+  const oldStats = { add: { c: 5, t: 7, hist: [1, 0] }, sub: { c: 1, t: 1, hist: [1] }, mul: { c: 0, t: 0, hist: [] }, riddle: { c: 0, t: 0, hist: [] }, seq: { c: 0, t: 0, hist: [] }, nb: { c: 0, t: 0, hist: [] }, grid: { c: 2, t: 3, hist: [] } };
+  const p1 = startMathFight(); const saved = p1.dump();
+  const r = JSON.parse(saved[RUN]); r.tiers = { add: 2, grid: 1 }; saved[RUN] = JSON.stringify(r);
+  saved[META] = JSON.stringify({ runs: 3, wins: 1, stats: { math: oldStats }, off: { math: ['seq'] } });
+  const p = open(saved); if (p.$('#later')) p.click('#later'); const m = p.w.__mq.meta.stats.math;
+  check(m.add.c === 5 && m.grid.t === 3, 'old stats are kept');
+  check(['div', 'rest', 'rund', 'dopp'].every((k) => m[k] && m[k].c === 0 && m[k].t === 0 && Array.isArray(m[k].hist)), 'old save gains empty stats for the new task types');
+  p.click('[data-cont="math"]');
+  check(!!p.$('#fe') && p.errors.length === 0, 'adventure saved before the new task types continues');
+  const p2 = open(p.dump()); for (let i = 0; i < 5; i++) p2.click('#logo');
+  check(['Teilen', 'Teilen mit Rest', 'Runden', 'Verdoppeln und Halbieren'].every((n) => p2.text().includes(n)), 'parent area lists the new task types');
+}
+
 reloadCases().then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

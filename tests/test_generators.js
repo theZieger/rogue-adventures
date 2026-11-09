@@ -21,6 +21,14 @@ for(const mod of M.MODULE_KEYS){ for(let t=1;t<=M.MODULES[mod].maxTier;t++){ con
     if(t<=M.MODULES[mod].worldCap[0]){ const nums=(tk.text.match(/\d+/g)||[]).map(Number).concat(tk.answers, tk.seq||[], tk.n!=null?[tk.n]:[]);
       if(tk.grid){ const g=tk.grid; for(let r=0;r<3;r++)for(let c=0;c<3;c++) nums.push(g.base+(r-g.sr)*g.stepD+(c-g.sc)*g.stepR); }
       check(nums.every(v=>v<100),'world1 <100',tk); }
+    if(mod==='div'){ let m; const ok=(m=tk.text.match(/^(\d+) : (\d+) = \?$/))?(+m[2])*tk.answers[0]===+m[1]:(m=tk.text.match(/^\? · (\d+) = (\d+)$/)||tk.text.match(/^(\d+) · \? = (\d+)$/))?(+m[1])*tk.answers[0]===+m[2]:false;
+      check(ok,'div',tk); check(tk.answers[0]>=2,'div quotient ≥ 2',tk); if(t===2) check(tk.answers[0]%10===0&&/:/.test(tk.text),'div tens',tk); }
+    if(mod==='rest'){ const m=tk.text.match(/^(\d+) : (\d+) = \?$/); const [q,r]=tk.answers;
+      check(m&&q*(+m[2])+r===+m[1],'rest',tk); check(m&&r>0&&r<+m[2],'0 < Rest < Divisor',tk); check(q>=2&&q<=10,'rest quotient',tk); check(m&&+m[1]<=(t===1?50:99),'rest range',tk); }
+    if(mod==='rund'){ const n=+tk.text, to=tk.ask.includes('Hunderter')?100:10; const a=tk.answers[0];
+      check(a%to===0&&Math.abs(a-n)<to/2+1&&(n%to>=to/2?a>n:a<n)&&a>0,'rund',tk); if(t===1) check(to===10,'rund1 Zehner',tk); if(t===2) check(to===100,'rund2 Hunderter',tk); }
+    if(mod==='dopp'){ const n=+tk.text, a=tk.answers[0];
+      check(tk.ask.includes('Verdopple')?a===2*n:n%2===0&&2*a===n,'dopp',tk); check(Math.max(n,a)<(t===1?100:1000),'dopp range',tk); }
     if(mod==='riddle'){ const lo=tk.digits===3?100:10, hi=tk.digits===3?999:99;
       check(tk.text.split('\n').length>=2,'cluecount',tk); check(tk.answers[0]>=lo&&tk.answers[0]<=hi,'riddlerange',tk); }
     if(mod==='seq'){ const s=tk.seq.concat(tk.answers); const d1=s[1]-s[0],d2=s[2]-s[1]; if(t<4){ check(s.every((v,i)=>i===0||v-s[i-1]===d1),'seqstep',tk);} else { check(s.every((v,i)=>i===0||v-s[i-1]===(i%2===1?d1:d2)),'altseq',tk);} if(t<=2) check(s.every(v=>v>0&&v<100),'w1seq',tk); }
