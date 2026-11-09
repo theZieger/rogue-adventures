@@ -335,7 +335,7 @@ const MS2 = (() => {
     const first = { arm: pick(main), v: vs[0] }; const others = (Math.random() < 0.5 ? side : [pick(side)]).map((arm, i) => ({ arm, v: vs[i + 1] }));
     const cars = [first].concat(others);
     if (Math.random() < 0.4) {
-      const lights = cars.map((c) => { const [x, y] = SIGN_AT[c.arm]; return `<path d="M${x} ${y + 10} L${x} ${y + 24}" stroke="#555" stroke-width="2"/><g transform="translate(${x - 15} ${y - 16}) scale(.3)">${lamp(c === first ? 'gruen' : 'rot')}</g>`; }).join('');
+      const lights = cars.map((c) => { const [x, y] = SIGN_AT[c.arm]; return `<path d="M${x} ${y + 10} L${x} ${y + 24}" stroke="#555" stroke-width="2"/><g transform="translate(${x - 18} ${y - 22}) scale(.36)">${lamp(c === first ? 'gruen' : 'rot')}</g>`; }).join('');
       return choice(mod, 'vorfahrt', 'Alle fahren geradeaus. Schau auf die Ampeln. Wer darf zuerst fahren?', first.v.name, others.map((c) => c.v.name), 'vfa_' + cars.map((c) => c.arm).join(''), { tier: 2, group: mod + ':2', pic: crossingSVG(cars, lights) });
     }
     const wait = pick(['vorfahrtgewaehren', 'stopp']);
