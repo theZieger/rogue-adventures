@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="7f7aa8e92820">
+<meta name="app-version" content="8eeb9d0fbf35">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -408,7 +408,7 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .enter { animation: screenIn .22s ease-out both; }
 @keyframes screenIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .sprite .mon { animation: bob 3.2s ease-in-out infinite; }
-.sprite#fe .mon { animation-delay: -1.6s; }
+.sprite#fe .mon:not(.top) { animation-delay: -1.6s; }
 .hero .logo, .card.center > .mon, .choice.selected .mon { animation: bob 3.6s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
 .floatnum { position: fixed; transform: translateX(-50%); font-family: var(--hand); font-size: 36px; color: #fff; text-shadow: 0 2px 0 var(--ink), 0 0 6px rgba(0,0,0,.4); pointer-events: none; animation: floatUp 2s ease-out forwards; z-index: 3; }
@@ -597,10 +597,90 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .mblock small { font-size: 14px; font-weight: 700; }
 @media (max-height: 720px) { .task .figure svg { height: 96px; } .task .figure figure:first-child svg { height: 72px; } .options.pics .opt svg { height: 60px; } }
 /* Kreisel: the squashed disc face turns around its centre; a top without Schwung lies on its side */
-.mon.top.live .spin { animation: topspin .7s linear infinite; transform-origin: 0 0; }
+.mon.top.live .spin { animation: topspin var(--spin, .7s) linear infinite; transform-origin: 0 0; }
 @keyframes topspin { to { transform: rotate(360deg); } }
-.mon.top.fallen, .sprite .mon.top.fallen { transform: rotate(-72deg) translate(-8px, 16px); }
+.mon.top.fallen, .sprite .mon.top.fallen { transform: scaleX(var(--flip, 1)) rotate(-72deg) translate(-8px, 16px); }
 @media (prefers-reduced-motion: reduce) { .mon.top.live .spin { animation: none; } }
+/* Kreisel-Arena: both tops chase each other round a dish. --rx/--ry is the track (a fraction of the dish), --px/--py each
+   top's home spot on it; a clash dashes the attacker to the other's spot and knocks that one towards the rim. */
+.arena.kreisel { grid-template-areas: "eplate ." "dish dish" ". hplate"; }
+.dish { grid-area: dish; position: relative; align-self: center; width: 100%; height: 100%; min-height: 120px; max-height: 300px; container-type: size; border-radius: 50%; border: 6px solid #8E9BC4; outline: 3px solid var(--ink); background: radial-gradient(ellipse at 50% 32%, #3A4A86 0%, #283560 50%, #1C2546 100%); box-shadow: inset 0 0 0 3px var(--ink), inset 0 16px 0 3px rgba(0,0,0,.3), inset 0 -4px 0 3px rgba(255,255,255,.07), var(--shadow); --rx: 100px; --ry: 70px; --rx: 31cqw; --ry: 24cqh; }
+.dish::before { content: ''; position: absolute; inset: 26% 19%; border-radius: 50%; border: 3px dashed rgba(255,255,255,.14); }
+.dish .emblem { position: absolute; left: 50%; top: 50%; width: 40cqh; height: 40cqh; translate: -50% -50%; opacity: .09; pointer-events: none; animation: topspin 30s linear infinite; }
+.dish .sprite { position: absolute; left: 50%; top: 44%; display: block; padding: 0; width: 100px; height: 100px; width: 52cqh; height: 52cqh; max-width: 150px; max-height: 150px; transform: translate(-50%, -50%); }
+.dish .sprite::after { content: ''; position: absolute; left: 50%; bottom: 4%; width: 62%; height: 13%; translate: -50% 0; border-radius: 50%; background: rgba(0,0,0,.35); filter: blur(2px); }
+.dish .sprite.hero { --px: -0.5; --py: 0.87; scale: .99; }
+.dish .sprite.enemy { --px: 0.5; --py: -0.87; --flip: -1; scale: .85; }
+.dish .sprite .mon { width: 100%; height: 100%; }
+.dish .sprite.hero.live { animation: orbitH 3.2s linear infinite; }
+.dish .sprite.enemy.live { animation: orbitE 3.2s linear infinite; }
+.dish.launch .sprite.hero.live { animation: launch .8s cubic-bezier(.3, 1.4, .5, 1) both, orbitH 3.2s linear .8s infinite; }
+.dish.launch .sprite.enemy.live { animation: launch .8s cubic-bezier(.3, 1.4, .5, 1) .15s both, orbitE 3.2s linear .95s infinite; }
+.dish.launch .sprite::after { animation: puff .8s ease-out both; }
+.dish.launch .sprite.enemy::after { animation-delay: .15s; }
+@keyframes launch { 0% { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry) - 70cqh); opacity: 0; } 30% { opacity: 1; } 100% { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry)); } }
+@keyframes puff { 0%, 50% { scale: .2; opacity: 0; } 100% { scale: 1; opacity: 1; } }
+.dish .sprite .mon.top.live { animation: wobble 1.4s ease-in-out infinite; --wob: 4deg; }
+.dish .sprite.low .mon.top.live { animation-duration: .8s; --wob: 11deg; }
+@keyframes wobble { 0%, 100% { rotate: calc(-1 * var(--wob)); } 50% { rotate: var(--wob); } }
+.dish.clash .sprite.hero.attacker { animation: dash 1.1s ease-in-out both, orbitH 3.2s linear 1.1s infinite; }
+.dish.clash .sprite.enemy.attacker { animation: dash 1.1s ease-in-out both, orbitE 3.2s linear 1.1s infinite; }
+.dish.clash .sprite.hero.target { animation: knock 1.2s ease-out both, orbitH 3.2s linear 1.2s infinite; }
+.dish.clash .sprite.enemy.target { animation: knock 1.2s ease-out both, orbitE 3.2s linear 1.2s infinite; }
+.dish.clash .sprite.target.fallen { animation: knock 1.2s ease-out both; }
+@keyframes dash { 0% { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry)); } 22% { translate: calc(var(--px) * var(--rx) * 1.18) calc(var(--py) * var(--ry) * 1.18); animation-timing-function: ease-in; } 50% { translate: calc(var(--px) * var(--rx) * -0.72) calc(var(--py) * var(--ry) * -0.72); } 66% { translate: calc(var(--px) * var(--rx) * -0.25) calc(var(--py) * var(--ry) * -0.25); } 100% { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry)); } }
+@keyframes knock { 0%, 46% { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry)); } 60% { translate: calc(var(--px) * var(--rx) * 1.45) calc(var(--py) * var(--ry) * 1.45); } 80% { translate: calc(var(--px) * var(--rx) * 0.92) calc(var(--py) * var(--ry) * 0.92); } 100% { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry)); } }
+.dish.clash .sprite.attacker .mon.top.live { animation: lunge 1.1s ease-in-out, wobble 1.4s ease-in-out 1.1s infinite; }
+@keyframes lunge { 0%, 100% { rotate: 0deg; } 22% { rotate: calc(var(--flip, 1) * -10deg); } 50% { rotate: calc(var(--flip, 1) * 18deg); } 70% { rotate: 0deg; } }
+.dish.clash .sprite.target .mon.top.live { animation: hitflash .5s .52s, wobble 1.4s ease-in-out 1.2s infinite; }
+.dish.clash .sprite.target .mon.top.fallen { animation: hitflash .5s .52s, topple .55s ease-in 1.2s both; }
+.dish.clash .sprite.target .mon.top.fallen .spin { animation: topspin 1.4s ease-out 1; transform-origin: 0 0; }
+@keyframes hitflash { 0%, 100% { filter: none; rotate: 0deg; } 30% { filter: brightness(2.2) saturate(0); rotate: calc(var(--flip, 1) * -14deg); } 65% { filter: none; rotate: calc(var(--flip, 1) * 10deg); } }
+@keyframes topple { from { transform: scaleX(var(--flip, 1)) rotate(0) translate(0, 0); } to { transform: scaleX(var(--flip, 1)) rotate(-72deg) translate(-8px, 16px); } }
+.dish .streaks { position: absolute; left: 50%; top: 52%; width: 75%; height: 4px; border-radius: 4px; background: #fff; box-shadow: 0 -12px 0 -1px #fff, 0 12px 0 -1px #fff; opacity: 0; transform-origin: 0 50%; rotate: calc(150deg - (1 - var(--flip, 1)) * 90deg); pointer-events: none; }
+.dish.clash .sprite.attacker .streaks { animation: streak 1.1s linear both; }
+@keyframes streak { 0%, 24% { opacity: 0; } 32% { opacity: .85; } 50% { opacity: .6; } 56%, 100% { opacity: 0; } }
+.dish .wave { position: absolute; left: 50%; top: 56%; width: 90%; height: 60%; translate: -50% -50%; border-radius: 50%; border: 4px solid #fff; opacity: 0; pointer-events: none; z-index: 2; }
+.dish.clash .sprite.target .wave { animation: wave .5s .5s ease-out both; }
+@keyframes wave { 0% { opacity: .9; scale: .2; } 100% { opacity: 0; scale: 2.4; } }
+.dish .sprite.boost .wave { border-color: var(--gold); border-style: dashed; animation: ringout .7s ease-out both; }
+@keyframes ringout { 0% { opacity: 1; scale: .3; rotate: 0deg; } 100% { opacity: 0; scale: 1.7; rotate: 90deg; } }
+.dish .sparks { position: absolute; left: 50%; top: 56%; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.dish .sparks i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 3px; background: var(--gold); border: 2px solid var(--ink); opacity: 0; }
+.dish .sparks i:nth-child(odd) { background: #fff; }
+.dish.clash .sprite.target .sparks i { animation: spark .65s .5s ease-out both; }
+@keyframes spark { 0% { opacity: 1; translate: 0 0; scale: 1; rotate: 0deg; } 100% { opacity: 0; translate: var(--dx) var(--dy); scale: .3; rotate: 220deg; } }
+.dish .sprite.winner .mon.top.live { animation: wobble 1.4s ease-in-out infinite, shine 1.2s ease-in-out infinite; }
+.dish.clash .sprite.attacker.winner .mon.top.live { animation: lunge 1.1s ease-in-out, wobble 1.4s ease-in-out 1.1s infinite, shine 1.2s ease-in-out 1.3s infinite; }
+@keyframes shine { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255,201,60,0)); } 50% { filter: drop-shadow(0 0 9px var(--gold)) brightness(1.15); } }
+.dish .bang { position: absolute; left: 50%; top: 56%; width: 120%; height: 120%; translate: -50% -50%; opacity: 0; pointer-events: none; z-index: 2; }
+.dish.clash .sprite.target .bang { animation: bang .55s .5s ease-out both; }
+@keyframes bang { 0% { opacity: 1; scale: .15; rotate: -25deg; } 55% { opacity: 1; scale: 1.1; rotate: 5deg; } 100% { opacity: 0; scale: 1.3; rotate: 12deg; } }
+.dish.clash { animation: jolt .45s .52s; }
+.dish::after { content: ''; position: absolute; inset: -9px; border-radius: 50%; background: #fff; opacity: 0; pointer-events: none; }
+.dish.clash::after { animation: flash .3s .5s; }
+@keyframes flash { 0%, 100% { opacity: 0; } 30% { opacity: .5; } }
+@keyframes jolt { 0%, 100% { translate: 0 0; } 20% { translate: -7px 3px; } 40% { translate: 6px -3px; } 60% { translate: -4px 2px; } 80% { translate: 3px -1px; } }
+.dish .sprite.boost .mon.top { animation: boost .6s ease-out, wobble 1.4s ease-in-out .6s infinite; }
+@keyframes boost { 0%, 100% { scale: 1; filter: none; } 40% { scale: 1.2; filter: brightness(1.5); } }
+/* task open: the dish shrinks to a strip between the plates, the tops wait at its ends */
+.screen.tasking .arena.kreisel { grid-template-columns: 1fr auto 1fr; grid-template-areas: "hplate dish eplate"; }
+.screen.tasking .dish { width: 108px; height: 44px; min-height: 0; border-width: 3px; box-shadow: none; --rx: 30px; --ry: 0px; }
+.screen.tasking .dish::before, .screen.tasking .dish .emblem { display: none; }
+.screen.tasking .dish .sprite { width: 44px; height: 44px; top: 36%; scale: 1; animation: none; translate: calc(var(--px) * 2 * var(--rx)) 0; }
+@media (max-height: 500px) and (orientation: landscape) {
+  .arena.kreisel { grid-template-columns: 1fr auto 1fr; grid-template-areas: "hplate dish eplate"; }
+  .dish { width: 108px; height: 44px; min-height: 0; border-width: 3px; box-shadow: none; --rx: 30px; --ry: 0px; }
+  .dish::before, .dish .emblem { display: none; }
+  .dish .sprite { width: 44px; height: 44px; top: 36%; scale: 1; animation: none; translate: calc(var(--px) * 2 * var(--rx)) 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dish .sprite.hero.live, .dish .sprite.enemy.live, .dish.clash .sprite.attacker, .dish.clash .sprite.target, .dish.clash .sprite.target.fallen, .dish.clash, .dish .sprite .mon.top.live, .dish .sprite.low .mon.top.live, .dish.clash .sprite.target .mon.top.live, .dish.clash .sprite.target .mon.top.fallen, .dish.clash .sprite.target .mon.top.fallen .spin, .dish .sprite.boost .mon.top, .dish.clash .sprite.attacker .mon.top.live, .dish.clash::after, .dish.launch .sprite.hero.live, .dish.launch .sprite.enemy.live, .dish.launch .sprite::after, .dish.clash .sprite.attacker .streaks, .dish.clash .sprite.target .wave, .dish .sprite.boost .wave, .dish.clash .sprite.target .sparks i, .dish .sprite.winner .mon.top.live, .dish.clash .sprite.attacker.winner .mon.top.live, .dish .emblem { animation: none; }
+  .dish .sprite { translate: calc(var(--px) * var(--rx)) calc(var(--py) * var(--ry)); }
+  .dish .sprite .bang { display: none; }
+}
+@keyframes orbitH { 0% { translate: calc(-0.50 * var(--rx)) calc(0.87 * var(--ry)); scale: 0.99; } 6.25% { translate: calc(-0.79 * var(--rx)) calc(0.61 * var(--ry)); scale: 0.97; } 12.5% { translate: calc(-0.97 * var(--rx)) calc(0.26 * var(--ry)); scale: 0.94; } 18.75% { translate: calc(-0.99 * var(--rx)) calc(-0.13 * var(--ry)); scale: 0.91; } 25% { translate: calc(-0.87 * var(--rx)) calc(-0.50 * var(--ry)); scale: 0.88; } 31.25% { translate: calc(-0.61 * var(--rx)) calc(-0.79 * var(--ry)); scale: 0.86; } 37.5% { translate: calc(-0.26 * var(--rx)) calc(-0.97 * var(--ry)); scale: 0.84; } 43.75% { translate: calc(0.13 * var(--rx)) calc(-0.99 * var(--ry)); scale: 0.84; } 50% { translate: calc(0.50 * var(--rx)) calc(-0.87 * var(--ry)); scale: 0.85; } 56.25% { translate: calc(0.79 * var(--rx)) calc(-0.61 * var(--ry)); scale: 0.87; } 62.5% { translate: calc(0.97 * var(--rx)) calc(-0.26 * var(--ry)); scale: 0.90; } 68.75% { translate: calc(0.99 * var(--rx)) calc(0.13 * var(--ry)); scale: 0.93; } 75% { translate: calc(0.87 * var(--rx)) calc(0.50 * var(--ry)); scale: 0.96; } 81.25% { translate: calc(0.61 * var(--rx)) calc(0.79 * var(--ry)); scale: 0.98; } 87.5% { translate: calc(0.26 * var(--rx)) calc(0.97 * var(--ry)); scale: 1.00; } 93.75% { translate: calc(-0.13 * var(--rx)) calc(0.99 * var(--ry)); scale: 1.00; } 100% { translate: calc(-0.50 * var(--rx)) calc(0.87 * var(--ry)); scale: 0.99; } }
+@keyframes orbitE { 0% { translate: calc(0.50 * var(--rx)) calc(-0.87 * var(--ry)); scale: 0.85; } 6.25% { translate: calc(0.79 * var(--rx)) calc(-0.61 * var(--ry)); scale: 0.87; } 12.5% { translate: calc(0.97 * var(--rx)) calc(-0.26 * var(--ry)); scale: 0.90; } 18.75% { translate: calc(0.99 * var(--rx)) calc(0.13 * var(--ry)); scale: 0.93; } 25% { translate: calc(0.87 * var(--rx)) calc(0.50 * var(--ry)); scale: 0.96; } 31.25% { translate: calc(0.61 * var(--rx)) calc(0.79 * var(--ry)); scale: 0.98; } 37.5% { translate: calc(0.26 * var(--rx)) calc(0.97 * var(--ry)); scale: 1.00; } 43.75% { translate: calc(-0.13 * var(--rx)) calc(0.99 * var(--ry)); scale: 1.00; } 50% { translate: calc(-0.50 * var(--rx)) calc(0.87 * var(--ry)); scale: 0.99; } 56.25% { translate: calc(-0.79 * var(--rx)) calc(0.61 * var(--ry)); scale: 0.97; } 62.5% { translate: calc(-0.97 * var(--rx)) calc(0.26 * var(--ry)); scale: 0.94; } 68.75% { translate: calc(-0.99 * var(--rx)) calc(-0.13 * var(--ry)); scale: 0.91; } 75% { translate: calc(-0.87 * var(--rx)) calc(-0.50 * var(--ry)); scale: 0.88; } 81.25% { translate: calc(-0.61 * var(--rx)) calc(-0.79 * var(--ry)); scale: 0.86; } 87.5% { translate: calc(-0.26 * var(--rx)) calc(-0.97 * var(--ry)); scale: 0.84; } 93.75% { translate: calc(0.13 * var(--rx)) calc(-0.99 * var(--ry)); scale: 0.84; } 100% { translate: calc(0.50 * var(--rx)) calc(-0.87 * var(--ry)); scale: 0.85; } }
 .topgrid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .topgrid .kkitem { padding: 8px 4px; border-radius: 18px; }
 .topgrid .kkitem .mon { width: 72px; height: 72px; }
@@ -6247,7 +6327,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch. Die Startseite ordnet sie nach Fächern.", "Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.", "Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.", "Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs."]}, {"title": "Verbessert", "items": ["Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.", "Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.", "Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation und Kompass (Sachkunde) – und das neue Fach Deutsch. Die Startseite ordnet sie nach Fächern.", "Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.", "Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.", "Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs."]}, {"title": "Verbessert", "items": ["Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.", "Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.", "Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.", "Zahlenquest: Teilen, Rest, Runden, Verdoppeln und Halbieren, Münzen für den Markt und in Welt 3 schriftliches Rechnen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -7033,17 +7113,26 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     const hpcls = (a, m) => a / m < .3 ? 'low' : a / m < .6 ? 'mid' : '';
     const quiet = !!b.shown; b.shown = true; const T = e.top;
     render(`<div class="screen">${topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
-      <div class="arena">
+      <div class="arena ${T ? 'kreisel' : ''}">
         <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
-        <div class="sprite enemy" id="fe">${T ? MONART.topSVG(TYPES[e.type].color, foeParts(), 'enemy ' + (e.hp > 0 ? 'live' : 'fallen')) : monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss })}<i class="ground"></i></div>
-        <div class="sprite hero" id="fh">${T ? MONART.topSVG(TYPES[heroSpec().type].color, T.parts, T.spin > 0 ? 'live' : 'fallen') : heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>
+        ${T ? `<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${SPIRAL}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>` : `<div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss })}<i class="ground"></i></div>
+        <div class="sprite hero" id="fh">${heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>`}
         <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div>${T ? `<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : `<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" aria-label="Erfahrung"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
       <div class="log ${b.logCls}">${b.log}</div>
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`, quiet);
     announce(b.log.replace(/<[^>]+>/g, ''));
+    delete b.clash; delete b.boost; // the clash plays once, on this render
     if (b.phase === 'choose') renderAttackChoice(b);
+  }
+  // a top in the dish: spins slower and wobbles more as its Schwung runs out; the burst shows where a clash lands
+  const BANG = `<svg class="bang" viewBox="0 0 100 100" aria-hidden="true"><path d="${Array.from({ length: 24 }, (_, i) => { const r = i % 2 ? 26 : 48, a = (i / 24) * 2 * Math.PI; return `${i ? 'L' : 'M'}${(50 + r * Math.cos(a)).toFixed(1)} ${(50 + r * Math.sin(a)).toFixed(1)}`; }).join('')}Z" fill="#FFC93C" stroke="#1C2541" stroke-width="3" stroke-linejoin="round"/><path d="${Array.from({ length: 12 }, (_, i) => { const r = i % 2 ? 10 : 24, a = (i / 12) * 2 * Math.PI + 0.3; return `${i ? 'L' : 'M'}${(50 + r * Math.cos(a)).toFixed(1)} ${(50 + r * Math.sin(a)).toFixed(1)}`; }).join('')}Z" fill="#FFF9EE"/></svg>`;
+  const SPARKS = Array.from({ length: 7 }, (_, i) => { const a = (i / 7) * 2 * Math.PI + 0.4; return `<i style="--dx:${Math.round(70 * Math.cos(a))}px;--dy:${Math.round(48 * Math.sin(a))}px"></i>`; }).join('');
+  const SPIRAL = (() => { let d = ''; for (let t = 0; t <= 4 * Math.PI; t += 0.25) { const r = 2 + t * 3.4; d += `${d ? 'L' : 'M'}${(r * Math.cos(t)).toFixed(1)} ${(r * Math.sin(t)).toFixed(1)}`; } return `<svg class="emblem" viewBox="-50 -50 100 100" aria-hidden="true"><path d="${d}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>`; })();
+  function topSprite(who, spin, max, color, parts, state) {
+    const live = spin > 0; const speed = (0.45 + 0.65 * (1 - spin / max)).toFixed(2);
+    return `<div class="sprite ${who} ${live ? 'live' : 'fallen'} ${live && spin / max < 0.3 ? 'low' : ''} ${state}" id="${who === 'hero' ? 'fh' : 'fe'}" style="--spin:${speed}s"><i class="streaks"></i>${MONART.topSVG(color, parts, live ? 'live' : 'fallen')}<i class="wave"></i><span class="sparks">${SPARKS}</span>${BANG}</div>`;
   }
   // Repeating an attack makes it tired; the weak spot moves to the least-practised attack after each hit.
   // Both push children to practise all task types. Damage is always a whole number.
@@ -7182,20 +7271,21 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   }
   function topAttack(b, atk) {
     const e = b.enemy, T = e.top; const t = makeTask(atk.mod, tierFor(atk.mod)); const wind = T.start < TOP_START;
-    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = '';
+    b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; $('#dish').classList.remove('clash');
     let fxOn = null;
     const onResult = (ok) => {
       recordAnswer(atk.mod, ok, t);
-      if (wind) { T.start++; if (ok) T.spin += TOP_WIND; b.log = `${ok ? `Richtig: +${TOP_WIND} Schwung` : 'Daneben: kein Schwung dazu'} (${T.start} von ${TOP_START}).${T.start === TOP_START ? ' Jetzt stoßen die Kreisel zusammen.' : ''}`; b.logCls = ok ? 'hit' : 'miss'; if (ok) fxOn = ['#fh', '+' + TOP_WIND, 'shield']; }
-      else if (ok) { e.hp = Math.max(0, e.hp - T.wucht); b.log = `${esc(atk.name)}: Dein Kreisel stößt zu. Der andere verliert ${T.wucht} Schwung.`; b.logCls = 'hit'; fxOn = ['#fe', '−' + T.wucht]; }
-      else { const l = TOP_KNOCK - T.panzer; T.spin = Math.max(0, T.spin - l); b.log = `Daneben. Dein Kreisel wird angestoßen und verliert ${l} Schwung.`; b.logCls = 'miss'; fxOn = ['#fh', '−' + l]; }
+      if (wind) { T.start++; if (ok) T.spin += TOP_WIND; b.log = `${ok ? `Richtig: +${TOP_WIND} Schwung` : 'Daneben: kein Schwung dazu'} (${T.start} von ${TOP_START}).${T.start === TOP_START ? ' Jetzt stoßen die Kreisel zusammen.' : ''}`; b.logCls = ok ? 'hit' : 'miss'; if (ok) { fxOn = ['#fh', '+' + TOP_WIND, 'shield']; b.boost = true; } }
+      else if (ok) { e.hp = Math.max(0, e.hp - T.wucht); b.log = `${esc(atk.name)}: Dein Kreisel kracht in den anderen. Der verliert ${T.wucht} Schwung.`; b.logCls = 'hit'; fxOn = ['#fe', '−' + T.wucht]; b.clash = 'hero'; }
+      else { const l = TOP_KNOCK - T.panzer; T.spin = Math.max(0, T.spin - l); b.log = `Daneben. Der andere Kreisel kracht in deinen, der verliert ${l} Schwung.`; b.logCls = 'miss'; fxOn = ['#fh', '−' + l]; b.clash = 'foe'; }
       if (e.hp <= 0) b.log += ' Der andere Kreisel kippt um.'; else if (T.spin <= 0) b.log += ' Dein Kreisel kippt um.';
       saveAll();
     };
     ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: wind ? 'Schwung holen' : atk.name, onResult }, () => {
       b.phase = 'choose'; renderBattle(b, true);
-      if (!fxOn) return; fx(fxOn[0], fxOn[1], fxOn[2]);
-      if (!wind) { $(fxOn[0]).classList.add('hurt'); if (fxOn[0] === '#fe') SFX.hit(); else SFX.hurt(); }
+      if (!fxOn) return;
+      if (wind) fx(fxOn[0], fxOn[1], fxOn[2]);
+      else setTimeout(() => { if (!run || !$(fxOn[0])) return; fx(fxOn[0], fxOn[1]); if (fxOn[0] === '#fe') SFX.hit(); else SFX.hurt(); }, reducedMotion ? 0 : 560);
     }));
   }
   // like a fight: the answers pay their stamps either way, the win adds XP and 1 stamp
@@ -7917,7 +8007,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '7f7aa8e92820';
+  const BUILD = '8eeb9d0fbf35';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
