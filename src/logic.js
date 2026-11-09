@@ -16,6 +16,9 @@ const MQ = (() => {
     rest: { name: 'Teilen mit Rest', icon: '🧺', maxTier: 2, worldCap: [1, 2, 2], dmg: 16 },
     rund: { name: 'Runden', icon: '🎯', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
     dopp: { name: 'Verdoppeln und Halbieren', icon: '🪞', maxTier: 2, worldCap: [1, 2, 2], dmg: 10 },
+    // worldCap 0 = not offered in that world (written methods only in world 3)
+    sadd: { name: 'Schriftlich addieren', icon: '📝', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
+    ssub: { name: 'Schriftlich subtrahieren', icon: '🗒️', maxTier: 2, worldCap: [0, 0, 2], dmg: 18 },
   };
   const MODULE_KEYS = Object.keys(MODULES);
 
@@ -154,11 +157,34 @@ const MQ = (() => {
     if (Math.random() < 0.5) { const n = t === 1 ? rnd(6, 49) : rnd(51, 499); return task(`${n}`, [2 * n], { ask: 'Verdopple die Zahl.' }); }
     const n = 2 * (t === 1 ? rnd(6, 49) : rnd(51, 499)); return task(`${n}`, [n / 2], { ask: 'Halbiere die Zahl.' });
   }
+  // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
+  // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
+  function columns(op, rows) {
+    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : rows[0] - rows[1];
+    const w = Math.max(...rows.concat(res).map((n) => String(n).length));
+    const dig = (n, i) => Math.floor(n / 10 ** (w - 1 - i)) % 10;
+    const carry = Array(w).fill(0);
+    for (let i = w - 1; i > 0; i--) carry[i - 1] = op === '+' ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10) : (dig(rows[0], i) < dig(rows[1], i) + carry[i] ? 1 : 0);
+    return task(`${rows.join(op === '+' ? ' + ' : ' − ')} = ?`, [res], { col: { op, rows, carry, w } });
+  }
+  const carries = (t) => t.col.carry.filter(Boolean).length;
+  function genSadd(t) {
+    let tk;
+    do tk = t === 1 ? columns('+', [rnd(100, 899), rnd(10, 899)]) : columns('+', [rnd(100, 599), rnd(10, 399), rnd(10, 299)]);
+    while (tk.answers[0] > 999 || !carries(tk));
+    return tk;
+  }
+  function genSsub(t) {
+    let tk;
+    // tier 1: one Übertrag, tier 2: two (often with a zero in the minuend)
+    do { const a = rnd(200, 999); tk = columns('−', [a, rnd(10, a - 10)]); } while (tk.answers[0] < 10 || carries(tk) !== t);
+    return tk;
+  }
   function task(text, answers, extra) { return Object.assign({ text, answers }, extra || {}); }
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: genRest, rund: genRund, dopp: genDopp }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: genRest, rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -224,6 +250,16 @@ const MQ = (() => {
       2: { title: 'Verdoppeln und Halbieren bis 1000', steps: ['Zerlege die Zahl in Hunderter, Zehner und Einer.', 'Das Doppelte von 236: 400 + 60 + 12 = 472.', 'Die Hälfte von 470: 400 + 70. Die Hälfte von 400 ist 200, von 70 ist 35. Zusammen 235.'] },
     },
   });
+  Object.assign(TUT, {
+    sadd: {
+      1: { title: 'Schriftlich addieren', steps: ['Die Zahlen stehen genau untereinander: Einer unter Einer, Zehner unter Zehner, Hunderter unter Hunderter. Du rechnest von rechts nach links.', '358 + 274: Einer 8 + 4 = 12. Schreibe 2. Die 1 kommt als Übertrag in das kleine Feld der Zehnerspalte.', 'Zehner: 1 + 5 + 7 = 13. Schreibe 3, Übertrag 1 in die Hunderterspalte.', 'Hunderter: 1 + 3 + 2 = 6. Schreibe 6. Ergebnis: 632.'] },
+      2: { title: 'Drei Zahlen schriftlich addieren', steps: ['Alle drei Zahlen stehen stellengerecht untereinander. Du rechnest von rechts nach links.', '246 + 135 + 89: Einer 6 + 5 + 9 = 20. Schreibe 0, Übertrag 2.', 'Zehner: 2 + 4 + 3 + 8 = 17. Schreibe 7, Übertrag 1.', 'Hunderter: 1 + 2 + 1 = 4. Schreibe 4. Ergebnis: 470.'] },
+    },
+    ssub: {
+      1: { title: 'Schriftlich subtrahieren', steps: ['Die kleinere Zahl steht stellengerecht unter der größeren. Du rechnest von rechts nach links und ergänzt von unten nach oben.', '742 − 318: Einer: 8 plus wie viel ist 2? Das geht nicht, also bis 12: 8 + 4 = 12. Schreibe 4, Übertrag 1 in die Zehnerspalte.', 'Zehner: 1 + 1 = 2. 2 plus wie viel ist 4? 2 + 2 = 4. Schreibe 2.', 'Hunderter: 3 plus wie viel ist 7? 3 + 4 = 7. Schreibe 4. Ergebnis: 424.'] },
+      2: { title: 'Subtrahieren mit zwei Überträgen', steps: ['Ist die untere Zahl größer als die obere Ziffer, ergänzt du bis zur Zahl über 10 und schreibst 1 als Übertrag in die nächste Spalte.', '503 − 276: Einer: 6 + 7 = 13. Schreibe 7, Übertrag 1.', 'Zehner: 7 + 1 = 8. 8 plus wie viel ist 0? Das geht nicht, also bis 10: 8 + 2 = 10. Schreibe 2, Übertrag 1.', 'Hunderter: 2 + 1 = 3. 3 + 2 = 5. Schreibe 2. Ergebnis: 227.'] },
+    },
+  });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
@@ -241,7 +277,7 @@ const MQ = (() => {
     { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
       attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Flügelschlag', mod: 'seq' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller' };
 
   const ENEMIES = {
     1: {

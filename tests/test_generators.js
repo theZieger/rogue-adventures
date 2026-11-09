@@ -93,5 +93,28 @@ for (const [d, k] of [['2026-11-09', '2026-W46'], ['2026-11-15', '2026-W46'], ['
 }
 { const a = M.schoolWeeks(new Date(2026, 10, 9)); check(a.length === 48 && a[0] === '2026-W36' && a[47] === '2027-W30' && new Set(a).size === 48, 'school year 2026/27 has 48 weeks', [a.length, a[0], a[a.length - 1]]);
   const b = M.schoolWeeks(new Date(2026, 7, 1)); check(b.length === 47 && b[0] === '2025-W36' && b[46] === '2026-W30', 'summer gap shows the year that just ended', [b.length, b[0]]); }
+// written methods: column layout, carries recomputed here, world 3 only
+for (const mod of ['sadd', 'ssub']) {
+  const cap = M.MODULES[mod].worldCap; check(cap[0] === 0 && cap[1] === 0 && cap[2] > 0, mod + ' only in world 3', cap);
+  for (let t = 1; t <= M.MODULES[mod].maxTier; t++) for (let i = 0; i < 2000; i++) {
+    const tk = M.generate(mod, t); const c = tk.col; const r = tk.answers[0];
+    check(c && c.op === (mod === 'sadd' ? '+' : '−'), mod + ' op', tk);
+    check(tk.text === c.rows.join(mod === 'sadd' ? ' + ' : ' − ') + ' = ?', mod + ' text', tk);
+    check(r === (mod === 'sadd' ? c.rows.reduce((a, b) => a + b, 0) : c.rows[0] - c.rows[1]), mod + ' result', tk);
+    check(r >= (mod === 'sadd' ? 100 : 10) && r <= 999 && c.rows.every((n) => n >= 10 && n <= 999), mod + ' range', tk);
+    check(c.w === Math.max(...c.rows.concat(r).map((n) => String(n).length)) && c.carry.length === c.w && c.carry[c.w - 1] === 0, mod + ' width', tk);
+    const d = (n, k) => Math.floor(n / 10 ** k) % 10; let carry = 0; const want = [];
+    for (let k = 0; k < c.w; k++) { // k = place from the right
+      const top = mod === 'sadd' ? c.rows.reduce((s, n) => s + d(n, k), 0) + carry : d(c.rows[0], k);
+      const out = mod === 'sadd' ? top % 10 : (top - d(c.rows[1], k) - carry + 10) % 10;
+      check(out === d(r, k), mod + ' digit ' + k, tk);
+      carry = mod === 'sadd' ? Math.floor(top / 10) : (top < d(c.rows[1], k) + carry ? 1 : 0); want.unshift(carry);
+    }
+    check(carry === 0 && JSON.stringify(want.slice(1).concat(0)) === JSON.stringify(c.carry), mod + ' carries', tk);
+    const n = c.carry.filter(Boolean).length;
+    if (mod === 'sadd') { check(n >= 1 && c.rows.length === t + 1, 'sadd summands and carry', tk); }
+    else check(c.rows.length === 2 && n === t, 'ssub carries per tier', tk);
+  }
+}
 console.log(M.makeMap(1).map((r) => r.map((n) => n.t).join('/')).join(' | '));
 console.log('fails',fails.length); if(fails.length){ console.log(fails.slice(0,10).join('\n')); process.exit(1); }
