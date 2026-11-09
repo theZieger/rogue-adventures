@@ -12,9 +12,11 @@
     wetterstation: MK.MODES.wetterstation,
     kompass: MK.MODES.kompass,
     freunde: MK.MODES.freunde,
+    teestube: MK.MODES.teestube,
+    doppeldecker: MK.MODES.doppeldecker,
     jahrmarkt: MJ.MODE,
   };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt'];
+  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'teestube', 'doppeldecker'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
@@ -22,6 +24,7 @@
       { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
       { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde'] },
       { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass'] },
+      { subject: 'Englisch', icon: '💬', modes: ['teestube', 'doppeldecker'] },
     ] },
   ];
   let mode = 'math';
