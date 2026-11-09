@@ -192,6 +192,29 @@ const MONART = (() => {
       ${eyes(60, 56, 11, 6, 'normal')}
       <path d="M60 62 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
       <circle cx="94" cy="92" r="11" fill="#FFC93C" ${S(2)}/><circle cx="94" cy="92" r="3" fill="${OUT}"/><path d="M94 103 L82 110 L86 117 L98 108" fill="#FFF3C4" ${S(1.5)}/>`,
+    muellerin: (c, g, d, l) => `
+      <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#8D6E63" ${S()}/><path d="M42 80 L44 108 L76 108 L78 80 Q60 88 42 80 Z" fill="#F5F0E6" ${S(2)}/>
+      <circle cx="60" cy="54" r="28" fill="#F5C9A0" ${S()}/>
+      <path d="M30 50 Q30 22 60 22 Q90 22 90 50 Q80 36 60 36 Q40 36 30 50 Z" fill="#F5F0E6" ${S()}/><path d="M86 44 Q98 50 94 62" fill="none" stroke="#F5F0E6" stroke-width="5" stroke-linecap="round"/>
+      ${eyes(60, 56, 11, 6, 'normal')}
+      <path d="M60 62 L58 70 L63 70" fill="none" ${S(2)}/>${mouth.smile(60, 76, 7)}
+      <path d="M82 84 Q80 70 92 70 Q104 70 102 84 L104 106 L80 106 Z" fill="#E6D3A3" ${S(2)}/><path d="M86 74 L98 74" ${S(2)}/>`,
+    wetterwart: (c, g, d, l) => `
+      <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#2F6FB0" ${S()}/><path d="M60 78 L60 108" ${S(2)}/><circle cx="54" cy="90" r="2" fill="${OUT}"/><circle cx="54" cy="100" r="2" fill="${OUT}"/>
+      <circle cx="60" cy="56" r="27" fill="#F5C9A0" ${S()}/>
+      <path d="M24 42 Q60 30 96 42 Q100 52 92 50 Q60 42 28 50 Q20 52 24 42 Z" fill="#FFC93C" ${S()}/><path d="M36 42 Q36 18 60 18 Q84 18 84 42 Z" fill="#FFC93C" ${S()}/>
+      ${eyes(60, 58, 11, 6, 'normal')}
+      <path d="M60 64 L58 72 L63 72" fill="none" ${S(2)}/>${mouth.smile(60, 78, 7)}
+      <rect x="92" y="62" width="8" height="34" rx="4" fill="#fff" ${S(2)}/><circle cx="96" cy="100" r="6" fill="#E5484D" ${S(2)}/><path d="M96 98 L96 78" stroke="#E5484D" stroke-width="3"/>`,
+    kartenzeichnerin: (c, g, d, l) => `
+      <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#4E7A3A" ${S()}/><path d="M48 78 L60 92 L72 78" fill="none" ${S(2)}/>
+      <circle cx="80" cy="30" r="10" fill="#5D3A1A" ${S()}/>
+      <circle cx="60" cy="54" r="28" fill="#F5C9A0" ${S()}/>
+      <path d="M32 50 Q30 24 60 24 Q90 24 88 50 Q78 34 60 36 Q42 34 32 50 Z" fill="#5D3A1A" ${S()}/>
+      ${eyes(60, 54, 11, 6, 'normal')}
+      <path d="M60 60 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
+      <circle cx="26" cy="94" r="12" fill="#FFF8E1" ${S(2)}/><path d="M26 85 L29 94 L26 103 L23 94 Z" fill="#E5484D" ${S(1.2)}/>
+      <rect x="80" y="84" width="26" height="9" rx="4" fill="#E6D3A3" ${S(2)} transform="rotate(-20 93 88)"/>`,
     potato: (c, g, d, l) => `
       <path d="M44 32 Q40 14 50 8 M72 30 Q74 14 84 10" fill="none" stroke="#3E8E41" stroke-width="4" stroke-linecap="round"/>
       <ellipse cx="48" cy="9" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(-30 48 9)"/><ellipse cx="84" cy="10" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(30 84 10)"/>
