@@ -19,6 +19,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
 - Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
 - Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.
+- Drei neue Sachkunde-Abenteuer: „Die Kornkammer“, „Die Wetterstation“ mit Forscherlabor und „Kompass und Karte“ mit Schatzkarte.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.

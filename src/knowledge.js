@@ -498,6 +498,7 @@ const MK = (() => {
   // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls
   function generate(mode, mod, tier, know, seqNow, opts) {
     const pool = MODES[mode].pool;
+    if (MODES[mode].gen) { const t = MODES[mode].gen(mod, tier, know, seqNow, opts); if (t) return t; } // units with their own task types (sachkunde.js)
     if (mod === 'ord') { const o = pick(MODES[mode].order); const idx = shuffle(o.items.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => o.items[i]); return { kind: 'order', mod, tier: 1, group: 'ord:1', note: o.note, q: o.q, items, order: items.map((x) => x.id), display: shuffle(items), qid: o.qid + idx.join('') }; }
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
@@ -525,6 +526,6 @@ const MK = (() => {
       order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' }] },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, generate, record, shuffle, pick, rnd };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, generate, record, shuffle, pick, rnd, weightedPick };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

@@ -27,6 +27,9 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🕯️ Das Kirchenjahr | Ethik: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
+| 🌾 Die Kornkammer | Sachkunde: Weizen, Roggen, Gerste, Hafer, Mais (Ähre, Rispe, Kolben), Teile der Getreidepflanze mit Zeichenschule, vom Korn zum Brot, Verwendung, Wertschätzung von Lebensmitteln |
+| 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
+| 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
 
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
@@ -48,6 +51,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast)
 src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/knowledge.js   Wissensinhalte Ethik + Kartoffel (Fragen, Notizkarten, Tutorials)
+src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/monsters.js    Handgezeichnete SVG-Monster
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
@@ -75,6 +79,7 @@ npm run playtest     # Bot spielt alle Modi durch
 
 Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
+- Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
 - Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr) und `K_POOL` (Kartoffel) in `src/knowledge.js`
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
 - Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
