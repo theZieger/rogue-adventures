@@ -349,5 +349,53 @@ mehr unbemerkt verloren.
   Beispiel nach dem in Sachsen üblichen Verfahren (Ergänzen bei der Subtraktion).
 - Tests und Bot wie oben.
 
+### 18 Englisch als neues Fach
+- Fach Englisch in `CURRICULUM` (Klasse 3, nach Lehrplan Englisch Grundschule Sachsen), zwei Einheiten in einer
+  englischen Hafenstadt: **Die Teestube** (Wortschatz: Englisch ↔ Deutsch, Zahlwörter mit dem Ziffernblock bis 20 und
+  bis 100, Farben am Farbfleck, „Was passt nicht?“) und **Der Doppeldecker** (Lückensatz, „Was bedeutet das?“,
+  Wochentage und Monate ordnen, Frage und Antwort). Wörter und Sätze in `src/english.js`, von Eltern erweiterbar,
+  britische Schreibweise, kein Ton. Keine Lesestube in Englisch. Wochenziele folgen den Fächern in `CURRICULUM`.
+
+### 19 Sachkunde: Körper und Sinne, Verkehr und Fahrrad
+- **Die fünf Sinne** (LB 2): Sinnesorgane, Zeichenschule Auge und Ohr, Schutz der Sinne, Hilfen für Menschen mit
+  Behinderung, Drogen (Rauchen, Alkohol, Medikamente) und Nein sagen als Dilemma-Karten mit Erwachsenen-Hilfe,
+  Sinnestäuschungen als Knoten im Stil des Forscherlabors.
+- **Sicher im Verkehr** (LB 5): Verkehrszeichen als SVG, Vorfahrt an der Kreuzung (rechts vor links, Schilder,
+  Ampel), verkehrssicheres Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als
+  Reihenfolge, Helm, Sichtbarkeit, Gehwegregeln. Beides in `src/sachkunde2.js`.
+
+### 20 Ethik: Ich im Wir und Wir in der Welt
+- Einheit **Ich, wir und die Welt** (`src/ethik.js`) mit zwei Welten: „Ich im Wir“ (LB 1: Stärken und Schwächen,
+  Mut und Angst, Kind und Erwachsener, Gleich und verschieden, Gut und Böse, Dilemma-Karten) und „Wir in der Welt“
+  (LB 4: Drei Welten sortieren als neue Aufgabenart, Natur als Lebensgrundlage, Arche Noah, Umweltschutz und
+  Klimawandel, die vier Elemente mit Redewendungen). Religiöses neutral („die Bibel erzählt …“).
+
+### 21 Mathe: weitere Aufgabenarten in Zahlenquest
+- Neue Module in `MODULES`: `smul` (schriftlich multiplizieren, Welt 3), `teilbar` (Teilbarkeitsregeln und
+  Quersumme), `mauer` (Zahlenmauern, Rechendreiecke), `bruch` (Bruchteile, auch von Größen), `vorrang` (Punkt vor
+  Strich, ohne Klammern), `zahlwort` (Zahlwörter und Stellenwerttafel). Welt 1 bleibt unter 100.
+
+### 22 Baustelle und Jahrmarkt: Fläche, Symmetrie, Vielecke, Fahrplan
+- Baustelle: `flaeche` (Kästchen zählen, Flächen vergleichen), `spiegel` (Achsensymmetrie), `bewegung` (gespiegelt,
+  gedreht, verschoben), `vieleck` (Drei- und Vierecke, Parallelogramm), Quadernetze als Stufe 2 von `netz`.
+- Jahrmarkt: `fahrplan` (Fahrplan lesen), Balkendiagramm in der Schautafel, Sekunden als neue Stufe des Uhrturms.
+
+### 23 Deutsch: Wortstamm, Satzproben, mehr Lesestube
+- Wörterwerkstatt: `stamm` (Wortfamilie, Vor- und Nachsilben), `trenn` (Worttrennung), `komma` (Komma und
+  Doppelpunkt), Stufe 2 für Großschreibung (Abstrakta, nominalisierte Wörter). Satzbaustelle: `ersatz`,
+  `weglass`, `pronomen`, `redensart` (mit Herkunft im Feedback). Lesestube: zwölf weitere Texte (gemeinfreie
+  Gedichte mit Autorzeile, Erzählungen, Anleitung, Rezept, Lexikon, Witz, Sachtexte zu Sachsen, Sage).
+
+### 24 Sachkunde: Die Wiese, Früher und heute
+- **Die Wiese** (LB 3): acht Wiesenpflanzen als Bild und nach Merkmal, Stockwerke der Wiese, Entwicklung von
+  Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Artenschutz.
+- **Früher und heute** (LB 1): Geräte und Leben auf dem Land früher und heute, Zeitleisten, Sprachen, Feste und
+  Essen aus aller Welt mit Dilemma-Karten, Medien als Informationsquelle. Beides in `src/sachkunde3.js`.
+
+### 25 Musik als neues Fach
+- Fach Musik mit der Einheit **Der Konzertsaal** (`src/musik.js`), alles ohne Ton: Notenwerte und Pausen, Takt
+  ergänzen, Tonhöhen im Violinschlüssel, Instrumente und Instrumentenfamilien, Fachbegriffe (piano, forte,
+  crescendo), Komponisten mit Sachsen-Bezug, Musik anderer Länder. Notizkarten können ein Bild zeigen.
+
 ## D. Nach dem letzten Schritt (Orchestrator)
 - CHANGELOG für den Release auf ein Datum zusammenziehen, Eigentümer prüft `v2` lokal, dann PR `v2` → `main`.
