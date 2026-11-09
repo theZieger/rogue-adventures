@@ -29,7 +29,8 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   variant to `art/monsters/raw/` and runs svgo only on changed ones (hashes in `art/monsters/manifest.json`) into
   `art/monsters/svg/`, which the game uses. Commit `art/` too. After changing the svgo settings run
   `node tools/svg_compare.js` (Playwright) to confirm the optimised SVGs look identical.
-- Before committing: `npm run build && npm test && npm run playtest`.
+- Before committing: `npm run build && npm test`. Don't run the slow `npm run playtest` locally – CI runs it on every
+  pull request and push to `main`; wait for the CI result instead.
 - **Any change a player can see needs before/after screenshots and the owner's approval before it is committed
   to `main`.** Take screenshots of every affected screen (phone size, 390×844 at 2×) before and after the change,
   publish them side by side as an artifact page, and wait for the go-ahead. Never push visual or copy changes
