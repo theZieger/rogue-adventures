@@ -238,7 +238,7 @@ async function stampCases() {
   { // buying deducts and unlocks; old saves have 0 and still load
     const old = { runs: 2, wins: 0, dex: {}, setup: { done: false, skipped: true, at: 'x' } };
     const p = open({ [META]: JSON.stringify(old) }); const m = p.w.__mq.meta;
-    check(m.stamps === 0 && m.stampsTotal === 0 && JSON.stringify(m.stampCard) === '{}' && JSON.stringify(m.owned) === '{}' && p.errors.length === 0, 'old save loads with 0 stamps, empty card and nothing owned');
+    check(m.stamps === 0 && m.stampsTotal === 0 && JSON.stringify(m.stampCard) === '{}' && JSON.stringify(m.owned) === '{}' && m.progressAt === '' && p.errors.length === 0, 'old save loads with 0 stamps, empty card and nothing owned');
     p.click('[data-new="math"]');
     check(!p.$('.choice[data-id="kauz"]') && p.text().includes('Steinkauz') && p.text().includes('40 🏷'), 'fourth hero is locked on the starter screen');
     p.click('#back'); p.click('#stamps');
@@ -248,7 +248,7 @@ async function stampCases() {
     p.click('[data-buy="map-w1-winter"]'); p.click('.overlay #no');
     check(m.stamps === 70 && !m.owned['map-w1-winter'], '"Zurück" in the buy dialog buys nothing');
     p.click('[data-buy="map-w1-winter"]'); p.click('.overlay #yes');
-    check(m.stamps === 45 && m.stampsTotal === 70 && m.owned['map-w1-winter'] === true && !p.$('[data-buy="map-w1-winter"]'), 'buying the winter map costs 25 stamps');
+    check(m.stamps === 45 && m.stampsTotal === 70 && m.owned['map-w1-winter'] === true && !!m.progressAt && !p.$('[data-buy="map-w1-winter"]'), 'buying the winter map costs 25 stamps');
     p.click('[data-buy="hero-kauz"]'); p.click('.overlay #yes');
     check(m.stamps === 5 && m.owned['hero-kauz'] === true, 'buying the fourth hero costs 40 stamps');
     check(p.$('[data-buy="map-w2-herbst"]').disabled, 'with 5 stamps left the next map stays locked');
