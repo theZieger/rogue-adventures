@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="a9b7c0288839">
+<meta name="app-version" content="dbe91f90b0b7">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -559,7 +559,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .task .expr.long { font-size: 34px; }
 .colcalc .inp.carry { width: 32px; height: 32px; font-size: 18px; border-width: 3px; border-radius: 8px; justify-self: center; }
 /* Lesestube and Duell */
-.readcard p { font-size: 20px; line-height: 1.5; }
+.readcard p { font-size: 20px; line-height: 1.5; white-space: pre-line; }
+.readcard p.by { font-size: 16px; color: var(--ink-soft); margin-top: 8px; }
 .nameinput { width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 20px; color: var(--ink); background: #fff; }
 .nameinput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
 /* market */
@@ -2106,7 +2107,18 @@ const MJ = (() => {
   dehnungsh    [richtig, falsch, in Silben]      silbentrennendes h
   zusammen     [Teil 1, Teil 2, zusammengesetzt] alle drei mit Artikel; der Artikel kommt vom letzten Teil
   abc          'Wort'                            für die Wörterbuch-Reihenfolge; die ersten drei Buchstaben ohne ä, ö, ü, ß
-  rede         [Begleitsatz mit Doppelpunkt, Rede mit Satzzeichen]
+  rede         [Begleitsatz mit Doppelpunkt, Rede mit Satzzeichen] – auch für den Doppelpunkt in „Komma und Doppelpunkt“
+  familien     [Wortstamm klein, Stammwort, [mindestens drei Wörter der Familie], [mindestens zwei ähnliche Wörter, die
+               nicht dazugehören]]; jedes Familienwort enthält den Stamm (ä, ö, ü, äu zählen wie a, o, u, au)
+  nachsilben   [Grundwort, Ableitung, falsch, falsch]: Nomen mit Artikel (-ung, -heit, -keit), sonst Adjektiv (-lich, -ig, -bar)
+  vorsilben    [Satz mit ___, richtiges Wort, falsch, falsch] – ver-, be-, ent-, vor-; nur ein Wort darf in den Satz passen
+  trennung     [richtig getrennt, falsch, falsch] – je ein Trennstrich; die falschen Stellen dürfen nirgends erlaubt sein
+               (also nur Wörter, die man an genau einer Stelle trennen kann)
+  aufzaehlung  'Satz mit Aufzählung': Kommas nur zwischen den Gliedern, vor dem letzten steht „und“ ohne Komma
+  aberdenn     'Satz, aber/denn …' mit genau einem Komma direkt vor „aber“ oder „denn“
+  grosssaetze  'Satz mit [Nomen]': das Nomen ist ein Gefühl, eine Farbe oder ein Verb oder Adjektiv als Nomen
+               (die Freude, das Rot, das Lachen) und das einzige Wort im Satz, das man großschreiben muss –
+               außer dem Satzanfang und Nomen, die schon groß dastehen
 
   SATZBAUSTELLE (Sprache untersuchen)
   nomen, verben, adjektive, pronomen   Wortarten; die Nomen werden auch für „Groß oder klein“ und „Artikel“ benutzt
@@ -2119,6 +2131,13 @@ const MJ = (() => {
                Zeitangabe – aus ihnen kommt auch die Umstellprobe.
   oberbegriffe { Oberbegriff: [mindestens drei Wörter] } – jedes Wort darf nur zu einem Oberbegriff passen
   teekessel    [Wort mit Artikel, Bedeutung 1, Bedeutung 2]
+  ersatz       [Nominalgruppe am Satzanfang, Rest des Satzes, Pronomen]: er, sie, es, wir, ihr oder 'sie (Mehrzahl)';
+               der Rest passt nur zu dieser Nominalgruppe (Verb in Einzahl oder Mehrzahl)
+  weglassen    'Teil | Teil | …' wie bei saetze; genau ein Teil steht in [eckigen Klammern]: das Wort oder Satzglied,
+               das man weglassen kann (Adjektiv, Orts- oder Zeitangabe). Alles andere muss bleiben, deshalb
+               nur Verben, die ein Objekt brauchen (tragen, brauchen, besuchen, mögen …)
+  personen     regelmäßige Verben für die Personalpronomen: du …st, er …t (Stamm endet nicht auf s, ß, z, t oder d)
+  redensarten  [Redensart oder Sprichwort, Bedeutung, falsch, falsch, Herkunft oder '' wenn unbekannt]
 */
 const MW = {
   doppel: [
@@ -2172,6 +2191,99 @@ const MW = {
     ['Mama fragt:', 'Wo ist dein Turnbeutel?'], ['Der Hausmeister sagt:', 'Die Tür bleibt heute zu.'], ['Emil fragt:', 'Darf ich mitspielen?'],
     ['Opa erzählt:', 'Früher bin ich zu Fuß zur Schule gegangen.'], ['Frau Weber sagt:', 'Heute lesen wir eine Geschichte.'],
     ['Noah ruft:', 'Ich habe gewonnen!'], ['Jule fragt:', 'Leihst du mir deinen Radiergummi?'],
+  ],
+  familien: [
+    ['fahr', 'fahren', ['der Fahrer', 'die Fahrt', 'die Abfahrt', 'das Fahrrad'], ['die Gefahr', 'die Farbe', 'der Pfarrer']],
+    ['spiel', 'spielen', ['der Spieler', 'das Spielzeug', 'verspielt', 'der Spielplatz'], ['der Spiegel', 'spitz']],
+    ['les', 'lesen', ['der Leser', 'das Lesebuch', 'vorlesen'], ['lösen', 'leise']],
+    ['back', 'backen', ['der Bäcker', 'die Bäckerei', 'das Backblech'], ['der Bach', 'packen']],
+    ['schreib', 'schreiben', ['der Schreibtisch', 'abschreiben', 'die Schreibschrift'], ['schreien', 'der Schrank']],
+    ['bau', 'bauen', ['der Bau', 'die Baustelle', 'der Neubau'], ['der Bauch', 'blau']],
+    ['flieg', 'fliegen', ['der Flieger', 'abfliegen', 'wegfliegen'], ['die Fliese', 'fließen']],
+    ['sing', 'singen', ['der Singvogel', 'vorsingen', 'die Singstimme'], ['sinken', 'die Sonne']],
+    ['kalt', 'kalt', ['die Kälte', 'erkälten', 'die Erkältung'], ['das Kalb', 'die Kante']],
+    ['hand', 'die Hand', ['der Handschuh', 'handlich', 'die Handschrift'], ['der Hund', 'die Wand']],
+    ['sonn', 'die Sonne', ['sonnig', 'der Sonnenschein', 'die Sonnenblume'], ['der Sohn', 'sonst']],
+    ['lauf', 'laufen', ['der Läufer', 'der Lauf', 'verlaufen'], ['das Laub', 'laut']],
+    ['schnee', 'der Schnee', ['der Schneemann', 'die Schneeflocke', 'schneeweiß'], ['schnell', 'die Schnecke']],
+    ['kind', 'das Kind', ['kindlich', 'die Kindheit', 'der Kindergarten'], ['das Kinn', 'das Rind']],
+    ['wohn', 'wohnen', ['die Wohnung', 'der Bewohner', 'das Wohnzimmer'], ['die Bohne', 'der Mohn']],
+    ['glück', 'das Glück', ['glücklich', 'der Glückwunsch', 'verunglücken'], ['die Glocke', 'die Lücke']],
+    ['rechn', 'rechnen', ['die Rechnung', 'der Rechner', 'berechnen'], ['der Regen', 'die Rache']],
+    ['schlaf', 'schlafen', ['der Schlaf', 'schläfrig', 'einschlafen'], ['schlapp', 'der Schal']],
+    ['trink', 'trinken', ['trinkbar', 'austrinken', 'das Trinkglas'], ['tanken', 'die Tinte']],
+    ['ess', 'essen', ['essbar', 'der Esstisch', 'das Essen'], ['der Esel', 'das Ende']],
+    ['mal', 'malen', ['der Maler', 'das Malbuch', 'bemalen'], ['das Mehl', 'der Mann']],
+  ],
+  nachsilben: [
+    ['fröhlich', 'die Fröhlichkeit', 'die Fröhlichheit', 'die Fröhlichnis'], ['krank', 'die Krankheit', 'die Krankkeit', 'die Kranknis'],
+    ['gesund', 'die Gesundheit', 'die Gesundkeit', 'die Gesundnis'], ['frei', 'die Freiheit', 'die Freikeit', 'die Freinis'],
+    ['schön', 'die Schönheit', 'die Schönkeit', 'die Schönnis'], ['klug', 'die Klugheit', 'die Klugkeit', 'die Klugnis'],
+    ['ehrlich', 'die Ehrlichkeit', 'die Ehrlichheit', 'die Ehrlichnis'], ['freundlich', 'die Freundlichkeit', 'die Freundlichheit', 'die Freundlichnis'],
+    ['dankbar', 'die Dankbarkeit', 'die Dankbarheit', 'die Dankbarnis'], ['pünktlich', 'die Pünktlichkeit', 'die Pünktlichheit', 'die Pünktlichnis'],
+    ['sauber', 'die Sauberkeit', 'die Sauberheit', 'die Saubernis'], ['müde', 'die Müdigkeit', 'die Müdheit', 'die Müdnis'],
+    ['wohnen', 'die Wohnung', 'die Wohnheit', 'die Wohnkeit'], ['rechnen', 'die Rechnung', 'die Rechnheit', 'die Rechnkeit'],
+    ['zeichnen', 'die Zeichnung', 'die Zeichnheit', 'die Zeichnkeit'], ['warnen', 'die Warnung', 'die Warnheit', 'die Warnkeit'],
+    ['landen', 'die Landung', 'die Landheit', 'die Landkeit'], ['hoffen', 'die Hoffnung', 'die Hoffheit', 'die Hoffkeit'],
+    ['üben', 'die Übung', 'die Übheit', 'die Übkeit'], ['ordnen', 'die Ordnung', 'die Ordnheit', 'die Ordnkeit'],
+    ['der Freund', 'freundlich', 'freundig', 'freundbar'], ['die Sonne', 'sonnig', 'sonnlich', 'sonnbar'],
+    ['der Durst', 'durstig', 'durstlich', 'durstbar'], ['der Schmutz', 'schmutzig', 'schmutzlich', 'schmutzbar'],
+    ['das Glück', 'glücklich', 'glückig', 'glückbar'], ['die Gefahr', 'gefährlich', 'gefahrig', 'gefahrbar'],
+    ['der Mut', 'mutig', 'mutlich', 'mutbar'], ['der Wind', 'windig', 'windlich', 'windbar'],
+    ['trinken', 'trinkbar', 'trinklich', 'trinkig'], ['waschen', 'waschbar', 'waschlich', 'waschig'],
+    ['lesen', 'lesbar', 'leslich', 'lesig'], ['der Ärger', 'ärgerlich', 'ärgerig', 'ärgerbar'],
+  ],
+  vorsilben: [
+    ['Ich darf mein Turnzeug nicht ___.', 'vergessen', 'begessen', 'entgessen'],
+    ['Die Lehrerin will uns eine Geschichte ___.', 'vorlesen', 'entlesen', 'belesen'],
+    ['Am Sonntag wollen wir Oma im Krankenhaus ___.', 'besuchen', 'versuchen', 'vorsuchen'],
+    ['Der Wellensittich ist aus dem Käfig ___.', 'entflogen', 'verflogen', 'beflogen'],
+    ['Ich muss mich bei Tim ___, weil ich ihn geschubst habe.', 'entschuldigen', 'beschuldigen', 'verschuldigen'],
+    ['Ich will dir ein Geheimnis ___.', 'verraten', 'beraten', 'entraten'],
+    ['Lena will ihr Gedicht der Klasse ___.', 'vortragen', 'betragen', 'entragen'],
+    ['Kannst du mir den Weg zum Bahnhof ___?', 'beschreiben', 'verschreiben', 'entschreiben'],
+    ['Ich habe meinen Schlüssel ___.', 'verloren', 'beloren', 'entloren'],
+    ['Der Bus kommt gleich. Wir müssen uns ___.', 'beeilen', 'vereilen', 'voreilen'],
+    ['Unser Hund ist ___. Wir suchen ihn überall.', 'entlaufen', 'belaufen', 'vorlaufen'],
+    ['Die Feuerwehr will die Katze vom Dach ___.', 'befreien', 'verfreien', 'entfreien'],
+  ],
+  trennung: [
+    ['Gar-ten', 'Ga-rten', 'Gart-en'], ['Blu-me', 'Bl-ume', 'Blum-e'], ['Ta-fel', 'Taf-el', 'T-afel'], ['Kin-der', 'Ki-nder', 'Kind-er'],
+    ['Win-ter', 'Wi-nter', 'Wint-er'], ['Pin-sel', 'Pi-nsel', 'Pins-el'], ['Ho-se', 'Hos-e', 'H-ose'], ['Fe-der', 'Fed-er', 'F-eder'],
+    ['Zu-cker', 'Zuc-ker', 'Zuck-er'], ['De-cke', 'Dec-ke', 'Deck-e'], ['Ja-cke', 'Jac-ke', 'Jack-e'], ['Glo-cke', 'Gloc-ke', 'Glock-e'],
+    ['Brü-cke', 'Brüc-ke', 'Brück-e'], ['Schne-cke', 'Schnec-ke', 'Schneck-e'], ['ba-cken', 'bac-ken', 'back-en'],
+    ['Kü-che', 'Küc-he', 'Küch-e'], ['Ku-chen', 'Kuc-hen', 'Kuch-en'], ['Ta-sche', 'Tas-che', 'Tasc-he'], ['Fla-sche', 'Flas-che', 'Flasc-he'],
+    ['Wä-sche', 'Wäs-che', 'Wäsc-he'], ['Bü-cher', 'Büc-her', 'Büch-er'], ['Stro-phe', 'Strop-he', 'Stroph-e'],
+    ['Fens-ter', 'Fen-ster', 'Fe-nster'], ['Kis-te', 'Ki-ste', 'Kist-e'], ['Kas-ten', 'Ka-sten', 'Kast-en'], ['Schwes-ter', 'Schwe-ster', 'Schwest-er'],
+    ['Pflas-ter', 'Pfla-ster', 'Pflast-er'], ['Wes-te', 'We-ste', 'West-e'],
+    ['Son-ne', 'So-nne', 'Sonn-e'], ['Tas-se', 'Ta-sse', 'Tass-e'], ['Kat-ze', 'Ka-tze', 'Katz-e'], ['Müt-ze', 'Mü-tze', 'Mütz-e'],
+    ['Ap-fel', 'A-pfel', 'Apf-el'], ['Trop-fen', 'Tro-pfen', 'Tropf-en'], ['schwim-men', 'schwi-mmen', 'schwimm-en'],
+    ['Ele-fant', 'E-lefant', 'Elef-ant'], ['Amei-se', 'A-meise', 'Am-eise'], ['Ra-dio', 'Radi-o', 'Rad-io'],
+  ],
+  aufzaehlung: [
+    'Ich kaufe Äpfel, Birnen und Nüsse.', 'In meiner Federtasche sind Stifte, ein Lineal und ein Spitzer.',
+    'Im Zoo sehen wir Löwen, Affen und Elefanten.', 'Zum Frühstück gibt es Brot, Käse und Tee.',
+    'Lena, Ben und Mia spielen Fangen.', 'Im Garten wachsen Tomaten, Gurken, Möhren und Kartoffeln.',
+    'Der Regenbogen ist rot, gelb, grün und blau.', 'Wir singen, tanzen und lachen.',
+    'Ich packe Hose, Pullover und Mütze in den Koffer.', 'Auf dem Bauernhof leben Kühe, Schweine und Hühner.',
+    'Im Herbst sammeln wir Kastanien, Eicheln und bunte Blätter.', 'Opa, Oma und Tante Ute kommen zu Besuch.',
+    'Mein Hund kann sitzen, rollen und Pfötchen geben.', 'Im Wald wachsen Buchen, Eichen, Tannen und Birken.',
+  ],
+  aberdenn: [
+    'Ich wollte draußen spielen, aber es regnete.', 'Ich bleibe heute zu Hause, denn ich bin krank.',
+    'Der Hund bellt laut, aber er beißt nicht.', 'Wir ziehen Jacken an, denn es ist kalt.',
+    'Ben ist klein, aber er rennt sehr schnell.', 'Lena trinkt viel Wasser, denn sie hat Durst.',
+    'Die Suppe ist heiß, aber sie schmeckt gut.', 'Mia nimmt einen Schirm mit, denn es regnet.',
+    'Ich habe gesucht, aber ich habe meinen Radiergummi nicht gefunden.', 'Tim geht früh ins Bett, denn er ist müde.',
+  ],
+  grosssaetze: [
+    'Wir hatten großes [Glück] mit dem Wetter.', 'Beim [Lachen] tut mir der Bauch weh.', 'Die [Freude] über das Geschenk war groß.',
+    'Das [Rot] der Ampel leuchtet hell.', 'Meine Oma hat viel [Geduld] mit mir.', 'Zum [Schwimmen] brauche ich eine Badekappe.',
+    'Das [Lesen] macht mir großen Spaß.', 'Vor [Angst] hielt sich Ben die Augen zu.', 'Ich wünsche dir viel [Mut] für morgen.',
+    'Beim [Malen] wird mein Pullover bunt.', 'Das [Blau] des Himmels ist heute besonders schön.', 'Die [Wut] im Bauch wird langsam kleiner.',
+    'Nach dem [Essen] gehen wir spazieren.', 'Sie sagt immer die [Wahrheit].', 'Im [Dunkeln] leuchtet die Taschenlampe.',
+    'Ich wünsche dir alles [Gute] zum Geburtstag.', 'Wir haben etwas [Schönes] erlebt.', 'Das [Singen] im Chor gefällt mir.',
+    'Die [Ruhe] im Wald tut gut.', 'Vor [Müdigkeit] fallen mir die Augen zu.', 'Die [Kälte] kriecht in meine Finger.',
   ],
 
   nomen: [
@@ -2267,12 +2379,62 @@ const MW = {
     ['das Gericht', 'Dort entscheidet ein Richter.', 'Das isst man zum Mittag.'],
     ['die Kette', 'Sie hängt um den Hals.', 'Sie treibt das Fahrrad an.'],
   ],
+  ersatz: [
+    ['der kleine Hund', 'bellt laut', 'er'], ['die alte Katze', 'schläft auf dem Sofa', 'sie'], ['das neue Fahrrad', 'steht im Keller', 'es'],
+    ['die Kinder', 'spielen auf dem Hof', 'sie (Mehrzahl)'], ['mein großer Bruder', 'fährt mit dem Bus', 'er'], ['unsere Lehrerin', 'liest eine Geschichte vor', 'sie'],
+    ['das kleine Baby', 'weint in der Nacht', 'es'], ['die bunten Vögel', 'singen am Morgen', 'sie (Mehrzahl)'], ['Paul und ich', 'bauen eine Sandburg', 'wir'],
+    ['Lena und du', 'habt heute Geburtstag', 'ihr'], ['der Bäcker', 'backt frische Brötchen', 'er'], ['die Sonne', 'scheint durch das Fenster', 'sie'],
+    ['das Pferd', 'frisst Heu', 'es'], ['meine Freunde', 'kommen zu Besuch', 'sie (Mehrzahl)'], ['der Igel', 'sucht im Laub nach Käfern', 'er'],
+    ['die Ameise', 'trägt ein Blatt', 'sie'], ['das Buch', 'liegt auf dem Tisch', 'es'], ['Oma und Opa', 'wohnen in Leipzig', 'sie (Mehrzahl)'],
+    ['der Zug', 'fährt um acht Uhr ab', 'er'], ['die Blumen', 'blühen im Garten', 'sie (Mehrzahl)'], ['das Feuer', 'wärmt die Hände', 'es'],
+    ['Mia und ich', 'gehen in dieselbe Klasse', 'wir'], ['Tim und du', 'habt heute Tischdienst', 'ihr'], ['der Schneemann', 'schmilzt in der Sonne', 'er'],
+  ],
+  weglassen: [
+    'Lena | trägt | [heute] | eine Mütze', 'wir | besuchen | [am Sonntag] | unsere Oma', 'der | [kleine] | Hund | braucht | Futter',
+    'Ben | bekommt | [zum Geburtstag] | ein Fahrrad', 'Mia | mag | [im Sommer] | Erdbeeren', 'Paul | hat | einen | [roten] | Ball',
+    'ich | brauche | einen | [spitzen] | Bleistift', 'Emma | findet | einen | [glatten] | Stein', 'die Katze | fängt | [im Garten] | eine Maus',
+    'die Lehrerin | lobt | [heute] | die Klasse', 'wir | besichtigen | [in Dresden] | die Frauenkirche', 'Mama | kauft | einen | [großen] | Kuchen',
+    'Lea | braucht | [morgen] | eine Jacke', 'die | [freche] | Maus | mag | Käse', 'Jonas | besucht | [in den Ferien] | seinen Opa',
+    'der Hund | trägt | einen | [langen] | Stock', 'Opa | repariert | [im Keller] | das Regal', 'die | [müde] | Katze | mag | Ruhe',
+  ],
+  personen: ['lachen', 'spielen', 'malen', 'singen', 'turnen', 'kochen', 'bauen', 'hüpfen', 'winken', 'rufen', 'schreiben', 'springen', 'schwimmen', 'trinken', 'kommen', 'gehen'],
+  redensarten: [
+    ['jemandem einen Bären aufbinden', 'jemandem eine Lüge erzählen', 'jemandem ein Kuscheltier schenken', 'jemandem beim Schuhebinden helfen', ''],
+    ['die Katze im Sack kaufen', 'etwas kaufen, ohne es vorher anzusehen', 'eine Katze aus dem Tierheim holen', 'einen Sack voll Katzenfutter kaufen', 'Auf Märkten sollen Betrüger früher statt eines Ferkels eine Katze in den Sack gesteckt haben.'],
+    ['Wer rastet, der rostet.', 'Wer sich nicht bewegt und nicht übt, verlernt vieles.', 'Wer Pause macht, wird nass.', 'Wer sich ausruht, wird reich.', 'Eisen, das lange herumliegt und nicht benutzt wird, bekommt Rost.'],
+    ['Tomaten auf den Augen haben', 'etwas nicht sehen, das jeder sieht', 'sehr gern Tomaten essen', 'rote Augen vom Weinen haben', ''],
+    ['jemandem die Daumen drücken', 'jemandem Glück wünschen', 'jemandem die Hand verletzen', 'jemandem ein Zeichen geben, dass er still sein soll', ''],
+    ['ins Fettnäpfchen treten', 'aus Versehen etwas Unpassendes sagen oder tun', 'in der Küche ausrutschen', 'zu viel Butter essen', 'In Bauernhäusern stand früher ein Napf mit Fett für die Stiefel. Wer hineintrat, machte den Boden schmutzig.'],
+    ['Hals- und Beinbruch!', 'Viel Glück!', 'Pass auf, du fällst gleich hin!', 'Gute Besserung!', 'Der Spruch kommt wahrscheinlich aus dem Jiddischen. Dort klingt ein Glückwunsch ganz ähnlich.'],
+    ['jemandem auf den Leim gehen', 'auf einen Trick hereinfallen', 'an einem Klebstoff festkleben', 'jemandem beim Basteln helfen', 'Vogelfänger strichen früher Leim auf Äste. Die Vögel blieben daran kleben.'],
+    ['etwas an die große Glocke hängen', 'etwas überall herumerzählen', 'etwas sehr laut läuten lassen', 'etwas ganz oben verstecken', 'Früher wurden wichtige Neuigkeiten mit einer Glocke angekündigt, damit alle zuhören.'],
+    ['den Nagel auf den Kopf treffen', 'genau das Richtige sagen', 'mit dem Hammer auf den Daumen hauen', 'sehr gut werfen können', 'Wer den Nagel genau auf den Kopf trifft, schlägt ihn gerade in die Wand.'],
+    ['Schwein haben', 'Glück haben', 'ein Haustier besitzen', 'unordentlich sein', 'Bei Wettkämpfen bekam früher manchmal der Letzte ein Ferkel als Trostpreis. Er hatte also Glück, obwohl er verloren hatte.'],
+    ['jemandem reinen Wein einschenken', 'jemandem die volle Wahrheit sagen', 'jemandem ein Glas Saft geben', 'jemandem beim Abwaschen helfen', 'Manche Wirte mischten früher Wasser in den Wein. Ehrliche Wirte schenkten reinen Wein aus.'],
+    ['sich etwas hinter die Ohren schreiben', 'sich etwas gut merken', 'sich einen Zettel hinter das Ohr klemmen', 'sich die Ohren waschen', ''],
+    ['die Ohren steifhalten', 'durchhalten und nicht aufgeben', 'sehr gut zuhören', 'eine Mütze tragen', ''],
+    ['Eulen nach Athen tragen', 'etwas tun, das niemand braucht', 'Tiere in den Zoo bringen', 'eine weite Reise machen', 'In Athen gab es früher sehr viele Eulen. Die Eule war sogar auf den Münzen der Stadt.'],
+    ['Übung macht den Meister.', 'Wer viel übt, wird gut darin.', 'Nur Meister dürfen üben.', 'Üben ist langweilig.', ''],
+    ['Lügen haben kurze Beine.', 'Mit Lügen kommt man nicht weit, sie kommen bald heraus.', 'Lügen sind lustige Geschichten.', 'Wer lügt, kann nicht schnell rennen.', ''],
+    ['Viele Köche verderben den Brei.', 'Wenn zu viele mitbestimmen, wird es nichts.', 'In der Küche ist zu wenig Platz.', 'Brei schmeckt nur einem Koch.', ''],
+    ['Der frühe Vogel fängt den Wurm.', 'Wer früh dran ist, hat einen Vorteil.', 'Vögel stehen früher auf als Menschen.', 'Würmer schlafen lange.', 'Der Spruch kommt aus dem Englischen.'],
+    ['Aller Anfang ist schwer.', 'Wenn man etwas Neues lernt, ist es zuerst mühsam.', 'Am Anfang muss man schwere Sachen tragen.', 'Man soll nichts Neues anfangen.', ''],
+    ['Ohne Fleiß kein Preis.', 'Wer etwas erreichen will, muss sich anstrengen.', 'Ohne Geld kann man nichts kaufen.', 'Fleißige Kinder gewinnen jedes Spiel.', ''],
+    ['jemandem einen Korb geben', 'jemandem eine Absage geben', 'jemandem beim Einkaufen helfen', 'jemandem ein Geschenk machen', ''],
+    ['etwas auf dem Kerbholz haben', 'etwas Verbotenes getan haben', 'gut schnitzen können', 'viel Brennholz haben', 'Früher ritzte man Schulden als Kerben in ein Holzstück, das Kerbholz.'],
+    ['die Flinte ins Korn werfen', 'zu schnell aufgeben', 'im Feld etwas verlieren', 'auf die Jagd gehen', 'Soldaten warfen früher manchmal ihr Gewehr, die Flinte, ins Getreidefeld und liefen davon.'],
+    ['mit dem linken Fuß zuerst aufgestanden sein', 'schlechte Laune haben', 'Linkshänder sein', 'sich den Fuß verstaucht haben', 'Früher glaubten viele Menschen, die linke Seite bringe Unglück.'],
+    ['Was du heute kannst besorgen, das verschiebe nicht auf morgen.', 'Erledige deine Aufgaben gleich und nicht erst später.', 'Kaufe heute immer doppelt ein.', 'Morgen ist alles besser.', ''],
+    ['Stille Wasser sind tief.', 'Ruhige Menschen wissen und können oft mehr, als man denkt.', 'In stillen Seen kann man nicht baden.', 'Man soll nicht ins Wasser springen.', ''],
+    ['Wer zuletzt lacht, lacht am besten.', 'Wer am Ende gewinnt, freut sich am meisten.', 'Man soll nicht über Witze lachen.', 'Wer langsam versteht, hat mehr Spaß.', ''],
+  ],
 };
 
 </script>
 <script>
 // Lesestube: short texts (60–120 words) with three questions each; the answer at index a is the right one.
-// Fables are retold in our own words after Aesop (public domain). tests/test_data.js checks the format.
+// Fables are retold in our own words after Aesop, poems are public domain (by = author), \n breaks a line.
+// Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
 const TEXTE = [
   { id: 'rabe', kind: 'Fabel', title: 'Der Fuchs und der Rabe',
     text: 'Ein Rabe hatte ein Stück Käse gefunden. Er setzte sich damit auf einen hohen Ast, um es in Ruhe zu fressen. Da kam ein Fuchs vorbei. Er roch den Käse und wollte ihn haben. „Was für ein schöner Vogel du bist!“, rief der Fuchs nach oben. „Deine Federn glänzen so schwarz. Wenn deine Stimme genauso schön ist, bist du der König aller Vögel.“ Der Rabe freute sich über das Lob. Er öffnete den Schnabel, um laut zu krächzen. Da fiel der Käse hinunter. Der Fuchs schnappte ihn und lief davon. Wer jedem Lob glaubt, wird leicht hereingelegt.',
@@ -2371,6 +2533,90 @@ const TEXTE = [
       { q: 'Was wollte Max tun?', o: ['Seine Schwester ärgern', 'Den Keller aufräumen', 'Mit Mia Sport machen'], a: 0 },
       { q: 'Wer kam am Ende zu spät?', o: ['Max', 'Mia', 'Beide'], a: 0 },
       { q: 'Was bedeutet das Sprichwort?', o: ['Wer anderen schaden will, dem passiert oft selbst etwas.', 'Man soll keine Löcher in den Garten graben.', 'Turnschuhe gehören in den Keller.'], a: 0 },
+    ] },
+  { id: 'kuckuck', kind: 'Gedicht', title: 'Der Kuckuck und der Esel', by: 'August Heinrich Hoffmann von Fallersleben (1835)',
+    text: 'Der Kuckuck und der Esel,\ndie hatten großen Streit,\nwer wohl am besten sänge,\nwer wohl am besten sänge\nzur schönen Maienzeit,\nzur schönen Maienzeit.\n\nDer Kuckuck sprach: „Das kann ich!“\nund hub gleich an zu schrein.\n„Ich aber kann es besser!\nIch aber kann es besser!“,\nfiel gleich der Esel ein,\nfiel gleich der Esel ein.\n\nDas klang so schön und lieblich,\nso schön von fern und nah.\nSie sangen alle beide:\n„Kuckuck, Kuckuck, i-a!\nKuckuck, Kuckuck, i-a!“',
+    qs: [
+      { q: 'Worüber stritten der Kuckuck und der Esel?', o: ['Wer am besten singt', 'Wer am schnellsten läuft', 'Wer das schönste Nest hat'], a: 0 },
+      { q: 'Was rief der Esel?', o: ['Ich aber kann es besser!', 'Das kann ich!', 'Kuckuck, Kuckuck!'], a: 0 },
+      { q: 'In welchem Monat spielt das Gedicht?', o: ['Im Mai', 'Im Dezember', 'Im Oktober'], a: 0 },
+    ] },
+  { id: 'maennlein', kind: 'Gedicht', title: 'Ein Männlein steht im Walde', by: 'August Heinrich Hoffmann von Fallersleben (1843)',
+    text: 'Ein Männlein steht im Walde\nganz still und stumm,\nes hat von lauter Purpur\nein Mäntlein um.\nSagt, wer mag das Männlein sein,\ndas da steht im Wald allein\nmit dem purpurroten Mäntelein?\n\nDas Männlein steht im Walde\nauf einem Bein\nund hat auf seinem Haupte\nschwarz Käpplein klein.\nSagt, wer mag das Männlein sein,\ndas da steht im Wald allein\nmit dem kleinen schwarzen Käppelein?',
+    qs: [
+      { q: 'Welche Farbe hat das Mäntlein?', o: ['Purpurrot', 'Grün', 'Blau'], a: 0 },
+      { q: 'Worauf steht das Männlein?', o: ['Auf einem Bein', 'Auf einem Stein', 'Auf einem Ast'], a: 0 },
+      { q: 'Was trägt das Männlein auf dem Kopf?', o: ['Ein kleines schwarzes Käppchen', 'Eine goldene Krone', 'Einen roten Hut mit Feder'], a: 0 },
+    ] },
+  { id: 'maxmoritz', kind: 'Gedicht', title: 'Max und Moritz – Vorwort', by: 'Wilhelm Busch (1865), in heutiger Rechtschreibung',
+    text: 'Ach, was muss man oft von bösen\nKindern hören oder lesen!\nWie zum Beispiel hier von diesen,\nWelche Max und Moritz hießen;\nDie, anstatt durch weise Lehren\nSich zum Guten zu bekehren,\nOftmals noch darüber lachten\nUnd sich heimlich lustig machten.\nJa, zur Übeltätigkeit,\nJa, dazu ist man bereit!\nMenschen necken, Tiere quälen,\nÄpfel, Birnen, Zwetschen stehlen –\nDas ist freilich angenehmer\nUnd dazu auch viel bequemer,\nAls in Kirche oder Schule\nFestzusitzen auf dem Stuhle.\nAber wehe, wehe, wehe!\nWenn ich auf das Ende sehe!!\nAch, das war ein schlimmes Ding,\nWie es Max und Moritz ging.\nDrum ist hier, was sie getrieben,\nAbgemalt und aufgeschrieben.',
+    qs: [
+      { q: 'Wie heißen die beiden Jungen?', o: ['Max und Moritz', 'Hans und Franz', 'Paul und Peter'], a: 0 },
+      { q: 'Was stehlen die beiden?', o: ['Äpfel, Birnen und Zwetschen', 'Brot und Käse', 'Bücher und Hefte'], a: 0 },
+      { q: 'Wo wollen sie nicht stillsitzen?', o: ['In Kirche oder Schule', 'Im Garten', 'Auf dem Spielplatz'], a: 0 },
+    ] },
+  { id: 'wackelzahn', kind: 'Erzählung', title: 'Der Wackelzahn',
+    text: 'Seit einer Woche wackelte Emils Zahn vorn unten. Beim Abbeißen tat er weh, deshalb aß Emil sein Brot nur noch in kleinen Stücken. Papa wollte den Zahn mit einem Faden ziehen. „Auf keinen Fall!“, rief Emil und hielt sich die Hand vor den Mund. In der Pause spielte er mit Jakob Fußball. Der Ball sprang hoch und traf Emil am Kinn. Erschrocken fasste er sich an den Mund. Da lag etwas Weißes in seiner Hand: der Zahn. Es hatte gar nicht wehgetan. Am Abend legte Emil den Zahn in eine Dose und zeigte ihn der ganzen Familie.',
+    qs: [
+      { q: 'Warum aß Emil sein Brot in kleinen Stücken?', o: ['Der Zahn tat beim Abbeißen weh.', 'Er hatte keinen Hunger.', 'Das Brot war zu hart.'], a: 0 },
+      { q: 'Wie kam der Zahn heraus?', o: ['Ein Ball traf Emil am Kinn.', 'Papa zog ihn mit einem Faden.', 'Der Zahnarzt zog ihn.'], a: 0 },
+      { q: 'Wohin legte Emil den Zahn?', o: ['In eine Dose', 'Unter das Kopfkissen', 'In seine Schultasche'], a: 0 },
+    ] },
+  { id: 'drachen', kind: 'Erzählung', title: 'Der Drachen',
+    text: 'Im Herbst bauten Mia und ihr Opa einen Drachen. Sie nahmen zwei Holzleisten, buntes Papier und eine lange Schnur. Mia malte ein lachendes Gesicht darauf. Am Sonntag gingen sie auf das Stoppelfeld hinter dem Dorf. Der Wind blies kräftig. Opa hielt den Drachen hoch, und Mia rannte los. Doch der Drachen fiel immer wieder ins Gras. „Du musst gegen den Wind laufen“, rief Opa. Mia drehte sich um und rannte in die andere Richtung. Auf einmal zog es an der Schnur. Der Drachen stieg höher und höher, bis das Gesicht ganz klein war. Mia hielt die Schnur fest und lachte.',
+    qs: [
+      { q: 'Was malte Mia auf den Drachen?', o: ['Ein lachendes Gesicht', 'Eine Sonne', 'Einen Hund'], a: 0 },
+      { q: 'Warum fiel der Drachen zuerst ins Gras?', o: ['Mia lief nicht gegen den Wind.', 'Die Schnur war gerissen.', 'Es war windstill.'], a: 0 },
+      { q: 'Wann bauten Mia und Opa den Drachen?', o: ['Im Herbst', 'Im Frühling', 'Im Sommer'], a: 0 },
+    ] },
+  { id: 'stillepost', kind: 'Anleitung', title: 'Spielanleitung: Stille Post',
+    text: 'Mitspieler: mindestens fünf Kinder\nMaterial: keins\n\nSo geht es:\nAlle sitzen im Kreis oder in einer Reihe. Das erste Kind denkt sich ein Wort oder einen kurzen Satz aus. Es flüstert ihn seinem Nachbarn leise ins Ohr. Der flüstert weiter, was er verstanden hat. Jedes Kind darf nur einmal flüstern und nicht nachfragen. Das letzte Kind sagt laut, was bei ihm angekommen ist. Dann verrät das erste Kind, was es am Anfang gesagt hat. Oft ist daraus etwas ganz anderes geworden. In der nächsten Runde beginnt ein anderes Kind.',
+    qs: [
+      { q: 'Wie viele Kinder braucht man mindestens?', o: ['Fünf', 'Zwei', 'Zehn'], a: 0 },
+      { q: 'Was darf man beim Flüstern nicht?', o: ['Nachfragen', 'Im Kreis sitzen', 'Leise sprechen'], a: 0 },
+      { q: 'Was macht das letzte Kind?', o: ['Es sagt laut, was es gehört hat.', 'Es flüstert weiter.', 'Es denkt sich ein neues Wort aus.'], a: 0 },
+    ] },
+  { id: 'obstsalat', kind: 'Rezept', title: 'Bunter Obstsalat für vier Personen',
+    text: 'Du brauchst: zwei Äpfel, zwei Bananen, eine Orange, eine Handvoll Weintrauben, den Saft einer halben Zitrone und einen Esslöffel Honig. Dazu ein Schneidebrett, ein Messer und eine große Schüssel.\n\nSo geht es:\n1. Wasche die Äpfel und die Trauben.\n2. Schäle die Bananen und die Orange.\n3. Schneide das Obst mit einem Erwachsenen in kleine Stücke.\n4. Gib alles in die Schüssel.\n5. Träufle den Zitronensaft darüber, damit die Äpfel nicht braun werden.\n6. Rühre den Honig unter.\n7. Stelle den Salat eine halbe Stunde in den Kühlschrank.',
+    qs: [
+      { q: 'Wozu kommt Zitronensaft in den Salat?', o: ['Damit die Äpfel nicht braun werden', 'Damit er süßer wird', 'Damit die Bananen weich werden'], a: 0 },
+      { q: 'Für wie viele Personen ist das Rezept?', o: ['Für vier', 'Für zwei', 'Für acht'], a: 0 },
+      { q: 'Wer hilft beim Schneiden?', o: ['Ein Erwachsener', 'Niemand', 'Der Nachbar von nebenan'], a: 0 },
+    ] },
+  { id: 'eichhorn', kind: 'Lexikon', title: 'Das Eichhörnchen',
+    text: 'Das Eichhörnchen ist ein Nagetier. Es lebt in Wäldern, Parks und Gärten.\n\nAussehen: Der Körper ist etwa 20 Zentimeter lang, der buschige Schwanz fast genauso lang. Das Fell ist meist rotbraun, der Bauch weiß. Im Winter tragen die Ohren lange Haarpinsel.\n\nNahrung: Nüsse, Samen aus Zapfen, Knospen, Pilze und Beeren.\n\nNest: Das kugelige Nest heißt Kobel. Es liegt hoch oben im Baum.\n\nBesonderes: Im Herbst versteckt das Eichhörnchen Vorräte in der Erde. Es findet nicht alle wieder. Aus vergessenen Nüssen wachsen manchmal neue Bäume. Eichhörnchen halten keinen Winterschlaf, sondern Winterruhe.',
+    qs: [
+      { q: 'Wie heißt das Nest des Eichhörnchens?', o: ['Kobel', 'Bau', 'Horst'], a: 0 },
+      { q: 'Was macht das Eichhörnchen im Winter?', o: ['Es hält Winterruhe.', 'Es hält Winterschlaf.', 'Es zieht in den Süden.'], a: 0 },
+      { q: 'Wie können aus Nüssen neue Bäume wachsen?', o: ['Das Eichhörnchen findet nicht alle versteckten Nüsse wieder.', 'Das Eichhörnchen pflanzt sie absichtlich ein.', 'Der Wind trägt die Nüsse fort.'], a: 0 },
+    ] },
+  { id: 'pronomen', kind: 'Witz', title: 'Zwei Pronomen',
+    text: 'In der Deutschstunde geht es um Pronomen. Frau Lehmann schreibt ich, du, er, sie und es an die Tafel. Dann schaut sie in die Klasse. Ben malt gerade ein Raumschiff in sein Heft und hört nicht zu. „Ben“, sagt Frau Lehmann, „nenne mir zwei Pronomen.“ Ben schreckt hoch und sieht sich um. „Wer, ich?“, fragt er. Frau Lehmann lächelt. „Richtig, Ben. Genau zwei.“ Die ganze Klasse lacht, und Ben weiß gar nicht, warum.',
+    qs: [
+      { q: 'Worum geht es in der Deutschstunde?', o: ['Um Pronomen', 'Um Nomen', 'Um Zeitformen'], a: 0 },
+      { q: 'Was macht Ben, bevor Frau Lehmann ihn fragt?', o: ['Er malt ein Raumschiff.', 'Er liest ein Buch.', 'Er schreibt von der Tafel ab.'], a: 0 },
+      { q: 'Warum sagt Frau Lehmann „Richtig“?', o: ['„Wer“ und „ich“ sind zwei Pronomen.', 'Ben hat schön gemalt.', 'Ben hat besonders laut gesprochen.'], a: 0 },
+    ] },
+  { id: 'elbe', kind: 'Sachtext', title: 'Die Elbe',
+    text: 'Die Elbe ist der größte Fluss in Sachsen. Sie entspringt im Riesengebirge in Tschechien. Von dort fließt sie nach Sachsen. Zuerst windet sie sich durch das Elbsandsteingebirge mit seinen hohen Felsen. Dann fließt sie durch Pirna, Dresden und Meißen. In Dresden fahren auf der Elbe Raddampfer, die schon über hundert Jahre alt sind. Hinter Riesa und Torgau verlässt die Elbe Sachsen. Sie fließt weiter durch Magdeburg und Hamburg und mündet bei Cuxhaven in die Nordsee. Insgesamt ist sie über 1000 Kilometer lang. Nach viel Regen kann die Elbe über die Ufer treten. In den Jahren 2002 und 2013 gab es in Sachsen schlimme Hochwasser.',
+    qs: [
+      { q: 'Wo entspringt die Elbe?', o: ['Im Riesengebirge in Tschechien', 'In Dresden', 'An der Nordsee'], a: 0 },
+      { q: 'Durch welche Stadt fließt die Elbe?', o: ['Dresden', 'Leipzig', 'Chemnitz'], a: 0 },
+      { q: 'Wohin fließt die Elbe am Ende?', o: ['In die Nordsee', 'In die Ostsee', 'In den Bodensee'], a: 0 },
+    ] },
+  { id: 'barbarine', kind: 'Sage', title: 'Die Barbarine',
+    text: 'Am Pfaffenstein bei Königstein in der Sächsischen Schweiz steht eine hohe, schmale Felssäule. Man nennt sie die Barbarine. Die Leute erzählen sich dazu eine alte Geschichte. Ein Mädchen namens Barbara sollte am Sonntag in die Kirche gehen. Doch Barbara hatte keine Lust. Sie lief lieber auf den Pfaffenstein, um Heidelbeeren zu pflücken. Als die Mutter aus der Kirche kam, suchte sie ihre Tochter. Oben auf dem Berg fand sie Barbara mit einem Korb voller Beeren. Wütend rief die Mutter: „Ach, würdest du doch zu Stein!“ Im selben Augenblick erstarrte das Mädchen und wurde zu einem Felsen. So erzählt es die Sage, und bis heute steht die Barbarine dort.',
+    qs: [
+      { q: 'Wo steht die Barbarine?', o: ['Am Pfaffenstein bei Königstein', 'In Dresden an der Elbe', 'Im Erzgebirge'], a: 0 },
+      { q: 'Was tat Barbara, statt in die Kirche zu gehen?', o: ['Sie pflückte Heidelbeeren.', 'Sie spielte im Garten.', 'Sie besuchte ihre Oma.'], a: 0 },
+      { q: 'Was wurde laut der Sage aus Barbara?', o: ['Ein Felsen', 'Ein Baum', 'Ein Vogel'], a: 0 },
+    ] },
+  { id: 'schwibbogen', kind: 'Sachtext', title: 'Der Schwibbogen',
+    text: 'Der Schwibbogen kommt aus dem Erzgebirge. Er ist ein Lichterbogen aus Holz oder Metall. In der Adventszeit stellen ihn viele Familien ins Fenster. Früher arbeiteten im Erzgebirge viele Männer als Bergleute. Sie holten Silber und Zinn aus dem Berg. Im Winter fuhren sie in den Schacht ein, wenn es noch dunkel war, und kamen erst im Dunkeln wieder heraus. Tageslicht sahen sie dann fast nie. Viele sagen, die Lichter am Bogen zeigen die Sehnsucht der Bergleute nach dem Licht. Auf dem Bogen sieht man oft Bergleute, Engel, Häuser und Tannen. Der älteste bekannte Schwibbogen ist aus Eisen und stammt aus Johanngeorgenstadt.',
+    qs: [
+      { q: 'Woher kommt der Schwibbogen?', o: ['Aus dem Erzgebirge', 'Aus Hamburg', 'Aus den Alpen'], a: 0 },
+      { q: 'Warum sahen die Bergleute im Winter kaum Tageslicht?', o: ['Sie arbeiteten im Dunkeln unter der Erde.', 'Sie schliefen den ganzen Tag.', 'Es schneite jeden Tag.'], a: 0 },
+      { q: 'Wann stellt man den Schwibbogen ins Fenster?', o: ['In der Adventszeit', 'Im Sommer', 'Zu Ostern'], a: 0 },
     ] },
 ];
 
@@ -3173,6 +3419,29 @@ const MK = (() => {
   });
   W.rede.forEach(([b, r]) => { const words = r.split(' '); const wrong = [`„${b} ${r}“`, `„${b}“ ${r}`, `${b} „${words.slice(0, -1).join(' ')}“ ${words[words.length - 1]}`];
     W_POOL.push({ id: 'wr_' + r, mod: 'rede', g: 'rede', q: 'Wo stehen die Anführungszeichen richtig?', o: [`${b} „${r}“`].concat(shuffle(wrong).slice(0, 2)), a: 0, why: 'Nur das, was jemand sagt, steht in Anführungszeichen.' }); });
+  const plain = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
+  W.familien.forEach(([stem, word, fam, other]) => W_POOL.push({ id: 'wf_' + word, mod: 'stamm', g: 'stamm', q: `Welches Wort gehört zur Wortfamilie von „${word}“?`, o: [pick(fam)].concat(shuffle(other).slice(0, 2)), a: 0, why: `In allen Wörtern der Familie steckt der Wortstamm „${stem}“: ${fam.join(', ')}.` }));
+  W.nachsilben.forEach(([w, r, f1, f2]) => { const nounForm = ARTS.includes(r.split(' ')[0]);
+    W_POOL.push({ id: 'ns_' + w, t: 2, mod: 'stamm', g: 'stamm', q: `Bilde ${nounForm ? 'das Nomen' : 'das Adjektiv'} zu „${w}“.`, o: [r, f1, f2], a: 0 }); });
+  W.vorsilben.forEach(([q, r, f1, f2]) => W_POOL.push({ id: 'vs_' + r, t: 2, mod: 'stamm', g: 'stamm', q: `Welches Wort passt? ${q}`, o: [r, f1, f2], a: 0 }));
+  function trennWhy(r) {
+    const [a, b] = r.split('-');
+    if (/^(ck|ch|sch|ph)/.test(b)) return `${b.match(/^(ck|sch|ch|ph)/)[0]} bleibt zusammen: ${r}.`;
+    if (/s$/.test(a) && /^t/.test(b)) return `st wird getrennt: ${r}.`;
+    if (/[^aeiouäöü]$/i.test(a) && /^[^aeiouäöü]/i.test(b)) return `Von mehreren Mitlauten kommt nur der letzte in die neue Zeile: ${r}.`;
+    if (/^[aeiouäöü]|[aeiouäöü]{2}$/i.test(r.replace('-', ''))) return `Ein einzelner Buchstabe wird nicht abgetrennt: ${r}.`;
+    return `Sprich in Silben: ${r}.`;
+  }
+  W.trennung.forEach(([r, f1, f2]) => W_POOL.push({ id: 'tr_' + r, mod: 'trenn', g: 'trenn', q: `Wie trennst du „${r.replace('-', '')}“ am Zeilenende?`, o: [r, f1, f2], a: 0, why: trennWhy(r) }));
+  W.aufzaehlung.forEach((x) => { const none = x.replace(/,/g, ''); const wrong = [none, x.replace(' und ', ', und '), none.replace(' und ', ', und ')];
+    W_POOL.push({ id: 'ko_' + x, mod: 'komma', g: 'komma', q: 'Wo stehen die Kommas richtig?', o: [x].concat(shuffle(wrong).slice(0, 2)), a: 0, why: 'Zwischen den Teilen einer Aufzählung steht ein Komma. Vor „und“ steht keins.' }); });
+  W.aberdenn.forEach((x) => { const c = x.match(/, (aber|denn) /)[1]; const none = x.replace(',', ''); const wrong = [none, none.replace(` ${c} `, ` ${c}, `), x.replace(` ${c} `, ` ${c}, `)];
+    W_POOL.push({ id: 'ko_' + x, mod: 'komma', g: 'komma', q: 'Wo steht das Komma richtig?', o: [x].concat(shuffle(wrong).slice(0, 2)), a: 0, why: `Vor „${c}“ steht ein Komma.` }); });
+  W.rede.forEach(([b, r]) => { const s = b.slice(0, -1);
+    W_POOL.push({ id: 'kd_' + r, mod: 'komma', g: 'komma', q: 'Welches Satzzeichen gehört hinter den Begleitsatz?', o: [`${b} „${r}“`, `${s}, „${r}“`, `${s} „${r}“`], a: 0, why: 'Vor der wörtlichen Rede steht nach dem Begleitsatz ein Doppelpunkt.' }); });
+  W.grosssaetze.forEach((x) => { const word = x.match(/\[(.+?)\]/)[1]; const shown = x.replace(`[${word}]`, word.toLowerCase());
+    const small = shown.split(' ').slice(1).map((w) => w.replace(/[.,!?]/g, '')).filter((w) => w && w !== word.toLowerCase() && w === w.toLowerCase());
+    W_POOL.push({ id: 'gs_' + x, t: 2, mod: 'gross', g: 'gross', q: `Welches Wort schreibt man groß? „${shown}“`, o: [word.toLowerCase()].concat(shuffle(small).slice(0, 2)), a: 0, why: `„${word}“ ist hier ein Nomen. Nomen schreibt man groß.` }); });
   // dictionary order only needs the first three letters; woerter.js keeps those free of umlauts
   const abcKey = (w) => w.slice(0, 3).toLowerCase();
   function abcTask() {
@@ -3187,19 +3456,25 @@ const MK = (() => {
     doppel: { title: 'Doppelte Mitlaute, ck und tz', lines: ['Nach einem kurzen Selbstlaut (a, e, i, o, u, ä, ö, ü) folgen zwei Mitlaute.', 'Hörst du nur einen Mitlaut, schreibst du ihn doppelt: die Sonne, die Tasse.', 'Statt kk schreibt man ck: die Jacke. Statt zz schreibt man tz: die Katze.'] },
     verl: { title: 'Verlängern', lines: ['Am Wortende klingen d und t, g und k, b und p gleich.', 'Verlängere das Wort, dann hörst du den Unterschied: der Hund, die Hun-de.', 'Bei Adjektiven hilft ein Nomen dahinter: gelb, der gel-be Ball.'] },
     dehn: { title: 'Silbentrennendes h', lines: ['Manchmal steht zwischen zwei Silben ein h: ge-hen, die Kü-he.', 'Man hört es kaum. Sprich das Wort deutlich in Silben.', 'Bei Wörtern mit einer Silbe hilft Verlängern: der Schuh, die Schu-he.'] },
-    gross: { title: 'Großschreibung', lines: ['Nomen schreibt man groß: der Hund, die Tasche.', 'Vor ein Nomen passt ein Artikel: der, die oder das.', 'Verben (laufen) und Adjektive (bunt) schreibt man klein.'] },
+    gross: { title: 'Großschreibung', lines: ['Nomen schreibt man groß: der Hund, die Tasche.', 'Vor ein Nomen passt ein Artikel: der, die oder das.', 'Verben (laufen) und Adjektive (bunt) schreibt man klein.', 'Auch Gefühle und Dinge, die man nicht anfassen kann, sind Nomen: die Freude, das Glück.', 'Steht ein Begleiter davor, wird ein Verb oder Adjektiv zum Nomen: das Lachen, beim Malen, das Rot, etwas Schönes.'] },
     zus: { title: 'Zusammengesetzte Wörter', lines: ['Aus zwei Nomen wird ein neues Wort: die Schule + der Hof = der Schulhof.', 'Der Artikel richtet sich nach dem letzten Teil.'] },
     abc: { title: 'Wörterbuch', lines: ['Im Wörterbuch stehen die Wörter nach dem ABC.', 'Ist der erste Buchstabe gleich, entscheidet der zweite, dann der dritte: Bach, Ball, Banane, Baum.'] },
+    stamm: { title: 'Wortstamm und Wortfamilie', lines: ['Wörter mit demselben Wortstamm bilden eine Wortfamilie: fahren, der Fahrer, die Abfahrt.', 'Der Stamm wird in der ganzen Familie gleich geschrieben: packen, er packt. Aus a kann ä werden: kalt, die Kälte.', 'Vorsilben stehen vorn: ver-, be-, ent-, vor- (vergessen, besuchen).', 'Nachsilben stehen hinten. Mit -ung, -heit, -keit wird ein Nomen daraus (die Wohnung, die Freiheit), mit -lich, -ig, -bar ein Adjektiv (freundlich, sonnig, essbar).'] },
+    trenn: { title: 'Worttrennung', lines: ['Man trennt nach Sprechsilben: Gar-ten, Blu-me.', 'Von mehreren Mitlauten kommt nur der letzte in die neue Zeile: Kin-der, Kat-ze, Fens-ter.', 'ck, ch, sch und ph bleiben zusammen: Zu-cker, Ku-chen, Ta-sche.', 'Ein einzelner Buchstabe am Anfang oder Ende wird nicht abgetrennt: Ele-fant, nicht E-lefant.'] },
+    komma: { title: 'Komma und Doppelpunkt', lines: ['Bei Aufzählungen steht zwischen den Teilen ein Komma: Äpfel, Birnen und Nüsse.', 'Vor „und“ und „oder“ in der Aufzählung steht kein Komma.', 'Vor „aber“ und „denn“ steht ein Komma: Ich bleibe zu Hause, denn ich bin krank.', 'Vor der wörtlichen Rede steht nach dem Begleitsatz ein Doppelpunkt: Tom ruft: „Der Bus kommt!“'] },
     rede: { title: 'Wörtliche Rede', lines: ['Was jemand sagt, steht in Anführungszeichen: „…“.', 'Der Begleitsatz sagt, wer spricht. Danach steht ein Doppelpunkt.', 'Das Satzzeichen der Rede steht vor dem schließenden Anführungszeichen: Mia sagt: „Ich komme mit.“'] },
   };
   const W_MODULES = {
     doppel: { name: 'Doppelt, ck, tz', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
     verl: { name: 'Verlängern', icon: '↔️', maxTier: 1, worldCap: [1], dmg: 12 },
     dehn: { name: 'Silbentrennendes h', icon: '🔡', maxTier: 1, worldCap: [1], dmg: 12 },
-    gross: { name: 'Groß oder klein', icon: '🔠', maxTier: 1, worldCap: [1], dmg: 10 },
+    gross: { name: 'Groß oder klein', icon: '🔠', maxTier: 2, worldCap: [2], dmg: 10 },
     zus: { name: 'Zusammengesetzte Wörter', icon: '🧩', maxTier: 1, worldCap: [1], dmg: 12 },
     abc: { name: 'Wörterbuch', icon: '📖', maxTier: 1, worldCap: [1], dmg: 16 },
     rede: { name: 'Wörtliche Rede', icon: '💬', maxTier: 1, worldCap: [1], dmg: 14 },
+    stamm: { name: 'Wortfamilie', icon: '🌳', maxTier: 2, worldCap: [2], dmg: 12 },
+    trenn: { name: 'Worttrennung', icon: '✂️', maxTier: 1, worldCap: [1], dmg: 12 },
+    komma: { name: 'Komma und Doppelpunkt', icon: '🖋️', maxTier: 1, worldCap: [1], dmg: 14 },
   };
   const W_TUT = {
     'doppel:1': { title: 'Doppelt, ck, tz', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort langsam. Ist der Selbstlaut kurz, folgt ein doppelter Mitlaut, ck oder tz.', 'Beispiel: „die Sonne“ oder „die Sone“? Das o ist kurz, also: die Sonne.', 'Tippe auf das richtige Wort.'] },
@@ -3208,13 +3483,18 @@ const MK = (() => {
     'gross:1': { title: 'Groß oder klein', steps: ['Drei Wörter, alle kleingeschrieben. Eines davon ist ein Nomen.', 'Probe: Passt der, die oder das davor?', 'Beispiel: hund, laufen, bunt. „Der Hund“ passt, also schreibt man Hund groß.', 'Tippe auf das Wort, das großgeschrieben wird.'] },
     'zus:1': { title: 'Zusammengesetzte Wörter', steps: ['Zwei Nomen werden zu einem Wort.', 'Der Artikel kommt immer vom letzten Teil.', 'Beispiel: die Schule + der Hof = der Schulhof, weil es „der Hof“ heißt.', 'Tippe auf die Antwort mit dem richtigen Artikel.'] },
     'abc:1': { title: 'Wörterbuch', steps: ['Vier Wörter sollen in die Reihenfolge wie im Wörterbuch.', 'Schau auf den ersten Buchstaben. Ist er gleich, schau auf den zweiten, dann auf den dritten.', 'Beispiel: Baum, Bach, Ball → Bach (c), Ball (l), Baum (u).', 'Tippe die Wörter der Reihe nach an. Nochmal tippen nimmt ein Wort wieder heraus.'] },
+    'gross:2': { title: 'Groß im Satz', steps: ['Ein Satz, ein Wort darin ist falsch kleingeschrieben.', 'Auch Gefühle (die Freude) und Verben oder Adjektive mit Begleiter (beim Lachen, das Rot, etwas Schönes) sind Nomen.', 'Beispiel: „Beim lachen tut mir der Bauch weh.“ Beim heißt „bei dem“, also: beim Lachen.', 'Tippe auf das Wort, das großgeschrieben wird.'] },
+    'stamm:1': { title: 'Wortfamilie', steps: ['Wörter mit demselben Wortstamm gehören zu einer Familie.', 'Der Stamm wird in der ganzen Familie gleich geschrieben: packen, er packt, die Packung. Ein verwandtes Wort hilft: der Hund mit d, weil man in „die Hunde“ das d hört.', 'Beispiel: fahren. Der Fahrer, die Fahrt und die Abfahrt haben den Stamm „fahr“. Die Farbe nicht.', 'Tippe auf das Wort aus der Wortfamilie.'] },
+    'stamm:2': { title: 'Vorsilben und Nachsilben', steps: ['Mit Vorsilben und Nachsilben entstehen neue Wörter.', 'Vorsilben: ver-, be-, ent-, vor-. Nachsilben für Nomen: -ung, -heit, -keit. Für Adjektive: -lich, -ig, -bar.', 'Beispiel: fröhlich + keit = die Fröhlichkeit. Nach -lich und -ig steht -keit.', 'Tippe auf das richtige Wort.'] },
+    'trenn:1': { title: 'Worttrennung', steps: ['Ein Wort passt nicht mehr in die Zeile. Wo setzt du den Trennstrich?', 'Sprich das Wort in Silben. ck, ch, sch und ph bleiben zusammen, st wird getrennt.', 'Beispiel: Zucker → Zu-cker. Fenster → Fens-ter.', 'Tippe auf das richtig getrennte Wort.'] },
+    'komma:1': { title: 'Komma und Doppelpunkt', steps: ['Drei Sätze, nur einer hat die Satzzeichen an der richtigen Stelle.', 'Aufzählung: Komma zwischen den Teilen, vor „und“ keins. Vor „aber“ und „denn“ steht ein Komma.', 'Beispiel: Ich kaufe Äpfel, Birnen und Nüsse.', 'Tippe auf den richtigen Satz.'] },
     'rede:1': { title: 'Wörtliche Rede', steps: ['Jemand sagt etwas. Wo gehören die Anführungszeichen hin?', 'Nur das Gesagte steht in „…“. Davor steht der Begleitsatz mit Doppelpunkt.', 'Beispiel: Mia sagt: „Ich komme mit.“', 'Tippe auf den richtig geschriebenen Satz.'] },
   };
   const W_STARTERS = [
     { id: 'graphit', type: 'normal', shape: 'pencil', names: ['Graphit', 'Graphit', 'Graphit'], hp: 65, desc: 'Ein Bleistift mit frisch gespitzter Mine. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Doppelstrich', mod: 'doppel' }, { name: 'Silbenbogen', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Daumenregister', mod: 'abc' }] },
   ];
-  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen' };
+  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen', stamm: 'Wurzelgriff', trenn: 'Trennstrich', komma: 'Beistrich' };
   const W_ENEMIES = {
     1: {
       normal: [
@@ -3278,6 +3558,23 @@ const MK = (() => {
     S_POOL.push({ id: 'og_' + o, mod: 'ober', g: 'ober', q: `Welches Wort gehört zu „${o}“?`, o: [pick(ws)].concat(rest.map((x) => pick(W.oberbegriffe[x]))), a: 0 });
   });
   W.teekessel.forEach(([w, b1, b2]) => S_POOL.push({ id: 'tk_' + w, mod: 'teekessel', g: 'teekessel', q: `Welches Wort passt zu beiden Sätzen? ${b1} ${b2}`, o: [w].concat(shuffle(W.teekessel.filter((x) => x[0] !== w)).slice(0, 2).map((x) => x[0])), a: 0 }));
+  // 'sie (Mehrzahl)' and 'sie' are the same word but stand for different groups
+  const word = (p) => p.split(' ')[0];
+  W.ersatz.forEach(([ng, rest, p]) => {
+    S_POOL.push({ id: 'er_' + ng, mod: 'ersatz', g: 'ersatz', q: `Welches Pronomen kann „${cap(ng)}“ ersetzen? „${cap(ng)} ${rest}.“`, o: [word(p)].concat(shuffle(['er', 'sie', 'es', 'wir', 'ihr'].filter((x) => x !== word(p))).slice(0, 2)), a: 0, why: `${cap(ng)} ${rest}. → ${cap(word(p))} ${rest}.` });
+    S_POOL.push({ id: 'eb_' + ng, t: 2, mod: 'ersatz', g: 'ersatz', q: `Für wen steht das Pronomen? „${cap(word(p))} ${rest}.“`, o: [cap(ng)].concat(shuffle(W.ersatz.filter((x) => x[2] !== p)).slice(0, 2).map((x) => cap(x[0]))), a: 0 });
+  });
+  W.weglassen.forEach((x) => {
+    const raw = x.split('|').map((y) => y.trim()); const a = raw.findIndex((y) => y.startsWith('[')); const parts = raw.map((y) => y.replace(/^\[|\]$/g, ''));
+    const shown = [cap(parts[0])].concat(parts.slice(1)); const rest = parts.filter((_, i) => i !== a);
+    S_POOL.push({ id: 'wl_' + parts.join(' '), mod: 'weglass', g: 'weglass', q: 'Welches Wort oder Satzglied kannst du weglassen? Der Satz muss richtig bleiben.', o: shown, a, inline: true, why: `${cap(rest.join(' '))}. Das ist immer noch ein richtiger Satz.` });
+  });
+  const conj = (v) => { const st = v.slice(0, -2); return { ich: `Ich ${st}e.`, du: `Du ${st}st.`, er: `Er ${st}t.`, sie: `Sie ${st}t.`, wir: `Wir ${v}.`, ihr: `Ihr ${st}t.`, sie2: `Sie ${v}.` }; };
+  W.personen.forEach((v) => { const f = conj(v); const plural = [f.wir, f.ihr, f.sie2];
+    [['ich', f.wir], ['du', f.ihr], ['er', f.sie2], ['sie', f.sie2]].forEach(([k, r]) => S_POOL.push({ id: `pp_${v}_${k}`, mod: 'pronomen', g: 'pronomen', q: `Setze in die Mehrzahl: „${f[k]}“`, o: [r].concat(plural.filter((x) => x !== r)), a: 0 }));
+    [['wir', f.ich], ['ihr', f.du]].forEach(([k, r]) => S_POOL.push({ id: `pp_${v}_${k}`, mod: 'pronomen', g: 'pronomen', q: `Setze in die Einzahl: „${f[k]}“`, o: [r].concat([f.ich, f.du, f.er].filter((x) => x !== r)).slice(0, 3), a: 0 }));
+  });
+  W.redensarten.forEach(([r, m, f1, f2, h]) => S_POOL.push({ id: 'ra_' + r, mod: 'redensart', g: 'redensart', q: `Was bedeutet „${r}“?`, o: [m, f1, f2], a: 0, more: h }));
   const S_NOTES = {
     wortart: { title: 'Wortarten', lines: ['Nomen sind Namen für Menschen, Tiere und Dinge: der Hund, die Schule.', 'Verben sagen, was jemand tut: laufen, lesen.', 'Adjektive sagen, wie etwas ist: groß, bunt.', 'Pronomen stehen für ein Nomen: ich, du, er, sie, es, wir, ihr.', 'Artikel begleiten ein Nomen: der, die, das, ein, eine.'] },
     zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.'] },
@@ -3286,6 +3583,10 @@ const MK = (() => {
     umstell: { title: 'Umstellprobe', lines: ['Satzglieder sind Wörter, die beim Umstellen zusammenbleiben.', 'Der Hund | schläft | im Korb. Umgestellt: Im Korb | schläft | der Hund.', 'Das Prädikat bleibt an zweiter Stelle.'] },
     ober: { title: 'Oberbegriffe', lines: ['Ein Oberbegriff fasst Wörter zusammen: Apfel, Birne und Kirsche sind Obst.', 'Hammer, Säge und Zange sind Werkzeuge.'] },
     teekessel: { title: 'Teekesselwörter', lines: ['Ein Wort kann zwei Bedeutungen haben: die Bank im Park und die Bank für Geld.', 'Man schreibt und spricht beide gleich.'] },
+    ersatz: { title: 'Ersatzprobe', lines: ['Eine Nominalgruppe kann man durch ein Pronomen ersetzen: Der kleine Hund bellt. → Er bellt.', 'der → er, die → sie, das → es. Mehrere → sie.', 'Paul und ich → wir. Lena und du → ihr.'] },
+    weglass: { title: 'Weglassprobe', lines: ['Manche Wörter kann man weglassen, und der Satz bleibt richtig: Lena trägt heute eine Mütze. → Lena trägt eine Mütze.', 'Oft sind das Adjektive (der kleine Hund) oder Angaben zu Ort und Zeit (im Garten, am Sonntag).', 'Subjekt und Prädikat kann man nie weglassen.'] },
+    pronomen: { title: 'Personalpronomen', lines: ['Einzahl: ich, du, er, sie, es.', 'Mehrzahl: wir, ihr, sie.', 'Das Verb ändert sich mit: ich lache, wir lachen, du lachst, ihr lacht.'] },
+    redensart: { title: 'Redensarten und Sprichwörter', lines: ['Eine Redensart meint etwas anderes, als die Wörter sagen: „Schwein haben“ heißt Glück haben.', 'Ein Sprichwort ist ein ganzer Satz mit einem Rat: „Übung macht den Meister.“', 'Viele kommen aus alter Zeit. Woher, steht nach der Antwort.'] },
   };
   const S_MODULES = {
     wortart: { name: 'Wortarten', icon: '🏷️', maxTier: 1, worldCap: [1], dmg: 12 },
@@ -3295,6 +3596,10 @@ const MK = (() => {
     umstell: { name: 'Umstellprobe', icon: '🔀', maxTier: 1, worldCap: [1], dmg: 16 },
     ober: { name: 'Oberbegriffe', icon: '🗂️', maxTier: 1, worldCap: [1], dmg: 10 },
     teekessel: { name: 'Teekesselwörter', icon: '🫖', maxTier: 1, worldCap: [1], dmg: 12 },
+    ersatz: { name: 'Ersatzprobe', icon: '🔁', maxTier: 2, worldCap: [2], dmg: 12 },
+    weglass: { name: 'Weglassprobe', icon: '🧽', maxTier: 1, worldCap: [1], dmg: 14 },
+    pronomen: { name: 'Personalpronomen', icon: '👥', maxTier: 1, worldCap: [1], dmg: 12 },
+    redensart: { name: 'Redensarten', icon: '💭', maxTier: 1, worldCap: [1], dmg: 12 },
   };
   const S_TUT = {
     'wortart:1': { title: 'Wortarten', steps: ['Zu welcher Wortart gehört das Wort?', 'Nomen: der Hund. Verb: laufen. Adjektiv: bunt. Pronomen: er. Artikel: der, ein.', 'Beispiel: „schnell“. Wie ist etwas? Schnell. Also ein Adjektiv.', 'Tippe auf die richtige Wortart.'] },
@@ -3304,12 +3609,17 @@ const MK = (() => {
     'umstell:1': { title: 'Umstellprobe', steps: ['Ein Satz hat drei Satzglieder. Stelle sie so um, dass ein neuer Satz entsteht.', 'Ein anderes Satzglied kommt nach vorn. Das Prädikat bleibt an zweiter Stelle.', 'Beispiel: der Hund | schläft | im Korb wird zu: im Korb | schläft | der Hund.', 'Tippe die Satzglieder in der neuen Reihenfolge an.'] },
     'ober:1': { title: 'Oberbegriffe', steps: ['Ein Oberbegriff fasst viele Wörter zusammen.', 'Beispiel: Apfel, Birne, Kirsche gehören zum Oberbegriff Obst.', 'Manchmal ist der Oberbegriff gegeben, dann suchst du ein Wort, das dazugehört.', 'Tippe auf die richtige Antwort.'] },
     'teekessel:1': { title: 'Teekesselwörter', steps: ['Ein Teekesselwort hat zwei Bedeutungen und wird gleich geschrieben.', 'Lies beide Sätze. Welches Wort passt zu beiden?', 'Beispiel: Darauf sitzt man im Park. Dort bringt man Geld hin. Das Wort ist: die Bank.', 'Tippe auf das Wort.'] },
+    'ersatz:1': { title: 'Ersatzprobe', steps: ['Eine Nominalgruppe wird durch ein Pronomen ersetzt.', 'der → er, die → sie, das → es, mehrere → sie. Mit „ich“ → wir, mit „du“ → ihr.', 'Beispiel: Der kleine Hund bellt laut. → Er bellt laut.', 'Tippe auf das passende Pronomen.'] },
+    'ersatz:2': { title: 'Ersatzprobe rückwärts', steps: ['Jetzt steht ein Pronomen im Satz. Für welche Nominalgruppe steht es?', 'Prüfe das Pronomen und das Verb: „Er bellt“ passt zu einem Wort mit „der“, „Sie spielen“ zu mehreren.', 'Beispiel: Er bellt laut. → Der kleine Hund bellt laut. „Die Kinder bellt laut“ passt nicht.', 'Tippe auf die passende Nominalgruppe.'] },
+    'weglass:1': { title: 'Weglassprobe', steps: ['Ein Wort oder Satzglied kann weg, und der Satz bleibt richtig.', 'Lies den Satz ohne das Wort. Fehlt dann etwas Wichtiges?', 'Beispiel: Lena trägt heute eine Mütze. Ohne „heute“: Lena trägt eine Mütze. Ohne „eine Mütze“: Lena trägt heute. Das geht nicht.', 'Tippe auf das Wort oder Satzglied, das wegkann.'] },
+    'pronomen:1': { title: 'Einzahl und Mehrzahl', steps: ['Aus einer Person werden mehrere oder aus mehreren eine.', 'ich → wir, du → ihr, er, sie, es → sie. Das Verb ändert sich mit.', 'Beispiel: Ich lache. → Wir lachen.', 'Tippe auf den richtigen Satz.'] },
+    'redensart:1': { title: 'Redensarten', steps: ['Redensarten meinen etwas anderes, als die Wörter sagen.', 'Überlege: Wann sagt man das? Was ist dann passiert?', 'Beispiel: „Schwein haben“ sagt man, wenn jemand Glück hatte. Ein Schwein ist gar nicht da.', 'Tippe auf die Bedeutung.'] },
   };
   const S_STARTERS = [
     { id: 'elle', type: 'wasser', shape: 'ruler', names: ['Elle', 'Elle', 'Elle'], hp: 80, desc: 'Ein Holzlineal, 30 Zentimeter lang. Hält viel aus.', perk: 'tank',
       attacks: [{ name: 'Farbmarker', mod: 'wortart' }, { name: 'Fragetest', mod: 'satzglied' }, { name: 'Umstellschub', mod: 'umstell' }, { name: 'Sortierkasten', mod: 'ober' }] },
   ];
-  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn' };
+  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn', ersatz: 'Stellvertreter', weglass: 'Tafelschwamm', pronomen: 'Namensruf', redensart: 'Volksmund' };
   const S_ENEMIES = {
     1: {
       normal: [
@@ -3351,6 +3661,7 @@ const MK = (() => {
     if (mod === 'grow') { const items = GROW.slice(); return { kind: 'order', mod, tier: 1, group: 'grow:1', note: 'wachstum', q: 'Wie wächst die Kartoffel? Tippe die Schritte der Reihe nach an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'grow' }; }
     if (mod === 'maerchen' && Math.random() < 0.25) { const idx = shuffle(STORY.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => STORY[i]); return { kind: 'order', mod, tier: 1, group: 'story:1', note: 'maerchen', q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'story_' + idx.join('') }; }
     let cands = pool.filter((p) => p.mod === mod);
+    const atTier = cands.filter((p) => (p.t || 1) === tier); if (atTier.length) cands = atTier; // t: 2 marks the harder questions of a module
     if (opts && opts.g) { const topic = cands.filter((p) => p.g === opts.g); if (topic.length) cands = topic; }
     const e = weightedPick(cands, know, seqNow);
     if (mod === 'parts') {
@@ -3363,7 +3674,7 @@ const MK = (() => {
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
     // inline: the options are the parts of a sentence and keep their order
     const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options, answer: correct, why: e.why || '', tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
@@ -3406,8 +3717,8 @@ const MK = (() => {
         { w: 2, items: KJ_OSTERWEG, note: 'ostern', q: 'Tippe die Tage in der Reihenfolge an, in der sie im Jahr kommen.', qid: 'kjo_' }, { w: 2, items: KJ_JAHR, note: 'festkreis', q: 'Tippe die Feste in der Reihenfolge des Kirchenjahrs an: Es beginnt mit dem 1. Advent.', qid: 'kjj_' }] },
     freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
       order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
-    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wörterbuch, wörtliche Rede' },
-    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Oberbegriffe' },
+    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
+    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
   return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
@@ -7897,7 +8208,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation, Kompass, Die Wiese und Früher und heute (Sachkunde) – und die neuen Fächer Deutsch und Musik. Die Startseite ordnet sie nach Fächern.", "Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.", "Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.", "Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs."]}, {"title": "Verbessert", "items": ["Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.", "Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.", "Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.", "Mehr Mathe: Bruchteile, Zahlenmauern, Punkt vor Strich, schriftliches Rechnen, Flächeninhalt, Spiegelbilder, Vierecke, Fahrpläne und Sekunden."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Abenteuer in jedem Fach: Jahrmarkt und Baustelle (Mathe), Kirchenjahr und Gute Freunde (Ethik), Kornkammer, Wetterstation, Kompass, Die Wiese und Früher und heute (Sachkunde) – und die neuen Fächer Deutsch und Musik. Die Startseite ordnet sie nach Fächern.", "Stempelheft: Stempel für richtige Aufgaben und Siege. Dafür gibt es Kleidung für die Helden, Kreiselteile, Möbel für deine Hütte, Wochenaufgaben, Schulgarten und Werkbank.", "Neu auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss und Kreisel-Arena. Dazu das Duell zu zweit an einem Gerät.", "Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Neues App-Symbol mit dem Sonnenfuchs.", "Deutsch: Wortfamilien, Trennen am Zeilenende, Kommas, Ersatz- und Weglassprobe, Pronomen und Redensarten. In der Lesestube gibt es Gedichte, ein Rezept und eine Sage aus Sachsen."]}, {"title": "Verbessert", "items": ["Kreisel-Arena: Die Kreisel sausen in einer Schüssel umeinander und krachen bei jedem Treffer richtig zusammen.", "Eltern legen beim ersten Start eine PIN fest. Im neu geordneten Elternbereich stehen Wochenbericht und gespielte Abenteuer.", "Den Spielstand als Code oder QR-Code sichern und auf einem anderen Gerät laden. Ein gelber Punkt erinnert daran.", "Mehr Mathe: Bruchteile, Zahlenmauern, Punkt vor Strich, schriftliches Rechnen, Flächeninhalt, Spiegelbilder, Vierecke, Fahrpläne und Sekunden."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -8269,7 +8580,8 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
     const finish = (ok, extraHtml) => {
       locked = true; const fb = $('#fb', container); if (ok) SFX.right(); else SFX.wrong();
       if (opts.onResult) opts.onResult(ok);
-      fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small></div>`;
+      const more = task.more ? `<small>Herkunft: ${esc(task.more)}</small>` : ''; // where a saying comes from, after every answer
+      fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔${more}</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small>${more}</div>`;
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
@@ -8882,7 +9194,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
   const READ_MOD = { icon: '📖', name: 'Lesestube' };
   const READ_TUT = { title: 'Lesestube', steps: ['Lies den Text in Ruhe. Vor jeder Frage kannst du ihn noch einmal ansehen.', 'Jede richtige Antwort trifft den Zeilenspringer. Nach einer falschen Antwort schlägt er zurück.', 'Nach drei Fragen ist die Lesestunde vorbei.'] };
   const readText = () => TEXTE[run.node.text];
-  const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p>${esc(t.text)}</p></div>`;
+  const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p>${esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
   function screenRead() {
     if (!Number.isInteger(run.node.text) || !TEXTE[run.node.text]) { run.node.text = rnd(0, TEXTE.length - 1); saveAll(); }
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll">${readCard(readText())}</div><div class="bottom"><button class="btn" id="next">Zu den Fragen</button></div></div>`);
@@ -9584,7 +9896,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'a9b7c0288839';
+  const BUILD = 'dbe91f90b0b7';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

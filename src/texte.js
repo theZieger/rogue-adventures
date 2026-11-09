@@ -1,5 +1,6 @@
 // Lesestube: short texts (60–120 words) with three questions each; the answer at index a is the right one.
-// Fables are retold in our own words after Aesop (public domain). tests/test_data.js checks the format.
+// Fables are retold in our own words after Aesop, poems are public domain (by = author), \n breaks a line.
+// Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
 const TEXTE = [
   { id: 'rabe', kind: 'Fabel', title: 'Der Fuchs und der Rabe',
     text: 'Ein Rabe hatte ein Stück Käse gefunden. Er setzte sich damit auf einen hohen Ast, um es in Ruhe zu fressen. Da kam ein Fuchs vorbei. Er roch den Käse und wollte ihn haben. „Was für ein schöner Vogel du bist!“, rief der Fuchs nach oben. „Deine Federn glänzen so schwarz. Wenn deine Stimme genauso schön ist, bist du der König aller Vögel.“ Der Rabe freute sich über das Lob. Er öffnete den Schnabel, um laut zu krächzen. Da fiel der Käse hinunter. Der Fuchs schnappte ihn und lief davon. Wer jedem Lob glaubt, wird leicht hereingelegt.',
@@ -98,6 +99,90 @@ const TEXTE = [
       { q: 'Was wollte Max tun?', o: ['Seine Schwester ärgern', 'Den Keller aufräumen', 'Mit Mia Sport machen'], a: 0 },
       { q: 'Wer kam am Ende zu spät?', o: ['Max', 'Mia', 'Beide'], a: 0 },
       { q: 'Was bedeutet das Sprichwort?', o: ['Wer anderen schaden will, dem passiert oft selbst etwas.', 'Man soll keine Löcher in den Garten graben.', 'Turnschuhe gehören in den Keller.'], a: 0 },
+    ] },
+  { id: 'kuckuck', kind: 'Gedicht', title: 'Der Kuckuck und der Esel', by: 'August Heinrich Hoffmann von Fallersleben (1835)',
+    text: 'Der Kuckuck und der Esel,\ndie hatten großen Streit,\nwer wohl am besten sänge,\nwer wohl am besten sänge\nzur schönen Maienzeit,\nzur schönen Maienzeit.\n\nDer Kuckuck sprach: „Das kann ich!“\nund hub gleich an zu schrein.\n„Ich aber kann es besser!\nIch aber kann es besser!“,\nfiel gleich der Esel ein,\nfiel gleich der Esel ein.\n\nDas klang so schön und lieblich,\nso schön von fern und nah.\nSie sangen alle beide:\n„Kuckuck, Kuckuck, i-a!\nKuckuck, Kuckuck, i-a!“',
+    qs: [
+      { q: 'Worüber stritten der Kuckuck und der Esel?', o: ['Wer am besten singt', 'Wer am schnellsten läuft', 'Wer das schönste Nest hat'], a: 0 },
+      { q: 'Was rief der Esel?', o: ['Ich aber kann es besser!', 'Das kann ich!', 'Kuckuck, Kuckuck!'], a: 0 },
+      { q: 'In welchem Monat spielt das Gedicht?', o: ['Im Mai', 'Im Dezember', 'Im Oktober'], a: 0 },
+    ] },
+  { id: 'maennlein', kind: 'Gedicht', title: 'Ein Männlein steht im Walde', by: 'August Heinrich Hoffmann von Fallersleben (1843)',
+    text: 'Ein Männlein steht im Walde\nganz still und stumm,\nes hat von lauter Purpur\nein Mäntlein um.\nSagt, wer mag das Männlein sein,\ndas da steht im Wald allein\nmit dem purpurroten Mäntelein?\n\nDas Männlein steht im Walde\nauf einem Bein\nund hat auf seinem Haupte\nschwarz Käpplein klein.\nSagt, wer mag das Männlein sein,\ndas da steht im Wald allein\nmit dem kleinen schwarzen Käppelein?',
+    qs: [
+      { q: 'Welche Farbe hat das Mäntlein?', o: ['Purpurrot', 'Grün', 'Blau'], a: 0 },
+      { q: 'Worauf steht das Männlein?', o: ['Auf einem Bein', 'Auf einem Stein', 'Auf einem Ast'], a: 0 },
+      { q: 'Was trägt das Männlein auf dem Kopf?', o: ['Ein kleines schwarzes Käppchen', 'Eine goldene Krone', 'Einen roten Hut mit Feder'], a: 0 },
+    ] },
+  { id: 'maxmoritz', kind: 'Gedicht', title: 'Max und Moritz – Vorwort', by: 'Wilhelm Busch (1865), in heutiger Rechtschreibung',
+    text: 'Ach, was muss man oft von bösen\nKindern hören oder lesen!\nWie zum Beispiel hier von diesen,\nWelche Max und Moritz hießen;\nDie, anstatt durch weise Lehren\nSich zum Guten zu bekehren,\nOftmals noch darüber lachten\nUnd sich heimlich lustig machten.\nJa, zur Übeltätigkeit,\nJa, dazu ist man bereit!\nMenschen necken, Tiere quälen,\nÄpfel, Birnen, Zwetschen stehlen –\nDas ist freilich angenehmer\nUnd dazu auch viel bequemer,\nAls in Kirche oder Schule\nFestzusitzen auf dem Stuhle.\nAber wehe, wehe, wehe!\nWenn ich auf das Ende sehe!!\nAch, das war ein schlimmes Ding,\nWie es Max und Moritz ging.\nDrum ist hier, was sie getrieben,\nAbgemalt und aufgeschrieben.',
+    qs: [
+      { q: 'Wie heißen die beiden Jungen?', o: ['Max und Moritz', 'Hans und Franz', 'Paul und Peter'], a: 0 },
+      { q: 'Was stehlen die beiden?', o: ['Äpfel, Birnen und Zwetschen', 'Brot und Käse', 'Bücher und Hefte'], a: 0 },
+      { q: 'Wo wollen sie nicht stillsitzen?', o: ['In Kirche oder Schule', 'Im Garten', 'Auf dem Spielplatz'], a: 0 },
+    ] },
+  { id: 'wackelzahn', kind: 'Erzählung', title: 'Der Wackelzahn',
+    text: 'Seit einer Woche wackelte Emils Zahn vorn unten. Beim Abbeißen tat er weh, deshalb aß Emil sein Brot nur noch in kleinen Stücken. Papa wollte den Zahn mit einem Faden ziehen. „Auf keinen Fall!“, rief Emil und hielt sich die Hand vor den Mund. In der Pause spielte er mit Jakob Fußball. Der Ball sprang hoch und traf Emil am Kinn. Erschrocken fasste er sich an den Mund. Da lag etwas Weißes in seiner Hand: der Zahn. Es hatte gar nicht wehgetan. Am Abend legte Emil den Zahn in eine Dose und zeigte ihn der ganzen Familie.',
+    qs: [
+      { q: 'Warum aß Emil sein Brot in kleinen Stücken?', o: ['Der Zahn tat beim Abbeißen weh.', 'Er hatte keinen Hunger.', 'Das Brot war zu hart.'], a: 0 },
+      { q: 'Wie kam der Zahn heraus?', o: ['Ein Ball traf Emil am Kinn.', 'Papa zog ihn mit einem Faden.', 'Der Zahnarzt zog ihn.'], a: 0 },
+      { q: 'Wohin legte Emil den Zahn?', o: ['In eine Dose', 'Unter das Kopfkissen', 'In seine Schultasche'], a: 0 },
+    ] },
+  { id: 'drachen', kind: 'Erzählung', title: 'Der Drachen',
+    text: 'Im Herbst bauten Mia und ihr Opa einen Drachen. Sie nahmen zwei Holzleisten, buntes Papier und eine lange Schnur. Mia malte ein lachendes Gesicht darauf. Am Sonntag gingen sie auf das Stoppelfeld hinter dem Dorf. Der Wind blies kräftig. Opa hielt den Drachen hoch, und Mia rannte los. Doch der Drachen fiel immer wieder ins Gras. „Du musst gegen den Wind laufen“, rief Opa. Mia drehte sich um und rannte in die andere Richtung. Auf einmal zog es an der Schnur. Der Drachen stieg höher und höher, bis das Gesicht ganz klein war. Mia hielt die Schnur fest und lachte.',
+    qs: [
+      { q: 'Was malte Mia auf den Drachen?', o: ['Ein lachendes Gesicht', 'Eine Sonne', 'Einen Hund'], a: 0 },
+      { q: 'Warum fiel der Drachen zuerst ins Gras?', o: ['Mia lief nicht gegen den Wind.', 'Die Schnur war gerissen.', 'Es war windstill.'], a: 0 },
+      { q: 'Wann bauten Mia und Opa den Drachen?', o: ['Im Herbst', 'Im Frühling', 'Im Sommer'], a: 0 },
+    ] },
+  { id: 'stillepost', kind: 'Anleitung', title: 'Spielanleitung: Stille Post',
+    text: 'Mitspieler: mindestens fünf Kinder\nMaterial: keins\n\nSo geht es:\nAlle sitzen im Kreis oder in einer Reihe. Das erste Kind denkt sich ein Wort oder einen kurzen Satz aus. Es flüstert ihn seinem Nachbarn leise ins Ohr. Der flüstert weiter, was er verstanden hat. Jedes Kind darf nur einmal flüstern und nicht nachfragen. Das letzte Kind sagt laut, was bei ihm angekommen ist. Dann verrät das erste Kind, was es am Anfang gesagt hat. Oft ist daraus etwas ganz anderes geworden. In der nächsten Runde beginnt ein anderes Kind.',
+    qs: [
+      { q: 'Wie viele Kinder braucht man mindestens?', o: ['Fünf', 'Zwei', 'Zehn'], a: 0 },
+      { q: 'Was darf man beim Flüstern nicht?', o: ['Nachfragen', 'Im Kreis sitzen', 'Leise sprechen'], a: 0 },
+      { q: 'Was macht das letzte Kind?', o: ['Es sagt laut, was es gehört hat.', 'Es flüstert weiter.', 'Es denkt sich ein neues Wort aus.'], a: 0 },
+    ] },
+  { id: 'obstsalat', kind: 'Rezept', title: 'Bunter Obstsalat für vier Personen',
+    text: 'Du brauchst: zwei Äpfel, zwei Bananen, eine Orange, eine Handvoll Weintrauben, den Saft einer halben Zitrone und einen Esslöffel Honig. Dazu ein Schneidebrett, ein Messer und eine große Schüssel.\n\nSo geht es:\n1. Wasche die Äpfel und die Trauben.\n2. Schäle die Bananen und die Orange.\n3. Schneide das Obst mit einem Erwachsenen in kleine Stücke.\n4. Gib alles in die Schüssel.\n5. Träufle den Zitronensaft darüber, damit die Äpfel nicht braun werden.\n6. Rühre den Honig unter.\n7. Stelle den Salat eine halbe Stunde in den Kühlschrank.',
+    qs: [
+      { q: 'Wozu kommt Zitronensaft in den Salat?', o: ['Damit die Äpfel nicht braun werden', 'Damit er süßer wird', 'Damit die Bananen weich werden'], a: 0 },
+      { q: 'Für wie viele Personen ist das Rezept?', o: ['Für vier', 'Für zwei', 'Für acht'], a: 0 },
+      { q: 'Wer hilft beim Schneiden?', o: ['Ein Erwachsener', 'Niemand', 'Der Nachbar von nebenan'], a: 0 },
+    ] },
+  { id: 'eichhorn', kind: 'Lexikon', title: 'Das Eichhörnchen',
+    text: 'Das Eichhörnchen ist ein Nagetier. Es lebt in Wäldern, Parks und Gärten.\n\nAussehen: Der Körper ist etwa 20 Zentimeter lang, der buschige Schwanz fast genauso lang. Das Fell ist meist rotbraun, der Bauch weiß. Im Winter tragen die Ohren lange Haarpinsel.\n\nNahrung: Nüsse, Samen aus Zapfen, Knospen, Pilze und Beeren.\n\nNest: Das kugelige Nest heißt Kobel. Es liegt hoch oben im Baum.\n\nBesonderes: Im Herbst versteckt das Eichhörnchen Vorräte in der Erde. Es findet nicht alle wieder. Aus vergessenen Nüssen wachsen manchmal neue Bäume. Eichhörnchen halten keinen Winterschlaf, sondern Winterruhe.',
+    qs: [
+      { q: 'Wie heißt das Nest des Eichhörnchens?', o: ['Kobel', 'Bau', 'Horst'], a: 0 },
+      { q: 'Was macht das Eichhörnchen im Winter?', o: ['Es hält Winterruhe.', 'Es hält Winterschlaf.', 'Es zieht in den Süden.'], a: 0 },
+      { q: 'Wie können aus Nüssen neue Bäume wachsen?', o: ['Das Eichhörnchen findet nicht alle versteckten Nüsse wieder.', 'Das Eichhörnchen pflanzt sie absichtlich ein.', 'Der Wind trägt die Nüsse fort.'], a: 0 },
+    ] },
+  { id: 'pronomen', kind: 'Witz', title: 'Zwei Pronomen',
+    text: 'In der Deutschstunde geht es um Pronomen. Frau Lehmann schreibt ich, du, er, sie und es an die Tafel. Dann schaut sie in die Klasse. Ben malt gerade ein Raumschiff in sein Heft und hört nicht zu. „Ben“, sagt Frau Lehmann, „nenne mir zwei Pronomen.“ Ben schreckt hoch und sieht sich um. „Wer, ich?“, fragt er. Frau Lehmann lächelt. „Richtig, Ben. Genau zwei.“ Die ganze Klasse lacht, und Ben weiß gar nicht, warum.',
+    qs: [
+      { q: 'Worum geht es in der Deutschstunde?', o: ['Um Pronomen', 'Um Nomen', 'Um Zeitformen'], a: 0 },
+      { q: 'Was macht Ben, bevor Frau Lehmann ihn fragt?', o: ['Er malt ein Raumschiff.', 'Er liest ein Buch.', 'Er schreibt von der Tafel ab.'], a: 0 },
+      { q: 'Warum sagt Frau Lehmann „Richtig“?', o: ['„Wer“ und „ich“ sind zwei Pronomen.', 'Ben hat schön gemalt.', 'Ben hat besonders laut gesprochen.'], a: 0 },
+    ] },
+  { id: 'elbe', kind: 'Sachtext', title: 'Die Elbe',
+    text: 'Die Elbe ist der größte Fluss in Sachsen. Sie entspringt im Riesengebirge in Tschechien. Von dort fließt sie nach Sachsen. Zuerst windet sie sich durch das Elbsandsteingebirge mit seinen hohen Felsen. Dann fließt sie durch Pirna, Dresden und Meißen. In Dresden fahren auf der Elbe Raddampfer, die schon über hundert Jahre alt sind. Hinter Riesa und Torgau verlässt die Elbe Sachsen. Sie fließt weiter durch Magdeburg und Hamburg und mündet bei Cuxhaven in die Nordsee. Insgesamt ist sie über 1000 Kilometer lang. Nach viel Regen kann die Elbe über die Ufer treten. In den Jahren 2002 und 2013 gab es in Sachsen schlimme Hochwasser.',
+    qs: [
+      { q: 'Wo entspringt die Elbe?', o: ['Im Riesengebirge in Tschechien', 'In Dresden', 'An der Nordsee'], a: 0 },
+      { q: 'Durch welche Stadt fließt die Elbe?', o: ['Dresden', 'Leipzig', 'Chemnitz'], a: 0 },
+      { q: 'Wohin fließt die Elbe am Ende?', o: ['In die Nordsee', 'In die Ostsee', 'In den Bodensee'], a: 0 },
+    ] },
+  { id: 'barbarine', kind: 'Sage', title: 'Die Barbarine',
+    text: 'Am Pfaffenstein bei Königstein in der Sächsischen Schweiz steht eine hohe, schmale Felssäule. Man nennt sie die Barbarine. Die Leute erzählen sich dazu eine alte Geschichte. Ein Mädchen namens Barbara sollte am Sonntag in die Kirche gehen. Doch Barbara hatte keine Lust. Sie lief lieber auf den Pfaffenstein, um Heidelbeeren zu pflücken. Als die Mutter aus der Kirche kam, suchte sie ihre Tochter. Oben auf dem Berg fand sie Barbara mit einem Korb voller Beeren. Wütend rief die Mutter: „Ach, würdest du doch zu Stein!“ Im selben Augenblick erstarrte das Mädchen und wurde zu einem Felsen. So erzählt es die Sage, und bis heute steht die Barbarine dort.',
+    qs: [
+      { q: 'Wo steht die Barbarine?', o: ['Am Pfaffenstein bei Königstein', 'In Dresden an der Elbe', 'Im Erzgebirge'], a: 0 },
+      { q: 'Was tat Barbara, statt in die Kirche zu gehen?', o: ['Sie pflückte Heidelbeeren.', 'Sie spielte im Garten.', 'Sie besuchte ihre Oma.'], a: 0 },
+      { q: 'Was wurde laut der Sage aus Barbara?', o: ['Ein Felsen', 'Ein Baum', 'Ein Vogel'], a: 0 },
+    ] },
+  { id: 'schwibbogen', kind: 'Sachtext', title: 'Der Schwibbogen',
+    text: 'Der Schwibbogen kommt aus dem Erzgebirge. Er ist ein Lichterbogen aus Holz oder Metall. In der Adventszeit stellen ihn viele Familien ins Fenster. Früher arbeiteten im Erzgebirge viele Männer als Bergleute. Sie holten Silber und Zinn aus dem Berg. Im Winter fuhren sie in den Schacht ein, wenn es noch dunkel war, und kamen erst im Dunkeln wieder heraus. Tageslicht sahen sie dann fast nie. Viele sagen, die Lichter am Bogen zeigen die Sehnsucht der Bergleute nach dem Licht. Auf dem Bogen sieht man oft Bergleute, Engel, Häuser und Tannen. Der älteste bekannte Schwibbogen ist aus Eisen und stammt aus Johanngeorgenstadt.',
+    qs: [
+      { q: 'Woher kommt der Schwibbogen?', o: ['Aus dem Erzgebirge', 'Aus Hamburg', 'Aus den Alpen'], a: 0 },
+      { q: 'Warum sahen die Bergleute im Winter kaum Tageslicht?', o: ['Sie arbeiteten im Dunkeln unter der Erde.', 'Sie schliefen den ganzen Tag.', 'Es schneite jeden Tag.'], a: 0 },
+      { q: 'Wann stellt man den Schwibbogen ins Fenster?', o: ['In der Adventszeit', 'Im Sommer', 'Zu Ostern'], a: 0 },
     ] },
 ];
 if (typeof module !== 'undefined') module.exports = TEXTE;
