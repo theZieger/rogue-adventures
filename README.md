@@ -34,6 +34,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
 | 🌾 Die Kornkammer | Sachkunde: Weizen, Roggen, Gerste, Hafer, Mais (Ähre, Rispe, Kolben), Teile der Getreidepflanze mit Zeichenschule, vom Korn zum Brot, Verwendung, Wertschätzung von Lebensmitteln |
 | 🌦️ Die Wetterstation | Sachkunde: fest/flüssig/gasförmig, gefrieren, schmelzen, verdampfen, verdunsten, kondensieren, Wasserkreislauf als Bild, Wettervorhersage lesen, Bauernregeln; Kartenfeld „Forscherlabor“ (erst vermuten, dann Ergebnis) |
+| 🌼 Die Wiese | Sachkunde: acht Wiesenpflanzen als Bild und nach Merkmalen, Stockwerke der Wiese (Bild, Tiere zuordnen, ordnen), Entwicklung von Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Wiese schützen, mit allen Sinnen |
+| 🕰️ Früher und heute | Sachkunde: Geräte und Leben auf dem Land früher und heute, Zeitleiste, Sprachen, Feste und Essen aus aller Welt (Dilemma-Karten ohne falsche Antwort), Nachschlagen und „Kann das stimmen?“ |
 | 🫖 Die Teestube | Englisch, Wortschatz: Englisch → Deutsch und umgekehrt, Zahlen als Wort (bis 20, Stufe 2 bis 100), Farben am Farbfleck, „Was passt nicht?“ – Themen nach Lehrplan Englisch Klasse 3 |
 | 🚌 Der Doppeldecker | Englisch, Sätze und Wendungen: Lückensatz, „Was bedeutet das?“, Wochentage (Stufe 2: Monate) ordnen, Frage und Antwort |
 | 🧭 Kompass und Karte | Sachkunde: Haupt- und Nebenhimmelsrichtungen, Windrose, Lauf der Sonne, Plan mit Legende; Kartenfeld „Schatzkarte“ (5 × 5 Felder, Stufe 2 mit Nebenrichtungen, Stufe 3 mit Maßstab) |
@@ -68,6 +70,7 @@ src/english.js     Wörter und Sätze für Englisch – hier können Eltern Wör
 src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop nacherzählt, Sachtexte, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel, Deutsch und Englisch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
+src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
