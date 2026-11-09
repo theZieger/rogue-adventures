@@ -10,6 +10,7 @@ def strip_exports(js, name):
     return js.replace(f"if (typeof module !== 'undefined') module.exports = {name};\n", "")
 css = (SRC / "style.css").read_text(encoding="utf-8")
 logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
+fair = strip_exports((SRC / "jahrmarkt.js").read_text(encoding="utf-8"), "MJ")
 woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
 texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
@@ -93,6 +94,7 @@ html = f"""<!DOCTYPE html>
 {logic}
 </script>
 <script>
+{fair}
 {woerter}
 </script>
 <script>
