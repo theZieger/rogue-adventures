@@ -297,23 +297,23 @@ const MJ = (() => {
   const ENEMIES = {
     1: {
       normal: [
-        { name: 'Die Jahrmarktwespe', type: 'normal', shape: 'bat', hp: 26, atk: 3 },
-        { name: 'Die Bratwurstglut', type: 'feuer', shape: 'flame', hp: 24, atk: 4 },
-        { name: 'Der Pfützenspritzer', type: 'wasser', shape: 'drop', hp: 26, atk: 4 },
-        { name: 'Der Kürbiskopf', type: 'pflanze', shape: 'blob', hp: 30, atk: 3 },
+        { name: 'Die Jahrmarktwespe', type: 'normal', shape: 'jahrmarktwespe', hp: 26, atk: 3 },
+        { name: 'Die Bratwurstglut', type: 'feuer', shape: 'bratwurstglut', hp: 24, atk: 4 },
+        { name: 'Der Pfützenspritzer', type: 'wasser', shape: 'pfuetzenspritzer', hp: 26, atk: 4 },
+        { name: 'Der Kürbiskopf', type: 'pflanze', shape: 'kuerbiskopf', hp: 30, atk: 3 },
       ],
-      elite: { name: 'Der Autoscooter', type: 'normal', shape: 'beetle', hp: 45, atk: 5 },
-      boss: { name: 'Der Ausrufer', acc: 'den Ausrufer', type: 'normal', shape: 'merchant', hp: 70, atk: 6, boss: true },
+      elite: { name: 'Der Autoscooter', type: 'normal', shape: 'autoscooter', hp: 45, atk: 5 },
+      boss: { name: 'Der Ausrufer', acc: 'den Ausrufer', type: 'normal', shape: 'ausrufer', hp: 70, atk: 6, boss: true },
     },
     2: {
       normal: [
-        { name: 'Der Kirmesnebel', type: 'wasser', shape: 'jelly', hp: 42, atk: 5 },
-        { name: 'Die Funkenrakete', type: 'feuer', shape: 'flame', hp: 40, atk: 6 },
-        { name: 'Das Zerrbild', type: 'normal', shape: 'blob', hp: 38, atk: 6 },
-        { name: 'Die Zaunranke', type: 'pflanze', shape: 'vine', hp: 44, atk: 5 },
+        { name: 'Der Kirmesnebel', type: 'wasser', shape: 'kirmesnebel', hp: 42, atk: 5 },
+        { name: 'Die Funkenrakete', type: 'feuer', shape: 'funkenrakete', hp: 40, atk: 6 },
+        { name: 'Das Zerrbild', type: 'normal', shape: 'zerrbild', hp: 38, atk: 6 },
+        { name: 'Die Zaunranke', type: 'pflanze', shape: 'zaunranke', hp: 44, atk: 5 },
       ],
-      elite: { name: 'Der Hau-den-Lukas', type: 'normal', shape: 'rock', hp: 70, atk: 8 },
-      boss: { name: 'Der Herr der Geisterbahn', acc: 'den Herrn der Geisterbahn', type: 'normal', shape: 'ghost', hp: 110, atk: 9, boss: true },
+      elite: { name: 'Der Hau-den-Lukas', type: 'normal', shape: 'haudenlukas', hp: 70, atk: 8 },
+      boss: { name: 'Der Herr der Geisterbahn', acc: 'den Herrn der Geisterbahn', type: 'normal', shape: 'herrdergeisterbahn', hp: 110, atk: 9, boss: true },
     },
   };
   const MOVES = ['Ellbogenstoß', 'Konfettikanone', 'Lautsprecherruf', 'Schubser', 'Senfspritzer', 'Rempler am Ausgang'];
