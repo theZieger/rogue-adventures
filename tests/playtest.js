@@ -13,7 +13,8 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
-let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0;
+let correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0;
+const cents=(x)=>{ const m=x.trim().match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); if(!m) throw new Error('not money: '+x); return (+(m[1]||0))*100+(+(m[2]||0)); };
 async function closeModal(){ const ov=$('.overlay'); if(ov){ const b=ov.querySelector('#tutok'); if(b){ tutorialsSeen++; click(b); return true;} } return false; }
 async function solveTask(forceWrong){
   const inps=$$('.inp'); if(!inps.length) return false;
@@ -21,7 +22,8 @@ async function solveTask(forceWrong){
   let answers=null;
   const expr=$('.expr'); const M=w.eval('MQ');
   if(expr){ const s=expr.textContent; let m;
-    if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
+    if(/€|ct/.test(s)){ const v=s.includes(' − ')?s.split(' − ').map(cents).reduce((a,b)=>a-b):s.split(' + ').map(cents).reduce((a,b)=>a+b); answers=[Math.floor(v/100),v%100]; }
+    else if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) − \? = (\d+)$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) · (\d+) = \?$/)) answers=[+m[1]*m[2]];
@@ -72,6 +74,19 @@ async function solveKnow(forceWrong){
   const good=fb.classList.contains('good'); if(forceWrong&&good) throw new Error('wrong marked good '+t.kind); if(!forceWrong&&!good) throw new Error('correct marked bad '+t.kind+' '+JSON.stringify(t));
   if(good) correctAnswers++; else wrongAnswers++; click($('#next'));
 }
+// market: buy exactly one affordable thing, then leave; in world 2+ mostly overpay to get the change task
+async function shop(){
+  const sold=$$('.offer.sold').length; const purse=+$('#purse').dataset.cents;
+  if(sold>1) throw new Error('bot bought more than one thing');
+  const offer=$$('.offer:not(.sold)').find(o=>+o.dataset.price<=purse);
+  if(sold||!offer){ markets++; bought+=sold; click($('#leave')); return; }
+  click(offer); const price=+offer.dataset.price; const tier=+$('.market').dataset.tier;
+  const coins=()=>$$('.coins .coin:not([disabled])').map(b=>+b.dataset.v);
+  const big=coins().filter(v=>v>price).pop();
+  if(tier>=2&&big&&Math.random()<0.7) click($(`.coins .coin[data-v="${big}"]`));
+  else { let rest=price; for(const v of [1000,500,200,100,50,20,10,5,2,1]) while(v<=rest&&coins().includes(v)){ click($(`.coins .coin[data-v="${v}"]`)); rest-=v; } if(rest) throw new Error('could not pay '+price+' from '+purse); }
+  click($('#pay'));
+}
 async function step(){
   if(await closeModal()) return;
   if($('#later')){ click($('#later')); return; }
@@ -79,6 +94,8 @@ async function step(){
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); return; }
   if($('.node.open')){ const nodes=$$('.node.open');
+    // the market is always taken when it is open
+    const mk=nodes.find(n=>n.getAttribute('aria-label')==='Markt'); if(mk){ click(mk); return; }
     const special=nodes.find(n=>['Forscherlabor','Schatzkarte'].includes(n.getAttribute('aria-label'))); if(special){ if(special.getAttribute('aria-label')==='Forscherlabor') labs++; else maps++; click(special); return; }
     // steer towards a Forscherlabor/Schatzkarte further up, so the bot plays them whatever the seed
     { const r=w.__mq.run, memo={}; const leads=(f,i)=>{ const k=f+'/'+i; if(k in memo) return memo[k]; const nd=r.map[f]&&r.map[f][i]; return memo[k]=!!nd&&(nd.t==='labor'||nd.t==='karte'||nd.n.some(j=>leads(f+1,j))); };
@@ -89,11 +106,12 @@ async function step(){
   if($('.opt.guess')){ const g=$$('.opt.guess'); click(g[Math.floor(Math.random()*g.length)]); return; } // Forscherlabor: any guess is fine
   if($('.opt')||$('.oitem')||$('.plant.clickable')||$('.kmap.clickable')){ await solveKnow(Math.random()>ACC); return; }
   if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
+  if($('.market')){ await shop(); return; }
   if($('#next')){ click($('#next')); return; }
   if($('#go')&&text().includes('Merk-Check')){ click($('#go')); return; }
   if($('#train')){ rests++; click(Math.random()<0.5?$('#train'):$('#heal')); return; }
   if($('.bottom .btn[data-i]')&&tx.includes('kein Richtig oder Falsch')){ events++; dilemmas++; const opts=$$('.bottom .btn[data-i]'); click(opts[Math.floor(Math.random()*opts.length)]); if(text().includes('Denk mal nach:')) consequences++; return; }
-  if($('.bottom .btn[data-i]')){ events++; click($('.bottom .btn[data-i="0"]')); return; }
+  if($('.bottom .btn[data-i]')){ events++; click($('.bottom .btn[data-i]:not([disabled])')); return; }
   if($('.choice[data-i]')&&tx.includes('Belohnung')){ if(tx.includes('Elitegegner')) eliteRewards++; else treasures++; click($$('.choice[data-i]').pop()); return; }
   if($('.choice[data-i]')&&tx.includes('ersetzen')){ click($$('.choice[data-i]')[0]); return; }
   if($('#again')){ console.log('END SCREEN:', tx.slice(0,110)); return 'end'; }
@@ -107,7 +125,7 @@ async function step(){
     for(let w=0; w<6 && !$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')&&!$('.opt')&&!$('[data-cell]'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
-  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
+  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,markets,bought,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
@@ -115,5 +133,6 @@ async function step(){
   if(mode==='kompass'&&!maps){ console.error('PLAYTEST FAIL: the bot never reached the Schatzkarte'); process.exit(1); }
   if(errors.length){ console.error('PLAYTEST FAIL: page errors', errors); process.exit(1); }
   if(dilemmas!==consequences){ console.error('PLAYTEST FAIL: a dilemma choice showed no consequence'); process.exit(1); }
+  if(mode==='math'&&!bought){ console.error('PLAYTEST FAIL: never bought anything at a market'); process.exit(1); }
   if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }
 })().catch(e=>{console.error('PLAYTEST FAIL',e.message); console.log(errors); process.exit(1);});

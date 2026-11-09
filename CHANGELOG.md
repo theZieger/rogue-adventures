@@ -23,6 +23,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Neues Fach Deutsch: die Wörterwerkstatt für Rechtschreibung und die Satzbaustelle für Wortarten, Zeitformen und Satzglieder.
 - Schulgarten: Pflanze Kartoffeln, Weizen, Roggen oder Hafer. Nach 7 Tagen erntest du und bekommst Stempel.
 - Drei neue Sachkunde-Abenteuer: „Die Kornkammer“, „Die Wetterstation“ mit Forscherlabor und „Kompass und Karte“ mit Schatzkarte.
+- Zahlenquest: Kämpfe bringen Münzen. Auf dem Markt bezahlst du passend, ab Welt 2 rechnest du das Rückgeld aus.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.

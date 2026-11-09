@@ -1,5 +1,5 @@
 (() => {
-  const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
+  const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
   const MODES = {
     math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
     ethik: MK.MODES.ethik,
@@ -73,7 +73,10 @@
   const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
   // switched off in the parent area; at least two stay on per mode
   const offList = (m) => (isObj(meta.off) && Array.isArray(meta.off[m]) ? meta.off[m] : []);
-  const enabledMods = (m) => { const all = Object.keys(MODES[m || mode].modules); const on = all.filter((k) => !offList(m || mode).includes(k)); return on.length >= 2 ? on : all; };
+  const fightMods = (m) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
+  const enabledMods = (m) => { const all = fightMods(m || mode); const on = all.filter((k) => !offList(m || mode).includes(k)); return on.length >= 2 ? on : all; };
+  // coins and the market only exist in Zahlenquest, and only while parents leave „Geld“ on
+  const marketOn = () => mode === 'math' && !offList('math').includes('geld');
   const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
   // a saved run is only removed by endRun or a new run, never as a side effect of saving
   const saveAll = () => { save(KEY_META, meta); if (run && !run.over) save(KEY_RUN_FOR(run.mode), run); };
@@ -87,6 +90,7 @@
     if (!r.map.every((fl) => Array.isArray(fl) && fl.length && fl.every((n) => isObj(n) && NODE_INFO[n.t] && Array.isArray(n.n) && Number.isFinite(n.c)))) { clear(KEY_RUN_FOR(m)); return null; }
     if (isObj(r.node) && !NODE_INFO[r.node.type]) r.node = null;
     r.items = r.items.filter((it) => ITEMS[it]);
+    r.coins = Number.isFinite(r.coins) ? Math.max(0, Math.floor(r.coins)) : 0;
     r.hero.attacks.forEach((a) => { if (RENAMES[a.name]) a.name = RENAMES[a.name]; });
     if (isObj(r.node) && isObj(r.node.enemy) && RENAMES[r.node.enemy.name]) r.node.enemy.name = RENAMES[r.node.enemy.name];
     r.mode = m; return r;
@@ -245,7 +249,7 @@
       inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
       if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
-      else { SFX.wrong(); const corr = task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      else { SFX.wrong(); const corr = task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -522,7 +526,7 @@
     $('#back').onclick = screenTitle;
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: makeMapFor(1), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'], coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
@@ -531,10 +535,12 @@
   function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
     // one special node per world on floors 3–6 instead of an event or treasure (a fight if the map has none)
     const sw = CFG().swap; if (sw) { const on = (t) => m.slice(2, 6).flat().filter((n) => n.t === t); const c = on(sw.from).length ? on(sw.from) : on('fight'); if (c.length) pick(c).t = sw.to; }
+    // one market per world on floors 3–6, in place of an event (a fight if there is none)
+    if (marketOn()) { const fl = m.slice(2, 6).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
     return m;
   }
 
-  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'] };
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], karte: ['🗺️', 'Schatzkarte'], markt: ['🧺', 'Markt'] };
   function screenMap() {
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
@@ -550,7 +556,7 @@
       return `<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}" ${isOpen ? '' : 'tabindex="-1" disabled'} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`; }).join('')).join('');
     const look = mode === 'math' && REWARDS.find((r) => r.world === run.world && meta.owned[r.id]);
     render(`<div class="screen"${look ? ` style="background:${look.bg}"` : ''}>${topbar(`${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
-      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
+      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span>${marketOn() ? `<span>🪙 ${euro(run.coins)}</span>` : ''}</div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
     app.querySelectorAll('.node.open').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni].t; run.node = { type }; saveAll(); enterNode(type); }; });
@@ -598,6 +604,7 @@
     else if (type === 'school') screenSchool(1);
     else if (type === 'labor') screenLabor();
     else if (type === 'karte') screenKarte();
+    else if (type === 'markt') { if (marketOn()) screenMarket(); else screenEvent(); }
   }
   function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
@@ -727,6 +734,7 @@
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
     else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
+    const coins = marketOn() ? (e.boss ? rnd(40, 60) : e.elite ? rnd(20, 40) : rnd(6, 16)) * 5 : 0; run.coins += coins;
     // the Monsterbuch stamps were given when the enemy appeared, they are only shown here
     const stamps = payAnswers() + (e.boss ? giveStamps(5) : 0) + (e.fresh ? 2 : 0);
     if (!(e.boss && run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
@@ -734,21 +742,22 @@
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3>${monsterSVG(heroSpec().shape, TYPES[heroSpec().type].color, run.hero.evo)}<p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
   /* ---------- Event ---------- */
   function screenEvent(resumeOpt) {
     // run.node.ev indexes the whole list, so new events are only ever appended; w = only in that world
-    const EV = CFG().events; const ids = EV.map((_, i) => i).filter((i) => !EV[i].w || EV[i].w === run.world);
+    const EV = CFG().events; const coinEv = (ev) => ev.opts.some((o) => [o.effect, o.win, o.lose].some((x) => x && x.coins));
+    const ids = EV.map((_, i) => i).filter((i) => (!EV[i].w || EV[i].w === run.world) && (marketOn() || !coinEv(EV[i])));
     if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = pick(ids); saveAll(); }
     const ev = run.node ? EV[run.node.ev] : EV[pick(ids)];
-    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p>${ev.dilemma ? '<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>' : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
+    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p>${ev.dilemma ? '<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>' : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-i="${i}" ${o.effect && run.coins < -(o.effect.coins || 0) ? 'disabled' : ''}>${esc(o.label)}</button>`).join('')}</div></div></div>`);
     const runOpt = (i) => { const o = ev.opts[i]; if (!o) return screenEvent();
       if (!o.task) { applyEffect(ev.dilemma ? ev.reward : o.effect); showEffect(ev.title, o); return; }
       if (run.node) { run.node.opt = i; saveAll(); }
-      const mod = o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, tierFor(mod), { g: o.g });
+      const mod = o.task === 'geld' ? 'geld' : o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, tierFor(mod), { g: o.g });
       render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
       let won = false;
       ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), onResult: (ok) => { won = ok; recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose); } }, () => showEffect(won ? 'Richtig gelöst' : 'Daneben')));
@@ -759,6 +768,7 @@
   function applyEffect(eff) {
     const lines = []; run.node && (run.node.lines = lines);
     if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 −${Math.abs(eff.hp)} Lebenspunkte`); } }
+    if (eff.coins) { run.coins = Math.max(0, run.coins + eff.coins); lines.push(`🪙 ${eff.coins > 0 ? '+' : '−'}${euro(Math.abs(eff.coins))}`); }
     if (eff.maxhp) { run.hero.maxHp += eff.maxhp; heal(eff.maxhp); lines.push(`💪 +${eff.maxhp} maximale Lebenspunkte`); }
     if (eff.item) { run.items.push(eff.item); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
     if (eff.xp) { const m = gainXp(eff.xp); lines.push(`⭐ +${eff.xp} XP`); lines.push(...m); }
@@ -804,6 +814,54 @@
     render(`<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map((a, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`).join('')}<button class="btn ghost" id="skip">Doch lieber behalten – dafür gibt es einen 🧪 Trank</button></div></div></div>`);
     app.querySelectorAll('.choice').forEach((b) => { b.onclick = () => { run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod }; saveAll(); advance(); }; });
     $('#skip').onclick = () => { run.items.push('trank'); saveAll(); advance(); };
+  }
+
+  /* ---------- Markt ---------- */
+  const STALL = `<svg class="stall" viewBox="0 0 220 120" aria-hidden="true"><path d="M30 34v80M190 34v80" stroke="#7A4A22" stroke-width="7"/>${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${14 + i * 32} 12h32v22a16 10 0 0 1-32 0z" fill="${i % 2 ? '#fff' : '#E8483B'}" stroke="#1C2541" stroke-width="3"/>`).join('')}<path d="M88 112q2-30 22-34 20 4 22 34z" fill="#3D8C55" stroke="#1C2541" stroke-width="3"/><circle cx="110" cy="62" r="15" fill="#F2C9A0" stroke="#1C2541" stroke-width="3"/><path d="M95 60q2-18 15-18t15 18q-6-9-15-9t-15 9z" fill="#7A4A22"/><rect x="18" y="84" width="184" height="30" rx="5" fill="#C98B4E" stroke="#1C2541" stroke-width="3"/></svg>`;
+  const coinBtn = (v, attr) => `<button class="coin ${v >= 500 ? 'note n' + v : v >= 100 ? 'euro' : v >= 10 ? 'brass' : 'copper'}" ${attr} aria-label="${euro(v)}">${euro(v)}</button>`;
+  function screenMarket(msg) {
+    const n = run.node || {}; const tier = run.world >= 2 ? 2 : 1; const P = MQ.PRICES;
+    if (!Array.isArray(n.offers) || n.offers.length !== 3 || !n.offers.every((id) => P[id])) { n.offers = shuffle(Object.keys(P)).slice(0, 3); n.sold = []; saveAll(); }
+    if (!Array.isArray(n.sold)) n.sold = [];
+    run.tiers.geld = tier;
+    const kinds = MQ.COINS.concat(run.world >= 3 ? [1000, 500] : []).sort((a, b) => b - a);
+    let sel = null; const counter = []; const sum = () => counter.reduce((a, b) => a + b, 0);
+    const hello = tier === 1 ? 'Was darf es sein? Bei mir bezahlst du passend.' : 'Was darf es sein? Du darfst auch mehr geben, das Rückgeld rechnest du dann selbst aus.';
+    render(`<div class="screen market" data-tier="${tier}">${topbar('🧺 Markt')}<div class="scroll"><div class="stack">
+      <div class="card seller">${STALL}<div class="row"><p class="say" id="say" role="status">${esc(msg || hello)}</p><button class="tut" type="button" id="mtut" aria-label="Erklärung anzeigen">🛈</button></div></div>
+      ${n.offers.map((id, i) => { const sold = n.sold.includes(i); return `<button class="choice offer ${sold ? 'sold' : ''}" data-i="${i}" data-price="${P[id]}" ${sold ? 'disabled' : ''}><span class="ic" aria-hidden="true">${ITEMS[id].icon}</span><div class="meta"><div class="name">${ITEMS[id].name}</div><div class="desc">${esc(ITEMS[id].desc)}</div></div><span class="price">${sold ? 'verkauft' : euro(P[id])}</span></button>`; }).join('')}
+      <div class="card purse"><div class="row"><span>👛 Geldbeutel</span><b id="purse" data-cents="${run.coins}">${euro(run.coins)}</b></div><div class="lbl">Ladentisch</div><div class="counter" id="counter"></div><div class="coins">${kinds.map((v) => coinBtn(v, `data-v="${v}"`)).join('')}</div></div>
+      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="leave">Weitergehen</button><button class="btn" id="pay" disabled>Bezahlen</button></div></div></div>`);
+    const show = (el) => { if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest' }); };
+    const say = (t) => { $('#say').textContent = t; show($('.seller')); };
+    const paint = () => {
+      $('#counter').innerHTML = counter.length ? counter.map((v, j) => coinBtn(v, `data-j="${j}"`)).join('') : `<span class="muted">${sel === null ? 'Tippe zuerst auf eine Ware.' : 'Tippe auf Münzen, um sie hinzulegen.'}</span>`;
+      app.querySelectorAll('.coins .coin').forEach((b) => { b.disabled = sel === null || sum() + +b.dataset.v > run.coins; });
+      app.querySelectorAll('.offer').forEach((b) => b.classList.toggle('selected', +b.dataset.i === sel));
+      $('#pay').disabled = sel === null || !counter.length;
+      $('#counter').querySelectorAll('.coin').forEach((b) => { b.onclick = () => { counter.splice(+b.dataset.j, 1); paint(); }; });
+    };
+    paint();
+    app.querySelectorAll('.offer').forEach((b) => { b.onclick = () => { const i = +b.dataset.i; const it = ITEMS[n.offers[i]]; counter.length = 0;
+      if (P[n.offers[i]] > run.coins) { sel = null; say(`${it.name} kostet ${euro(P[n.offers[i]])}. Dafür reicht dein Geld noch nicht.`); } else { sel = i; say(`${it.name} kostet ${euro(P[n.offers[i]])}.`); }
+      paint(); if (sel !== null) show($('.purse')); }; });
+    app.querySelectorAll('.coins .coin').forEach((b) => { b.onclick = () => { counter.push(+b.dataset.v); paint(); }; });
+    $('#mtut').onclick = () => showTutorial('geld:' + tier);
+    $('#leave').onclick = () => { nodeDone(); saveAll(); advance(); };
+    const buy = (bonus) => { const id = n.offers[sel]; run.coins -= P[id]; run.items.push(id); n.sold.push(sel); if (bonus) run.items.push('beere'); saveAll();
+      return `Bitte schön, ${ITEMS[id].name} ist jetzt in deinem Beutel.${bonus ? ' Weil du passend bezahlt hast, bekommst du eine Beere dazu.' : ''}`; };
+    $('#pay').onclick = () => {
+      const id = n.offers[sel], price = P[id], paid = sum(), name = ITEMS[id].name;
+      if (paid === price) { recordAnswer('geld', true); return screenMarket(buy(tier === 1)); }
+      if (tier === 1 || paid < price) { recordAnswer('geld', false); saveAll(); counter.length = 0; paint(); return say(`Das sind ${euro(paid)}. ${name} kostet ${euro(price)}. Hier hast du dein Geld zurück.`); }
+      const c = paid - price; let ok = false;
+      const t = { kind: 'num', mod: 'geld', tier: 2, group: 'geld:2', text: `${euro(paid)} − ${euro(price)}`, ask: `Du gibst ${euro(paid)}. ${name} kostet ${euro(price)}. Wie viel Rückgeld bekommst du?`, answers: [Math.floor(c / 100), c % 100], labels: ['€', 'ct'], money: true };
+      let done = '';
+      render(`<div class="screen">${topbar('🧺 Rückgeld')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
+      ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Markt', onResult: (r) => { ok = r; recordAnswer('geld', r, t); if (r) done = buy(false); else saveAll(); } },
+        () => screenMarket(ok ? done : 'Das Rückgeld stimmt nicht. Hier hast du dein Geld zurück. Du kannst neu bezahlen oder weitergehen.')));
+    };
+    if (!msg && !meta.seenTut[tutKey('geld:1')]) showTutorial('geld:1', null, null, true);
   }
 
   /* ---------- Zeichenschule ---------- */
@@ -972,7 +1030,7 @@
       ${meta.pin ? '' : `<div class="card warncard"><p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
       <h2 class="psec" id="p-practice">Üben</h2>
       ${card('Klasse', gradeTabs())}
-      ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
+      ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Ist „Geld“ aus, gibt es keinen Markt und keine Münzen. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
       <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
       <h2 class="psec" id="p-progress">Fortschritt</h2>
       ${card('Stempel', `<div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>`)}
@@ -1026,7 +1084,7 @@
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = keepScroll(() => { meta.grade = +b.dataset.grade; saveAll(); again(); }); });
     app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
       const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
-      if (i >= 0) off.splice(i, 1); else { if (Object.keys(MODES[m].modules).length - off.length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }
+      if (i >= 0) off.splice(i, 1); else { if (!MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }
       meta.off[m] = off; saveAll(); keepScroll(again)(); }; });
   }
 
