@@ -426,6 +426,14 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .choice.reward .btn { margin-top: 8px; }
 .rwprev { width: 96px; height: 96px; flex: none; border-radius: 18px; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 30px; }
 .rwhave { margin-top: 8px; font-weight: 700; color: #1E7A34; }
+.weekcard { display: block; width: 100%; text-align: left; border: 3px solid var(--ink); font: inherit; cursor: pointer; }
+.weekline { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 18px; }
+.weekline span { font-size: 15px; color: var(--ink-soft); }
+.weekcard .bar, .goal .bar { display: block; width: 100%; margin-top: 8px; }
+.goal p { margin: 2px 0 0; font-size: 19px; font-weight: 700; }
+.goalrow { display: flex; align-items: center; gap: 12px; } .goalrow b { white-space: nowrap; margin-top: 8px; }
+.codebox.reporttext { word-break: normal; font: 15px/1.4 var(--text); }
+.wmap .node.weekboss small { font-size: 9.5px; }
 .gardencard { display: flex; align-items: center; gap: 12px; border: 3px solid var(--green); }
 .gardencard p { flex: 1; margin: 0; font-weight: 700; }
 .beds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
