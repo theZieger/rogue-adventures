@@ -331,6 +331,18 @@ async function saveCodeCases() {
   check(o.backupAt === '' && o.progressAt === '', 'old save loads with empty backup and win dates');
 }
 
+// 13. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
+{
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.stats.jahrmarkt;
+  const p1 = open({ [META]: JSON.stringify(old) }); if (p1.$('#later')) p1.click('#later');
+  check(p1.errors.length === 0 && p1.w.__mq.meta.stats.jahrmarkt && p1.w.__mq.meta.stats.jahrmarkt.uhr.t === 0, 'old save without Jahrmarkt stats loads with empty stats');
+  p1.click('[data-new="jahrmarkt"]'); p1.click('.choice'); p1.click('#go'); p1.click('.node.open');
+  const p2 = open(p1.dump());
+  check(!!p2.dump().mathquest_run_jahrmarkt && !!p2.$('[data-cont="jahrmarkt"]'), 'Jahrmarkt adventure is saved and can be continued');
+  p2.click('[data-cont="jahrmarkt"]');
+  check(!!p2.$('#fe') && p2.errors.length === 0, 'Jahrmarkt fight resumes after reopening');
+}
+
 reloadCases().then(saveCodeCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

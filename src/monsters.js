@@ -164,6 +164,24 @@ const MONART = (() => {
       ${eyes(60, 54, 11, 6, 'normal')}
       <path d="M60 60 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
       <rect x="84" y="80" width="10" height="24" rx="2" fill="#FFF3C4" ${S(2)}/><path d="M89 80 L89 75" ${S(1.5)}/><path d="M89 64 Q95 72 89 76 Q83 72 89 64 Z" fill="#FFC93C" ${S(1.5)}/>`,
+    horse: (c, g, d, l) => `
+      <rect x="57" y="2" width="6" height="116" rx="3" fill="#FFC93C" ${S(2)}/><path d="M60 8 L60 114" stroke="#C0392B" stroke-width="2" stroke-dasharray="5 7"/>
+      <path d="M90 62 Q116 58 110 92 Q102 78 92 76 Z" fill="${g.inner}" ${S()}/>
+      <path d="M44 78 L32 100 M52 82 L52 108 M80 82 L92 102 M88 78 L102 92" fill="none" stroke="${OUT}" stroke-width="10" stroke-linecap="round"/><path d="M44 78 L32 100 M52 82 L52 108 M80 82 L92 102 M88 78 L102 92" fill="none" stroke="${d}" stroke-width="5" stroke-linecap="round"/>
+      <ellipse cx="66" cy="70" rx="30" ry="17" fill="${g.body}" ${S()}/>
+      <path d="M42 70 Q30 48 32 32 L50 34 Q50 52 58 62 Z" fill="${g.body}" ${S()}/>
+      <ellipse cx="30" cy="32" rx="17" ry="11" transform="rotate(-24 30 32)" fill="${g.body}" ${S()}/><path d="M36 20 L40 6 L46 22 Z" fill="${g.body}" ${S(2)}/>
+      <path d="M46 20 Q58 26 52 34 Q62 40 54 48 Q64 54 58 60" fill="none" stroke="${g.inner}" stroke-width="6" stroke-linecap="round"/>
+      <path d="M56 56 Q68 48 80 56 L78 66 Q68 61 58 66 Z" fill="#C0392B" ${S(2)}/><circle cx="68" cy="60" r="2.5" fill="#FFC93C"/>
+      ${highlight(60, 62, 10, 4)}${eye1(30, 28, 5)}<circle cx="18" cy="38" r="1.8" fill="${OUT}"/>${mouth.smile(22, 42, 4)}`,
+    schaustellerin: (c, g, d, l) => `
+      <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#C0392B" ${S()}/><path d="M44 79 L44 108 M56 77 L56 108 M68 77 L68 108 M80 80 L80 108" stroke="#FFF3C4" stroke-width="4"/>
+      <circle cx="60" cy="54" r="28" fill="#F5C9A0" ${S()}/>
+      <path d="M32 58 Q30 38 42 34 L78 34 Q90 38 88 58 Q84 46 76 44 L44 44 Q36 46 32 58 Z" fill="#B5651D" ${S()}/>
+      <path d="M42 34 L45 14 L75 14 L78 34 Z" fill="#F2D27A" ${S()}/><rect x="44" y="23" width="32" height="6" fill="#3F7FE0"/><ellipse cx="60" cy="34" rx="36" ry="6" fill="#F2D27A" ${S()}/>
+      ${eyes(60, 56, 11, 6, 'normal')}
+      <path d="M60 62 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
+      <circle cx="94" cy="92" r="11" fill="#FFC93C" ${S(2)}/><circle cx="94" cy="92" r="3" fill="${OUT}"/><path d="M94 103 L82 110 L86 117 L98 108" fill="#FFF3C4" ${S(1.5)}/>`,
     potato: (c, g, d, l) => `
       <path d="M44 32 Q40 14 50 8 M72 30 Q74 14 84 10" fill="none" stroke="#3E8E41" stroke-width="4" stroke-linecap="round"/>
       <ellipse cx="48" cy="9" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(-30 48 9)"/><ellipse cx="84" cy="10" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(30 84 10)"/>

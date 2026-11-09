@@ -1,4 +1,5 @@
 const { JSDOM } = require('jsdom');
+const JM = require('./jm_solver.js');
 const fs = require('fs');
 const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'),'utf8');
 // Seeded randomness (game and bot), so a failing run can be reproduced: SEED=123 node tests/playtest.js
@@ -20,7 +21,8 @@ async function solveTask(forceWrong){
   const task=$('.task'); const t=task.textContent;
   let answers=null;
   const expr=$('.expr'); const M=w.eval('MQ');
-  if(expr){ const s=expr.textContent; let m;
+  if($('.jm')) answers=JM.solve(task.innerHTML, null, w.eval('MJ').REF);
+  else if(expr){ const s=expr.textContent; let m;
     if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) − \? = (\d+)$/)) answers=[+m[1]-m[2]];
@@ -59,7 +61,7 @@ async function solveTask(forceWrong){
 }
 async function solveKnow(forceWrong){
   const t=w.__task; if(!t) throw new Error('no task');
-  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf(t.answer); if(forceWrong) idx=(idx+1)%t.options.length; click(opts[idx]); }
+  if(t.kind==='choice'||t.kind==='parts'){ const opts=$$('.opt'); let idx=t.options.indexOf($('.jm')?JM.solve($('.task').innerHTML, t.options, w.eval('MJ').REF):t.answer); if(idx<0) throw new Error('choice not solvable: '+$('.task').textContent); if(forceWrong) idx=(idx+1)%t.options.length; click(opts[idx]); }
   else if(t.kind==='parts-find'){ const parts=$$('.plant [data-part]'); let el=parts.find(x=>x.dataset.part===t.part); if(forceWrong) el=parts.find(x=>x.dataset.part!==t.part); click(el); }
   else if(t.kind==='order'){ let order=t.order.slice(); if(forceWrong) order=[order[1],order[0]].concat(order.slice(2)); for(const id of order){ click($('.oitem[data-id="'+id+'"]')); } if($('#ocheck').disabled) throw new Error('check disabled'); click($('#ocheck')); }
   const fb=$('.feedback'); if(!fb) throw new Error('no feedback (know) '+t.kind);

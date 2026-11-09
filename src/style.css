@@ -404,3 +404,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .sumlist { margin: 10px 0; padding-left: 22px; font-size: 17px; }
 .qrbox { margin: 12px auto 6px; max-width: 320px; }
 .qr { display: block; width: 100%; height: auto; border-radius: 8px; }
+/* Jahrmarkt: clock, wheel, scale, ruler and chart */
+.jm-fig { display: block; margin: 4px auto 0; width: 100%; max-width: 170px; max-height: 22vh; }
+.jm-fig.jm-wide { max-width: 360px; }
+.jm text { font-family: 'Andika', sans-serif; }
+.jm .question { text-align: center; }

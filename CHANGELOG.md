@@ -11,6 +11,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Neu
 - Neues Ethik-Abenteuer „Das Kirchenjahr“: Buß- und Bettag, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten.
 - Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
+- Neues Mathe-Abenteuer „Der Jahrmarkt“: Uhr lesen, Längen, Gewichte, Glücksrad, Diagramme und Sachaufgaben mit Geld.
 - Zahlenquest: Neue Aufgaben zum Teilen, Teilen mit Rest, Runden und Verdoppeln und Halbieren.
 - Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.
 - Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.

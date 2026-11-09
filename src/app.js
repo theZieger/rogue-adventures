@@ -1,16 +1,17 @@
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap } = MQ;
   const MODES = {
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, gen: MQ.generate, numTut: MQ.TUT, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen' },
     ethik: MK.MODES.ethik,
     kirchenjahr: MK.MODES.kirchenjahr,
     kartoffel: MK.MODES.kartoffel,
+    jahrmarkt: MJ.MODE,
   };
-  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel'];
+  const MODE_KEYS = ['math', 'ethik', 'kirchenjahr', 'kartoffel', 'jahrmarkt'];
   // the title screen builds itself from this list
   const CURRICULUM = [
     { grade: 3, label: 'Klasse 3', subjects: [
-      { subject: 'Mathe', modes: ['math'] },
+      { subject: 'Mathe', modes: ['math', 'jahrmarkt'] },
       { subject: 'Ethik', modes: ['ethik', 'kirchenjahr'] },
       { subject: 'Sachkunde', modes: ['kartoffel'] },
     ] },
@@ -104,7 +105,7 @@
     run.recent = run.recent || {}; const rec = run.recent[mod] = run.recent[mod] || [];
     let t, sig;
     for (let i = 0; i < 12; i++) {
-      if (mode === 'math') { t = MQ.generate(mod, tier, opts); t.kind = 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
+      if (CFG().gen) { t = CFG().gen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
       else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, opts && opts.g ? { g: opts.g } : undefined); sig = t.qid; }
       if (!rec.includes(sig)) break;
     }
@@ -155,7 +156,7 @@
   }
 
   /* ---------- Tutorials ---------- */
-  function tutFor(group) { if (mode === 'math') { const [mod, tier] = group.split(':'); return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]); } const t = CFG().tut[group]; const M = MODULES_OF()[group.split(':')[0]]; return Object.assign({ icon: M ? M.icon : '📖' }, t); }
+  function tutFor(group) { const nt = CFG().numTut; if (nt) { const [mod, tier] = group.split(':'); return Object.assign({ icon: MODULES_OF()[mod].icon }, nt[mod][+tier] || nt[mod][1]); } const t = CFG().tut[group]; const M = MODULES_OF()[group.split(':')[0]]; return Object.assign({ icon: M ? M.icon : '📖' }, t); }
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
@@ -174,7 +175,8 @@
     const labelsFor = () => task.nb ? [`${task.nb} davor`, `${task.nb} danach`] : task.seq ? ['', '', ''] : [''];
     function cardHtml() {
       let body = '';
-      if (task.riddle) body = `<div class="clues">${task.text.split('\n').map((c) => `<div>${esc(c)}</div>`).join('')}</div><div class="prompt">Welche Zahl bin ich?</div>`;
+      if (task.fig) body = task.fig; // ready-made question with drawing (Jahrmarkt)
+      else if (task.riddle) body = `<div class="clues">${task.text.split('\n').map((c) => `<div>${esc(c)}</div>`).join('')}</div><div class="prompt">Welche Zahl bin ich?</div>`;
       else if (task.seq) body = `<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
       else if (task.nb) body = `<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
       else if (task.grid) { const g = task.grid; let cells = ''; for (let r = 0; r < g.size; r++) for (let c = 0; c < g.size; c++) { const isS = r === g.sr && c === g.sc, isT = r === g.tr && c === g.tc; cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`; } body = `<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${arrow('r')} +${g.stepR}</span><span>${arrow('l')} −${g.stepR}</span><span>${arrow('d')} +${g.stepD}</span><span>${arrow('u')} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`; }
@@ -210,7 +212,7 @@
         if (values.some((v) => v === '')) { const idx = values.findIndex((v) => v === ''); if (idx === active) return; active = idx; paint(); return; }
         submit(); return;
       }
-      else { if (values[active].length < 3) values[active] += k; }
+      else { if (values[active].length < (task.maxLen || 3)) values[active] += k; }
       paint();
     }
     function submit() {
@@ -220,7 +222,7 @@
       inps.forEach((el, i) => { el.classList.remove('active'); el.classList.add(parseInt(values[i], 10) === task.answers[i] ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
       if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
-      else { SFX.wrong(); const corr = task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      else { SFX.wrong(); const corr = task.show || task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -242,7 +244,7 @@
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
     if (task.kind === 'choice') {
-      container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
+      container.innerHTML = `<div class="task">${head}${task.fig || ''}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div><div id="fb" role="status" aria-live="polite"></div></div>`;
       bottom.innerHTML = `<div class="options ${task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
       bottom.querySelectorAll('.opt').forEach((b) => { b.onclick = () => { if (locked) return; const ok = task.options[+b.dataset.i] === task.answer; b.classList.add(ok ? 'right' : 'wrong'); finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`); }; });
       if (opts.hint) strikeWrongOption();
@@ -802,7 +804,7 @@
       <h2 class="psec" id="p-practice">Üben</h2>
       ${card('Klasse', gradeTabs())}
       ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
-      <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Mathe bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
+      <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Zahlenquest bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
       <h2 class="psec" id="p-progress">Fortschritt</h2>
       ${tables}
       ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}

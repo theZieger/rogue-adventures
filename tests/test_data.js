@@ -10,6 +10,7 @@ const modes = {
   math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, moves: MQ.ENEMY_MOVES, pool: null },
 };
 for (const [k, cfg] of Object.entries(MK.MODES)) modes[k] = cfg;
+modes.jahrmarkt = require('../src/jahrmarkt.js').MODE;
 
 for (const [mode, cfg] of Object.entries(modes)) {
   const mods = new Set(Object.keys(cfg.modules));
