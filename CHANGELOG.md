@@ -13,6 +13,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Der Moosbär teilt jetzt mit der Attacke „Wabenteilung“.
 - Beim ersten Start können Eltern eine PIN festlegen. Mit „Später“ geht es sofort ins Spiel.
 - Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.
+- Stempelheft: Stempel 🏷️ für richtige Aufgaben, Bosse, Siege und neue Monster. Die Stempelkarte zeigt jede Schulwoche, in der du gespielt hast.
+- Mit Stempeln holst du neue Kartenfarben in Zahlenquest und den Steinkauz als vierten Helden.
 
 ### Verbessert
 - Der Elternbereich ist in Üben, Fortschritt, Spielstand und App aufgeteilt.
