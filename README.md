@@ -29,6 +29,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
 | 🕯️ Das Kirchenjahr | Ethik, 2 Welten: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion – Welt 2: Fastenzeit, Symbole, Karwoche und Ostern, Himmelfahrt, Pfingsten, Taufe, feste und bewegliche Feste, sorbische Bräuche |
 | 🤝 Gute Freunde | Ethik: Freundschaft, wahre und falsche Freunde, Versprechen und Geheimnisse, Streitregeln, Kompromiss, Schlichter, Goldene Regel, Mobbing mit Worten, Wahrheit – Dilemma-Karten als Ereignisse ohne falsche Antwort |
+| 🌍 Ich, wir und die Welt | Ethik, 2 Welten: „Ich im Wir“ – Stärken und Schwächen, Mut und Angst, Kind und Erwachsener, Vorurteile, Gut und Böse, Nein sagen; „Wir in der Welt“ – Zeichen und Symbol, Drei Welten sortieren (natürlich, vom Menschen geschaffen, Gedankenwelt), Naturgewalten und Arche Noah, Müll, Strom, Klimawandel, die vier Elemente mit Redewendungen – Dilemma-Karten in beiden Welten |
 | ✏️ Wörterwerkstatt | Deutsch, Richtig schreiben: doppelte Mitlaute/ck/tz, Verlängern (d/t, g/k, b/p), silbentrennendes h, Groß oder klein (Stufe 2: Gefühle und Wörter mit Begleiter im Satz), zusammengesetzte Wörter mit Artikel, Wörterbuch-Reihenfolge, wörtliche Rede, Wortfamilie (Stufe 2: Vor- und Nachsilben), Worttrennung am Zeilenende, Komma und Doppelpunkt |
 | 🏗️ Satzbaustelle | Deutsch, Sprache untersuchen: Wortarten, Zeitformen (Präsens/Präteritum), Steigerung mit „als“/„wie“, Subjekt und Prädikat, Umstellprobe, Oberbegriffe, Teekesselwörter, Ersatzprobe (Stufe 2 rückwärts), Weglassprobe, Personalpronomen in Einzahl und Mehrzahl, Redensarten und Sprichwörter mit Herkunft |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
@@ -69,6 +70,7 @@ src/jahrmarkt.js   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waag
 src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
 src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
+src/ethik.js       Ethik-Einheit Ich, wir und die Welt (Fragen, Drei Welten, Dilemma-Karten)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
 src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
 src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
@@ -104,7 +106,7 @@ npm run playtest     # Bot spielt alle Modi durch
 Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
 - Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Auge, Ohr und Fahrrad: `EYE_PARTS`, `EAR_PARTS`, `BIKE_PARTS` in `src/sachkunde2.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
-- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.js`; Dilemma-Karten in `F_EVENTS`
+- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.js`; Dilemma-Karten in `F_EVENTS`; Ich, wir und die Welt in `src/ethik.js` (`POOL`, Dinge für Drei Welten in `DINGE`, Dilemma-Karten in `EVENTS`)
 - Deutsch-Wörter und -Sätze: `src/woerter.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
 - Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`

@@ -14,6 +14,11 @@
   "out": "cbc3fd2f291eaec1",
   "config": "14e1c93b1e80bcea"
  },
+ "ausrede": {
+  "raw": "ded5dfedff727664",
+  "out": "e87be10c4d12cbc4",
+  "config": "14e1c93b1e80bcea"
+ },
  "ausrufer-boss": {
   "raw": "936e621de3f2485d",
   "out": "6b54b1521984584e",
@@ -139,6 +144,11 @@
   "out": "7a760de97f4e2470",
   "config": "14e1c93b1e80bcea"
  },
+ "duerre": {
+  "raw": "3f467e06ba3c9341",
+  "out": "0574107b50d1c3cb",
+  "config": "14e1c93b1e80bcea"
+ },
  "efeuranke": {
   "raw": "99fc8749a67698e9",
   "out": "0905035c0286f1d8",
@@ -259,6 +269,11 @@
   "out": "34da28a22fe60180",
   "config": "14e1c93b1e80bcea"
  },
+ "grosseangst-boss": {
+  "raw": "9c6f17080094b611",
+  "out": "c1fda3798692e5fe",
+  "config": "14e1c93b1e80bcea"
+ },
  "gruppendruck-boss": {
   "raw": "69ca047dbe75443d",
   "out": "93e71c89f6b8f3d8",
@@ -297,6 +312,11 @@
  "hitzeflimmern": {
   "raw": "3b916d5f89758cc7",
   "out": "8e22edd96ddca399",
+  "config": "14e1c93b1e80bcea"
+ },
+ "hochwasser": {
+  "raw": "6ee239c31b6662ad",
+  "out": "261692f79593c1c6",
   "config": "14e1c93b1e80bcea"
  },
  "holzwurm": {
@@ -404,6 +424,11 @@
   "out": "2ff868efcb0b584d",
   "config": "14e1c93b1e80bcea"
  },
+ "kohlequalm-boss": {
+  "raw": "f307d2cd782b0fd3",
+  "out": "46dbf4ee8e9206ab",
+  "config": "14e1c93b1e80bcea"
+ },
  "kornkaefer": {
   "raw": "b8f067c4d06642f4",
   "out": "fe4f077d8fa470c9",
@@ -457,6 +482,11 @@
  "laerm": {
   "raw": "87f65d1d048b2e51",
   "out": "2859aa2d76baff2e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lampenfieber": {
+  "raw": "356fb441ef651e10",
+  "out": "109fb17dbf92a029",
   "config": "14e1c93b1e80bcea"
  },
  "lavamolch": {
@@ -539,6 +569,11 @@
   "out": "0685e3b36e87580e",
   "config": "14e1c93b1e80bcea"
  },
+ "muellberg": {
+  "raw": "c0e83c15e98b6997",
+  "out": "863dad7bf1d279e4",
+  "config": "14e1c93b1e80bcea"
+ },
  "muellerin-0": {
   "raw": "07d6ebe7ebd6a232",
   "out": "97f63644ded42de0",
@@ -599,6 +634,11 @@
   "out": "14beecdc763bd7e8",
   "config": "14e1c93b1e80bcea"
  },
+ "orkan-elite": {
+  "raw": "f18332a4299a5237",
+  "out": "f438d23663e09d9c",
+  "config": "14e1c93b1e80bcea"
+ },
  "owl-0": {
   "raw": "525d1897d8f79673",
   "out": "738cfc89bfeb9e88",
@@ -627,6 +667,21 @@
  "pencil-2": {
   "raw": "66b0ecd5b2e8233a",
   "out": "4039d28c39fcb5aa",
+  "config": "14e1c93b1e80bcea"
+ },
+ "pfadfinderin-0": {
+  "raw": "e95e9ec4f118a009",
+  "out": "1d6a9b1a8188337f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "pfadfinderin-1": {
+  "raw": "877fe338f193154a",
+  "out": "dc40501f13758899",
+  "config": "14e1c93b1e80bcea"
+ },
+ "pfadfinderin-2": {
+  "raw": "b570ea9d877d4872",
+  "out": "a22deb261ab80c67",
   "config": "14e1c93b1e80bcea"
  },
  "pfuetzenmolch": {
@@ -749,6 +804,11 @@
   "out": "99c4d2d2366d5206",
   "config": "14e1c93b1e80bcea"
  },
+ "schadenfreude-elite": {
+  "raw": "2819f7850fb8b9ca",
+  "out": "daa4d72d1169bb9c",
+  "config": "14e1c93b1e80bcea"
+ },
  "schattenwolf": {
   "raw": "6199cc6ea003aff2",
   "out": "e9b9fdf29ee72164",
@@ -782,6 +842,11 @@
  "schotterhaufen": {
   "raw": "7922b8a2ac92cab1",
   "out": "c9931bd0d190d6b5",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schubladendenken": {
+  "raw": "ba5105fcbbfcf338",
+  "out": "263d6b0bd4ba0ffc",
   "config": "14e1c93b1e80bcea"
  },
  "schulaerztin-0": {
@@ -849,6 +914,11 @@
   "out": "31fd753cf70179f1",
   "config": "14e1c93b1e80bcea"
  },
+ "stromfresser": {
+  "raw": "32df21772b09258b",
+  "out": "3e01ee92d8d35b7a",
+  "config": "14e1c93b1e80bcea"
+ },
  "stummel": {
   "raw": "96a307d2b0fd11fb",
   "out": "8cdadb87b6a7e967",
@@ -897,6 +967,11 @@
  "trockenheit": {
   "raw": "1af66eece37f168c",
   "out": "49ca9cdce05482c0",
+  "config": "14e1c93b1e80bcea"
+ },
+ "trotzkopf": {
+  "raw": "e74526a9dd1dd92e",
+  "out": "f5dfb52ecdb88c74",
   "config": "14e1c93b1e80bcea"
  },
  "unwetter-boss": {
