@@ -135,6 +135,39 @@ for(const e of K.GARDEN_POOL){ if(!K.CROPS[e.crop]&&e.crop!=='getreide') fails.p
 for(const c of Object.keys(K.CROPS)){ if(K.GARDEN_POOL.filter(e=>e.crop===c).length<3) fails.push('garden too few questions '+c);
   for(let i=0;i<50;i++){ const q=K.gardenQuestion(c); const e=K.GARDEN_POOL.find(x=>x.id===q.qid);
     if(!q.options.includes(q.answer)||(e.crop!==c&&!(e.crop==='getreide'&&c!=='kartoffel'))) fails.push('garden question '+c+' '+q.qid); } }
+// Englisch: data complete and unique, enough words and sentences, every generated task has one right answer
+{ const E=K.E, en=[], fail=(m)=>fails.push('englisch '+m);
+  for(const [t,list] of Object.entries(K.EN_THEMES)){ if(list.length<4) fail('theme '+t+' has fewer than 4 words');
+    for(const w of list) if(typeof w[0]!=='string'||!w[0].trim()||typeof w[1]!=='string'||!w[1].trim()) fail('incomplete word in '+t+': '+JSON.stringify(w));
+    const de=list.map(w=>w[1]); de.filter((x,i)=>de.indexOf(x)!==i).forEach(x=>fail('theme '+t+' has the meaning '+x+' twice')); }
+  const all=Object.values(E.woerter).flat().concat(E.farben,E.zahlen,E.tage,E.monate);
+  all.forEach(w=>en.push(w[0])); en.filter((x,i)=>en.indexOf(x)!==i).forEach(x=>fail('word twice: '+x));
+  if(all.length<180) fail('only '+all.length+' words');
+  for(const w of Object.values(E.woerter).flat()) if(/^[A-ZÄÖÜ]/.test(w[1])&&!/^(der|die|das) /.test(w[1])) fail('German noun without article: '+w[1]);
+  for(const f of E.farben) if(!/^#[0-9A-F]{6}$/i.test(f[2])) fail('colour '+f[0]+' without #RRGGBB');
+  for(const z of E.zahlen) if(!Number.isInteger(z[2])) fail('number '+z[0]+' without value');
+  for(let n=1;n<=20;n++) if(!E.zahlen.some(z=>z[2]===n)) fail('number word missing for '+n);
+  for(let n=30;n<=100;n+=10) if(!E.zahlen.some(z=>z[2]===n)) fail('number word missing for '+n);
+  if(K.numWord(42)!=='forty-two'||K.numWord(100)!=='one hundred'||K.numWord(17)!=='seventeen'||K.numWord(70)!=='seventy') fail('numWord');
+  if(E.tage.length!==7||E.monate.length!==12) fail('days or months incomplete');
+  if(E.saetze.length+E.luecken.length+E.fragen.length<40) fail('fewer than 40 sentences');
+  if(E.saetze.length<40) fail('only '+E.saetze.length+' sentences for „Was bedeutet das?“');
+  for(const l of E.luecken){ if(l.length!==4||(l[0].match(/___/g)||[]).length!==1) fail('gap sentence '+l[0]); if(new Set(l.slice(1)).size!==3) fail('gap words not distinct '+l[0]); }
+  for(const f of E.fragen) if(f.length!==4||new Set(f.slice(1)).size!==3) fail('question '+f[0]);
+  const de=E.saetze.map(x=>x[1]), es=E.saetze.map(x=>x[0]); de.concat(es).filter((x,i,a)=>a.indexOf(x)!==i).forEach(x=>fail('sentence twice: '+x));
+  if(/'/.test(JSON.stringify(E))) fail("straight apostrophe, use ’");
+  if(/colou?r/.test(JSON.stringify(E))&&/\bcolor\b|favorite|\bgray\b/.test(JSON.stringify(E))) fail('American spelling');
+  for(const m of ['teestube','doppeldecker']){ const cfg=K.MODES[m];
+    for(const mod of Object.keys(cfg.modules)) for(let t=1;t<=cfg.modules[mod].maxTier;t++) for(let i=0;i<300;i++){ const q=K.generate(m,mod,t,{},++seq);
+      if(q.mod!==mod) fail(m+' wrong mod '+q.mod);
+      if(q.kind==='choice'){ if(q.options.filter(o=>o===q.answer).length!==1) fail('not exactly one correct '+q.qid); if(new Set(q.options).size!==q.options.length) fail('duplicate option '+q.qid); }
+      if(mod==='zahl'){ const n=q.answers[0]; if(q.kind!=='num'||q.text!==K.numWord(n)||(t===1?n<1||n>20:n<21||n>100)) fail('zahl tier '+t+' '+q.text+' '+n); }
+      if(mod==='farbe'&&(!q.pic||!q.pic.includes(E.farben.find(f=>f[0]===q.answer)[2]))) fail('colour swatch '+q.qid);
+      if(mod==='odd'){ const th=(w)=>Object.keys(K.EN_THEMES).filter(k=>K.EN_THEMES[k].some(x=>x[0]===w)); const others=q.options.filter(o=>o!==q.answer);
+        if(q.options.length!==4||new Set(others.map(o=>th(o)[0])).size!==1||th(q.answer)[0]===th(others[0])[0]) fail('odd one out '+q.options); }
+      if(mod==='reihe'){ const list=(t===1?E.tage:E.monate).map(x=>x[0]); const txt=q.order.map(id=>q.items.find(x=>x.id===id).text);
+        if(q.items.length!==4||txt.some((x,i)=>i&&list.indexOf(x)<list.indexOf(txt[i-1]))||txt.some(x=>!list.includes(x))) fail('order '+txt); }
+      if(!cfg.tut[q.group]||!cfg.notes[q.note]) fail('tut/note '+q.group+' '+q.note); } } }
 const ids=Object.values(K.MODES).flatMap(c=>c.pool.map(p=>p.id)).concat(K.GARDEN_POOL.map(p=>p.id)); const dup=ids.filter((x,i)=>ids.indexOf(x)!==i);
 console.log('knowledge fails',fails.length,'duplicate ids',dup.length,'questions',Object.keys(know).length);
 if(fails.length||dup.length){ console.log(fails.slice(0,20), dup); process.exit(1); }

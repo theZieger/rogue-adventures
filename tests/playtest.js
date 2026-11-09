@@ -40,6 +40,12 @@ async function solveColumns(forceWrong){
   if($$('.colcalc .inp.carry.bad').length) throw new Error('bot carries marked wrong: '+label);
   colTasks++; if(good) correctAnswers++; else wrongAnswers++; click($('#next')); return true;
 }
+// Englisch, worked out by the bot itself: number words, days and months
+const EN_ONES=['','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const EN_TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const EN_DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const EN_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function enNumber(s){ if(s==='one hundred') return 100; const [t,o]=s.split('-'); const n=EN_ONES.indexOf(t)>0?EN_ONES.indexOf(t):EN_TENS.indexOf(t)*10+(o?EN_ONES.indexOf(o):0); if(!(n>0)) throw new Error('unknown number word '+s); return n; }
 async function solveTask(forceWrong){
   const inps=$$('.inp'); if(!inps.length) return false;
   if($('.colcalc')) return solveColumns(forceWrong);
@@ -59,6 +65,7 @@ async function solveTask(forceWrong){
     else if(m=s.match(/^(\d+) · (\d+) = \?$/)) answers=[+m[1]*m[2]];
     else if(m=s.match(/^\? · (\d+) = (\d+)$/)||s.match(/^(\d+) · \? = (\d+)$/)) answers=[+m[2]/m[1]];
     else if(m=s.match(/^(\d+) : (\d+) = \?$/)) answers=inps.length===2?[Math.floor(m[1]/m[2]),m[1]%m[2]]:[+m[1]/m[2]];
+    else if(/^[a-z -]+$/.test(s)) answers=[enNumber(s)]; // Englisch: number word to digits
     else if(/^\d+$/.test(s)){ const n=+s, ask=$('.prompt').textContent;
       if(ask.includes('Runde')){ const to=ask.includes('Hunderter')?100:10; answers=[Math.round(n/to)*to]; }
       else if(ask.includes('Verdopple')) answers=[2*n]; else if(ask.includes('Halbiere')) answers=[n/2]; }
@@ -99,7 +106,8 @@ async function solveKnow(forceWrong){
     const shown=$$('.oitem').map(b=>({id:b.dataset.id,text:b.textContent.trim()}));
     if(t.mod==='abc') order=shown.slice().sort((a,b)=>a.text.slice(0,3).toLowerCase()<b.text.slice(0,3).toLowerCase()?-1:1).map(x=>x.id);
     if(t.mod==='umstell'){ const sentence=$('.question').textContent.match(/„(.+)\.“/)[1].toLowerCase(); const parts=shown.slice().sort((a,b)=>sentence.indexOf(a.text.toLowerCase())-sentence.indexOf(b.text.toLowerCase())); order=[parts[2],parts[1],parts[0]].map(x=>x.id); }
-    if(order.join()!==t.order.join()) throw new Error('bot and game disagree on '+t.qid); if(forceWrong) order=[order[1],order[0]].concat(order.slice(2)); for(const id of order){ click($('.oitem[data-id="'+id+'"]')); } if($('#ocheck').disabled) throw new Error('check disabled'); click($('#ocheck')); }
+    if(t.mod==='reihe'){ const cal=EN_DAYS.concat(EN_MONTHS); order=shown.slice().sort((a,b)=>cal.indexOf(a.text)-cal.indexOf(b.text)).map(x=>x.id); }
+    if(order.join()!==t.order.join()) throw new Error('bot and game disagree on '+t.qid); if(forceWrong) order=order.slice(0,-2).concat([order[order.length-1],order[order.length-2]]); /* the last two: an Eselsbrücke may fix the first */ for(const id of order){ click($('.oitem[data-id="'+id+'"]')); } if($('#ocheck').disabled) throw new Error('check disabled'); click($('#ocheck')); }
   const fb=$('.feedback'); if(!fb) throw new Error('no feedback (know) '+t.kind);
   const good=fb.classList.contains('good'); if(forceWrong&&good) throw new Error('wrong marked good '+t.kind); if(!forceWrong&&!good) throw new Error('correct marked bad '+t.kind+' '+JSON.stringify(t));
   if(good) correctAnswers++; else wrongAnswers++; click($('#next'));
