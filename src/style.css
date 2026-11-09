@@ -214,6 +214,7 @@ p { margin: 8px 0; }
 .task .question .blank { display: inline-block; border-bottom: 4px solid var(--blue); padding: 0 6px; color: var(--blue); }
 .options { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .options.two { grid-template-columns: 1fr 1fr; }
+.options.sentence { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 8px; font-weight: 700; font-size: 22px; }
 .opt { min-height: 56px; border: 3px solid var(--ink); border-radius: 16px; background: var(--card); color: var(--ink); font-weight: 700; font-size: 19px; padding: 8px 14px; box-shadow: var(--shadow); cursor: pointer; text-align: center; line-height: 1.25; }
 .opt:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,.25); }
 .opt.right { background: #CDEFD3; outline: 4px solid var(--green); }
