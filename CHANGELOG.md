@@ -15,7 +15,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Der Knopf „Eltern“ oben rechts öffnet den Elternbereich, auf Wunsch mit PIN geschützt.
 - Stempelheft: Stempel 🏷️ für richtige Aufgaben, Bosse, Siege und neue Monster. Die Stempelkarte zeigt jede Schulwoche, in der du gespielt hast.
 - Mit Stempeln holst du neue Kartenfarben in Zahlenquest und den Steinkauz als vierten Helden.
-- Neues Ethik-Abenteuer „Das Kirchenjahr“: Buß- und Bettag, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten.
+- Neues Ethik-Abenteuer „Das Kirchenjahr“ in zwei Welten: von Buß- und Bettag bis Weihnachten und von der Fastenzeit bis Pfingsten.
+- Neues Ethik-Abenteuer „Gute Freunde“: Streitregeln, Goldene Regel, Wahrheit und Karten, bei denen es kein Richtig oder Falsch gibt.
 - Mit der Küsterin durch Kirche und Adventszeit – Konflikte als Ereignisse, Notizkarten zu jedem Thema.
 - Eltern sichern den Spielstand als Code oder QR-Code und laden ihn auf einem anderen Gerät.
 - Ein gelber Punkt am Knopf „Eltern“ erinnert daran, den Spielstand wieder zu sichern.

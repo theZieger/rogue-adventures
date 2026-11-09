@@ -25,7 +25,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 |---|---|
 | 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
-| 🕯️ Das Kirchenjahr | Ethik: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion |
+| 🕯️ Das Kirchenjahr | Ethik, 2 Welten: Buß- und Bettag, innere und äußere Konflikte, Kreuz, Kirche, Bibel, Zehn Gebote, Advent und Weihnachten (Lukas), Ethik und Religion – Welt 2: Fastenzeit, Symbole, Karwoche und Ostern, Himmelfahrt, Pfingsten, Taufe, feste und bewegliche Feste, sorbische Bräuche |
+| 🤝 Gute Freunde | Ethik: Freundschaft, wahre und falsche Freunde, Versprechen und Geheimnisse, Streitregeln, Kompromiss, Schlichter, Goldene Regel, Mobbing mit Worten, Wahrheit – Dilemma-Karten als Ereignisse ohne falsche Antwort |
 | ✏️ Wörterwerkstatt | Deutsch, Richtig schreiben: doppelte Mitlaute/ck/tz, Verlängern (d/t, g/k, b/p), silbentrennendes h, Groß oder klein, zusammengesetzte Wörter mit Artikel, Wörterbuch-Reihenfolge, wörtliche Rede |
 | 🏗️ Satzbaustelle | Deutsch, Sprache untersuchen: Wortarten, Zeitformen (Präsens/Präteritum), Steigerung mit „als“/„wie“, Subjekt und Prädikat, Umstellprobe, Oberbegriffe, Teekesselwörter |
 | 🥔 Kartoffel-Werkstatt | Sachkunde: Pflanzenteile (mit Zeichenschule), Wachstum, Herkunft, Ernte früher/heute, Kartoffelkäfer, Kartoffelwörter, „Der Bauer und der Teufel“ |
@@ -83,10 +84,10 @@ npm run playtest     # Bot spielt alle Modi durch
 Inhalte anpassen:
 - Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
 - Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
-- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr) und `K_POOL` (Kartoffel) in `src/knowledge.js`
+- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.js`; Dilemma-Karten in `F_EVENTS`
 - Deutsch-Wörter und -Sätze: `src/woerter.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
-- Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
+- Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
 
 ## Veröffentlichen (GitHub Pages)
 
