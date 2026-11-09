@@ -90,7 +90,7 @@ const MS3 = (() => {
     { id: 'staengel', name: 'Stängel- und Blattschicht', desc: 'Zwischen Halmen, Stängeln und Blättern. Hier sitzen Heuschrecken, Marienkäfer und Raupen, Spinnen bauen ihre Netze.', tip: 'Das Stockwerk liegt zwischen den Halmen.' },
     { id: 'bluete', name: 'Blütenschicht', desc: 'Ganz oben bei den Blüten. Bienen, Hummeln und Schmetterlinge holen hier Nektar.', tip: 'Das Stockwerk ist ganz oben.' },
   ];
-  const WIESE = { label: 'Stockwerke der Wiese', box: '0 0 300 240', parts: LAYERS, stepOf: {},
+  const WIESE = { label: 'Stockwerke der Wiese', box: '0 0 300 240', parts: LAYERS, stepOf: {}, tap: 'die Stelle im Bild',
     ask: () => 'Wie heißt das leuchtende Stockwerk der Wiese?', find: (p) => `Tippe auf das Stockwerk: ${p.name}` };
   const hit = (y, h) => `<rect class="hitarea" x="0" y="${y}" width="300" height="${h}" fill="transparent"/>`;
   WIESE.svg = (opts) => partsSVG(WIESE, opts, (g) => `

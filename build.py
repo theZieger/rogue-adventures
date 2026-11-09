@@ -16,6 +16,7 @@ english = strip_exports((SRC / "english.js").read_text(encoding="utf-8"), "ENG")
 texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
 sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
+sach2 = strip_exports((SRC / "sachkunde2.js").read_text(encoding="utf-8"), "MS2")
 sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
@@ -114,6 +115,7 @@ html = f"""<!DOCTYPE html>
 {sach}
 </script>
 <script>
+{sach2}
 {sach3}
 </script>
 <script>
