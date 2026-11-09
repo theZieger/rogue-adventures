@@ -5,7 +5,7 @@ const fails = [];
 const check = (cond, msg, t) => { if (!cond && fails.length < 10) fails.push(msg + ' ' + JSON.stringify(t).slice(0, 400)); };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 // upper bound per input field, by the unit written under it
-const FIELD_MAX = { Minuten: 59, cm: 99, g: 999, ct: 99 };
+const FIELD_MAX = { Minuten: 59, Sekunden: 59, cm: 99, g: 999, ct: 99 };
 
 for (const [mod, M] of Object.entries(MJ.MODULES)) {
   check(M.worldCap.length === MJ.MODE.worlds && M.worldCap.every((c, i) => c >= 1 && c <= M.maxTier && (!i || c >= M.worldCap[i - 1])), 'worldCap', mod);
@@ -34,6 +34,9 @@ for (const [mod, M] of Object.entries(MJ.MODULES)) {
     }
   }
 }
+// tier 2 of the Schautafel shows standing and lying bars; the Fahrplan crosses the full hour in tier 2 only
+{ const kinds = new Set(); for (let i = 0; i < 200; i++) kinds.add(MJ.generate('tafel', 2).fig.match(/aria-label="([A-Za-zä]+)diagramm/)[1]); check(kinds.size === 2, 'Säulen- and Balkendiagramm in tier 2', [...kinds]);
+  for (let t = 1; t <= 2; t++) { let cross = 0; for (let i = 0; i < 300; i++) { const hs = [...MJ.generate('fahrplan', t).fig.matchAll(/<td>(\d+):/g)].map((m) => m[1]); if (new Set(hs).size > 1) cross++; } check(t === 1 ? cross === 0 : cross > 100, 'Fahrplan hours per tier', [t, cross]); } }
 // estimate questions: the other options are off by at least a factor of 10
 for (const r of MJ.REF) { const g = r.slice(1).map(MJ.qty); check(g.slice(1).every((x) => Math.max(x, g[0]) / Math.min(x, g[0]) >= 10), 'REF options far apart', r); }
 for (const mod of Object.keys(MJ.MODULES)) { const tk = MJ.generate(mod, MJ.MODULES[mod].maxTier); console.log(mod, textOf(tk.fig), tk.q || '', JSON.stringify(tk.answers || tk.answer)); }
