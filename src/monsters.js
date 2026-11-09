@@ -166,6 +166,14 @@ const MONART = (() => {
       ${eyes(60, 54, 11, 6, 'normal')}
       <path d="M60 60 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
       <path d="M66 92 L92 70" fill="none" stroke="#FFC93C" stroke-width="3" stroke-linecap="round"/><path d="M88 66 L96 68 L92 76 Z" fill="#FFF3C4" ${S(1.5)}/>`,
+    kuesterin: (c, g, d, l) => `
+      <path d="M22 108 Q24 76 60 76 Q96 76 98 108 Z" fill="#3B5B8C" ${S()}/><path d="M46 78 Q60 90 74 78" fill="#F5F0E6" ${S(2)}/>
+      <circle cx="60" cy="24" r="11" fill="#7A4A2A" ${S()}/>
+      <circle cx="60" cy="54" r="28" fill="#F5C9A0" ${S()}/>
+      <path d="M32 50 Q32 24 60 24 Q88 24 88 50 Q78 34 60 34 Q42 34 32 50 Z" fill="#7A4A2A" ${S()}/>
+      ${eyes(60, 54, 11, 6, 'normal')}
+      <path d="M60 60 L58 68 L63 68" fill="none" ${S(2)}/>${mouth.smile(60, 74, 7)}
+      <rect x="84" y="80" width="10" height="24" rx="2" fill="#FFF3C4" ${S(2)}/><path d="M89 80 L89 75" ${S(1.5)}/><path d="M89 64 Q95 72 89 76 Q83 72 89 64 Z" fill="#FFC93C" ${S(1.5)}/>`,
     potato: (c, g, d, l) => `
       <path d="M44 32 Q40 14 50 8 M72 30 Q74 14 84 10" fill="none" stroke="#3E8E41" stroke-width="4" stroke-linecap="round"/>
       <ellipse cx="48" cy="9" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(-30 48 9)"/><ellipse cx="84" cy="10" rx="9" ry="5" fill="#4FB04F" ${S(2)} transform="rotate(30 84 10)"/>
