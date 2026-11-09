@@ -65,12 +65,15 @@ src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Le
 src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop nacherzählt, Sachtexte, Witze, Sprichwörter)
 src/knowledge.js   Wissensinhalte Ethik, Kartoffel und Deutsch (Fragen, Notizkarten, Tutorials)
 src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
-src/monsters.js    Handgezeichnete SVG-Monster
+src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
+art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
+tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
+tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
@@ -85,7 +88,7 @@ docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebu
 
 ```bash
 npm install          # nur jsdom für die Tests
-npm run build        # src/* -> docs/index.html
+npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
 npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/)
 npm run playtest     # Bot spielt alle Modi durch
 ```

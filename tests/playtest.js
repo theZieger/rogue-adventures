@@ -11,11 +11,13 @@ function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.i
 Math.random=prng(SEED+1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
 const NOW=Date.parse(process.env.NOW||'2026-12-23T10:00:00');
-const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); } });
+// Fake time: the game's battle pauses (up to ~2 s) and the bot's waits run 100× faster; TIME=1 plays in real time.
+const TIME=+(process.env.TIME||0.01);
+const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const st=win.setTimeout; win.setTimeout=(fn,ms,...a)=>st.call(win,fn,(ms||0)*TIME,...a); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
-const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+const sleep = (ms)=>new Promise(r=>setTimeout(r,ms*TIME));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
 const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
