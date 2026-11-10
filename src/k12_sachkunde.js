@@ -49,15 +49,15 @@ const MSK12 = (() => {
   // ein Baum in den vier Jahreszeiten
   const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
   function seasonSVG(i) {
-    const crown = (fill) => `<path d="M60 22 Q86 18 94 40 Q108 50 100 68 Q98 84 78 84 Q60 92 42 84 Q22 84 20 68 Q12 50 26 40 Q34 18 60 22 Z" fill="${fill}" ${ln(2)}/>`;
+    const crown = (a, b) => `<defs><linearGradient id="k2cr${i}" x1="0" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><path d="M60 22 Q86 18 94 40 Q108 50 100 68 Q98 84 78 84 Q60 92 42 84 Q22 84 20 68 Q12 50 26 40 Q34 18 60 22 Z" fill="url(#k2cr${i})" ${ln(2)}/><path d="M36 42 q8 -7 16 0 M64 34 q8 -7 16 0 M26 62 q8 -7 16 0 M76 58 q8 -7 16 0 M50 74 q8 -7 16 0" fill="none" stroke="${b}" stroke-width="1.8" stroke-linecap="round"/>`;
     // spread evenly over the crown (sunflower spiral)
     const dots = (cols, n) => Array.from({ length: n }, (_, k) => `<circle cx="${+(60 + Math.cos(k * 2.4) * 8.6 * Math.sqrt(k + 0.5) * 1.15).toFixed(1)}" cy="${+(54 + Math.sin(k * 2.4) * 8.6 * Math.sqrt(k + 0.5) * 0.8).toFixed(1)}" r="3.2" fill="${cols[k % cols.length]}" ${ln(0.8)}/>`).join('');
-    const trunk = `<path d="M54 118 L56 76 L64 76 L66 118 Z" fill="#8A5A34" ${ln(2)}/>`;
+    const trunk = `<defs><linearGradient id="k2tk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A8744A"/><stop offset="1" stop-color="#6E4426"/></linearGradient></defs><path d="M52 118 Q56 110 56 96 L56 76 L64 76 L64 96 Q64 110 68 118 Z" fill="url(#k2tk)" ${ln(2)}/><path d="M59 112 q-1 -8 0 -14 M62 96 q1 -6 0 -10" fill="none" stroke="#5A3820" stroke-width="1.2"/>`;
     const art = [
-      `<rect width="120" height="130" fill="#E6F6FF"/>${SOIL(116, 120).replace('#B88A5E', '#8CCB5E')}${trunk}${crown('#A8DB7A')}${dots(['#FFFFFF', '#F7B8D2'], 14)}<path d="M14 116 v-6 M20 116 v-5 M102 116 v-6" stroke="#4E9A32" stroke-width="2"/><circle cx="14" cy="108" r="3" fill="#FFD43B"/><circle cx="102" cy="108" r="3" fill="#F7B8D2"/>`,
-      `<rect width="120" height="130" fill="#CFEBFF"/>${sun(102, 16, 9)}${SOIL(116, 120).replace('#B88A5E', '#6DB24A')}${trunk}${crown('#4E9A32')}${dots(['#E8344A'], 6)}`,
-      `<rect width="120" height="130" fill="#F4EDE0"/>${SOIL(116, 120).replace('#B88A5E', '#C9A26A')}${trunk}${crown('#F0A23A')}${dots(['#E8603A', '#FFD43B', '#B8562A'], 16)}${[[18, 100, 20], [96, 98, -30], [84, 110, 60], [30, 112, -10]].map(([x, y, r]) => at(x, y, r, 1, `<path d="M0 -5 Q5 0 0 5 Q-5 0 0 -5 Z" fill="#E8603A" ${ln(1)}/>`)).join('')}`,
-      `<rect width="120" height="130" fill="#DCE6F2"/>${SOIL(116, 120).replace('#B88A5E', '#FFFFFF')}${trunk}<path d="M60 78 L40 46 M60 78 L82 44 M60 70 L60 30 M48 60 L30 54 M74 58 L94 50 M40 46 L34 32 M82 44 L88 30" fill="none" ${ln(4)}/><path d="M40 46 L34 32 M82 44 L88 30 M60 30 L60 40" fill="none" stroke="#fff" stroke-width="2"/><path d="${flake(16, 24) + flake(104, 34) + flake(24, 70) + flake(98, 86) + flake(70, 14)}" stroke="#5B8FC9" stroke-width="1.6" stroke-linecap="round"/>`,
+      `<rect width="120" height="130" fill="#E6F6FF"/>${SOIL(116, 120).replace('#B88A5E', '#8CCB5E')}${trunk}${crown('#CFEFA8', '#7CBF52')}${dots(['#FFFFFF', '#F7B8D2'], 14)}<path d="M14 116 v-6 M20 116 v-5 M102 116 v-6" stroke="#4E9A32" stroke-width="2"/><circle cx="14" cy="108" r="3" fill="#FFD43B"/><circle cx="102" cy="108" r="3" fill="#F7B8D2"/>`,
+      `<rect width="120" height="130" fill="#CFEBFF"/>${sun(102, 16, 9)}${SOIL(116, 120).replace('#B88A5E', '#6DB24A')}${trunk}${crown('#7CC35B', '#2F7A32')}${dots(['#E8344A'], 6)}`,
+      `<rect width="120" height="130" fill="#F4EDE0"/>${SOIL(116, 120).replace('#B88A5E', '#C9A26A')}${trunk}${crown('#FFC85A', '#D8662A')}${dots(['#E8603A', '#FFD43B', '#B8562A'], 16)}${[[18, 100, 20], [96, 98, -30], [84, 110, 60], [30, 112, -10]].map(([x, y, r]) => at(x, y, r, 1, `<path d="M0 -5 Q5 0 0 5 Q-5 0 0 -5 Z" fill="#E8603A" ${ln(1)}/>`)).join('')}`,
+      `<rect width="120" height="130" fill="#DCE6F2"/>${SOIL(116, 120).replace('#B88A5E', '#FFFFFF')}${twin('M48 62 L30 54 M74 58 L94 50 M40 46 L34 32 M40 46 L26 40 M82 44 L88 30 M82 44 L98 40 M60 44 L52 32 M60 40 L68 28', '#7A5032', 1.6)}${twin('M60 80 Q50 62 40 46 M60 78 Q72 60 82 44 M60 78 L60 30', '#7A5032', 3.4)}${trunk}<path d="M30 52 L46 59 M76 55 L92 48 M60 28 L60 36 M26 38 L38 43 M84 41 L96 38 M38 44 Q46 54 52 62" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="${flake(16, 24) + flake(104, 34) + flake(24, 70) + flake(98, 86) + flake(70, 14)}" stroke="#5B8FC9" stroke-width="1.6" stroke-linecap="round"/>`,
     ][i];
     return pic('0 0 120 130', art, 'Ein Baum in einer Jahreszeit', 170);
   }
@@ -505,13 +505,13 @@ const MSK12 = (() => {
     steps: ['Zeichne die Erdlinie und darunter die Wurzeln.', 'Zeichne den dicken Stamm nach oben.', 'Zeichne oben am Stamm zwei dicke Äste.', 'Zeichne an die Äste dünne Zweige.', 'Male um die Äste die grüne Krone.', 'Zeichne daneben ein Blatt, stark vergrößert.'],
     ask: () => 'Wie heißt der leuchtende Teil?', find: (p) => `Tippe auf: ${p.name}`, poolQ: 'Wie heißt dieser Teil des Baumes?', tap: 'den Teil des Baumes' };
   const BLOBS = [[130, 92, 62], [82, 104, 40], [178, 100, 40], [104, 60, 40], [158, 58, 40], [130, 44, 34]];
-  TREE.svg = (opts) => partsSVG(TREE, opts, (g) => `${SOIL(240, 260)}
+  TREE.svg = (opts) => partsSVG(TREE, opts, (g) => `<defs>${GRAD.lf}<linearGradient id="k2tc" gradientUnits="userSpaceOnUse" x1="90" y1="10" x2="170" y2="160"><stop offset="0" stop-color="#A8DA6C"/><stop offset="1" stop-color="#468A2C"/></linearGradient><linearGradient id="k2ts" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A8744A"/><stop offset="1" stop-color="#6E4426"/></linearGradient></defs>${SOIL(240, 260)}
     ${g('wurzeln', `${twin('M130 240 Q112 258 96 282 M130 240 Q126 264 120 292 M130 240 Q140 264 146 290 M130 240 Q150 254 168 276 M130 242 Q104 248 86 254 M130 242 Q156 248 176 252', '#D9B98E', 3)}<rect class="hitarea" x="80" y="242" width="100" height="54" fill="transparent"/>`)}
-    ${g('krone', `${BLOBS.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${LEAF}" ${ln(2.5)}/>`).join('')}${BLOBS.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r - 1.5}" fill="${LEAF}"/>`).join('')}<path d="M70 100 q6 -6 12 0 M150 120 q6 -6 12 0 M110 50 q6 -6 12 0 M176 70 q6 -6 12 0" fill="none" stroke="${LEAF_D}" stroke-width="2" stroke-linecap="round"/>`)}
-    ${g('stamm', `<path d="M114 241 Q122 190 120 132 L140 132 Q138 190 146 241 Z" fill="${BARK}" ${ln(2.5)}/><path d="M126 220 q4 -10 0 -20 M134 180 q-3 -8 0 -16" fill="none" stroke="#5E3C22" stroke-width="2"/>`)}
+    ${g('krone', `${BLOBS.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#k2tc)" ${ln(2.5)}/>`).join('')}${BLOBS.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r - 1.5}" fill="url(#k2tc)"/>`).join('')}<path d="M70 100 q6 -6 12 0 M150 120 q6 -6 12 0 M110 50 q6 -6 12 0 M176 70 q6 -6 12 0" fill="none" stroke="${LEAF_D}" stroke-width="2" stroke-linecap="round"/>`)}
+    ${g('stamm', `<path d="M114 241 Q122 190 120 132 L140 132 Q138 190 146 241 Z" fill="url(#k2ts)" ${ln(2.5)}/><path d="M126 220 q4 -10 0 -20 M134 180 q-3 -8 0 -16" fill="none" stroke="#5E3C22" stroke-width="2"/>`)}
     ${g('ast', twin('M124 140 Q104 118 84 96 M136 140 Q158 116 178 92', BARK, 9) + `<path class="hitarea" d="M124 140 Q104 118 84 96 M136 140 Q158 116 178 92" fill="none" stroke="transparent" stroke-width="22"/>`)}
     ${g('zweig', twin('M84 96 Q74 80 70 62 M84 96 Q70 96 58 104 M178 92 Q188 76 190 58 M178 92 Q192 94 204 102 M130 134 Q130 100 132 66', BARK, 3.5) + `<path class="hitarea" d="M84 96 Q74 80 70 62 M84 96 Q70 96 58 104 M178 92 Q188 76 190 58 M178 92 Q192 94 204 102 M130 126 Q130 100 132 66" fill="none" stroke="transparent" stroke-width="16"/>`)}
-    ${g('blatt', `<path d="M72 160 L56 236" stroke="${OUT}" stroke-width="1.5" stroke-dasharray="4 3"/><circle cx="44" cy="262" r="32" fill="#FFF8E1" ${ln(2.5)}/>${at(44, 286, 0, 0.5, `<path d="M0 0 L0 -8 Q-28 -24 -24 -54 Q-18 -80 0 -92 Q18 -80 24 -54 Q28 -24 0 -8" fill="${LEAF}" ${ln(3)}/><path d="M0 -8 L0 -88 M0 -30 L-16 -42 M0 -30 L16 -42 M0 -52 L-14 -64 M0 -52 L14 -64" fill="none" stroke="${LEAF_D}" stroke-width="3"/>`)}`)}`,
+    ${g('blatt', `<path d="M72 160 L56 236" stroke="${OUT}" stroke-width="1.5" stroke-dasharray="4 3"/><circle cx="44" cy="262" r="32" fill="#FFF8E1" ${ln(2.5)}/>${at(44, 286, 0, 0.5, `<path d="M0 0 L0 -8 Q-28 -24 -24 -54 Q-18 -80 0 -92 Q18 -80 24 -54 Q28 -24 0 -8" fill="url(#k2lf)" ${ln(3)}/><path d="M0 -8 L0 -88 M0 -30 L-16 -42 M0 -30 L16 -42 M0 -52 L-14 -64 M0 -52 L14 -64 M0 -72 L-9 -80 M0 -72 L9 -80" fill="none" style="stroke:#E6F4CE;stroke-width:2.4" stroke-linecap="round"/>`)}`)}`,
   [['wurzeln', 184, 290], ['stamm', 150, 210], ['ast', 14, 132, 'start', [92, 106]], ['zweig', 256, 120, 'end', [200, 100]], ['krone', 256, 22, 'end', [186, 40]], ['blatt', 4, 222]]);
   S.PLANTS.baum12 = TREE;
 
@@ -527,13 +527,13 @@ const MSK12 = (() => {
     stepOf: { wurzel: 1, staengel: 2, blatt: 3, bluete: 4, frucht: 5, samen: 6 },
     steps: ['Zeichne die Erdlinie und darunter die Wurzel.', 'Zeichne den Stängel nach oben.', 'Zeichne Blätter an den Stängel. Bei der Bohne sind es immer drei zusammen.', 'Zeichne oben kleine Blüten.', 'Zeichne die langen Hülsen. Das ist die Frucht.', 'Zeichne daneben die Samen, stark vergrößert: die Bohnen.'],
     ask: () => 'Wie heißt der leuchtende Teil?', find: (p) => `Tippe auf: ${p.name}`, poolQ: 'Wie heißt dieser Teil der Pflanze?', tap: 'den Teil der Pflanze' };
-  const trio = (x, y, rot, s) => at(x, y, rot, s, [-50, 0, 50].map((r) => at(0, 0, r, 1, `<path d="M0 0 Q-13 -10 -11 -26 Q-6 -38 0 -40 Q6 -38 11 -26 Q13 -10 0 0 Z" fill="${LEAF}" ${ln(1.8)}/><path d="M0 -2 L0 -34" stroke="${LEAF_D}" stroke-width="1.5"/>`)).join(''));
+  const trio = (x, y, rot, s) => at(x, y, rot, s, [-50, 0, 50].map((r) => at(0, 0, r, 1, `<path d="M0 0 Q-13 -10 -11 -26 Q-6 -38 0 -40 Q6 -38 11 -26 Q13 -10 0 0 Z" fill="url(#k2lf)" ${ln(1.8)}/><path d="M0 -2 L0 -34" style="stroke:#E6F4CE;stroke-width:1.5"/>`)).join(''));
   const bloom = (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 0 Q-10 -4 -9 -12 Q0 -14 0 -4 Q0 -14 9 -12 Q10 -4 0 0 Z" fill="#F2E9FF" ${ln(1.4)}/><path d="M-4 -1 Q0 6 4 -1" fill="#C9A6E8" ${ln(1.2)}/></g>`;
   // pod along a quadratic curve "Mx0 y0 Qcx cy x1 y1": thick light green line with the beans as bumps
   const pod = (d) => { const [x0, y0, cx, cy, x1, y1] = d.match(/-?[\d.]+/g).map(Number); const q = (t) => [(1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1, (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y1];
     return `<path d="${d}" fill="none" ${ln(14)}/><path d="${d}" fill="none" style="stroke:#9AD65A;stroke-width:11" stroke-linecap="round"/>${[0.3, 0.55, 0.8].map((t) => { const [x, y] = q(t); return `<circle cx="${fx(x)}" cy="${fx(y)}" r="3.6" fill="#C2E88A" stroke="#6DB24A" stroke-width="1"/>`; }).join('')}`; };
   const bean = (x, y, r) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M-10 -5 Q-12 -12 -2 -11 Q4 -9 8 -10 Q14 -8 12 2 Q10 10 0 9 Q-12 8 -10 -5 Z" fill="#E8D7C0" ${ln(1.6)}/><path d="M-1 -10 q-2 4 1 6" fill="none" stroke="${BARK}" stroke-width="1.4"/></g>`;
-  BEAN.svg = (opts) => partsSVG(BEAN, opts, (g) => `${SOIL(214, 260)}
+  BEAN.svg = (opts) => partsSVG(BEAN, opts, (g) => `<defs>${GRAD.lf}</defs>${SOIL(214, 260)}
     ${g('wurzel', `${twin('M130 214 Q122 236 112 262 M130 214 Q134 240 132 274 M130 214 Q142 234 154 254 M126 230 l-12 6 M133 246 l10 4 M120 248 l-10 2', '#EAD7B0', 2.4)}<rect class="hitarea" x="100" y="216" width="64" height="64" fill="transparent"/>`)}
     ${g('staengel', twin('M130 214 Q127 150 130 100 Q133 70 128 46', '#6DB24A', 5) + `<path class="hitarea" d="M130 214 Q127 150 130 100 Q133 70 128 46" fill="none" stroke="transparent" stroke-width="18"/>`)}
     ${g('blatt', trio(129, 200, -105, 1.1) + trio(130, 192, 105, 1.1) + trio(130, 82, -75, 0.95) + trio(131, 72, 75, 0.95))}
@@ -544,52 +544,157 @@ const MSK12 = (() => {
   S.PLANTS.bohne12 = BEAN;
 
   // Blätter, Nadelzweige und Früchte mit den Merkmalen aus dem Bestimmungsbuch (Blattform, Nadeln, Zapfen, Frucht)
-  // Kastanie: each leaflet is widest near its tip
-  const leafletK = 'M0 0 Q-5 -12 -9 -30 Q-12 -44 -3 -47 L0 -50 L3 -47 Q12 -44 9 -30 Q5 -12 0 0 Z';
   const fx = (v) => +v.toFixed(1);
   // closed smooth outline through the points (Catmull-Rom as cubic Béziers)
   const smooth = (pts) => pts.map((p, i) => { const a = pts[(i - 1 + pts.length) % pts.length], b = pts[(i + 1) % pts.length], c = pts[(i + 2) % pts.length];
     return (i ? '' : `M${fx(p[0])} ${fx(p[1])}`) + ` C${fx(p[0] + (b[0] - a[0]) / 6)} ${fx(p[1] + (b[1] - a[1]) / 6)} ${fx(b[0] - (c[0] - p[0]) / 6)} ${fx(b[1] - (c[1] - p[1]) / 6)} ${fx(b[0])} ${fx(b[1])}`; }).join('') + 'Z';
-  // leaf from its base (50|y0) to the tip (50|y1) with half-width w(t, i); teeth: a zigzag edge
-  const leafEdge = (y0, y1, w, n, teeth) => { const side = (sg) => Array.from({ length: n + 1 }, (_, i) => { const t = i / n; return [50 + sg * w(t, i), y0 + (y1 - y0) * t]; });
-    const pts = side(1).concat(side(-1).reverse().slice(1, -1)); return teeth ? 'M' + pts.map(([x, y]) => `${fx(x)} ${fx(y)}`).join(' L') + 'Z' : smooth(pts); };
-  // Linde: a heart turned upside down (tip up, stalk in the notch), finely toothed
-  const lindeEdge = 'M' + Array.from({ length: 48 }, (_, i) => { const a = (i / 48) * Math.PI * 2, k = i % 2 ? 1 : 1.045;
-    return `${fx(50 + 2.05 * 16 * Math.sin(a) ** 3 * k)} ${fx(56 + 2.5 * (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * (k > 1 ? 1.02 : 1))}`; }).join(' L') + 'Z';
+  // n points evenly spaced along the smooth line through pts, each as [x, y, tangent x, tangent y]
+  function samp(pts, n, closed) {
+    const L = pts.length, d = [], g = (k) => pts[closed ? (k + L) % L : Math.max(0, Math.min(L - 1, k))];
+    for (let i = 0; i < (closed ? L : L - 1); i++) { const p0 = g(i - 1), p1 = g(i), p2 = g(i + 1), p3 = g(i + 2);
+      for (let k = 0; k < 20; k++) { const t = k / 20, t2 = t * t, t3 = t2 * t; d.push([0, 1].map((j) => 0.5 * (2 * p1[j] + (p2[j] - p0[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (3 * p1[j] - p0[j] - 3 * p2[j] + p3[j]) * t3))); } }
+    d.push(closed ? d[0] : pts[L - 1]);
+    const cum = [0]; for (let i = 1; i < d.length; i++) cum.push(cum[i - 1] + Math.hypot(d[i][0] - d[i - 1][0], d[i][1] - d[i - 1][1]));
+    const out = []; let j = 0;
+    for (let i = 0; i < n; i++) { const s = cum[cum.length - 1] * i / (closed ? n : n - 1); while (j < d.length - 2 && cum[j + 1] < s) j++;
+      const a = d[j], b = d[j + 1], f = Math.min(1, (s - cum[j]) / (cum[j + 1] - cum[j] || 1)), tl = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      out.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, (b[0] - a[0]) / tl, (b[1] - a[1]) / tl]); }
+    return out;
+  }
+  // leaf edge: the outline through pts, every point pushed outward by amp(i, x, y) (teeth, waves)
+  const rim = (pts, n, amp) => { const s = samp(pts, n, true); let A = 0; s.forEach((p, i) => { const q = s[(i + 1) % n]; A += p[0] * q[1] - q[0] * p[1]; }); const g = A > 0 ? 1 : -1;
+    return 'M' + s.map(([x, y, tx, ty], i) => { const m = amp(i, x, y); return `${fx(x + g * ty * m)} ${fx(y - g * tx * m)}`; }).join(' L') + 'Z'; };
+  // right half as segments [x, y] (line) or [cx, cy, x, y] (curve) from 0|0, mirrored into a closed shape; dy shifts the left half
+  const symQ = (segs, ox, oy, s, dy) => { const P = (x, y, sx, d) => `${fx(ox + sx * x * s)} ${fx(oy + (y + d) * s)}`, pts = [[0, 0]].concat(segs.map((g) => g.slice(-2)));
+    let d = `M${P(0, 0, 1, 0)}` + segs.map((g) => (g.length > 2 ? `Q${P(g[0], g[1], 1, 0)} ` : 'L') + P(g[g.length - 2], g[g.length - 1], 1, 0)).join('');
+    for (let i = segs.length - 1; i >= 0; i--) { const g = segs[i]; d += (g.length > 2 ? `Q${P(g[0], g[1], -1, dy)} ` : 'L') + P(pts[i][0], pts[i][1], -1, i ? dy : 0); }
+    return d + 'Z'; };
+  const lgr = (id, a, b, x2, y2) => `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
+  const rgr = (id, a, b) => `<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient>`;
+  const GRAD = {
+    lf: lgr('k2lf', '#A8DA6C', '#468A2C', 1, 1), gl: lgr('k2gl', '#B2D4A0', '#5A8A5A', 1, 1), bk: lgr('k2bk', '#E8A260', '#9A5226', 0, 1), tw: lgr('k2tw', '#B8977A', '#6E5038', 0, 1),
+    cn: rgr('k2cn', '#C2AA88', '#5E4A34'), fc: lgr('k2fc', '#D29A5E', '#7A4A26', 1, 0), lc: rgr('k2lc', '#E2BC8A', '#8A6038'), nut: rgr('k2nut', '#EAC07A', '#94602A'),
+    cup: rgr('k2cup', '#B8986A', '#6A4E2E'), kas: rgr('k2kas', '#B8642E', '#3E1608'), sh: rgr('k2sh', '#CDEB98', '#5E9E34'), wg: lgr('k2wg', '#F0EAB8', '#BCA85A', 1, 0),
+    bh: lgr('k2bh', '#C8A070', '#7A5430', 0, 1), bn: rgr('k2bn', '#B87442', '#4E2410'), kr: lgr('k2kr', '#E8D8FA', '#8050C4', 0, 1), tu: lgr('k2tu', '#FF8A78', '#C21A2C', 0, 1),
+    ny: rgr('k2ny', '#FFFBD8', '#F2D24A'), tr: lgr('k2tr', '#FFD43A', '#E68A00', 1, 0), wt: lgr('k2wt', '#FFFFFF', '#D2DCE6', 0, 1),
+  };
+  const defs = (...k) => `<defs>${k.map((x) => GRAD[x]).join('')}</defs>`;
+  const vein = (d, w) => `<path d="${d}" fill="none" stroke="#E6F4CE" stroke-width="${w || 0.9}" stroke-linecap="round" opacity=".9"/>`;
+  const petiole = (d, w) => `<path d="${d}" fill="none" ${ln(w + 2)}/><path d="${d}" fill="none" stroke="#8DBE5A" stroke-width="${w}" stroke-linecap="round"/>`;
+  const leafFill = (d, w) => `<path d="${d}" fill="url(#k2lf)" ${ln(w || 1.4)}/>`;
+  // Eiche: rounded lobes alternating left and right, ear-like lobes at the base, hardly any stalk
+  const OAK = [[8, 1, 10, -4], [10, -9, 3, -10], [14, -10, 17, -17], [19, -25, 4, -25], [20, -24, 26, -33], [31, -44, 5, -43], [26, -44, 30, -54], [33, -66, 5, -63], [23, -64, 24, -72], [23, -82, 4, -77], [13, -80, 10, -86], [6, -93, 0, -92]];
+  const OAK_V = [[-10, 17, -17], [-26, 26, -33], [-45, 30, -54], [-64, 24, -72], [-80, 10, -86]];
+  // Spitzahorn: five lobes with a few long pointed teeth, from the top tip down the right side to the stalk
+  const MAPLE = [[4, 12], [13, 9], [10, 18], [11, 26], [10, 38, 18, 35], [24, 28], [25, 18], [30, 25], [42, 21], [35, 33], [44, 38], [34, 43], [22, 44, 27, 51], [37, 58], [35, 63], [42, 70], [30, 70], [20, 72], [8, 74, 0, 64]];
+  const KLEAF = [[0, -52], [5, -50], [10, -42], [11, -30], [8, -18], [4, -7], [0, 0], [-4, -7], [-8, -18], [-11, -30], [-10, -42], [-5, -50]];
+  const near = (x, y, px, py, r) => Math.min(1, Math.hypot(x - px, y - py) / r);
+  const BIRCH = [[50, 6], [53, 16], [58, 30], [66, 46], [73, 60], [74, 70], [66, 78], [56, 82], [50, 82]];
+  const beechW = (t, i) => 27 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.85)), 0.9) + (i % 2 || !i ? 0 : 1.3);
   const LEAVES = {
-    eiche: `<path d="M50 104 L50 92" ${ln(3)}/><path d="${leafEdge(94, 10, (t) => (5 + 26 * Math.sin(Math.PI * Math.pow(t, 0.7))) * (0.42 + 0.58 * Math.abs(Math.cos(4.5 * Math.PI * t))), 44)}" fill="${LEAF}" ${ln(2)}/><path d="M50 96 L50 16 M50 82 L38 78 M50 82 L62 78 M50 64 L30 58 M50 64 L70 58 M50 44 L32 38 M50 44 L68 38 M50 28 L40 22 M50 28 L60 22" fill="none" stroke="${LEAF_D}" stroke-width="1.6"/>`,
-    buche: `<path d="M50 108 L50 96" ${ln(3)}/><path d="${leafEdge(98, 12, (t, i) => 24 * Math.sin(Math.PI * Math.pow(t, 0.9)) + (i % 2 ? 1.8 : 0), 16)}" fill="${LEAF}" ${ln(2)}/><path d="M50 98 L50 16 ${[88, 76, 64, 52, 40, 28].map((y) => `M50 ${y} L${32 + (88 - y) / 6} ${y - 10} M50 ${y} L${68 - (88 - y) / 6} ${y - 10}`).join(' ')}" fill="none" stroke="${LEAF_D}" stroke-width="1.6"/>`,
-    ahorn: `<path d="M50 102 L48 84 Q36 90 30 88 L22 92 L24 82 L12 78 L20 70 L8 58 L22 56 L20 44 L32 50 L34 36 L28 26 L40 30 L50 8 L60 30 L72 26 L66 36 L68 50 L80 44 L78 56 L92 58 L80 70 L88 78 L76 82 L78 92 L70 88 Q64 90 52 84 Z" fill="#E8A23A" ${ln(2)}/><path d="M50 114 L50 84 L50 12 M50 84 L12 60 M50 84 L88 60 M50 84 L18 84 M50 84 L82 84" fill="none" stroke="#B8562A" stroke-width="1.6"/>`,
-    linde: `<path d="M50 112 L50 66" ${ln(3)}/><path d="${lindeEdge}" fill="${LEAF}" ${ln(2)}/><path d="M50 68 L50 16 M50 68 L26 62 M50 68 L74 62 M50 68 L30 82 M50 68 L70 82 M50 50 L34 38 M50 50 L66 38" fill="none" stroke="${LEAF_D}" stroke-width="1.6"/>`,
-    birke: `<path d="M50 112 L50 84" ${ln(2.6)}/><path d="${leafEdge(86, 10, (t, i) => (t < 0.22 ? 24 * Math.pow(t / 0.22, 0.55) : 24 * (1 - t) / 0.78) + [0, 2.4, 0.8, 2.4][i % 4], 24, true)}" fill="#A8DB7A" ${ln(2)}/><path d="M50 86 L50 16 M50 78 L30 70 M50 78 L70 70 M50 66 L34 56 M50 66 L66 56 M50 52 L40 42 M50 52 L60 42" fill="none" stroke="${LEAF_D}" stroke-width="1.6"/>`,
-    kastanie: `<path d="M50 116 L50 70" ${ln(3)}/>${[[-80, 0.7], [-52, 0.95], [-26, 1.15], [0, 1.25], [26, 1.15], [52, 0.95], [80, 0.7]].map(([r, s]) => at(50, 70, r, s, `<path d="${leafletK}" fill="${LEAF}" ${ln(+(1.8 / s).toFixed(2))}/><path d="M0 -2 L0 -46" stroke="${LEAF_D}" stroke-width="${+(1.4 / s).toFixed(2)}"/>`)).join('')}<circle cx="50" cy="70" r="3" fill="${LEAF_D}" ${ln(1.4)}/>`,
+    eiche: defs('lf') + petiole('M50 90 L50 99', 2.4) + leafFill(symQ(OAK, 50, 92, 1, 4)) + vein('M50 92 Q49 50 50 6', 1.8) + vein(OAK_V.map(([y0, x, y]) => `M50 ${92 + y0} Q${50 + x * 0.5} ${92 + y0 - 2} ${50 + x * 0.85} ${92 + y + 1} M50 ${96 + y0} Q${50 - x * 0.5} ${96 + y0 - 2} ${50 - x * 0.85} ${96 + y + 1}`).join(' ')),
+    buche: (() => { const pts = Array.from({ length: 15 }, (_, i) => [i / 14, i]), ys = (t) => 94 - 84 * t;
+      const edge = smooth(pts.map(([t, i]) => [50 + beechW(t, i), ys(t)]).concat(pts.slice(1, -1).reverse().map(([t, i]) => [50 - beechW(t, i), ys(t)])));
+      return defs('lf') + petiole('M50 92 L50 106', 2) + leafFill(edge) + vein('M50 94 L50 12', 1.6) + vein(pts.filter(([, i]) => i % 2 === 0 && i > 0 && i < 14).map(([t, i]) => `M50 ${fx(ys(t) + 9)} L${fx(50 + beechW(t, i) * 0.88)} ${fx(ys(t))} M50 ${fx(ys(t) + 9)} L${fx(50 - beechW(t, i) * 0.88)} ${fx(ys(t))}`).join(' ')); })(),
+    ahorn: defs('lf') + petiole('M50 72 Q52 94 49 114', 2) + leafFill(symQ(MAPLE, 50, 4, 1.1, 0)) + vein('M50 74 L50 8 M50 74 Q66 54 95 27 M50 74 Q34 54 5 27 M50 74 Q70 74 94 81 M50 74 Q30 74 6 81', 1.4)
+      + vein('M50 40 L59 33 M50 40 L41 33 M50 26 L55 18 M50 26 L45 18 M72 55 L76 36 M28 55 L24 36 M80 46 L93 47 M20 46 L7 47 M76 77 L90 68 M24 77 L10 68', 0.8),
+    linde: defs('lf') + petiole('M50 70 Q49 92 52 112', 2) + leafFill(rim([[50, 4], [56, 14], [68, 22], [80, 34], [86, 50], [82, 66], [70, 76], [57, 78], [50, 72], [42, 80], [28, 84], [16, 76], [10, 60], [14, 42], [26, 26], [40, 16]], 84, (i, x, y) => (i % 2 ? 1.3 : 0) * near(x, y, 50, 72, 10)), 1.3)
+      + vein('M50 72 Q50 40 50 8', 1.6) + vein('M50 72 Q66 66 80 56 M50 72 Q32 72 16 66 M50 56 Q62 44 74 30 M50 58 Q36 46 22 38 M50 38 Q56 28 62 18 M50 40 Q42 30 36 20 M68 63 L74 72 M33 70 L28 80', 0.9),
+    birke: defs('lf') + petiole('M50 80 Q52 98 49 114', 1.6) + leafFill(rim(BIRCH.concat(BIRCH.slice(1, -1).reverse().map(([x, y]) => [100 - x, y])), 76, (i, x, y) => [2.2, 0, 1.1, 0][i % 4] * near(x, y, 50, 82, 8) * near(x, y, 50, 6, 12)), 1.3)
+      + vein('M50 82 L50 10', 1.4) + vein([[78, 72, 66], [70, 72, 54], [60, 66, 42], [48, 61, 30], [36, 56, 20]].map(([y0, x, y]) => `M50 ${y0} L${x} ${y} M50 ${y0} L${100 - x} ${y}`).join(' '), 0.8),
+    kastanie: defs('lf') + petiole('M50 116 L50 70', 2.6) + [[-108, 0.62], [-72, 0.84], [-36, 1], [0, 1.08], [36, 1], [72, 0.84], [108, 0.62]].map(([r, s]) => at(50, 70, r, s, `<path d="${rim(KLEAF, 58, (i, x, y) => (i % 2 ? 1 : 0) * Math.min(1, -y / 12))}" fill="url(#k2lf)" ${ln(fx(1.3 / s))}/>`
+      + vein(`M0 -2 L0 -48 ${[-12, -20, -28, -36, -43].map((y) => `M0 ${y + 4} L${fx(-y * 0.16 + 4)} ${y - 2} M0 ${y + 4} L${fx(y * 0.16 - 4)} ${y - 2}`).join(' ')}`, fx(0.9 / s)))).join('') + `<circle cx="50" cy="70" r="2.6" fill="#8DBE5A" ${ln(1.2)}/>`,
   };
-  const twig = `<path d="M8 106 Q60 60 112 18" fill="none" ${ln(4)}/><path d="M8 106 Q60 60 112 18" fill="none" stroke="${BARK}" stroke-width="2"/>`;
-  // points along the twig (a quadratic curve from 8|106 over 60|60 to 112|18)
-  const along = (n, f) => Array.from({ length: n }, (_, i) => { const t = (i + 0.5) / n, u = 1 - t; return f(+(u * u * 8 + 2 * u * t * 60 + t * t * 112).toFixed(1), +(u * u * 106 + 2 * u * t * 60 + t * t * 18).toFixed(1), i); }).join('');
-  const NEEDLES = {
-    fichte: `${along(16, (x, y) => `<path d="M${x} ${y} l-6 -6 M${x} ${y} l6 -6 M${x} ${y} l-7 2 M${x} ${y} l3 7" stroke="#2E7A3A" stroke-width="2" stroke-linecap="round"/>`)}${twig}<path d="M74 52 L76 58" ${ln(2)}/><ellipse cx="76" cy="84" rx="9" ry="24" fill="#9A6B3E" ${ln(2)}/><path d="${[66, 74, 82, 90, 98].map((y) => `M68 ${y} q8 5 16 0`).join(' ')}" fill="none" stroke="#5E3C22" stroke-width="1.4"/>`,
-    kiefer: `${along(13, (x, y, i) => { const up = i % 2 ? -1 : 1; return up > 0 ? `<path d="M${x} ${y} l-1 -22 M${x} ${y} l5 -21" stroke="#3F7F5A" stroke-width="1.8" stroke-linecap="round"/>` : `<path d="M${x} ${y} l20 8 M${x} ${y} l19 13" stroke="#3F7F5A" stroke-width="1.8" stroke-linecap="round"/>`; })}${twig}<ellipse cx="30" cy="94" rx="10" ry="13" fill="#A08A6A" ${ln(2)} transform="rotate(-30 30 94)"/><path d="M22 90 l8 5 l9 -6 M22 98 l8 5 l9 -6 M26 84 l5 4 l6 -4" fill="none" stroke="#6E5A40" stroke-width="1.4"/>`,
-    laerche: `${twig}${along(5, (x, y) => `${Array.from({ length: 11 }, (_, k) => `<path d="M${x} ${y} L${pt(x, y, -Math.PI + k * Math.PI / 10, 13)}" stroke="#8FD16A" stroke-width="1.8" stroke-linecap="round"/>`).join('')}<circle cx="${x}" cy="${y}" r="2" fill="${BARK}"/>`)}<ellipse cx="96" cy="20" rx="6" ry="8" fill="#B08A5A" ${ln(1.8)}/><ellipse cx="50" cy="56" rx="6" ry="8" fill="#B08A5A" ${ln(1.8)}/>`,
-  };
+
+  const R = (i) => { const s = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); };
+  // one needle: a thin sliver from x|y in direction a, length l, half-width w, bent sideways by b
+  const needle = (x, y, a, l, w, b) => { const c = Math.cos(a), s = Math.sin(a), mx = x + c * l / 2 - s * b, my = y + s * l / 2 + c * b;
+    return `M${fx(x)} ${fx(y)}Q${fx(mx - s * w)} ${fx(my + c * w)} ${fx(x + c * l)} ${fx(y + s * l)}Q${fx(mx + s * w)} ${fx(my - c * w)} ${fx(x)} ${fx(y)}Z`; };
+  const tuft = (list, fill, edge) => `<path d="${list.join('')}" fill="${fill}" stroke="${edge}" stroke-width=".4" stroke-linejoin="round"/>`;
+  // point and direction on a quadratic curve [x0, y0, cx, cy, x1, y1]
+  const qp = (p, t) => { const u = 1 - t; return [u * u * p[0] + 2 * u * t * p[2] + t * t * p[4], u * u * p[1] + 2 * u * t * p[3] + t * t * p[5], Math.atan2(u * (p[3] - p[1]) + t * (p[5] - p[3]), u * (p[2] - p[0]) + t * (p[4] - p[2]))]; };
+  // a twig along that curve, tapering from w0 to w1
+  const branch = (p, w0, w1, fill) => { const L = [], Rt = [];
+    for (let i = 0; i <= 16; i++) { const t = i / 16, [x, y, a] = qp(p, t), w = (w0 + (w1 - w0) * t) / 2; L.push(`${fx(x + Math.sin(a) * w)} ${fx(y - Math.cos(a) * w)}`); Rt.unshift(`${fx(x - Math.sin(a) * w)} ${fx(y + Math.cos(a) * w)}`); }
+    return `<path d="M${L.join(' L')} L${Rt.join(' L')}Z" fill="${fill}" ${ln(1.2)}/>`; };
+  // Waldkiefer: long needles in pairs from a short sheath, a dense brush at the shoot tip, an egg-shaped cone pointing backwards
+  function kiefer() {
+    const tw = [14, 114, 44, 80, 78, 38], back = [], front = [];
+    for (let i = 0; i < 60; i++) {
+      const t = 0.32 + 0.68 * Math.pow(i / 59, 0.7), [x, y, a] = qp(tw, t), sd = i % 2 ? 1 : -1, end = t > 0.88;
+      const off = sd * (end ? 0.1 + 1.1 * R(i) : i % 3 === 2 ? 0.06 + 0.3 * R(i) : 0.3 + 0.7 * R(i)), l = (29 + 12 * R(i + 50)) * (i % 3 === 2 ? 0.62 + 0.3 * R(i + 9) : 1), b = (R(i + 20) - 0.5) * 6;
+      (i % 3 === 1 ? back : front).push(needle(x, y, a + off, l, 1.15, b), needle(x, y, a + off + 0.16 * sd, l * 0.95, 1.15, -b));
+    }
+    const [ex, ey, ea] = qp(tw, 1);
+    for (let k = 0; k < 11; k++) front.push(needle(ex, ey, ea + (k - 5) * 0.2, 24 + 8 * R(k + 80), 1.15, (R(k + 3) - 0.5) * 5));
+    const [cx, cy] = qp(tw, 0.42), CONE = smooth([[0, -14], [7, -11], [10, -3], [9, 6], [5, 13], [0, 16], [-5, 13], [-9, 6], [-10, -3], [-7, -11]]);
+    let lat = '', dots = '';
+    for (let k = -40; k <= 40; k += 5.6) lat += `M-12 ${fx(k - 9.6)} L12 ${fx(k + 9.6)} M-12 ${fx(k + 9.6)} L12 ${fx(k - 9.6)}`;
+    for (let k1 = -40; k1 <= 40; k1 += 5.6) for (let k2 = -40; k2 <= 40; k2 += 5.6) { const x = (k2 - k1) / 1.6, y = (k1 + k2) / 2 + 2.8; if ((x / 9) ** 2 + (y / 14) ** 2 < 0.8) dots += `M${fx(x)} ${fx(y)}h.1`; }
+    const cone = at(fx(cx + 7), fx(cy + 17), 25, 1.12, `<clipPath id="k2kc"><path d="${CONE}"/></clipPath><path d="${CONE}" fill="url(#k2cn)"/><g clip-path="url(#k2kc)"><path d="${lat}" stroke="#4A3826" stroke-width=".8"/><path d="${dots}" stroke="#3A2A1A" stroke-width="1.6" stroke-linecap="round"/></g><path d="${CONE}" fill="none" ${ln(1.3)}/><ellipse cx="-4" cy="-4" rx="2.2" ry="5" fill="#fff" opacity=".3"/>`);
+    return defs('bk', 'cn') + tuft(back, '#3F7A66', '#24493E') + `<path d="M${fx(cx)} ${fx(cy)} L${fx(cx + 12)} ${fx(cy + 3)}" fill="none" ${ln(3.4)}/>` + branch(tw, 6, 3.2, 'url(#k2bk)')
+      + `<path d="${[0.06, 0.13, 0.2, 0.27].map((t) => { const [x, y] = qp(tw, t); return `M${fx(x - 2)} ${fx(y - 1.6)} l2.4 1.4 l1.4 -2.4`; }).join('')}" fill="none" stroke="#8A4620" stroke-width=".9" stroke-linecap="round"/>` + cone
+      + tuft(front, '#74B09A', '#2F5E50') + at(fx(ex), fx(ey), fx(ea * 180 / Math.PI), 1, `<ellipse cx="3" cy="0" rx="4" ry="2.4" fill="#B8642E" ${ln(0.9)}/><ellipse cx="1" cy="-3" rx="2.4" ry="1.6" fill="#B8642E" ${ln(0.8)}/>`);
+  }
+  // Fichte: short stiff single needles all round the twig (bottle brush), a long hanging cone
+  function fichte() {
+    const shoots = [[6, 52, 56, 30, 114, 30], [47, 38, 56, 22, 70, 6]], back = [], front = [];
+    shoots.forEach((tw, s) => { const n = s ? 18 : 40;
+      for (let i = 0; i < n; i++) { const [x, y, a] = qp(tw, 0.04 + 0.96 * i / (n - 1));
+        [[0.7 + 0.5 * R(i + s * 99), 1], [-0.7 - 0.5 * R(i + 7 + s * 99), 1], [(R(i + 3) - 0.5) * 0.8, 0.55]].forEach(([o, f], k) => (k === 1 && i % 2 ? back : front).push(needle(x, y, a + o, (9 + 2.5 * R(i + k * 31 + s * 7)) * f, 0.85, 0)));
+        back.push(needle(x, y, a + (i % 2 ? 1.6 : -1.6), 8, 0.85, 0)); } });
+    const CONE = smooth([[0, 0], [7, 4], [9, 16], [9, 34], [8, 48], [5, 58], [0, 62], [-5, 58], [-8, 48], [-9, 34], [-9, 16], [-7, 4]]);
+    let sc = ''; for (let r = 14; r >= 0; r--) for (let c = -2; c <= 2; c++) { const x = c * 4.6 + (r % 2 ? 2.3 : 0), y = 4 + r * 4; sc += `<path d="M${fx(x - 3.2)} ${y} Q${fx(x - 3.2)} ${y + 4} ${fx(x)} ${y + 4.4} Q${fx(x + 3.2)} ${y + 4} ${fx(x + 3.2)} ${y}" fill="#C9925A" stroke="#6A4024" stroke-width=".7"/>`; }
+    return defs('tw', 'fc') + tuft(back, '#1E5632', '#0F3320') + branch(shoots[0], 4.2, 2.4, 'url(#k2tw)') + branch(shoots[1], 2.8, 1.8, 'url(#k2tw)')
+      + `<path d="M71 32 L71 40" ${ln(3)}/>` + at(71, 38, 4, 1, `<clipPath id="k2fz"><path d="${CONE}"/></clipPath><path d="${CONE}" fill="url(#k2fc)"/><g clip-path="url(#k2fz)">${sc}<rect x="-10" width="20" height="64" fill="url(#k2fc)" opacity=".35"/></g><path d="${CONE}" fill="none" ${ln(1.3)}/><path d="M-5 8 Q-6 30 -4 52" fill="none" stroke="#fff" stroke-width="1.6" opacity=".35" stroke-linecap="round"/>`)
+      + tuft(front, '#2E8046', '#164A28') + `<path d="M114 30 l3 -1 M70 6 l2 -2" ${ln(2.6)}/>`;
+  }
+  // Lärche: soft light-green needles in rosettes on short knobs, small upright rose-like cones
+  function laerche() {
+    const tw = [8, 100, 54, 70, 112, 20], back = [], front = [], knobs = [];
+    [0.12, 0.3, 0.5, 0.66, 0.84].forEach((t, j) => { const [x0, y0, a] = qp(tw, t), sd = j % 2 ? 1 : -1, x = x0 + Math.sin(a) * 3 * sd, y = y0 - Math.cos(a) * 3 * sd;
+      for (let k = 0; k < 32; k++) { const an = (k / 32) * Math.PI * 2 + R(k + j * 30) * 0.2, l = (11 + 5 * R(k + j * 17)) * (k % 3 === 2 ? 0.65 : 1); (k % 2 ? back : front).push(needle(x, y, an, l, 0.8, (R(k + j) - 0.5) * 3)); }
+      knobs.push(`<circle cx="${fx(x)}" cy="${fx(y)}" r="2.4" fill="#8A6A4E" ${ln(0.9)}/>`); });
+    for (let i = 0; i < 10; i++) { const [x, y, a] = qp(tw, 0.9 + i * 0.01); front.push(needle(x, y, a + (i % 2 ? 0.7 : -0.7), 8, 0.7, 0)); }
+    const cone = (x, y) => `<path d="M${x} ${y + 9} L${x} ${y + 14}" ${ln(2.2)}/>` + [[0, -5, 1], [-3, -1, 1], [3, -1, 1], [-5, 4, 1], [0, 3, 1], [5, 4, 1], [-2.6, 8, 1], [2.6, 8, 1]].map(([dx, dy]) => `<path d="M${fx(x + dx - 3.6)} ${fx(y + dy + 1)} Q${fx(x + dx - 3.8)} ${fx(y + dy - 4)} ${fx(x + dx)} ${fx(y + dy - 4.6)} Q${fx(x + dx + 3.8)} ${fx(y + dy - 4)} ${fx(x + dx + 3.6)} ${fx(y + dy + 1)} Q${fx(x + dx)} ${fx(y + dy + 2.4)} ${fx(x + dx - 3.6)} ${fx(y + dy + 1)}Z" fill="url(#k2lc)" stroke="${OUT}" stroke-width=".7"/>`).join('');
+    const [c1x, c1y] = qp(tw, 0.4), [c2x, c2y] = qp(tw, 0.75);
+    return defs('tw', 'lc') + tuft(back, '#84C052', '#4E8A30') + branch(tw, 4.4, 2.2, 'url(#k2tw)') + knobs.join('') + cone(fx(c1x), fx(c1y - 15)) + cone(fx(c2x), fx(c2y - 15)) + tuft(front, '#B2E27A', '#5E9A3A');
+  }
+  const NEEDLES = { kiefer: kiefer(), fichte: fichte(), laerche: laerche() };
+  const acorn = (x, y, r, s) => at(x, y, r, s, `<ellipse cx="0" cy="19" rx="10.5" ry="16" fill="url(#k2nut)" ${ln(1.4)}/><path d="M0 35 l0 3" ${ln(2)}/><path d="M-4 12 Q-5 22 -3 30 M4 12 Q5 22 3 30" fill="none" stroke="#B07A3A" stroke-width=".8" opacity=".6"/><ellipse cx="-4.5" cy="20" rx="2.4" ry="7" fill="#fff" opacity=".45"/>`
+    + `<path d="M-12.5 7 Q-14 -8 0 -9 Q14 -8 12.5 7 Q0 11 -12.5 7 Z" fill="url(#k2cup)" ${ln(1.4)}/><path d="${[[-8, -4], [-2, -6], [4, -5], [9, -2], [-10, 2], [-4, 0], [2, 0], [8, 3], [-6, 5], [0, 5], [6, 6]].map(([a, b]) => `M${a - 2} ${b} q2 2 4 0`).join('')}" fill="none" stroke="#4E3820" stroke-width=".8"/>`);
   const FRUITS = {
-    eiche: `<path d="M50 10 L52 30" ${ln(3)}/><ellipse cx="50" cy="64" rx="16" ry="24" fill="#B98A4A" ${ln(2)}/><path d="M32 52 Q32 30 50 30 Q68 30 68 52 Z" fill="#8A6A3F" ${ln(2)}/><path d="M38 42 h3 M46 38 h3 M54 42 h3 M42 48 h3 M52 48 h3 M60 46 h2" stroke="#5E4426" stroke-width="2" stroke-linecap="round"/><ellipse cx="44" cy="68" rx="3" ry="8" fill="#fff" opacity=".5"/>`,
-    buche: `<path d="M50 84 V96" ${ln(3)}/>${[[-50, 1], [-17, 0.9], [17, 0.9], [50, 1]].map(([r, s]) => at(50, 84, r, s, `<path d="M0 0 Q-11 -20 -4 -40 Q0 -44 4 -40 Q11 -20 0 0 Z" fill="#9A6B3E" ${ln(+(1.8 / s).toFixed(2))}/><path d="M-6 -14 l-4 -1 M6 -14 l4 -1 M-6 -24 l-4 -1 M6 -24 l4 -1 M-4 -33 l-3 -2 M4 -33 l3 -2" stroke="#5E3C22" stroke-width="1.4" stroke-linecap="round"/>`)).join('')}<path d="M38 76 L45 36 L53 76 Z" fill="#6B3E22" ${ln(1.8)}/><path d="M47 76 L55 38 L62 76 Z" fill="#7A4A28" ${ln(1.8)}/><path d="M45 44 L43 68" stroke="#fff" stroke-width="1.4" opacity=".5"/>`,
-    ahorn: `<path d="M44 62 Q30 60 16 46 Q10 38 16 34 Q24 32 32 40 Q40 48 48 54 Z M56 62 Q70 60 84 46 Q90 38 84 34 Q76 32 68 40 Q60 48 52 54 Z" fill="#D2DE86" ${ln(2)}/><path d="M44 58 Q30 52 18 38 M48 56 Q36 46 26 34 M56 58 Q70 52 82 38 M52 56 Q64 46 74 34" fill="none" stroke="#9AAA4A" stroke-width="1.3"/><ellipse cx="43" cy="62" rx="8" ry="7" fill="#A8B84A" ${ln(2)}/><ellipse cx="57" cy="62" rx="8" ry="7" fill="#A8B84A" ${ln(2)}/><path d="M50 58 Q50 46 54 34" fill="none" ${ln(2)}/>`,
-    kastanie: `<path d="M20 70 Q18 40 44 34 L46 72 Q34 82 20 70 Z" fill="#8BCB4F" ${ln(2)}/><path d="M22 52 l-6 -3 M26 42 l-5 -5 M34 36 l-2 -6 M22 62 l-6 0" stroke="${OUT}" stroke-width="1.6" stroke-linecap="round"/><circle cx="62" cy="62" r="22" fill="#7A3E1E" ${ln(2)}/><ellipse cx="62" cy="76" rx="12" ry="6" fill="#D9B98E"/><ellipse cx="54" cy="52" rx="6" ry="3" fill="#fff" opacity=".6" transform="rotate(-30 54 52)"/>`,
+    eiche: defs('nut', 'cup') + `<path d="M58 4 Q56 18 52 28 Q44 32 38 38 M52 28 Q60 34 66 42" fill="none" ${ln(3.4)}/><path d="M58 4 Q56 18 52 28 Q44 32 38 38 M52 28 Q60 34 66 42" fill="none" stroke="#8A6A3F" stroke-width="1.6" stroke-linecap="round"/>` + acorn(36, 46, 10, 1) + acorn(68, 50, -8, 1.05),
+    buche: defs('bh', 'bn') + `<path d="M50 96 V80" ${ln(3.4)}/><path d="M50 96 V80" stroke="#8A6A3F" stroke-width="1.6"/>` + [[-62, 0.9], [-22, 1], [22, 1], [62, 0.9]].map(([r, s]) => at(50, 80, r, s, `<path d="M-6 0 Q-12 -20 -6 -36 Q0 -42 6 -36 Q12 -20 6 0 Z" fill="url(#k2bh)" ${ln(fx(1.3 / s))}/><path d="M-3 -4 Q-6 -20 -2 -32 Q2 -34 3 -30 Q4 -20 3 -4 Z" fill="#EAD7B0" opacity=".85"/><path d="${Array.from({ length: 9 }, (_, k) => { const y = -4 - k * 3.6, w = 6 + Math.sin((k / 8) * Math.PI) * 3.4; return `M${fx(-w)} ${fx(y)} l-3.4 -1.6 M${fx(w)} ${fx(y)} l3.4 -1.6`; }).join('')}" stroke="#6E4A2C" stroke-width="1" stroke-linecap="round"/>`)).join('')
+      + [[44, -8], [57, 8]].map(([x, r]) => at(x, 78, r, 1, `<path d="M0 1 Q-11 1 -10 -6 L-1.4 -30 Q0 -32 1.4 -30 L10 -6 Q11 1 0 1 Z" fill="url(#k2bn)" ${ln(1.3)}/><path d="M1 -1 L0.4 -29" fill="none" stroke="#2E1408" stroke-width=".9"/><path d="M-6 -6 L-1.5 -24" fill="none" stroke="#fff" stroke-width="1.4" opacity=".45" stroke-linecap="round"/>`)).join(''),
+    ahorn: defs('wg') + `<path d="M50 52 Q50 36 56 18" fill="none" ${ln(3.2)}/><path d="M50 52 Q50 36 56 18" fill="none" stroke="#8A9A4A" stroke-width="1.4"/>` + [1, -1].map((d) => `<g transform="translate(50 56) scale(${d} 1) rotate(-28)"><path d="M4 -5 Q20 -12 36 -14 Q47 -13 46 -4 Q44 4 32 5 Q18 6 5 5 Z" fill="url(#k2wg)" ${ln(1.3)}/><path d="M6 -2 Q22 -8 44 -8 M8 0 Q24 -3 42 -2 M8 2 Q22 2 36 2 M6 -4 Q18 -10 34 -12" fill="none" stroke="#A89548" stroke-width=".7"/><ellipse cx="2" cy="0" rx="8" ry="6.5" fill="#B8C064" ${ln(1.4)}/><ellipse cx="0" cy="-2" rx="3" ry="2" fill="#fff" opacity=".45"/></g>`).join(''),
+    kastanie: defs('sh', 'kas') + (() => { let sp = ''; for (let k = 0; k < 22; k++) { const a = (k / 22) * Math.PI * 2; sp += `M${pt(34, 44, a, 22)} L${pt(34, 44, a + 0.04, 29)}`; }
+      return `<path d="${sp}" ${ln(1.6)}/><circle cx="34" cy="44" r="23" fill="url(#k2sh)" ${ln(1.6)}/><path d="M34 36 L44 30 L50 42 L44 54 L32 56 L22 48 L26 38 Z" fill="#F4EEDA" ${ln(1.2)}/><path d="M30 42 Q38 34 46 40 Q48 48 40 52 Q32 52 30 42 Z" fill="url(#k2kas)" ${ln(1)}/><ellipse cx="36" cy="41" rx="3" ry="1.6" fill="#fff" opacity=".5"/>`; })()
+      + `<path d="${smooth([[64, 46], [80, 50], [88, 64], [82, 80], [64, 88], [48, 82], [44, 66], [50, 52]])}" fill="url(#k2kas)" ${ln(1.8)}/><path d="${smooth([[50, 72], [60, 70], [72, 75], [76, 82], [64, 87], [52, 83]])}" fill="#D9C49C" stroke="#B49A6E" stroke-width="1"/><path d="M56 54 Q66 50 76 56 M52 62 Q64 58 80 64" fill="none" stroke="#2A0E04" stroke-width=".9" opacity=".5"/><ellipse cx="58" cy="56" rx="7" ry="3.4" fill="#fff" opacity=".55" transform="rotate(-20 58 56)"/>`,
   };
   const LAUB = [{ id: 'eiche', name: 'Eiche' }, { id: 'buche', name: 'Buche' }, { id: 'ahorn', name: 'Ahorn' }, { id: 'linde', name: 'Linde' }, { id: 'birke', name: 'Birke' }, { id: 'kastanie', name: 'Kastanie' }];
   const NADEL = [{ id: 'fichte', name: 'Fichte' }, { id: 'kiefer', name: 'Kiefer' }, { id: 'laerche', name: 'Lärche' }];
   const treeSVG = (id) => pic('0 0 120 120', LEAVES[id] ? `<g transform="translate(10 4)">${LEAVES[id]}</g>` : NEEDLES[id], LEAVES[id] ? 'Blatt eines Baumes' : 'Zweig eines Nadelbaumes', 150);
   const fruitSVG = (id) => pic('0 0 100 100', FRUITS[id], 'Frucht eines Baumes', 140);
 
-  const stalk = (d) => `<path d="${d}" fill="none" ${ln(5)}/><path d="${d}" fill="none" stroke="#6DB24A" stroke-width="2.6" stroke-linecap="round"/>`;
-  const blade = (x, h, l, w) => `<path d="M${x - w} 120 Q${x + l * 0.3} ${120 - h * 0.6} ${x + l} ${120 - h} Q${x + w + l * 0.3} ${120 - h * 0.6} ${x + w} 120 Z" fill="${LEAF}" ${ln(1.6)}/>`;
+  const stalk = (d, w) => `<path d="${d}" fill="none" ${ln((w || 2.6) + 2.4)}/><path d="${d}" fill="none" stroke="#6DB24A" stroke-width="${w || 2.6}" stroke-linecap="round"/>`;
+  const blade = (x, h, l, w, g, stripe) => `<path d="M${x - w} 120 Q${x + l * 0.3 - w * 0.4} ${120 - h * 0.6} ${x + l} ${120 - h} Q${x + w * 0.4 + l * 0.3} ${120 - h * 0.6} ${x + w} 120 Z" fill="url(#k2${g || 'lf'})" ${ln(1.2)}/>${stripe ? `<path d="M${x} 120 Q${x + l * 0.3} ${120 - h * 0.6} ${fx(x + l * 0.94)} ${fx(120 - h * 0.94)}" fill="none" stroke="#F4FAEC" stroke-width=".9"/>` : ''}`;
+  const frill = (x, y, rx, ry) => smooth(Array.from({ length: 24 }, (_, k) => { const a = (k / 24) * Math.PI * 2, f = k % 2 ? 0.88 : 1; return [x + Math.cos(a) * rx * f, y + Math.sin(a) * ry * f]; }));
   const FLOWERS = {
-    schneegloeckchen: `${blade(44, 60, -6, 3)}${blade(56, 64, 8, 3)}${stalk('M50 120 Q52 60 62 40 Q68 32 72 42')}<path d="M72 42 Q60 52 64 70 Q70 74 72 60 Z M72 42 Q84 52 80 70 Q74 74 72 60 Z" fill="#fff" ${ln(1.8)}/><path d="M72 42 Q66 56 72 68 Q78 56 72 42 Z" fill="#fff" ${ln(1.6)}/><path d="M69 64 q3 3 6 0" fill="none" stroke="${LEAF_D}" stroke-width="2"/>`,
-    krokus: `${blade(40, 50, -8, 2.5)}${blade(50, 56, 2, 2.5)}${blade(62, 52, 10, 2.5)}<path d="M38 80 L42 108 M52 72 L51 110 M70 82 L66 108" stroke="#fff" stroke-width="1" opacity=".8"/>${stalk('M52 120 L52 74')}<path d="M52 76 Q34 64 38 36 Q46 32 52 44 Q58 32 66 36 Q70 64 52 76 Z" fill="#A77BD8" ${ln(2)}/><path d="M52 76 Q46 56 52 30 Q58 56 52 76 Z" fill="#C9A6E8" ${ln(1.6)}/><path d="M52 52 L50 40 M52 52 L54 40" stroke="#F28C28" stroke-width="2.4" stroke-linecap="round"/>`,
-    tulpe: `<path d="M50 120 Q26 96 30 60 Q44 82 50 104 Z" fill="${LEAF}" ${ln(1.8)}/><path d="M52 120 Q78 100 74 70 Q60 88 52 106 Z" fill="${LEAF}" ${ln(1.8)}/>${stalk('M50 120 L50 54')}<path d="M50 58 Q30 56 32 30 Q34 18 40 24 Q44 14 50 22 Q56 14 60 24 Q66 18 68 30 Q70 56 50 58 Z" fill="#E8344A" ${ln(2)}/><path d="M50 58 Q42 40 50 22 Q58 40 50 58 Z" fill="#F25A6A" ${ln(1.4)}/>`,
-    osterglocke: `${blade(42, 80, -6, 3)}${blade(60, 74, 10, 3)}${stalk('M50 120 Q50 62 48 50 Q48 44 52 42')}<path d="M48 50 Q44 44 46 40 L50 44 Z" fill="#E8DFC0" ${ln(1.2)}/><g transform="translate(55 40) scale(0.72 1)">${[0, 60, 120, 180, 240, 300].map((r) => at(0, 0, r, 1, `<path d="M0 0 Q-13 -11 0 -25 Q13 -11 0 0 Z" fill="#FFF09A" ${ln(2.2)}/>`)).join('')}</g><path d="M55 33 L73 29 Q71 40 73 51 L55 47 Z" fill="#F5B800" ${ln(2)}/><ellipse cx="74" cy="40" rx="5" ry="11.5" fill="#E89A00" ${ln(1.8)}/><ellipse cx="74.5" cy="40" rx="2.4" ry="7" fill="#C97800"/>`,
+    schneegloeckchen: defs('gl', 'wt') + blade(44, 62, -4, 2.8, 'gl') + blade(54, 58, 6, 2.8, 'gl') + stalk('M50 120 Q50 70 54 46 Q58 36 66 38', 1.8)
+      + `<path d="M56 46 Q53 36 61 34 Q60 40 58 47 Z" fill="#D4E8BE" ${ln(0.8)}/><path d="M66 38 Q71 40 71 46" fill="none" ${ln(3)}/><path d="M66 38 Q71 40 71 46" fill="none" stroke="#6DB24A" stroke-width="1.4"/><ellipse cx="71" cy="48.5" rx="3.4" ry="3.6" fill="#7CC35B" ${ln(0.9)}/>`
+      + `<path d="M66.5 52 Q65 64 66 76 Q71 80 76 76 Q77 64 75.5 52 Z" fill="url(#k2wt)" ${ln(1)}/><path d="M67.5 73 Q71 67 74.5 73 L74.5 76 Q71 71 67.5 76 Z" fill="#4E9A32"/>`
+      + `<path d="M71 51 Q60 56 58 70 Q58 81 64 81 Q67 66 71 51 Z" fill="url(#k2wt)" ${ln(1)}/><path d="M71 51 Q82 56 84 70 Q84 81 78 81 Q75 66 71 51 Z" fill="url(#k2wt)" ${ln(1)}/><path d="M62 62 Q61 70 62 76" fill="none" stroke="#fff" stroke-width="1.4" opacity=".9" stroke-linecap="round"/>`,
+    krokus: defs('lf', 'kr') + blade(38, 52, -10, 2.4, 'lf', 1) + blade(46, 60, -3, 2.4, 'lf', 1) + blade(58, 56, 6, 2.4, 'lf', 1) + blade(64, 46, 14, 2.4, 'lf', 1)
+      + `<path d="M50 120 L50 80" fill="none" ${ln(5.6)}/><path d="M50 120 L50 80" stroke="#EDE4F6" stroke-width="3.2"/>`
+      + `<path d="M50 80 Q36 66 38 46 Q40 36 46 40 Q50 56 50 80 Z M50 80 Q64 66 62 46 Q60 36 54 40 Q50 56 50 80 Z" fill="url(#k2kr)" ${ln(1.2)}/><path d="M50 46 L47 36 M50 46 L50 34 M50 46 L53 36" stroke="#F28C28" stroke-width="2" stroke-linecap="round"/>`
+      + `<path d="M50 82 Q34 74 34 54 Q34 40 41 39 Q47 44 48 60 Z M50 82 Q66 74 66 54 Q66 40 59 39 Q53 44 52 60 Z" fill="url(#k2kr)" ${ln(1.2)}/><path d="M50 82 Q40 66 42 50 Q44 41 50 39 Q56 41 58 50 Q60 66 50 82 Z" fill="url(#k2kr)" ${ln(1.2)}/>`
+      + `<path d="M50 78 L50 60 M50 74 Q46 68 46 60 M50 74 Q54 68 54 60 M40 70 Q38 64 38 58 M60 70 Q62 64 62 58" fill="none" stroke="#5E2E9A" stroke-width=".8" opacity=".7"/><ellipse cx="46.5" cy="50" rx="1.8" ry="5" fill="#fff" opacity=".5"/>`,
+    tulpe: defs('gl', 'tu') + `<path d="M50 120 Q24 98 28 60 Q44 80 50 106 Z" fill="url(#k2gl)" ${ln(1.3)}/><path d="M52 120 Q80 100 76 68 Q60 86 52 106 Z" fill="url(#k2gl)" ${ln(1.3)}/><path d="M48 112 Q36 94 32 70 M54 112 Q66 96 72 76" fill="none" stroke="#DCEBD2" stroke-width=".9"/>${stalk('M50 120 L50 54', 3)}`
+      + `<path d="M50 60 Q30 58 30 38 Q31 24 38 20 Q44 30 50 40 Z M50 60 Q70 58 70 38 Q69 24 62 20 Q56 30 50 40 Z" fill="url(#k2tu)" ${ln(1.3)}/><path d="M50 62 Q34 60 36 40 Q38 26 50 18 Q62 26 64 40 Q66 60 50 62 Z" fill="url(#k2tu)" ${ln(1.3)}/><path d="M50 58 Q46 40 50 22" fill="none" stroke="#A8142A" stroke-width=".8" opacity=".6"/><path d="M42 28 Q39 38 41 50" fill="none" stroke="#fff" stroke-width="2" opacity=".5" stroke-linecap="round"/>`,
+    osterglocke: defs('gl', 'ny', 'tr') + blade(40, 82, -8, 3.2, 'gl') + blade(60, 76, 12, 3.2, 'gl') + stalk('M50 120 Q50 70 50 52 Q50 44 54 42')
+      + `<path d="M50 50 Q45 42 47 35 L53 44 Z" fill="#E8DCB8" ${ln(0.9)}/><g transform="translate(56 40) scale(0.72 1)">${[0, 60, 120, 180, 240, 300].map((r) => at(0, 0, r, 1, `<path d="M0 0 Q-13 -10 -1 -25 Q0 -26 1 -25 Q13 -10 0 0 Z" fill="url(#k2ny)" ${ln(1.4)}/><path d="M0 -3 L0 -20" stroke="#E8C230" stroke-width="1"/>`)).join('')}</g>`
+      + `<path d="M56 33 L74 28 Q72 40 74 52 L56 47 Z" fill="url(#k2tr)" ${ln(1.3)}/><path d="M60 36 L71 33 M60 44 L71 47" stroke="#D07800" stroke-width=".8" opacity=".7"/><path d="${frill(75, 40, 5.6, 12.6)}" fill="#F5B000" ${ln(1.2)}/><ellipse cx="75.6" cy="40" rx="2.6" ry="8" fill="#C87400"/>`,
   };
   const SPRING = [{ id: 'schneegloeckchen', name: 'Schneeglöckchen' }, { id: 'krokus', name: 'Krokus' }, { id: 'tulpe', name: 'Tulpe' }, { id: 'osterglocke', name: 'Osterglocke' }];
   const flowerSVG = (id) => pic('0 0 100 130', `${FLOWERS[id]}${SOIL(120, 100)}`, 'Bild einer Frühlingsblume', 150);
@@ -746,21 +851,35 @@ const MSK12 = (() => {
   BA.gen = baGen(BA);
 
   /* ================= TIERE BEI UNS (Klasse 2, LB 3) ================= */
-  // Singvögel aus einer Form, gefärbt nach dem Gefieder; Storch und Schwalbe haben eigene Umrisse
+  const BIRD_SIL = smooth([[94, 38], [91, 29], [83, 23], [73, 24], [65, 31], [53, 39], [41, 51], [35, 61], [42, 70], [56, 76], [72, 74], [85, 64], [93, 50]]);
+  const BEAK = { thin: 'M91 31 Q98 33 104 35 Q98 36.6 91 38 Z', cone: 'M90 29 Q99 31 103 35 Q99 38.6 90 40 Z', short: 'M91 31 L100 34.5 L91 37.5 Z', tiny: 'M92 32 L99 34.5 L92 36.6 Z' };
+  const TAIL = { n: 'M42 60 L16 72 Q11 76 15 80 L46 68 Z', long: 'M42 60 L7 74 Q3 79 9 81 L46 68 Z', fork: 'M42 62 L2 70 L4 73 L32 68 L5 83 L8 85 L44 68 Z' };
+  const WING = { n: 'M70 38 Q54 40 40 58 L33 67 Q48 68 62 62 Q74 54 70 38 Z', long: 'M72 40 Q50 44 8 74 Q32 70 52 64 Q70 58 72 40 Z' };
+  // Singvögel aus einer Form; die Gefiederzeichnung liegt beschnitten auf dem Körper
   const SONG = {
-    amsel: { body: '#2A2A2E', belly: '#2A2A2E', head: '#2A2A2E', wing: '#1E1E22', tail: '#1E1E22', beak: '#F2A20C', ring: '#F2A20C' },
-    meise: { body: '#8AA04A', belly: '#F5D33B', head: '#1C1C22', cheek: '#FFFFFF', wing: '#6C8CA8', tail: '#6C8CA8', beak: '#333', stripe: true },
-    spatz: { body: '#9A6B3E', belly: '#CFC5B5', head: '#8E8E8E', cheek: '#E8E2D6', bib: true, nape: '#8A4E26', wing: '#7A5230', tail: '#7A5230', beak: '#555', bar: true },
-    rotkehlchen: { body: '#8B7A55', belly: '#F1EAD8', head: '#8B7A55', breast: '#E8742C', wing: '#75653F', tail: '#75653F', beak: '#333' },
-    schwalbe: { body: '#1F2E6B', belly: '#F3E6D0', head: '#1F2E6B', throat: '#B8322A', brow: true, wing: '#16214D', tail: '#16214D', beak: '#222', fork: true },
+    amsel: { body: '#2A2A30', wing: '#1C1C21', tail: '#1C1C21', beak: '#F5A300', ring: '#F5B400', legs: '#3A2E26', tl: 'long', bk: 'thin' },
+    meise: { body: '#8FA048', wing: '#6E8EAE', tail: '#5E7E9E', beak: '#2A2A2E', legs: '#6E7E96', bk: 'short', bar: '#fff',
+      marks: `<ellipse cx="64" cy="70" rx="22" ry="11" fill="#F6D43A"/><path d="M60 14 H100 V44 Q94 46 88 44 Q80 41 72 40 Q66 38 62 36 Z" fill="#17171C"/><path d="M76 37 Q84 33 90 37 Q90 43 84 45 Q78 45 76 41 Z" fill="#fff"/><path d="M84 44 Q92 46 95 48 Q90 56 80 60 L72 78 L65 78 L74 58 Q78 50 84 44 Z" fill="#17171C"/>` },
+    spatz: { body: '#9C6C40', wing: '#8A5A30', tail: '#6E4A2C', beak: '#4A4A50', legs: '#B08A70', bk: 'cone', bar: '#fff',
+      marks: `<ellipse cx="64" cy="70" rx="24" ry="11" fill="#CBC6BC"/><path d="M60 14 H100 V30 Q92 27 86 27 Q76 28 68 32 L60 35 Z" fill="#8C9096"/><path d="M87 30 Q78 30 70 33 Q64 36 60 40 L62 47 Q70 41 78 37 Q84 35 90 35 Z" fill="#8A4A22"/><ellipse cx="81" cy="42" rx="7" ry="4.5" fill="#E8E3D8"/><path d="M88 40 Q96 42 95 48 Q92 58 82 62 Q79 54 82 46 Z M86 32 L93 33 L92 36 L86 35 Z" fill="#1C1C22"/>` },
+    rotkehlchen: { body: '#8C7652', wing: '#7A6544', tail: '#6E5A3C', beak: '#2A2A2E', legs: '#8A6E5A', bk: 'thin', eye: 3.1,
+      marks: `<ellipse cx="62" cy="71" rx="22" ry="10" fill="#EFE6D6"/><path d="M100 26 Q88 25 84 28 Q78 32 76 38 Q72 48 71 58 Q71 68 78 75" fill="none" stroke="#A4ADB8" stroke-width="5"/><path d="M100 27 Q90 26 86 28 Q80 31 78 36 Q74 46 73 58 Q73 68 79 75 L100 75 Z" fill="#EC7A2E"/>` },
+    schwalbe: { body: '#1E2F6A', wing: '#16214D', tail: '#16214D', beak: '#222', legs: '#3A2E2E', bk: 'tiny', tl: 'fork', wg: 'long',
+      marks: `<ellipse cx="64" cy="73" rx="20" ry="9" fill="#F3E8D6"/><path d="M95 37 Q97 46 92 52 Q86 54 80 50 Q82 41 90 37 Z" fill="#B32E28"/><ellipse cx="92" cy="28" rx="3.6" ry="2.8" fill="#B32E28"/><path d="M79 50 Q86 56 93 51 L94 58 Q84 62 76 58 Z" fill="#1E2F6A"/><path d="M58 40 Q70 30 80 26" fill="none" stroke="#5A78C0" stroke-width="2.4" opacity=".6" stroke-linecap="round"/>` },
   };
+  const BIRD_DEFS = `<defs><radialGradient id="k2bs" cx=".62" cy=".28" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".32"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></radialGradient><clipPath id="k2bc"><path d="${BIRD_SIL}"/></clipPath>${lgr('k2br', '#A87650', '#6E4628', 0, 1)}</defs>`;
   function birdSVG(id) {
-    const ground = `<path d="M4 88 Q60 82 116 90" fill="none" ${ln(7)}/><path d="M4 88 Q60 82 116 90" fill="none" stroke="${BARK}" stroke-width="4"/>`;
-    if (id === 'storch') return pic('0 0 120 120', `<path d="M0 116 H120" ${ln(2)}/><path d="M52 70 L50 114 M62 70 L66 114" fill="none" ${ln(5)}/><path d="M52 70 L50 114 M62 70 L66 114" fill="none" stroke="#E8344A" stroke-width="2.6"/><ellipse cx="56" cy="58" rx="28" ry="16" fill="#fff" ${ln(2)}/><path d="M28 56 Q44 74 74 66 Q60 78 36 74 Q24 68 28 56 Z" fill="${OUT}"/>${twin('M74 52 Q86 40 82 24', '#fff', 7)}<circle cx="84" cy="22" r="8" fill="#fff" ${ln(2)}/><path d="M90 19 L116 29 L90 25 Z" fill="#E8344A" ${ln(1.6)}/><circle cx="86" cy="20" r="1.8" fill="${OUT}"/>`, 'Bild eines Vogels', 150);
+    if (id === 'storch') return pic('0 0 120 120', `<defs>${lgr('k2st', '#FF6A48', '#C8261C', 1, 0)}${lgr('k2gr', '#9CD06E', '#5E9E3E', 0, 1)}</defs><path d="M0 110 Q60 106 120 110 V120 H0 Z" fill="url(#k2gr)"/><path d="M0 110 Q60 106 120 110" fill="none" ${ln(1.4)}/>`
+      + twin('M54 72 L53 92 L49 112 M48 112 L42 114 M49 112 L55 114', '#E8342A', 2.4) + twin('M64 72 L67 92 L61 111 M60 111 L54 112 M61 111 L66 113', '#E8342A', 2.4)
+      + `<path d="${smooth([[24, 52], [44, 42], [66, 42], [80, 48], [84, 60], [74, 72], [52, 76], [32, 68]])}" fill="#fff" ${ln(1.6)}/><path d="M82 55 Q70 70 44 70 Q26 68 10 58 Q28 55 44 52 Q66 48 82 55 Z" fill="#1E1E24" ${ln(1)}/><path d="M20 59 L40 57 M28 63 L50 60 M38 67 L60 62" stroke="#4A4A55" stroke-width=".9"/><path d="M50 72 Q62 76 74 70" fill="none" stroke="#DCE3EA" stroke-width="2"/>`
+      + twin('M76 52 Q88 44 86 34 Q84 26 88 20', '#fff', 10) + `<ellipse cx="89" cy="18" rx="7.5" ry="6.2" fill="#fff" ${ln(1.6)}/><path d="M78 50 Q86 42 84 32" fill="none" stroke="#DCE3EA" stroke-width="2.4" stroke-linecap="round"/>`
+      + `<path d="M94 14.5 L119 26 L94 21.5 Z" fill="url(#k2st)" ${ln(1.2)}/><path d="M94 18 L117 25.6" stroke="#8E1A12" stroke-width=".7"/><circle cx="90" cy="16.5" r="2.4" fill="#2A2A30"/><circle cx="89.4" cy="15.9" r=".7" fill="#fff"/>`, 'Bild eines Vogels', 150);
     const o = SONG[id];
-    const tail = o.fork ? `<path d="M40 60 L2 64 L22 68 L4 80 L44 68 Z" fill="${o.tail}" ${ln(2)}/>` : `<path d="M38 62 L10 76 L16 84 L44 68 Z" fill="${o.tail}" ${ln(2)}/>`;
-    const wing = o.fork ? `<path d="M44 50 Q72 44 78 54 L20 70 Z" fill="${o.wing}" ${ln(2)}/>` : `<path d="M40 52 Q58 44 72 56 Q58 72 40 64 Z" fill="${o.wing}" ${ln(2)}/>${o.bar ? '<path d="M48 58 Q58 54 66 58" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M46 52 l6 6 M54 50 l6 5 M62 51 l5 4" stroke="#3E2814" stroke-width="1.6" stroke-linecap="round"/>' : ''}`;
-    return pic('0 0 120 100', `${ground}<path d="M56 74 L54 86 M64 74 L64 86" fill="none" ${ln(2.4)}/>${tail}<ellipse cx="58" cy="58" rx="26" ry="18" fill="${o.body}" ${ln(2)} transform="rotate(-20 58 58)"/><ellipse cx="66" cy="66" rx="16" ry="10" fill="${o.belly}" transform="rotate(-20 66 66)"/>${o.breast ? `<ellipse cx="76" cy="54" rx="12" ry="14" fill="${o.breast}"/>` : ''}${o.stripe ? `<path d="M78 50 L68 76" stroke="${OUT}" stroke-width="4" stroke-linecap="round"/>` : ''}${wing}<circle cx="80" cy="38" r="14" fill="${o.head}" ${ln(2)}/>${o.breast ? `<path d="M74 50 Q74 36 86 34 Q94 40 90 50 Z" fill="${o.breast}"/>` : ''}${o.cheek ? `<ellipse cx="82" cy="42" rx="7" ry="5" fill="${o.cheek}"/>` : ''}${o.nape ? `<path d="M87 33 Q80 30 70 36 Q72 42 76 40 Q80 35 87 36 Z" fill="${o.nape}"/>` : ''}${o.bib ? `<path d="M89 43 Q94 44 94 40 Q96 50 86 58 Q82 54 84 46 Z" fill="${OUT}"/>` : ''}${o.throat ? `<ellipse cx="88" cy="46" rx="6" ry="5" fill="${o.throat}"/>` : ''}${o.brow ? `<ellipse cx="92" cy="33" rx="3" ry="2.4" fill="${o.throat}"/>` : ''}<path d="M93 36 L103 39 L93 42 Z" fill="${o.beak}" ${ln(1.4)}/>${o.ring ? `<circle cx="85" cy="35" r="4" fill="${o.ring}"/>` : ''}<circle cx="85" cy="35" r="2.4" fill="${o.ring ? OUT : '#fff'}"/>${o.ring ? '' : `<circle cx="85" cy="35" r="1.4" fill="${OUT}"/>`}`, 'Bild eines Vogels', 150);
+    return pic('0 0 120 100', `${BIRD_DEFS}<path d="M2 92 Q60 82 118 88" fill="none" ${ln(7.6)}/><path d="M2 92 Q60 82 118 88" fill="none" stroke="url(#k2br)" stroke-width="5" stroke-linecap="round"/><path d="M90 85 Q100 78 106 70" fill="none" ${ln(4.4)}/><path d="M90 85 Q100 78 106 70" fill="none" stroke="#8A5E3A" stroke-width="2"/>`
+      + `<path d="${TAIL[o.tl || 'n']}" fill="${o.tail}" ${ln(1.3)}/>` + twin('M60 74 L58 85 M67 74 L68 85', o.legs, 1.6) + `<path d="M54 87 Q58 83 62 87 M64 87 Q68 83 72 87" fill="none" stroke="${o.legs}" stroke-width="1.6" stroke-linecap="round"/>`
+      + `<path d="${BIRD_SIL}" fill="${o.body}"/><g clip-path="url(#k2bc)">${o.marks || ''}<rect x="30" y="18" width="70" height="62" fill="url(#k2bs)"/></g><path d="${BIRD_SIL}" fill="none" ${ln(1.5)}/>`
+      + `<path d="${WING[o.wg || 'n']}" fill="${o.wing}" ${ln(1.3)}/><path d="M48 60 L36 66 M54 58 L42 66 M60 56 L48 65" stroke="${o.bar ? '#3A3A44' : '#55555F'}" stroke-width=".8" opacity=".7"/>${o.bar ? `<path d="M66 46 Q58 50 52 57" fill="none" stroke="${o.bar}" stroke-width="2.2" stroke-linecap="round"/>` : ''}`
+      + `${o.ring ? `<circle cx="86" cy="31" r="3.9" fill="${o.ring}"/>` : ''}<circle cx="86" cy="31" r="${o.eye || 2.6}" fill="#111"/><circle cx="85.2" cy="30.2" r=".9" fill="#fff"/><path d="${BEAK[o.bk]}" fill="${o.beak}" ${ln(1.1)}/><path d="M92 34.6 L${o.bk === 'cone' ? 101 : 99} 34.9" stroke="#111" stroke-width=".6"/>`, 'Bild eines Vogels', 150);
   }
   const BIRDS = [{ id: 'amsel', name: 'Amsel' }, { id: 'meise', name: 'Kohlmeise' }, { id: 'spatz', name: 'Spatz' }, { id: 'rotkehlchen', name: 'Rotkehlchen' }, { id: 'storch', name: 'Storch' }, { id: 'schwalbe', name: 'Schwalbe' }];
   // has: Vögel mit diesem Merkmal; skip: ähnlich genug, um als falsche Antwort zu verwirren
@@ -776,11 +895,34 @@ const MSK12 = (() => {
     { q: 'Welcher Vogel fliegt im Herbst nach Afrika?', has: ['storch', 'schwalbe'], skip: ['rotkehlchen'] },
     { q: 'Welcher kleine braune Vogel badet gern im Staub?', has: ['spatz'], skip: ['amsel'] },
   ];
+  // Regenwurm: a body that tapers to both ends, ring segments and the thicker, lighter saddle (Gürtel) nearer the head
+  function worm() {
+    const c = samp([[12, 80], [24, 64], [42, 66], [56, 78], [74, 76], [88, 62], [104, 58], [112, 64]], 64, false);
+    const w = (t) => 4.2 * Math.min(1, (t + 0.2) / 0.3) * Math.min(1, Math.sqrt((1.02 - t) / 0.12)) * (t > 0.66 && t < 0.77 ? 1.18 : 1);
+    const side = (t0, t1, f) => { const L = [], Rt = []; c.forEach(([x, y, tx, ty], i) => { const t = i / 63; if (t < t0 || t > t1) return; const r = w(t) * f; L.push(`${fx(x + ty * r)} ${fx(y - tx * r)}`); Rt.unshift(`${fx(x - ty * r)} ${fx(y + tx * r)}`); }); return `M${L.join(' L')} L${Rt.join(' L')}Z`; };
+    const rings = c.filter((_, i) => i % 2 && i > 3 && i < 62).map(([x, y, tx, ty], k, a) => { const r = w((2 * k + 5) / 63) * 0.85; return `M${fx(x + ty * r)} ${fx(y - tx * r)} L${fx(x - ty * r)} ${fx(y + tx * r)}`; }).join('');
+    const hl = c.filter((_, i) => i > 4 && i < 60).map(([x, y, tx, ty], i) => `${i ? 'L' : 'M'}${fx(x + ty * w((i + 5) / 63) * 0.5)} ${fx(y - tx * w((i + 5) / 63) * 0.5)}`).join('');
+    return `<defs>${lgr('k2wm', '#F2A4AC', '#C4606E', 0, 1)}${lgr('k2er', '#C9A27A', '#A07850', 0, 1)}</defs><path d="M0 50 Q60 44 120 50 V90 H0 Z" fill="url(#k2er)"/><path d="M0 50 Q60 44 120 50" fill="none" ${ln(1.4)}/><path d="M6 50 l-2 -6 M10 50 l1 -7 M100 48 l-1 -6 M106 48 l2 -6" stroke="#5E9E3E" stroke-width="1.6" stroke-linecap="round"/><path d="M30 58 h.1 M70 84 h.1 M96 76 h.1 M20 86 h.1 M84 54 h.1" stroke="#7A5634" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="94" cy="86" rx="4" ry="2.4" fill="#B6AEA2" ${ln(0.8)}/><ellipse cx="11" cy="82" rx="7" ry="3.4" fill="#4A3220"/>`
+      + `<path d="${side(0, 1, 1)}" fill="url(#k2wm)" ${ln(1.3)}/><path d="${rings}" stroke="#A04E5E" stroke-width=".6" opacity=".7"/><path d="${side(0.66, 0.77, 1)}" fill="#E8977C" ${ln(1)}/><path d="${hl}" fill="none" stroke="#fff" stroke-width="1" opacity=".5" stroke-linecap="round"/>`;
+  }
   const SMALL = {
-    igel: `<path d="M8 80 H112" ${ln(2)}/><path d="M40 78 v4 M78 78 v4" ${ln(3)}/><path d="M${Array.from({ length: 27 }, (_, k) => { const a = Math.PI + k * (Math.PI * 0.84) / 26, r = k % 2 ? 1.16 : 1; return `${fx(52 + Math.cos(a) * 40 * r)} ${fx(78 + Math.sin(a) * 36 * r)}`; }).join(' L')} L84 78 Z" fill="#5A3E26" ${ln(2)}/><path d="${Array.from({ length: 9 }, (_, k) => { const a = Math.PI + 0.35 + k * 0.26; return `M${pt(52, 78, a, 18)} L${pt(52, 78, a + 0.12, 30)}`; }).join(' ')}" stroke="#8A6440" stroke-width="2" stroke-linecap="round"/><path d="M80 52 Q98 56 112 68 Q104 78 80 78 Z" fill="#D9B98E" ${ln(2)}/><circle cx="112" cy="68" r="3.4" fill="${OUT}"/><circle cx="97" cy="61" r="2.2" fill="${OUT}"/><path d="M86 54 q3 -5 6 -1" fill="#D9B98E" ${ln(1.4)}/>`,
-    regenwurm: `<rect x="0" y="62" width="120" height="28" fill="#B88A5E"/><path d="M0 62 H120" ${ln(2)}/>${twin('M10 70 Q26 40 46 56 Q66 74 84 50 Q96 36 110 46', '#E8909A', 10)}<path d="M10 70 Q26 40 46 56 Q66 74 84 50 Q96 36 110 46" fill="none" stroke="#C26A78" stroke-width="10" stroke-dasharray="1.2 5"/><circle cx="108" cy="45" r="1.6" fill="${OUT}" opacity=".5"/>`,
-    schnecke: `<path d="M4 80 H116" ${ln(2)}/><path d="M104 52 L98 30 M110 52 L116 30" fill="none" ${ln(2.4)}/><circle cx="98" cy="29" r="3" fill="${OUT}"/><circle cx="116" cy="29" r="3" fill="${OUT}"/><path d="M8 80 Q10 68 28 68 H86 Q96 68 98 58 Q100 50 106 50 Q114 52 112 62 Q108 78 90 80 Z" fill="#C9B79A" ${ln(2)}/><circle cx="54" cy="48" r="24" fill="#B8763E" ${ln(2)}/><path d="M54 48 m0 -4 a4 4 0 1 1 -4 4 a8 8 0 1 1 8 8 a12 12 0 1 1 -12 -12 a16 16 0 1 1 16 16" fill="none" stroke="#7A4A22" stroke-width="2"/>`,
-    marienkaefer: `<path d="M38 40 L22 32 M36 54 L18 56 M40 68 L24 80 M82 40 L98 32 M84 54 L102 56 M80 68 L96 80 M54 18 L48 8 M66 18 L72 8" fill="none" ${ln(2.4)}/><circle cx="60" cy="52" r="27" fill="#E8344A" ${ln(2.2)}/><path d="M48 26 A12 10 0 0 1 72 26 Z" fill="${OUT}"/><circle cx="54" cy="22" r="2" fill="#fff"/><circle cx="66" cy="22" r="2" fill="#fff"/><path d="M60 26 L60 79" ${ln(2)}/>${[[60, 33, 5], [46, 42, 5], [74, 42, 5], [40, 58, 5], [80, 58, 5], [50, 70, 4.5], [70, 70, 4.5]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${OUT}"/>`).join('')}<ellipse cx="48" cy="34" rx="5" ry="3" fill="#fff" opacity=".5"/>`,
+    igel: (() => { const sil = Array.from({ length: 41 }, (_, k) => { const a = Math.PI + k * (0.86 * Math.PI) / 40, r = k % 2 ? 42 : 36; return `${fx(54 + Math.cos(a) * r)} ${fx(80 + Math.sin(a) * r * 0.85)}`; });
+      let dark = '', tip = ''; [[18, 20, 0], [26, 24, 0.07], [33, 26, 0.03]].forEach(([r, n, o]) => { for (let k = 0; k < n; k++) { const a = Math.PI + 0.12 + o + k * (0.8 * Math.PI) / n, b = a - 0.35, x = 54 + Math.cos(a) * r, y = 80 + Math.sin(a) * r * 0.85;
+        dark += `M${fx(x)} ${fx(y)} l${fx(Math.cos(b) * 7)} ${fx(Math.sin(b) * 7)}`; tip += `M${fx(x + Math.cos(b) * 7)} ${fx(y + Math.sin(b) * 7)} l${fx(Math.cos(b) * 3.4)} ${fx(Math.sin(b) * 3.4)}`; } });
+      return `<defs>${rgr('k2ig', '#8A6A48', '#3E2A1A')}${lgr('k2if', '#E6C8A0', '#B48A60', 0, 1)}</defs><path d="M4 80 Q60 77 116 80" fill="none" ${ln(1.6)}/><path d="M10 80 l-1 -5 M14 80 l1 -6 M108 80 l1 -5" stroke="#5E9E3E" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="40" cy="78" rx="5" ry="2.6" fill="#3A2A1C"/><ellipse cx="78" cy="78" rx="5" ry="2.6" fill="#3A2A1C"/>`
+        + `<path d="M${sil.join(' L')} L86 80 Z" fill="url(#k2ig)" ${ln(1.4)}/><path d="${dark}" stroke="#2E1E12" stroke-width="1.5" stroke-linecap="round"/><path d="${tip}" stroke="#F0E2C4" stroke-width="1.3" stroke-linecap="round"/>`
+        + `<path d="M84 58 Q98 60 110 69 Q113 72 109 75 Q98 81 80 80 Q76 70 84 58 Z" fill="url(#k2if)" ${ln(1.4)}/><path d="M86 59 Q87 52 92 55 Q92 59 89 61 Z" fill="#C49A70" ${ln(1)}/><circle cx="111" cy="71" r="2.6" fill="#1C1C22"/><circle cx="97" cy="65" r="2" fill="#1C1C22"/><circle cx="96.4" cy="64.4" r=".6" fill="#fff"/><path d="M104 74 Q100 76 96 75" fill="none" stroke="#8A6040" stroke-width=".8"/>`; })(),
+    regenwurm: worm(),
+    schnecke: (() => { const k = Math.log(24 / 2.2) / (5 * Math.PI), sp = (f) => 'M' + Array.from({ length: 90 }, (_, i) => { const th = (i / 89) * 5 * Math.PI, r = 24 * Math.exp(-k * th) * f; return `${fx(52 + Math.cos(0.7 - th) * r)} ${fx(46 + Math.sin(0.7 - th) * r)}`; }).join(' L');
+      return `<defs>${rgr('k2sn', '#F0C080', '#8A5226')}${lgr('k2sb', '#DCD2BE', '#A49680', 0, 1)}</defs><path d="M2 82 Q20 80 30 81" fill="none" stroke="#C6D8E2" stroke-width="3" stroke-linecap="round" opacity=".8"/><path d="M4 80 Q60 77 116 80" fill="none" ${ln(1.6)}/>`
+        + `<path d="M108 56 L101 32 M112 56 L117 33" fill="none" ${ln(3.4)}/><path d="M108 56 L101 32 M112 56 L117 33" fill="none" stroke="#B4A68E" stroke-width="1.6" stroke-linecap="round"/><circle cx="101" cy="31" r="2.6" fill="#3A3226" ${ln(0.8)}/><circle cx="117" cy="32" r="2.6" fill="#3A3226" ${ln(0.8)}/>`
+        + `<path d="M8 80 Q10 68 28 68 H86 Q96 68 98 58 Q100 50 106 50 Q115 51 114 62 Q110 78 90 80 Z" fill="url(#k2sb)" ${ln(1.5)}/><path d="M110 70 l4 5 M106 72 l2 5" fill="none" ${ln(1.6)}/><path d="M20 74 h.1 M34 75 h.1 M48 74 h.1 M62 75 h.1 M76 74 h.1 M90 73 h.1" stroke="#8E8270" stroke-width="1.6" stroke-linecap="round"/>`
+        + `<circle cx="52" cy="46" r="24" fill="url(#k2sn)" ${ln(1.5)}/><path d="${sp(0.86)}" fill="none" stroke="#7A4A22" stroke-width="3" opacity=".35"/><path d="${sp(1)}" fill="none" stroke="#5E3618" stroke-width="1.3"/><ellipse cx="42" cy="32" rx="6" ry="3" fill="#fff" opacity=".45" transform="rotate(-35 42 32)"/>`; })(),
+    marienkaefer: `<defs><radialGradient id="k2mk" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#FF7A64"/><stop offset="1" stop-color="#B8141E"/></radialGradient></defs>`
+      + `<path d="M44 42 L30 36 L22 39 M40 56 L26 58 L19 65 M44 70 L32 78 L28 86 M76 42 L90 36 L98 39 M80 56 L94 58 L101 65 M76 70 L88 78 L92 86 M56 15 Q52 8 46 6 M64 15 Q68 8 74 6" fill="none" ${ln(1.8)}/><circle cx="46" cy="6" r="1.8" fill="${OUT}"/><circle cx="74" cy="6" r="1.8" fill="${OUT}"/>`
+      + `<ellipse cx="60" cy="20" rx="8" ry="6" fill="#1C1C22" ${ln(1.2)}/><path d="M43 33 Q45 21 60 21 Q75 21 77 33 Z" fill="#1C1C22" ${ln(1.2)}/><ellipse cx="49" cy="28" rx="3.6" ry="2.8" fill="#fff"/><ellipse cx="71" cy="28" rx="3.6" ry="2.8" fill="#fff"/>`
+      + `<path d="M34 52 Q34 32 60 31 Q86 32 86 52 Q86 80 60 84 Q34 80 34 52 Z" fill="url(#k2mk)" ${ln(1.6)}/><path d="M60 31 L60 84" ${ln(1.4)}/>`
+      + [[60, 37, 4.5], [47, 46, 4.6], [73, 46, 4.6], [42, 60, 4.6], [78, 60, 4.6], [51, 73, 4.2], [69, 73, 4.2]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#1C1C22"/>`).join('') + `<ellipse cx="46" cy="38" rx="5" ry="2.6" fill="#fff" opacity=".55" transform="rotate(-30 46 38)"/><ellipse cx="70" cy="38" rx="3.6" ry="2" fill="#fff" opacity=".4" transform="rotate(30 70 38)"/>`,
   };
   const SMALL_LIST = [{ id: 'igel', name: 'Igel' }, { id: 'regenwurm', name: 'Regenwurm' }, { id: 'schnecke', name: 'Schnecke' }, { id: 'marienkaefer', name: 'Marienkäfer' }];
   const smallSVG = (id) => pic('0 0 120 90', SMALL[id], 'Bild eines kleinen Tieres', 160);
