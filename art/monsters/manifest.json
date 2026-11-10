@@ -75,8 +75,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "blendlicht": {
-  "raw": "af9b09cfb8bd8201",
-  "out": "774a7a9dc19b5d51",
+  "raw": "6e1ec05880234cba",
+  "out": "8f3b3e7d3741e20c",
   "config": "14e1c93b1e80bcea"
  },
  "bratwurstglut": {
@@ -105,8 +105,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "bulldogge": {
-  "raw": "d2be33efa14d0593",
-  "out": "d5dd1689e517eb08",
+  "raw": "2219e5644baefb74",
+  "out": "ad6fd09680b48f68",
   "config": "14e1c93b1e80bcea"
  },
  "bus-0": {
@@ -185,8 +185,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "elster": {
-  "raw": "3b95bb78bb06278d",
-  "out": "31f2f19637bb3cdd",
+  "raw": "90b9ab709cc18d3e",
+  "out": "2700e943942103a8",
   "config": "14e1c93b1e80bcea"
  },
  "eselsohr": {
@@ -240,18 +240,18 @@
   "config": "14e1c93b1e80bcea"
  },
  "friends-0": {
-  "raw": "8fe3350f22b11e46",
-  "out": "22de3e5a58ebfc21",
+  "raw": "81c35a388e0eba51",
+  "out": "da721a9f679c5eea",
   "config": "14e1c93b1e80bcea"
  },
  "friends-1": {
-  "raw": "6a1dc5cbe3562873",
-  "out": "2ceb10c282daa0ee",
+  "raw": "32b7993b7e3d5ac7",
+  "out": "29218dcbf0cac6a9",
   "config": "14e1c93b1e80bcea"
  },
  "friends-2": {
-  "raw": "88c5822840b6864c",
-  "out": "7d15f4bc80f78df7",
+  "raw": "2cce3279b21676e5",
+  "out": "e311df9f55403864",
   "config": "14e1c93b1e80bcea"
  },
  "frostblitz": {
@@ -350,8 +350,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "holzwurm": {
-  "raw": "e43e3979bfbb2fd6",
-  "out": "960fd4aed678b492",
+  "raw": "cfefec6c457a80af",
+  "out": "41b13628235e402c",
   "config": "14e1c93b1e80bcea"
  },
  "horse-0": {
@@ -390,8 +390,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "jahrmarktwespe": {
-  "raw": "d0aee85feb212ec5",
-  "out": "605239038de643bb",
+  "raw": "2f36cd3c1ad5f606",
+  "out": "6dbfe1f8026281c0",
   "config": "14e1c93b1e80bcea"
  },
  "kabelnatter": {
@@ -460,8 +460,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "kornkaefer": {
-  "raw": "b8f067c4d06642f4",
-  "out": "fe4f077d8fa470c9",
+  "raw": "fda7559257b6873d",
+  "out": "779a07307079e5dd",
   "config": "14e1c93b1e80bcea"
  },
  "krabbelstein": {
@@ -470,18 +470,23 @@
   "config": "14e1c93b1e80bcea"
  },
  "krachmacher-boss": {
-  "raw": "1cb54b0ec17778ef",
-  "out": "a9b15ee449c9a9f6",
+  "raw": "e1bce41ecd155247",
+  "out": "a708f15dfa1bc7cf",
   "config": "14e1c93b1e80bcea"
  },
  "kritzelei": {
-  "raw": "b028c4799c71e654",
-  "out": "7e033a884dfff80f",
+  "raw": "6ef5f52b44ca9bb6",
+  "out": "3abbad2453c5cba4",
   "config": "14e1c93b1e80bcea"
  },
  "kuerbiskopf": {
-  "raw": "1527bd3470874815",
-  "out": "a2eb48859fdfacd3",
+  "raw": "7a1669d78789e2bc",
+  "out": "329e6da8cf47c556",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kuerbiskopf-enemy": {
+  "raw": "a70f22da3da96b4f",
+  "out": "4889da80bd705121",
   "config": "14e1c93b1e80bcea"
  },
  "kuesterin-0": {
