@@ -556,7 +556,7 @@ function gardenCases() {
   { // planting, growth phases, a planted bed survives a reload
     const p = open({ [META]: JSON.stringify(skip) }); p.w.__mq.now = T;
     p.click('#garden');
-    check(p.text().includes('Beete wachsen auch, wenn du nicht spielst.') && p.d.querySelectorAll('[data-plant]').length === 3 && p.d.querySelectorAll('.bed.locked').length === 1, 'garden shows three free beds and bed 4 locked');
+    check(p.text().includes('Beete wachsen auch, wenn du Pause machst.') && p.d.querySelectorAll('[data-plant]').length === 3 && p.d.querySelectorAll('.bed.locked').length === 1, 'garden shows three free beds and bed 4 locked');
     p.click('[data-plant="0"]'); p.click('.overlay [data-crop="weizen"]');
     const m = p.w.__mq.meta;
     check(m.garden.beds[0].crop === 'weizen' && m.garden.beds[0].plantedAt === T && p.text().includes('Heute gesät'), 'planting weizen stores the crop and the time');
@@ -1216,14 +1216,14 @@ function topCases() {
   check(S.slice(0, -1).every((x) => m.hidden.includes('hero:math:' + x.id)) && !m.hidden.includes('hero:math:' + S[S.length - 1].id) && p0.text().includes('Mindestens ein Held muss bleiben.'), 'heroes can be hidden, but one always stays');
   const d1 = p0.dump(); const m1 = JSON.parse(d1[META]); m1.hidden = m1.hidden.concat(Object.keys(m1.stats).filter((k) => k !== 'math').map((k) => 'mode:' + k)); d1[META] = JSON.stringify(m1);
   const p1 = open(d1, { now: W49 }); p1.click('#parents'); p1.click('[data-hide="mode:math"]');
-  check(!p1.w.__mq.meta.hidden.includes('mode:math') && p1.text().includes('Mindestens ein Spiel muss sichtbar bleiben.'), 'the last game cannot be hidden');
+  check(!p1.w.__mq.meta.hidden.includes('mode:math') && p1.text().includes('Mindestens ein Thema muss sichtbar bleiben.'), 'the last game cannot be hidden');
   p1.click('#back');
   check(p1.d.querySelectorAll('[data-sub]').length === 1 && p1.w.__mq.weeklyGoals().length === 1, 'only Mathe is left on the title and in the weekly goals');
   p1.click('[data-new="math"]');
   check(p1.d.querySelectorAll('.choice[data-id]').length === 1 && p1.$('.choice[data-id]').dataset.id === S[S.length - 1].id && !p1.$('#go').disabled, 'the hero choice shows only the hero that is left, already picked');
   check(p1.w.__mq.mergeMeta(p0.w.__mq.meta, Object.assign({}, p0.w.__mq.meta, { hidden: ['mode:musik'] })).hidden.length === p0.w.__mq.meta.hidden.length, 'merging a save code keeps the settings of a device that has them');
 }
-{ // „Jetzt spielen“ on a goal: the hero choice gets the goal's task type, the attack shows the goal
+{ // „Jetzt loslegen“ on a goal: the hero choice gets the goal's task type, the attack shows the goal
   const p = open(null, { now: W49 }); p.click('#later'); p.click('#weekly');
   const g = p.w.__mq.weeklyGoals()[0];
   check(p.d.querySelectorAll('.goal [data-goal]').length === p.w.__mq.weeklyGoals().length && p.$('.goal').textContent.includes('Zahlenquest'), 'every open goal has a play button and names its game');
@@ -1240,7 +1240,7 @@ function topCases() {
   // a running adventure without the attack: the child is asked, and can keep playing it
   const d = p.dump(); const rr = JSON.parse(d[RUN]); rr.hero.attacks = rr.hero.attacks.filter((a) => a.mod !== g.mod); while (rr.hero.attacks.length < 2) rr.hero.attacks.push({ name: 'x', mod: 'sub' }); d[RUN] = JSON.stringify(rr);
   const q = open(d, { now: W49 }); q.click('#weekly');
-  check(q.$('[data-goal="0"]').textContent.includes('Weiterspielen'), 'with a running adventure the button says „Weiterspielen“');
+  check(q.$('[data-goal="0"]').textContent.includes('Weitermachen'), 'with a running adventure the button says „Weitermachen“');
   q.click('[data-goal="0"]');
   if (q.w.__mq.weeklyGoals()[0].mod !== 'sub') { check(!!q.$('.overlay #yes') && !!q.$('.overlay #cont'), 'a running hero without the attack asks first'); q.click('.overlay #cont'); }
   check(q.errors.length === 0 && q.w.__mq.run && q.w.__mq.run.mode === 'math' && !!q.dump()[RUN], 'keep playing resumes the running adventure');

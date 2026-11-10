@@ -458,9 +458,9 @@
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
     render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
-        ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
+        ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${weeklyCard()}
-        ${gradeTabs()}${gardenCard()}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Spiel' : 'Spiele'}`}</span></button>`; }).join('')}</div>
+        ${gradeTabs()}${gardenCard()}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`; }).join('')}</div>
         <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
         <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
         <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
@@ -492,13 +492,13 @@
   const goalCount = (g) => Math.min(g.n, weekly().progress[g.i] || 0);
   function weeklyCard() {
     const goals = weeklyGoals(); const n = goals.filter(goalDone).length; const pct = Math.round((goals.reduce((a, g) => a + goalCount(g) / g.n, 0) / goals.length) * 100);
-    return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span>${weekly().done ? '' : '<span class="weekgo">Ziele ansehen und losspielen ›</span>'}</button>`;
+    return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span>${weekly().done ? '' : '<span class="weekgo">Ziele ansehen und loslegen ›</span>'}</button>`;
   }
   function screenWeekly() {
     const goals = weeklyGoals();
     render(`<div class="screen">${topbar('Wochenaufgabe')}<div class="scroll"><div class="stack">
       <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
-      ${goals.map((g) => { const c = goalCount(g); const M = MODES[g.m]; return `<div class="card goal${c >= g.n ? ' done' : ''}"><div class="eyebrow">${esc(g.subject)}</div><div class="goalgame"><span aria-hidden="true">${M.icon}</span>${esc(M.title)}</div><p>${esc(goalText(g))}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n ? '' : `<button class="btn goalplay" data-goal="${g.i}">▶ ${loadRun(g.m) ? 'Weiterspielen' : 'Jetzt spielen'}</button>`}</div>`; }).join('')}
+      ${goals.map((g) => { const c = goalCount(g); const M = MODES[g.m]; return `<div class="card goal${c >= g.n ? ' done' : ''}"><div class="eyebrow">${esc(g.subject)}</div><div class="goalgame"><span aria-hidden="true">${M.icon}</span>${esc(M.title)}</div><p>${esc(goalText(g))}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n ? '' : `<button class="btn goalplay" data-goal="${g.i}">▶ ${loadRun(g.m) ? 'Weitermachen' : 'Jetzt loslegen'}</button>`}</div>`; }).join('')}
       <p class="center">Nichts geht verloren, wenn du eine Woche aussetzt. Neue Aufgaben gibt es am Montag.</p>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
@@ -510,7 +510,7 @@
     if (!run) return screenStarter(g);
     if (g.kind !== 'right' || heroAttacks().some((a) => a.mod === g.mod)) return resumeRun();
     const M = MODES[mode].modules[g.mod];
-    const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>Dein Held in „${esc(MODES[mode].title)}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes">Neues Abenteuer</button><button class="btn secondary" id="cont">Altes Abenteuer weiterspielen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+    const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>Dein Held in „${esc(MODES[mode].title)}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes">Neues Abenteuer</button><button class="btn secondary" id="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no">Zurück</button></div>`);
     $('#yes', ov).onclick = () => { run = null; screenStarter(g); }; $('#cont', ov).onclick = resumeRun; $('#no', ov).onclick = () => { run = null; ov.remove(); };
   }
 
@@ -1292,12 +1292,12 @@
   }
   function screenStamps(jump) {
     const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
-    const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', gespielt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
+    const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', geübt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
     const row = (r) => { const prev = r.icon ? `<div class="rwprev" aria-hidden="true">${r.icon}</div>` : r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
       return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${owns(r) ? '<div class="rwhave">✔ Schon geholt</div>' : r.price ? `<button class="btn small" data-buy="${r.id}" ${canBuy(r) ? '' : 'disabled'}>Holen · ${r.price} 🏷️${r.stein ? ` + ${r.stein} Stein` : ''}</button>` : ''}</div></div>`; };
     render(`<div class="screen">${topbar('Stempelheft')}<div class="scroll"><div class="stack">
       <div class="card center"><div class="stampbal">🏷️ ${meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenaufgabe: 10.</p></div>
-      <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
+      <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du geübt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', { outfit: 'strohhut' })}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
       <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
@@ -1571,7 +1571,7 @@
     };
     const got = Object.keys(MK.CROPS).filter((k) => meta.materials[k]).map((k) => `${MK.CROPS[k].name} ${meta.materials[k]}`);
     render(`<div class="screen">${topbar('Schulgarten')}<div class="scroll"><div class="stack">
-      <div class="card"><p>Beete wachsen auch, wenn du nicht spielst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
+      <div class="card"><p>Beete wachsen auch, wenn du Pause machst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
       <div class="beds">${meta.garden.beds.map(bed).join('')}</div>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
@@ -1613,12 +1613,12 @@
     const gameState = (m) => { if (!shown(m)) return 'ausgeblendet'; const all = Object.keys(MODES[m].modules); const n = all.filter((k) => !offList(m).includes(k)).length; const S = MODES[m].starters;
       return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`; };
     const gameBody = (m) => { const c = MODES[m];
-      return group('', sw(shown(m), `data-hide="mode:${m}"`, 'Spiel anzeigen'))
+      return group('', sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen'))
         + (c.starters.length > 1 ? group('Helden', `<div class="toggles">${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, `${esc(x.names[0])}<small>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</small>`)).join('')}</div>`) : '')
         + group('Aufgabenarten', `<div class="toggles">${Object.keys(c.modules).map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${c.modules[k].name}`)).join('')}</div>`); };
     const subjects = curGrade().subjects.map((sub, i) => { const vis = sub.modes.filter(shown).length;
       const body = sub.modes.length === 1 ? gameBody(sub.modes[0]) : group('', sw(vis > 0, `data-hidesub="${i}"`, 'Fach anzeigen')) + sub.modes.map((m) => fold('mode:' + m, 'pgame', `${MODES[m].icon} ${MODES[m].title}`, gameState(m), gameBody(m))).join('');
-      return fold('sub:' + sub.subject, 'psub', `${sub.icon} ${esc(sub.subject)}`, !vis ? 'ausgeblendet' : sub.modes.length === 1 ? gameState(sub.modes[0]) : `${vis} von ${sub.modes.length} Spielen`, body); }).join('');
+      return fold('sub:' + sub.subject, 'psub', `${sub.icon} ${esc(sub.subject)}`, !vis ? 'ausgeblendet' : sub.modes.length === 1 ? gameState(sub.modes[0]) : `${vis} von ${sub.modes.length} Themen`, body); }).join('');
     const played = MODE_KEYS.filter((m) => Object.values(meta.stats[m]).some((x) => x.t > 0));
     const tables = played.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).filter((k) => meta.stats[m][k].t > 0).map((k) => { const s = meta.stats[m][k]; const acc = Math.round((s.c / s.t) * 100); return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return card(`${MODES[m].icon} ${MODES[m].title}`, `<table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Stufe</th></tr>${rows}</table>`); }).join('');
     const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = Object.values(MK.MODES).flatMap((c) => c.pool).find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
@@ -1629,27 +1629,27 @@
       ${meta.pin ? '' : `<div class="card warncard"><p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
       ${sec('practice', `
       ${CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : ''}
-      ${card('Was soll gespielt und geübt werden?', `${note('Tippen Sie auf ein Fach, um Spiele, Helden und Aufgabenarten ein- oder auszuschalten. Das gilt sofort.')}<ul class="plist"><li>Ausgeblendete Fächer, Spiele und Helden erscheinen nicht mehr. Laufende Abenteuer bleiben gespeichert.</li><li>Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke vor. Mindestens zwei bleiben an.</li><li>Ist „Geld“ aus, gibt es keinen Markt und keine Münzen.</li></ul>${subjects}`)}
+      ${card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach, um Themen, Helden und Aufgabenarten ein- oder auszuschalten. Das gilt sofort.')}<ul class="plist"><li>Ausgeblendete Fächer, Themen und Helden erscheinen nicht mehr. Laufende Abenteuer bleiben gespeichert.</li><li>Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke vor. Mindestens zwei bleiben an.</li><li>Ist „Geld“ aus, gibt es keinen Markt und keine Münzen.</li></ul>${subjects}`)}
       ${card('So passt sich Lernquest an', note('5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Zahlenquest bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.'))}`)}
       ${sec('progress', `
       <div id="p-weekrep">${card('Wochenbericht', report.html)}</div>
       ${card('Überblick', `<div class="statrow"><span class="n">Abenteuer begonnen</span><span>${meta.runs}</span></div><div class="statrow"><span class="n">Bis zum Ende geschafft</span><span>${meta.wins}</span></div><div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`)}
-      <h3 class="psub-h">Trefferquote je Spiel</h3>
-      ${tables || note('Noch nichts gespielt.')}${tables ? note('Hier stehen nur Spiele und Aufgabenarten, die schon gespielt wurden. „Stufe“ zeigt den Stand im laufenden Abenteuer.') : ''}
-      ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}`)}
+      <h3 class="psub-h">Trefferquote je Thema</h3>
+      ${tables || note('Noch nichts geübt.')}${tables ? note('Hier stehen nur Themen und Aufgabenarten, die schon geübt wurden. „Stufe“ zeigt den Stand im laufenden Abenteuer.') : ''}
+      ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug geübt.'))}`)}
       ${sec('save', `
       ${backupDue() ? `<div class="card warncard" id="pwarn"><p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>` : ''}
       ${card('Spielstand sichern', `${note('Der Code enthält den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)}
       <div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.')}`)}</div>
-      ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Spielen. Als App auf dem Startbildschirm ist er sicherer.'))}
-      ${card('Zurücksetzen', `${note('Statistik zurücksetzen löscht nur die Zahlen unter „Fortschritt“. Alles löschen setzt das ganze Spiel auf Anfang.')}<div class="stack"><button class="btn small secondary" id="rstats">Statistik zurücksetzen</button><button class="btn small danger" id="rall">Alles löschen</button></div>`)}`)}
+      ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.'))}
+      ${card('Zurücksetzen', `${note('Statistik zurücksetzen löscht nur die Zahlen unter „Fortschritt“. Alles löschen setzt Lernquest ganz auf Anfang.')}<div class="stack"><button class="btn small secondary" id="rstats">Statistik zurücksetzen</button><button class="btn small danger" id="rall">Alles löschen</button></div>`)}`)}
       ${sec('appsec', `
       ${card('Töne', `${note('Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).')}<button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button>`)}
       ${card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt.')}<button class="btn small" id="pset">PIN festlegen</button>`)}
       ${card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>`)}
       ${card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)}
       <p class="center muted">Lernquest, Version ${esc(version)}</p>`)}
-      </div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
+      </div></div><div class="bottom"><button class="btn" id="back">Zurück zu Lernquest</button></div></div>`);
     const scroller = $('.scroll');
     app.querySelectorAll('[data-jump]').forEach((b) => { b.onclick = () => { pTab = b.dataset.jump; app.querySelectorAll('[data-jump]').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); }); app.querySelectorAll('section.psec').forEach((el) => { el.hidden = el.id !== 'p-' + pTab; }); scroller.scrollTop = 0; }; });
     app.querySelectorAll('details[data-fold]').forEach((d) => { d.ontoggle = () => { if (d.open) pOpen.add(d.dataset.fold); else pOpen.delete(d.dataset.fold); }; });
@@ -1694,7 +1694,7 @@
     const noGameLeft = (keys) => !curGrade().subjects.some((sub) => sub.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
     app.querySelectorAll('[data-hide]').forEach((b) => { b.onclick = () => {
       const key = b.dataset.hide; const hide = !meta.hidden.includes(key); const [kind, m, id] = key.split(':');
-      if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Spiel muss sichtbar bleiben.');
+      if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
       // a hero that is a reward does not count: it may still be locked
       if (hide && kind === 'hero' && !REWARDS.some((r) => r.hero === id) && !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))) return say(b, 'Mindestens ein Held muss bleiben.');
       setHidden([key], hide); saveAll(); keepScroll(again)(); }; });

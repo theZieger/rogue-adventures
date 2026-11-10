@@ -56,6 +56,11 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 
 - All player-facing text is German, child-friendly, with German typography („…“, –).
   Check new names and messages against `tools/unslop-text.md` (patterns to avoid).
+- Lernquest is about learning, not gaming: player- and parent-facing copy talks about learning, practising and
+  getting going, not about playing. Say „loslegen“, „weitermachen“, „üben“, „Thema“ (one unit such as Zahlenquest),
+  „Abenteuer“ (one run), never „spielen“, „Spiel“ or „Spiele“ for what the child does in Lernquest
+  (e.g. „Jetzt loslegen“, not „Jetzt spielen“; „3 Themen“, not „3 Spiele“). „Spielstand“ stays as the usual word for
+  the save. Learning content about real-life play (Fußball spielen, Spielplatz) is fine.
 - No time pressure, no comma numbers in what children see (show whole numbers).
 - No external requests at runtime (fonts are self-hosted in `docs/fonts/`), no tracking, everything stays on the device.
   Only exception: the feedback screen posts the message to the Google Form when the player taps „Absenden“.

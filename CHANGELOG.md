@@ -9,12 +9,13 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-10
 
 ### Neu
-- Jedes Wochenziel hat einen Knopf „Jetzt spielen“, der direkt ins passende Spiel führt.
-- Eltern können Fächer, Spiele und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.
+- Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, der direkt zum passenden Thema führt.
+- Eltern können Fächer, Themen und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.
 
 ### Verbessert
 - Im Kampf zeigt „⭐ Wochenziel“, welche Attacke für die Wochenaufgabe zählt.
 - Der Elternbereich ist in vier Reiter aufgeteilt und viel kürzer: Fächer klappen erst beim Antippen auf.
+- Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
 
 ## 2026-11-09
 

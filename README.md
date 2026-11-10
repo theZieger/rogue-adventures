@@ -59,7 +59,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 - Startseite: Klasse → Fach (Kachel) → Spiel. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
 - „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
-- Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Weiterspielen geht es genau dort weiter. Über den Elternbereich lässt sich alles als Spielstand-Code auf ein anderes Gerät mitnehmen.
+- Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Fortsetzen geht es genau dort weiter. Über den Elternbereich lässt sich alles als Spielstand-Code auf ein anderes Gerät mitnehmen.
 - Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften. Einzige Ausnahme: eine Nachricht, die man selbst mit „Idee senden“ abschickt.
 - Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich.
 
