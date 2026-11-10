@@ -262,6 +262,45 @@ const ELTERN = (() => {
       daten: 'Strichlisten und Säulendiagramme lesen und damit rechnen.',
       zufall: 'Entscheiden, ob etwas sicher, möglich oder unmöglich ist.',
     },
+    koerper1: {
+      parts: 'Körperteile und Teile des Gesichts im Bild benennen und antippen, mit Zeichenschule.',
+      pflege: 'Händewaschen, Zähneputzen, Schlaf und Bewegung, auch als Reihenfolge.',
+      essen: 'Gesundes Frühstück, Grundnahrungsmittel, Trinken und Werbung; gesundes Essen im Bild antippen.',
+      kleidung: 'Zum Wetterzeichen die passende Kleidung wählen, auch Schutz vor Sonne und Dunkelheit.',
+      schutz: 'Nein sagen, gute und schlechte Geheimnisse, wem man sich anvertraut, Nummer gegen Kummer.',
+      hilfe: 'Erste Hilfe bei kleinen Wunden, Nasenbluten und Verbrennungen; den Notruf 112 der Reihe nach.',
+    },
+    jahr1: {
+      zeiten: 'Jahreszeiten am Baum im Bild erkennen, Monate zuordnen und die Jahreszeiten ordnen.',
+      kalender: 'Wochentage und Monate ordnen, gestern, morgen, vorgestern und übermorgen.',
+      tag: 'Tageszeiten im Bild erkennen und den Tagesablauf ordnen.',
+      uhr: 'Die Uhr im Bild auf volle und halbe Stunden ablesen.',
+      wetter: 'Wetterzeichen erkennen und Fragen zum Wetter beantworten.',
+      weg: 'Straße überqueren der Reihe nach, Ampel, Haltestelle und nicht mit Fremden mitgehen.',
+    },
+    baeume2: {
+      baum: 'Laub- und Nadelbäume an Blatt, Zweig und Frucht im Bild erkennen.',
+      parts: 'Teile des Baumes und der Bohnenpflanze im Bild benennen und antippen, mit Zeichenschule.',
+      frueh: 'Schneeglöckchen, Krokus, Tulpe und Osterglocke im Bild erkennen, Zwiebel und Knolle.',
+      keim: 'Was ein Samen zum Keimen braucht und wie er wächst, auch als Reihenfolge.',
+      obst: 'Kern-, Stein- und Beerenobst unterscheiden, von der Blüte zur Frucht.',
+      garten: 'Gartengeräte, Säen der Reihe nach, Gießen und Ernten.',
+    },
+    tiere2: {
+      vogel: 'Amsel, Kohlmeise, Spatz, Rotkehlchen, Storch und Schwalbe im Bild und an Merkmalen erkennen.',
+      zug: 'Zugvögel und Standvögel, Nestbau und Brutpflege, auch als Reihenfolge.',
+      heim: 'Heimtiere richtig füttern und pflegen, ihre Körpersprache verstehen.',
+      hof: 'Tiere auf dem Bauernhof, ihre Jungen und was sie uns geben.',
+      klein: 'Igel, Regenwurm, Schnecke und Marienkäfer im Bild erkennen und wie sie leben.',
+    },
+    natur2: {
+      licht: 'Lichtquellen, durchsichtig oder nicht, und im Bild ablesen, wohin der Schatten fällt.',
+      himmel: 'Fragen zu Sonne, Mond und Sternen.',
+      luft: 'Luft braucht Platz, Wind, Töne, Echo und Donner.',
+      waerme: 'Das Thermometer im Bild auf ganze Grad ablesen, gefrieren und schmelzen bei 0 °C.',
+      wasser: 'Was sich in Wasser löst und was nicht, Wasser sparen.',
+      gefahr: 'Warnzeichen auf Putzmitteln erkennen und sicher mit gefährlichen Flüssigkeiten umgehen.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n, name) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -297,6 +336,11 @@ const ELTERN = (() => {
     zahlen100: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 100, ohne schriftliches Rechnen.',
     malteilen: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“: Malnehmen und Teilen, sicher in den Reihen mit 2, 5 und 10.',
     groessen2: 'Mathematik, Klasse 1/2, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“.',
+    koerper1: 'Sachunterricht, Klasse 1/2, Lernbereich 2 „Mein Körper und meine Gesundheit“.',
+    jahr1: 'Sachunterricht, Klasse 1/2, Lernbereich 5 „Begegnung mit Raum und Zeit“, dazu die Jahreszeiten aus Lernbereich 3 und die Wetterzeichen aus Lernbereich 4.',
+    baeume2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
+    tiere2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
+    natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
   };
   return { INFO, PLAN };
 })();
