@@ -1,5 +1,5 @@
-// 731df9c37586 = build hash (build.py), so every build refreshes the cache.
-const VERSION = '731df9c37586';
+// b692dfbd9804 = build hash (build.py), so every build refreshes the cache.
+const VERSION = 'b692dfbd9804';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;
 const CORE = [

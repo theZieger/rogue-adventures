@@ -10,6 +10,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Verbessert
 - Kreisel und viele Monster sind feiner gezeichnet.
+- Hütte, Schulgarten, Markt, Bergwerk und die Kartoffelpflanze sind neu gezeichnet.
 
 ## 2026-11-09
 
