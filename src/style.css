@@ -234,6 +234,7 @@ p { margin: 8px 0; }
 .plant .part { transition: filter .2s; }
 .plant .part.glow { filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 10px #FFC93C); }
 .plant .part.glow * { stroke: #E0A800; stroke-width: 3; }
+.plant .part.glow .hitarea { stroke: none; }
 .plant.clickable .part { cursor: pointer; }
 .plant.clickable .part:hover, .plant.clickable .part:focus-visible { filter: drop-shadow(0 0 5px #3FA0FF); outline: none; }
 .plant .part.reveal { filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 10px #FFC93C); }
