@@ -51,14 +51,26 @@ const MJ = (() => {
       <path d="M60 40 L30 88 M60 40 L90 88 M232 40 L170 88 M232 40 L294 88" stroke="${OUT}" stroke-width="1.5"/><path d="M14 88 L106 88 L96 98 L24 98 Z M166 88 L298 88 L288 98 L176 98 Z" fill="#C9A227" stroke="${OUT}" stroke-width="2"/>
       <rect x="34" y="54" width="52" height="34" rx="6" fill="#FF8C42" stroke="${OUT}" stroke-width="2"/><text x="60" y="78" text-anchor="middle" font-size="20" font-weight="700" fill="${OUT}">?</text><text x="60" y="118" text-anchor="middle" font-size="12" fill="${OUT}">${thing}</text>${blocks}</svg>`;
   }
-  const COLORS = { rot: { name: 'Rot', fill: '#E8453C' }, blau: { name: 'Blau', fill: '#3F7FE0' }, gelb: { name: 'Gelb', fill: '#F5C518' }, gruen: { name: 'Grün', fill: '#3DAA55' } };
+  // lt/dk: the same paint in light and shade, so every field of one colour looks alike
+  const COLORS = { rot: { name: 'Rot', fill: '#E8453C', lt: '#F06A60', dk: '#C93730' }, blau: { name: 'Blau', fill: '#3F7FE0', lt: '#6497EA', dk: '#336CC8' }, gelb: { name: 'Gelb', fill: '#F5C518', lt: '#FFD84A', dk: '#E0AE10' }, gruen: { name: 'Grün', fill: '#3DAA55', lt: '#5CBD6E', dk: '#329548' } };
   // each colour also gets its own mark, so the wheel works without telling colours apart
-  const MARK = { rot: (x, y) => `<circle cx="${x}" cy="${y}" r="5"/>`, blau: (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10"/>`, gelb: (x, y) => `<path d="M${x} ${y - 6} L${x + 6} ${y + 5} L${x - 6} ${y + 5} Z"/>`, gruen: (x, y) => `<path d="M${x} ${y - 7} L${x + 6} ${y} L${x} ${y + 7} L${x - 6} ${y} Z"/>` };
+  const MARK = { rot: (x, y) => `<circle cx="${x}" cy="${y}" r="5"/>`, blau: (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1"/>`, gelb: (x, y) => `<path d="M${x} ${y - 6} L${x + 6} ${y + 5} L${x - 6} ${y + 5} Z"/>`, gruen: (x, y) => `<path d="M${x} ${y - 7} L${x + 6} ${y} L${x} ${y + 7} L${x - 6} ${y} Z"/>` };
+  const WHEEL_DEFS = '<defs>' + Object.entries(COLORS).map(([k, c]) => `<linearGradient id="jmw-${k}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c.lt}"/><stop offset=".45" stop-color="${c.fill}"/><stop offset="1" stop-color="${c.dk}"/></linearGradient>`).join('') +
+    '<linearGradient id="jmw-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2C27E"/><stop offset=".55" stop-color="#C9843F"/><stop offset="1" stop-color="#8E5524"/></linearGradient>' +
+    '<radialGradient id="jmw-brass" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF3B0"/><stop offset=".5" stop-color="#F2BE3A"/><stop offset="1" stop-color="#A9761A"/></radialGradient>' +
+    '<radialGradient id="jmw-gloss" cx="34%" cy="28%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1C2541" stop-opacity=".12"/></radialGradient>' +
+    '<pattern id="jmw-grain" width="14" height="7" patternUnits="userSpaceOnUse"><path d="M0 3.5 Q3.5 1.5 7 3.5 T14 3.5" fill="none" stroke="#5A3410" stroke-width=".6" opacity=".12"/></pattern></defs>';
   function wheelSVG(sectors) {
-    const n = sectors.length, P = (a, r) => [(60 + r * Math.sin(a)).toFixed(1), (64 - r * Math.cos(a)).toFixed(1)];
-    const parts = sectors.map((c, i) => { const a0 = i * 2 * Math.PI / n, a1 = (i + 1) * 2 * Math.PI / n, [x0, y0] = P(a0, 52), [x1, y1] = P(a1, 52), [mx, my] = P((a0 + a1) / 2, 34);
-      return `<path class="sector" data-color="${c}" d="M60 64 L${x0} ${y0} A52 52 0 0 1 ${x1} ${y1} Z" fill="${COLORS[c].fill}" stroke="${OUT}" stroke-width="2"/><g fill="#fff" stroke="${OUT}" stroke-width="1.5">${MARK[c](+mx, +my)}</g>`; }).join('');
-    return `<svg class="jm-fig jm-wheel" viewBox="0 0 120 120" role="img" aria-label="Glücksrad mit ${n} gleich großen Feldern">${parts}<circle cx="60" cy="64" r="6" fill="#FFC93C" stroke="${OUT}" stroke-width="2"/><path d="M52 2 L68 2 L60 18 Z" fill="${OUT}"/></svg>`;
+    const n = sectors.length, R = 44, P = (a, r) => [(60 + r * Math.sin(a)).toFixed(1), (64 - r * Math.cos(a)).toFixed(1)];
+    let studs = '';
+    const parts = sectors.map((c, i) => { const a0 = i * 2 * Math.PI / n, a1 = (i + 1) * 2 * Math.PI / n, [x0, y0] = P(a0, R), [x1, y1] = P(a1, R), [mx, my] = P((a0 + a1) / 2, 28), [sx, sy] = P(a0, 49);
+      studs += `<circle cx="${sx}" cy="${sy}" r="2.3" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="1.2"/>`;
+      return `<path class="sector" data-color="${c}" d="M60 64 L${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1} Z" fill="url(#jmw-${c})" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><g fill="#FFFDF5" stroke="${OUT}" stroke-width="1.6" stroke-linejoin="round">${MARK[c](+mx, +my)}</g>`; }).join('');
+    return `<svg class="jm-fig jm-wheel" viewBox="0 0 120 120" role="img" aria-label="Glücksrad mit ${n} gleich großen Feldern">${WHEEL_DEFS}<circle cx="62" cy="67" r="54" fill="${OUT}" opacity=".16"/>` +
+      `<circle cx="60" cy="64" r="53" fill="url(#jmw-wood)" stroke="${OUT}" stroke-width="3"/><circle cx="60" cy="64" r="53" fill="url(#jmw-grain)"/><path d="M${P(-1.25, 50.5).join(' ')} A50.5 50.5 0 0 1 ${P(-0.3, 50.5).join(' ')}" fill="none" stroke="#FFE7B8" stroke-width="2" stroke-linecap="round" opacity=".7"/>` +
+      `${parts}<circle cx="60" cy="64" r="${R}" fill="url(#jmw-gloss)" stroke="${OUT}" stroke-width="2.5" pointer-events="none"/>${studs}` +
+      `<circle cx="60" cy="64" r="7" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="2.2"/><circle cx="57.8" cy="61.8" r="1.8" fill="#fff" opacity=".8"/>` +
+      `<path d="M51 3 Q60 0 69 3 L61.5 23 Q60 25.5 58.5 23 Z" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="60" cy="7" r="2" fill="${OUT}"/><path d="M55 5 L58 14" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></svg>`;
   }
   function chartSVG(title, bars, step, top) {
     const H = 120, y0 = 140, x0 = 36, w = 274 / bars.length, Y = (v) => y0 - (v / top) * H; let grid = '';
