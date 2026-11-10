@@ -16,7 +16,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Verbessert
 - Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.
 - Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
-- Viele Bilder sind neu gezeichnet, und kleine Symbole sehen überall gleich aus.
+- Viele Bilder sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen.
 
 ### Behoben
 - Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen.

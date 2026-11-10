@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="4a244bff7047">
+<meta name="app-version" content="8de78c24f9a6">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -6867,7 +6867,13 @@ const K12 = (() => {
   const { shuffle, pick, rnd } = K;
   const OUT = '#1C2541', NB = ' ';
 
-  const svgOf = (w, h, body, label, attrs) => `<svg viewBox="0 0 ${w} ${h}"${attrs || ''} role="img" aria-label="${label}">${body}</svg>`;
+  // fl(colour): a soft light-to-shade gradient of the colour; svgOf adds the defs a drawing uses
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const fl = (c) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
+  const grad = (c) => `<linearGradient id="km${c}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone('#' + c, 0.32)}"/><stop offset=".5" stop-color="#${c}"/><stop offset="1" stop-color="${tone('#' + c, -0.16)}"/></linearGradient>`;
+  const svgOf = (w, h, body, label, attrs) => { const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u) => u.slice(7, 13)))];
+    return `<svg viewBox="0 0 ${w} ${h}"${attrs || ''} role="img" aria-label="${label}">${used.length ? `<defs>${used.map(grad).join('')}</defs>` : ''}${body}</svg>`; };
+  const gloss = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"/>`;
   const pic = (s) => `<div class="figure">${s}</div>`;
   const height = (px) => ` style="height:${px}px"`;
   // k different numbers close to right, inside lo … hi
@@ -6893,16 +6899,18 @@ const K12 = (() => {
 
   /* ---------- Drawings ---------- */
   const RED = '#E8453C', BLUE = '#3F7FE0';
-  const dot = (x, y, r, fill) => `<circle class="dot" cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${OUT}" stroke-width="1.5"/>`;
+  // counters get a shine; dice pips stay plain ink
+  const dot = (x, y, r, fill) => `<circle class="dot" cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${OUT}" stroke-width="1.5"/>${fill === OUT ? '' : gloss(x - r * 0.3, y - r * 0.35, r * 0.38, r * 0.26)}`;
   // Zehnerfeld (2 × 5) or Zwanzigerfeld (2 × 10), filled row by row: red up to five, then blue
   function fieldSVG(n, cols) {
     const C = 26; let b = '';
     for (let r = 0; r < 2; r++) for (let c = 0; c < cols; c++) { const x = 2 + c * C + (c >= 5 ? 6 : 0), y = 2 + r * C;
       b += `<rect x="${x}" y="${y}" width="${C}" height="${C}" fill="#fff" stroke="${OUT}" stroke-width="1.5"/>${r * cols + c < n ? dot(x + C / 2, y + C / 2, 9, c < 5 ? RED : BLUE) : ''}`; }
+    b += (cols > 5 ? [2, 2 + 5 * C + 6] : [2]).map((x) => `<rect x="${x}" y="2" width="${5 * C}" height="${2 * C}" fill="none" stroke="${OUT}" stroke-width="2.5"/>`).join('');
     return svgOf(cols * C + (cols > 5 ? 10 : 4), 2 * C + 4, b, cols > 5 ? 'Zwanzigerfeld mit Punkten' : 'Zehnerfeld mit Punkten');
   }
   const PIPS = { 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]], 5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [2, 0], [0, 1], [2, 1], [0, 2], [2, 2]] };
-  const diceSVG = (ns) => svgOf(ns.length * 64, 62, ns.map((n, k) => `<rect x="${k * 64 + 3}" y="3" width="56" height="56" rx="10" fill="#fff" stroke="${OUT}" stroke-width="2.5"/>${PIPS[n].map(([c, r]) => dot(k * 64 + 15 + c * 16, 15 + r * 16, 5.5, OUT)).join('')}`).join(''), 'Zwei Würfel');
+  const diceSVG = (ns) => svgOf(ns.length * 64, 64, ns.map((n, k) => `<rect x="${k * 64 + 4}" y="5" width="56" height="56" rx="11" fill="${OUT}" opacity=".18"/><rect x="${k * 64 + 3}" y="3" width="56" height="56" rx="10" fill="#fff" stroke="${OUT}" stroke-width="2.5"/><path d="M${k * 64 + 10} 8 H${k * 64 + 50}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>${PIPS[n].map(([c, r]) => dot(k * 64 + 15 + c * 16, 15 + r * 16, 5.5, OUT)).join('')}`).join(''), 'Zwei Würfel');
   // Zahlenmauer and Rechendreieck in the markup of src/logic.js, so the bot reads them the same way
   const stone = (x, y, w, v) => `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${v === '?' ? '#FFE27A' : '#F3D9B1'}" stroke="${OUT}" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="${OUT}">${v}</text></g>`;
   function mauerTask(m, mod, t, b, r, c) {
@@ -7037,7 +7045,7 @@ const K12 = (() => {
   // a Quadrat is also a Rechteck and a Viereck, a Rechteck also a Viereck: such names never count as wrong
   const IS_ALSO = { quadrat: ['rechteck', 'viereck'], rechteck: ['viereck'] };
   const fits = (shape, name) => shape === name || (IS_ALSO[shape] || []).includes(name);
-  const formG = (k, fill) => `${FORMS[k].draw()} fill="${fill || pick(FILLS)}" stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const formG = (k, fill) => `${FORMS[k].draw()} fill="${fl(fill || pick(FILLS))}" stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
   const formSVG = (k) => svgOf(60, 60, formG(k), 'Form');
   const STAR = 'M30 4 L37.6 19.5 L54.7 22 L42.4 34 L45.3 51 L30 43 L14.7 51 L17.6 34 L5.3 22 L22.4 19.5 Z';
   // things for the Lage tasks: one colour each, so they are easy to tell apart
@@ -7051,10 +7059,16 @@ const K12 = (() => {
   const rowSVG = (ks) => svgOf(210, 74, `<path d="M4 70 H206" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>${ks.map((k, i) => `<g data-at="${i}" data-thing="${k}">${at(8 + i * 68, 6, 1, THINGS[k].g)}</g>`).join('')}`, 'Drei Formen in einer Reihe');
   const shelfSVG = (ks) => svgOf(96, 214, `<rect x="4" y="4" width="88" height="206" rx="4" fill="#F2C27E" stroke="${OUT}" stroke-width="2.5"/>${[72, 140].map((y) => `<path d="M6 ${y} H90" stroke="${OUT}" stroke-width="3"/>`).join('')}${ks.map((k, i) => `<g data-at="${i}" data-thing="${k}">${at(20, 12 + i * 68, 0.95, THINGS[k].g)}</g>`).join('')}`, 'Regal mit drei Fächern', height(170));
   const SOLIDS = { wuerfel: ['Würfel', 'den'], quader: ['Quader', 'den'], kugel: ['Kugel', 'die'] };
+  // isometric view like Die Baustelle (src/logic.js): x to the right, y to the front, z up; faces top, front, right
+  const iso = (x, y, z, k) => `${((x - y) * 12 * k).toFixed(1)} ${((x + y) * 7 * k - z * 14 * k).toFixed(1)}`;
+  const box = (x, y, z, dx, dy, dz, k, fills, cls) => [[[x, y, z + dz], [x + dx, y, z + dz], [x + dx, y + dy, z + dz], [x, y + dy, z + dz]], [[x, y + dy, z], [x + dx, y + dy, z], [x + dx, y + dy, z + dz], [x, y + dy, z + dz]], [[x + dx, y, z], [x + dx, y + dy, z], [x + dx, y + dy, z + dz], [x + dx, y, z + dz]]]
+    .map((f, i) => `<polygon${i === 1 && cls ? ` class="${cls}"` : ''} points="${f.map((p) => iso(...p, k)).join(' ')}" fill="${fl(fills[i])}" stroke="${OUT}" stroke-width="${k > 1 ? 2 : 1.5}" stroke-linejoin="round"/>`).join('');
+  const BLUES = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
+  const SHADE = '<radialGradient id="kmball" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#BFE4FF"/><stop offset=".45" stop-color="#3FA0FF"/><stop offset="1" stop-color="#1F5E9E"/></radialGradient>';
   const solidSVG = (k) => svgOf(68, 62, {
-    wuerfel: `<path d="M10 22 L22 10 L56 10 L44 22 Z" fill="#8FD3FF" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M44 22 L56 10 L56 44 L44 56 Z" fill="#2B78C2" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><rect x="10" y="22" width="34" height="34" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/>`,
-    quader: `<path d="M4 30 L14 20 L64 20 L54 30 Z" fill="#8FD3FF" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M54 30 L64 20 L64 44 L54 54 Z" fill="#2B78C2" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="30" width="50" height="24" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/>`,
-    kugel: `<circle cx="34" cy="31" r="26" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/><path d="M8 31 a26 8 0 0 0 52 0" fill="none" stroke="${OUT}" stroke-width="1.5"/><ellipse cx="25" cy="21" rx="7" ry="4" fill="#fff" opacity=".6" transform="rotate(-30 25 21)"/>`,
+    wuerfel: `<g transform="translate(34 31)">${box(0, 0, 0, 1, 1, 1, 2, BLUES)}</g>`,
+    quader: `<g transform="translate(25.3 37.1)">${box(-0.6, -0.5, 0, 2.2, 1, 1.1, 1.45, BLUES)}</g>`,
+    kugel: `<defs>${SHADE}</defs><ellipse cx="34" cy="57" rx="20" ry="3.5" fill="${OUT}" opacity=".15"/><circle cx="34" cy="30" r="26" fill="url(#kmball)" stroke="${OUT}" stroke-width="2"/><ellipse cx="25" cy="19" rx="7" ry="4" fill="#fff" opacity=".7" transform="rotate(-30 25 19)"/>`,
   }[k], 'Körper');
   const OBJECTS = [['einem Ball', 'kugel'], ['einer Murmel', 'kugel'], ['einer Orange', 'kugel'], ['einem Spielwürfel', 'wuerfel'], ['einem Zuckerwürfel', 'wuerfel'], ['einem Schuhkarton', 'quader'], ['einem Ziegelstein', 'quader'], ['einem Saftkarton', 'quader']];
   const SOLID_FACTS = [['Welcher Körper kann gut rollen?', 'kugel'], ['Welcher Körper hat keine Ecken?', 'kugel'], ['Welcher Körper hat 6 gleich große Quadrate als Flächen?', 'wuerfel'], ['Welcher Körper sieht aus wie ein langer Kasten?', 'quader']];
@@ -7063,12 +7077,11 @@ const K12 = (() => {
   const tokenG = (k) => `${TOKENS[k]} stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
   const tokenSVG = (k) => svgOf(40, 40, `<g data-k="${k}">${tokenG(k)}</g>`, 'Musterteil');
   const PATTERNS = { 1: ['AB', 'ABC'], 2: ['AAB', 'ABB', 'AABB', 'ABAC'] };
-  // a row of cubes seen from the front: every cube shows its front face
+  // a row of towers in the isometric view of Die Baustelle; every cube shows its front face, drawn back to front
   function towerSVG(hs) {
-    const C = 24, D = 8, H = Math.max(...hs); let b = '';
-    hs.forEach((h, c) => { for (let k = 0; k < h; k++) { const x = 2 + c * C, y = 2 + D + (H - k - 1) * C;
-      b += `<path d="M${x + C} ${y} l${D} ${-D} v${C} l${-D} ${D} Z" fill="#B54E2A" stroke="${OUT}" stroke-width="1.5" stroke-linejoin="round"/><path d="M${x} ${y} l${D} ${-D} h${C} l${-D} ${D} Z" fill="#F6A36B" stroke="${OUT}" stroke-width="1.5" stroke-linejoin="round"/><rect class="cube" x="${x}" y="${y}" width="${C}" height="${C}" fill="#D9653B" stroke="${OUT}" stroke-width="1.5"/>`; } });
-    return svgOf(hs.length * C + D + 4, H * C + D + 4, b, 'Würfel in einer Reihe');
+    const H = Math.max(...hs), n = hs.length, k = 1.4; let b = '';
+    hs.forEach((h, x) => { for (let z = 0; z < h; z++) b += box(x, 0, z, 1, 1, 1, k, ['#F6A36B', '#D9653B', '#B54E2A'], 'cube'); });
+    return svgOf((n + 1) * 12 * k + 4, (H * 14 + (n + 1) * 7) * k + 4, `<g transform="translate(${12 * k + 2} ${H * 14 * k + 2})">${b}</g>`, 'Würfel in einer Reihe');
   }
   function genForm(mod, t) {
     if (mod === 'lage') {
@@ -7166,11 +7179,14 @@ const K12 = (() => {
   const h = maker('z100');
   // Zehnerstangen and Einerwürfel
   function blocksSVG(n) {
-    const tens = Math.floor(n / 10), ones = n % 10, U = 11; let b = '';
-    for (let i = 0; i < tens; i++) b += `<g class="ten">${range(0, 9).map((k) => `<rect x="${2 + i * 16}" y="${2 + k * U}" width="${U}" height="${U}" fill="#7CC2FF" stroke="${OUT}" stroke-width="1.2"/>`).join('')}</g>`;
-    const x0 = 2 + tens * 16 + 8;
-    for (let k = 0; k < ones; k++) b += `<rect class="one" x="${x0 + (k % 3) * 14}" y="${2 + 10 * U - (Math.floor(k / 3) + 1) * 14 + 3}" width="${U}" height="${U}" fill="#FFD84A" stroke="${OUT}" stroke-width="1.2"/>`;
-    return svgOf(x0 + 44, 10 * U + 4, b, 'Zehnerstangen und Einerwürfel');
+    const tens = Math.floor(n / 10), ones = n % 10, U = 11, D = 3; let b = '';
+    // a block of h units seen from the front with a little depth: top and right side, then the front squares
+    const block = (x, y, h, c, cls) => `<path d="M${x} ${y} l${D} ${-D} h${U} l${-D} ${D} Z" fill="${tone(c, 0.35)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/><path d="M${x + U} ${y} l${D} ${-D} v${h * U} l${-D} ${D} Z" fill="${tone(c, -0.25)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/>`
+      + range(0, h - 1).map((k) => `<rect${cls ? ` class="${cls}"` : ''} x="${x}" y="${y + k * U}" width="${U}" height="${U}" fill="${fl(c)}" stroke="${OUT}" stroke-width="1.2"/>`).join('') + `<path d="M${x + 2.5} ${y + 2.5} V${y + h * U - 2.5}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>`;
+    for (let i = 0; i < tens; i++) b += `<g class="ten">${block(2 + i * 17, 2 + D, 10, '#7CC2FF')}</g>`;
+    const x0 = 2 + tens * 17 + 8;
+    for (let k = 0; k < ones; k++) b += block(x0 + (k % 3) * 15, 2 + D + 10 * U - (Math.floor(k / 3) + 1) * 15 + 4, 1, '#FFD84A', 'one');
+    return svgOf(x0 + 48, 10 * U + D + 4, b, 'Zehnerstangen und Einerwürfel');
   }
   function hundredSVG(n) {
     const C = 12; let b = '';
@@ -7391,26 +7407,39 @@ const K12 = (() => {
   const pad = (n) => String(n).padStart(2, '0');
   const komma = (ct) => `${Math.floor(ct / 100)},${pad(ct % 100)}${NB}€`;
   // coins and notes in cent: label, colour, coin radius or note width; sizes follow the real coins and notes.
-  // Euro coins have two metals: 1 € gold ring and silver core, 2 € the other way round.
-  const GOLDC = '#F2C14E', SILVER = '#D3D8E3';
-  const MONEY = { 1: ['1 ct', '#D9864A', 13], 2: ['2 ct', '#D9864A', 15], 5: ['5 ct', '#D9864A', 17], 10: ['10 ct', GOLDC, 16], 20: ['20 ct', GOLDC, 18], 50: ['50 ct', GOLDC, 20],
-    100: ['1 €', GOLDC, 19, SILVER], 200: ['2 €', SILVER, 21, GOLDC], 500: ['5 €', '#C3C7CF', 0, 64], 1000: ['10 €', '#F2A0A0', 0, 67], 2000: ['20 €', '#9CC4F0', 0, 70], 5000: ['50 €', '#F7B877', 0, 73] };
+  // Euro coins have two metals: 1 € silver ring and gold core, 2 € gold ring and silver core.
+  const GOLDC = '#EDBE4A', SILVER = '#D3D8E3', COPPER = '#D9864A';
+  const MONEY = { 1: ['1', 'ct', COPPER, 13], 2: ['2', 'ct', COPPER, 15], 5: ['5', 'ct', COPPER, 17], 10: ['10', 'ct', GOLDC, 16], 20: ['20', 'ct', GOLDC, 18], 50: ['50', 'ct', GOLDC, 20],
+    100: ['1', '€', SILVER, 19, GOLDC], 200: ['2', '€', GOLDC, 21, SILVER], 500: ['5', '€', '#B9BEC8', 0, 64], 1000: ['10', '€', '#EE8E8E', 0, 67], 2000: ['20', '€', '#8FBDEE', 0, 70], 5000: ['50', '€', '#F5AE62', 0, 73] };
   function moneySVG(vals) {
     let x = 4, y = 4, rowH = 0, b = '';
-    for (const v of vals) { const [label, fill, r, extra] = MONEY[v]; const w = r ? 2 * r : extra, hh = r ? 2 * r : Math.round(extra * 0.53); if (x + w > 300) { x = 4; y += rowH + 6; rowH = 0; }
-      const coin = r && `<circle cx="${x + r}" cy="${y + r}" r="${r}" fill="${fill}" stroke="${OUT}" stroke-width="2"/>${extra ? `<circle cx="${x + r}" cy="${y + r}" r="${r - 5}" fill="${extra}" stroke="${OUT}" stroke-width="1"/>` : `<circle cx="${x + r}" cy="${y + r}" r="${r - 2.5}" fill="none" stroke="#fff" stroke-width="1" opacity=".5"/>`}`;
-      const note = !r && `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="4" fill="${fill}" stroke="${OUT}" stroke-width="2"/><path d="M${x + 5} ${y + 5} h${w - 10} v${hh - 10} h${-(w - 10)} Z" fill="none" stroke="#fff" stroke-width="1.2" opacity=".7"/><circle cx="${x + w - 12}" cy="${y + hh / 2}" r="6" fill="#fff" opacity=".45"/>`;
-      b += `<g class="money" data-ct="${v}">${coin || note}<text x="${x + (r ? w / 2 : w / 2 - 5)}" y="${y + hh / 2 + 5}" text-anchor="middle" font-size="${r ? 11 : 15}" font-weight="700" fill="${OUT}">${label}</text></g>`;
+    for (const v of vals) { const [num, unit, fill, r, extra] = MONEY[v]; const w = r ? 2 * r : extra, hh = r ? 2 * r : Math.round(extra * 0.53); if (x + w > 300) { x = 4; y += rowH + 6; rowH = 0; }
+      const cx = x + r, cy = y + r;
+      const coin = r && `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${OUT}" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="${r - 2.2}" fill="none" stroke="${tone(fill, -0.3)}" stroke-width="1" opacity=".7"/>`
+        + (extra ? `<circle cx="${cx}" cy="${cy}" r="${Math.round(r * 0.66)}" fill="${fl(extra)}" stroke="${OUT}" stroke-width="1.2"/>` : '')
+        + `<path d="M${cx - r * 0.72} ${cy - r * 0.3} A${r * 0.78} ${r * 0.78} 0 0 1 ${cx - r * 0.1} ${cy - r * 0.77}" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>`;
+      // a plain made-up note: frame, big value, a lighter round window; no real banknote design
+      const note = !r && `<rect x="${x + 1}" y="${y + 2}" width="${w}" height="${hh}" rx="4" fill="${OUT}" opacity=".18"/><rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="4" fill="${fl(fill)}" stroke="${OUT}" stroke-width="2"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${hh - 8}" rx="2" fill="none" stroke="#fff" stroke-width="1.2" opacity=".75"/>`
+        + `<circle cx="${x + w - 13}" cy="${y + hh / 2}" r="8" fill="#fff" opacity=".4"/><circle cx="${x + w - 13}" cy="${y + hh / 2}" r="8" fill="none" stroke="${tone(fill, -0.35)}" stroke-width="1"/><path d="M${x + 7} ${y + hh - 8} h${w - 34}" stroke="${tone(fill, -0.3)}" stroke-width="1.5" stroke-dasharray="2 2"/>`;
+      const text = r ? `<text x="${cx}" y="${cy + (r > 15 ? 2 : 1.5)}" text-anchor="middle" font-size="${r > 15 ? 13 : 11}" font-weight="700" fill="${OUT}">${num}</text><text x="${cx}" y="${cy + (r > 15 ? 10.5 : 8.5)}" text-anchor="middle" font-size="${r > 15 ? 8 : 6.5}" font-weight="700" fill="${OUT}">${unit}</text>`
+        : `<text x="${x + (w - 26) / 2 + 3}" y="${y + hh / 2 + 5.5}" text-anchor="middle" font-size="16" font-weight="700" fill="${OUT}">${num}${NB}${unit}</text>`;
+      b += `<g class="money" data-ct="${v}">${coin || note}${text}</g>`;
       x += w + 6; rowH = Math.max(rowH, hh); }
-    return svgOf(304, y + rowH + 4, b, 'Geld');
+    return svgOf(304, y + rowH + 6, b, 'Geld');
   }
   // 1 and c hundredths written wrongly: digits swapped, comma one place off, a zero too many
   const mixups = (c, u) => { const right = `1,${pad(c)}${NB}${u}`; return [...new Set([`1,${pad(c).split('').reverse().join('')}${NB}${u}`, `${10 + Math.floor(c / 10)},${c % 10}${NB}${u}`, `10,${pad(c)}${NB}${u}`])].filter((x) => x !== right).slice(0, 2); };
   const coins = (from, k, max) => { let vs; do vs = Array.from({ length: k }, () => pick(from)).sort((a, b) => b - a); while (vs.reduce((a, b) => a + b, 0) > max); return vs; };
   function rulerSVG(cm) {
     const px = 22, x0 = 14, x1 = x0 + cm * px; let marks = '';
-    for (let i = 0; i <= 12; i++) marks += `<path d="M${x0 + i * px} 52 V${i % 5 ? 62 : 66}" stroke="${OUT}" stroke-width="1.5"/><text x="${x0 + i * px}" y="78" text-anchor="middle" font-size="10" fill="${OUT}">${i}</text>`;
-    return svgOf(300, 86, `<rect x="4" y="50" width="292" height="32" rx="4" fill="#F7E3A1" stroke="${OUT}" stroke-width="2"/>${marks}<g class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}"><path d="M${x0} 24 H${x1 - 14} L${x1} 33 L${x1 - 14} 42 H${x0} Z" fill="#FFD84A" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x1 - 5} 30 L${x1} 33 L${x1 - 5} 36 Z" fill="${OUT}"/><path d="M${x0} 24 h6 v18 h-6 Z" fill="#FF8FA3" stroke="${OUT}" stroke-width="2"/></g>`, 'Lineal mit Stift');
+    // cm marks long with a number, half cm medium, mm short
+    for (let i = 0; i <= 120; i++) { const x = (x0 + i * px / 10).toFixed(1), cmMark = i % 10 === 0;
+      marks += `<path d="M${x} 50 V${cmMark ? 64 : i % 5 ? 55 : 59}" stroke="${OUT}" stroke-width="${cmMark ? 1.6 : 0.8}"/>` + (cmMark ? `<text x="${x}" y="77" text-anchor="middle" font-size="11" font-weight="700" fill="${OUT}">${i / 10}</text>` : ''); }
+    const pencil = `<path d="M${x0} 24 H${x1 - 14} L${x1} 33 L${x1 - 14} 42 H${x0} Z" fill="${fl('#FFD84A')}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x0 + 10} 30 H${x1 - 14} M${x0 + 10} 36 H${x1 - 14}" stroke="#E0A800" stroke-width="1"/>`
+      + `<path d="M${x1 - 14} 24 L${x1} 33 L${x1 - 14} 42 Z" fill="${fl('#F5D3A6')}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x1 - 5} 30 L${x1} 33 L${x1 - 5} 36 Z" fill="${OUT}"/>`
+      + `<path d="M${x0} 24 h6 v18 h-6 Z" fill="${fl('#FF8FA3')}" stroke="${OUT}" stroke-width="2"/><path d="M${x0 + 6} 24 h4 v18 h-4 Z" fill="${fl('#C9CEDD')}" stroke="${OUT}" stroke-width="2"/><path d="M${x0 + 12} 27 H${x1 - 16}" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>`;
+    return svgOf(300, 86, `<rect x="4" y="48" width="292" height="34" rx="4" fill="${fl('#F7E3A1')}" stroke="${OUT}" stroke-width="2"/>${marks}<text x="289" y="62" text-anchor="middle" font-size="9" fill="${OUT}">cm</text>`
+      + `<path d="M${x0} 18 V48 M${x1} 18 V48" stroke="${OUT}" stroke-width="1" stroke-dasharray="3 3"/><g class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}">${pencil}</g>`, 'Lineal mit Stift');
   }
   // estimate: first option is right, the others are off by a factor of 10 or more
   const LENGTHS = [['ein Bleistift', 'lang', '15 cm', '15 m', '15 mm'], ['eine Tür', 'hoch', '2 m', '2 cm', '20 m'], ['eine Ameise', 'groß', '5 mm', '5 cm', '5 m'], ['ein Schulheft', 'hoch', '30 cm', '3 m', '3 mm'], ['ein Bus', 'lang', '12 m', '12 cm', '120 m'],
@@ -7421,19 +7450,25 @@ const K12 = (() => {
   const FACTS = [['Wie viele Tage hat eine Woche?', 7], ['Wie viele Monate hat ein Jahr?', 12], ['Wie viele Minuten hat eine Stunde?', 60], ['Wie viele Stunden hat ein Tag?', 24]];
   const ORD = ['erste', 'zweite', 'dritte'];
   function calSVG(mi, first) {
-    const C = 30; let b = `<text x="${3.5 * C + 2}" y="18" text-anchor="middle" font-size="16" font-weight="700" fill="${OUT}">${MONTHS[mi]}</text>`;
-    WD.forEach((d, i) => { b += `<text x="${2 + i * C + C / 2}" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="${i > 4 ? RED : OUT}">${d.slice(0, 2)}</text>`; });
-    for (let d = 1; d <= MDAYS[mi]; d++) { const i = first + d - 1, x = 2 + (i % 7) * C, y = 46 + Math.floor(i / 7) * 26;
-      b += `<g data-day="${d}" data-wd="${i % 7}"><rect x="${x}" y="${y}" width="${C}" height="26" fill="#fff" stroke="#B8C2D9"/><text x="${x + C / 2}" y="${y + 18}" text-anchor="middle" font-size="13" fill="${OUT}">${d}</text></g>`; }
-    return svgOf(7 * C + 4, 46 + Math.ceil((first + MDAYS[mi]) / 7) * 26 + 4, b, `Kalenderblatt ${MONTHS[mi]}`, height(180));
+    const C = 30, W = 7 * C, H = 54 + Math.ceil((first + MDAYS[mi]) / 7) * 26;
+    // paper sheet with a red header and two rings, weekend columns tinted
+    let b = `<rect x="4" y="9" width="${W + 4}" height="${H - 4}" rx="6" fill="${OUT}" opacity=".15"/><rect x="2" y="6" width="${W + 4}" height="${H - 4}" rx="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>`
+      + `<path d="M2 12 Q2 6 8 6 H${W} Q${W + 6} 6 ${W + 6} 12 V30 H2 Z" fill="${fl(RED)}" stroke="${OUT}" stroke-width="2"/><text x="${W / 2 + 4}" y="25" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">${MONTHS[mi]}</text>`
+      + [W * 0.22, W * 0.78].map((x) => `<rect x="${x}" y="1" width="6" height="12" rx="3" fill="${fl('#C9CEDD')}" stroke="${OUT}" stroke-width="1.5"/>`).join('')
+      + `<rect x="${4 + 5 * C}" y="32" width="${2 * C}" height="${H - 32}" fill="#FFECEC"/>`;
+    WD.forEach((d, i) => { b += `<text x="${4 + i * C + C / 2}" y="45" text-anchor="middle" font-size="12" font-weight="700" fill="${i > 4 ? RED : OUT}">${d.slice(0, 2)}</text>`; });
+    for (let d = 1; d <= MDAYS[mi]; d++) { const i = first + d - 1, x = 4 + (i % 7) * C, y = 50 + Math.floor(i / 7) * 26;
+      b += `<g data-day="${d}" data-wd="${i % 7}"><rect x="${x}" y="${y}" width="${C}" height="26" fill="${i % 7 > 4 ? '#FFECEC' : '#fff'}" stroke="#B8C2D9"/><text x="${x + C / 2}" y="${y + 18}" text-anchor="middle" font-size="13" fill="${OUT}">${d}</text></g>`; }
+    return svgOf(W + 10, H + 6, b, `Kalenderblatt ${MONTHS[mi]}`, height(180));
   }
   // Strichliste: four strokes and the fifth across them
   function tallySVG(rows) {
-    let b = '';
+    const H = rows.length * 32 + 6;
+    let b = `<rect x="1" y="1" width="298" height="${H}" rx="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>` + rows.map((_, i) => (i % 2 ? `<rect x="2" y="${4 + i * 32}" width="296" height="32" fill="#F3F6FC"/>` : '')).join('') + `<path d="M94 2 V${H}" stroke="#B8C2D9" stroke-width="1.5"/>`;
     rows.forEach(([label, n], i) => { const y = 8 + i * 32; let s = '';
-      for (let k = 0; k < n; k++) { const grp = Math.floor(k / 5), x = 104 + grp * 40 + (k % 5) * 7; s += k % 5 === 4 ? `<path class="s" d="M${x - 31} ${y + 18} L${x + 1} ${y + 4}" stroke="${OUT}" stroke-width="2.5" stroke-linecap="round"/>` : `<path class="s" d="M${x} ${y} V${y + 22}" stroke="${OUT}" stroke-width="2.5" stroke-linecap="round"/>`; }
-      b += `<g class="tally" data-n="${n}"><text x="4" y="${y + 17}" font-size="14" font-weight="700" fill="${OUT}">${label}</text>${s}</g><path d="M2 ${y + 28} H298" stroke="#B8C2D9"/>`; });
-    return svgOf(300, rows.length * 32 + 8, b, 'Strichliste');
+      for (let k = 0; k < n; k++) { const grp = Math.floor(k / 5), x = 104 + grp * 40 + (k % 5) * 7; s += k % 5 === 4 ? `<path class="s" d="M${x - 31} ${y + 18} L${x + 1} ${y + 4}" stroke="#2B3350" stroke-width="2.6" stroke-linecap="round"/>` : `<path class="s" d="M${x} ${y} L${x + (k % 2 ? 0.6 : -0.4)} ${y + 22}" stroke="#2B3350" stroke-width="2.6" stroke-linecap="round"/>`; }
+      b += `<g class="tally" data-n="${n}"><text x="8" y="${y + 17}" font-size="14" font-weight="700" fill="${OUT}">${label}</text>${s}</g>${i ? `<path d="M2 ${y - 4} H298" stroke="#B8C2D9"/>` : ''}`; });
+    return svgOf(300, H + 2, b, 'Strichliste');
   }
   // label on the chart, what the question says, and the question
   const DATA = [
@@ -7584,10 +7619,14 @@ const K12D = (() => {
 
   /* ---------- Bilder für Klasse 1: ein Ding je Bild, eindeutig benannt ---------- */
   const O = '#1C2541';
-  const p = (d, fill, w) => `<path d="${d}" fill="${fill}" stroke="${O}" stroke-width="${w || 2}"/>`;
-  const ci = (x, y, r, fill) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${O}" stroke-width="2"/>`;
-  const el = (x, y, rx, ry, fill) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${O}" stroke-width="2"/>`;
-  const rect = (x, y, w, h, fill, r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r || 0}" fill="${fill}" stroke="${O}" stroke-width="2"/>`;
+  // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const USED = new Set();
+  const fl = (c) => { const h = c.length === 4 ? '#' + [...c.slice(1)].map((x) => x + x).join('') : c; if (!/^#[0-9A-F]{6}$/i.test(h) || h === O) return c; USED.add(h.toUpperCase()); return `url(#kd${h.slice(1).toUpperCase()})`; };
+  const p = (d, fill, w) => `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
+  const ci = (x, y, r, fill) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
+  const el = (x, y, rx, ry, fill) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
+  const rect = (x, y, w, h, fill, r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r || 0}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
   const line = (d, c, w) => `<path d="${d}" fill="none" stroke="${c || O}" stroke-width="${w || 2}"/>`;
   const shine = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".6"/>`;
   const around = (n, cx, cy, f) => Array.from({ length: n }, (_, i) => f(cx, cy, (i / n) * Math.PI * 2)).join('');
@@ -7606,20 +7645,25 @@ const K12D = (() => {
     apfel: { w: 'Apfel', syl: 'Ap-fel', svg: line('M32 20 Q32 12 36 7', O, 3) + p('M32 20 C20 12 8 20 10 34 C12 48 22 56 32 52 C42 56 52 48 54 34 C56 20 44 12 32 20 Z', RED) + p('M35 13 Q43 5 49 11 Q43 17 35 13 Z', GRN) + shine(20, 28, 4, 6) },
     igel: { w: 'Igel', syl: 'I-gel', svg: line('M24 50 L23 56 M46 50 L47 56', O, 3) + p(spikes, '#5A3E22', 1.5) + el(36, 40, 21, 13, '#8A5530') + p('M20 48 Q10 48 3 43 Q8 35 20 33 Z', '#E9C9A0') + ci(4, 43, 2, O) + `<circle cx="12" cy="40" r="1.6" fill="${O}"/>` },
     uhr: { w: 'Uhr', syl: 'Uhr', svg: `<circle cx="32" cy="32" r="25" fill="${BLU}" stroke="${O}" stroke-width="2"/>` + ci(32, 32, 20, '#fff') + around(12, 32, 32, (x, y, a) => line(`M${r1(x + Math.cos(a) * 16)} ${r1(y + Math.sin(a) * 16)} L${r1(x + Math.cos(a) * 18.5)} ${r1(y + Math.sin(a) * 18.5)}`, O, 1.5)) + line('M32 32 L32 17 M32 32 L23 37', O, 3) + ci(32, 32, 2, O) },
-    ente: { w: 'Ente', syl: 'En-te', svg: el(36, 42, 21, 13, YEL) + ci(20, 28, 10, YEL) + p('M11 26 L2 30 L11 33 Z', '#FF9F43') + `<circle cx="18" cy="25" r="1.8" fill="${O}"/>` + p('M30 38 Q42 32 50 41 Q40 47 30 38 Z', '#F5C400') },
+    // a mallard on the water: a yellow duck would be a Quietscheente or a Küken
+    ente: { w: 'Ente', syl: 'En-te', svg: p('M2 52 Q8 48 14 52 T26 52 T38 52 T50 52 T62 52 V60 H2 Z', BLU, 1.5) + p('M14 36 Q12 52 30 53 H46 Q56 51 61 34 Q55 38 49 36 Q40 30 26 33 Z', '#B8BECC') + p('M14 36 Q13 46 22 50 Q26 40 24 33 Z', '#8A5530')
+      + p('M30 38 Q42 32 52 38 Q44 47 32 44 Z', '#8E96B5') + p('M47 38 L54 41 L49 43 Z', '#3F6FD9', 1.2) + p('M58 30 Q62 31 61 34 Q58 34 57 32 Z', O, 1) + p('M13 35 Q11 26 12 22 L22 22 Q22 30 24 33 Z', '#2E8B57')
+      + line('M12.5 31 Q18 34 23.5 31', '#fff', 2.2) + ci(17, 18, 8, '#2E8B57') + p('M10 17 Q2 17 1 21 Q4 23 11 21 Z', YEL, 1.6) + `<circle cx="15" cy="16" r="1.6" fill="${O}"/><circle cx="15.5" cy="15.5" r=".5" fill="#fff"/>` + shine(19, 13, 3, 1.6) + shine(34, 36, 6, 1.6) },
     rakete: { w: 'Rakete', syl: 'Ra-ke-te', svg: p('M26 48 Q32 63 38 48 Z', '#FFB347') + p('M21 36 L11 52 L21 48 Z', RED) + p('M43 36 L53 52 L43 48 Z', RED) + p('M32 4 Q44 16 44 36 L44 48 L20 48 L20 36 Q20 16 32 4 Z', '#E9EEF6') + p('M32 4 Q39 10 42 19 L22 19 Q25 10 32 4 Z', RED) + ci(32, 30, 5, BLU) },
     banane: { w: 'Banane', syl: 'Ba-na-ne', svg: p('M10 14 Q12 44 38 50 Q52 52 58 44 Q50 46 40 42 Q22 34 17 13 Z', YEL) + p('M10 14 L11 8 L17 13 Z', '#8A5530') + line('M20 22 Q26 38 42 44', '#E0A800', 1.5) },
     tomate: { w: 'Tomate', syl: 'To-ma-te', svg: el(32, 37, 23, 19, RED) + p('M32 14 L36 20 L45 18 L38 24 L32 22 L26 24 L19 18 L28 20 Z', GRN) + line('M32 14 L32 8', O, 3) + shine(22, 30, 5, 3) },
     leiter: { w: 'Leiter', syl: 'Lei-ter', svg: [12, 24, 36, 48].map((y) => rect(19, y, 26, 4, '#D9A066')).join('') + rect(14, 4, 6, 56, '#B8763E', 2) + rect(44, 4, 6, 56, '#B8763E', 2) },
     kerze: { w: 'Kerze', syl: 'Ker-ze', svg: el(32, 58, 16, 3.5, GRY) + rect(24, 26, 16, 31, RED, 2) + line('M32 26 L32 21', O, 2) + p('M32 5 Q40 15 32 22 Q24 15 32 5 Z', '#FFB347') + `<path d="M32 12 Q35 17 32 20 Q29 17 32 12 Z" fill="#FFE27A"/>` + shine(28, 34, 1.5, 5) },
     wolke: { w: 'Wolke', syl: 'Wol-ke', svg: p('M14 46 Q3 46 5 35 Q7 26 18 28 Q20 15 33 18 Q43 11 49 24 Q61 24 59 37 Q58 46 48 46 Z', '#E9EEF6') + shine(26, 26, 5, 3) },
-    hut: { w: 'Hut', syl: 'Hut', svg: el(32, 47, 27, 7, '#3E3E52') + p('M18 47 L20 18 Q32 13 44 18 L46 47 Z', '#55556E') + p('M19 37 L45 37 L46 44 L18 44 Z', RED) },
+    hut: { w: 'Hut', syl: 'Hut', svg: p('M18 40 Q16 24 22 15 Q32 11 42 15 Q48 24 46 40 Z', '#9A6A3E') + line('M24 16 Q32 22 40 16', '#5A3E22', 1.6) + p('M17.5 33 H46.5 L47 40 H17 Z', '#3E2A1C') + p('M3 42 Q6 35 17 38 H47 Q58 35 61 42 Q58 50 32 50 Q6 50 3 42 Z', '#9A6A3E') + line('M8 43 Q32 47 56 43', '#5A3E22', 1.2) + shine(23, 26, 2, 7) },
     gabel: { w: 'Gabel', syl: 'Ga-bel', svg: rect(29, 32, 6, 28, GRY, 3) + [19, 26.5, 34, 41].map((x) => rect(x, 4, 4, 20, GRY, 2)).join('') + p('M18 22 Q18 35 32 35 Q46 35 46 22 Z', GRY) },
     pilz: { w: 'Pilz', syl: 'Pilz', svg: p('M24 36 L22 58 L42 58 L40 36 Z', '#FFF3D6') + p('M6 38 Q8 10 32 10 Q56 10 58 38 Z', RED) + `<g fill="#fff">${[[20, 24, 4], [36, 18, 3.5], [46, 30, 3], [30, 30, 3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` },
     zitrone: { w: 'Zitrone', syl: 'Zi-tro-ne', svg: p('M3 34 Q6 30 9 28 Q16 16 32 16 Q48 16 55 28 Q58 30 61 34 Q58 38 55 40 Q48 52 32 52 Q16 52 9 40 Q6 38 3 34 Z', YEL) + p('M32 16 Q35 5 46 6 Q43 15 32 16 Z', GRN) + shine(22, 26, 6, 3) },
     krone: { w: 'Krone', syl: 'Kro-ne', svg: p('M8 50 L8 18 L20 32 L32 10 L44 32 L56 18 L56 50 Z', YEL) + rect(8, 42, 48, 9, '#F0A500') + ci(32, 46.5, 2.6, RED) + ci(19, 46.5, 2.2, BLU) + ci(45, 46.5, 2.2, BLU) + ci(8, 16, 2.5, YEL) + ci(32, 8, 2.5, YEL) + ci(56, 16, 2.5, YEL) },
     baum: { w: 'Baum', syl: 'Baum', svg: rect(27, 36, 10, 24, BRN, 2) + p('M14 40 Q4 36 8 26 Q6 14 18 12 Q24 2 36 6 Q48 4 52 16 Q62 22 56 32 Q58 42 46 42 Q32 46 14 40 Z', GRN) + shine(22, 20, 6, 3) },
-    nest: { w: 'Nest', syl: 'Nest', svg: el(25, 33, 5, 6.5, '#BFE3FF') + el(39, 33, 5, 6.5, '#BFE3FF') + el(32, 30, 5, 6.5, '#BFE3FF') + p('M3 32 Q4 58 32 58 Q60 58 61 32 Q48 40 32 40 Q16 40 3 32 Z', '#B8763E') + line('M6 38 Q30 50 58 37 M9 46 Q32 55 55 45 M4 33 L1 28 M60 33 L63 27 M14 39 L10 34 M50 39 L55 34 M20 55 L16 60 M44 55 L48 60', '#7A4A20', 1.6) },
+    nest: { w: 'Nest', syl: 'Nest', svg: el(32, 31, 27, 10, '#8A5530') + el(32, 31, 20, 6.5, '#5A3E22') + el(24, 30, 5, 6.5, '#BFE3FF') + el(40, 30, 5, 6.5, '#BFE3FF') + el(32, 28, 5, 6.5, '#BFE3FF') + shine(30, 25, 1.5, 2.4) + shine(22, 27, 1.5, 2.4) + shine(38, 27, 1.5, 2.4)
+      + p('M5 32 Q6 57 32 58 Q58 57 59 32 Q50 41 32 41 Q14 41 5 32 Z', '#B8763E')
+      + line('M3 34 Q20 46 46 40 M14 42 Q34 52 60 36 M7 44 Q24 54 48 50 M18 54 Q40 52 56 44 M10 38 Q30 36 52 46 M2 30 L9 36 M62 30 L55 37 M8 25 L15 31 M56 25 L50 30', '#6E4320', 1.4) },
     herz: { w: 'Herz', syl: 'Herz', svg: p('M32 55C14 42 5 32 5 22a13 13 0 0 1 27-4 13 13 0 0 1 27 4c0 10-9 20-27 33Z', RED) + shine(17, 18, 5, 3) },
     blume: { w: 'Blume', syl: 'Blu-me', svg: line('M32 34 L32 60', O, 5) + line('M32 34 L32 60', GRN, 2.5) + p('M32 50 Q42 40 50 46 Q42 54 32 50 Z', GRN) + around(6, 32, 22, (x, y, a) => ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7')) + ci(32, 22, 6.5, YEL) },
     tasse: { w: 'Tasse', syl: 'Tas-se', svg: el(30, 54, 27, 6, '#E9EEF6') + line('M46 32 Q58 30 56 40 Q53 47 42 45', O, 7) + line('M46 32 Q58 30 56 40 Q53 47 42 45', '#fff', 3) + p('M8 26 H52 Q52 50 30 52 Q8 50 8 26 Z', '#fff') + p('M9 32 H51 Q50 38 49 40 H11 Q10 38 9 32 Z', BLU, 1.5) + el(30, 26, 22, 3.5, '#C9A27A') + line('M22 19 Q18 14 22 9 M34 19 Q30 14 34 9', '#8E96B5', 2) },
@@ -7627,7 +7671,8 @@ const K12D = (() => {
     wal: { w: 'Wal', syl: 'Wal', svg: line('M20 20 Q18 12 12 9 M20 20 Q22 12 28 9 M20 20 V8', '#2478D6', 2.5) + p('M42 42 Q54 36 53 22 Q46 22 41 15 Q50 14 55 18 Q58 13 63 11 Q61 20 57 24 Q59 38 47 47 Z', '#3F7FC7') + p('M3 40 Q3 23 24 22 Q42 22 50 37 Q46 51 28 52 Q5 53 3 40 Z', '#4A90D9') + p('M7 45 Q24 50 45 44 Q38 51 27 51 Q12 51 7 45 Z', '#BFE3FF', 1.5) + line('M4 41 Q11 43 17 41', O, 1.5) + p('M24 46 Q30 54 36 50 Q32 46 24 46 Z', '#3F7FC7', 1.5) + `<circle cx="13" cy="35" r="2" fill="${O}"/>` + shine(24, 28, 7, 2.5) },
     topf: { w: 'Topf', syl: 'Topf', svg: rect(4, 29, 9, 5, '#8E96B5', 2) + rect(51, 29, 9, 5, '#8E96B5', 2) + rect(11, 25, 42, 30, GRY, 4) + p('M9 26 Q32 12 55 26 Z', '#C9CEDD') + ci(32, 16, 3, '#8E96B5') + shine(20, 34, 2, 6) },
   };
-  const svgOf = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${PICS[id].svg}</svg>`;
+  const DEFS = `<defs>${[...USED].map((c) => `<linearGradient id="kd${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
+  const svgOf = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${DEFS}${PICS[id].svg}</svg>`;
   // the picture in the task, with its name for the read-aloud voice (it reads .prompt, not the drawing)
   const picOf = (id) => `<div class="pic" style="max-width:130px">${svgOf(id)}</div><span class="prompt sr-only">${PICS[id].w}</span>`;
   const optPic = (id) => `${svgOf(id)}<span class="sr-only">${PICS[id].w}</span>`;
@@ -9275,83 +9320,149 @@ const K12E = (() => {
 
   /* ---------- Zeichnungen ---------- */
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
-  const INK = '#1C2541', WOOD = '#E9A15B', DARK = '#8A5A2B', METAL = '#C9CEDD', GOLD = '#FFD25A', RED = '#E8344A', BLUE = '#7CC2FF', GREEN = '#4FC96A', WHITE = '#FFFFFF', PAPER = '#FFFDF5';
+  const INK = '#1C2541', WOOD = '#E9A15B', DARK = '#8A5A2B', EBONY = '#3B2A26', METAL = '#C9CEDD', GOLD = '#FFD25A', RED = '#E8344A', BLUE = '#7CC2FF', GREEN = '#4FC96A', FIR = '#2E9E57', WHITE = '#FFFFFF', PAPER = '#FFFDF5';
+  // every flat colour becomes a soft light-to-shade gradient of itself (defs added by pic and optPic)
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const USED = new Set();
+  const fl = (c) => (/^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c);
   const ln = (d, w, c) => `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const sh = (d, fill, w) => `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
-  const rect = (x, y, w, h, fill, rx) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fill}" stroke="${INK}" stroke-width="2.5"/>`;
-  const circ = (cx, cy, r, fill, w) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
-  // one outline around overlapping shapes: thick ink first, the fill on top
-  const union = (shapes, fill) => `<g fill="${INK}" stroke="${INK}" stroke-width="5">${shapes}</g><g fill="${fill}">${shapes}</g>`;
+  const sh = (d, fill, w) => `<path d="${d}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
+  const rect = (x, y, w, h, fill, rx, sw) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${sw || 2.5}"/>`;
+  const circ = (cx, cy, r, fill, w) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
+  const oval = (cx, cy, rx, ry, fill, w, rot) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
+  // white gloss: a soft spot or a stroke along the lit edge
+  const gloss = (cx, cy, rx, ry, rot) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
+  const lit = (d, w) => `<path d="${d}" fill="none" stroke="#fff" stroke-width="${w || 2}" stroke-linecap="round" opacity=".6"/>`;
   const tube = (d, w, c) => ln(d, w + 4) + ln(d, w, c);
   const star = (cx, cy, R, r) => 'M' + Array.from({ length: 10 }, (_, i) => { const a = Math.PI / 5 * i - Math.PI / 2, d = i % 2 ? r : R; return `${(cx + d * Math.cos(a)).toFixed(1)} ${(cy + d * Math.sin(a)).toFixed(1)}`; }).join(' L') + 'Z';
+  const flame = (x, y) => sh(`M${x} ${y - 13} Q${x + 6} ${y - 5} ${x} ${y} Q${x - 6} ${y - 5} ${x} ${y - 13} Z`, '#FFB347', 2) + `<path d="M${x} ${y - 8} Q${x + 2.5} ${y - 3} ${x} ${y - 1} Q${x - 2.5} ${y - 3} ${x} ${y - 8} Z" fill="#FFF3B0"/>`;
+  const defs = () => `<defs>${[...USED].map((c) => `<linearGradient id="ke${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
   // question picture with a paper frame, answer pictures plain; labels never name the answer
-  const pic = (inner, label) => `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}"><rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
-  const optPic = (inner, label) => `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${inner}</svg>`;
+  const pic = (inner, label) => `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}">${defs()}<rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
+  const optPic = (inner, label) => `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${defs()}${inner}</svg>`;
   // smaller copy standing on the same ground line (hoch und tief)
   const scaled = (inner, s) => `<g transform="translate(${50 - 50 * s} ${100 - 100 * s}) scale(${s})">${inner}</g>`;
 
   /* Gesichter */
   const SKIN = '#FFD9A8';
-  const HAIR = sh('M14 46 Q18 10 50 11 Q82 10 86 46 Q76 27 50 27 Q24 27 14 46 Z', DARK);
-  const DOTS = circ(37, 54, 4, INK, 0) + circ(63, 54, 4, INK, 0);
+  const HAIR = sh('M14 46 Q18 10 50 11 Q82 10 86 46 Q76 27 50 27 Q24 27 14 46 Z', DARK) + lit('M30 20 Q40 15 52 15', 2.5);
+  const HEAD = (skin) => circ(11, 56, 7, skin) + circ(89, 56, 7, skin) + circ(50, 52, 40, skin, 3) + HAIR;
+  const DOTS = circ(37, 54, 4.5, INK, 0) + circ(63, 54, 4.5, INK, 0) + '<circle cx="38.5" cy="52.5" r="1.4" fill="#fff"/><circle cx="64.5" cy="52.5" r="1.4" fill="#fff"/>';
+  const CHEEKS = '<circle cx="27" cy="66" r="5.5" fill="#FF8A8A" opacity=".5"/><circle cx="73" cy="66" r="5.5" fill="#FF8A8A" opacity=".5"/>';
   const FACES = {
-    froehlich: { word: 'fröhlich', svg: circ(50, 52, 40, SKIN, 3) + HAIR + DOTS + sh('M32 66 Q50 88 68 66 Z', '#B8323F') + `<circle cx="27" cy="66" r="5" fill="#FF8A8A" opacity=".6"/><circle cx="73" cy="66" r="5" fill="#FF8A8A" opacity=".6"/>` },
-    traurig: { word: 'traurig', svg: circ(50, 52, 40, SKIN, 3) + HAIR + DOTS + ln('M28 46 L42 41') + ln('M58 41 L72 46') + ln('M36 78 Q50 67 64 78', 3.5) + sh('M33 60 Q28 69 33 72 Q38 69 33 60 Z', BLUE, 2) },
-    wuetend: { word: 'wütend', svg: circ(50, 52, 40, '#FFB08A', 3) + HAIR + DOTS + ln('M27 40 L43 48', 4.5) + ln('M57 48 L73 40', 4.5) + rect(35, 68, 30, 10, WHITE, 3) + ln('M35 73 H65', 1.5) + ln('M45 68 V78 M55 68 V78', 1.5) },
-    aengstlich: { word: 'ängstlich', svg: circ(50, 52, 40, SKIN, 3) + HAIR + circ(37, 54, 7, WHITE) + circ(63, 54, 7, WHITE) + circ(37, 55, 3, INK, 0) + circ(63, 55, 3, INK, 0) + ln('M29 40 Q36 35 43 40') + ln('M57 40 Q64 35 71 40') + ln('M36 75 q3.5 -4 7 0 t7 0 t7 0 t7 0') + sh('M84 38 Q80 46 84 49 Q88 46 84 38 Z', BLUE, 2) },
+    froehlich: { word: 'fröhlich', svg: HEAD(SKIN) + DOTS + ln('M30 44 Q37 40 44 44', 2.5) + ln('M56 44 Q63 40 70 44', 2.5) + sh('M32 65 Q50 90 68 65 Z', '#B8323F') + '<path d="M36 67 H64 Q62 71 50 71 Q38 71 36 67 Z" fill="#fff"/>' + CHEEKS },
+    traurig: { word: 'traurig', svg: HEAD(SKIN) + DOTS + ln('M28 46 L42 41') + ln('M58 41 L72 46') + ln('M36 78 Q50 67 64 78', 3.5) + sh('M33 60 Q28 69 33 72 Q38 69 33 60 Z', BLUE, 2) },
+    wuetend: { word: 'wütend', svg: HEAD('#FFB08A') + DOTS + ln('M27 40 L43 48', 4.5) + ln('M57 48 L73 40', 4.5) + rect(35, 68, 30, 10, WHITE, 3) + ln('M35 73 H65', 1.5) + ln('M45 68 V78 M55 68 V78', 1.5) },
+    aengstlich: { word: 'ängstlich', svg: HEAD(SKIN) + circ(37, 54, 7.5, WHITE) + circ(63, 54, 7.5, WHITE) + circ(37, 55, 3, INK, 0) + circ(63, 55, 3, INK, 0) + ln('M29 40 Q36 35 43 40') + ln('M57 40 Q64 35 71 40') + ln('M36 75 q3.5 -4 7 0 t7 0 t7 0 t7 0') + sh('M84 34 Q80 42 84 45 Q88 42 84 34 Z', BLUE, 2) },
   };
   const FACE_IDS = Object.keys(FACES);
 
   /* Zeichen der Feste */
   const FESTE = ['Geburtstag', 'Erntedank', 'St. Martin', 'Advent', 'Nikolaus', 'Weihnachten', 'Silvester', 'Ostern'];
+  const candle = (x, y, h, c) => rect(x - 4, y - h, 8, h, c, 1.5, 2) + lit(`M${x - 1.5} ${y - h + 3} V${y - 3}`, 1.5) + ln(`M${x} ${y - h} v-3`, 1.5) + flame(x, y - h - 2);
+  // Ähre: stalk and two rows of grains, tip at (x, y)
+  const ear = (x, y, rot) => `<g transform="rotate(${rot} ${x} ${y})">${ln(`M${x} ${y} V${y + 40}`, 2, '#B8862E')}${[0, 6, 12, 18].map((d) => oval(x - 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, -25) + oval(x + 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, 25)).join('')}${oval(x, y + 1, 2.4, 4, '#F2C14E', 1.2)}</g>`;
+  const heart = 'M0 0 C-4 -6 -17 -9 -17 -20 C-17 -27 -9 -30 -4.5 -26.5 Q-1.5 -24 0 -20 Q1.5 -24 4.5 -26.5 C9 -30 17 -27 17 -20 C17 -9 4 -6 0 0 Z';
   const SYMS = [
-    { id: 'kuchen', fest: 'Geburtstag', note: 'geburtstag', svg: `<ellipse cx="50" cy="88" rx="42" ry="6" fill="${METAL}" stroke="${INK}" stroke-width="2.5"/>` + rect(18, 54, 64, 32, '#FFB3D9', 4)
-      + sh('M18 58 Q18 52 24 52 H76 Q82 52 82 58 Q76 66 70 58 Q64 66 58 58 Q52 66 46 58 Q40 66 34 58 Q28 66 18 58 Z', WHITE)
-      + [30, 47, 64].map((x) => rect(x, 34, 6, 19, BLUE, 1) + sh(`M${x + 3} 20 Q${x + 9} 28 ${x + 3} 32 Q${x - 3} 28 ${x + 3} 20 Z`, GOLD, 2)).join('') },
-    { id: 'korb', fest: 'Erntedank', note: 'erntedank', svg: sh('M50 22 Q58 30 57 40 Q61 54 50 55 Q39 54 43 40 Q42 30 50 22 Z', '#C9E265') + circ(31, 44, 13, RED) + `<ellipse cx="70" cy="44" rx="15" ry="12" fill="#FF8A3D" stroke="${INK}" stroke-width="2.5"/>` + ln('M70 32 V56 M62 34 Q58 44 62 54 M78 34 Q82 44 78 54', 1.8) + ln('M31 31 Q32 26 36 24', 2.5, DARK) + ln('M70 32 Q71 27 74 26', 2.5, '#2E9E57')
-      + sh('M10 52 H90 L79 90 H21 Z', WOOD) + ln('M14 64 H86 M17 76 H83', 2) + ln('M30 52 L32 90 M50 52 V90 M70 52 L68 90', 2) },
-    { id: 'laterne', fest: 'St. Martin', note: 'martin', svg: ln('M50 30 V14 Q50 8 58 8 L92 4', 3, DARK) + ln('M38 32 Q50 18 62 32', 2) + circ(50, 60, 28, '#FF8A3D') + `<circle cx="50" cy="62" r="10" fill="${GOLD}" opacity=".9"/>` + `<ellipse cx="50" cy="60" rx="14" ry="28" fill="none" stroke="${INK}" stroke-width="1.5"/>` + ln('M50 32 V88', 1.5) + rect(37, 28, 26, 7, RED, 2) + rect(40, 85, 20, 6, RED, 2) },
-    { id: 'kranz', fest: 'Advent', note: 'advent', not: ['Weihnachten', 'Nikolaus'], svg: `<ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${INK}" stroke-width="18"/><ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="#2E9E57" stroke-width="13"/>`
-      + [[22, 80], [44, 87], [66, 64], [80, 76]].map(([x, y]) => circ(x, y, 3, RED, 1.5)).join('')
-      + [[32, 62], [68, 62], [24, 80], [76, 80]].map(([x, y]) => rect(x - 4, y - 24, 8, 24, RED, 1) + sh(`M${x} ${y - 36} Q${x + 6} ${y - 29} ${x} ${y - 25} Q${x - 6} ${y - 29} ${x} ${y - 36} Z`, GOLD, 2)).join('') },
-    { id: 'stiefel', fest: 'Nikolaus', note: 'nikolaus', not: ['Advent', 'Weihnachten'], svg: circ(40, 20, 10, '#FF8A3D') + ln('M66 24 L62 36', 3) + circ(67, 15, 9, '#FFB3D9') + sh('M30 28 H64 V62 L84 68 Q93 72 88 86 H30 Z', RED) + rect(25, 22, 44, 12, WHITE, 4) + rect(28, 84, 62, 7, INK, 3) },
-    { id: 'baum', fest: 'Weihnachten', note: 'weihnachten', not: ['Advent'], svg: rect(44, 80, 12, 12, DARK) + sh('M50 44 L86 82 H14 Z', '#2E9E57') + sh('M50 28 L77 62 H23 Z', '#3DB36A') + sh('M50 14 L68 44 H32 Z', GREEN)
-      + [[34, 74, RED], [62, 72, BLUE], [50, 56, GOLD], [40, 50, BLUE], [60, 38, RED]].map(([x, y, c]) => circ(x, y, 4, c, 1.5)).join('') + sh(star(50, 11, 10, 4.5), GOLD, 2) },
-    { id: 'klee', fest: 'Silvester', note: 'silvester', svg: ln('M50 52 Q55 76 68 92', 4.5, '#2E9E57') + union('<circle cx="37" cy="37" r="15"/><circle cx="63" cy="37" r="15"/><circle cx="37" cy="63" r="15"/><circle cx="63" cy="63" r="15"/>', GREEN) + ln('M50 50 L36 36 M50 50 L64 36 M50 50 L36 64 M50 50 L64 64', 1.8, '#2E9E57') },
-    { id: 'ei', fest: 'Ostern', note: 'ostern', svg: sh('M50 12 C70 12 80 44 78 62 C76 80 64 90 50 90 C36 90 24 80 22 62 C20 44 30 12 50 12 Z', GOLD) + ln('M24 56 L31 49 L38 56 L45 49 L52 56 L59 49 L66 56 L73 49 L76 52', 3, RED) + ln('M26 70 H74', 3.5, BLUE) + [[40, 32], [50, 26], [60, 32]].map(([x, y]) => circ(x, y, 3, GREEN, 0)).join('') },
+    { id: 'kuchen', fest: 'Geburtstag', note: 'geburtstag', svg: oval(50, 88, 44, 7, METAL) + rect(16, 54, 68, 32, '#FFB3D9', 5) + ln('M18 74 H82', 2.5, '#E86AA8')
+      + [24, 38, 52, 66, 78].map((x, i) => circ(x, 74, 2, i % 2 ? GOLD : BLUE, 1)).join('')
+      + sh('M16 59 Q16 52 23 52 H77 Q84 52 84 59 Q84 66 79 66 Q75 66 75 61 Q71 68 66 61 Q61 69 56 61 Q51 68 46 61 Q41 69 36 61 Q31 68 26 61 Q24 66 20 66 Q16 66 16 59 Z', WHITE)
+      + lit('M22 80 V60', 2.5) + [30, 50, 70].map((x, i) => candle(x, 54, 18, [BLUE, '#FF8A3D', GREEN][i])).join('') },
+    { id: 'korb', fest: 'Erntedank', note: 'erntedank', svg: ear(20, 6, -24) + ear(80, 6, 24) + ear(50, 2, 0)
+      + sh('M58 20 Q66 28 64 38 Q68 52 58 54 Q48 52 52 38 Q50 28 58 20 Z', '#C9E265') + ln('M58 20 Q58 16 62 14', 2.2, DARK) + gloss(55, 34, 2, 5)
+      + circ(32, 44, 13, RED) + ln('M32 31 Q33 26 37 24', 2.5, DARK) + gloss(27, 39, 3, 4.5, 30)
+      + oval(73, 45, 15, 12, '#FF8A3D') + ln('M73 33 V57 M65 35 Q61 45 65 55 M81 35 Q85 45 81 55', 1.6) + ln('M73 33 Q74 28 77 27', 2.5, FIR)
+      + sh('M8 52 H92 L80 92 H20 Z', WOOD) + ln('M12 65 H88 M16 78 H84', 2, DARK) + ln('M30 52 L33 92 M50 52 V92 M70 52 L67 92', 2, DARK) + rect(6, 48, 88, 8, '#D58A44', 4) + lit('M12 51 H88', 1.5) },
+    { id: 'laterne', fest: 'St. Martin', note: 'martin', svg: ln('M52 22 L66 8 L95 2', 3.5, DARK) + ln('M33 34 Q50 12 67 34', 1.8)
+      + oval(50, 60, 30, 27, '#FF8A3D') + `<ellipse cx="50" cy="62" rx="20" ry="18" fill="#FFD25A" opacity=".75"/><ellipse cx="50" cy="64" rx="10" ry="9" fill="#FFF3B0" opacity=".9"/>`
+      + rect(46.5, 62, 7, 12, WHITE, 1, 1.5) + flame(50, 60)
+      + `<path d="M50 33 Q30 60 50 87 M50 33 Q70 60 50 87 M50 33 Q12 60 50 87 M50 33 Q88 60 50 87" fill="none" stroke="#C85A1E" stroke-width="1.3"/>`
+      + rect(34, 29, 32, 8, RED, 3) + rect(36, 84, 28, 7, RED, 3) + lit('M38 32 H62', 1.5) + circ(66, 8, 2, METAL, 1.2) },
+    { id: 'kranz', fest: 'Advent', note: 'advent', not: ['Weihnachten', 'Nikolaus'], svg: `<ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${INK}" stroke-width="19"/><ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${fl(FIR)}" stroke-width="14"/>`
+      + `<path d="${Array.from({ length: 28 }, (_, i) => { const a = i * Math.PI / 14, x = 50 + 38 * Math.cos(a), y = 72 + 14 * Math.sin(a); return `M${(x - 4).toFixed(1)} ${(y - 3).toFixed(1)} L${(x + 3).toFixed(1)} ${(y + 3).toFixed(1)}`; }).join(' ')}" stroke="#7FD49A" stroke-width="1.4" stroke-linecap="round"/>`
+      + [[22, 62], [80, 64], [64, 85], [34, 85]].map(([x, y]) => circ(x, y, 3, RED, 1.5)).join('')
+      + [[33, 62], [67, 62], [24, 78], [76, 78]].map(([x, y]) => candle(x, y, 22, RED)).join('')
+      + sh('M50 84 Q38 76 38 84 Q38 92 50 86 Z M50 84 Q62 76 62 84 Q62 92 50 86 Z', '#C9283B', 2) + sh('M48 86 L43 97 L47 95 L49 98 L50 87 Z M52 86 L57 97 L53 95 L51 98 L50 87 Z', '#C9283B', 1.5) + circ(50, 85, 3, RED, 1.8) },
+    { id: 'stiefel', fest: 'Nikolaus', note: 'nikolaus', not: ['Advent', 'Weihnachten'], svg: tube('M36 34 V14 Q36 6 43 6 Q50 6 50 13', 4, WHITE) + ln('M36 30 l0 -4 M36 20 l0 -4 M39 8 l3 -2 M48 9 l2 2', 4, RED)
+      + circ(57, 24, 11, '#FF8A3D') + `<circle cx="57" cy="24" r="1.5" fill="${DARK}"/>` + gloss(53, 20, 3, 2.5, -30) + circ(72, 28, 9, RED) + ln('M72 19 Q73 15 76 14', 2, DARK) + gloss(69, 25, 2, 3, 30)
+      + sh('M28 30 H66 V64 L84 69 Q95 73 90 88 H28 Z', RED) + lit('M33 40 V82', 3) + rect(23, 24, 48, 13, WHITE, 6) + rect(26, 86, 66, 7, EBONY, 3) },
+    { id: 'baum', fest: 'Weihnachten', note: 'weihnachten', not: ['Advent'], svg: rect(44, 80, 12, 10, DARK) + rect(34, 88, 32, 8, RED, 2) + sh('M50 42 L88 82 H12 Z', FIR) + sh('M50 27 L78 62 H22 Z', '#3DB36A') + sh('M50 13 L69 44 H31 Z', GREEN)
+      + ln('M27 72 Q50 80 73 70 M33 54 Q50 60 66 52', 2, GOLD)
+      + [[32, 76, RED], [62, 74, BLUE], [50, 57, GOLD], [38, 50, BLUE], [61, 38, RED], [44, 34, GOLD]].map(([x, y, c]) => circ(x, y, 4.5, c, 1.5) + '<circle cx="' + (x - 1.5) + '" cy="' + (y - 1.5) + '" r="1.3" fill="#fff" opacity=".8"/>').join('') + sh(star(50, 11, 11, 4.8), GOLD, 2) },
+    { id: 'klee', fest: 'Silvester', note: 'silvester', svg: ln('M50 48 Q56 76 70 94', 5, INK) + ln('M50 48 Q56 76 70 94', 2.5, FIR)
+      + [45, 135, 225, 315].map((a) => `<g transform="translate(50 46) rotate(${a})">${sh(heart, GREEN, 2.5)}${ln('M0 -3 V-19', 1.5, '#2E9E57')}${lit('M-12 -22 Q-11 -26 -7 -26', 1.8)}</g>`).join('') + circ(50, 46, 2.5, '#2E9E57', 1) },
+    { id: 'ei', fest: 'Ostern', note: 'ostern', svg: sh('M50 10 C71 10 82 44 80 62 C78 81 65 92 50 92 C35 92 22 81 20 62 C18 44 29 10 50 10 Z', GOLD) + ln('M23 54 L30 47 L37 54 L44 47 L51 54 L58 47 L65 54 L72 47 L78 53', 3.5, RED)
+      + ln('M22 70 Q50 76 78 70', 4, BLUE) + [[40, 30], [50, 23], [60, 30], [35, 82], [50, 85], [65, 82]].map(([x, y]) => circ(x, y, 3, GREEN, 1.2)).join('') + gloss(34, 30, 5, 10, 20) },
   ];
   const symFits = (a, b) => a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
 
   /* Instrumente */
   // Handtrommel: flat wooden frame with a skin, played with the hand or a soft beater
-  const drum = sh('M10 48 V60 A40 15 0 0 0 90 60 V48 Z', WOOD) + [18, 34, 50, 66, 82].map((x) => circ(x, x === 50 ? 75 : x === 34 || x === 66 ? 73 : 68, 2, METAL, 1.2)).join('') + `<ellipse cx="50" cy="48" rx="40" ry="15" fill="#FBEBC8" stroke="${INK}" stroke-width="2.5"/><ellipse cx="50" cy="48" rx="33" ry="11" fill="none" stroke="#E6CF9E" stroke-width="1.5"/>`;
-  const recorder = `<g transform="rotate(35 50 50)">` + rect(44, 18, 12, 70, '#F3D6A4', 4) + rect(42, 6, 16, 16, WOOD, 5) + `<rect x="47" y="14" width="6" height="4" fill="${INK}"/>` + [29, 36, 43, 50, 57, 64, 73].map((y) => circ(50, y, 2.4, INK, 0)).join('') + sh('M43 84 L40 95 H60 L57 84 Z', WOOD) + '</g>';
-  const strBody = union('<ellipse cx="40" cy="44" rx="13" ry="13"/><ellipse cx="40" cy="68" rx="16" ry="16"/><rect x="33" y="46" width="14" height="20"/>', '#C8692E')
-    + rect(37, 14, 6, 42, '#3B2A1E', 2) + circ(40, 10, 5, '#C8692E') + ln('M33 60 q-2.5 4 0 9 M47 60 q2.5 4 0 9', 1.8) + rect(34, 64, 12, 3, '#F3D6A4') + sh('M37 74 H43 L42 82 H38 Z', '#3B2A1E', 1.5) + ln('M34.5 17 H37 M34.5 22 H37 M43 17 H45.5 M43 22 H45.5', 2.2) + ln('M38.2 14 V76 M39.4 14 V76 M40.6 14 V76 M41.8 14 V76', 0.6, '#F3D6A4');
+  const drum = sh('M8 46 V58 A42 16 0 0 0 92 58 V46 Z', WOOD) + ln('M8 52 A42 16 0 0 0 92 52', 1.5, DARK)
+    + [18, 34, 50, 66, 82].map((x) => { const y = 55 + 16 * Math.sqrt(1 - ((x - 50) / 42) ** 2); return rect(x - 2.5, (y - 4).toFixed(1), 5, 8, METAL, 1, 1.2); }).join('')
+    + oval(50, 46, 42, 16, '#FBEBC8') + `<ellipse cx="50" cy="46" rx="35" ry="12" fill="none" stroke="#E2C78F" stroke-width="1.5"/>` + lit('M20 41 Q32 34 50 33', 2.5);
+  const recorder = '<g transform="rotate(35 50 50)">' + sh('M44.5 80 L43.5 93 Q50 97 56.5 93 L55.5 80 Z', '#E9C08A') + rect(45, 26, 10, 56, '#F3D6A4', 2)
+    + sh('M44 28 L44 14 Q45 5 50 3 Q55 5 56 14 L56 28 Z', '#E9C08A') + sh('M46.5 17 H53.5 L52.5 21 H47.5 Z', INK, 1) + rect(43.5, 26, 13, 4, '#D9A766', 2, 1.8) + rect(44, 78, 12, 4, '#D9A766', 2, 1.8)
+    + `<ellipse cx="45.3" cy="34" rx="0.9" ry="2.2" fill="${DARK}"/>`
+    + [36, 42, 48, 57, 63].map((y) => `<circle cx="50" cy="${y}" r="2.1" fill="${INK}"/>`).join('') + [[69, 50], [87, 51.5]].map(([y, x]) => `<circle cx="${x - 1.6}" cy="${y}" r="1.2" fill="${INK}"/><circle cx="${x + 1.6}" cy="${y}" r="1.2" fill="${INK}"/>`).join('')
+    + lit('M47 31 V76', 1.5) + '</g>';
+  // violin (Geige) without bow, 42 wide 90 tall, standing on y 92
+  const violinBody = 'M42 42 C49 42 55 45 55 52 C55 57 52 59 50 60 Q48 64 50 69 C54 70 58 74 58 80 C58 88 51 92 42 92 C33 92 26 88 26 80 C26 74 30 70 34 69 Q36 64 34 60 C32 59 29 57 29 52 C29 45 35 42 42 42 Z';
+  const violin = sh(violinBody, '#C8692E') + lit('M31 51 Q32 46 37 44 M29 78 Q29 74 32 72', 2)
+    + ln('M35 63 Q32.5 69 35.5 75 M49 63 Q51.5 69 48.5 75', 1.4) + [[35, 63], [35.5, 75], [49, 63], [48.5, 75]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="${INK}"/>`).join('')
+    + sh('M39.5 10 H44.5 V17 H39.5 Z', '#A9521F', 1.8) + circ(42, 6, 4.2, '#A9521F', 1.8) + ln('M42 6 m-2 0 a2 2 0 1 1 2 2', 1) + [[37, 11], [47, 11], [37, 15], [47, 15]].map(([x, y]) => oval(x, y, 2.6, 1.4, EBONY, 1)).join('')
+    + sh('M40 15 L44 15 L45.2 64 L38.8 64 Z', EBONY, 1.8) + sh('M39.5 78 H44.5 L45.3 88 Q42 90.5 38.7 88 Z', EBONY, 1.8) + sh('M27.5 84 Q29 79 36 80 Q38.5 85 35.5 89 Q30.5 90 27.5 84 Z', EBONY, 1.5)
+    + sh('M36.5 75 H47.5 L46.5 71.5 H37.5 Z', '#F3D6A4', 1.4) + ln([0, 1, 2, 3].map((i) => `M${(40.9 + i * 0.73).toFixed(2)} 15 L${(39.6 + i * 1.6).toFixed(2)} 79`).join(' '), 0.6, '#EDE6D6');
+  // bow: stick, light hair, frog at the lower end
+  const bow = tube('M62 4 L87 93', 2, DARK) + ln('M65.5 7 L84.5 85', 3, INK) + ln('M65.5 7 L84.5 85', 1.6, '#F7F1E1') + sh('M61 2.5 L66.5 3 L66.8 8.5 L63.3 8 Z', '#F3D6A4', 1.2) + rect(81, 82, 6, 9, EBONY, 1.5, 1.5) + `<circle cx="84" cy="86.5" r="1.3" fill="#fff"/>`;
+  // Kontrabass: much taller, sloping shoulders, stands on its spike
+  const bass = sh('M50 36 C53 36 55 37 57 40 L64 51 C67 55 66 58 63 61 Q60 65 62 69 C69 70 73 75 73 81 C73 89 62 93 50 93 C38 93 27 89 27 81 C27 75 31 70 38 69 Q40 65 37 61 C34 58 33 55 36 51 L43 40 C45 37 47 36 50 36 Z', '#B55A24')
+    + lit('M38 53 L44 43 M31 81 Q31 76 35 73', 2.2) + ln('M42.5 66 Q40 72 43 78 M57.5 66 Q60 72 57 78', 1.5) + [[42.5, 66], [43, 78], [57.5, 66], [57, 78]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="${INK}"/>`).join('')
+    + ln('M50 93 V99', 2.5) + sh('M47.5 6 H52.5 V15 H47.5 Z', '#8F431A', 1.8) + circ(50, 4, 3.4, '#8F431A', 1.6) + [[44.5, 8.5], [55.5, 8.5], [44.5, 12.5], [55.5, 12.5]].map(([x, y]) => oval(x, y, 2.4, 1.3, METAL, 1)).join('')
+    + sh('M48.3 13 H51.7 L53.2 67 H46.8 Z', EBONY, 1.8) + sh('M47 80 H53 L54 89 Q50 91.5 46 89 Z', EBONY, 1.8) + sh('M44 76 H56 L55 72.5 H45 Z', '#F3D6A4', 1.4)
+    + ln([0, 1, 2, 3].map((i) => `M${(48.9 + i * 0.73).toFixed(2)} 13 L${(47.4 + i * 1.7).toFixed(2)} 81`).join(' '), 0.7, '#EDE6D6');
   const BARS = ['#E8344A', '#FF8A3D', '#FFD25A', '#4FC96A', '#2BB3A0', '#7CC2FF', '#5B6CFF', '#B07CFF'];
+  // Glockenspiel bars: long and low on the left, short and high on the right
+  const glock = sh('M5 28 L95 40 L95 46 L5 36 Z', DARK, 2) + sh('M5 78 L95 66 L95 72 L5 86 Z', DARK, 2)
+    + BARS.map((c, i) => { const x = 10 + i * 10.4, t = 32 + (x - 5) * 0.133 - 5, b = 82 - (x - 5) * 0.155 + 5; return rect(x, t.toFixed(1), 8, (b - t).toFixed(1), c, 1.5, 2) + lit(`M${x + 2.2} ${(t + 4).toFixed(1)} V${(b - 4).toFixed(1)}`, 1.3) + `<circle cx="${x + 4}" cy="${(t + 4.5).toFixed(1)}" r="1.1" fill="${INK}"/><circle cx="${x + 4}" cy="${(b - 4.5).toFixed(1)}" r="1.1" fill="${INK}"/>`; }).join('');
+  const mallet = (x1, y1, x2, y2) => tube(`M${x1} ${y1} L${x2} ${y2}`, 2.4, WOOD) + circ(x1, y1, 5, RED, 2) + gloss(x1 - 1.5, y1 - 1.5, 1.5, 1.2);
   const INSTR = [
-    { id: 'trommel', name: 'Handtrommel', acc: 'die Handtrommel', fam: 'schlag', how: 'schlagen', svg: drum + tube('M64 40 L90 12', 3, DARK) + circ(61, 43, 6.5, RED) },
-    { id: 'triangel', name: 'Triangel', acc: 'die Triangel', fam: 'schlag', how: 'schlagen', svg: ln('M50 18 V5', 2) + tube('M43 30 L16 78 L84 78 L50 18', 4, METAL) + tube('M72 24 L96 10', 3.5, METAL) },
-    { id: 'klanghoelzer', name: 'Klanghölzer', acc: 'die Klanghölzer', fam: 'schlag', how: 'schlagen', svg: '<g transform="rotate(-30 50 50)">' + [36, 54].map((y) => rect(8, y, 84, 11, WOOD, 5.5) + ln(`M18 ${y + 4} H40 M56 ${y + 7} H82`, 1.2, DARK)).join('') + '</g>' },
-    { id: 'rassel', name: 'Rassel', acc: 'die Rassel', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: '<g transform="rotate(-30 50 55)">' + rect(45, 56, 10, 38, DARK, 4) + `<ellipse cx="50" cy="36" rx="21" ry="25" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>` + ln('M31 38 L37 32 L43 38 L49 32 L55 38 L61 32 L69 38', 2.5, RED) + [[42, 22], [56, 21], [45, 50], [58, 48]].map(([x, y]) => circ(x, y, 2.5, INK, 0)).join('') + '</g>' },
-    { id: 'schellenkranz', name: 'Schellenkranz', acc: 'den Schellenkranz', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: `<circle cx="50" cy="50" r="32" fill="none" stroke="${INK}" stroke-width="16"/><circle cx="50" cy="50" r="32" fill="none" stroke="${WOOD}" stroke-width="11"/>` + [0, 60, 120, 180, 240, 300].map((a) => { const x = 50 + 32 * Math.cos(a * Math.PI / 180), y = 50 + 32 * Math.sin(a * Math.PI / 180); return circ(x.toFixed(1), y.toFixed(1), 6.5, METAL, 2) + circ(x.toFixed(1), y.toFixed(1), 1.8, INK, 0); }).join('') },
-    { id: 'glockenspiel', name: 'Glockenspiel', acc: 'das Glockenspiel', fam: 'schlag', how: 'schlagen', notFam: ['tasten'], notHow: ['Tasten drücken'], svg: tube('M8 36 L90 44', 4, DARK) + tube('M8 76 L90 66', 4, DARK) + BARS.map((c, i) => rect((12 + i * 9.6).toFixed(1), (26 + i * 2.6).toFixed(1), 7.5, (58 - i * 5.2).toFixed(1), c, 1.5)).join('') + tube('M80 91 L95 96', 3, WOOD) + circ(75, 89, 5.5, RED) },
+    { id: 'trommel', name: 'Handtrommel', acc: 'die Handtrommel', fam: 'schlag', how: 'schlagen', svg: drum + tube('M64 40 L90 12', 3, DARK) + circ(61, 43, 7, RED) + gloss(59, 41, 2, 1.5) },
+    { id: 'triangel', name: 'Triangel', acc: 'die Triangel', fam: 'schlag', how: 'schlagen', svg: ln('M50 20 Q45 10 50 4 Q55 10 50 20', 1.8, RED) + rect(45, 1, 10, 5, RED, 2, 1.5)
+      + tube('M25 82 L84 82 L50 22 L18 77', 4, METAL) + lit('M50 27 L80 79', 1.2) + tube('M58 68 L92 46', 2.5, METAL) + rect(84, 45, 12, 6, EBONY, 3, 1.5) },
+    { id: 'klanghoelzer', name: 'Klanghölzer', acc: 'die Klanghölzer', fam: 'schlag', how: 'schlagen', svg: '<g transform="rotate(-28 50 50)">' + [33, 55].map((y) => rect(6, y, 88, 12, WOOD, 6) + oval(88, y + 6, 3, 6, '#F6CC94', 1.8) + lit(`M14 ${y + 3.5} H80`, 1.8) + ln(`M20 ${y + 8} H44 M54 ${y + 8.5} H74`, 1, DARK)).join('') + '</g>' },
+    { id: 'rassel', name: 'Rassel', acc: 'die Rassel', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: '<g transform="rotate(-30 50 55)">' + rect(45, 56, 10, 38, DARK, 4) + ln('M45 66 H55 M45 70 H55', 1.5) + oval(50, 35, 22, 26, '#FF8A3D')
+      + ln('M29 37 L35 31 L41 37 L47 31 L53 37 L59 31 L65 37 L71 33', 3, GOLD) + [[41, 21], [57, 20], [43, 49], [57, 48], [50, 14]].map(([x, y]) => circ(x, y, 2.4, GREEN, 1)).join('') + gloss(40, 25, 4, 7, 20) + '</g>' },
+    { id: 'schellenkranz', name: 'Schellenkranz', acc: 'den Schellenkranz', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: `<path d="M50 14 a36 36 0 1 0 0.01 0 Z M50 27 a23 23 0 1 0 0.01 0 Z" fill="${fl(WOOD)}" fill-rule="evenodd" stroke="${INK}" stroke-width="2.5"/>` + lit('M22 36 Q30 22 44 17', 2.2)
+      + [0, 72, 144, 216, 288].map((a) => `<g transform="translate(${(50 + 29.5 * Math.cos((a - 90) * Math.PI / 180)).toFixed(1)} ${(50 + 29.5 * Math.sin((a - 90) * Math.PI / 180)).toFixed(1)}) rotate(${a})">${rect(-9, -5, 18, 10, '#6B3E1C', 1.5, 1.5)}${circ(-3.2, 0, 4.6, METAL, 1.5)}${circ(3.2, 0, 4.6, METAL, 1.5)}${ln('M-9 0 H9', 1)}</g>`).join('') },
+    { id: 'glockenspiel', name: 'Glockenspiel', acc: 'das Glockenspiel', fam: 'schlag', how: 'schlagen', notFam: ['tasten'], notHow: ['Tasten drücken'], svg: glock + mallet(62, 90, 96, 80) + mallet(74, 96, 98, 90) },
     { id: 'blockfloete', name: 'Blockflöte', acc: 'die Blockflöte', fam: 'blas', how: 'blasen', svg: recorder },
-    { id: 'trompete', name: 'Trompete', acc: 'die Trompete', fam: 'blas', how: 'blasen', notHow: ['Tasten drücken'], svg: tube('M30 52 V66 H66 V52', 4, GOLD) + rect(8, 46, 56, 6, GOLD, 2) + [34, 44, 54].map((x) => rect(x, 32, 7, 22, GOLD, 1) + rect(x - 1, 27, 9, 5, METAL, 1) + circ(x + 3.5, 24, 3, METAL, 2)).join('') + sh('M60 46 L91 30 Q96 49 91 68 L60 52 Z', GOLD) + sh('M3 42 L10 46 V52 L3 56 Z', METAL) },
-    { id: 'gitarre', name: 'Gitarre', acc: 'die Gitarre', fam: 'saiten', how: 'zupfen', notHow: ['schlagen', 'streichen'], svg: rect(44, 3, 12, 14, DARK, 3) + [6, 10, 14].map((y) => circ(41, y, 1.8, METAL, 1) + circ(59, y, 1.8, METAL, 1)).join('') + rect(45.5, 15, 9, 35, DARK, 1)
-      + union('<circle cx="50" cy="50" r="15"/><circle cx="50" cy="74" r="21"/>', WOOD) + circ(50, 58, 6.5, INK, 0) + rect(41, 79, 18, 4, DARK, 1) + ln('M46.6 6 V81 M48 6 V81 M49.4 6 V81 M50.8 6 V81 M52.2 6 V81 M53.6 6 V81', 0.6, PAPER) },
-    { id: 'geige', name: 'Geige', acc: 'die Geige', fam: 'saiten', how: 'streichen', notHow: ['zupfen'], svg: strBody + tube('M62 6 L84 94', 2.5, DARK) + ln('M66 8 L87 90', 1.2, '#BFB7A8') + rect(80, 84, 7, 9, '#3B2A1E', 1) },
-    { id: 'klavier', name: 'Klavier', acc: 'das Klavier', fam: 'tasten', how: 'Tasten drücken', notFam: ['saiten', 'schlag'], notHow: ['schlagen'], svg: rect(10, 14, 80, 46, '#6B3E26', 3) + rect(22, 22, 56, 18, DARK, 2) + rect(12, 72, 6, 20, '#6B3E26') + rect(82, 72, 6, 20, '#6B3E26') + rect(6, 56, 88, 16, WHITE, 1)
-      + ln(Array.from({ length: 10 }, (_, i) => `M${14 + i * 8} 56 V72`).join(' '), 1.2) + [1, 2, 4, 5, 6, 8, 9].map((i) => `<rect x="${3.5 + i * 8}" y="56" width="5" height="9" fill="${INK}"/>`).join('') },
+    { id: 'trompete', name: 'Trompete', acc: 'die Trompete', fam: 'blas', how: 'blasen', notHow: ['Tasten drücken'], svg: tube('M14 48 H78 Q86 48 86 55 Q86 62 78 62 H66', 3.5, GOLD) + tube('M38 58 H26 Q16 58 16 47 Q16 36 26 36 H62', 4, GOLD)
+      + sh('M60 33.5 C72 33 82 27 90 17 L90 55 C82 45 72 39 60 38.5 Z', GOLD) + oval(90, 36, 4.5, 19, '#E9B33A') + lit('M64 33 Q78 30 87 21', 1.5)
+      + tube('M42 66 V72 Q42 76 46 76 H50 Q54 76 54 72 V66', 3, GOLD)
+      + [36, 46, 56].map((x) => rect(x, 29, 8, 37, GOLD, 2, 2) + rect(x - 0.5, 63, 9, 4, '#E9B33A', 1, 1.5) + rect(x + 2.5, 21, 3, 8, METAL, 0.5, 1.2) + oval(x + 4, 20, 5, 2.2, WHITE, 1.5) + lit(`M${x + 2.3} 33 V60`, 1.3)).join('')
+      + sh('M2 44 L6 46 L15 47 V49 L6 50 L2 52 Z', METAL, 1.8) },
+    { id: 'gitarre', name: 'Gitarre', acc: 'die Gitarre', fam: 'saiten', how: 'zupfen', notHow: ['schlagen', 'streichen'], svg: [6, 10.5, 15].map((y) => oval(38.5, y, 2.6, 1.6, METAL, 1) + oval(61.5, y, 2.6, 1.6, METAL, 1)).join('')
+      + sh('M43 2 H57 L56 18 H44 Z', '#6B3E1C', 2) + [6, 10.5, 15].map((y) => `<circle cx="46.5" cy="${y}" r="1" fill="${METAL}"/><circle cx="53.5" cy="${y}" r="1" fill="${METAL}"/>`).join('')
+      + rect(45.5, 18, 9, 34, '#6B3E1C', 1, 2) + ln([22, 25.8, 29.4, 32.8, 36, 39, 41.8, 44.4].map((y) => `M46 ${y} H54`).join(' '), 1, '#D7DCE8') + rect(44.5, 17, 11, 2.2, '#F3EBD8', 0.5, 1)
+      + sh('M50 37.5 C59 37.5 65.5 44 65.5 52 C65.5 58 62 61 61.5 64 C61.5 66 71 69 71 77 C71 89 61 96 50 96 C39 96 29 89 29 77 C29 69 38.5 66 38.5 64 C38 61 34.5 58 34.5 52 C34.5 44 41 37.5 50 37.5 Z', '#F0B46A') + lit('M38 50 Q39 44 44 41 M33 80 Q33 73 37 69', 2)
+      + rect(46, 48, 8, 6, '#6B3E1C', 1, 1.5) + circ(50, 61, 8.5, 'none', 1.5) + circ(50, 61, 6.5, '#2A1A10', 1.5) + rect(41, 79, 18, 4.5, '#6B3E1C', 1.5, 1.8) + ln('M43 80.3 H57', 1, '#F3EBD8')
+      + ln([0, 1, 2, 3, 4, 5].map((i) => `M${(46.6 + i * 1.36).toFixed(2)} 18 V80.5`).join(' '), 0.6, '#F3EBD8') },
+    { id: 'geige', name: 'Geige', acc: 'die Geige', fam: 'saiten', how: 'streichen', notHow: ['zupfen'], svg: violin + bow },
+    { id: 'klavier', name: 'Klavier', acc: 'das Klavier', fam: 'tasten', how: 'Tasten drücken', notFam: ['saiten', 'schlag'], notHow: ['schlagen'], svg: rect(10, 12, 80, 44, '#6B3E26', 3) + rect(6, 7, 88, 7, '#7E4A2E', 2) + rect(20, 19, 60, 20, '#8A5536', 2, 2)
+      + rect(38, 21, 24, 15, PAPER, 1, 1.2) + ln('M41 25 H59 M41 29 H59 M41 33 H59', 0.7, '#9AA3B8') + `<circle cx="45" cy="29" r="1.4" fill="${INK}"/><circle cx="52" cy="25" r="1.4" fill="${INK}"/>` + lit('M14 16 H86', 1.5)
+      + rect(6, 52, 88, 6, '#5B3420', 1, 2) + rect(8, 57, 84, 15, WHITE, 1, 2) + ln(Array.from({ length: 13 }, (_, i) => `M${14 + i * 6} 57 V72`).join(' '), 1)
+      + [0, 1, 3, 4, 5, 7, 8, 10, 11, 12].map((i) => `<rect x="${(12.2 + i * 6).toFixed(1)}" y="57" width="3.6" height="9" rx=".6" fill="${INK}"/>`).join('')
+      + rect(10, 72, 7, 22, '#6B3E26', 1, 2) + rect(83, 72, 7, 22, '#6B3E26', 1, 2) + rect(17, 80, 66, 12, '#5B3420', 1, 2) + rect(43, 89, 5, 4, GOLD, 1, 1.2) + rect(52, 89, 5, 4, GOLD, 1, 1.2) },
   ];
   const FAM = { saiten: 'Saiteninstrument', blas: 'Blasinstrument', schlag: 'Schlaginstrument', tasten: 'Tasteninstrument' };
   const HOWS = ['zupfen', 'streichen', 'blasen', 'schlagen', 'schütteln', 'Tasten drücken'];
-  // hoch und tief: the same drawing small and big; the long bar of the Glockenspiel sounds lower
-  const bar = (w) => rect(50 - w / 2, 42, w, 16, BLUE, 3) + circ(50 - w / 2 + 6, 50, 2, INK, 0) + circ(50 + w / 2 - 6, 50, 2, INK, 0);
+  // hoch und tief: the same drawing small and big; the long bar of the Glockenspiel sounds lower; Geige against Kontrabass
+  const bar = (w) => rect(50 - w / 2, 42, w, 16, BLUE, 3) + lit(`M${50 - w / 2 + 4} 46 H${50 + w / 2 - 4}`, 1.5) + circ(50 - w / 2 + 6, 50, 2, INK, 0) + circ(50 + w / 2 - 6, 50, 2, INK, 0);
   const PAIRS = [
     { id: 'trommel', q: 'Welche Trommel', small: scaled(drum, 0.55), big: drum },
     { id: 'floete', q: 'Welche Flöte', small: scaled(recorder, 0.55), big: recorder },
-    { id: 'bass', q: 'Welches Instrument', small: scaled(strBody, 0.5), big: strBody + ln('M40 84 V97', 2.5) },
+    { id: 'bass', q: 'Welches Instrument', small: `<g transform="translate(32.4 57.5) scale(.42)">${violin}</g>`, big: bass },
     { id: 'platte', q: 'Welche Platte', small: bar(36), big: bar(84) },
   ];
 
@@ -14782,7 +14893,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.", "Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.", "Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu gezeichnet, und kleine Symbole sehen überall gleich aus."]}, {"title": "Behoben", "items": ["Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.", "Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.", "Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen."]}, {"title": "Behoben", "items": ["Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -16684,7 +16795,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '4a244bff7047';
+  const BUILD = '8de78c24f9a6';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

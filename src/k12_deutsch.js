@@ -15,10 +15,14 @@ const K12D = (() => {
 
   /* ---------- Bilder für Klasse 1: ein Ding je Bild, eindeutig benannt ---------- */
   const O = '#1C2541';
-  const p = (d, fill, w) => `<path d="${d}" fill="${fill}" stroke="${O}" stroke-width="${w || 2}"/>`;
-  const ci = (x, y, r, fill) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${O}" stroke-width="2"/>`;
-  const el = (x, y, rx, ry, fill) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${O}" stroke-width="2"/>`;
-  const rect = (x, y, w, h, fill, r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r || 0}" fill="${fill}" stroke="${O}" stroke-width="2"/>`;
+  // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const USED = new Set();
+  const fl = (c) => { const h = c.length === 4 ? '#' + [...c.slice(1)].map((x) => x + x).join('') : c; if (!/^#[0-9A-F]{6}$/i.test(h) || h === O) return c; USED.add(h.toUpperCase()); return `url(#kd${h.slice(1).toUpperCase()})`; };
+  const p = (d, fill, w) => `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
+  const ci = (x, y, r, fill) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
+  const el = (x, y, rx, ry, fill) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
+  const rect = (x, y, w, h, fill, r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r || 0}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
   const line = (d, c, w) => `<path d="${d}" fill="none" stroke="${c || O}" stroke-width="${w || 2}"/>`;
   const shine = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".6"/>`;
   const around = (n, cx, cy, f) => Array.from({ length: n }, (_, i) => f(cx, cy, (i / n) * Math.PI * 2)).join('');
@@ -37,20 +41,25 @@ const K12D = (() => {
     apfel: { w: 'Apfel', syl: 'Ap-fel', svg: line('M32 20 Q32 12 36 7', O, 3) + p('M32 20 C20 12 8 20 10 34 C12 48 22 56 32 52 C42 56 52 48 54 34 C56 20 44 12 32 20 Z', RED) + p('M35 13 Q43 5 49 11 Q43 17 35 13 Z', GRN) + shine(20, 28, 4, 6) },
     igel: { w: 'Igel', syl: 'I-gel', svg: line('M24 50 L23 56 M46 50 L47 56', O, 3) + p(spikes, '#5A3E22', 1.5) + el(36, 40, 21, 13, '#8A5530') + p('M20 48 Q10 48 3 43 Q8 35 20 33 Z', '#E9C9A0') + ci(4, 43, 2, O) + `<circle cx="12" cy="40" r="1.6" fill="${O}"/>` },
     uhr: { w: 'Uhr', syl: 'Uhr', svg: `<circle cx="32" cy="32" r="25" fill="${BLU}" stroke="${O}" stroke-width="2"/>` + ci(32, 32, 20, '#fff') + around(12, 32, 32, (x, y, a) => line(`M${r1(x + Math.cos(a) * 16)} ${r1(y + Math.sin(a) * 16)} L${r1(x + Math.cos(a) * 18.5)} ${r1(y + Math.sin(a) * 18.5)}`, O, 1.5)) + line('M32 32 L32 17 M32 32 L23 37', O, 3) + ci(32, 32, 2, O) },
-    ente: { w: 'Ente', syl: 'En-te', svg: el(36, 42, 21, 13, YEL) + ci(20, 28, 10, YEL) + p('M11 26 L2 30 L11 33 Z', '#FF9F43') + `<circle cx="18" cy="25" r="1.8" fill="${O}"/>` + p('M30 38 Q42 32 50 41 Q40 47 30 38 Z', '#F5C400') },
+    // a mallard on the water: a yellow duck would be a Quietscheente or a Küken
+    ente: { w: 'Ente', syl: 'En-te', svg: p('M2 52 Q8 48 14 52 T26 52 T38 52 T50 52 T62 52 V60 H2 Z', BLU, 1.5) + p('M14 36 Q12 52 30 53 H46 Q56 51 61 34 Q55 38 49 36 Q40 30 26 33 Z', '#B8BECC') + p('M14 36 Q13 46 22 50 Q26 40 24 33 Z', '#8A5530')
+      + p('M30 38 Q42 32 52 38 Q44 47 32 44 Z', '#8E96B5') + p('M47 38 L54 41 L49 43 Z', '#3F6FD9', 1.2) + p('M58 30 Q62 31 61 34 Q58 34 57 32 Z', O, 1) + p('M13 35 Q11 26 12 22 L22 22 Q22 30 24 33 Z', '#2E8B57')
+      + line('M12.5 31 Q18 34 23.5 31', '#fff', 2.2) + ci(17, 18, 8, '#2E8B57') + p('M10 17 Q2 17 1 21 Q4 23 11 21 Z', YEL, 1.6) + `<circle cx="15" cy="16" r="1.6" fill="${O}"/><circle cx="15.5" cy="15.5" r=".5" fill="#fff"/>` + shine(19, 13, 3, 1.6) + shine(34, 36, 6, 1.6) },
     rakete: { w: 'Rakete', syl: 'Ra-ke-te', svg: p('M26 48 Q32 63 38 48 Z', '#FFB347') + p('M21 36 L11 52 L21 48 Z', RED) + p('M43 36 L53 52 L43 48 Z', RED) + p('M32 4 Q44 16 44 36 L44 48 L20 48 L20 36 Q20 16 32 4 Z', '#E9EEF6') + p('M32 4 Q39 10 42 19 L22 19 Q25 10 32 4 Z', RED) + ci(32, 30, 5, BLU) },
     banane: { w: 'Banane', syl: 'Ba-na-ne', svg: p('M10 14 Q12 44 38 50 Q52 52 58 44 Q50 46 40 42 Q22 34 17 13 Z', YEL) + p('M10 14 L11 8 L17 13 Z', '#8A5530') + line('M20 22 Q26 38 42 44', '#E0A800', 1.5) },
     tomate: { w: 'Tomate', syl: 'To-ma-te', svg: el(32, 37, 23, 19, RED) + p('M32 14 L36 20 L45 18 L38 24 L32 22 L26 24 L19 18 L28 20 Z', GRN) + line('M32 14 L32 8', O, 3) + shine(22, 30, 5, 3) },
     leiter: { w: 'Leiter', syl: 'Lei-ter', svg: [12, 24, 36, 48].map((y) => rect(19, y, 26, 4, '#D9A066')).join('') + rect(14, 4, 6, 56, '#B8763E', 2) + rect(44, 4, 6, 56, '#B8763E', 2) },
     kerze: { w: 'Kerze', syl: 'Ker-ze', svg: el(32, 58, 16, 3.5, GRY) + rect(24, 26, 16, 31, RED, 2) + line('M32 26 L32 21', O, 2) + p('M32 5 Q40 15 32 22 Q24 15 32 5 Z', '#FFB347') + `<path d="M32 12 Q35 17 32 20 Q29 17 32 12 Z" fill="#FFE27A"/>` + shine(28, 34, 1.5, 5) },
     wolke: { w: 'Wolke', syl: 'Wol-ke', svg: p('M14 46 Q3 46 5 35 Q7 26 18 28 Q20 15 33 18 Q43 11 49 24 Q61 24 59 37 Q58 46 48 46 Z', '#E9EEF6') + shine(26, 26, 5, 3) },
-    hut: { w: 'Hut', syl: 'Hut', svg: el(32, 47, 27, 7, '#3E3E52') + p('M18 47 L20 18 Q32 13 44 18 L46 47 Z', '#55556E') + p('M19 37 L45 37 L46 44 L18 44 Z', RED) },
+    hut: { w: 'Hut', syl: 'Hut', svg: p('M18 40 Q16 24 22 15 Q32 11 42 15 Q48 24 46 40 Z', '#9A6A3E') + line('M24 16 Q32 22 40 16', '#5A3E22', 1.6) + p('M17.5 33 H46.5 L47 40 H17 Z', '#3E2A1C') + p('M3 42 Q6 35 17 38 H47 Q58 35 61 42 Q58 50 32 50 Q6 50 3 42 Z', '#9A6A3E') + line('M8 43 Q32 47 56 43', '#5A3E22', 1.2) + shine(23, 26, 2, 7) },
     gabel: { w: 'Gabel', syl: 'Ga-bel', svg: rect(29, 32, 6, 28, GRY, 3) + [19, 26.5, 34, 41].map((x) => rect(x, 4, 4, 20, GRY, 2)).join('') + p('M18 22 Q18 35 32 35 Q46 35 46 22 Z', GRY) },
     pilz: { w: 'Pilz', syl: 'Pilz', svg: p('M24 36 L22 58 L42 58 L40 36 Z', '#FFF3D6') + p('M6 38 Q8 10 32 10 Q56 10 58 38 Z', RED) + `<g fill="#fff">${[[20, 24, 4], [36, 18, 3.5], [46, 30, 3], [30, 30, 3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` },
     zitrone: { w: 'Zitrone', syl: 'Zi-tro-ne', svg: p('M3 34 Q6 30 9 28 Q16 16 32 16 Q48 16 55 28 Q58 30 61 34 Q58 38 55 40 Q48 52 32 52 Q16 52 9 40 Q6 38 3 34 Z', YEL) + p('M32 16 Q35 5 46 6 Q43 15 32 16 Z', GRN) + shine(22, 26, 6, 3) },
     krone: { w: 'Krone', syl: 'Kro-ne', svg: p('M8 50 L8 18 L20 32 L32 10 L44 32 L56 18 L56 50 Z', YEL) + rect(8, 42, 48, 9, '#F0A500') + ci(32, 46.5, 2.6, RED) + ci(19, 46.5, 2.2, BLU) + ci(45, 46.5, 2.2, BLU) + ci(8, 16, 2.5, YEL) + ci(32, 8, 2.5, YEL) + ci(56, 16, 2.5, YEL) },
     baum: { w: 'Baum', syl: 'Baum', svg: rect(27, 36, 10, 24, BRN, 2) + p('M14 40 Q4 36 8 26 Q6 14 18 12 Q24 2 36 6 Q48 4 52 16 Q62 22 56 32 Q58 42 46 42 Q32 46 14 40 Z', GRN) + shine(22, 20, 6, 3) },
-    nest: { w: 'Nest', syl: 'Nest', svg: el(25, 33, 5, 6.5, '#BFE3FF') + el(39, 33, 5, 6.5, '#BFE3FF') + el(32, 30, 5, 6.5, '#BFE3FF') + p('M3 32 Q4 58 32 58 Q60 58 61 32 Q48 40 32 40 Q16 40 3 32 Z', '#B8763E') + line('M6 38 Q30 50 58 37 M9 46 Q32 55 55 45 M4 33 L1 28 M60 33 L63 27 M14 39 L10 34 M50 39 L55 34 M20 55 L16 60 M44 55 L48 60', '#7A4A20', 1.6) },
+    nest: { w: 'Nest', syl: 'Nest', svg: el(32, 31, 27, 10, '#8A5530') + el(32, 31, 20, 6.5, '#5A3E22') + el(24, 30, 5, 6.5, '#BFE3FF') + el(40, 30, 5, 6.5, '#BFE3FF') + el(32, 28, 5, 6.5, '#BFE3FF') + shine(30, 25, 1.5, 2.4) + shine(22, 27, 1.5, 2.4) + shine(38, 27, 1.5, 2.4)
+      + p('M5 32 Q6 57 32 58 Q58 57 59 32 Q50 41 32 41 Q14 41 5 32 Z', '#B8763E')
+      + line('M3 34 Q20 46 46 40 M14 42 Q34 52 60 36 M7 44 Q24 54 48 50 M18 54 Q40 52 56 44 M10 38 Q30 36 52 46 M2 30 L9 36 M62 30 L55 37 M8 25 L15 31 M56 25 L50 30', '#6E4320', 1.4) },
     herz: { w: 'Herz', syl: 'Herz', svg: p('M32 55C14 42 5 32 5 22a13 13 0 0 1 27-4 13 13 0 0 1 27 4c0 10-9 20-27 33Z', RED) + shine(17, 18, 5, 3) },
     blume: { w: 'Blume', syl: 'Blu-me', svg: line('M32 34 L32 60', O, 5) + line('M32 34 L32 60', GRN, 2.5) + p('M32 50 Q42 40 50 46 Q42 54 32 50 Z', GRN) + around(6, 32, 22, (x, y, a) => ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7')) + ci(32, 22, 6.5, YEL) },
     tasse: { w: 'Tasse', syl: 'Tas-se', svg: el(30, 54, 27, 6, '#E9EEF6') + line('M46 32 Q58 30 56 40 Q53 47 42 45', O, 7) + line('M46 32 Q58 30 56 40 Q53 47 42 45', '#fff', 3) + p('M8 26 H52 Q52 50 30 52 Q8 50 8 26 Z', '#fff') + p('M9 32 H51 Q50 38 49 40 H11 Q10 38 9 32 Z', BLU, 1.5) + el(30, 26, 22, 3.5, '#C9A27A') + line('M22 19 Q18 14 22 9 M34 19 Q30 14 34 9', '#8E96B5', 2) },
@@ -58,7 +67,8 @@ const K12D = (() => {
     wal: { w: 'Wal', syl: 'Wal', svg: line('M20 20 Q18 12 12 9 M20 20 Q22 12 28 9 M20 20 V8', '#2478D6', 2.5) + p('M42 42 Q54 36 53 22 Q46 22 41 15 Q50 14 55 18 Q58 13 63 11 Q61 20 57 24 Q59 38 47 47 Z', '#3F7FC7') + p('M3 40 Q3 23 24 22 Q42 22 50 37 Q46 51 28 52 Q5 53 3 40 Z', '#4A90D9') + p('M7 45 Q24 50 45 44 Q38 51 27 51 Q12 51 7 45 Z', '#BFE3FF', 1.5) + line('M4 41 Q11 43 17 41', O, 1.5) + p('M24 46 Q30 54 36 50 Q32 46 24 46 Z', '#3F7FC7', 1.5) + `<circle cx="13" cy="35" r="2" fill="${O}"/>` + shine(24, 28, 7, 2.5) },
     topf: { w: 'Topf', syl: 'Topf', svg: rect(4, 29, 9, 5, '#8E96B5', 2) + rect(51, 29, 9, 5, '#8E96B5', 2) + rect(11, 25, 42, 30, GRY, 4) + p('M9 26 Q32 12 55 26 Z', '#C9CEDD') + ci(32, 16, 3, '#8E96B5') + shine(20, 34, 2, 6) },
   };
-  const svgOf = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${PICS[id].svg}</svg>`;
+  const DEFS = `<defs>${[...USED].map((c) => `<linearGradient id="kd${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
+  const svgOf = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${DEFS}${PICS[id].svg}</svg>`;
   // the picture in the task, with its name for the read-aloud voice (it reads .prompt, not the drawing)
   const picOf = (id) => `<div class="pic" style="max-width:130px">${svgOf(id)}</div><span class="prompt sr-only">${PICS[id].w}</span>`;
   const optPic = (id) => `${svgOf(id)}<span class="sr-only">${PICS[id].w}</span>`;
