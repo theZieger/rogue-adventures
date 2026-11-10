@@ -175,10 +175,11 @@ const MJ = (() => {
     ['ein Hühnerei', '60 g', '6 kg', '1 g'], ['ein Pony', '200 kg', '2 kg', '20 g'], ['ein Kind aus der 3. Klasse', '30 kg', '300 g', '300 kg'],
   ];
   const PER = [['Ein Stück Butter', 'Stück Butter', 250], ['Eine Tafel Schokolade', 'Tafeln Schokolade', 100], ['Ein Glas Honig', 'Gläser Honig', 500], ['Ein Apfel', 'Äpfel', 125], ['Ein Beutel Bonbons', 'Beutel Bonbons', 200]];
-  const SCALE_THINGS = [['der Kürbis', 'Kürbis'], ['das Paket', 'Paket'], ['der Sack Nüsse', 'Sack Nüsse'], ['das Brot', 'Brot'], ['die Melone', 'Melone']];
+  // gram ranges a real object of that kind weighs, so the scale never shows a 20-g loaf of bread
+  const SCALE_THINGS = [['der Apfel', 'Apfel', 100, 250], ['die Tüte Bonbons', 'Bonbons', 100, 300], ['das Glas Honig', 'Honig', 400, 600], ['das Paket', 'Paket', 200, 990], ['der Sack Nüsse', 'Sack Nüsse', 200, 990], ['das Brot', 'Brot', 500, 990]];
   function genMasse(t) {
     if (t === 1) return pick([
-      () => { let ws; do { ws = Array.from({ length: rnd(2, 4) }, () => pick([500, 200, 200, 100, 50, 20, 10])).sort((a, b) => b - a); } while (ws.reduce((a, b) => a + b, 0) >= 1000); const s = ws.reduce((a, b) => a + b, 0), th = pick(SCALE_THINGS);
+      () => { const th = pick(SCALE_THINGS); let ws, s; do { ws = Array.from({ length: rnd(2, 4) }, () => pick([500, 200, 200, 100, 50, 20, 10])).sort((a, b) => b - a); s = ws.reduce((a, b) => a + b, 0); } while (s < th[2] || s > th[3]);
         return num('scale', `Die Waage ist im Gleichgewicht. Wie viel Gramm wiegt ${th[0]}?`, scaleSVG(ws, th[1]), [s], ['g'], `${s} g`); },
       () => conv(`${rnd(1, 9)} kg`, 'g'),
       () => conv(`${1000 * rnd(2, 9)} g`, 'kg'),

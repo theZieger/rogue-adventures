@@ -199,17 +199,17 @@ const MK = (() => {
     { id: 'lk10', mod: 'ltk', g: 'herkunft', q: 'Die Spanier lernten die Kartoffel im ___ Jahrhundert bei den Inkas in Peru kennen.', o: ['16.', '20.', '10.'], a: 0 },
     // Lückentext: Ernte
     { id: 'le1', mod: 'ltk', g: 'ernte', q: 'Früher mussten die Kartoffeln mit großen ___ aus der Erde herausgehoben werden.', o: ['Gabeln', 'Maschinen', 'Löffeln'], a: 0 },
-    { id: 'le2', mod: 'ltk', g: 'ernte', q: 'Man ließ sie kurze Zeit auf den Feldern ___.', o: ['trocknen', 'wachsen', 'schlafen'], a: 0 },
+    { id: 'le2', mod: 'ltk', g: 'ernte', q: 'Nach dem Ausgraben ließ man die Kartoffeln kurze Zeit auf den Feldern ___.', o: ['trocknen', 'wachsen', 'schlafen'], a: 0 },
     { id: 'le3', mod: 'ltk', g: 'ernte', q: 'Dann wurden sie aufgelesen und in Körbe und ___ gefüllt.', o: ['Säcke', 'Flaschen', 'Tassen'], a: 0 },
     { id: 'le4', mod: 'ltk', g: 'ernte', q: 'Das Auflesen in ___ Haltung war eine mühsame Arbeit.', o: ['gebückter', 'aufrechter', 'sitzender'], a: 0 },
     { id: 'le5', mod: 'ltk', g: 'ernte', q: 'Arme Leute und auch ___ halfen den Bauern beim Auflesen.', o: ['Kinder', 'Könige', 'Maschinen'], a: 0 },
-    { id: 'le6', mod: 'ltk', g: 'ernte', q: 'Als Lohn bekamen sie ___.', o: ['Kartoffeln', 'Geld', 'Brot'], a: 0 },
+    { id: 'le6', mod: 'ltk', g: 'ernte', q: 'Wer früher beim Kartoffellesen half, bekam als Lohn oft ___.', o: ['Kartoffeln', 'Spielzeug', 'Steine'], a: 0 },
     { id: 'le7', mod: 'ltk', g: 'ernte', q: 'Heute werden die Kartoffeln mit ___ geerntet.', o: ['Maschinen', 'Gabeln', 'Händen'], a: 0 },
     { id: 'le8', mod: 'ltk', g: 'ernte', q: 'Große ___ fahren über das Feld und ernten die Kartoffeln.', o: ['Kartoffelroder', 'Busse', 'Rasenmäher'], a: 0 },
     { id: 'le9', mod: 'ltk', g: 'ernte', q: 'Sie befreien die Kartoffeln gleichzeitig von der anhaftenden ___.', o: ['Erde', 'Schale', 'Farbe'], a: 0 },
     { id: 'le10', mod: 'ltk', g: 'ernte', q: 'Mit Hilfe einer ___ werden sie der Größe nach sortiert.', o: ['Sortiermaschine', 'Waschmaschine', 'Nähmaschine'], a: 0 },
     { id: 'le11', mod: 'ltk', g: 'ernte', q: 'Nach dem Sortieren kommen die Kartoffeln in ___.', o: ['Säcke', 'Flaschen', 'Gläser'], a: 0 },
-    { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Nur die Aussortierung unförmiger und ___ Kartoffeln geschieht noch von Hand.', o: ['grüner', 'kleiner', 'dicker'], a: 0 },
+    { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Grüne Kartoffeln sind giftig. Nur unförmige und ___ Kartoffeln sortiert man noch mit der Hand aus.', o: ['grüne', 'gelbe', 'saubere'], a: 0 },
     // Wissen: Käfer + Herkunft + Ernte (rf / mc); kmc1–6 oben gehören auch dazu
     { id: 'kw1', mod: 'wissen', g: 'kaefer', q: 'Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', rf: true, a: true },
     { id: 'kw2', mod: 'wissen', g: 'kaefer', q: 'Wie viele Eier legt ein Kartoffelkäferweibchen?', o: ['Mehrere hundert', 'Nur eins', 'Etwa drei'], a: 0 },
@@ -259,7 +259,7 @@ const MK = (() => {
     { id: 'ma12', mod: 'maerchen', g: 'maerchen', q: 'Am Ende bekommt der Teufel den Schatz.', rf: true, a: false, why: 'Der Bauer holt sich den Schatz.' },
     { id: 'ma13', mod: 'maerchen', g: 'maerchen', q: 'Was bekommt der Teufel im zweiten Jahr?', o: ['Nur die Stoppeln', 'Die vollen Halme', 'Die Kartoffeln'], a: 0 },
     { id: 'ma14', mod: 'maerchen', g: 'maerchen', q: 'Wohin fährt der Teufel am Ende?', o: ['In eine Felsenschlucht', 'In die Kirche', 'Nach Peru'], a: 0 },
-    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Wer hat das Märchen vom Bauern und dem Teufel aufgeschrieben?', o: ['Die Brüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
+    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Nach wessen Märchen ist die Geschichte vom Bauern und dem Teufel erzählt?', o: ['Die Brüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
   );
   const K_MODULES = {
     parts: { name: 'Teile benennen', icon: '🥔', maxTier: 2, worldCap: [2, 2], dmg: 12 },

@@ -115,7 +115,7 @@ const ME = (() => {
     { id: 'iwmc18', mod: 'mc', g: 'verschieden', q: 'Worin können sich Menschen unterscheiden?', o: ['In Sprache, Aussehen und Hobbys', 'Sie unterscheiden sich gar nicht', 'Nur in der Schuhgröße'], a: 0 },
     { id: 'iwmc19', mod: 'mc', g: 'verschieden', q: 'Ben möchte tanzen lernen. Ein Kind sagt: „Tanzen ist nur was für Mädchen.“ Was stimmt?', o: ['Das ist ein Vorurteil. Alle Kinder dürfen tanzen.', 'Das stimmt.', 'Ben muss stattdessen Fußball spielen.'], a: 0 },
     { id: 'iwlt8', mod: 'lt', g: 'verschieden', q: 'Gemeinsames ___, Verschiedenes kann bereichern.', o: ['verbindet', 'trennt', 'ärgert'], a: 0 },
-    { id: 'iwlt9', mod: 'lt', g: 'verschieden', q: 'Alle Kinder dürfen alles ___.', o: ['ausprobieren', 'verbieten', 'vergessen'], a: 0 },
+    { id: 'iwlt9', mod: 'lt', g: 'verschieden', q: 'Mädchen und Jungen dürfen alle Hobbys ___.', o: ['ausprobieren', 'verbieten', 'vergessen'], a: 0 },
     { id: 'iwdef12', mod: 'def', g: 'verschieden', q: 'Was ist ein Vorurteil?', o: ['Eine Meinung über Menschen, die man sich bildet, ohne sie zu kennen', 'Ein Urteil vor Gericht', 'Ein Spiel vor dem Unterricht'], a: 0 },
     { id: 'iwdef13', mod: 'def', g: 'verschieden', q: 'Was bedeutet „Herkunft“?', o: ['Woher ein Mensch oder seine Familie kommt', 'Wohin jemand in den Urlaub fährt', 'Wie schnell jemand laufen kann'], a: 0 },
     { id: 'iwdef14', mod: 'def', g: 'verschieden', q: 'Was bedeutet „bereichern“?', o: ['Etwas wertvoller und vielfältiger machen', 'Etwas kaputt machen', 'Etwas wegnehmen'], a: 0 },

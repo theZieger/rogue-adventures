@@ -18,6 +18,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
 - Viele Bilder sind neu gezeichnet, und kleine Symbole sehen überall gleich aus.
 
+### Behoben
+- Einige Aufgaben waren unklar oder hatten zwei richtige Antworten, zum Beispiel an der Waage und beim Parallelogramm.
+
 ## 2026-11-09
 
 ### Neu

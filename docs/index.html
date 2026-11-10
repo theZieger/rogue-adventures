@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="12c76c425350">
+<meta name="app-version" content="18f91ef46c66">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1679,14 +1679,14 @@ const MQ = (() => {
       const no = shuffle(SHAPES.filter((s) => !yes.includes(s))).sort((a, b) => (a.startsWith('Dreieck') === tri ? 0 : 1) - (b.startsWith('Dreieck') === tri ? 0 : 1));
       const pts = polyPoints(id);
       return { kind: 'choice', q: 'Wie heißt diese Figur?', pic: polySVG(pts), options: shuffle([id, no[0], pick(no.slice(1, 3))]), answer: id, shape: id, pts, cols: 1,
-        why: { Quadrat: 'Vier gleich lange Seiten und vier rechte Winkel.', Rechteck: 'Vier rechte Winkel, aber nicht alle Seiten gleich lang.', Parallelogramm: 'Gegenüberliegende Seiten sind parallel, es gibt keinen rechten Winkel.', 'Dreieck mit rechtem Winkel': 'Drei Ecken, eine davon ist ein rechter Winkel.', 'Dreieck ohne rechten Winkel': 'Drei Ecken, keine davon ist ein rechter Winkel.', 'Viereck ohne parallele Seiten': 'Vier Ecken, aber keine zwei Seiten sind parallel.' }[id], sig: 'n' + id + JSON.stringify(pts) };
+        why: { Quadrat: 'Vier gleich lange Seiten und vier rechte Winkel.', Rechteck: 'Vier rechte Winkel, aber nicht alle Seiten gleich lang.', Parallelogramm: 'Gegenüberliegende Seiten sind parallel. Dieses hat keinen rechten Winkel – hätte es welche, wäre es ein Rechteck.', 'Dreieck mit rechtem Winkel': 'Drei Ecken, eine davon ist ein rechter Winkel.', 'Dreieck ohne rechten Winkel': 'Drei Ecken, keine davon ist ein rechter Winkel.', 'Viereck ohne parallele Seiten': 'Vier Ecken, aber keine zwei Seiten sind parallel.' }[id], sig: 'n' + id + JSON.stringify(pts) };
     }
     if (Math.random() < 0.5) {
       const [q, yes] = pick(PROPS); const right = pick(yes);
       return { kind: 'choice', q, options: shuffle([right].concat(shuffle(PROP_FALSE(q, yes)).slice(0, 2))), answer: right, yes, cols: 1, sig: q };
     }
     const [what, val, opts] = pick(COUNTS); const id = pick(Object.keys(val)); const right = String(val[id]);
-    return { kind: 'choice', q: `Wie viele ${what} hat ein ${id}?`, pic: polySVG(polyPoints(id)), options: [right].concat(shuffle(opts.filter((o) => o !== right)).slice(0, 2)).sort(), answer: right, shape: id, cols: 1, sig: what + id };
+    return { kind: 'choice', q: `Wie viele ${what} hat dieses ${id}?`, pic: polySVG(polyPoints(id)), options: [right].concat(shuffle(opts.filter((o) => o !== right)).slice(0, 2)).sort(), answer: right, shape: id, cols: 1, sig: what + id };
   }
 
   function bauGenerate(mod, tier) {
@@ -1710,8 +1710,8 @@ const MQ = (() => {
     'spiegel:1': { title: 'Achsensymmetrie', steps: ['Eine Figur ist achsensymmetrisch, wenn beide Hälften beim Umklappen genau aufeinanderpassen. Die Linie dazwischen heißt Spiegelachse.', 'Prüfe Kästchen für Kästchen: Ein Kästchen 2 Felder links von der Linie braucht ein Kästchen 2 Felder rechts davon, in derselben Reihe.', 'Fehlt auch nur ein Spiegelbild, ist die Figur nicht achsensymmetrisch.'] },
     'spiegel:2': { title: 'Spiegelbild ergänzen', steps: ['Die rechte Hälfte ist das Spiegelbild der linken Hälfte.', 'Was direkt an der Spiegelachse liegt, liegt auch im Spiegelbild direkt an der Achse. Was weit weg ist, bleibt weit weg.', 'Beispiel: Ein Kästchen ganz links in der obersten Reihe kommt im Spiegelbild ganz nach rechts, auch in die oberste Reihe.'] },
     'bewegung:1': { title: 'Spiegeln, drehen, schieben', steps: ['Verschoben: Die Figur liegt genauso da wie vorher, nur an einer anderen Stelle.', 'Gedreht: Die Figur wurde um eine Ecke gedreht, zum Beispiel eine Vierteldrehung. Sie wurde nicht umgeklappt.', 'Gespiegelt: Die Figur wurde umgeklappt. Zeigt bei einem L der Fuß vorher nach rechts und jetzt nach links, ist es gespiegelt.'] },
-    'vieleck:1': { title: 'Dreiecke und Vierecke', steps: ['Quadrat: vier gleich lange Seiten und vier rechte Winkel. Rechteck: vier rechte Winkel, gegenüber gleich lange Seiten.', 'Parallelogramm: Gegenüberliegende Seiten sind parallel, es gibt keinen rechten Winkel.', 'Dreiecke haben drei Ecken. Beim Dreieck mit rechtem Winkel bilden zwei Seiten eine Ecke wie bei einem Blatt Papier.', 'Beispiel: 3 Kästchen lang, 3 Kästchen hoch, alle Ecken rechte Winkel: Das ist ein Quadrat.'] },
-    'vieleck:2': { title: 'Eigenschaften von Vierecken', steps: ['Rechteck und Quadrat haben vier rechte Winkel und zwei Paar parallele Seiten.', 'Ein Parallelogramm hat auch zwei Paar parallele Seiten, aber keinen rechten Winkel.', 'Ein Dreieck mit rechtem Winkel hat genau 1 rechten Winkel. Ein Dreieck hat nie parallele Seiten.'] },
+    'vieleck:1': { title: 'Dreiecke und Vierecke', steps: ['Quadrat: vier gleich lange Seiten und vier rechte Winkel. Rechteck: vier rechte Winkel, gegenüber gleich lange Seiten.', 'Parallelogramm: Gegenüberliegende Seiten sind parallel. Hat es rechte Winkel, ist es ein Rechteck.', 'Dreiecke haben drei Ecken. Beim Dreieck mit rechtem Winkel bilden zwei Seiten eine Ecke wie bei einem Blatt Papier.', 'Beispiel: 3 Kästchen lang, 3 Kästchen hoch, alle Ecken rechte Winkel: Das ist ein Quadrat.'] },
+    'vieleck:2': { title: 'Eigenschaften von Vierecken', steps: ['Rechteck und Quadrat haben vier rechte Winkel und zwei Paar parallele Seiten.', 'Ein Parallelogramm hat auch zwei Paar parallele Seiten. Das Parallelogramm im Bild hat keinen rechten Winkel.', 'Ein Dreieck mit rechtem Winkel hat genau 1 rechten Winkel. Ein Dreieck hat nie parallele Seiten.'] },
     'umfang:1': { title: 'Umfang', steps: ['Der Umfang ist der Weg einmal ganz um die Fläche herum.', 'Zähle jede Kästchenseite am Rand. Starte an einer Ecke und fahre mit dem Finger herum.', 'Rechteck 3 Kästchen lang und 2 hoch: 3 + 2 + 3 + 2 = 10. Der Umfang ist 10 Kästchenseiten.'] },
   };
   const BAU = {
@@ -1936,10 +1936,11 @@ const MJ = (() => {
     ['ein Hühnerei', '60 g', '6 kg', '1 g'], ['ein Pony', '200 kg', '2 kg', '20 g'], ['ein Kind aus der 3. Klasse', '30 kg', '300 g', '300 kg'],
   ];
   const PER = [['Ein Stück Butter', 'Stück Butter', 250], ['Eine Tafel Schokolade', 'Tafeln Schokolade', 100], ['Ein Glas Honig', 'Gläser Honig', 500], ['Ein Apfel', 'Äpfel', 125], ['Ein Beutel Bonbons', 'Beutel Bonbons', 200]];
-  const SCALE_THINGS = [['der Kürbis', 'Kürbis'], ['das Paket', 'Paket'], ['der Sack Nüsse', 'Sack Nüsse'], ['das Brot', 'Brot'], ['die Melone', 'Melone']];
+  // gram ranges a real object of that kind weighs, so the scale never shows a 20-g loaf of bread
+  const SCALE_THINGS = [['der Apfel', 'Apfel', 100, 250], ['die Tüte Bonbons', 'Bonbons', 100, 300], ['das Glas Honig', 'Honig', 400, 600], ['das Paket', 'Paket', 200, 990], ['der Sack Nüsse', 'Sack Nüsse', 200, 990], ['das Brot', 'Brot', 500, 990]];
   function genMasse(t) {
     if (t === 1) return pick([
-      () => { let ws; do { ws = Array.from({ length: rnd(2, 4) }, () => pick([500, 200, 200, 100, 50, 20, 10])).sort((a, b) => b - a); } while (ws.reduce((a, b) => a + b, 0) >= 1000); const s = ws.reduce((a, b) => a + b, 0), th = pick(SCALE_THINGS);
+      () => { const th = pick(SCALE_THINGS); let ws, s; do { ws = Array.from({ length: rnd(2, 4) }, () => pick([500, 200, 200, 100, 50, 20, 10])).sort((a, b) => b - a); s = ws.reduce((a, b) => a + b, 0); } while (s < th[2] || s > th[3]);
         return num('scale', `Die Waage ist im Gleichgewicht. Wie viel Gramm wiegt ${th[0]}?`, scaleSVG(ws, th[1]), [s], ['g'], `${s} g`); },
       () => conv(`${rnd(1, 9)} kg`, 'g'),
       () => conv(`${1000 * rnd(2, 9)} g`, 'kg'),
@@ -2615,8 +2616,8 @@ const ENG = {
   luecken: [
     ['I have ___ a dog.', 'got', 'get', 'go'],
     ['This is my ___.', 'sister', 'blue', 'sing'],
-    ['Can I have an ___, please?', 'apple', 'banana', 'cake'],
-    ['Can I have a ___, please?', 'sandwich', 'egg', 'ice cream'],
+    ['Can I have an ___, please?', 'apple', 'chair', 'Friday'],
+    ['Can I have a ___, please?', 'sandwich', 'Monday', 'green'],
     ['Sit ___, please.', 'down', 'open', 'blue'],
     ['Open your ___.', 'books', 'red', 'go'],
     ['Close the ___, please.', 'door', 'happy', 'eat'],
@@ -3170,17 +3171,17 @@ const MK = (() => {
     { id: 'lk10', mod: 'ltk', g: 'herkunft', q: 'Die Spanier lernten die Kartoffel im ___ Jahrhundert bei den Inkas in Peru kennen.', o: ['16.', '20.', '10.'], a: 0 },
     // Lückentext: Ernte
     { id: 'le1', mod: 'ltk', g: 'ernte', q: 'Früher mussten die Kartoffeln mit großen ___ aus der Erde herausgehoben werden.', o: ['Gabeln', 'Maschinen', 'Löffeln'], a: 0 },
-    { id: 'le2', mod: 'ltk', g: 'ernte', q: 'Man ließ sie kurze Zeit auf den Feldern ___.', o: ['trocknen', 'wachsen', 'schlafen'], a: 0 },
+    { id: 'le2', mod: 'ltk', g: 'ernte', q: 'Nach dem Ausgraben ließ man die Kartoffeln kurze Zeit auf den Feldern ___.', o: ['trocknen', 'wachsen', 'schlafen'], a: 0 },
     { id: 'le3', mod: 'ltk', g: 'ernte', q: 'Dann wurden sie aufgelesen und in Körbe und ___ gefüllt.', o: ['Säcke', 'Flaschen', 'Tassen'], a: 0 },
     { id: 'le4', mod: 'ltk', g: 'ernte', q: 'Das Auflesen in ___ Haltung war eine mühsame Arbeit.', o: ['gebückter', 'aufrechter', 'sitzender'], a: 0 },
     { id: 'le5', mod: 'ltk', g: 'ernte', q: 'Arme Leute und auch ___ halfen den Bauern beim Auflesen.', o: ['Kinder', 'Könige', 'Maschinen'], a: 0 },
-    { id: 'le6', mod: 'ltk', g: 'ernte', q: 'Als Lohn bekamen sie ___.', o: ['Kartoffeln', 'Geld', 'Brot'], a: 0 },
+    { id: 'le6', mod: 'ltk', g: 'ernte', q: 'Wer früher beim Kartoffellesen half, bekam als Lohn oft ___.', o: ['Kartoffeln', 'Spielzeug', 'Steine'], a: 0 },
     { id: 'le7', mod: 'ltk', g: 'ernte', q: 'Heute werden die Kartoffeln mit ___ geerntet.', o: ['Maschinen', 'Gabeln', 'Händen'], a: 0 },
     { id: 'le8', mod: 'ltk', g: 'ernte', q: 'Große ___ fahren über das Feld und ernten die Kartoffeln.', o: ['Kartoffelroder', 'Busse', 'Rasenmäher'], a: 0 },
     { id: 'le9', mod: 'ltk', g: 'ernte', q: 'Sie befreien die Kartoffeln gleichzeitig von der anhaftenden ___.', o: ['Erde', 'Schale', 'Farbe'], a: 0 },
     { id: 'le10', mod: 'ltk', g: 'ernte', q: 'Mit Hilfe einer ___ werden sie der Größe nach sortiert.', o: ['Sortiermaschine', 'Waschmaschine', 'Nähmaschine'], a: 0 },
     { id: 'le11', mod: 'ltk', g: 'ernte', q: 'Nach dem Sortieren kommen die Kartoffeln in ___.', o: ['Säcke', 'Flaschen', 'Gläser'], a: 0 },
-    { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Nur die Aussortierung unförmiger und ___ Kartoffeln geschieht noch von Hand.', o: ['grüner', 'kleiner', 'dicker'], a: 0 },
+    { id: 'le12', mod: 'ltk', g: 'ernte', q: 'Grüne Kartoffeln sind giftig. Nur unförmige und ___ Kartoffeln sortiert man noch mit der Hand aus.', o: ['grüne', 'gelbe', 'saubere'], a: 0 },
     // Wissen: Käfer + Herkunft + Ernte (rf / mc); kmc1–6 oben gehören auch dazu
     { id: 'kw1', mod: 'wissen', g: 'kaefer', q: 'Früher war der Kartoffelkäfer die größte Bedrohung für die Kartoffelpflanze.', rf: true, a: true },
     { id: 'kw2', mod: 'wissen', g: 'kaefer', q: 'Wie viele Eier legt ein Kartoffelkäferweibchen?', o: ['Mehrere hundert', 'Nur eins', 'Etwa drei'], a: 0 },
@@ -3230,7 +3231,7 @@ const MK = (() => {
     { id: 'ma12', mod: 'maerchen', g: 'maerchen', q: 'Am Ende bekommt der Teufel den Schatz.', rf: true, a: false, why: 'Der Bauer holt sich den Schatz.' },
     { id: 'ma13', mod: 'maerchen', g: 'maerchen', q: 'Was bekommt der Teufel im zweiten Jahr?', o: ['Nur die Stoppeln', 'Die vollen Halme', 'Die Kartoffeln'], a: 0 },
     { id: 'ma14', mod: 'maerchen', g: 'maerchen', q: 'Wohin fährt der Teufel am Ende?', o: ['In eine Felsenschlucht', 'In die Kirche', 'Nach Peru'], a: 0 },
-    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Wer hat das Märchen vom Bauern und dem Teufel aufgeschrieben?', o: ['Die Brüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
+    { id: 'ma15', mod: 'maerchen', g: 'maerchen', q: 'Nach wessen Märchen ist die Geschichte vom Bauern und dem Teufel erzählt?', o: ['Die Brüder Grimm', 'Martin Luther', 'Josef Guggenmos'], a: 0 },
   );
   const K_MODULES = {
     parts: { name: 'Teile benennen', icon: '🥔', maxTier: 2, worldCap: [2, 2], dmg: 12 },
@@ -4356,7 +4357,7 @@ const MS = (() => {
     { id: 'kobr5', mod: 'brot', g: 'brot', q: 'Für Vollkornmehl wird das ganze Korn mit der Schale gemahlen.', rf: true, a: true },
     { id: 'kobr6', mod: 'brot', g: 'brot', q: 'Wie heißen die trockenen Halme, die nach dem Dreschen übrig bleiben?', o: ['Stroh', 'Heu', 'Mehl'], a: 0 },
     { id: 'kobr7', mod: 'brot', g: 'brot', q: 'Getreide wird bei uns im Winter geerntet.', rf: true, a: false, why: 'Getreide wird im Sommer geerntet.' },
-    { id: 'kobr8', mod: 'brot', g: 'brot', q: 'Wann wird Wintergetreide gesät?', o: ['Im Herbst', 'Im Sommer', 'Im Juli'], a: 0 },
+    { id: 'kobr8', mod: 'brot', g: 'brot', q: 'Wann wird Wintergetreide gesät?', o: ['Im Herbst', 'Im Frühling', 'Im Sommer'], a: 0 },
     { id: 'kobr9', mod: 'brot', g: 'brot', q: 'Wofür braucht man das Stroh?', o: ['Als Einstreu im Stall', 'Zum Brotbacken', 'Als Saatgut'], a: 0 },
     { id: 'kobr10', mod: 'brot', g: 'brot', q: 'Was macht der Teig, wenn Hefe oder Sauerteig darin ist?', o: ['Er geht auf und wird locker', 'Er wird hart wie Stein', 'Er wird grün'], a: 0 },
     { id: 'kobr11', mod: 'brot', g: 'brot', q: 'Wie nennt man das Trennen der Körner von Halm und Ähre?', o: ['Dreschen', 'Mahlen', 'Kneten'], a: 0 },
@@ -4523,7 +4524,7 @@ const MS = (() => {
     { id: 'werg2', mod: 'regel', g: 'regeln', q: 'Morgenrot – ___.', o: ['Schlechtwetterbot’', 'Schönwetterbot’', 'Sonnenscheinbot’'], a: 0 },
     { id: 'werg3', mod: 'regel', g: 'regeln', q: 'April, April, der macht, was er ___.', o: ['will', 'kann', 'soll'], a: 0 },
     { id: 'werg4', mod: 'regel', g: 'regeln', q: 'Ist der Mai kühl und nass, füllt’s dem Bauern Scheun’ und ___.', o: ['Fass', 'Haus', 'Glas'], a: 0 },
-    { id: 'werg5', mod: 'regel', g: 'regeln', q: 'Kräht der Hahn auf dem Mist, ändert sich das Wetter oder es bleibt, wie es ___.', o: ['ist', 'war', 'wird'], a: 0 },
+    { id: 'werg5', mod: 'regel', g: 'regeln', q: 'Kräht der Hahn auf dem Mist, ändert sich das Wetter oder es bleibt, wie es ___.', o: ['ist', 'fällt', 'will'], a: 0 },
     { id: 'werg6', mod: 'regel', g: 'regeln', q: 'Ist der Siebenschläfer nass, regnet’s ohne ___.', o: ['Unterlass', 'Regenschirm', 'Pause'], a: 0 },
     { id: 'werg7', mod: 'regel', g: 'regeln', q: 'Wenn die Schwalben niedrig fliegen, werden wir bald ___ kriegen.', o: ['Regen', 'Sonne', 'Schnee'], a: 0 },
     { id: 'werg8', mod: 'regel', g: 'regeln', q: 'Mairegen bringt ___.', o: ['Segen', 'Schnee', 'Hagel'], a: 0 },
@@ -5004,7 +5005,7 @@ const MS2 = (() => {
   };
   const SI_POOL = partPool('auge', 'parts', 'auge', 'sa_').concat(partPool('ohr', 'parts', 'ohr', 'so_'), [
     // Die fünf Sinne
-    { id: 'sise1', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne hat der Mensch?', o: ['5', '3', '10'], a: 0 },
+    { id: 'sise1', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne lernst du in der Schule kennen?', o: ['5', '3', '10'], a: 0 },
     { id: 'sise2', mod: 'sinne', g: 'sinne', q: 'Welches ist das größte Sinnesorgan?', o: ['Die Haut', 'Das Auge', 'Die Nase'], a: 0 },
     { id: 'sise3', mod: 'sinne', g: 'sinne', q: 'Wohin schicken die Sinnesorgane ihre Meldungen?', o: ['An das Gehirn', 'An den Magen', 'An die Füße'], a: 0 },
     { id: 'sise4', mod: 'sinne', g: 'sinne', q: 'Was kann die Zunge schmecken?', o: ['Süß, sauer, salzig und bitter', 'Laut und leise', 'Hell und dunkel'], a: 0 },
@@ -5791,7 +5792,7 @@ const MS3 = (() => {
     { id: 'wisi6', mod: 'sinne', g: 'sinne', q: 'Mit welchem Sinn hörst du das Summen der Bienen?', o: ['Mit dem Hören', 'Mit dem Tasten', 'Mit dem Schmecken'], a: 0 },
     { id: 'wisi7', mod: 'sinne', g: 'sinne', q: 'Was spürst du, wenn du mit geschlossenen Augen über die Gräser streichst?', o: ['Wie weich oder rau sie sind', 'Welche Farbe sie haben', 'Wie sie heißen'], a: 0 },
     { id: 'wisi8', mod: 'sinne', g: 'sinne', q: 'Warum solltest du auf einer blühenden Wiese vorsichtig barfuß laufen?', o: ['Auf den Blüten sitzen Bienen', 'Das Gras ist zu heiß', 'Die Wiese ist zu laut'], a: 0 },
-    { id: 'wisi9', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne hat der Mensch?', o: ['5', '3', '7'], a: 0 },
+    { id: 'wisi9', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne lernst du in der Schule kennen?', o: ['5', '3', '7'], a: 0 },
   ];
   const WI_MODULES = {
     pflanze: { name: 'Wiesenpflanzen', icon: '🌼', maxTier: 2, worldCap: [2], dmg: 12 },
@@ -5873,7 +5874,7 @@ const MS3 = (() => {
     ['Kohleofen im Zimmer', 'Heizung'], ['Pferdewagen', 'Auto'], ['Plumpsklo im Hof', 'Toilette mit Spülung'], ['Waschschüssel und Krug', 'Dusche'],
   ];
   const LINES = [
-    { qid: 'zlver_', note: 'zeit', q: 'Was gab es zuerst? Tippe vom ältesten zum neuesten an.', items: [{ id: 'v1', text: 'Pferdewagen' }, { id: 'v2', text: 'Dampflok' }, { id: 'v3', text: 'Auto' }, { id: 'v4', text: 'Elektroauto' }] },
+    { qid: 'zlver_', note: 'zeit', q: 'Was gab es zuerst? Tippe vom ältesten zum neuesten an.', items: [{ id: 'v1', text: 'Pferdewagen' }, { id: 'v2', text: 'Dampflok' }, { id: 'v3', text: 'Auto' }, { id: 'v4', text: 'Auto, das von selbst fährt' }] },
     { qid: 'zlnach_', note: 'zeit', q: 'Wie haben Menschen sich Nachrichten geschickt? Tippe vom ältesten zum neuesten an.', items: [{ id: 'n1', text: 'Brief' }, { id: 'n2', text: 'Telefon' }, { id: 'n3', text: 'Handy' }, { id: 'n4', text: 'Smartphone' }] },
     { qid: 'zllic_', note: 'zeit', q: 'Womit wurde es abends hell? Tippe vom ältesten zum neuesten an.', items: [{ id: 'l1', text: 'Kerze' }, { id: 'l2', text: 'Petroleumlampe' }, { id: 'l3', text: 'Glühbirne' }, { id: 'l4', text: 'LED-Lampe' }] },
     { qid: 'zlmus_', note: 'zeit', q: 'Womit hörte man Musik? Tippe vom ältesten zum neuesten an.', items: [{ id: 'u1', text: 'Grammophon' }, { id: 'u2', text: 'Kassettenrekorder' }, { id: 'u3', text: 'CD-Spieler' }, { id: 'u4', text: 'Musik aus dem Internet' }] },
@@ -5926,7 +5927,7 @@ const MS3 = (() => {
     { id: 'fral7', mod: 'alltag', g: 'berufe', q: 'Was machte früher der Schmied?', o: ['Er schmiedete Hufeisen und Werkzeug aus Eisen', 'Er backte Brot', 'Er nähte Kleider'], a: 0 },
     { id: 'fral8', mod: 'alltag', g: 'berufe', q: 'Früher arbeiteten viel mehr Menschen in der Landwirtschaft als heute.', rf: true, a: true },
     { id: 'fral9', mod: 'alltag', g: 'berufe', q: 'Wer arbeitet heute außer Haus?', o: ['Frauen und Männer', 'Nur Männer', 'Nur Frauen'], a: 0 },
-    { id: 'fral10', mod: 'alltag', g: 'berufe', q: 'Früher arbeiteten meist nur die Männer außer Haus.', rf: true, a: true },
+    { id: 'fral10', mod: 'alltag', g: 'berufe', q: 'Vor etwa 100 Jahren arbeiteten meist nur die Männer außer Haus.', rf: true, a: true },
     { id: 'fral11', mod: 'alltag', g: 'berufe', q: 'Welchen Beruf gab es früher noch nicht?', o: ['Programmiererin am Computer', 'Bäcker', 'Müllerin'], a: 0 },
     { id: 'fral12', mod: 'alltag', g: 'kinder', q: 'Wen kannst du fragen, wenn du wissen willst, wie Kinder früher gelebt haben?', o: ['Oma und Opa', 'Ein Baby', 'Den Wetterbericht'], a: 0 },
     { id: 'fral13', mod: 'alltag', g: 'kinder', q: 'Wo kann man sich Dinge aus früherer Zeit ansehen?', o: ['Im Heimatmuseum', 'Im Supermarkt', 'Im Schwimmbad'], a: 0 },
@@ -6175,7 +6176,7 @@ const ME = (() => {
     { id: 'iwmc18', mod: 'mc', g: 'verschieden', q: 'Worin können sich Menschen unterscheiden?', o: ['In Sprache, Aussehen und Hobbys', 'Sie unterscheiden sich gar nicht', 'Nur in der Schuhgröße'], a: 0 },
     { id: 'iwmc19', mod: 'mc', g: 'verschieden', q: 'Ben möchte tanzen lernen. Ein Kind sagt: „Tanzen ist nur was für Mädchen.“ Was stimmt?', o: ['Das ist ein Vorurteil. Alle Kinder dürfen tanzen.', 'Das stimmt.', 'Ben muss stattdessen Fußball spielen.'], a: 0 },
     { id: 'iwlt8', mod: 'lt', g: 'verschieden', q: 'Gemeinsames ___, Verschiedenes kann bereichern.', o: ['verbindet', 'trennt', 'ärgert'], a: 0 },
-    { id: 'iwlt9', mod: 'lt', g: 'verschieden', q: 'Alle Kinder dürfen alles ___.', o: ['ausprobieren', 'verbieten', 'vergessen'], a: 0 },
+    { id: 'iwlt9', mod: 'lt', g: 'verschieden', q: 'Mädchen und Jungen dürfen alle Hobbys ___.', o: ['ausprobieren', 'verbieten', 'vergessen'], a: 0 },
     { id: 'iwdef12', mod: 'def', g: 'verschieden', q: 'Was ist ein Vorurteil?', o: ['Eine Meinung über Menschen, die man sich bildet, ohne sie zu kennen', 'Ein Urteil vor Gericht', 'Ein Spiel vor dem Unterricht'], a: 0 },
     { id: 'iwdef13', mod: 'def', g: 'verschieden', q: 'Was bedeutet „Herkunft“?', o: ['Woher ein Mensch oder seine Familie kommt', 'Wohin jemand in den Urlaub fährt', 'Wie schnell jemand laufen kann'], a: 0 },
     { id: 'iwdef14', mod: 'def', g: 'verschieden', q: 'Was bedeutet „bereichern“?', o: ['Etwas wertvoller und vielfältiger machen', 'Etwas kaputt machen', 'Etwas wegnehmen'], a: 0 },
@@ -14610,7 +14611,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.", "Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.", "Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu gezeichnet, und kleine Symbole sehen überall gleich aus."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.", "Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.", "Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu gezeichnet, und kleine Symbole sehen überall gleich aus."]}, {"title": "Behoben", "items": ["Einige Aufgaben waren unklar oder hatten zwei richtige Antworten, zum Beispiel an der Waage und beim Parallelogramm."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -16512,7 +16513,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '12c76c425350';
+  const BUILD = '18f91ef46c66';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
