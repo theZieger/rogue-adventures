@@ -1,7 +1,7 @@
 // Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
-const { modes } = require('./units.js');
+const modes = require('./units.js');
 const MONART = require('../src/monsters.js');
 const fails = [];
 const fail = (msg) => fails.push(msg);
@@ -126,8 +126,8 @@ for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) l
 {
   const ELTERN = require('../src/eltern.js');
   for (const [m, c] of Object.entries(modes)) {
-    if (!c.plan && !ELTERN.PLAN[m]) fail(`${m}: no place in the curriculum (plan, or PLAN.${m} in eltern.js)`);
-    for (const [k, M] of Object.entries(c.modules)) if (!M.info && !(ELTERN.INFO[m] || {})[k]) fail(`${m}.${k}: no sentence for parents (info, or INFO.${m}.${k} in eltern.js)`);
+    if (!ELTERN.PLAN[m]) fail(`eltern.js: PLAN.${m} is missing`);
+    for (const k of Object.keys(c.modules)) if (!(ELTERN.INFO[m] || {})[k]) fail(`eltern.js: INFO.${m}.${k} is missing`);
     for (const k of Object.keys(ELTERN.INFO[m] || {})) if (!c.modules[k]) fail(`eltern.js: INFO.${m}.${k} has no task type`);
   }
   for (const m of Object.keys(ELTERN.INFO)) if (!modes[m]) fail(`eltern.js: INFO.${m} has no topic`);

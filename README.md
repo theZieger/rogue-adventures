@@ -88,7 +88,6 @@ build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifes
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
 tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
-src/units/         Einheiten, die nur aus Daten bestehen (Vorlage: _vorlage.js)
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
@@ -118,18 +117,10 @@ Inhalte anpassen:
 
 ## Neue Einheit
 
-Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst. Startseite, Klassen-Reiter, Elternbereich, Wochenziele,
-Statistik, Spielstand, Tests und der Bot lesen die Einheiten aus einer Liste – es gibt keine zweite Stelle, an der man sie eintragen muss.
-
-**Nur Daten (Fragen, Richtig/Falsch, Lücke, Reihenfolge, Dilemma-Karten):** `src/units/_vorlage.js` kopieren, umbenennen (ohne `_`),
-ausfüllen, `npm run build && npm test && npm run playtest`. Die Vorlage erklärt jedes Feld und wird selbst mitgetestet.
-Die Tests melden, was fehlt (Erklärung, Elternsatz, Zeichnung, doppelte Namen, Frage ohne richtige Antwort).
-
-**Braucht weiterhin Code:**
-- Zeichnungen: jeder neue Held und Gegner in `src/monsters.js`, jedes neue Emoji in `src/icons.js`. Solange darf eine Einheit vorhandene Zeichnungen verwenden.
-- Erzeugte Aufgaben (Rechnen, Uhr, Wörter aus Listen) und Bildaufgaben zum Antippen: eigene Datei wie `src/sachkunde3.js` oder `src/jahrmarkt.js`,
-  die ihre Einheit in `MK.MODES` einträgt (`gen` bzw. `numGen`) und in `build.py` eingebunden wird. Auch sie braucht nur `grade` und `subject`, um auf der Startseite zu erscheinen.
-- Ein neues Fach: eine Zeile in `SUBJECTS` (`src/app.js`).
+Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.js`).
+Startseite, Klassen-Reiter, Statistik, Spielstand und der Bot lesen die Einheiten aus dieser einen Liste.
+Dazu gehören: die Datei in `build.py` einbinden, Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
+`src/monsters.js`, neue Emojis in `src/icons.js`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app.js`).
 
 ## Veröffentlichen (GitHub Pages)
 

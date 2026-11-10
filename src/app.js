@@ -1,6 +1,6 @@
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
-  // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES (README „Neue Einheit“).
+  // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES.
   const MODES = Object.assign({
     math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
     bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
@@ -13,7 +13,6 @@
   const SUBJECTS = { Mathe: '🔢', Deutsch: '📖', Ethik: '🕊️', Sachkunde: '🌱', Musik: '🎵', Englisch: '💬' };
   const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort().map((grade) => ({ grade, label: 'Klasse ' + grade,
     subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject) })).filter((x) => x.modes.length) }));
-  const INFO = (m, k) => MODES[m].modules[k].info || ELTERN.INFO[m][k];
   let mode = 'math';
   const CFG = () => MODES[mode];
   const MODULES_OF = () => CFG().modules;
@@ -1738,13 +1737,13 @@
           + (CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : '')
           + card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach. Dort sehen Sie, was jede Aufgabenart übt, und können Themen, Helden und Aufgabenarten ein- oder ausschalten.')}${S.map((s, i) => { const vis = s.modes.filter(shown).length;
             return `<button class="pnav" data-pf="${i}"><span class="ptext"><b>${s.icon} ${esc(s.subject)}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`; }).join('')}`);
-        const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = c.plan || ELTERN.PLAN[m];
+        const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = ELTERN.PLAN[m];
         return `<button class="pback" id="pback">${ico('back')}Alle Fächer</button>`
           + (s.modes.length > 1 ? card(`${s.icon} ${esc(s.subject)}`, sw(s.modes.some(shown), `data-hidesub="${pAt.subj}"`, 'Fach anzeigen', '<span>Ausgeschaltet erscheint das ganze Fach nicht mehr auf der Startseite.</span>') + msg)
             + `<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => `<button role="tab" data-pm="${x}" aria-selected="${x === m}" class="${shown(x) ? '' : 'off'}">${MODES[x].icon} ${esc(MODES[x].title)}</button>`).join('')}</div>` : '')
           + card(`${c.icon} ${esc(c.title)}`, `<p>${esc(c.sub)}</p>${plan ? `<p class="pplan"><b>Lehrplan Sachsen:</b> ${esc(plan)}</p>` : ''}${sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen', '<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>')}${msg}`)
           + (c.starters.length > 1 ? card('Helden', `${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, esc(x.names[0]), `<span>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</span>`)).join('')}${msg}`) : '')
-          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(INFO(m, k))}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
+          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
       },
       how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
         + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Jedes Abenteuer beginnt auf Stufe 1.</p>')
@@ -1780,7 +1779,7 @@
     on('[data-pm]', (b) => { const x = $('.pchips').scrollLeft; pAt.mode = b.dataset.pm; redraw('.pchips [aria-selected=true]'); $('.pchips').scrollLeft = x; });
     on('[data-info]', (b) => { const m = pAt.mode || curGrade().subjects[pAt.subj].modes[0]; const k = b.dataset.info; const M = MODES[m].modules[k];
       const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
-      const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>${esc(INFO(m, k))}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => `${tiers.length > 1 ? `<h4>Stufe ${t}: ${esc(x.title)}</h4>` : ''}<ol>${x.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`).join('')}<button class="btn" id="ok">Schließen</button>`);
+      const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>${esc(ELTERN.INFO[m][k])}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => `${tiers.length > 1 ? `<h4>Stufe ${t}: ${esc(x.title)}</h4>` : ''}<ol>${x.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`).join('')}<button class="btn" id="ok">Schließen</button>`);
       $('#ok', ov).onclick = () => ov.remove(); $('#ok', ov).focus({ preventScroll: true }); });
     const newPin = () => setPin(() => screenParent('appsec', back), () => screenParent('appsec', back));
     on('#pnew, #pset, #pchange', newPin);

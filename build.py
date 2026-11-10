@@ -20,8 +20,6 @@ sach2 = strip_exports((SRC / "sachkunde2.js").read_text(encoding="utf-8"), "MS2"
 sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3")
 ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
 musik = strip_exports((SRC / "musik.js").read_text(encoding="utf-8"), "MU")
-# Units that are plain data register themselves (MK.addUnit); files starting with "_" are templates and stay out.
-units = "\n".join(f.read_text(encoding="utf-8") for f in sorted((SRC / "units").glob("*.js")) if not f.name.startswith("_"))
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 icons = strip_exports((SRC / "icons.js").read_text(encoding="utf-8"), "ICONS")
 eltern = strip_exports((SRC / "eltern.js").read_text(encoding="utf-8"), "ELTERN")
@@ -127,7 +125,6 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {musik}
-{units}
 </script>
 <script>
 {mon}

@@ -1180,7 +1180,6 @@ const MK = (() => {
     const atTier = cands.filter((p) => (p.t || 1) === tier); if (atTier.length) cands = atTier; // t: 2 marks the harder questions of a module
     if (opts && opts.g) { const topic = cands.filter((p) => p.g === opts.g); if (topic.length) cands = topic; }
     const e = weightedPick(cands, know, seqNow);
-    if (e.order) { const idx = shuffle(e.order.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => ({ id: 'o' + i, text: e.order[i] })); return { kind: 'order', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, items, order: items.map((y) => y.id), display: shuffle(items), qid: e.id + '_' + idx.join('') }; }
     if (mod === 'parts') {
       const part = PARTS.find((p) => p.id === e.part);
       if (tier >= 2) return { kind: 'parts-find', mod, tier: 2, group: 'parts:2', note: 'teile', q: `Tippe auf: ${part.name}`, part: part.id, answer: part.name, qid: e.id + '_find' };
@@ -1191,7 +1190,7 @@ const MK = (() => {
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
     // inline: the options are the parts of a sentence and keep their order
     const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, fig: e.fig, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
@@ -1242,25 +1241,6 @@ const MK = (() => {
       gen: (mod, tier) => (mod === 'reihe' ? reiheTask(tier) : null) },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, grade: 3, subject: 'Sachkunde', title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  // A unit from plain data (src/units/*.js, format in src/units/_vorlage.js): fills in what the engine needs.
-  // Question ids come from the question text, so sorting or adding questions keeps what a child has already learned.
-  const hash = (t) => { let h = 5381; for (const c of t) h = (h * 33 + c.codePointAt(0)) >>> 0; return h.toString(36); };
-  const BANK = { title: 'Die Bank am Weg', text: 'Am Weg steht eine Bank. Hier ruhst du dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] };
-  function addUnit(id, u) {
-    const modules = {}, tut = {}, notes = {}, extra = {}, pool = []; const keys = Object.keys(u.topics);
-    for (const k of keys) {
-      const T = u.topics[k]; const tiers = Math.max(...T.questions.map((q) => q.t || 1));
-      modules[k] = { name: T.name, icon: T.icon, maxTier: tiers, worldCap: [tiers], dmg: T.dmg || 12, info: T.info };
-      for (let t = 1; t <= tiers; t++) tut[k + ':' + t] = { title: T.name, steps: T.explain };
-      notes[k] = { title: T.name, lines: T.note }; extra[k] = T.attack;
-      for (const q of T.questions) pool.push(Object.assign({ id: id + '_' + hash(q.q), mod: k, g: k }, q));
-    }
-    const attacks = keys.slice(0, 4).map((k) => ({ name: extra[k], mod: k }));
-    MODES[id] = { modules, tut, notes, extra, pool, worlds: 1, grade: u.grade, subject: u.subject, title: u.title, icon: u.icon, sub: u.sub, plan: u.plan,
-      starters: u.heroes.map((h) => Object.assign({ hp: 70, names: [h.name, h.name, h.name], attacks }, h)),
-      enemies: { 1: u.enemies }, moves: u.moves, events: (u.events || []).concat([BANK]) };
-  }
-
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, addUnit, shuffle, pick, rnd, weightedPick };
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
 })();
 if (typeof module !== 'undefined') module.exports = MK;

@@ -13,7 +13,7 @@ Reihenfolge. Arbeitsweise wie in `ROADMAP-v2.md` Abschnitt A (eigener Branch je 
 - **Gültige Fassungen:** Mathematik und Deutsch gelten seit 1.8.2025 in neuer Fassung (keine Wahlbereiche und keine
   Stundenrichtwerte mehr), dazu verbindlich der Sächsische Rechtschreibrahmen 2025. Sachunterricht, Ethik und Musik: Fassung 2019.
 - **Klasse 1 und 2 sind ein Block.** Der Lehrplan teilt nicht auf, was in Klasse 1 und was in Klasse 2 drankommt.
-  Die Aufteilung unten folgt der üblichen Praxis und ist nicht aus einer sächsischen Quelle belegt → Entscheidung 1.
+  Die Aufteilung unten folgt der üblichen Praxis und ist nicht aus einer sächsischen Quelle belegt.
 
 ### Mathematik (Zahlenraum bis 100)
 | Lernbereich | Inhalt | Im Spiel |
@@ -56,20 +56,20 @@ Passt gut zu Fragen und Dilemma-Karten.
 
 ### Musik
 Fast alles ist Singen, Musizieren und Bewegen. Als Fragen übbar bleibt wenig: Instrumente und Stimmen erkennen, laut/leise,
-schnell/langsam, Wiederholung und Gegensatz. Noten und Komponisten stehen in Klasse 1/2 nicht im Pflichtteil → Entscheidung 5.
+schnell/langsam, Wiederholung und Gegensatz. Noten und Komponisten stehen in Klasse 1/2 nicht im Pflichtteil.
 
-## 2. Was schon gebaut ist (dieser Branch)
+## 2. Was schon gebaut ist
 
-- Jede Einheit trägt `grade` und `subject`; Startseite, Klassen-Reiter, Elternbereich, Statistik, Spielstand und Tests
+- Jede Einheit trägt `grade` und `subject`; Startseite, Klassen-Reiter, Statistik, Spielstand, Tests und Bot
   bauen sich daraus selbst auf. Eine Einheit mit `grade: 1` oder `2` erzeugt den Klassen-Reiter von allein.
-- Einheiten, die nur aus Fragen bestehen, sind reine Daten in `src/units/` (Vorlage `_vorlage.js`, im Test und vom Bot durchgespielt).
-- README „Neue Einheit“ sagt, was weiterhin Code braucht: Zeichnungen, erzeugte Aufgaben, Bildaufgaben.
+- Eine eigene Ebene für Einheiten aus reinen Daten wurde gebaut und wieder verworfen (Entscheidung des Eigentümers):
+  neue Einheiten entstehen wie bisher als Code-Datei, siehe README „Neue Einheit“.
 
 ## 3. Was vor den Inhalten an der Technik fehlt
 
 | Nr. | Schritt | Warum |
 |---|---|---|
-| T1 | **Leseanfänger:** kurze Sätze, größere Schrift, Bild statt Text bei den Antworten; Lesestube, Lückentext und lange Tipps in Klasse 1 aus | Kinder in Klasse 1 können die heutigen Aufgaben nicht lesen. Größtes Risiko des Vorhabens → Entscheidung 2 |
+| T1 | **Leseanfänger:** kurze Sätze, größere Schrift, Bild statt Text bei den Antworten; Lesestube, Lückentext und lange Tipps in Klasse 1 aus | Kinder in Klasse 1 können die heutigen Aufgaben nicht lesen. Größtes Risiko des Vorhabens |
 | T2 | **Klasse wählen:** Einrichtung fragt nach der Klasse; Titel, Beschreibung und Installationstexte sagen nicht mehr „Klasse 3“ | heute fest verdrahtet |
 | T3 | **Rechenaufgaben mit einstellbarem Zahlenraum:** eine Tabelle je Aufgabenart (bis 10, bis 20, bis 100, mit/ohne Zehnerübergang) statt fester Stufen; Uhr, Geld, Diagramm, Würfelgebäude aus Jahrmarkt und Baustelle wiederverwendbar machen | die vorhandenen Generatoren beginnen bei Klasse-3-Niveau |
 | T4 | **Wortaufgaben nach Klasse:** Wortlisten in `src/woerter.js` je Klasse, Generatoren der Deutsch-Einheiten nehmen die Liste der Klasse | Rechtschreibthemen der Klasse 3 (ck, tz, Komma) dürfen in Klasse 2 nicht vorkommen |
@@ -78,7 +78,7 @@ schnell/langsam, Wiederholung und Gegensatz. Noten und Komponisten stehen in Kla
 
 ## 4. Einheiten (Arbeitstitel – Namen werden gegen `tools/unslop-text.md` geprüft)
 
-„Daten“ = geht über `src/units/`. „Code“ = braucht Generatoren oder Bildaufgaben. Jede Einheit braucht außerdem
+„Daten“ = Fragen aus einer Liste. „Code“ = braucht Generatoren oder Bildaufgaben. Jede Einheit braucht außerdem
 einen Helden und sechs Gegner als Zeichnung.
 
 | Nr. | Klasse | Fach | Einheit | Inhalt | Art |
@@ -91,7 +91,7 @@ einen Helden und sechs Gegner als Zeichnung.
 | D1 | 1 | Deutsch | Buchstaben und Laute | Anlaut zum Bild, Selbstlaut/Mitlaut, wo hörst du den Laut, Silben zählen, ABC, Reimwörter | Code (T4, T5) |
 | D2 | 2 | Deutsch | Richtig schreiben | st/sp, qu, ie, doppelte Mitlaute, verlängern, ableiten, groß/klein, Satzzeichen, ABC-Reihenfolge, kleine Wörter | Code (T4), Generatoren aus der Wörterwerkstatt |
 | D3 | 2 | Deutsch | Wörter und Sätze | vier Wortarten, Einzahl/Mehrzahl, Artikel, zusammengesetzte Nomen, Wortfamilie, Wortfeld, drei Satzarten | Code (T4), Generatoren aus der Satzbaustelle |
-| D4 | 1/2 | Deutsch | Leichte Lesestube | Texte mit 20–50 Wörtern, je zwei Fragen; Reim, Vers, Strophe, Märchen | Daten (`src/texte.js` mit Klasse) |
+| D4 | 1/2 | Deutsch | Leichte Lesestube | Texte mit 20–50 Wörtern, je zwei Fragen; Reim, Vers, Strophe, Märchen | Fragen (`src/texte.js` mit Klasse) |
 | S1 | 1 | Sachkunde | Mein Körper | Körper- und Zahnpflege, Frühstück, Kleidung nach Wetter, Nein sagen, Erste Hilfe, Notruf | Daten, Dilemma-Karten |
 | S2 | 1 | Sachkunde | Durch das Jahr | Jahreszeiten, Monate, Wochentage, Tageslauf, Uhr (volle Stunde), Wetterzeichen, Schulweg | Daten + Bilder (T5) |
 | S3 | 2 | Sachkunde | Bäume und Blumen | Laub- und Nadelbäume, Teile von Baum und Pflanze (Zeichenschule), Frühblüher, Keimung, Obstarten, Garten | Code (Bilder zum Antippen) |
@@ -99,13 +99,13 @@ einen Helden und sechs Gegner als Zeichnung.
 | S5 | 2 | Sachkunde | Licht, Luft und Wasser | Schatten, Sonne/Mond/Sterne, Luft und Schall, Thermometer, löslich/unlöslich, Gefahrenzeichen; Forscherlabor wie in der Wetterstation | Daten + etwas Code |
 | E1 | 1 | Ethik | Ich und die anderen | Gefühle, das kann ich gut, anders sein, Familie, Regeln, streiten und versöhnen | Daten, Dilemma-Karten |
 | E2 | 2 | Ethik | Feste und die Welt | Geburtstag, Erntedank, St. Martin, Nikolaus, Advent, Weihnachten, Ostern; Natur schützen, wachsen und vergehen | Daten, Dilemma-Karten |
-| Mu1 | 2 | Musik | (offen) | Instrumente, laut/leise, schnell/langsam | Daten → Entscheidung 5 |
+| Mu1 | 2 | Musik | (offen) | Instrumente, laut/leise, schnell/langsam | Daten, offen |
 
 Die Baum-, Blumen- und Vogelarten sowie die Lernwörter kommen von den Arbeitsblättern der Klasse, nicht aus dem Lehrplan.
 
 ## 5. Reihenfolge
 
-1. **Entscheidungen** aus Abschnitt 6.
+1. **Offene Entscheidungen** aus Abschnitt 6.
 2. **T1 und T2**, danach als Probe **S2** (reine Daten) und **M1** (Code). Mit einem Kind aus Klasse 1 ausprobieren, bevor mehr entsteht.
 3. **T3–T6**, soweit die Probe sie bestätigt.
 4. **Klasse 2** zuerst (liegt näher am Bestehenden): M3, M4, D2, D3, S4, E2 – parallel in eigenen Sitzungen, wie bei v2.
@@ -113,14 +113,17 @@ Die Baum-, Blumen- und Vogelarten sowie die Lernwörter kommen von den Arbeitsbl
 6. Abschluss: Elterntexte, README, Installationstexte, Screenshots, Freigabe wie in `CLAUDE.md`.
 
 Größenordnung: je Dateneinheit 50 und mehr Fragen plus 7 Zeichnungen; 16 Einheiten sind gut 110 neue Zeichnungen.
-Das ist der größte Posten → Entscheidung 4.
+Das ist der größte Posten.
 
-## 6. Entscheidungen des Eigentümers
+## 6. Entscheidungen
 
-1. **Aufteilung Klasse 1 / Klasse 2:** wie in Abschnitt 4 (übliche Praxis) – oder ein gemeinsamer Reiter „Klasse 1/2“, wie der Lehrplan es sieht?
-2. **Vorlesen für Leseanfänger:** Soll das Gerät Aufgaben vorlesen dürfen (eingebaute Sprachausgabe, ohne Internet, Qualität je nach Gerät)? Ohne Vorlesen bleibt Klasse 1 auf Bild- und Zahlenaufgaben beschränkt.
-3. **Kommazahlen:** Der Lehrplan verlangt bei Geld und Länge schon in Klasse 1/2 die Schreibweise mit Komma (1,50 €). Die Projektregel verbietet Kommazahlen. Regel lockern oder bei „1 € 50 ct“ bleiben?
-4. **Zeichnungen:** eigene Helden und Gegner für jede Einheit, oder je Fach und Klasse ein gemeinsamer Satz?
-5. **Musik in Klasse 1/2:** weglassen (Empfehlung, da ohne Töne kaum Lehrplaninhalt übrig bleibt) oder eine kleine Einheit?
-6. **Religion:** Der Lehrplan sieht Religion oder Ethik vor. Bleibt es bei Ethik?
-7. **Arbeitsblätter:** Gibt es Blätter aus Klasse 1/2 (Lernwörter, Baum- und Tierarten)? Ohne sie folgen die Inhalte nur dem Lehrplan.
+Entschieden (2026-11-10):
+- **Klasse 1 und Klasse 2 bekommen getrennte Reiter.** Die Aufteilung folgt Abschnitt 4.
+- **Das Gerät liest Aufgaben vor** (eingebaute Sprachausgabe, ohne Internet).
+- **Kommazahlen sind bei Geld und Länge erlaubt** (1,50 €; 1,20 m), sonst weiter ganze Zahlen.
+
+Offen:
+1. **Zeichnungen:** eigene Helden und Gegner für jede Einheit, oder je Fach und Klasse ein gemeinsamer Satz?
+2. **Musik in Klasse 1/2:** weglassen oder eine kleine Einheit?
+3. **Religion:** Der Lehrplan sieht Religion oder Ethik vor. Bleibt es bei Ethik?
+4. **Arbeitsblätter:** Gibt es Blätter aus Klasse 1/2 (Lernwörter, Baum- und Tierarten)? Ohne sie folgen die Inhalte nur dem Lehrplan.
