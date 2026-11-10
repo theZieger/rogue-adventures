@@ -149,7 +149,7 @@ const K12E = (() => {
     { id: 'k1ef7', mod: 'familie', g: 'familie', q: 'Wer kann in einer Familie mithelfen?', o: ['Alle, auch die Kinder', 'Nur die Erwachsenen'], a: 0 },
     { id: 'k1ef8', mod: 'familie', g: 'familie', q: 'Wie viele Menschen gehören zu einer Familie?', o: ['Das ist verschieden', 'Immer vier', 'Immer zwei'], a: 0 },
     { id: 'k1ef9', mod: 'familie', g: 'familie', q: 'Nur Eltern und Kinder wohnen zusammen. Wie heißt das?', o: ['Kleinfamilie', 'Großfamilie'], a: 0 },
-    { id: 'k1ef10', mod: 'familie', g: 'familie', q: 'Lina ist adoptiert. Was stimmt?', o: ['Ihre Eltern sorgen für immer für sie', 'Ihre Eltern sorgen nur eine Woche für sie'], a: 0 },
+    { id: 'k1ef10', mod: 'familie', g: 'familie', q: 'Lina ist adoptiert. Was stimmt?', o: ['Ihre Eltern sorgen immer für sie', 'Nur für eine Woche'], a: 0 },
     { id: 'k1er9', mod: 'rf', g: 'familie', q: 'Alle Familien sehen gleich aus.', a: false, why: 'Familien sind verschieden. Jede ist eine richtige Familie.' },
     { id: 'k1er10', mod: 'rf', g: 'familie', q: 'In einer Großfamilie wohnen oft Oma und Opa mit.', a: true },
 
