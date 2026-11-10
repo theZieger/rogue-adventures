@@ -436,11 +436,23 @@ const MS = (() => {
   function karteTarget(start, steps) { let [r, c] = start; for (const s of steps) { r += DIRS[s.d][0] * s.n; c += DIRS[s.d][1] * s.n; } return [r, c]; }
   const fields = (n) => (n === 1 ? '1 Feld' : `${n} Felder`);
   function karteText(steps, metres) { return 'Gehe ' + steps.map((s, i) => `${metres ? s.n * 100 + ' m' : fields(s.n)} nach ${DIRS[s.d][2]}`).join(' und dann ') + '.'; }
+  // brass compass rose: each arm has a lit and a shaded half; N is red, the asked arm orange
+  const ROSE_DEFS = '<defs><radialGradient id="kr-brass" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".45" stop-color="#E8B84A"/><stop offset=".85" stop-color="#A8771E"/><stop offset="1" stop-color="#C8973A"/></radialGradient>' +
+    '<radialGradient id="kr-face" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#FFFDF4"/><stop offset=".7" stop-color="#F8EBC8"/><stop offset="1" stop-color="#E8D3A0"/></radialGradient></defs>';
+  const ROSE_COL = { main: ['#F6DC8E', '#C99A3A'], side: ['#B4CBE6', '#5F84B0'], N: ['#F26A6E', '#B8323A'], mark: ['#FFA24D', '#E5620F'] };
   function roseG(opts) {
-    opts = opts || {}; const mark = opts.mark; const arm = (d, len, w) => { const a = CLOCK.indexOf(d) * Math.PI / 4; const x = 60 + Math.sin(a) * len, y = 60 - Math.cos(a) * len; const px = Math.cos(a) * w, py = Math.sin(a) * w; const hot = d === mark; return `<path d="M60 60 L${(60 + px).toFixed(1)} ${(60 + py).toFixed(1)} L${x.toFixed(1)} ${y.toFixed(1)} L${(60 - px).toFixed(1)} ${(60 - py).toFixed(1)} Z" fill="${hot ? '#FF8A3D' : d === 'N' ? '#E5484D' : '#fff'}" stroke="${STROKE}" stroke-width="2"/>`; };
-    const lab = (d, len, size) => { const a = CLOCK.indexOf(d) * Math.PI / 4; return txt((60 + Math.sin(a) * len).toFixed(1), (60 - Math.cos(a) * len + size / 3).toFixed(1), d === mark ? '?' : d, { size }); };
+    opts = opts || {}; const mark = opts.mark, f = (v) => v.toFixed(1);
+    const arm = (d, len, w) => { const a = CLOCK.indexOf(d) * Math.PI / 4, x = 60 + Math.sin(a) * len, y = 60 - Math.cos(a) * len, px = Math.cos(a) * w, py = Math.sin(a) * w;
+      const [lt, dk] = ROSE_COL[d === mark ? 'mark' : d === 'N' ? 'N' : MAIN.includes(d) ? 'main' : 'side'];
+      return `<path d="M60 60 L${f(60 - px)} ${f(60 - py)} L${f(x)} ${f(y)} Z" fill="${lt}"/><path d="M60 60 L${f(60 + px)} ${f(60 + py)} L${f(x)} ${f(y)} Z" fill="${dk}"/>` +
+        `<path d="M60 60 L${f(x)} ${f(y)}" stroke="${STROKE}" stroke-width="1" opacity=".5"/><path d="M60 60 L${f(60 + px)} ${f(60 + py)} L${f(x)} ${f(y)} L${f(60 - px)} ${f(60 - py)} Z" fill="none" stroke="${STROKE}" stroke-width="${d === mark ? 2.2 : 1.8}" stroke-linejoin="round"/>`; };
+    const lab = (d, len, size) => { const a = CLOCK.indexOf(d) * Math.PI / 4; if (d === mark) size = 14; return txt(f(60 + Math.sin(a) * len), f(60 - Math.cos(a) * len + size / 3), d === mark ? '?' : d, { size, fill: d === mark ? '#D2600F' : STROKE }); };
     const side = opts.neben !== false;
-    return `<circle cx="60" cy="60" r="34" fill="#FFF8E1" stroke="#B08D4A" stroke-width="1.5"/>${side ? SIDE.map((d) => arm(d, 30, 5)).join('') : ''}${MAIN.map((d) => arm(d, 42, 7)).join('')}<circle cx="60" cy="60" r="3" fill="${STROKE}"/>${MAIN.map((d) => lab(d, 52, 14)).join('')}${side ? SIDE.map((d) => lab(d, 42, 10)).join('') : ''}`;
+    let ticks = ''; for (let i = 0; i < 32; i++) { const a = i * Math.PI / 16, r0 = i % 4 ? 32.5 : 30.5; ticks += `M${f(60 + Math.sin(a) * r0)} ${f(60 - Math.cos(a) * r0)} L${f(60 + Math.sin(a) * 34.5)} ${f(60 - Math.cos(a) * 34.5)} `; }
+    return `${ROSE_DEFS}<circle cx="61.5" cy="62" r="38" fill="${STROKE}" opacity=".14"/><circle cx="60" cy="60" r="38" fill="url(#kr-brass)" stroke="${STROKE}" stroke-width="2.5"/><circle cx="60" cy="60" r="34.5" fill="url(#kr-face)" stroke="${STROKE}" stroke-width="1.5"/>` +
+      `<path d="${ticks}" stroke="#A8823A" stroke-width="1" stroke-linecap="round"/><circle cx="60" cy="60" r="22" fill="none" stroke="#D9BE84" stroke-width="1"/>` +
+      `${side ? SIDE.map((d) => arm(d, 32, 6.5)).join('') : ''}${MAIN.map((d) => arm(d, 44, 8)).join('')}${SIDE.includes(mark) ? arm(mark, 32, 6.5) : ''}<circle cx="60" cy="60" r="4.5" fill="url(#kr-brass)" stroke="${STROKE}" stroke-width="2"/><circle cx="58.8" cy="58.8" r="1.2" fill="#fff" opacity=".85"/>` +
+      `${MAIN.map((d) => lab(d, 53, 14)).join('')}${side ? SIDE.map((d) => lab(d, 45.5, 10)).join('') : ''}`;
   }
   const roseSVG = (opts) => `<svg ${NS} class="pic" viewBox="-4 -4 128 128" style="max-width:220px" aria-label="Windrose">${roseG(opts)}</svg>`;
   // Schatzkarte: 5 × 5 Felder, Zelt = Start, ✕ = Schatz; clickable cells carry data-cell="Zeile-Spalte"
