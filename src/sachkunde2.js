@@ -23,7 +23,7 @@ const MS2 = (() => {
     ask: () => 'Wie heißt der leuchtende Teil des Auges?', find: (p) => `Tippe auf: ${p.name}` };
   // points on the edges of the eye opening: quadratic curves from 60|110 over 150|cy to 240|110 (cy 44 above, 170 below)
   const lidAt = (t, cy) => [(1 - t) ** 2 * 60 + 2 * t * (1 - t) * 150 + t * t * 240, (1 - t) ** 2 * 110 + 2 * t * (1 - t) * cy + t * t * 110];
-  const f1 = (v) => v.toFixed(1);
+  const f1 = (v) => Math.round(v * 10) / 10;
   // texture strokes sit in style="" so a glowing part keeps them (the glow rule recolours stroke attributes only)
   const tex = (d, c, w, o) => `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round"${o ? ` opacity="${o}"` : ''}/>`;
   const lashes = (cy, ts, len) => ts.map((t) => { const [x, y] = lidAt(t, cy), dx = (t - 0.5) * 26, l = len * (1 - Math.abs(t - 0.5)) * (cy < 110 ? -1 : 1); return `M${f1(x)} ${f1(y)} q${f1(dx * 0.1)} ${f1(l * 0.8)} ${f1(dx)} ${f1(l)}`; }).join(' ');
@@ -296,22 +296,48 @@ const MS2 = (() => {
   SI.gen = siGen(SI);
 
   /* ================= SICHER IM VERKEHR (LB 5) ================= */
-  // Verkehrszeichen nach StVO, schematisch im Kasten 0–100
-  const BIKE = (c, w) => `<g fill="none" stroke="${c}" stroke-width="${w || 4}" stroke-linecap="round" stroke-linejoin="round"><circle cx="30" cy="62" r="12"/><circle cx="70" cy="62" r="12"/><path d="M30 62 L46 62 L40 44 L62 44 L70 62 M46 62 L62 44 M38 40 L46 40 M62 44 L60 36 L68 36"/></g>`;
-  const WALKER = (x, y, k, c) => `<g transform="translate(${x} ${y}) scale(${k})" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="-26" r="5" fill="${c}"/><path d="M0 -19 L0 0 M0 0 L-7 16 M0 0 L7 16 M0 -14 L-9 -3 M0 -14 L9 -4"/></g>`;
+  // Verkehrszeichen nach StVO im Kasten 0–100: weißer Rand, Tusche-Umriss, Emailglanz von links oben
+  const disc = (r) => `M${50 - r} 50 A${r} ${r} 0 1 0 ${50 + r} 50 A${r} ${r} 0 1 0 ${50 - r} 50 Z`;
+  const box = (x, y, w, h, r) => `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + h - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`;
+  const poly = (pts) => 'M' + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join(' L') + ' Z';
+  const around = (pts, k, cx, cy) => poly(pts.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]));
+  const OCT = (R) => poly(Array.from({ length: 8 }, (_, i) => [50 + R * Math.cos((22.5 + 45 * i) * Math.PI / 180), 50 + R * Math.sin((22.5 + 45 * i) * Math.PI / 180)]));
+  const TRI = [[5, 12], [95, 12], [50, 89.9]], DIA = [[50, 3], [97, 50], [50, 97], [3, 50]];
+  const vg = (id, a, b) => `<linearGradient id="vz-${id}" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
+  const SIGN_DEFS = `<defs>${vg('red', '#E8424A', '#B3141E')}${vg('blue', '#3474C8', '#164C94')}${vg('yellow', '#FFD84A', '#EBA600')}${vg('white', '#FFFFFF', '#E3E8EF')}${vg('case', '#4A5560', '#1F262C')}` +
+    '<radialGradient id="vz-sheen" cx="28%" cy="20%" r="90%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#0B1020" stop-opacity=".12"/></radialGradient></defs>';
+  // outer: the whole plate (white rim included); inner: the coloured field
+  const sign = (outer, inner, col, sym) => `${SIGN_DEFS}<path d="${outer}" fill="${STROKE}" opacity=".18" transform="translate(1.5 2.5)"/><path d="${outer}" fill="url(#vz-white)" stroke="${STROKE}" stroke-width="3" stroke-linejoin="round"/>${inner ? `<path d="${inner}" fill="${col}"/>` : ''}${sym}<path d="${outer}" fill="url(#vz-sheen)"/>`;
+  const LINE = (c, w) => `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+  // facing right like on the signs 237 and 254
+  const BIKE = (c, w) => `<g ${LINE(c, w || 4.5)}><circle cx="30" cy="61" r="13"/><circle cx="70" cy="61" r="13"/><path d="M30 61 L47 61 L41 41 M30 61 L42.2 45 L64.4 45 M47 61 L64 45 M70 61 L62 38 L58 33 M62 38 L69 36 M36 39 L47 39"/></g>`;
+  const SANS = 'style="font-family:\'Arial Narrow\',Arial,Helvetica,sans-serif"';
   const SIGN_ART = {
-    stopp: `<path d="M33 8 L67 8 L92 33 L92 67 L67 92 L33 92 L8 67 L8 33 Z" fill="#D32F2F" stroke="#fff" stroke-width="3"/><text x="50" y="59" font-size="23" font-weight="800" text-anchor="middle" fill="#fff">STOP</text>`,
-    vorfahrtgewaehren: '<path d="M6 12 L94 12 L50 92 Z" fill="#D32F2F" stroke="#7A1414" stroke-width="1" stroke-linejoin="round"/><path d="M22 21 L78 21 L50 72 Z" fill="#fff"/>',
-    vorfahrtstrasse: '<path d="M50 4 L96 50 L50 96 L4 50 Z" fill="#fff" stroke="#333" stroke-width="1.5"/><path d="M50 16 L84 50 L50 84 L16 50 Z" fill="#FDD835" stroke="#333" stroke-width="1"/>',
-    radweg: `<circle cx="50" cy="50" r="44" fill="#1565C0" stroke="#fff" stroke-width="3"/>${BIKE('#fff')}`,
-    gehweg: `<circle cx="50" cy="50" r="44" fill="#1565C0" stroke="#fff" stroke-width="3"/>${WALKER(40, 62, 1.15, '#fff')}${WALKER(62, 66, 0.8, '#fff')}<path d="M50 52 L56 55" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>`,
-    zebra: `<rect x="8" y="8" width="84" height="84" rx="6" fill="#1565C0" stroke="#fff" stroke-width="3"/><path d="M50 16 L86 82 L14 82 Z" fill="#fff"/><path d="M30 76 L70 76 M34 70 L66 70" stroke="${STROKE}" stroke-width="3"/>${WALKER(50, 62, 0.85, STROKE)}`,
-    einbahn: '<rect x="4" y="30" width="92" height="40" rx="3" fill="#1565C0" stroke="#fff" stroke-width="2.5"/><path d="M10 42 L68 42 L68 35 L90 50 L68 65 L68 58 L10 58 Z" fill="#fff"/><text x="39" y="53.5" font-size="8.5" font-weight="800" text-anchor="middle" fill="#111">Einbahnstraße</text>',
-    radverbot: `<circle cx="50" cy="50" r="42" fill="#fff" stroke="#D32F2F" stroke-width="9"/>${BIKE('#111')}`,
-    spielstrasse: `<rect x="4" y="16" width="92" height="68" rx="4" fill="#1565C0" stroke="#fff" stroke-width="2.5"/><path d="M12 54 L12 34 L24 24 L36 34 L36 54 Z" fill="#fff"/>${WALKER(48, 62, 0.75, '#fff')}${WALKER(60, 66, 0.55, '#fff')}<circle cx="70" cy="70" r="3.5" fill="#fff"/><path d="M66 78 L70 72 L86 72 L90 78 Z M62 78 L92 78" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>`,
-    radfrei: `<rect x="6" y="26" width="88" height="48" rx="4" fill="#fff" stroke="#111" stroke-width="2.5"/><g transform="translate(-2 18) scale(.62)">${BIKE('#111', 5)}</g><text x="74" y="58" font-size="16" font-weight="800" text-anchor="middle" fill="#111">frei</text>`,
+    stopp: sign(OCT(48), OCT(43.5), 'url(#vz-red)', `<text x="50" y="58.5" font-size="23" font-weight="700" text-anchor="middle" textLength="68" lengthAdjust="spacingAndGlyphs" fill="#fff" ${SANS}>STOP</text>`),
+    vorfahrtgewaehren: sign(poly(TRI), around(TRI, 0.93, 50, 38), 'url(#vz-red)', `<path d="${around(TRI, 0.53, 50, 38)}" fill="url(#vz-white)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>`),
+    vorfahrtstrasse: sign(poly(DIA), '', '', `<path d="${around(DIA, 0.93, 50, 50)}" fill="none" stroke="#2B2F36" stroke-width="1.2"/><path d="${around(DIA, 0.62, 50, 50)}" fill="url(#vz-yellow)" stroke="#C98E00" stroke-width="1" stroke-linejoin="round"/>`),
+    radweg: sign(disc(47.5), disc(43.5), 'url(#vz-blue)', `<g transform="translate(50 50) scale(.95) translate(-50 -51)">${BIKE('#fff')}</g>`),
+    gehweg: sign(disc(47.5), disc(43.5), 'url(#vz-blue)', `<g fill="#fff"><circle cx="40" cy="25" r="6"/><path d="M35 33 Q40 31 45 33 L46 47 L52 63 L28 63 L34 47 Z"/><circle cx="62" cy="44" r="4.6"/><path d="M58 51 Q62 49.5 66 51 L67 64 L57 64 Z"/></g>` +
+      `<path d="M37 63 L37 79 M43 63 L43 79 M60 63 L59.5 76 M64 63 L65 76" ${LINE('#fff', 4.2)}/><path d="M35.5 36 L31 52 M44.5 36 L52 50 L58.5 53 M66.5 53 L69 60" ${LINE('#fff', 3.6)}/>`),
+    zebra: sign(box(4, 4, 92, 92, 9), box(7.5, 7.5, 85, 85, 6.5), 'url(#vz-blue)', `<path d="M50 13 L87 80 L13 80 Z" fill="#fff" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>` +
+      `<path d="${[0, 1, 2, 3, 4].map((i) => { const x = 22 + i * 12.4; return `M${x} 76 L${f1(x + 7.4)} 76 L${f1(x + 6.4 + (50 - x) * 0.1)} 69 L${f1(x + 1.4 + (50 - x) * 0.1)} 69 Z`; }).join(' ')}" fill="#1A1A1A"/>` +
+      `<circle cx="51" cy="33" r="4.6" fill="#1A1A1A"/><path d="M50 40 L48 54 L43 61 L39 70 M48 54 L54 61 L57 70 M50 43 L44 51 M50 43 L56 49" ${LINE('#1A1A1A', 4.6)}/>`),
+    einbahn: sign(box(3, 33, 94, 34, 4), box(5.5, 35.5, 89, 29, 2.5), 'url(#vz-blue)', `<path d="M9 42.5 L67 42.5 L65.5 37.5 Q65.5 36 67 37 L91 49 Q92.5 50 91 51 L67 63 Q65.5 64 65.5 62.5 L67 57.5 L9 57.5 Z" fill="#fff"/>` +
+      `<text x="38" y="53.4" font-size="10" font-weight="700" text-anchor="middle" textLength="54" lengthAdjust="spacingAndGlyphs" fill="#1A1A1A" ${SANS}>Einbahnstraße</text>`),
+    radverbot: sign(disc(47.5), disc(45), 'url(#vz-red)', `<path d="${disc(36.5)}" fill="url(#vz-white)"/><g transform="translate(50 50) scale(.78) translate(-50 -51)">${BIKE('#1A1A1A', 5)}</g>`),
+    spielstrasse: sign(box(3, 17, 94, 66, 5), box(6, 20, 88, 60, 3), 'url(#vz-blue)', `<g fill="#fff"><path d="M10 64 L10 42 L19.5 33 L29 42 L29 64 Z"/><circle cx="40" cy="38" r="4.2"/><path d="M36.5 44 Q40 42.5 43.5 44 L44.5 56 L35.5 56 Z"/><circle cx="54" cy="51" r="3.4"/><path d="M51.5 56 Q54 55 56.5 56 L57 64 L51 64 Z"/><circle cx="63.5" cy="67" r="3.3"/>` +
+      `<path d="M66 73 L69 65.5 Q70 64 72 64 L84 64 Q86 64 87 65.5 L90 73 Z"/></g><path d="M38 56 L37 70 M42 56 L44 70 M52.5 64 L52 72 M55.5 64 L57 71.5 M43.5 46 L47 53 M36.5 46 L34 53 M56.5 57 L60.5 63" ${LINE('#fff', 3)}/><path d="M64 73 L92 73" ${LINE('#fff', 4.5)}/><circle cx="70.5" cy="74" r="3.2" fill="#fff"/><circle cx="85.5" cy="74" r="3.2" fill="#fff"/>` +
+      `<path d="M15.5 49 L15.5 55 L23.5 55 L23.5 49 Z" fill="url(#vz-blue)"/>`),
+    radfrei: sign(box(7, 19, 86, 62, 5), '', '', `<path d="${box(10.5, 22.5, 79, 55, 3)}" fill="none" stroke="#1A1A1A" stroke-width="2.6"/><g transform="translate(50 42) scale(.56) translate(-50 -51)">${BIKE('#1A1A1A', 6)}</g>` +
+      `<text x="50" y="73" font-size="16" font-weight="700" text-anchor="middle" fill="#1A1A1A" ${SANS}>frei</text>`),
   };
-  const lamp = (lit) => `<rect x="33" y="4" width="34" height="92" rx="8" fill="#263238" stroke="#111" stroke-width="2"/>${[['rot', '#E53935', 21], ['gelb', '#FDD835', 50], ['gruen', '#43A047', 79]].map(([k, c, y]) => `<circle cx="50" cy="${y}" r="11" fill="${k === lit ? c : '#4A5459'}" stroke="#111" stroke-width="1.5"/>`).join('')}`;
+  // traffic light; the lit lamp glows, the others stay dark
+  const LAMPS = [['rot', '#FF5A4E', 20], ['gelb', '#FFD23A', 50], ['gruen', '#3FD27A', 80]];
+  const lamp = (lit) => `${SIGN_DEFS}<rect x="31" y="3" width="38" height="94" rx="9" fill="${STROKE}" opacity=".18" transform="translate(1.5 2.5)"/><rect x="31" y="3" width="38" height="94" rx="9" fill="url(#vz-case)" stroke="${STROKE}" stroke-width="3"/>` +
+    LAMPS.map(([k, c, y]) => { const on = k === lit;
+      return `${on ? `<circle cx="50" cy="${y}" r="16" fill="${c}" opacity=".35"/>` : ''}<circle cx="50" cy="${y}" r="12.5" fill="#111518" stroke="${STROKE}" stroke-width="1.5"/><circle cx="50" cy="${y}" r="10.5" fill="${on ? c : '#3A4248'}"/>` +
+        `${on ? `<circle cx="50" cy="${y}" r="10.5" fill="url(#vz-sheen)"/><circle cx="46" cy="${y - 4}" r="3" fill="#fff" opacity=".8"/>` : `<circle cx="47" cy="${y - 3.5}" r="2" fill="#fff" opacity=".12"/>`}<path d="M37 ${y - 9} Q50 ${y - 18} 63 ${y - 9}" fill="none" stroke="#11161A" stroke-width="3" stroke-linecap="round"/>`; }).join('') +
+    '<rect x="31" y="3" width="38" height="94" rx="9" fill="url(#vz-sheen)" opacity=".7"/>';
   SIGN_ART.ampelrot = lamp('rot'); SIGN_ART.ampelgelb = lamp('gelb'); SIGN_ART.ampelgruen = lamp('gruen');
   const SIGNS = [
     { id: 'stopp', name: 'Stoppschild', mean: 'Stopp: Ganz anhalten und die anderen zuerst fahren lassen' },
