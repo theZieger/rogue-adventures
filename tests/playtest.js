@@ -61,6 +61,7 @@ async function solveTask(forceWrong){
   else if(T&&T.plan){ const n=T.plan.flat().reduce((a,b)=>a+b,0); answers=[T.full?T.plan.length*T.plan[0].length*T.full-n:n]; }
   else if(T&&T.beats) answers=[T.beats.reduce((a,b)=>a+b,0)/T.unit]; // Konzertsaal: note values in eighths, counted in the asked unit
   else if(T&&T.cells){ const at=new Set(T.cells.map(p=>p.join())); answers=[T.cells.reduce((n,[r,c])=>n+[[r+1,c],[r-1,c],[r,c+1],[r,c-1]].filter(q=>!at.has(q.join())).length,0)]; }
+  else if(T&&T.k12) answers=T.answers; // Klasse 1/2 Mathe: tests/test_k12_mathe.js recomputes these from the pictures
   else if($('.story')){ const n=$('.story').textContent.match(/\d+/g).map(Number); answers=[n[0]*n[1]]; } // Werkbank: a · b from the text
   else if($('.jm')) answers=JM.solve(task.innerHTML, null, w.eval('MJ').REF);
   else if($('.numword')){ const wd=$('.numword').textContent; const n=[...Array(1000).keys()].find(k=>k&&M.numWord(k)===wd); if(!n) throw new Error('unknown number word '+wd); answers=[n]; }

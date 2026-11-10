@@ -172,6 +172,46 @@ const ELTERN = (() => {
       laender: 'Fragen zu Instrumenten und Tänzen aus anderen Ländern.',
       lt: LT,
     },
+    zahlen20: {
+      menge: 'Punkte im Zehner- und Zwanzigerfeld und auf Würfeln schnell erfassen, ohne einzeln zu zählen.',
+      zerlegen: 'Zahlen bis 20 in zwei Teile zerlegen, zum Beispiel 7 = 3 + 4 und 16 = 10 + 6.',
+      vergleich: 'Zahlen und kleine Plusaufgaben mit <, > und = vergleichen.',
+      nachbar: 'Vorgänger und Nachfolger finden und Zahlen bis 20 der Größe nach ordnen.',
+      dopp: 'Zahlen bis 10 verdoppeln und gerade Zahlen bis 20 halbieren.',
+      rechnen: 'Plus und minus bis 20, später über die 10, mit Tausch- und Umkehraufgaben.',
+      mauer: 'Kleine Zahlenmauern: zwei Steine ergeben zusammen den Stein darüber.',
+    },
+    formen1: {
+      lage: 'Oben, unten, links, rechts, neben und zwischen an Bildern beschreiben.',
+      formen: 'Dreieck, Viereck, Rechteck, Quadrat und Kreis erkennen, Ecken und Formen zählen.',
+      koerper: 'Würfel, Quader und Kugel erkennen und Dingen aus dem Alltag zuordnen.',
+      muster: 'Muster aus Formen erkennen und fortsetzen.',
+      bauen: 'Würfel in Türmen und Gebäuden mit Bauplan zählen.',
+    },
+    zahlen100: {
+      stelle: 'Zahlen bis 100 mit Zehnerstangen, Einern und im Hunderterfeld darstellen und ablesen.',
+      zehner: 'Nachbarzehner und Nachbarzahlen finden, Zahlen am Zahlenstrahl ablesen.',
+      gerade: 'Gerade und ungerade Zahlen unterscheiden, verdoppeln und halbieren bis 100.',
+      folge: 'Zahlenfolgen fortsetzen und in Schritten vorwärts und rückwärts zählen.',
+      plus: 'Plus bis 100 in Schritten, ohne schriftliches Rechnen, dazu Ergänzen bis zum Zehner und bis 100.',
+      minus: 'Minus bis 100 in Schritten, ohne schriftliches Rechnen, dazu Lückenaufgaben.',
+      dreieck: 'Rechendreiecke und Zauberquadrate: fehlende Zahlen durch Plus und Minus finden.',
+    },
+    malteilen: {
+      reihe: 'Die Malaufgaben der Reihen mit 2, 5 und 10, auch mit fehlender Zahl.',
+      nachbar: 'Andere Reihen über Nachbaraufgaben und Verdoppeln lösen, zum Beispiel 4 · 7 = 5 · 7 − 7.',
+      bild: 'Malaufgaben in Punktefeldern erkennen: Reihen mal Punkte in einer Reihe.',
+      teilen: 'Teilen als Umkehrung des Malnehmens, zuerst mit 2, 5 und 10.',
+      sach: 'Kurze Sachaufgaben zum Malnehmen und gerechten Verteilen.',
+    },
+    groessen2: {
+      geld: 'Geld zählen, Euro und Cent umrechnen, mit Komma schreiben, wechseln und Rückgeld berechnen.',
+      laenge: 'Längen am Lineal messen, mm, cm, dm und m umrechnen, vergleichen und schätzen.',
+      uhr: 'Die Zeigeruhr lesen, erst volle, halbe und Viertelstunden, dann auf 5 Minuten genau.',
+      kalender: 'Wochentage und Monate in der richtigen Reihenfolge, Daten am Kalenderblatt ablesen.',
+      daten: 'Strichlisten und Säulendiagramme lesen und damit rechnen.',
+      zufall: 'Entscheiden, ob etwas sicher, möglich oder unmöglich ist.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n, name) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -196,6 +236,11 @@ const ELTERN = (() => {
     musik: 'Musik, Klasse 3, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“. Notenwerte, Takt und Notennamen stehen so nicht im Lehrplan der Klasse 3, sie folgen den Arbeitsblättern aus dem Unterricht.',
     teestube: 'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Animals“, „Food and drink“ und „My body and my clothes“.',
     doppeldecker: 'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Me, my family and my friends“, „At school“ und „Around the year“.',
+    zahlen20: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 20.',
+    formen1: 'Mathematik, Klasse 1/2, Lernbereich 1 „Raum und Form“.',
+    zahlen100: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 100, ohne schriftliches Rechnen.',
+    malteilen: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“: Malnehmen und Teilen, sicher in den Reihen mit 2, 5 und 10.',
+    groessen2: 'Mathematik, Klasse 1/2, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“.',
   };
   return { INFO, PLAN };
 })();
