@@ -35,6 +35,8 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   to `main`.** Take screenshots of every affected screen (phone size, 390×844 at 2×) before and after the change,
   publish them side by side as an artifact page, and wait for the go-ahead. Never push visual or copy changes
   to `main` unapproved; a branch is fine for work in progress.
+- New units: see README „Neue Einheit“. Never add a second list of units anywhere – everything reads `grade` and
+  `subject` from the unit itself.
 - Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.js` (key = the emoji) when shown.
   A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.
 - Icons and iOS launch screens (`docs/icons/`, `docs/splash/`) come from `node tools/make_icons.js`
@@ -63,7 +65,8 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   „Abenteuer“ (one run), never „spielen“, „Spiel“ or „Spiele“ for what the child does in Lernquest
   (e.g. „Jetzt loslegen“, not „Jetzt spielen“; „3 Themen“, not „3 Spiele“). „Spielstand“ stays as the usual word for
   the save. Learning content about real-life play (Fußball spielen, Spielplatz) is fine.
-- No time pressure, no comma numbers in what children see (show whole numbers).
+- No time pressure. Children see whole numbers; the only comma numbers are money and lengths, written as the
+  curriculum asks (1,50 €; 1,20 m).
 - No external requests at runtime (fonts are self-hosted in `docs/fonts/`), no tracking, everything stays on the device.
   Only exception: the feedback screen posts the message to the Google Form when the player taps „Absenden“.
 - The app is an installable PWA: assets the game needs offline must be listed in `CORE` in `src/sw.js`.

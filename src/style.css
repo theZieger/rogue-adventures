@@ -139,6 +139,8 @@ p { margin: 8px 0; }
 .task { background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 22px 22px; background-position: 11px 11px; color: var(--ink); border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow); position: relative; }
 .task .head { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--ink-soft); font-weight: 700; }
 .task .head .tut { margin-left: auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; font-size: 16px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.task .head .speak + .tut { margin-left: 0; }
+@media (max-width: 480px) { .task .head .tut .lbl { display: none; } }
 .task .expr { font-size: 42px; font-weight: 700; text-align: center; margin: 10px 0 4px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 .task .clues { font-size: 21px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
 .task .clues div::before { content: '• '; color: var(--orange); }

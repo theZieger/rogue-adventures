@@ -372,7 +372,7 @@ const MU = (() => {
     return null;
   }
 
-  const MODE = { modules: MODULES, tut: TUT, notes: NOTES, pool: POOL, worlds: 1, title: 'Der Konzertsaal', icon: '🎻', sub: 'Noten und Takt, Tonhöhen, Instrumente, Komponisten und Musik der Welt', gen,
+  const MODE = { modules: MODULES, tut: TUT, notes: NOTES, pool: POOL, worlds: 1, grade: 3, subject: 'Musik', title: 'Der Konzertsaal', icon: '🎻', sub: 'Noten und Takt, Tonhöhen, Instrumente, Komponisten und Musik der Welt', gen,
     starters: [{ id: 'dirigentin', type: 'normal', shape: 'dirigentin', names: ['Die Dirigentin', 'Die Dirigentin', 'Die Dirigentin'], hp: 75, desc: 'Sie leitet das Orchester. Mit dem Taktstock zeigt sie Takt, Tempo und Lautstärke. Treffer machen ihr weniger.', perk: 'tank',
       attacks: [{ name: 'Taktstock', mod: 'noten' }, { name: 'Metronom', mod: 'takt' }, { name: 'Stimmgabel', mod: 'ton' }, { name: 'Notenpult', mod: 'instr' }] }],
     extra: { noten: 'Notenbalken', takt: 'Taktstrich', ton: 'Tonleiter', instr: 'Orchestergraben', begriffe: 'Fortissimo', komp: 'Partitur', laender: 'Konzertreise', lt: 'Notenheft' },

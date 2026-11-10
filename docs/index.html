@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="e7c0fb88f95f">
+<meta name="app-version" content="33caf5b05929">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -195,6 +195,8 @@ p { margin: 8px 0; }
 .task { background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 22px 22px; background-position: 11px 11px; color: var(--ink); border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow); position: relative; }
 .task .head { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--ink-soft); font-weight: 700; }
 .task .head .tut { margin-left: auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; font-size: 16px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.task .head .speak + .tut { margin-left: 0; }
+@media (max-width: 480px) { .task .head .tut .lbl { display: none; } }
 .task .expr { font-size: 42px; font-weight: 700; text-align: center; margin: 10px 0 4px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 .task .clues { font-size: 21px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
 .task .clues div::before { content: '• '; color: var(--orange); }
@@ -2152,7 +2154,7 @@ const MJ = (() => {
     { title: 'Die Bank am Riesenrad', text: 'Neben dem Riesenrad steht eine Bank im Schatten. Du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
-  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
   return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG, barhSVG };
 })();
 
@@ -4097,20 +4099,20 @@ const MK = (() => {
   }
 
   const MODES = {
-    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
+    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, grade: 3, subject: 'Ethik', title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
       order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
-    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
+    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, grade: 3, subject: 'Ethik', title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
       order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' },
         { w: 2, items: KJ_OSTERWEG, note: 'ostern', q: 'Tippe die Tage in der Reihenfolge an, in der sie im Jahr kommen.', qid: 'kjo_' }, { w: 2, items: KJ_JAHR, note: 'festkreis', q: 'Tippe die Feste in der Reihenfolge des Kirchenjahrs an: Es beginnt mit dem 1. Advent.', qid: 'kjj_' }] },
-    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
+    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, grade: 3, subject: 'Ethik', title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
       order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
-    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
-    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
-    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
+    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
+    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
+    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
       gen: (mod, tier, know, seq) => (mod === 'zahl' ? zahlTask(tier, know, seq) : mod === 'farbe' ? farbeTask(know, seq) : mod === 'odd' ? oddTask() : null) },
-    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
+    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
       gen: (mod, tier) => (mod === 'reihe' ? reiheTask(tier) : null) },
-    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
+    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, grade: 3, subject: 'Sachkunde', title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
   return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
 })();
@@ -4330,7 +4332,7 @@ const MS = (() => {
       return null;
     };
   }
-  const KO = { modules: KO_MODULES, tut: KO_TUT, notes: KO_NOTES, pool: KO_POOL, worlds: 1, title: 'Die Kornkammer', icon: '🌾', sub: 'Getreidearten, Getreidepflanze, vom Korn zum Brot', school: 'getreide',
+  const KO = { modules: KO_MODULES, tut: KO_TUT, notes: KO_NOTES, pool: KO_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Kornkammer', icon: '🌾', sub: 'Getreidearten, Getreidepflanze, vom Korn zum Brot', school: 'getreide',
     starters: [{ id: 'muellerin', type: 'normal', shape: 'muellerin', names: ['Die Müllerin', 'Die Müllerin', 'Die Müllerin'], hp: 70, desc: 'Sie mahlt in der Wassermühle aus Korn das Mehl für das ganze Dorf.', perk: 'heal',
       attacks: [{ name: 'Sichel', mod: 'parts' }, { name: 'Dreschflegel', mod: 'arten' }, { name: 'Mühlrad', mod: 'brot' }, { name: 'Mehlsack', mod: 'nutzen' }] }],
     extra: { parts: 'Ährenkranz', arten: 'Saatkorn', brot: 'Mahlstein', nutzen: 'Vorratskammer', wert: 'Erntekrone', lt: 'Kornsieb' },
@@ -4522,7 +4524,7 @@ const MS = (() => {
     return shuffle(fl.concat(st, [urnExperiment()]));
   }
 
-  const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
+  const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
     starters: [{ id: 'wetterwart', type: 'normal', shape: 'wetterwart', names: ['Der Wetterwart', 'Der Wetterwart', 'Der Wetterwart'], hp: 70, desc: 'Er liest jeden Morgen Thermometer, Regenmesser und Windfahne ab und schreibt alles auf.', perk: 'none',
       attacks: [{ name: 'Eiszapfen', mod: 'zustand' }, { name: 'Wasserkessel', mod: 'begriff' }, { name: 'Wolkenzug', mod: 'kreislauf' }, { name: 'Wetterhahn', mod: 'vorhersage' }] }],
     extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender' },
@@ -4756,7 +4758,7 @@ const MS = (() => {
       return null;
     };
   }
-  const KK = { modules: KK_MODULES, tut: KK_TUT, notes: KK_NOTES, pool: KK_POOL, worlds: 1, title: 'Kompass und Karte', icon: '🧭', sub: 'Himmelsrichtungen, Windrose, Plan mit Legende und die Schatzkarte', swap: { from: 'treasure', to: 'karte' },
+  const KK = { modules: KK_MODULES, tut: KK_TUT, notes: KK_NOTES, pool: KK_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Kompass und Karte', icon: '🧭', sub: 'Himmelsrichtungen, Windrose, Plan mit Legende und die Schatzkarte', swap: { from: 'treasure', to: 'karte' },
     starters: [{ id: 'kartenzeichnerin', type: 'normal', shape: 'kartenzeichnerin', names: ['Die Kartenzeichnerin', 'Die Kartenzeichnerin', 'Die Kartenzeichnerin'], hp: 70, desc: 'Sie vermisst Wege und Felder mit Kompass und Messkette und zeichnet daraus Karten.', perk: 'crit',
       attacks: [{ name: 'Sonnenstand', mod: 'richtung' }, { name: 'Kompassnadel', mod: 'rose' }, { name: 'Messkette', mod: 'plan' }, { name: 'Fernrohr', mod: 'karte' }] }],
     extra: { richtung: 'Polarstern', rose: 'Wetterfahne', plan: 'Grenzstein', karte: 'Wegweiser', lt: 'Merkvers' },
@@ -5032,7 +5034,7 @@ const MS2 = (() => {
   }
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung; nie eine Wahl, bei der das Kind eine Droge nimmt
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
-  const SI = { modules: SI_MODULES, tut: SI_TUT, notes: SI_NOTES, pool: SI_POOL, worlds: 1, title: 'Die fünf Sinne', icon: '👁️', sub: 'Auge, Ohr, Sinne schützen, Hilfen im Alltag, Nein zu Drogen und Sinnestäuschungen', school: ['auge', 'ohr'], swap: { from: 'event', to: 'taeusch' }, labor: illusionSet,
+  const SI = { modules: SI_MODULES, tut: SI_TUT, notes: SI_NOTES, pool: SI_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die fünf Sinne', icon: '👁️', sub: 'Auge, Ohr, Sinne schützen, Hilfen im Alltag, Nein zu Drogen und Sinnestäuschungen', school: ['auge', 'ohr'], swap: { from: 'event', to: 'taeusch' }, labor: illusionSet,
     starters: [{ id: 'schulaerztin', type: 'normal', shape: 'schulaerztin', names: ['Die Schulärztin', 'Die Schulärztin', 'Die Schulärztin'], hp: 70, desc: 'Sie prüft bei allen Kindern, wie gut sie sehen und hören, und erklärt, wie man Augen und Ohren schützt.', perk: 'heal',
       attacks: [{ name: 'Sehtafel', mod: 'parts' }, { name: 'Stimmgabel', mod: 'sinne' }, { name: 'Ohrenschützer', mod: 'schutz' }, { name: 'Frische Luft', mod: 'drogen' }] }],
     extra: { parts: 'Augenspiegel', sinne: 'Duftprobe', schutz: 'Sonnenhut', hilfe: 'Leitlinie', drogen: 'Klares Nein', lt: 'Merkzettel' },
@@ -5377,7 +5379,7 @@ const MS2 = (() => {
       return null;
     };
   }
-  const VE = { modules: VE_MODULES, tut: VE_TUT, notes: VE_NOTES, pool: VE_POOL, worlds: 1, title: 'Sicher im Verkehr', icon: '🚲', sub: 'Verkehrszeichen, Vorfahrt, das sichere Fahrrad, Schulweg und Helm', school: 'fahrrad',
+  const VE = { modules: VE_MODULES, tut: VE_TUT, notes: VE_NOTES, pool: VE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Sicher im Verkehr', icon: '🚲', sub: 'Verkehrszeichen, Vorfahrt, das sichere Fahrrad, Schulweg und Helm', school: 'fahrrad',
     starters: [{ id: 'verkehrspolizistin', type: 'normal', shape: 'verkehrspolizistin', names: ['Die Verkehrspolizistin', 'Die Verkehrspolizistin', 'Die Verkehrspolizistin'], hp: 70, desc: 'Sie übt mit Schulkindern auf dem Übungsplatz das Radfahren und prüft, ob jedes Fahrrad verkehrssicher ist.', perk: 'crit',
       attacks: [{ name: 'Kelle', mod: 'zeichen' }, { name: 'Trillerpfeife', mod: 'vorfahrt' }, { name: 'Luftpumpe', mod: 'parts' }, { name: 'Warnweste', mod: 'weg' }] }],
     extra: { zeichen: 'Schilderwald', vorfahrt: 'Handzeichen', parts: 'Fahrradcheck', fehlt: 'Werkzeugkasten', weg: 'Schulwegplan', lt: 'Verkehrsfibel' },
@@ -5740,7 +5742,7 @@ const MS3 = (() => {
       return null;
     };
   }
-  const WI = { modules: WI_MODULES, tut: WI_TUT, notes: WI_NOTES, pool: WI_POOL, worlds: 1, title: 'Die Wiese', icon: '🌼', sub: 'Wiesenpflanzen, Stockwerke, wie Kleintiere wachsen, Herbarium und Naturschutz',
+  const WI = { modules: WI_MODULES, tut: WI_TUT, notes: WI_NOTES, pool: WI_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wiese', icon: '🌼', sub: 'Wiesenpflanzen, Stockwerke, wie Kleintiere wachsen, Herbarium und Naturschutz',
     starters: [{ id: 'imkerin', type: 'pflanze', shape: 'imkerin', names: ['Die Imkerin', 'Die Imkerin', 'Die Imkerin'], hp: 70, desc: 'Ihre Bienenkästen stehen am Rand der Wiese. Sie weiß, welche Blumen ihre Bienen besuchen.', perk: 'heal',
       attacks: [{ name: 'Blütenstaub', mod: 'pflanze' }, { name: 'Bienenschwarm', mod: 'stock' }, { name: 'Honigwabe', mod: 'entw' }, { name: 'Imkerpfeife', mod: 'herbar' }] }],
     extra: { pflanze: 'Blütenstaub', stock: 'Bienenschwarm', entw: 'Honigwabe', herbar: 'Imkerpfeife', schutz: 'Blühstreifen', sinne: 'Wiesenduft' },
@@ -5910,7 +5912,7 @@ const MS3 = (() => {
     };
   }
   // Dilemma-Karten wie bei Gute Freunde: jede Wahl bekommt dieselbe Belohnung
-  const FR = { modules: FR_MODULES, tut: FR_TUT, notes: FR_NOTES, pool: FR_POOL, worlds: 1, title: 'Früher und heute', icon: '🕰️', sub: 'Leben auf dem Land früher, Zeitleiste, Sprachen und Feste, Nachschlagen und Prüfen',
+  const FR = { modules: FR_MODULES, tut: FR_TUT, notes: FR_NOTES, pool: FR_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Früher und heute', icon: '🕰️', sub: 'Leben auf dem Land früher, Zeitleiste, Sprachen und Feste, Nachschlagen und Prüfen',
     starters: [{ id: 'heimatforscherin', type: 'normal', shape: 'heimatforscherin', names: ['Die Heimatforscherin', 'Die Heimatforscherin', 'Die Heimatforscherin'], hp: 70, desc: 'Sie sammelt alte Fotos und Geräte für das Heimatmuseum und schreibt auf, was die Großeltern erzählen.', perk: 'crit',
       attacks: [{ name: 'Petroleumlampe', mod: 'geraet' }, { name: 'Fotoalbum', mod: 'zeit' }, { name: 'Weltkarte', mod: 'kultur' }, { name: 'Karteikasten', mod: 'medien' }] }],
     extra: { geraet: 'Petroleumlampe', alltag: 'Schiefertafel', zeit: 'Fotoalbum', kultur: 'Weltkarte', medien: 'Karteikasten', pruefen: 'Zeitungsarchiv' },
@@ -6276,7 +6278,7 @@ const ME = (() => {
   };
 
   const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, tut: TUT, notes: NOTES, pool: POOL, worlds: 2, byWorld: true, worldAttacks: WORLD_ATTACKS, gen,
-    title: 'Ich, wir und die Welt', icon: '🌍', sub: 'Welt 1 „Ich im Wir“: Stärken, Mut, Vorurteile, Gut und Böse. Welt 2 „Wir in der Welt“: Natur, Umwelt, die vier Elemente',
+    grade: 3, subject: 'Ethik', title: 'Ich, wir und die Welt', icon: '🌍', sub: 'Welt 1 „Ich im Wir“: Stärken, Mut, Vorurteile, Gut und Böse. Welt 2 „Wir in der Welt“: Natur, Umwelt, die vier Elemente',
     order: [{ items: VERSOEHNEN, note: 'gutboese', q: 'So versöhnt man sich: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwv_' }, { items: BESSER, note: 'staerken', q: 'So wirst du besser: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwb_' },
       { w: 2, items: ARCHE, note: 'natur', q: 'Die Bibel erzählt von Noah: Tippe die Teile in der richtigen Reihenfolge an.', qid: 'iwa_' }, { w: 2, items: PAPIER, note: 'bewahren', q: 'Vom Altpapier zum neuen Heft: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwp_' }] };
   K.MODES.ichwelt = MODE;
@@ -6659,7 +6661,7 @@ const MU = (() => {
     return null;
   }
 
-  const MODE = { modules: MODULES, tut: TUT, notes: NOTES, pool: POOL, worlds: 1, title: 'Der Konzertsaal', icon: '🎻', sub: 'Noten und Takt, Tonhöhen, Instrumente, Komponisten und Musik der Welt', gen,
+  const MODE = { modules: MODULES, tut: TUT, notes: NOTES, pool: POOL, worlds: 1, grade: 3, subject: 'Musik', title: 'Der Konzertsaal', icon: '🎻', sub: 'Noten und Takt, Tonhöhen, Instrumente, Komponisten und Musik der Welt', gen,
     starters: [{ id: 'dirigentin', type: 'normal', shape: 'dirigentin', names: ['Die Dirigentin', 'Die Dirigentin', 'Die Dirigentin'], hp: 75, desc: 'Sie leitet das Orchester. Mit dem Taktstock zeigt sie Takt, Tempo und Lautstärke. Treffer machen ihr weniger.', perk: 'tank',
       attacks: [{ name: 'Taktstock', mod: 'noten' }, { name: 'Metronom', mod: 'takt' }, { name: 'Stimmgabel', mod: 'ton' }, { name: 'Notenpult', mod: 'instr' }] }],
     extra: { noten: 'Notenbalken', takt: 'Taktstrich', ton: 'Tonleiter', instr: 'Orchestergraben', begriffe: 'Fortissimo', komp: 'Partitur', laender: 'Konzertreise', lt: 'Notenheft' },
@@ -10857,45 +10859,24 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.", "Eltern können Fächer, Themen und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.", "Eltern sehen zu jeder Aufgabenart, was sie übt, mit Beispiel und Bezug zum Lehrplan Sachsen."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet in Überblick, Inhalte und Einstellungen und fragt vor jedem Löschen nach.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu gezeichnet, kleine Symbole sehen überall gleich aus, und Zeichnungen in Aufgaben sind klarer."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.", "Der Knopf mit dem Lautsprecher liest dir jede Aufgabe mit ihren Antworten vor.", "Eltern können Fächer, Themen und Helden ausblenden und sehen zu jeder Aufgabenart, was sie übt."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet in Überblick, Inhalte und Einstellungen und fragt vor jedem Löschen nach.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu gezeichnet, kleine Symbole sehen überall gleich aus, und Zeichnungen in Aufgaben sind klarer."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
-  const MODES = {
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
-    ethik: MK.MODES.ethik,
-    kirchenjahr: MK.MODES.kirchenjahr,
-    kartoffel: MK.MODES.kartoffel,
-    woerterwerkstatt: MK.MODES.woerterwerkstatt,
-    satzbaustelle: MK.MODES.satzbaustelle,
-    kornkammer: MK.MODES.kornkammer,
-    wetterstation: MK.MODES.wetterstation,
-    kompass: MK.MODES.kompass,
-    wiese: MK.MODES.wiese,
-    frueher: MK.MODES.frueher,
-    freunde: MK.MODES.freunde,
-    teestube: MK.MODES.teestube,
-    doppeldecker: MK.MODES.doppeldecker,
-    ichwelt: MK.MODES.ichwelt,
+  // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES.
+  const MODES = Object.assign({
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
+    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
     jahrmarkt: MJ.MODE,
-    sinne: MK.MODES.sinne,
-    verkehr: MK.MODES.verkehr,
-    musik: MK.MODES.musik,
-  };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
-  // the title screen builds itself from this list
-  const CURRICULUM = [
-    { grade: 3, label: 'Klasse 3', subjects: [
-      { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
-      { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
-      { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde', 'ichwelt'] },
-      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher', 'sinne', 'verkehr'] },
-      { subject: 'Musik', icon: '🎵', modes: ['musik'] },
-      { subject: 'Englisch', icon: '💬', modes: ['teestube', 'doppeldecker'] },
-    ] },
-  ];
+  }, MK.MODES);
+  // the Monsterbuch and the hero lists keep this order; new units follow in the order they register
+  const FIRST = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
+  const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
+  // the title screen builds itself from grade and subject of the units
+  const SUBJECTS = { Mathe: '🔢', Deutsch: '📖', Ethik: '🕊️', Sachkunde: '🌱', Musik: '🎵', Englisch: '💬' };
+  const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort().map((grade) => ({ grade, label: 'Klasse ' + grade,
+    subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject) })).filter((x) => x.modes.length) }));
   let mode = 'math';
   const CFG = () => MODES[mode];
   const MODULES_OF = () => CFG().modules;
@@ -10929,7 +10910,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [] });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -11115,7 +11096,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
   /* ---------- Rendering primitives ---------- */
   let keyHandler = null; // physical keyboard while a number task is open
   // quiet: re-render without fade-in (battle turns)
-  function render(html, quiet) { keyHandler = null; app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
+  function render(html, quiet) { keyHandler = null; if (window.speechSynthesis) speechSynthesis.cancel(); app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
 
   /* ---------- Sounds ---------- */
   // phones stay silent until a user gesture, so the first tap unlocks the context
@@ -11196,7 +11177,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
       else if (task.labels) inputs = `<div class="nbline">${task.labels.map((l, i) => `<div class="inpgroup"><div class="inp" data-i="${i}"></div><span>${esc(l)}</span></div>`).join('')}</div>`;
       else inputs = `<div class="inputs">${task.answers.map((_, i) => `<div class="inp" data-i="${i}"></div>`).join('')}</div>`;
       const a0 = task.answers[0]; const lo = Math.max(0, a0 - 1 - Math.floor(Math.random() * 3)); const hint = opts.hint ? `<div class="hintline">🌉 Tipp: ${task.answers.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>` : '';
-      return `<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
+      return `<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
     }
     container.innerHTML = cardHtml();
     bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
@@ -11204,6 +11185,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
     function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); const a = inps[active]; if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' }); }
     inps.forEach((el) => { el.onclick = () => { if (!locked) { active = +el.dataset.i; paint(); } }; });
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
+    readAloud(container, opts.bottom);
     paint();
     bottom.onclick = (e) => {
       const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; press(b.dataset.k);
@@ -11250,10 +11232,26 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
     }
   }
 
+  /* ---------- Vorlesen ---------- */
+  // Only a voice that lives on the device: a network voice would send the task text away.
+  const TTS = window.speechSynthesis;
+  if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
+  const voice = () => (TTS && meta.speak ? TTS.getVoices().find((v) => v.localService && /^de/i.test(v.lang)) : null);
+  const spoken = (t) => t.replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ');
+  function speak(text) { const v = voice(); if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = 0.9; TTS.speak(u); }
+  // reads the task and its answers; units for Klasse 1 and 2 start reading on their own
+  function readAloud(container, bottom) {
+    if (!voice()) return;
+    $('.tut', container).insertAdjacentHTML('beforebegin', '<button class="tut speak" type="button" aria-label="Vorlesen">🔊</button>');
+    const read = () => speak([...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(bottom || container).querySelectorAll('.opt, .oitem')].map((e) => e.textContent.trim()).filter(Boolean).join('. '));
+    $('.speak', container).onclick = read;
+    if (CFG().grade < 3) read();
+  }
+
   /* ---------- Choice / order / parts tasks ---------- */
   function runChoiceTask(task, opts, done) {
     const container = opts.container, bottom = opts.bottom; const M = MODULES_OF()[task.mod] || READ_MOD; let locked = false;
-    const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈 Wie geht das?</button></div>`;
+    const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>`;
     // with two options crossing one out gives the answer away, so show the notes instead
     const strikeWrongOption = () => { if (task.options.length <= 2) { const n = task.note && CFG().notes ? CFG().notes[task.note] : null; $('#fb', container).insertAdjacentHTML('beforebegin', task.tip ? `<div class="hintline">🌉 Tipp: ${esc(task.tip)}</div>` : n ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>` : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>'); return; } const wrong = [...bottom.querySelectorAll('.opt')].filter((b) => task.options[+b.dataset.i] !== task.answer); const w = wrong[Math.floor(Math.random() * wrong.length)]; if (w) { w.disabled = true; w.classList.add('struck'); } $('#fb', container).insertAdjacentHTML('beforebegin', '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>'); };
     const finish = (ok, extraHtml) => {
@@ -11298,6 +11296,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
       paint();
     }
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
+    readAloud(container, opts.bottom);
   }
 
   /* ---------- Potato plant drawing ---------- */
@@ -11538,7 +11537,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
       for (const [k, v] of Object.entries(iw.tally)) { const d = dw.tally[k] || { c: 0, t: 0 }; dw.tally[k] = { c: d.c + v.c, t: d.t + v.t }; }
     }
     // a device without PIN was not set up yet, so it takes the settings from the code
-    if (!dev.pin && inc.pin) for (const k of ['off', 'hidden', 'sound', 'grade', 'pin', 'setup']) m[k] = inc[k];
+    if (!dev.pin && inc.pin) for (const k of ['off', 'hidden', 'sound', 'speak', 'grade', 'pin', 'setup']) m[k] = inc[k];
     return m;
   }
   function applySave(s, how) {
@@ -11613,7 +11612,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
-  const readsIn = (m) => CURRICULUM.some((g) => g.subjects.some((s) => ['Deutsch', 'Ethik'].includes(s.subject) && s.modes.includes(m)));
+  const readsIn = (m) => ['Deutsch', 'Ethik'].includes(MODES[m].subject);
   // same enemy, weak spot and HP on every device in this week
   function weekBossSpec(world) {
     const r = MQ.seeded(weekly().week + ':' + mode + ':' + world); const pool = CFG().enemies[world].normal; const e = pool[Math.floor(r() * pool.length)];
@@ -12639,6 +12638,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
         + `<div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('<b>Zusammenlegen</b> behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. <b>Ersetzen</b> überschreibt alles auf diesem Gerät. Vor beidem fragt Lernquest noch einmal nach.')}`)}</div>`
         + card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.')),
       app: () => card('Töne', sw(meta.sound, 'id="psound"', 'Töne an', '<span>Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</span>'))
+          + card('Vorlesen', sw(meta.speak, 'id="pspeak"', 'Aufgaben vorlesen', '<span>Ein Knopf bei jeder Aufgabe liest Frage und Antworten vor, in Klasse 1 und 2 von selbst. Es spricht die Stimme Ihres Geräts, ohne Internet.</span>'))
         + card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt. Ohne PIN kann jeder hier alles ändern.')}<button class="btn small" id="pset">PIN festlegen</button>`)
         + card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>${msg}`)
         + card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)
@@ -12667,6 +12667,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
     const newPin = () => setPin(() => screenParent('appsec', back), () => screenParent('appsec', back));
     on('#pnew, #pset, #pchange', newPin);
     on('#pdel', () => confirmBox('PIN entfernen?', '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>', 'Ja, PIN entfernen', () => { meta.pin = ''; saveAll(); again(); }, true));
+    on('#pspeak', () => { meta.speak = !meta.speak; saveAll(); again(); });
     on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
     on('#pfeedback', () => screenFeedback(() => screenParent('appsec', back)));
@@ -12754,7 +12755,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'e7c0fb88f95f';
+  const BUILD = '33caf5b05929';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

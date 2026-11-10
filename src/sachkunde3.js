@@ -329,7 +329,7 @@ const MS3 = (() => {
       return null;
     };
   }
-  const WI = { modules: WI_MODULES, tut: WI_TUT, notes: WI_NOTES, pool: WI_POOL, worlds: 1, title: 'Die Wiese', icon: '🌼', sub: 'Wiesenpflanzen, Stockwerke, wie Kleintiere wachsen, Herbarium und Naturschutz',
+  const WI = { modules: WI_MODULES, tut: WI_TUT, notes: WI_NOTES, pool: WI_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wiese', icon: '🌼', sub: 'Wiesenpflanzen, Stockwerke, wie Kleintiere wachsen, Herbarium und Naturschutz',
     starters: [{ id: 'imkerin', type: 'pflanze', shape: 'imkerin', names: ['Die Imkerin', 'Die Imkerin', 'Die Imkerin'], hp: 70, desc: 'Ihre Bienenkästen stehen am Rand der Wiese. Sie weiß, welche Blumen ihre Bienen besuchen.', perk: 'heal',
       attacks: [{ name: 'Blütenstaub', mod: 'pflanze' }, { name: 'Bienenschwarm', mod: 'stock' }, { name: 'Honigwabe', mod: 'entw' }, { name: 'Imkerpfeife', mod: 'herbar' }] }],
     extra: { pflanze: 'Blütenstaub', stock: 'Bienenschwarm', entw: 'Honigwabe', herbar: 'Imkerpfeife', schutz: 'Blühstreifen', sinne: 'Wiesenduft' },
@@ -499,7 +499,7 @@ const MS3 = (() => {
     };
   }
   // Dilemma-Karten wie bei Gute Freunde: jede Wahl bekommt dieselbe Belohnung
-  const FR = { modules: FR_MODULES, tut: FR_TUT, notes: FR_NOTES, pool: FR_POOL, worlds: 1, title: 'Früher und heute', icon: '🕰️', sub: 'Leben auf dem Land früher, Zeitleiste, Sprachen und Feste, Nachschlagen und Prüfen',
+  const FR = { modules: FR_MODULES, tut: FR_TUT, notes: FR_NOTES, pool: FR_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Früher und heute', icon: '🕰️', sub: 'Leben auf dem Land früher, Zeitleiste, Sprachen und Feste, Nachschlagen und Prüfen',
     starters: [{ id: 'heimatforscherin', type: 'normal', shape: 'heimatforscherin', names: ['Die Heimatforscherin', 'Die Heimatforscherin', 'Die Heimatforscherin'], hp: 70, desc: 'Sie sammelt alte Fotos und Geräte für das Heimatmuseum und schreibt auf, was die Großeltern erzählen.', perk: 'crit',
       attacks: [{ name: 'Petroleumlampe', mod: 'geraet' }, { name: 'Fotoalbum', mod: 'zeit' }, { name: 'Weltkarte', mod: 'kultur' }, { name: 'Karteikasten', mod: 'medien' }] }],
     extra: { geraet: 'Petroleumlampe', alltag: 'Schiefertafel', zeit: 'Fotoalbum', kultur: 'Weltkarte', medien: 'Karteikasten', pruefen: 'Zeitungsarchiv' },

@@ -10,8 +10,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Neu
 - Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.
-- Eltern können Fächer, Themen und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.
-- Eltern sehen zu jeder Aufgabenart, was sie übt, mit Beispiel und Bezug zum Lehrplan Sachsen.
+- Der Knopf mit dem Lautsprecher liest dir jede Aufgabe mit ihren Antworten vor.
+- Eltern können Fächer, Themen und Helden ausblenden und sehen zu jeder Aufgabenart, was sie übt.
 
 ### Verbessert
 - Der Elternbereich ist neu geordnet in Überblick, Inhalte und Einstellungen und fragt vor jedem Löschen nach.

@@ -316,7 +316,7 @@ const ME = (() => {
   };
 
   const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, tut: TUT, notes: NOTES, pool: POOL, worlds: 2, byWorld: true, worldAttacks: WORLD_ATTACKS, gen,
-    title: 'Ich, wir und die Welt', icon: '🌍', sub: 'Welt 1 „Ich im Wir“: Stärken, Mut, Vorurteile, Gut und Böse. Welt 2 „Wir in der Welt“: Natur, Umwelt, die vier Elemente',
+    grade: 3, subject: 'Ethik', title: 'Ich, wir und die Welt', icon: '🌍', sub: 'Welt 1 „Ich im Wir“: Stärken, Mut, Vorurteile, Gut und Böse. Welt 2 „Wir in der Welt“: Natur, Umwelt, die vier Elemente',
     order: [{ items: VERSOEHNEN, note: 'gutboese', q: 'So versöhnt man sich: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwv_' }, { items: BESSER, note: 'staerken', q: 'So wirst du besser: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwb_' },
       { w: 2, items: ARCHE, note: 'natur', q: 'Die Bibel erzählt von Noah: Tippe die Teile in der richtigen Reihenfolge an.', qid: 'iwa_' }, { w: 2, items: PAPIER, note: 'bewahren', q: 'Vom Altpapier zum neuen Heft: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwp_' }] };
   K.MODES.ichwelt = MODE;
