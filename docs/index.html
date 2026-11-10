@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="3b6d734a3761">
+<meta name="app-version" content="72318ce92e84">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -462,7 +462,26 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .numpad button:disabled { opacity: .45; cursor: default; }
 .jumpbar { display: flex; gap: 6px; padding: 8px 12px; background: var(--bg2); border-bottom: 3px solid rgba(255,255,255,.08); overflow-x: auto; flex: none; }
 .jumpbar button { flex: 1 0 auto; min-height: 44px; padding: 0 12px; border-radius: 999px; border: 2px solid rgba(255,255,255,.4); background: transparent; color: var(--paper-ink); font-weight: 700; font-size: 16px; cursor: pointer; }
-.psec { margin-top: 10px; color: var(--gold); }
+.jumpbar button.on { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.psec[hidden] { display: none; }
+.psub-h { margin: 6px 0 -4px; color: var(--gold); }
+.plist { margin: 0 0 10px; padding-left: 20px; font-size: 15px; color: var(--ink-soft); }
+.plist li { margin: 2px 0; }
+.psub, .pgame { border: 3px solid var(--card2); border-radius: 16px; margin-top: 8px; background: #fff; }
+.pgame { margin: 8px 0 0; }
+.psub summary, .pgame summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-height: 48px; padding: 10px 36px 10px 12px; cursor: pointer; list-style: none; position: relative; }
+.psub summary::-webkit-details-marker, .pgame summary::-webkit-details-marker { display: none; }
+.psub summary::after, .pgame summary::after { content: '›'; position: absolute; right: 14px; top: 8px; font-size: 24px; font-weight: 700; transition: rotate .15s; }
+.psub[open] > summary::after, .pgame[open] > summary::after { rotate: 90deg; }
+.fhead { font-size: 18px; font-weight: 700; }
+.pgame .fhead { font-size: 17px; }
+.fstate { font-size: 14px; color: var(--ink-soft); }
+.foldbody { padding: 0 12px 12px; }
+.pgroup h4 { margin: 10px 0 4px; }
+.pgroup .toggle small { display: block; font-size: 13px; font-weight: 400; }
+.tmsg { color: #A42020; font-size: 15px; margin: 4px 0 0; min-height: 0; }
+.tmsg:empty { display: none; }
+.btn.danger { background: var(--red); color: #fff; }
 .parent-stats .grades { justify-content: flex-start; margin-top: 6px; }
 .parent-stats .gradechip { color: var(--ink); border-color: var(--ink-soft); }
 .parentbtn .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 2px var(--bg2); }
@@ -515,6 +534,13 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .weekline span { font-size: 15px; color: var(--ink-soft); }
 .weekcard .bar, .goal .bar { display: block; width: 100%; margin-top: 8px; }
 .goal p { margin: 2px 0 0; font-size: 19px; font-weight: 700; }
+.goalgame { display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 700; margin: 2px 0 4px; }
+.goalgame span { font-size: 30px; }
+.goal.done { opacity: .75; }
+.goalplay { margin-top: 12px; }
+.goalbadge { display: block; background: #FFF1C7; color: #6B4E00; border-radius: 14px; padding: 4px 10px; font-size: 15px; font-weight: 700; margin: 8px 0 0; }
+.weekgo { display: block; margin-top: 8px; font-size: 16px; font-weight: 700; color: var(--ink); text-align: right; }
+.atk .tag.goal { background: #FFF1C7; color: #6B4E00; }
 .goalrow { display: flex; align-items: center; gap: 12px; } .goalrow b { white-space: nowrap; margin-top: 8px; }
 .codebox.reporttext { word-break: normal; font: 15px/1.4 var(--text); }
 .wmap .node.weekboss small { font-size: 9.5px; }
@@ -10438,7 +10464,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "items": ["Glücksrad, Windrose, Ortsplan und Verkehrszeichen sind neu gezeichnet.", "Kreisel und viele Monster sind feiner gezeichnet.", "Hütte, Schulgarten, Markt, Bergwerk und die Kartoffelpflanze sind neu gezeichnet.", "Die Bilder der Zeichenschule (Auge, Ohr, Fahrrad, Stockwerke der Wiese) und die Wiesenpflanzen sind neu gezeichnet."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.", "Eltern können Fächer, Themen und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist in vier Reiter aufgeteilt und viel kürzer: Fächer klappen erst beim Antippen auf.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu oder feiner gezeichnet, von Monstern und Kreiseln bis zu Hütte, Markt und Verkehrszeichen."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -10498,7 +10524,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
-    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} } });
+    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [] });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
   const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
@@ -10521,6 +10547,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
+    m.hidden = m.hidden.filter((x) => typeof x === 'string');
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
@@ -10537,6 +10564,10 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
   const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
   // switched off in the parent area; at least two stay on per mode
   const offList = (m) => (isObj(meta.off) && Array.isArray(meta.off[m]) ? meta.off[m] : []);
+  // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
+  const shown = (m) => !meta.hidden.includes('mode:' + m);
+  const heroShown = (m, s) => !meta.hidden.includes(`hero:${m}:${s.id}`);
+  const visSubjects = () => curGrade().subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) })).filter((sub) => sub.modes.length);
   const fightMods = (m) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
   // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
   const inWorld = (m, k) => { const c = MODES[m].modules[k].worldCap; return c[Math.min(run && run.mode === m ? run.world : 1, c.length) - 1] > 0; };
@@ -10618,25 +10649,30 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
   /* ---------- Weekly goals ---------- */
   // a new week starts fresh; finished weeks stay on the stamp card, nothing is taken away
   const weekly = () => { const k = MQ.isoWeek(new Date()); if (meta.weekly.week !== k) meta.weekly = { week: k, progress: [], done: false, beaten: [], tally: {} }; return meta.weekly; };
-  // one goal per subject of the grade, from the week key and the enabled task types only.
-  // Every branch draws the same numbers, so switching a task type off changes no other goal.
+  // one goal per shown subject of the grade, from the week key and the enabled task types only.
+  // Every branch draws the same numbers, so switching a task type off changes no other goal. A hidden game is
+  // replaced from its own seed, so the other subjects keep their goals. i is the goal's slot in weekly.progress.
   function weeklyGoals() {
     const r = MQ.seeded(weekly().week);
-    return curGrade().subjects.map((sub) => {
-      const m = sub.modes[Math.floor(r() * sub.modes.length)]; const on = enabledMods(m);
-      const kinds = ['right', 'elite', 'boss'].concat(MODES[m].worlds <= 2 ? ['win'] : []); // three worlds are too long for one week
+    const goal = (r, m) => {
+      const on = enabledMods(m); const kinds = ['right', 'elite', 'boss'].concat(MODES[m].worlds <= 2 ? ['win'] : []); // three worlds are too long for one week
       const kind = kinds[Math.floor(r() * kinds.length)]; const mod = seededOrder(r, Object.keys(MODES[m].modules)).find((k) => on.includes(k));
       const n = kind === 'right' ? 15 + Math.floor(r() * 11) : kind === 'elite' ? 2 + Math.floor(r() * 2) : (r(), 1);
-      return { m, kind, mod, n, subject: sub.subject };
-    });
+      return { m, kind, mod, n };
+    };
+    return curGrade().subjects.map((sub, i) => {
+      let g = goal(r, sub.modes[Math.floor(r() * sub.modes.length)]);
+      if (!shown(g.m)) { const vis = sub.modes.filter(shown); if (!vis.length) return null; const r2 = MQ.seeded(weekly().week + ':' + sub.subject); g = goal(r2, vis[Math.floor(r2() * vis.length)]); }
+      return Object.assign(g, { subject: sub.subject, i });
+    }).filter(Boolean);
   }
   const seededOrder = (r, arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const goalText = (g) => { const t = `„${MODES[g.m].title}“`; return g.kind === 'right' ? `Löse ${g.n} Aufgaben ${MODES[g.m].modules[g.mod].icon} ${MODES[g.m].modules[g.mod].name} richtig.` : g.kind === 'win' ? `Gewinne ein Abenteuer in ${t}.` : g.kind === 'elite' ? `Besiege ${g.n} Elitegegner in ${t}.` : `Besiege den Wochenboss in ${t}.`; };
-  const goalDone = (g, i) => (weekly().progress[i] || 0) >= g.n;
+  const goalDone = (g) => (weekly().progress[g.i] || 0) >= g.n;
   let weeklyNews = false; // the card waits for the next calm screen (map or title)
   function weeklyStep(kind, mod) {
     const w = weekly(); if (w.done) return; const goals = weeklyGoals();
-    goals.forEach((g, i) => { if (g.m === mode && g.kind === kind && (kind !== 'right' || g.mod === mod)) w.progress[i] = Math.min(g.n, (w.progress[i] || 0) + 1); });
+    goals.forEach((g) => { if (g.m === mode && g.kind === kind && (kind !== 'right' || g.mod === mod)) w.progress[g.i] = Math.min(g.n, (w.progress[g.i] || 0) + 1); });
     if (goals.every(goalDone)) { w.done = true; meta.stampCard[w.week] = 2; giveStamps(10); meta.progressAt = new Date().toISOString(); weeklyNews = true; }
   }
   function showWeeklyNews() {
@@ -10907,9 +10943,9 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
     render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
-        ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht gespeicherte Spiele nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
+        ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${weeklyCard()}
-        ${gradeTabs()}${gardenCard()}<div class="subjects">${curGrade().subjects.map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Spiel' : 'Spiele'}`}</span></button>`; }).join('')}</div>
+        ${gradeTabs()}${gardenCard()}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`; }).join('')}</div>
         <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
         <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
         <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
@@ -10918,7 +10954,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
     $('#parents').onclick = () => askPin(screenParent);
     if ($('#warnx')) { const seen = () => { meta.storage.warnedAt = new Date().toISOString(); saveAll(); }; $('#warnx').onclick = () => { seen(); screenTitle(); }; $('#warnp').onclick = () => { seen(); askPin(() => screenParent('save')); }; }
-    app.querySelectorAll('[data-sub]').forEach((b) => { b.onclick = () => screenSubject(curGrade().subjects[+b.dataset.sub]); });
+    app.querySelectorAll('[data-sub]').forEach((b) => { b.onclick = () => screenSubject(visSubjects()[+b.dataset.sub]); });
     $('#dex').onclick = screenDex;
     $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
     $('#news').onclick = screenNews;
@@ -10930,26 +10966,37 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     $('#weekly').onclick = screenWeekly;
     showWeeklyNews();
   }
-  const subjectOf = (m) => curGrade().subjects.find((sub) => sub.modes.includes(m));
+  const subjectOf = (m) => visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
+  const openGoals = (m) => weeklyGoals().filter((g) => g.m === m && !goalDone(g));
   function screenSubject(sub) {
-    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${openGoals(m).map((g) => `<p class="goalbadge">⭐ Wochenziel: ${esc(goalText(g))}</p>`).join('')}<div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenSubject(sub); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#back').onclick = screenTitle;
   }
-  const goalCount = (g, i) => Math.min(g.n, weekly().progress[i] || 0);
+  const goalCount = (g) => Math.min(g.n, weekly().progress[g.i] || 0);
   function weeklyCard() {
-    const goals = weeklyGoals(); const n = goals.filter(goalDone).length; const pct = Math.round((goals.reduce((a, g, i) => a + goalCount(g, i) / g.n, 0) / goals.length) * 100);
-    return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span></button>`;
+    const goals = weeklyGoals(); const n = goals.filter(goalDone).length; const pct = Math.round((goals.reduce((a, g) => a + goalCount(g) / g.n, 0) / goals.length) * 100);
+    return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span>${weekly().done ? '' : '<span class="weekgo">Ziele ansehen und loslegen ›</span>'}</button>`;
   }
   function screenWeekly() {
     const goals = weeklyGoals();
     render(`<div class="screen">${topbar('Wochenaufgabe')}<div class="scroll"><div class="stack">
       <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
-      ${goals.map((g, i) => { const c = goalCount(g, i); return `<div class="card goal"><div class="eyebrow">${esc(g.subject)}</div><p>${esc(goalText(g))}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div></div>`; }).join('')}
+      ${goals.map((g) => { const c = goalCount(g); const M = MODES[g.m]; return `<div class="card goal${c >= g.n ? ' done' : ''}"><div class="eyebrow">${esc(g.subject)}</div><div class="goalgame"><span aria-hidden="true">${M.icon}</span>${esc(M.title)}</div><p>${esc(goalText(g))}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n ? '' : `<button class="btn goalplay" data-goal="${g.i}">▶ ${loadRun(g.m) ? 'Weitermachen' : 'Jetzt loslegen'}</button>`}</div>`; }).join('')}
       <p class="center">Nichts geht verloren, wenn du eine Woche aussetzt. Neue Aufgaben gibt es am Montag.</p>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
+    app.querySelectorAll('[data-goal]').forEach((b) => { b.onclick = () => playGoal(goals.find((g) => g.i === +b.dataset.goal)); });
+  }
+  // straight into the game of a goal; an adventure whose hero lacks the goal's task type asks first
+  function playGoal(g) {
+    mode = g.m; run = loadRun(mode);
+    if (!run) return screenStarter(g);
+    if (g.kind !== 'right' || heroAttacks().some((a) => a.mod === g.mod)) return resumeRun();
+    const M = MODES[mode].modules[g.mod];
+    const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>Dein Held in „${esc(MODES[mode].title)}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes">Neues Abenteuer</button><button class="btn secondary" id="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no">Zurück</button></div>`);
+    $('#yes', ov).onclick = () => { run = null; screenStarter(g); }; $('#cont', ov).onclick = resumeRun; $('#no', ov).onclick = () => { run = null; ov.remove(); };
   }
 
   /* ---------- First start, PIN, parental gate ---------- */
@@ -11084,7 +11131,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
       for (const [k, v] of Object.entries(iw.tally)) { const d = dw.tally[k] || { c: 0, t: 0 }; dw.tally[k] = { c: d.c + v.c, t: d.t + v.t }; }
     }
     // a device without PIN was not set up yet, so it takes the settings from the code
-    if (!dev.pin && inc.pin) for (const k of ['off', 'sound', 'grade', 'pin', 'setup']) m[k] = inc[k];
+    if (!dev.pin && inc.pin) for (const k of ['off', 'hidden', 'sound', 'grade', 'pin', 'setup']) m[k] = inc[k];
     return m;
   }
   function applySave(s, how) {
@@ -11110,26 +11157,31 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     unpackSave(h).then(askImport, (e) => { const ov = modal(`<h2>Spielstand nicht geladen</h2><p>${esc(e.message)}</p><button class="btn" id="iok">OK</button>`); $('#iok', ov).onclick = () => ov.remove(); });
   }
 
-  function screenStarter() {
-    let sel = CFG().starters.length === 1 ? CFG().starters[0].id : null;
-    // recommend the monster whose attacks were practised least (and not the one played last time)
-    const S = CFG().starters.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
-    const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0);
+  // goal: the weekly goal this adventure was started for; its task type is offered as an attack
+  function screenStarter(goal) {
+    const vis = CFG().starters.filter((s) => heroShown(mode, s)); const S = vis.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
+    let sel = S.length === 1 ? S[0].id : null;
+    const want = goal && goal.kind === 'right' ? goal.mod : null;
+    // recommend the monster whose attacks were practised least (and not the one played last time); for a goal one that has its task type
+    const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0) - (want && s.attacks.some((a) => a.mod === want) ? 1e9 : 0);
     const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
-    // offer to swap the most practised attack for a task type that was hardly practised yet
+    // offer to swap the most practised attack for the goal's task type or one that was hardly practised yet
     let swap = null, swapOn = true;
-    const swapFor = (s) => { if (!s) return null; const have = s.attacks.map((a) => a.mod); const cand = enabledMods().filter((k) => !have.includes(k)).sort((a, b) => practice(a) - practice(b))[0]; const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
+    const swapFor = (s) => { if (!s) return null; const have = s.attacks.map((a) => a.mod); const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
+      if (want) return have.includes(want) || !most ? null : { from: most, to: want, goal: true };
+      const cand = enabledMods().filter((k) => !have.includes(k)).sort((a, b) => practice(a) - practice(b))[0];
       return cand && most && practice(most) >= practice(cand) + 3 ? { from: most, to: cand } : null; };
     const paintSwap = () => { const s = S.find((x) => x.id === sel); swap = swapFor(s); const box = $('#swapbox'); if (!box) return; const M = MODULES_OF();
-      box.innerHTML = swap ? `<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" aria-pressed="${swapOn}"><div class="meta"><div class="name">🎯 Neues üben: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name} (schon oft geübt) bekommst du die Attacke „${esc(CFG().extra[swap.to])}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>` : '';
+      box.innerHTML = swap ? `<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" aria-pressed="${swapOn}"><div class="meta"><div class="name">${swap.goal ? '⭐ Für dein Wochenziel' : '🎯 Neues üben'}: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name}${swap.goal ? '' : ' (schon oft geübt)'} bekommst du die Attacke „${esc(CFG().extra[swap.to])}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>` : '';
       if (swap) $('#swap').onclick = () => { swapOn = !swapOn; paintSwap(); }; };
-    render(`<div class="screen">${topbar(CFG().starters.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
-      ${S.map((s) => `<button class="choice ${CFG().starters.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? '<div class="recbadge">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>' : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
-      ${CFG().starters.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
+    render(`<div class="screen">${topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
+      ${goal ? `<p class="center goalbadge">⭐ Wochenziel: ${esc(goalText(goal))}</p>` : ''}
+      ${S.map((s) => `<button class="choice ${S.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? `<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${vis.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
       <div id="swapbox"></div>
       ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
-    $('#back').onclick = () => screenSubject(subjectOf(mode));
+    $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
     $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
@@ -11297,7 +11349,8 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     if (b.enemy.top) return topChoice(b);
     const atks = heroAttacks(); const MODULES = MODULES_OF();
     if (!atks.some((a) => a.mod === b.enemy.weak)) { b.enemy.weak = pickWeak(); saveAll(); } // older save or task types switched in the parent area
-    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.weak ? ', Schwachstelle' : ''}${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.weak ? '<span class="tag weak">🎯 Schwachstelle</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
+    const goalMods = openGoals(mode).filter((g) => g.kind === 'right').map((g) => g.mod);
+    $('#bottom').innerHTML = `<div class="attacks">${atks.map((a, i) => { const inf = attackInfo(b, a); return `<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-i="${i}" aria-label="${esc(a.name)}: ${MODULES[a.mod].name}, ${inf.dmg} Schaden${inf.weak ? ', Schwachstelle' : ''}${inf.strong ? ', stark' : ''}${inf.tired ? ', müde' : ''}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? '<span class="tag goal">⭐ Wochenziel</span>' : ''}${inf.weak ? '<span class="tag weak">🎯 Schwachstelle</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`; }).join('')}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
     $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
     app.querySelectorAll('.atk').forEach((btn) => { btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]); });
     if (!meta.seenTut['battle:intro2']) showBattleIntro();
@@ -11727,14 +11780,14 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null; setTimeout(SFX.lose, 200);
     render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p>${stampLine(b.stamps)}<p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
-    $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
+    $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenVictory() {
     meta.wins++; giveStamps(10); weeklyStep('win'); meta.progressAt = new Date().toISOString(); if (mode === 'kartoffel') meta.owned['beet-4'] = true;
     const roof = CFG().worlds >= 3 && !meta.owned['hut-dachfenster']; if (roof) meta.owned['hut-dachfenster'] = true; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
     render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}${roof ? '<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>' : ''}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
-    $('#again').onclick = screenStarter; $('#home').onclick = screenTitle;
+    $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenDex() {
     const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push({ ...EN[w].elite, elite: true }); all.push(EN[w].boss); } }
@@ -11743,12 +11796,12 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
   }
   function screenStamps(jump) {
     const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
-    const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', gespielt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
+    const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', geübt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
     const row = (r) => { const prev = r.icon ? `<div class="rwprev" aria-hidden="true">${r.icon}</div>` : r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
       return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${owns(r) ? '<div class="rwhave">✔ Schon geholt</div>' : r.price ? `<button class="btn small" data-buy="${r.id}" ${canBuy(r) ? '' : 'disabled'}>Holen · ${r.price} 🏷️${r.stein ? ` + ${r.stein} Stein` : ''}</button>` : ''}</div></div>`; };
     render(`<div class="screen">${topbar('Stempelheft')}<div class="scroll"><div class="stack">
       <div class="card center"><div class="stampbal">🏷️ ${meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenaufgabe: 10.</p></div>
-      <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du gespielt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
+      <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du geübt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', { outfit: 'strohhut' })}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
       <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
@@ -11955,8 +12008,8 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
   const duelAttacks = (p) => { const on = enabledMods(p.mode); const a = duelSpec(p).attacks.filter((x) => on.includes(x.mod)); return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k })); };
   function screenDuel(players) {
     const i = players.length; const p = { name: '', mode: null, hero: null };
-    const units = curGrade().subjects.flatMap((s) => s.modes);
-    const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s)) : []);
+    const units = visSubjects().flatMap((s) => s.modes);
+    const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s) && heroShown(p.mode, s)) : []);
     render(`<div class="screen">${topbar(`Duell · Kind ${i + 1} von 2`)}<div class="scroll"><div class="stack">
       ${i ? `<p class="center">${esc(players[0].name)} ist bereit. Jetzt wählt das zweite Kind.</p>` : '<p class="center">Zwei Kinder, ein Gerät. Ihr löst abwechselnd Aufgaben. Jede richtige Antwort trifft den Helden des anderen Kindes.</p>'}
       <div class="card"><h3><label for="dname">Dein Name</label></h3><input id="dname" class="nameinput" maxlength="12" autocomplete="off" placeholder="Kind ${i + 1}"><p class="pnote">Der Name wird nicht gespeichert.</p></div>
@@ -12024,7 +12077,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
       weak ? `Schwächste Aufgabenart: ${label(weak)} (${weak.c} von ${weak.t} richtig)` : '', `Wochenziele: ${done} von ${goals.length} erledigt`].filter(Boolean).join('\n');
     const html = `<p class="pnote">Kalenderwoche ${wk}, seit Montag.</p>${rows.length ? `<table><tr><th>Art</th><th>Richtig</th></tr>${rows.map((r) => `<tr><td>${r.icon} ${esc(label(r))}</td><td>${r.c} / ${r.t}</td></tr>`).join('')}</table>` : '<p class="pnote">Diese Woche noch nichts geübt.</p>'}
       <div class="statrow"><span class="n">Schwächste Aufgabenart</span><span>${weak ? `${weak.icon} ${esc(label(weak))}` : 'noch zu wenig geübt'}</span></div>
-      <h4 style="margin:10px 0 4px">Wochenziele: ${done} von ${goals.length} erledigt</h4>${goals.map((g, i) => `<div class="statrow"><span class="n">${esc(goalText(g))}</span><span>${goalCount(g, i)} / ${g.n}</span></div>`).join('')}
+      <h4 style="margin:10px 0 4px">Wochenziele: ${done} von ${goals.length} erledigt</h4>${goals.map((g) => `<div class="statrow"><span class="n">${esc(goalText(g))}</span><span>${goalCount(g)} / ${g.n}</span></div>`).join('')}
       <label for="wtext" class="pnote">Als Text</label><textarea id="wtext" class="codebox reporttext" rows="6" readonly>${esc(text)}</textarea><button class="btn small" id="wcopy">Als Text kopieren</button><p id="wmsg" role="status" class="pnote"></p>`;
     return { text, html };
   }
@@ -12079,7 +12132,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     };
     const got = Object.keys(MK.CROPS).filter((k) => meta.materials[k]).map((k) => `${MK.CROPS[k].name} ${meta.materials[k]}`);
     render(`<div class="screen">${topbar('Schulgarten')}<div class="scroll"><div class="stack">
-      <div class="card"><p>Beete wachsen auch, wenn du nicht spielst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
+      <div class="card"><p>Beete wachsen auch, wenn du Pause machst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
       <div class="beds">${meta.garden.beds.map(bed).join('')}</div>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
@@ -12106,46 +12159,62 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
       $('#hnext', ov).focus(); $('#hnext', ov).onclick = screenGarden;
     }; });
   }
+  const pOpen = new Set(); // folded-open parts of the parent area stay open when a switch re-renders it
+  let pTab = 'practice';
   function screenParent(jump, back) {
     back = typeof back === 'function' ? back : screenTitle;
-    const again = (j) => screenParent(j, back);
+    const TABS = { practice: 'Üben', progress: 'Fortschritt', save: 'Spielstand', appsec: 'App' };
+    pTab = TABS[jump] ? jump : jump === 'load' ? 'save' : jump ? pTab : 'practice';
+    const again = (j) => screenParent(j || pTab, back);
     const card = (h, body) => `<div class="card parent-stats"><h3>${h}</h3>${body}</div>`;
     const note = (t) => `<p class="pnote">${t}</p>`;
-    const tables = MODE_KEYS.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).map((k) => { const s = meta.stats[m][k]; const acc = s.t ? Math.round((s.c / s.t) * 100) : 0; return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return card(`${MODES[m].icon} ${MODES[m].title}`, `<table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Aktuell</th></tr>${rows}</table>`); }).join('');
+    const sw = (on, attr, label) => `<button class="toggle ${on ? 'on' : ''}" ${attr} aria-pressed="${on}">${on ? '✔' : '✖'} ${label}</button>`;
+    const group = (h, body) => `<div class="pgroup">${h ? `<h4>${h}</h4>` : ''}${body}<p class="tmsg" role="status"></p></div>`;
+    const fold = (key, cls, head, state, body) => `<details class="${cls}" data-fold="${key}"${pOpen.has(key) ? ' open' : ''}><summary><span class="fhead">${head}</span><span class="fstate">${state}</span></summary><div class="foldbody">${body}</div></details>`;
+    const gameState = (m) => { if (!shown(m)) return 'ausgeblendet'; const all = Object.keys(MODES[m].modules); const n = all.filter((k) => !offList(m).includes(k)).length; const S = MODES[m].starters;
+      return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`; };
+    const gameBody = (m) => { const c = MODES[m];
+      return group('', sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen'))
+        + (c.starters.length > 1 ? group('Helden', `<div class="toggles">${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, `${esc(x.names[0])}<small>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</small>`)).join('')}</div>`) : '')
+        + group('Aufgabenarten', `<div class="toggles">${Object.keys(c.modules).map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${c.modules[k].name}`)).join('')}</div>`); };
+    const subjects = curGrade().subjects.map((sub, i) => { const vis = sub.modes.filter(shown).length;
+      const body = sub.modes.length === 1 ? gameBody(sub.modes[0]) : group('', sw(vis > 0, `data-hidesub="${i}"`, 'Fach anzeigen')) + sub.modes.map((m) => fold('mode:' + m, 'pgame', `${MODES[m].icon} ${MODES[m].title}`, gameState(m), gameBody(m))).join('');
+      return fold('sub:' + sub.subject, 'psub', `${sub.icon} ${esc(sub.subject)}`, !vis ? 'ausgeblendet' : sub.modes.length === 1 ? gameState(sub.modes[0]) : `${vis} von ${sub.modes.length} Themen`, body); }).join('');
+    const played = MODE_KEYS.filter((m) => Object.values(meta.stats[m]).some((x) => x.t > 0));
+    const tables = played.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).filter((k) => meta.stats[m][k].t > 0).map((k) => { const s = meta.stats[m][k]; const acc = Math.round((s.c / s.t) * 100); return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return card(`${MODES[m].icon} ${MODES[m].title}`, `<table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Stufe</th></tr>${rows}</table>`); }).join('');
     const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = Object.values(MK.MODES).flatMap((c) => c.pool).find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
-    const toggles = MODE_KEYS.map((m) => `<h4 style="margin:10px 0 4px">${MODES[m].icon} ${MODES[m].title}</h4><div class="toggles">${Object.keys(MODES[m].modules).map((k) => { const on = !offList(m).includes(k); return `<button class="toggle ${on ? 'on' : ''}" data-m="${m}" data-k="${k}" aria-pressed="${on}">${on ? '✔' : '✖'} ${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</button>`; }).join('')}</div>`).join('');
     const report = weekReport();
-    const SECTIONS = { practice: 'Üben', progress: 'Fortschritt', save: 'Spielstand', appsec: 'App' };
     const version = (document.querySelector('meta[name=app-version]') || {}).content || '?';
-    render(`<div class="screen">${topbar('Elternbereich')}<nav class="jumpbar" aria-label="Abschnitte">${Object.entries(SECTIONS).map(([id, t]) => `<button data-jump="${id}">${t}</button>`).join('')}</nav><div class="scroll"><div class="stack">
+    const sec = (id, body) => `<section class="psec" id="p-${id}" role="tabpanel" aria-label="${TABS[id]}"${id === pTab ? '' : ' hidden'}><div class="stack">${body}</div></section>`;
+    render(`<div class="screen">${topbar('Elternbereich')}<nav class="jumpbar" role="tablist" aria-label="Bereiche">${Object.entries(TABS).map(([id, t]) => `<button role="tab" data-jump="${id}" aria-selected="${id === pTab}" class="${id === pTab ? 'on' : ''}">${t}</button>`).join('')}</nav><div class="scroll"><div class="stack">
       ${meta.pin ? '' : `<div class="card warncard"><p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
-      <h2 class="psec" id="p-practice">Üben</h2>
-      ${card('Klasse', gradeTabs())}
-      ${card('Was soll geübt werden?', `${note('Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke, Ereignis oder Training vor. Mindestens zwei bleiben an. Ist „Geld“ aus, gibt es keinen Markt und keine Münzen. Gilt sofort, auch für laufende Abenteuer.')}${toggles}<p id="tmsg" role="status" class="pnote" style="color:#A42020;min-height:1em;margin:6px 0 0"></p>`)}
-      <p class="muted">Die Stufe passt sich an: 5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Zahlenquest bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.</p>
-      <h2 class="psec" id="p-progress">Fortschritt</h2>
-      ${card('Stempel', `<div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>`)}
-      <div id="pruns">${card('🗺️ Abenteuer', `<div class="statrow"><span class="n">Begonnen</span><span>${meta.runs}</span></div><div class="statrow"><span class="n">Bis zum Ende geschafft</span><span>${meta.wins}</span></div>${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt. Die übrigen Abenteuer wurden verloren, abgebrochen oder laufen noch.')}`)}</div>
+      ${sec('practice', `
+      ${CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : ''}
+      ${card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach, um Themen, Helden und Aufgabenarten ein- oder auszuschalten. Das gilt sofort.')}<ul class="plist"><li>Ausgeblendete Fächer, Themen und Helden erscheinen nicht mehr. Laufende Abenteuer bleiben gespeichert.</li><li>Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke vor. Mindestens zwei bleiben an.</li><li>Ist „Geld“ aus, gibt es keinen Markt und keine Münzen.</li></ul>${subjects}`)}
+      ${card('So passt sich Lernquest an', note('5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Zahlenquest bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.'))}`)}
+      ${sec('progress', `
       <div id="p-weekrep">${card('Wochenbericht', report.html)}</div>
-      ${tables}
-      ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug gespielt.'))}
-      <h2 class="psec" id="p-save">Spielstand</h2>
+      ${card('Überblick', `<div class="statrow"><span class="n">Abenteuer begonnen</span><span>${meta.runs}</span></div><div class="statrow"><span class="n">Bis zum Ende geschafft</span><span>${meta.wins}</span></div><div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`)}
+      <h3 class="psub-h">Trefferquote je Thema</h3>
+      ${tables || note('Noch nichts geübt.')}${tables ? note('Hier stehen nur Themen und Aufgabenarten, die schon geübt wurden. „Stufe“ zeigt den Stand im laufenden Abenteuer.') : ''}
+      ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug geübt.'))}`)}
+      ${sec('save', `
       ${backupDue() ? `<div class="card warncard" id="pwarn"><p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>` : ''}
       ${card('Spielstand sichern', `${note('Der Code enthält den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)}
       <div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.')}`)}</div>
-      ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Spielen. Als App auf dem Startbildschirm ist er sicherer.'))}
-      <button class="btn secondary" id="rstats">Statistik zurücksetzen</button><button class="btn ghost" id="rall">Alles löschen (Abenteuer, Monsterbuch, Statistik)</button>
-      <h2 class="psec" id="p-appsec">App</h2>
+      ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.'))}
+      ${card('Zurücksetzen', `${note('Statistik zurücksetzen löscht nur die Zahlen unter „Fortschritt“. Alles löschen setzt Lernquest ganz auf Anfang.')}<div class="stack"><button class="btn small secondary" id="rstats">Statistik zurücksetzen</button><button class="btn small danger" id="rall">Alles löschen</button></div>`)}`)}
+      ${sec('appsec', `
       ${card('Töne', `${note('Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).')}<button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button>`)}
       ${card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt.')}<button class="btn small" id="pset">PIN festlegen</button>`)}
-      <button class="btn secondary" id="rtut">Alle Erklärungen wieder einmalig anzeigen</button><button class="btn secondary" id="pfeedback">Idee oder Fehler melden</button>
-      <p class="center muted">Lernquest, Version ${esc(version)}</p>
-      </div></div><div class="bottom"><button class="btn" id="back">Zurück zum Spiel</button></div></div>`);
+      ${card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>`)}
+      ${card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)}
+      <p class="center muted">Lernquest, Version ${esc(version)}</p>`)}
+      </div></div><div class="bottom"><button class="btn" id="back">Zurück zu Lernquest</button></div></div>`);
     const scroller = $('.scroll');
-    const go = (id) => { const el = $('#p-' + id); if (el) scroller.scrollTop = el.offsetTop - scroller.offsetTop - 8; };
-    app.querySelectorAll('[data-jump]').forEach((b) => { b.onclick = () => go(b.dataset.jump); });
-    if (jump) go(jump);
-    if (jump === 'load') $('#pcodein').focus({ preventScroll: true });
+    app.querySelectorAll('[data-jump]').forEach((b) => { b.onclick = () => { pTab = b.dataset.jump; app.querySelectorAll('[data-jump]').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); }); app.querySelectorAll('section.psec').forEach((el) => { el.hidden = el.id !== 'p-' + pTab; }); scroller.scrollTop = 0; }; });
+    app.querySelectorAll('details[data-fold]').forEach((d) => { d.ontoggle = () => { if (d.open) pOpen.add(d.dataset.fold); else pOpen.delete(d.dataset.fold); }; });
+    if (jump === 'load') { const el = $('#p-load'); scroller.scrollTop = el.offsetTop - scroller.offsetTop - 8; $('#pcodein').focus({ preventScroll: true }); }
     $('#back').onclick = () => back();
     const keepScroll = (fn) => () => { const y = scroller.scrollTop; fn(); $('.scroll').scrollTop = y; };
     $('#rtut').onclick = keepScroll(() => { meta.seenTut = {}; saveAll(); again(); });
@@ -12179,8 +12248,21 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = keepScroll(() => { meta.grade = +b.dataset.grade; saveAll(); again(); }); });
     app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
       const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
-      if (i >= 0) off.splice(i, 1); else { if (!MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2) { $('#tmsg').textContent = 'Mindestens zwei Aufgabenarten müssen an bleiben.'; return; } off.push(k); }
+      if (i >= 0) off.splice(i, 1); else { if (!MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2) { say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.'); return; } off.push(k); }
       meta.off[m] = off; saveAll(); keepScroll(again)(); }; });
+    const say = (b, t) => { b.closest('.pgroup').querySelector('.tmsg').textContent = t; };
+    const setHidden = (keys, hide) => { meta.hidden = meta.hidden.filter((x) => !keys.includes(x)).concat(hide ? keys : []); };
+    const noGameLeft = (keys) => !curGrade().subjects.some((sub) => sub.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
+    app.querySelectorAll('[data-hide]').forEach((b) => { b.onclick = () => {
+      const key = b.dataset.hide; const hide = !meta.hidden.includes(key); const [kind, m, id] = key.split(':');
+      if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
+      // a hero that is a reward does not count: it may still be locked
+      if (hide && kind === 'hero' && !REWARDS.some((r) => r.hero === id) && !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))) return say(b, 'Mindestens ein Held muss bleiben.');
+      setHidden([key], hide); saveAll(); keepScroll(again)(); }; });
+    app.querySelectorAll('[data-hidesub]').forEach((b) => { b.onclick = () => {
+      const keys = curGrade().subjects[+b.dataset.hidesub].modes.map((m) => 'mode:' + m); const hide = keys.some((k) => !meta.hidden.includes(k));
+      if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
+      setHidden(keys, hide); saveAll(); keepScroll(again)(); }; });
   }
 
   /* ---------- Feedback ---------- */
@@ -12226,7 +12308,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '3b6d734a3761';
+  const BUILD = '72318ce92e84';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

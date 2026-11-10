@@ -8,11 +8,14 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ## 2026-11-10
 
+### Neu
+- Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.
+- Eltern können Fächer, Themen und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.
+
 ### Verbessert
-- Glücksrad, Windrose, Ortsplan und Verkehrszeichen sind neu gezeichnet.
-- Kreisel und viele Monster sind feiner gezeichnet.
-- Hütte, Schulgarten, Markt, Bergwerk und die Kartoffelpflanze sind neu gezeichnet.
-- Die Bilder der Zeichenschule (Auge, Ohr, Fahrrad, Stockwerke der Wiese) und die Wiesenpflanzen sind neu gezeichnet.
+- Der Elternbereich ist in vier Reiter aufgeteilt und viel kürzer: Fächer klappen erst beim Antippen auf.
+- Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
+- Viele Bilder sind neu oder feiner gezeichnet, von Monstern und Kreiseln bis zu Hütte, Markt und Verkehrszeichen.
 
 ## 2026-11-09
 

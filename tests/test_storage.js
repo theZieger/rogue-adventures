@@ -556,7 +556,7 @@ function gardenCases() {
   { // planting, growth phases, a planted bed survives a reload
     const p = open({ [META]: JSON.stringify(skip) }); p.w.__mq.now = T;
     p.click('#garden');
-    check(p.text().includes('Beete wachsen auch, wenn du nicht spielst.') && p.d.querySelectorAll('[data-plant]').length === 3 && p.d.querySelectorAll('.bed.locked').length === 1, 'garden shows three free beds and bed 4 locked');
+    check(p.text().includes('Beete wachsen auch, wenn du Pause machst.') && p.d.querySelectorAll('[data-plant]').length === 3 && p.d.querySelectorAll('.bed.locked').length === 1, 'garden shows three free beds and bed 4 locked');
     p.click('[data-plant="0"]'); p.click('.overlay [data-crop="weizen"]');
     const m = p.w.__mq.meta;
     check(m.garden.beds[0].crop === 'weizen' && m.garden.beds[0].plantedAt === T && p.text().includes('Heute gesät'), 'planting weizen stores the crop and the time');
@@ -1192,6 +1192,58 @@ function topCases() {
   check(p1.errors.length === 0 && task && task.kind === 'num' && !!p1.$('.mus') && !!p1.$('.inp'), 'Notenwerte on tier 2 asks for a number');
   const p2 = open(p1.dump()); p2.click('[data-cont="musik"]'); const ok2 = p2.$('.overlay #tutok'); if (ok2) ok2.click();
   check(p2.errors.length === 0 && !!p2.$('.atk') && p2.w.__mq.run.mode === 'musik', 'reloading a Konzertsaal fight continues it');
+}
+
+// 26. Parents hide subjects, games and heroes; weekly goals lead straight into their game
+{
+  const base = { setup: { done: false, skipped: true, at: 'x' } };
+  const p0 = open({ [META]: JSON.stringify(base) }, { now: W49 });
+  check(same(p0.w.__mq.meta.hidden, []), 'old save without hidden things loads with nothing hidden');
+  const bad = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: ['mode:musik', 3, null] })) });
+  check(same(bad.w.__mq.meta.hidden, ['mode:musik']) && ![...bad.d.querySelectorAll('[data-sub]')].some((b) => b.textContent.includes('Musik')), 'broken entries are dropped, a hidden game leaves the title');
+  const ga = p0.w.__mq.weeklyGoals();
+  p0.click('#parents');
+  const subs = [...p0.d.querySelectorAll('details.psub')]; const di = subs.findIndex((d) => d.textContent.includes('Deutsch'));
+  p0.click(`[data-hidesub="${di}"]`);
+  const m = p0.w.__mq.meta;
+  check(m.hidden.includes('mode:woerterwerkstatt') && m.hidden.includes('mode:satzbaustelle') && p0.$('details.psub[data-fold="sub:Deutsch"] .fstate').textContent === 'ausgeblendet', 'parents hide the subject Deutsch');
+  const gb = p0.w.__mq.weeklyGoals();
+  check(!gb.some((g) => g.subject === 'Deutsch') && same(gb, ga.filter((g) => g.subject !== 'Deutsch')), 'a hidden subject has no weekly goal, the other goals stay');
+  // two of the three Zahlenquest heroes hidden; the last one stays (the Steinkauz is a reward and does not count)
+  const S = p0.w.eval('MQ.STARTERS').filter((x) => x.id !== 'kauz');
+  S.slice(0, -1).forEach((x) => p0.click(`[data-hide="hero:math:${x.id}"]`));
+  p0.click(`[data-hide="hero:math:${S[S.length - 1].id}"]`);
+  check(S.slice(0, -1).every((x) => m.hidden.includes('hero:math:' + x.id)) && !m.hidden.includes('hero:math:' + S[S.length - 1].id) && p0.text().includes('Mindestens ein Held muss bleiben.'), 'heroes can be hidden, but one always stays');
+  const d1 = p0.dump(); const m1 = JSON.parse(d1[META]); m1.hidden = m1.hidden.concat(Object.keys(m1.stats).filter((k) => k !== 'math').map((k) => 'mode:' + k)); d1[META] = JSON.stringify(m1);
+  const p1 = open(d1, { now: W49 }); p1.click('#parents'); p1.click('[data-hide="mode:math"]');
+  check(!p1.w.__mq.meta.hidden.includes('mode:math') && p1.text().includes('Mindestens ein Thema muss sichtbar bleiben.'), 'the last game cannot be hidden');
+  p1.click('#back');
+  check(p1.d.querySelectorAll('[data-sub]').length === 1 && p1.w.__mq.weeklyGoals().length === 1, 'only Mathe is left on the title and in the weekly goals');
+  p1.click('[data-new="math"]');
+  check(p1.d.querySelectorAll('.choice[data-id]').length === 1 && p1.$('.choice[data-id]').dataset.id === S[S.length - 1].id && !p1.$('#go').disabled, 'the hero choice shows only the hero that is left, already picked');
+  check(p1.w.__mq.mergeMeta(p0.w.__mq.meta, Object.assign({}, p0.w.__mq.meta, { hidden: ['mode:musik'] })).hidden.length === p0.w.__mq.meta.hidden.length, 'merging a save code keeps the settings of a device that has them');
+}
+{ // „Jetzt loslegen“ on a goal: the hero choice gets the goal's task type, the attack shows the goal
+  const p = open(null, { now: W49 }); p.click('#later'); p.click('#weekly');
+  const g = p.w.__mq.weeklyGoals()[0];
+  check(p.d.querySelectorAll('.goal [data-goal]').length === p.w.__mq.weeklyGoals().length && p.$('.goal').textContent.includes('Zahlenquest'), 'every open goal has a play button and names its game');
+  p.click('[data-goal="0"]');
+  const lacks = p.w.eval('MQ.STARTERS').find((x) => x.id !== 'kauz' && !x.attacks.some((a) => a.mod === g.mod));
+  check(p.text().includes('Wochenziel') && !!p.$('.recbadge'), 'the goal leads to the hero choice of its game, with the goal on top');
+  if (lacks) { p.click(`.choice[data-id="${lacks.id}"]`); check(!!p.$('#swap') && p.$('#swap').textContent.includes('Wochenziel'), 'a hero without the task type is offered it for the goal'); }
+  else p.click('.choice[data-id]');
+  p.click('#go');
+  const r = p.w.__mq.run;
+  check(r.mode === 'math' && r.hero.attacks.some((a) => a.mod === g.mod), 'the new adventure has the attack for the goal');
+  const fight = [...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf'); if (fight) { p.click(fight); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); }
+  check(!fight || [...p.d.querySelectorAll('.atk')].some((b) => b.querySelector('.tag.goal')), 'in the fight the attack for the goal is marked');
+  // a running adventure without the attack: the child is asked, and can keep playing it
+  const d = p.dump(); const rr = JSON.parse(d[RUN]); rr.hero.attacks = rr.hero.attacks.filter((a) => a.mod !== g.mod); while (rr.hero.attacks.length < 2) rr.hero.attacks.push({ name: 'x', mod: 'sub' }); d[RUN] = JSON.stringify(rr);
+  const q = open(d, { now: W49 }); q.click('#weekly');
+  check(q.$('[data-goal="0"]').textContent.includes('Weitermachen'), 'with a running adventure the button says „Weitermachen“');
+  q.click('[data-goal="0"]');
+  if (q.w.__mq.weeklyGoals()[0].mod !== 'sub') { check(!!q.$('.overlay #yes') && !!q.$('.overlay #cont'), 'a running hero without the attack asks first'); q.click('.overlay #cont'); }
+  check(q.errors.length === 0 && q.w.__mq.run && q.w.__mq.run.mode === 'math' && !!q.dump()[RUN], 'keep playing resumes the running adventure');
 }
 
 reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(() => {
