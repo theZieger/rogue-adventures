@@ -21,6 +21,8 @@ sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3"
 ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
 musik = strip_exports((SRC / "musik.js").read_text(encoding="utf-8"), "MU")
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
+icons = strip_exports((SRC / "icons.js").read_text(encoding="utf-8"), "ICONS")
+eltern = strip_exports((SRC / "eltern.js").read_text(encoding="utf-8"), "ELTERN")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
 # Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
 baked = {f.stem: f.read_text(encoding="utf-8").strip() for f in sorted((ROOT / "art" / "monsters" / "svg").glob("*.svg"))}
@@ -126,6 +128,12 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {mon}
+</script>
+<script>
+{icons}
+</script>
+<script>
+{eltern}
 </script>
 <script>
 {qr}

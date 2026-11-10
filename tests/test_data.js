@@ -133,5 +133,24 @@ for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) l
   if (MONART.monsterSVG(enemy, '#4FC96A', 0, '', { outfit: 'krone' }).replace(/mg\d+/g, '') !== MONART.monsterSVG(enemy, '#4FC96A', 0).replace(/mg\d+/g, '')) fail('enemies must not wear clothes');
 }
 
+// parent area: every task type has its one-sentence explanation, every topic its place in the curriculum
+{
+  const ELTERN = require('../src/eltern.js'); const MJ = require('../src/jahrmarkt.js');
+  const modes = Object.assign({ math: { modules: MQ.MODULES }, bau: { modules: MQ.BAU.MODULES }, jahrmarkt: MJ.MODE }, MK.MODES);
+  for (const [m, c] of Object.entries(modes)) {
+    if (!ELTERN.PLAN[m]) fail(`eltern.js: PLAN.${m} is missing`);
+    for (const k of Object.keys(c.modules)) if (!(ELTERN.INFO[m] || {})[k]) fail(`eltern.js: INFO.${m}.${k} is missing`);
+    for (const k of Object.keys(ELTERN.INFO[m] || {})) if (!c.modules[k]) fail(`eltern.js: INFO.${m}.${k} has no task type`);
+  }
+  for (const m of Object.keys(ELTERN.INFO)) if (!modes[m]) fail(`eltern.js: INFO.${m} has no topic`);
+}
+
+// drawn icons: all live in one document, so ids must be unique; nothing may load from outside
+{
+  const ICONS = require('../src/icons.js'); const ids = Object.values(ICONS).flatMap((m) => [...m.matchAll(/\bid="([^"]+)"/g)].map((x) => x[1]));
+  for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i))) fail(`icons.js: id ${id} is used twice`);
+  for (const [k, m] of Object.entries(ICONS)) { if (/<(script|style|image)|href=|https?:/.test(m)) fail(`icons.js: ${k} must be plain shapes`); if (/\uFE0F/.test(k)) fail(`icons.js: key ${k} must not carry a variation selector`); }
+}
+
 console.log('data fails', fails.length);
 if (fails.length) { console.log(fails.join('\n')); process.exit(1); }

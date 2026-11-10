@@ -45,6 +45,20 @@
   const arrow = (dir) => `<svg class="arr arr-${dir}" viewBox="0 0 20 20" aria-label="${{ r: 'rechts', l: 'links', d: 'unten', u: 'oben' }[dir]}"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  /* ---------- Icons ---------- */
+  // Emojis look different on every device and some are missing on older ones. Wherever one appears as text inside
+  // #app, the drawn icon from icons.js takes its place. Attributes (aria-label, data-*) keep the emoji.
+  const emoId = (k) => 'i-' + [...k].map((c) => c.codePointAt(0).toString(16)).join('-');
+  // not display:none, or Safari and Firefox lose the gradients inside <use>
+  document.body.insertAdjacentHTML('beforeend', `<svg class="emosheet" aria-hidden="true">${Object.entries(ICONS).map(([k, m]) => `<symbol id="${emoId(k)}" viewBox="0 0 32 32">${m}</symbol>`).join('')}</svg>`);
+  const EMO = new RegExp('(' + Object.keys(ICONS).sort((a, b) => b.length - a.length).map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\uFE0F?', 'gu');
+  function drawIcons(root) {
+    const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const hits = [];
+    while (walk.nextNode()) { const n = walk.currentNode; EMO.lastIndex = 0; if (EMO.test(n.data) && !n.parentElement.closest('textarea, svg, script, style')) hits.push(n); }
+    for (const n of hits) { const box = document.createElement('span'); box.innerHTML = esc(n.data).replace(EMO, (all, k) => `<svg class="emo" role="img" aria-label="${all}"><use href="#${emoId(k)}"/></svg>`); n.replaceWith(...box.childNodes); }
+  }
+  new MutationObserver((list) => { for (const m of list) { if (m.type === 'characterData') { if (m.target.parentElement) drawIcons(m.target.parentElement); } else m.addedNodes.forEach((n) => { if (n.nodeType === 1) drawIcons(n); else if (n.nodeType === 3 && n.parentElement) drawIcons(n.parentElement); }); } }).observe(app, { childList: true, subtree: true, characterData: true });
+
   /* ---------- Storage ---------- */
   const KEY_META = 'mathquest_meta_v2';
   const KEY_RUN_FOR = (m) => (m === 'math' ? 'mathquest_run_v1' : 'mathquest_run_' + m);
@@ -1599,18 +1613,14 @@
   // this week for parents: practised task types, the weakest one, the goals; the text has no names in it
   function weekReport() {
     const w = weekly(); const goals = weeklyGoals(); const wk = +w.week.slice(6);
-    const rows = Object.entries(w.tally).map(([k, v]) => { const [m, mod] = k.split(':'); const M = MODES[m] && MODES[m].modules[mod]; return M && v.t ? { m, name: M.name, icon: M.icon, c: v.c, t: v.t } : null; }).filter(Boolean).sort((a, b) => b.t - a.t);
+    const all = Object.entries(w.tally).map(([k, v]) => { const [m, mod] = k.split(':'); const M = MODES[m] && MODES[m].modules[mod]; return M && v.t ? { m, name: M.name, icon: M.icon, c: v.c, t: v.t } : null; }).filter(Boolean).sort((a, b) => b.t - a.t);
     // Luther and Kirchenjahr share task type names
-    const label = (r) => (rows.some((x) => x.name === r.name && x.m !== r.m) ? `${r.name} (${MODES[r.m].title})` : r.name);
+    const rows = all.map((r) => Object.assign(r, { label: all.some((x) => x.name === r.name && x.m !== r.m) ? `${r.name} (${MODES[r.m].title})` : r.name }));
     const weak = rows.filter((r) => r.t >= 3).sort((a, b) => a.c / a.t - b.c / b.t)[0];
     const done = goals.filter(goalDone).length;
-    const text = [`Lernquest, Woche ${wk}`, rows.length ? 'Geübt (richtig von gesamt): ' + rows.map((r) => `${label(r)} ${r.c} von ${r.t}`).join(', ') : 'Diese Woche noch nichts geübt.',
-      weak ? `Schwächste Aufgabenart: ${label(weak)} (${weak.c} von ${weak.t} richtig)` : '', `Wochenziele: ${done} von ${goals.length} erledigt`].filter(Boolean).join('\n');
-    const html = `<p class="pnote">Kalenderwoche ${wk}, seit Montag.</p>${rows.length ? `<table><tr><th>Art</th><th>Richtig</th></tr>${rows.map((r) => `<tr><td>${r.icon} ${esc(label(r))}</td><td>${r.c} / ${r.t}</td></tr>`).join('')}</table>` : '<p class="pnote">Diese Woche noch nichts geübt.</p>'}
-      <div class="statrow"><span class="n">Schwächste Aufgabenart</span><span>${weak ? `${weak.icon} ${esc(label(weak))}` : 'noch zu wenig geübt'}</span></div>
-      <h4 style="margin:10px 0 4px">Wochenziele: ${done} von ${goals.length} erledigt</h4>${goals.map((g) => `<div class="statrow"><span class="n">${esc(goalText(g))}</span><span>${goalCount(g)} / ${g.n}</span></div>`).join('')}
-      <label for="wtext" class="pnote">Als Text</label><textarea id="wtext" class="codebox reporttext" rows="6" readonly>${esc(text)}</textarea><button class="btn small" id="wcopy">Als Text kopieren</button><p id="wmsg" role="status" class="pnote"></p>`;
-    return { text, html };
+    const text = [`Lernquest, Woche ${wk}`, rows.length ? 'Geübt (richtig von gesamt): ' + rows.map((r) => `${r.label} ${r.c} von ${r.t}`).join(', ') : 'Diese Woche noch nichts geübt.',
+      weak ? `Schwächste Aufgabenart: ${weak.label} (${weak.c} von ${weak.t} richtig)` : '', `Wochenziele: ${done} von ${goals.length} erledigt`].filter(Boolean).join('\n');
+    return { text, wk, rows, goals, done };
   }
   /* ---------- Schulgarten ---------- */
   const DAY = 864e5;
@@ -1690,110 +1700,153 @@
       $('#hnext', ov).focus(); $('#hnext', ov).onclick = screenGarden;
     }; });
   }
-  const pOpen = new Set(); // folded-open parts of the parent area stay open when a switch re-renders it
-  let pTab = 'practice';
-  function screenParent(jump, back) {
+  // svg, not emoji: the parent area looks the same on every device
+  const ICO = { chart: '<path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/>', book: '<path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h12M9 8h6"/>', sliders: '<path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="3"/><circle cx="8" cy="17" r="3"/>',
+    next: '<path d="M9 5l7 7-7 7"/>', back: '<path d="M15 5l-7 7 7 7"/>', warn: '<path d="M12 3l10 18H2zM12 10v5M12 18v.5"/>' };
+  const ico = (n) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`;
+  const P_TABS = { overview: ['Überblick', 'chart', { week: 'Diese Woche', all: 'Insgesamt' }], practice: ['Inhalte', 'book', { subjects: 'Fächer', how: 'So lernt Ihr Kind' }], settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', reset: 'Löschen' }] };
+  const P_JUMPS = { load: ['settings', 'save'], save: ['settings', 'save'], appsec: ['settings', 'app'] };
+  let pAt;
+  const tutOf = (m, k, tier) => { const c = MODES[m]; return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier]; };
+  function confirmBox(title, body, yes, fn, danger) {
+    const ov = modal(`<h2>${title}</h2>${body}<div class="stack"><button class="btn${danger ? ' danger' : ''}" id="yes">${yes}</button><button class="btn secondary" id="no">Abbrechen</button></div>`);
+    $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { ov.remove(); fn(); }; $('#no', ov).focus({ preventScroll: true });
+  }
+  // quiet: redrawn in place after a switch or a tab, without the screen animation
+  function screenParent(jump, back, quiet) {
     back = typeof back === 'function' ? back : screenTitle;
-    const TABS = { practice: 'Üben', progress: 'Fortschritt', save: 'Spielstand', appsec: 'App' };
-    pTab = TABS[jump] ? jump : jump === 'load' ? 'save' : jump ? pTab : 'practice';
-    const again = (j) => screenParent(j || pTab, back);
-    const card = (h, body) => `<div class="card parent-stats"><h3>${h}</h3>${body}</div>`;
+    if (!quiet) pAt = { tab: 'overview', sub: {}, subj: -1, mode: '' };
+    if (P_JUMPS[jump]) { pAt.tab = P_JUMPS[jump][0]; pAt.sub[pAt.tab] = P_JUMPS[jump][1]; }
+    const tab = pAt.tab; const subs = P_TABS[tab][2]; const sub = subs[pAt.sub[tab]] ? pAt.sub[tab] : Object.keys(subs)[0];
+    const redraw = (focus) => { screenParent(null, back, true); const el = focus && $(focus); if (el) el.focus({ preventScroll: true }); };
+    const switches = () => [...app.querySelectorAll('[role=switch]')];
+    const again = () => { const y = $('.scroll').scrollTop; const i = switches().indexOf(document.activeElement); redraw(); $('.scroll').scrollTop = y; if (i >= 0 && switches()[i]) switches()[i].focus({ preventScroll: true }); };
+    const card = (h, body, cls) => `<div class="card pcard${cls ? ' ' + cls : ''}">${h ? `<h3>${h}</h3>` : ''}${body}</div>`;
     const note = (t) => `<p class="pnote">${t}</p>`;
-    const sw = (on, attr, label) => `<button class="toggle ${on ? 'on' : ''}" ${attr} aria-pressed="${on}">${on ? '✔' : '✖'} ${label}</button>`;
-    const group = (h, body) => `<div class="pgroup">${h ? `<h4>${h}</h4>` : ''}${body}<p class="tmsg" role="status"></p></div>`;
-    const fold = (key, cls, head, state, body) => `<details class="${cls}" data-fold="${key}"${pOpen.has(key) ? ' open' : ''}><summary><span class="fhead">${head}</span><span class="fstate">${state}</span></summary><div class="foldbody">${body}</div></details>`;
+    const msg = '<p class="tmsg" role="status"></p>';
+    const sw = (on, attr, title, desc) => `<div class="prow"><div class="ptext"><b>${title}</b>${desc || ''}</div><button class="switch" role="switch" aria-checked="${!!on}" aria-label="${title.replace(/<[^>]+>/g, '')}" ${attr}><i></i></button></div>`;
+    const stat = (n, v) => `<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
+    const level = (c, t) => (c / t >= 0.8 ? '<span class="lvl good">sicher</span>' : c / t >= 0.5 ? '<span class="lvl mid">fast sicher</span>' : '<span class="lvl low">übt noch</span>');
+    const srow = (icon, name, c, t, more) => `<div class="srow"><div class="ptext"><b>${icon} ${esc(name)}</b><span>${c} von ${t} richtig${more || ''}</span></div>${level(c, t)}</div>`;
+    const LEGEND = note('<b>sicher:</b> mindestens 8 von 10 richtig · <b>fast sicher:</b> mindestens die Hälfte · <b>übt noch:</b> weniger als die Hälfte');
+    const report = weekReport();
     const gameState = (m) => { if (!shown(m)) return 'ausgeblendet'; const all = Object.keys(MODES[m].modules); const n = all.filter((k) => !offList(m).includes(k)).length; const S = MODES[m].starters;
       return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`; };
-    const gameBody = (m) => { const c = MODES[m];
-      return group('', sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen'))
-        + (c.starters.length > 1 ? group('Helden', `<div class="toggles">${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, `${esc(x.names[0])}<small>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</small>`)).join('')}</div>`) : '')
-        + group('Aufgabenarten', `<div class="toggles">${Object.keys(c.modules).map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${c.modules[k].name}`)).join('')}</div>`); };
-    const subjects = curGrade().subjects.map((sub, i) => { const vis = sub.modes.filter(shown).length;
-      const body = sub.modes.length === 1 ? gameBody(sub.modes[0]) : group('', sw(vis > 0, `data-hidesub="${i}"`, 'Fach anzeigen')) + sub.modes.map((m) => fold('mode:' + m, 'pgame', `${MODES[m].icon} ${MODES[m].title}`, gameState(m), gameBody(m))).join('');
-      return fold('sub:' + sub.subject, 'psub', `${sub.icon} ${esc(sub.subject)}`, !vis ? 'ausgeblendet' : sub.modes.length === 1 ? gameState(sub.modes[0]) : `${vis} von ${sub.modes.length} Themen`, body); }).join('');
-    const played = MODE_KEYS.filter((m) => Object.values(meta.stats[m]).some((x) => x.t > 0));
-    const tables = played.map((m) => { const r = loadRun(m); const rows = Object.keys(MODES[m].modules).filter((k) => meta.stats[m][k].t > 0).map((k) => { const s = meta.stats[m][k]; const acc = Math.round((s.c / s.t) * 100); return `<tr><td>${MODES[m].modules[k].icon} ${MODES[m].modules[k].name}</td><td>${s.c} / ${s.t}</td><td><div class="bar" aria-label="${acc} %"><i style="width:${acc}%;background:${acc < 50 ? 'var(--red)' : acc < 80 ? 'var(--gold)' : 'var(--green)'}"></i></div></td><td>${acc} %</td><td>${r ? 'Stufe ' + (r.tiers[k] || 1) : '–'}</td></tr>`; }).join(''); return card(`${MODES[m].icon} ${MODES[m].title}`, `<table><tr><th>Art</th><th>Richtig</th><th></th><th></th><th>Stufe</th></tr>${rows}</table>`); }).join('');
-    const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = Object.values(MK.MODES).flatMap((c) => c.pool).find((p) => p.id === id.replace('_find', '')); return q ? `<div class="statrow"><span class="n">${esc(q.q)}</span><span>${k.c} / ${k.t}</span></div>` : ''; }).join('');
-    const report = weekReport();
-    const version = (document.querySelector('meta[name=app-version]') || {}).content || '?';
-    const sec = (id, body) => `<section class="psec" id="p-${id}" role="tabpanel" aria-label="${TABS[id]}"${id === pTab ? '' : ' hidden'}><div class="stack">${body}</div></section>`;
-    render(`<div class="screen">${topbar('Elternbereich')}<nav class="jumpbar" role="tablist" aria-label="Bereiche">${Object.entries(TABS).map(([id, t]) => `<button role="tab" data-jump="${id}" aria-selected="${id === pTab}" class="${id === pTab ? 'on' : ''}">${t}</button>`).join('')}</nav><div class="scroll"><div class="stack">
-      ${meta.pin ? '' : `<div class="card warncard"><p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
-      ${sec('practice', `
-      ${CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : ''}
-      ${card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach, um Themen, Helden und Aufgabenarten ein- oder auszuschalten. Das gilt sofort.')}<ul class="plist"><li>Ausgeblendete Fächer, Themen und Helden erscheinen nicht mehr. Laufende Abenteuer bleiben gespeichert.</li><li>Ausgeschaltete Aufgabenarten kommen nicht mehr als Attacke vor. Mindestens zwei bleiben an.</li><li>Ist „Geld“ aus, gibt es keinen Markt und keine Münzen.</li></ul>${subjects}`)}
-      ${card('So passt sich Lernquest an', note('5 von 6 richtig → eine Stufe höher, weniger als die Hälfte → eine Stufe tiefer. Welt 1 in Zahlenquest bleibt unter 100. Wissensfragen, die falsch waren, kommen schneller wieder.'))}`)}
-      ${sec('progress', `
-      <div id="p-weekrep">${card('Wochenbericht', report.html)}</div>
-      ${card('Überblick', `<div class="statrow"><span class="n">Abenteuer begonnen</span><span>${meta.runs}</span></div><div class="statrow"><span class="n">Bis zum Ende geschafft</span><span>${meta.wins}</span></div><div class="statrow"><span class="n">Stempel verdient insgesamt</span><span>${meta.stampsTotal}</span></div><div class="statrow"><span class="n">Davon noch übrig</span><span>${meta.stamps}</span></div>${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`)}
-      <h3 class="psub-h">Trefferquote je Thema</h3>
-      ${tables || note('Noch nichts geübt.')}${tables ? note('Hier stehen nur Themen und Aufgabenarten, die schon geübt wurden. „Stufe“ zeigt den Stand im laufenden Abenteuer.') : ''}
-      ${card('Wissensfragen mit Schwierigkeiten', weakFacts || note('Noch keine – oder noch nicht genug geübt.'))}`)}
-      ${sec('save', `
-      ${backupDue() ? `<div class="card warncard" id="pwarn"><p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>` : ''}
-      ${card('Spielstand sichern', `${note('Der Code enthält den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)}
-      <div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.')}`)}</div>
-      ${card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.'))}
-      ${card('Zurücksetzen', `${note('Statistik zurücksetzen löscht nur die Zahlen unter „Fortschritt“. Alles löschen setzt Lernquest ganz auf Anfang.')}<div class="stack"><button class="btn small secondary" id="rstats">Statistik zurücksetzen</button><button class="btn small danger" id="rall">Alles löschen</button></div>`)}`)}
-      ${sec('appsec', `
-      ${card('Töne', `${note('Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).')}<button class="toggle ${meta.sound ? 'on' : ''}" id="psound" aria-pressed="${!!meta.sound}">${meta.sound ? '✔ Töne an' : '✖ Töne aus'}</button>`)}
-      ${card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt.')}<button class="btn small" id="pset">PIN festlegen</button>`)}
-      ${card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>`)}
-      ${card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)}
-      <p class="center muted">Lernquest, Version ${esc(version)}</p>`)}
-      </div></div><div class="bottom"><button class="btn" id="back">Zurück zu Lernquest</button></div></div>`);
-    const scroller = $('.scroll');
-    app.querySelectorAll('[data-jump]').forEach((b) => { b.onclick = () => { pTab = b.dataset.jump; app.querySelectorAll('[data-jump]').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', on); }); app.querySelectorAll('section.psec').forEach((el) => { el.hidden = el.id !== 'p-' + pTab; }); scroller.scrollTop = 0; }; });
-    app.querySelectorAll('details[data-fold]').forEach((d) => { d.ontoggle = () => { if (d.open) pOpen.add(d.dataset.fold); else pOpen.delete(d.dataset.fold); }; });
-    if (jump === 'load') { const el = $('#p-load'); scroller.scrollTop = el.offsetTop - scroller.offsetTop - 8; $('#pcodein').focus({ preventScroll: true }); }
+
+    const pages = {
+      week() {
+        const r = report; const sum = (f) => r.rows.reduce((a, x) => a + x[f], 0);
+        const weak = r.rows.filter((x) => x.t >= 3 && x.c / x.t < 0.8).sort((a, b) => a.c / a.t - b.c / b.t).slice(0, 3);
+        return card(`Kalenderwoche ${r.wk}`, r.rows.length ? `<p class="plead">${sum('t')} Aufgaben gelöst, ${sum('c')} davon richtig.</p>${note('Gezählt wird seit Montag.')}` : note('Diese Woche wurde noch nichts geübt.'))
+          + card('Braucht noch Übung', weak.length ? weak.map((x) => srow(x.icon, x.label, x.c, x.t)).join('') : note(r.rows.some((x) => x.t >= 3) ? 'Im Moment nichts. Alles, was diese Woche geübt wurde, klappt sicher.' : 'Noch zu wenig geübt für eine Auswertung.'))
+          + card('Wochenziele', `${note(`${r.done} von ${r.goals.length} erledigt. Für alle Wochenziele zusammen gibt es 10 Stempel.`)}${r.goals.map((g) => stat(esc(goalText(g)), `${Math.min(goalCount(g), g.n)} von ${g.n}`)).join('')}`)
+          + (r.rows.length ? card('Alles, was diese Woche geübt wurde', LEGEND + r.rows.map((x) => srow(x.icon, x.label, x.c, x.t)).join('')) : '')
+          + card('Wochenbericht als Text', `${note('Zum Weitergeben, zum Beispiel an die Lehrerin oder den Lehrer. Es steht kein Name darin.')}<label for="wtext" class="sr-only">Wochenbericht</label><textarea id="wtext" class="codebox reporttext" rows="6" readonly>${esc(r.text)}</textarea><button class="btn small" id="wcopy">Text kopieren</button><p id="wmsg" role="status" class="pnote"></p>`);
+      },
+      all() {
+        const played = MODE_KEYS.filter((m) => Object.values(meta.stats[m]).some((x) => x.t > 0));
+        const topics = played.map((m) => { const r = loadRun(m); return card(`${MODES[m].icon} ${MODES[m].title}`, Object.keys(MODES[m].modules).filter((k) => meta.stats[m][k].t > 0).map((k) => { const s = meta.stats[m][k]; return srow(MODES[m].modules[k].icon, MODES[m].modules[k].name, s.c, s.t, r ? ` · Stufe ${r.tiers[k] || 1}` : ''); }).join('')); }).join('');
+        const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = Object.values(MK.MODES).flatMap((c) => c.pool).find((p) => p.id === id.replace('_find', '')); return q ? stat(esc(q.q), `${k.c} von ${k.t}`) : ''; }).join('');
+        return card('Seit dem ersten Tag', `${stat('Abenteuer begonnen', meta.runs)}${stat('Bis zum Ende geschafft', meta.wins)}${stat('Stempel verdient insgesamt', meta.stampsTotal)}${stat('Davon noch übrig', meta.stamps)}${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`)
+          + card('Trefferquote je Thema', topics ? `${note('Hier stehen nur Themen und Aufgabenarten, die schon geübt wurden. „Stufe“ zeigt, wie schwer die Aufgaben im laufenden Abenteuer gerade sind.')}${LEGEND}` : note('Noch nichts geübt.'))
+          + topics
+          + card('Wissensfragen mit Schwierigkeiten', weakFacts ? `${note('Diese Fragen waren öfter falsch. Lernquest stellt sie bald wieder.')}${weakFacts}` : note('Noch keine – oder noch nicht genug geübt.'));
+      },
+      subjects() {
+        const S = curGrade().subjects;
+        if (!S[pAt.subj]) return card('', `<p class="plead">Lernquest merkt, was Ihr Kind schon kann, und stellt passende Aufgaben: nicht zu leicht und nicht zu schwer.</p><button class="linkbtn" data-ps="how">So lernt Ihr Kind mit Lernquest</button>`)
+          + (CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : '')
+          + card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach. Dort sehen Sie, was jede Aufgabenart übt, und können Themen, Helden und Aufgabenarten ein- oder ausschalten.')}${S.map((s, i) => { const vis = s.modes.filter(shown).length;
+            return `<button class="pnav" data-pf="${i}"><span class="ptext"><b>${s.icon} ${esc(s.subject)}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`; }).join('')}`);
+        const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = ELTERN.PLAN[m];
+        return `<button class="pback" id="pback">${ico('back')}Alle Fächer</button>`
+          + (s.modes.length > 1 ? card(`${s.icon} ${esc(s.subject)}`, sw(s.modes.some(shown), `data-hidesub="${pAt.subj}"`, 'Fach anzeigen', '<span>Ausgeschaltet erscheint das ganze Fach nicht mehr auf der Startseite.</span>') + msg)
+            + `<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => `<button role="tab" data-pm="${x}" aria-selected="${x === m}" class="${shown(x) ? '' : 'off'}">${MODES[x].icon} ${esc(MODES[x].title)}</button>`).join('')}</div>` : '')
+          + card(`${c.icon} ${esc(c.title)}`, `<p>${esc(c.sub)}</p>${plan ? `<p class="pplan"><b>Lehrplan Sachsen:</b> ${esc(plan)}</p>` : ''}${sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen', '<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>')}${msg}`)
+          + (c.starters.length > 1 ? card('Helden', `${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, esc(x.names[0]), `<span>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</span>`)).join('')}${msg}`) : '')
+          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
+      },
+      how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
+        + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Jedes Abenteuer beginnt auf Stufe 1.</p>')
+        + card('Wann wird es schwerer?', '<p>Lernquest schaut bei jeder Aufgabenart auf die letzten 6 Aufgaben.</p><ul class="plist"><li><b>Alle 6 richtig:</b> eine Stufe höher.</li><li><b>Weniger als 3 richtig:</b> eine Stufe zurück.</li><li><b>Dazwischen:</b> Die Stufe bleibt.</li></ul><p>Danach zählt Lernquest von vorn.</p>')
+        + card('Was ist eine Welt?', '<p>Ein Abenteuer führt durch eine bis drei Welten. In jeder neuen Welt kommen höhere Stufen und neue Aufgabenarten dazu.</p><p>Beispiel Zahlenquest: In Welt 1 bleiben alle Zahlen unter 100. Das schriftliche Rechnen beginnt erst in Welt 3.</p>')
+        + card('Was passiert bei einem Fehler?', '<p>Ihr Kind sieht sofort die richtige Lösung. Niemand schimpft, es geht einfach weiter.</p><p>Wissensfragen, die falsch waren, kommen bald wieder, bis sie sitzen.</p>')
+        + card('Wie lernt mein Kind eine neue Aufgabenart?', '<p>Beim ersten Mal erklärt Lernquest die Aufgabenart in drei bis vier kurzen Schritten mit einem Beispiel.</p><p>Dieselben Erklärungen finden Sie unter „Fächer“ bei jeder Aufgabenart: „Beispiel ansehen“.</p>'),
+      save: () => (backupDue() ? `<div class="card warncard pwarn" id="pwarn">${ico('warn')}<p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>` : '')
+        + card('Spielstand sichern', `${note('Der Code enthält den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)
+        + `<div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('<b>Zusammenlegen</b> behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. <b>Ersetzen</b> überschreibt alles auf diesem Gerät. Vor beidem fragt Lernquest noch einmal nach.')}`)}</div>`
+        + card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.')),
+      app: () => card('Töne', sw(meta.sound, 'id="psound"', 'Töne an', '<span>Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</span>'))
+        + card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt. Ohne PIN kann jeder hier alles ändern.')}<button class="btn small" id="pset">PIN festlegen</button>`)
+        + card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>${msg}`)
+        + card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)
+        + `<p class="center muted">Lernquest, Version ${esc((document.querySelector('meta[name=app-version]') || {}).content || '?')}</p>`,
+      reset: () => card('', `<p class="plead">Hier wird gelöscht. Vor jedem Löschen fragt Lernquest noch einmal nach.</p>${note('Tipp: Sichern Sie vorher den Spielstand unter „Spielstand“.')}`)
+        + card('Statistik zurücksetzen', `${note('Löscht nur die Zahlen unter „Überblick“. Stempel, Monsterbuch und laufende Abenteuer bleiben.')}<button class="btn small secondary" id="rstats">Statistik zurücksetzen</button>`)
+        + card('Alles löschen', `${note('Setzt Lernquest ganz auf Anfang: Abenteuer, Stempel, Monsterbuch, Statistik und Einstellungen.')}<button class="btn small danger" id="rall">Alles löschen</button>`),
+    };
+    render(`<div class="screen">${topbar('Elternbereich')}<nav class="ptabs" role="tablist" aria-label="Bereiche">${Object.entries(P_TABS).map(([id, [t, ic]]) => `<button role="tab" data-pt="${id}" aria-selected="${id === tab}">${ico(ic)}<span>${t}</span></button>`).join('')}</nav><div class="scroll"><div class="stack" id="p-${sub}">
+      ${meta.pin || tab !== 'overview' ? '' : `<div class="card warncard pwarn">${ico('warn')}<p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
+      ${tab === 'practice' && curGrade().subjects[pAt.subj] ? '' : `<div class="psubtabs" role="tablist" aria-label="${P_TABS[tab][0]}">${Object.entries(subs).map(([id, t]) => `<button role="tab" data-ps="${id}" aria-selected="${id === sub}">${t}</button>`).join('')}</div>`}
+      ${pages[sub]()}
+      </div></div><div class="bottom"><button class="btn" id="back">Zurück zu Lernquest</button></div></div>`, quiet);
+    const on = (sel, fn) => app.querySelectorAll(sel).forEach((el) => { el.onclick = () => fn(el); });
+    const say = (b, t) => { b.closest('.card').querySelector('.tmsg').textContent = t; };
     $('#back').onclick = () => back();
-    const keepScroll = (fn) => () => { const y = scroller.scrollTop; fn(); $('.scroll').scrollTop = y; };
-    $('#rtut').onclick = keepScroll(() => { meta.seenTut = {}; saveAll(); again(); });
-    $('#rstats').onclick = keepScroll(() => { meta.stats = defaultMeta().stats; meta.know = {}; meta.runs = 0; meta.wins = 0; saveAll(); again(); });
-    $('#rall').onclick = () => { const ov = modal(`<h2>Wirklich alles löschen?</h2><p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht. Das kann man nicht rückgängig machen.</p><div class="stack"><button class="btn" id="yes" style="background:var(--red)">Ja, alles löschen</button><button class="btn secondary" id="no">Abbrechen</button></div>`); $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }; };
-    $('#pfeedback').onclick = () => screenFeedback(() => again('appsec'));
-    $('#psound').onclick = keepScroll(() => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
-    const newPin = () => setPin(() => again('appsec'), () => again('appsec'));
-    for (const id of ['pnew', 'pset', 'pchange']) if ($('#' + id)) $('#' + id).onclick = newPin;
-    $('#pexport').onclick = async () => {
+    on('[data-pt]', (b) => { pAt.tab = b.dataset.pt; redraw('.ptabs [aria-selected=true]'); });
+    on('[data-ps]', (b) => { pAt.sub[tab] = b.dataset.ps; redraw('.psubtabs [aria-selected=true]'); });
+    on('[data-pf]', (b) => { pAt.subj = +b.dataset.pf; pAt.mode = ''; redraw('#pback'); });
+    on('#pback', () => { const i = pAt.subj; pAt.subj = -1; redraw(`[data-pf="${i}"]`); });
+    on('[data-pm]', (b) => { const x = $('.pchips').scrollLeft; pAt.mode = b.dataset.pm; redraw('.pchips [aria-selected=true]'); $('.pchips').scrollLeft = x; });
+    on('[data-info]', (b) => { const m = pAt.mode || curGrade().subjects[pAt.subj].modes[0]; const k = b.dataset.info; const M = MODES[m].modules[k];
+      const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
+      const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>${esc(ELTERN.INFO[m][k])}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => `${tiers.length > 1 ? `<h4>Stufe ${t}: ${esc(x.title)}</h4>` : ''}<ol>${x.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`).join('')}<button class="btn" id="ok">Schließen</button>`);
+      $('#ok', ov).onclick = () => ov.remove(); $('#ok', ov).focus({ preventScroll: true }); });
+    const newPin = () => setPin(() => screenParent('appsec', back), () => screenParent('appsec', back));
+    on('#pnew, #pset, #pchange', newPin);
+    on('#pdel', () => confirmBox('PIN entfernen?', '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>', 'Ja, PIN entfernen', () => { meta.pin = ''; saveAll(); again(); }, true));
+    on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
+    on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
+    on('#pfeedback', () => screenFeedback(() => screenParent('appsec', back)));
+    on('#rstats', () => confirmBox('Statistik zurücksetzen?', '<p>Alle Trefferquoten und die Zahl der Abenteuer werden gelöscht. Stempel, Monsterbuch und laufende Abenteuer bleiben.</p><p>Das kann man nicht rückgängig machen.</p>', 'Ja, Statistik löschen', () => { meta.stats = defaultMeta().stats; meta.know = {}; meta.runs = 0; meta.wins = 0; saveAll(); again(); }, true));
+    on('#rall', () => confirmBox('Wirklich alles löschen?', '<p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht.</p><p>Das kann man nicht rückgängig machen.</p>', 'Ja, alles löschen', () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }, true));
+    const copy = (text, box, out) => { const tell = (t) => { $(out).textContent = t; }; const mark = () => { $(box).focus(); $(box).select(); tell('Der Text ist markiert. Bitte jetzt kopieren.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => tell('Kopiert.'), mark); else mark(); };
+    on('#wcopy', () => copy(report.text, '#wtext', '#wmsg'));
+    on('#pexport', async () => {
       meta.backupAt = new Date().toISOString(); saveAll(); if ($('#pwarn')) $('#pwarn').remove();
       const full = saveData(false); const code = await packSave(full); const link = (c) => SITE + '#lade=' + c;
       let qr = QR.svg(link(code), 'QR-Code mit dem Spielstand'), short = false;
       if (!qr) { qr = QR.svg(link(await packSave(saveData(true))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
       $('#pout').innerHTML = `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
         ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer, den ganzen Spielstand gibt es nur mit dem Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte den Code benutzen.')}`;
-      $('#pcopy').onclick = () => { const say = (t) => { $('#pcmsg').textContent = t; }; const mark = () => { $('#pcode').focus(); $('#pcode').select(); say('Der Code ist markiert. Bitte jetzt kopieren.'); };
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(() => say('Kopiert.'), mark); else mark(); };
+      $('#pcopy').onclick = () => copy(code, '#pcode', '#pcmsg');
       if ($('#pshare')) $('#pshare').onclick = () => navigator.share({ title: 'Lernquest-Spielstand', text: link(code) }).catch(() => { });
-    };
+    });
     const readCode = async (how) => {
       let s; try { s = await unpackSave($('#pcodein').value); } catch (e) { $('#pimsg').textContent = e.message; return; }
-      if (how === 'merge') return applySave(s, how);
-      const ov = modal(`<h2>Alles ersetzen?</h2>${summaryHtml(s)}<p>Alles auf diesem Gerät wird durch diesen Spielstand ersetzt.</p><div class="stack"><button class="btn" id="yes">Ja, ersetzen</button><button class="btn secondary" id="no">Abbrechen</button></div>`);
-      $('#no', ov).onclick = () => ov.remove(); $('#yes', ov).onclick = () => applySave(s, how);
+      if (how === 'merge') confirmBox('Spielstände zusammenlegen?', `${summaryHtml(s)}<p>Alles auf diesem Gerät bleibt. Dazu kommt, was in diesem Spielstand mehr ist.</p>`, 'Ja, zusammenlegen', () => applySave(s, how));
+      else confirmBox('Alles ersetzen?', `${summaryHtml(s)}<p>Alles auf diesem Gerät wird durch diesen Spielstand ersetzt. Das kann man nicht rückgängig machen.</p>`, 'Ja, ersetzen', () => applySave(s, how), true);
     };
-    $('#wcopy').onclick = () => { const say = (t) => { $('#wmsg').textContent = t; }; const mark = () => { $('#wtext').focus(); $('#wtext').select(); say('Der Text ist markiert. Bitte jetzt kopieren.'); };
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(report.text).then(() => say('Kopiert.'), mark); else mark(); };
-    $('#pmerge').onclick = () => readCode('merge'); $('#preplace').onclick = () => readCode('replace');
-    if ($('#pdel')) $('#pdel').onclick = () => { meta.pin = ''; saveAll(); again('appsec'); };
-    app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = keepScroll(() => { meta.grade = +b.dataset.grade; saveAll(); again(); }); });
-    app.querySelectorAll('.toggle[data-k]').forEach((b) => { b.onclick = () => {
+    on('#pmerge', () => readCode('merge')); on('#preplace', () => readCode('replace'));
+    if (jump === 'load') { const el = $('#p-load'); const sc = $('.scroll'); sc.scrollTop = el.offsetTop - sc.offsetTop - 8; $('#pcodein').focus({ preventScroll: true }); }
+    on('[data-grade]', (b) => { meta.grade = +b.dataset.grade; saveAll(); again(); });
+    on('.switch[data-k]', (b) => {
       const m = b.dataset.m, k = b.dataset.k; const off = offList(m).slice(); const i = off.indexOf(k);
-      if (i >= 0) off.splice(i, 1); else { if (!MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2) { say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.'); return; } off.push(k); }
-      meta.off[m] = off; saveAll(); keepScroll(again)(); }; });
-    const say = (b, t) => { b.closest('.pgroup').querySelector('.tmsg').textContent = t; };
+      if (i >= 0) off.splice(i, 1); else { if (!MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2) return say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.'); off.push(k); }
+      meta.off[m] = off; saveAll(); again(); });
     const setHidden = (keys, hide) => { meta.hidden = meta.hidden.filter((x) => !keys.includes(x)).concat(hide ? keys : []); };
-    const noGameLeft = (keys) => !curGrade().subjects.some((sub) => sub.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
-    app.querySelectorAll('[data-hide]').forEach((b) => { b.onclick = () => {
+    const noGameLeft = (keys) => !curGrade().subjects.some((s) => s.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
+    on('[data-hide]', (b) => {
       const key = b.dataset.hide; const hide = !meta.hidden.includes(key); const [kind, m, id] = key.split(':');
       if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
       // a hero that is a reward does not count: it may still be locked
       if (hide && kind === 'hero' && !REWARDS.some((r) => r.hero === id) && !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))) return say(b, 'Mindestens ein Held muss bleiben.');
-      setHidden([key], hide); saveAll(); keepScroll(again)(); }; });
-    app.querySelectorAll('[data-hidesub]').forEach((b) => { b.onclick = () => {
+      setHidden([key], hide); saveAll(); again(); });
+    on('[data-hidesub]', (b) => {
       const keys = curGrade().subjects[+b.dataset.hidesub].modes.map((m) => 'mode:' + m); const hide = keys.some((k) => !meta.hidden.includes(k));
       if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
-      setHidden(keys, hide); saveAll(); keepScroll(again)(); }; });
+      setHidden(keys, hide); saveAll(); again(); });
   }
 
   /* ---------- Feedback ---------- */

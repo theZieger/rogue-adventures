@@ -21,7 +21,8 @@ const w = dom.window, d = w.document;
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms*TIME));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
-const text = ()=>$('#app').textContent.replace(/\s+/g,' ').trim();
+// drawn icons count as their emoji again
+const text = ()=>{ const c=$('#app').cloneNode(true); c.querySelectorAll('svg.emo').forEach(s=>s.replaceWith(s.getAttribute('aria-label'))); return c.textContent.replace(/\s+/g,' ').trim(); };
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
 let weekbossFights=0, correctAnswers=0, wrongAnswers=0, tutorialsSeen=0, battles=0, events=0, dilemmas=0, consequences=0, rests=0, treasures=0, eliteRewards=0, labs=0, maps=0, markets=0, bought=0, mines=0, arenas=0;
 const cents=(x)=>{ const m=x.trim().match(/^(?:(\d+) €)?(?: ?(\d+) ct)?$/); if(!m) throw new Error('not money: '+x); return (+(m[1]||0))*100+(+(m[2]||0)); };
@@ -176,7 +177,7 @@ async function step(){
   if($('.inp')){ await solveTask(Math.random()>ACC); return; }
   if($('.opt.guess')){ const g=$$('.opt.guess'); click(g[Math.floor(Math.random()*g.length)]); return; } // Forscherlabor: any guess is fine
   if($('.opt')||$('.oitem')||$('.plant.clickable')||$('.kmap.clickable')){ await solveKnow(Math.random()>ACC); return; }
-  if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤️ (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
+  if($('.atk:not(.locked)')){ battles++; const hpm=text().match(/❤\uFE0F? (\d+) \/ (\d+)/); if(hpm && +hpm[1]/+hpm[2]<0.4 && $('#bag')){ $('#bag').click(); const it=$('.overlay .item'); if(it){ it.click(); if(!$('.overlay')) return; } const c=$('.overlay #close'); if(c) c.click(); } const atks=$$('.atk:not(.locked)'); const weak=$('.atk.weak'); click(weak&&Math.random()<0.7?weak:atks[Math.floor(Math.random()*atks.length)]); return; }
   if($('.mblock.covered:not([disabled])')){ if(!$('.mblock.open')) mines++; const b=$$('.mblock.covered:not([disabled])'); click(b[Math.floor(Math.random()*b.length)]); return; }
   if($('.market')){ await shop(); return; }
   if($('#topend')) arenas++;
@@ -188,7 +189,7 @@ async function step(){
   if($('.choice[data-i]')&&tx.includes('Belohnung')){ if(tx.includes('Elitegegner')) eliteRewards++; else treasures++; click($$('.choice[data-i]').pop()); return; }
   if($('.choice[data-i]')&&tx.includes('ersetzen')){ click($$('.choice[data-i]')[0]); return; }
   if($('#again')){ console.log('END SCREEN:', tx.slice(0,110)); return 'end'; }
-  if(tx.includes('❤️ 0 /')){ await sleep(700); return; }
+  if(/❤\uFE0F? 0 \//.test(tx)){ await sleep(700); return; }
   throw new Error('stuck at: '+tx.slice(0,300));
 }
 (async()=>{

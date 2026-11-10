@@ -28,8 +28,12 @@ function open(storage, opts) {
   const toGame = (s) => { const m = /data-(?:new|cont)="(\w+)"/.exec(s); const sub = m && d.querySelector('[data-sub]') && w.__mq.subjectOf(m[1]); if (!sub) return null; d.querySelectorAll('[data-sub]')[[...d.querySelectorAll('[data-sub]')].findIndex((b) => b.textContent.includes(sub.subject))].click(); return d.querySelector(s); };
   const click = (s) => { const el = typeof s === 'string' ? $(s) : s; if (!el) throw new Error('missing ' + s + ' on: ' + d.body.textContent.slice(0, 200)); el.click(); };
   const dump = () => Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)]));
-  const text = () => $('#app').textContent;
-  return { w, d, $, click, dump, text, errors };
+  // drawn icons count as their emoji again
+  const text = () => { const c = $('#app').cloneNode(true); c.querySelectorAll('svg.emo').forEach((s) => s.replaceWith(s.getAttribute('aria-label'))); return c.textContent; };
+  // parent area: go(tab, sub tab) and subj(subject, topic) open a page of it
+  const go = (tab, sub) => { click(`[data-pt="${tab}"]`); click(`[data-ps="${sub}"]`); };
+  const subj = (name, m) => { click('[data-pt="practice"]'); click(d.querySelector('#pback') ? '#pback' : '[data-ps="subjects"]'); click([...d.querySelectorAll('[data-pf]')].find((b) => b.textContent.includes(name))); if (m && d.querySelector(`[data-pm="${m}"]`)) click(`[data-pm="${m}"]`); };
+  return { w, d, $, click, dump, text, errors, go, subj };
 }
 const RUN = 'mathquest_run_v1';
 const META = 'mathquest_meta_v2';
@@ -53,7 +57,12 @@ function startMathFight(opts) {
   const p2 = open(saved);
   for (let i = 0; i < 5; i++) p2.click('#logo');
   check(p2.text().includes('Elternbereich'), 'parent area opens after 5 taps');
-  p2.click('#rtut'); p2.click('#rstats');
+  p2.go('settings', 'app'); p2.click('#rtut'); p2.go('settings', 'reset'); p2.click('#rstats'); p2.click('.overlay #no');
+  check(p2.w.__mq.meta.runs === 1, '"Statistik zurücksetzen" asks first, "Abbrechen" changes nothing');
+  p2.click('#rstats'); p2.click('.overlay #yes');
+  check(p2.w.__mq.meta.runs === 0, '"Ja" resets the statistics');
+  p2.subj('Mathe', 'math'); p2.click('.switch[data-k="add"]');
+  check(p2.w.__mq.meta.off.math.includes('add') && !p2.$('.screen.enter') && p2.$('.switch[data-k="add"]').getAttribute('aria-checked') === 'false', 'a switch redraws the parent area without the screen animation');
   check(!!p2.dump()[RUN], 'parent-area buttons keep the saved adventure');
 }
 
@@ -137,7 +146,7 @@ async function reloadCases() {
   check(!p2.$('#later') && !!p2.$('[data-sub]'), 'setup dialog does not come back after "Später"');
   p2.click('#parents');
   check(p2.text().includes('Elternbereich') && p2.text().includes('Noch keine PIN'), 'without PIN the parent area opens directly and says so');
-  check(['practice', 'progress', 'save', 'appsec'].every((s) => p2.$('[data-jump="' + s + '"]') && p2.$('#p-' + s)), 'parent area has the four sections with jump bar');
+  check(['overview', 'practice', 'settings'].every((s) => p2.$('[data-pt="' + s + '"]')) && !!p2.$('#p-week'), 'parent area has three tabs and opens on this week');
 
   const old = { runs: 4, wins: 1, dex: { Sumpfbrocken: { world: 1 } }, sound: false };
   const p3 = open({ [META]: JSON.stringify(old) });
@@ -164,19 +173,19 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   const p2 = open(p1.dump());
   check(!p2.$('#later'), 'setup dialog does not come back after setting a PIN');
   p2.click('#parents');
-  check(!!p2.$('#cval') && !p2.$('#p-practice'), 'parent button asks for the PIN');
+  check(!!p2.$('#cval') && !p2.$('[data-pt]'), 'parent button asks for the PIN');
   typePin(p2, '1111');
-  check(p2.text().includes('Falsche PIN') && !p2.$('#p-practice'), 'wrong PIN is rejected');
+  check(p2.text().includes('Falsche PIN') && !p2.$('[data-pt]'), 'wrong PIN is rejected');
   typePin(p2, '2468');
-  check(!!p2.$('#p-practice'), 'right PIN opens the parent area');
+  check(!!p2.$('[data-pt]'), 'right PIN opens the parent area');
 
   const p3 = open(p1.dump());
   for (let i = 0; i < 5; i++) p3.click('#logo');
-  check(!!p3.$('#cval') && !p3.$('#p-practice'), '5 taps on the title also ask for the PIN');
+  check(!!p3.$('#cval') && !p3.$('[data-pt]'), '5 taps on the title also ask for the PIN');
   typePin(p3, '0000'); typePin(p3, '0000'); typePin(p3, '0000');
   check(p3.text().includes('30 Sekunden') && p3.$('.numpad [data-k="2"]').disabled, 'three wrong PINs pause the numpad');
   typePin(p3, '2468');
-  check(!p3.$('#p-practice'), 'the right PIN does nothing during the pause');
+  check(!p3.$('[data-pt]'), 'the right PIN does nothing during the pause');
 
   const p4 = open(p1.dump());
   p4.click('#parents'); p4.click('#forgot');
@@ -189,11 +198,11 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   typePin(p4, String(+a * +b)); p4.click('.numpad [data-k="ok"]');
   check(p4.text().includes('PIN festlegen'), 'right gate answer leads to choosing a new PIN');
   typePin(p4, '1357'); typePin(p4, '1357');
-  check(!!p4.$('#p-practice'), 'after the new PIN the parent area opens');
+  check(!!p4.$('[data-pt]'), 'after the new PIN the parent area opens');
   const p5 = open(p4.dump());
   p5.click('#parents'); typePin(p5, '1357');
-  check(!!p5.$('#p-practice'), 'the new PIN works after reopening');
-  p5.click('#pdel');
+  check(!!p5.$('[data-pt]'), 'the new PIN works after reopening');
+  p5.go('settings', 'app'); p5.click('#pdel'); p5.click('.overlay #yes');
   check(p5.w.__mq.meta.pin === '' && p5.text().includes('Noch keine PIN'), 'PIN can be removed in the parent area');
 }
 
@@ -209,6 +218,7 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   p.click('[data-cont="math"]');
   check(!!p.$('#fe') && p.errors.length === 0, 'adventure saved before the new task types continues');
   const p2 = open(p.dump()); for (let i = 0; i < 5; i++) p2.click('#logo');
+  p2.subj('Mathe', 'math');
   check(['Teilen', 'Teilen mit Rest', 'Runden', 'Verdoppeln und Halbieren'].every((n) => p2.text().includes(n)), 'parent area lists the new task types');
 }
 
@@ -280,7 +290,7 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
 const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
 const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await sleep(10); return fn(); };
 async function exportCode(p) {
-  p.click('#parents'); p.click('#pexport');
+  p.click('#parents'); p.go('settings', 'save'); p.click('#pexport');
   await until(() => p.$('#pcode'));
   return p.$('#pcode').value;
 }
@@ -319,7 +329,7 @@ async function saveCodeCases() {
 
   // broken codes are rejected with a message and change nothing
   const bad = open(saved);
-  bad.click('#parents');
+  bad.click('#parents'); bad.go('settings', 'save');
   for (const c of ['', 'hallo', 'LQ0.abc!!', 'LQ1.' + code.slice(4), code.slice(0, -12), 'LQ0.' + Buffer.from('{"v":1}').toString('base64url'), 'LQ0.' + Buffer.from('[1,2]').toString('base64url')]) {
     bad.$('#pcodein').value = c; bad.$('#pimsg').textContent = ''; bad.click('#pmerge');
     await until(() => bad.$('#pimsg').textContent);
@@ -332,7 +342,7 @@ async function saveCodeCases() {
   check(zcode.startsWith('LQ1.') && zcode.length < code.length, 'with compression the code starts with LQ1. and is shorter (' + zcode.length + ' vs ' + code.length + ')');
   const back = await z.w.__mq.unpackSave(zcode);
   check(same(back.meta, JSON.parse(saved[META])) && same(back.runs.math, JSON.parse(saved[RUN])), 'LQ1. code reads back to the same save');
-  const old = open(saved); old.click('#parents');
+  const old = open(saved); old.click('#parents'); old.go('settings', 'save');
   old.$('#pcodein').value = zcode; old.click('#pmerge');
   await until(() => old.$('#pimsg').textContent);
   check(old.$('#pimsg').textContent.includes('Browser'), 'a browser without decompression explains why it cannot read LQ1.');
@@ -361,8 +371,9 @@ async function saveCodeCases() {
   dev.click('.overlay #imerge');
   check(!!dev.$('#cval') && dev.w.__mq.meta.wins === 0, 'with a PIN, loading from a link asks for the PIN first');
 
-  const keep = open(own.dump()); keep.click('#parents');
+  const keep = open(own.dump()); keep.click('#parents'); keep.go('settings', 'save');
   keep.$('#pcodein').value = code; keep.click('#pmerge');
+  await until(() => keep.$('.overlay #yes')); keep.click('.overlay #yes');
   await until(() => keep.$('[data-cont]'));
   check(keep.dump()[RUN] === ownRun && keep.w.__mq.meta.wins === 2, 'merge keeps the adventure of this device and takes the wins from the code');
 
@@ -454,7 +465,7 @@ async function stampCases() {
   }
   { // parent area shows the total
     const p = open({ [META]: JSON.stringify({ stampsTotal: 123, setup: { done: false, skipped: true, at: 'x' } }) });
-    p.click('#parents');
+    p.click('#parents'); p.go('overview', 'all');
     check(p.text().includes('Stempel verdient insgesamt') && p.text().includes('123'), 'parent area shows stamps earned in total');
   }
 }
@@ -528,7 +539,7 @@ function wardrobeCases() {
   const m = p1.w.__mq.meta;
   check(m.runs === 2 && m.stats.teestube.zahl.t === 0 && m.stats.doppeldecker.reihe.t === 0 && p1.errors.length === 0, 'old save gets stats for the Englisch units');
   p1.click('#parents');
-  check(Object.keys(p1.w.eval('MK.MODES.teestube.modules')).concat(Object.keys(p1.w.eval('MK.MODES.doppeldecker.modules'))).every((k) => p1.$('.toggle[data-m="' + (p1.w.eval('MK.MODES.teestube.modules')[k] ? 'teestube' : 'doppeldecker') + '"][data-k="' + k + '"]')) && p1.text().includes('Was passt nicht?') && p1.text().includes('Wochentage und Monate'), 'parent area has toggles and statistics for every Englisch task type');
+  check(['teestube', 'doppeldecker'].every((mode) => { p1.subj('Englisch', mode); return Object.keys(p1.w.eval('MK.MODES.' + mode + '.modules')).every((k) => p1.$('.switch[data-m="' + mode + '"][data-k="' + k + '"]')); }) && p1.text().includes('Wochentage und Monate'), 'parent area has a switch for every Englisch task type');
   for (const mode of ['teestube', 'doppeldecker']) {
     const p1 = open({ [META]: JSON.stringify(old) });
     p1.click('[data-new="' + mode + '"]'); p1.click('.choice'); p1.click('#go');
@@ -630,6 +641,7 @@ const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
   const m = p.w.__mq.meta;
   check(m.stats.math.add.c === 3 && NEW.every((k) => m.stats.math[k] && m.stats.math[k].t === 0 && Array.isArray(m.stats.math[k].hist)) && m.off.math.join() === 'seq', 'old save gets empty statistics for the six new task types and keeps its switches');
   const p2 = open(p.dump()); for (let i = 0; i < 5; i++) p2.click('#logo');
+  p2.subj('Mathe', 'math');
   check(['Schriftlich multiplizieren', 'Teilbarkeit', 'Zahlenmauern', 'Bruchteile', 'Punkt vor Strich', 'Zahlwörter und Stellenwerte'].every((n) => p2.text().includes(n)), 'parent area lists the new task types');
   // a Kröte adventure saved while she still had Nachbarflut (nb) continues; the first attack is Teilbarkeit
   const p3 = startMathFight(); const d = p3.dump(); const r = JSON.parse(d[RUN]);
@@ -814,7 +826,7 @@ async function weeklyCases() {
     const p2 = open(p.dump(), { now: W49 });
     check(p2.w.__mq.meta.weekly.done && p2.$('#weekly').textContent.includes('Wochenaufgabe geschafft'), 'a finished week is saved and shown on the title');
     p2.click('#parents');
-    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 / 3') && p2.text().includes(`Wochenziele: ${goals.length} von ${goals.length} erledigt`), 'parent area shows the weekly report');
+    check(p2.text().includes('Wochenbericht') && p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) && p2.text().includes('2 von 3 richtig') && p2.text().includes(`Wochenziele: ${goals.length} von ${goals.length} erledigt`), 'parent area shows the weekly report');
     const lines = p2.$('#wtext').value.split('\n');
     check(lines.length >= 3 && lines.length <= 5 && lines[0] === 'Lernquest, Woche 4' && lines.some((l) => l.startsWith('Geübt')) && !/Steinkauz|Moosbär/.test(p2.$('#wtext').value), 'report text has three to five lines and no names: ' + JSON.stringify(lines));
     p2.click('#wcopy');
@@ -1203,19 +1215,19 @@ function topCases() {
   check(same(bad.w.__mq.meta.hidden, ['mode:musik']) && ![...bad.d.querySelectorAll('[data-sub]')].some((b) => b.textContent.includes('Musik')), 'broken entries are dropped, a hidden game leaves the title');
   const ga = p0.w.__mq.weeklyGoals();
   p0.click('#parents');
-  const subs = [...p0.d.querySelectorAll('details.psub')]; const di = subs.findIndex((d) => d.textContent.includes('Deutsch'));
-  p0.click(`[data-hidesub="${di}"]`);
+  p0.subj('Deutsch'); p0.click('[data-hidesub]'); p0.click('#pback');
   const m = p0.w.__mq.meta;
-  check(m.hidden.includes('mode:woerterwerkstatt') && m.hidden.includes('mode:satzbaustelle') && p0.$('details.psub[data-fold="sub:Deutsch"] .fstate').textContent === 'ausgeblendet', 'parents hide the subject Deutsch');
+  check(m.hidden.includes('mode:woerterwerkstatt') && m.hidden.includes('mode:satzbaustelle') && [...p0.d.querySelectorAll('[data-pf]')].find((b) => b.textContent.includes('Deutsch')).textContent.includes('ausgeblendet'), 'parents hide the subject Deutsch');
   const gb = p0.w.__mq.weeklyGoals();
   check(!gb.some((g) => g.subject === 'Deutsch') && same(gb, ga.filter((g) => g.subject !== 'Deutsch')), 'a hidden subject has no weekly goal, the other goals stay');
   // two of the three Zahlenquest heroes hidden; the last one stays (the Steinkauz is a reward and does not count)
   const S = p0.w.eval('MQ.STARTERS').filter((x) => x.id !== 'kauz');
+  p0.subj('Mathe', 'math');
   S.slice(0, -1).forEach((x) => p0.click(`[data-hide="hero:math:${x.id}"]`));
   p0.click(`[data-hide="hero:math:${S[S.length - 1].id}"]`);
   check(S.slice(0, -1).every((x) => m.hidden.includes('hero:math:' + x.id)) && !m.hidden.includes('hero:math:' + S[S.length - 1].id) && p0.text().includes('Mindestens ein Held muss bleiben.'), 'heroes can be hidden, but one always stays');
   const d1 = p0.dump(); const m1 = JSON.parse(d1[META]); m1.hidden = m1.hidden.concat(Object.keys(m1.stats).filter((k) => k !== 'math').map((k) => 'mode:' + k)); d1[META] = JSON.stringify(m1);
-  const p1 = open(d1, { now: W49 }); p1.click('#parents'); p1.click('[data-hide="mode:math"]');
+  const p1 = open(d1, { now: W49 }); p1.click('#parents'); p1.subj('Mathe', 'math'); p1.click('[data-hide="mode:math"]');
   check(!p1.w.__mq.meta.hidden.includes('mode:math') && p1.text().includes('Mindestens ein Thema muss sichtbar bleiben.'), 'the last game cannot be hidden');
   p1.click('#back');
   check(p1.d.querySelectorAll('[data-sub]').length === 1 && p1.w.__mq.weeklyGoals().length === 1, 'only Mathe is left on the title and in the weekly goals');

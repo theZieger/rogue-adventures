@@ -702,8 +702,8 @@ const MQ = (() => {
   const solidSVG = (id) => {
     const D = `fill="none" stroke="${INK}" stroke-width="1.5" stroke-dasharray="3 3"`;
     const body = {
-      wuerfel: () => `<g transform="translate(36 40) scale(1.6)">${boxFaces(0, 0, 0, 1, 1, 1, SOLID_FILL)}</g>`,
-      quader: () => `<g transform="translate(26 38) scale(1.05)">${boxFaces(0, 0, 0, 3, 1, 1.4, SOLID_FILL)}</g>`,
+      wuerfel: () => `<g transform="translate(36 30) scale(1.6)">${boxFaces(0, 0, 0, 1, 1, 1, SOLID_FILL)}</g>`,
+      quader: () => `<g transform="translate(23.4 25.6) scale(1.05)">${boxFaces(0, 0, 0, 3, 1, 1.4, SOLID_FILL)}</g>`,
       kugel: () => `<circle cx="36" cy="30" r="24" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M12 30 a24 8 0 0 0 48 0" fill="none" ${LINE}/><path d="M12 30 a24 8 0 0 1 48 0" ${D}/>`,
       zylinder: () => `<path d="M16 12 v34 a20 7 0 0 0 40 0 v-34" fill="${SOLID_FILL[1]}" ${LINE}/><ellipse cx="36" cy="12" rx="20" ry="7" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
       kegel: () => `<path d="M36 4 L16 46 a20 7 0 0 0 40 0 Z" fill="${SOLID_FILL[1]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,

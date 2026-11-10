@@ -11,11 +11,12 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Neu
 - Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.
 - Eltern können Fächer, Themen und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.
+- Eltern sehen zu jeder Aufgabenart, was sie übt, mit Beispiel und Bezug zum Lehrplan Sachsen.
 
 ### Verbessert
-- Der Elternbereich ist in vier Reiter aufgeteilt und viel kürzer: Fächer klappen erst beim Antippen auf.
+- Der Elternbereich ist neu geordnet in Überblick, Inhalte und Einstellungen und fragt vor jedem Löschen nach.
 - Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
-- Viele Bilder sind neu oder feiner gezeichnet, von Monstern und Kreiseln bis zu Hütte, Markt und Verkehrszeichen.
+- Viele Bilder sind neu gezeichnet, kleine Symbole sehen überall gleich aus, und Zeichnungen in Aufgaben sind klarer.
 
 ## 2026-11-09
 
