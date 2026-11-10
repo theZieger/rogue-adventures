@@ -1,4 +1,4 @@
-const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const E=require('../src/ethik.js');const know={};let seq=0;const fails=[];
+const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const E=require('../src/ethik.js');require('./units.js');const know={};let seq=0;const fails=[];
 for(const [mode,cfg] of Object.entries(K.MODES)){ for(const mod of Object.keys(cfg.modules)){ for(let t=1;t<=cfg.modules[mod].maxTier;t++){ for(let i=0;i<400;i++){ const q=K.generate(mode,mod,t,know,++seq);
  if(q.kind==='choice'||q.kind==='parts'){ if(!q.options.includes(q.answer)) fails.push(JSON.stringify(q)); if(new Set(q.options).size!==q.options.length) fails.push('dup '+q.q); }
  if(q.kind==='order'){ const ids=q.items.map(x=>x.id), texts=q.items.map(x=>x.text);

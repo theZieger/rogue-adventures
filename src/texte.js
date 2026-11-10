@@ -1,6 +1,7 @@
 // Lesestube: short texts (60–120 words) with three questions each; the answer at index a is the right one.
 // Fables are retold in our own words after Aesop, poems are public domain (by = author), \n breaks a line.
 // Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
+// grade: 1 or 2 marks a short text with two questions for Klasse 1 (8–30 words) or 2 (20–60 words); without it, Klasse 3.
 const TEXTE = [
   { id: 'rabe', kind: 'Fabel', title: 'Der Fuchs und der Rabe',
     text: 'Ein Rabe hatte ein Stück Käse gefunden. Er setzte sich damit auf einen hohen Ast, um es in Ruhe zu fressen. Da kam ein Fuchs vorbei. Er roch den Käse und wollte ihn haben. „Was für ein schöner Vogel du bist!“, rief der Fuchs nach oben. „Deine Federn glänzen so schwarz. Wenn deine Stimme genauso schön ist, bist du der König aller Vögel.“ Der Rabe freute sich über das Lob. Er öffnete den Schnabel, um laut zu krächzen. Da fiel der Käse hinunter. Der Fuchs schnappte ihn und lief davon. Wer jedem Lob glaubt, wird leicht hereingelegt.',

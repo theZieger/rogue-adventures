@@ -11,7 +11,7 @@
   const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
   // the title screen builds itself from grade and subject of the units
   const SUBJECTS = { Mathe: '🔢', Deutsch: '📖', Ethik: '🕊️', Sachkunde: '🌱', Musik: '🎵', Englisch: '💬' };
-  const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort().map((grade) => ({ grade, label: 'Klasse ' + grade,
+  const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort((a, b) => a - b).map((grade) => ({ grade, label: 'Klasse ' + grade,
     subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject) })).filter((x) => x.modes.length) }));
   let mode = 'math';
   const CFG = () => MODES[mode];
@@ -547,7 +547,9 @@
     render(`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
-      <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div></div></div>`);
+      <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div>
+      <div class="card"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${gradeTabs()}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`);
+    app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenSetup(); }; });
     $('#setpin').onclick = () => setPin(screenTitle, screenSetup);
     $('#setload').onclick = () => screenParent('load', screenSetup);
     $('#later').onclick = () => { setupDone('skipped'); screenTitle(); };
@@ -748,7 +750,9 @@
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
-  const readsIn = (m) => ['Deutsch', 'Ethik'].includes(MODES[m].subject);
+  // texts carry their grade (default 3); a unit only gets a Lesestube when there are texts for its grade
+  const textsFor = (m) => TEXTE.map((t, i) => i).filter((i) => (TEXTE[i].grade || 3) === MODES[m].grade);
+  const readsIn = (m) => ['Deutsch', 'Ethik'].includes(MODES[m].subject) && textsFor(m).length > 0;
   // same enemy, weak spot and HP on every device in this week
   function weekBossSpec(world) {
     const r = MQ.seeded(weekly().week + ':' + mode + ':' + world); const pool = CFG().enemies[world].normal; const e = pool[Math.floor(r() * pool.length)];
@@ -1039,22 +1043,22 @@
   // three questions about a text are the attacks; after the third the reading lesson ends, beaten or not
   const READ_FOE = { name: 'Der Zeilenspringer', type: 'normal', shape: 'zeilenspringer', hp: 30, atk: 4 };
   const READ_MOD = { icon: '📖', name: 'Lesestube' };
-  const READ_TUT = { title: 'Lesestube', steps: ['Lies den Text in Ruhe. Vor jeder Frage kannst du ihn noch einmal ansehen.', 'Jede richtige Antwort trifft den Zeilenspringer. Nach einer falschen Antwort schlägt er zurück.', 'Nach drei Fragen ist die Lesestunde vorbei.'] };
+  const READ_TUT = { title: 'Lesestube', steps: ['Lies den Text in Ruhe. Vor jeder Frage kannst du ihn noch einmal ansehen.', 'Jede richtige Antwort trifft den Zeilenspringer. Nach einer falschen Antwort schlägt er zurück.', 'Nach den Fragen ist die Lesestunde vorbei.'] };
   const readText = () => TEXTE[run.node.text];
   const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p>${esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
   function screenRead() {
-    if (!Number.isInteger(run.node.text) || !TEXTE[run.node.text]) { run.node.text = rnd(0, TEXTE.length - 1); saveAll(); }
+    if (!Number.isInteger(run.node.text) || !TEXTE[run.node.text]) { run.node.text = pick(textsFor(mode)); saveAll(); }
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll">${readCard(readText())}</div><div class="bottom"><button class="btn" id="next">Zu den Fragen</button></div></div>`);
     $('#next').onclick = () => {
       const e = { name: READ_FOE.name, type: READ_FOE.type, shape: READ_FOE.shape, maxHp: READ_FOE.hp, hp: READ_FOE.hp, atk: READ_FOE.atk, read: { q: 0, right: 0 } };
       run.node.enemy = e; saveAll();
-      renderBattle({ enemy: e, log: `${e.name} bringt die Zeilen durcheinander. Beantworte drei Fragen zum Text.`, logCls: '', phase: 'choose' });
+      renderBattle({ enemy: e, log: `${e.name} bringt die Zeilen durcheinander. Beantworte ${readText().qs.length === 2 ? 'zwei' : 'drei'} Fragen zum Text.`, logCls: '', phase: 'choose' });
     };
   }
   function readChoice(b) {
-    const r = b.enemy.read; const dmg = Math.ceil(b.enemy.maxHp / 3);
-    if (r.q >= 3 || b.enemy.hp <= 0) { $('#bottom').innerHTML = '<button class="btn" id="next">Weiter</button>'; $('#next').onclick = () => readEnd(b); return; }
-    $('#bottom').innerHTML = `<div class="attacks" style="grid-template-columns:1fr"><button class="atk" id="rq" aria-label="Frage ${r.q + 1} von 3, ${dmg} Schaden"><span class="n">Frage ${r.q + 1} von 3</span><span class="m">${READ_MOD.icon} ${READ_MOD.name}<span class="dmg">💥 ${dmg}${run.power ? ' · 🌶️ doppelt' : ''}</span></span></button></div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="rtext">📄 Text ansehen</button><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button></div>`;
+    const r = b.enemy.read; const n = readText().qs.length; const dmg = Math.ceil(b.enemy.maxHp / n);
+    if (r.q >= n || b.enemy.hp <= 0) { $('#bottom').innerHTML = '<button class="btn" id="next">Weiter</button>'; $('#next').onclick = () => readEnd(b); return; }
+    $('#bottom').innerHTML = `<div class="attacks" style="grid-template-columns:1fr"><button class="atk" id="rq" aria-label="Frage ${r.q + 1} von ${n}, ${dmg} Schaden"><span class="n">Frage ${r.q + 1} von ${n}</span><span class="m">${READ_MOD.icon} ${READ_MOD.name}<span class="dmg">💥 ${dmg}${run.power ? ' · 🌶️ doppelt' : ''}</span></span></button></div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="rtext">📄 Text ansehen</button><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button></div>`;
     $('#rtext').onclick = () => { const ov = modal(`${readCard(readText())}<button class="btn" id="tutok" style="margin-top:12px">Zurück zur Frage</button>`); $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => ov.remove(); };
     $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
     $('#rq').onclick = () => readAsk(b, dmg);
@@ -1070,7 +1074,7 @@
       else { b.log = `Das stand anders im Text. ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss'; b.enemy.pending = 1; }
       saveAll();
     };
-    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: `Frage ${r.q + 1} von 3`, hint, onResult }, () => {
+    ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: `Frage ${r.q + 1} von ${tx.qs.length}`, hint, onResult }, () => {
       b.phase = b.enemy.pending ? 'wait' : 'choose'; renderBattle(b, true);
       if (hit) { $('#fe').classList.add('hurt'); fx('#fe', '−' + hit); SFX.hit(); }
       else setTimeout(() => { if (run) enemyTurn(b, 1); }, 1700);
@@ -1333,6 +1337,7 @@
   }
   function screenDex() {
     const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push({ ...EN[w].elite, elite: true }); all.push(EN[w].boss); } }
+    for (let i = all.length - 1; i >= 0; i--) if (all.findIndex((e) => e.name === all[i].name) < i) all.splice(i, 1); // Klasse 1/2 units share their opponents
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss }) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
   }
