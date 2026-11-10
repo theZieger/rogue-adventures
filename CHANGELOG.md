@@ -6,6 +6,16 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-10
+
+### Neu
+- Jedes Wochenziel hat einen Knopf „Jetzt spielen“, der direkt ins passende Spiel führt.
+- Eltern können Fächer, Spiele und Helden ausblenden, zum Beispiel Deutsch oder einzelne Helden in Mathe.
+
+### Verbessert
+- Im Kampf zeigt „⭐ Wochenziel“, welche Attacke für die Wochenaufgabe zählt.
+- Der Elternbereich ist in vier Reiter aufgeteilt und viel kürzer: Fächer klappen erst beim Antippen auf.
+
 ## 2026-11-09
 
 ### Neu

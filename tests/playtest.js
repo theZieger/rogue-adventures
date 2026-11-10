@@ -202,7 +202,7 @@ async function step(){
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
-  const goals=w.__mq.weeklyGoals(); const done=goals.filter((g,i)=>(m.weekly.progress[i]||0)>=g.n).length;
+  const goals=w.__mq.weeklyGoals(); const done=goals.filter((g)=>(m.weekly.progress[g.i]||0)>=g.n).length;
   console.log('weekly', m.weekly.week, 'boss fights', weekbossFights, 'goals done', done, JSON.stringify(m.weekly.progress));
   if(mode==='wetterstation'&&!labs){ console.error('PLAYTEST FAIL: the bot never reached the Forscherlabor'); process.exit(1); }
   if(mode==='sinne'&&!labs){ console.error('PLAYTEST FAIL: the bot never reached the Sinnestäuschung'); process.exit(1); }

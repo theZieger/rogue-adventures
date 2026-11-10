@@ -75,6 +75,7 @@ Run-Speicherstände mit, deshalb gehört **alles Persistente in meta oder die Ru
 | `materials` | `{ [id]: number }` | `{}` | 12/13 | Holz, Stein, Erz, Ernte |
 | `pantry` | `string[]` (Ids aus `ITEMS`) | `[]` | 13 | Vorrat aus der Werkbank, höchstens drei; kommt beim Start des nächsten Abenteuers in `run.items` und wird geleert |
 | `hut` | `{ rooms: number, items: string[] }` | `{rooms:1,items:[]}` | 13 | Meine Hütte: `rooms` 1 oder 2 (Zweites Zimmer), `items` = Möbel-Ids, die im zweiten Zimmer stehen; gebaute Möbel selbst stehen in `owned['hut-…']` |
+| `hidden` | `string[]` | `[]` | Elternbereich | im Elternbereich ausgeblendet: `mode:<mode>` für ein Spiel, `hero:<mode>:<id>` für einen Helden; ein Fach ist aus, wenn alle seine Spiele aus sind |
 
 Kalenderwoche: ISO-Woche nach ISO 8601, Schlüssel `2026-W46`. Eine kleine Hilfsfunktion `isoWeek(date)` kommt in
 Schritt 03 nach `logic.js` und wird von allen späteren Schritten benutzt. Wochenaufgaben werden aus dem

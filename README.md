@@ -55,7 +55,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 - „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
-- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) → Üben (Aufgabenarten an/aus), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset).
+- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset).
 - Startseite: Klasse → Fach (Kachel) → Spiel. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
 - „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
