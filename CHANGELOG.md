@@ -9,6 +9,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-10
 
 ### Verbessert
+- Glücksrad, Windrose, Ortsplan und Verkehrszeichen sind neu gezeichnet.
 - Kreisel und viele Monster sind feiner gezeichnet.
 - Hütte, Schulgarten, Markt, Bergwerk und die Kartoffelpflanze sind neu gezeichnet.
 

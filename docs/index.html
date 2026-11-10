@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="b692dfbd9804">
+<meta name="app-version" content="8d72a882a667">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1756,14 +1756,26 @@ const MJ = (() => {
       <path d="M60 40 L30 88 M60 40 L90 88 M232 40 L170 88 M232 40 L294 88" stroke="${OUT}" stroke-width="1.5"/><path d="M14 88 L106 88 L96 98 L24 98 Z M166 88 L298 88 L288 98 L176 98 Z" fill="#C9A227" stroke="${OUT}" stroke-width="2"/>
       <rect x="34" y="54" width="52" height="34" rx="6" fill="#FF8C42" stroke="${OUT}" stroke-width="2"/><text x="60" y="78" text-anchor="middle" font-size="20" font-weight="700" fill="${OUT}">?</text><text x="60" y="118" text-anchor="middle" font-size="12" fill="${OUT}">${thing}</text>${blocks}</svg>`;
   }
-  const COLORS = { rot: { name: 'Rot', fill: '#E8453C' }, blau: { name: 'Blau', fill: '#3F7FE0' }, gelb: { name: 'Gelb', fill: '#F5C518' }, gruen: { name: 'Grün', fill: '#3DAA55' } };
+  // lt/dk: the same paint in light and shade, so every field of one colour looks alike
+  const COLORS = { rot: { name: 'Rot', fill: '#E8453C', lt: '#F06A60', dk: '#C93730' }, blau: { name: 'Blau', fill: '#3F7FE0', lt: '#6497EA', dk: '#336CC8' }, gelb: { name: 'Gelb', fill: '#F5C518', lt: '#FFD84A', dk: '#E0AE10' }, gruen: { name: 'Grün', fill: '#3DAA55', lt: '#5CBD6E', dk: '#329548' } };
   // each colour also gets its own mark, so the wheel works without telling colours apart
-  const MARK = { rot: (x, y) => `<circle cx="${x}" cy="${y}" r="5"/>`, blau: (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10"/>`, gelb: (x, y) => `<path d="M${x} ${y - 6} L${x + 6} ${y + 5} L${x - 6} ${y + 5} Z"/>`, gruen: (x, y) => `<path d="M${x} ${y - 7} L${x + 6} ${y} L${x} ${y + 7} L${x - 6} ${y} Z"/>` };
+  const MARK = { rot: (x, y) => `<circle cx="${x}" cy="${y}" r="5"/>`, blau: (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1"/>`, gelb: (x, y) => `<path d="M${x} ${y - 6} L${x + 6} ${y + 5} L${x - 6} ${y + 5} Z"/>`, gruen: (x, y) => `<path d="M${x} ${y - 7} L${x + 6} ${y} L${x} ${y + 7} L${x - 6} ${y} Z"/>` };
+  const WHEEL_DEFS = '<defs>' + Object.entries(COLORS).map(([k, c]) => `<linearGradient id="jmw-${k}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c.lt}"/><stop offset=".45" stop-color="${c.fill}"/><stop offset="1" stop-color="${c.dk}"/></linearGradient>`).join('') +
+    '<linearGradient id="jmw-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2C27E"/><stop offset=".55" stop-color="#C9843F"/><stop offset="1" stop-color="#8E5524"/></linearGradient>' +
+    '<radialGradient id="jmw-brass" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF3B0"/><stop offset=".5" stop-color="#F2BE3A"/><stop offset="1" stop-color="#A9761A"/></radialGradient>' +
+    '<radialGradient id="jmw-gloss" cx="34%" cy="28%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1C2541" stop-opacity=".12"/></radialGradient>' +
+    '<pattern id="jmw-grain" width="14" height="7" patternUnits="userSpaceOnUse"><path d="M0 3.5 Q3.5 1.5 7 3.5 T14 3.5" fill="none" stroke="#5A3410" stroke-width=".6" opacity=".12"/></pattern></defs>';
   function wheelSVG(sectors) {
-    const n = sectors.length, P = (a, r) => [(60 + r * Math.sin(a)).toFixed(1), (64 - r * Math.cos(a)).toFixed(1)];
-    const parts = sectors.map((c, i) => { const a0 = i * 2 * Math.PI / n, a1 = (i + 1) * 2 * Math.PI / n, [x0, y0] = P(a0, 52), [x1, y1] = P(a1, 52), [mx, my] = P((a0 + a1) / 2, 34);
-      return `<path class="sector" data-color="${c}" d="M60 64 L${x0} ${y0} A52 52 0 0 1 ${x1} ${y1} Z" fill="${COLORS[c].fill}" stroke="${OUT}" stroke-width="2"/><g fill="#fff" stroke="${OUT}" stroke-width="1.5">${MARK[c](+mx, +my)}</g>`; }).join('');
-    return `<svg class="jm-fig jm-wheel" viewBox="0 0 120 120" role="img" aria-label="Glücksrad mit ${n} gleich großen Feldern">${parts}<circle cx="60" cy="64" r="6" fill="#FFC93C" stroke="${OUT}" stroke-width="2"/><path d="M52 2 L68 2 L60 18 Z" fill="${OUT}"/></svg>`;
+    const n = sectors.length, R = 44, P = (a, r) => [(60 + r * Math.sin(a)).toFixed(1), (64 - r * Math.cos(a)).toFixed(1)];
+    let studs = '';
+    const parts = sectors.map((c, i) => { const a0 = i * 2 * Math.PI / n, a1 = (i + 1) * 2 * Math.PI / n, [x0, y0] = P(a0, R), [x1, y1] = P(a1, R), [mx, my] = P((a0 + a1) / 2, 28), [sx, sy] = P(a0, 49);
+      studs += `<circle cx="${sx}" cy="${sy}" r="2.3" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="1.2"/>`;
+      return `<path class="sector" data-color="${c}" d="M60 64 L${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1} Z" fill="url(#jmw-${c})" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><g fill="#FFFDF5" stroke="${OUT}" stroke-width="1.6" stroke-linejoin="round">${MARK[c](+mx, +my)}</g>`; }).join('');
+    return `<svg class="jm-fig jm-wheel" viewBox="0 0 120 120" role="img" aria-label="Glücksrad mit ${n} gleich großen Feldern">${WHEEL_DEFS}<circle cx="62" cy="67" r="54" fill="${OUT}" opacity=".16"/>` +
+      `<circle cx="60" cy="64" r="53" fill="url(#jmw-wood)" stroke="${OUT}" stroke-width="3"/><circle cx="60" cy="64" r="53" fill="url(#jmw-grain)"/><path d="M${P(-1.25, 50.5).join(' ')} A50.5 50.5 0 0 1 ${P(-0.3, 50.5).join(' ')}" fill="none" stroke="#FFE7B8" stroke-width="2" stroke-linecap="round" opacity=".7"/>` +
+      `${parts}<circle cx="60" cy="64" r="${R}" fill="url(#jmw-gloss)" stroke="${OUT}" stroke-width="2.5" pointer-events="none"/>${studs}` +
+      `<circle cx="60" cy="64" r="7" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="2.2"/><circle cx="57.8" cy="61.8" r="1.8" fill="#fff" opacity=".8"/>` +
+      `<path d="M51 3 Q60 0 69 3 L61.5 23 Q60 25.5 58.5 23 Z" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="60" cy="7" r="2" fill="${OUT}"/><path d="M55 5 L58 14" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></svg>`;
   }
   function chartSVG(title, bars, step, top) {
     const H = 120, y0 = 140, x0 = 36, w = 274 / bars.length, Y = (v) => y0 - (v / top) * H; let grid = '';
@@ -4490,11 +4502,23 @@ const MS = (() => {
   function karteTarget(start, steps) { let [r, c] = start; for (const s of steps) { r += DIRS[s.d][0] * s.n; c += DIRS[s.d][1] * s.n; } return [r, c]; }
   const fields = (n) => (n === 1 ? '1 Feld' : `${n} Felder`);
   function karteText(steps, metres) { return 'Gehe ' + steps.map((s, i) => `${metres ? s.n * 100 + ' m' : fields(s.n)} nach ${DIRS[s.d][2]}`).join(' und dann ') + '.'; }
+  // brass compass rose: each arm has a lit and a shaded half; N is red, the asked arm orange
+  const ROSE_DEFS = '<defs><radialGradient id="kr-brass" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFF0B0"/><stop offset=".45" stop-color="#E8B84A"/><stop offset=".85" stop-color="#A8771E"/><stop offset="1" stop-color="#C8973A"/></radialGradient>' +
+    '<radialGradient id="kr-face" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#FFFDF4"/><stop offset=".7" stop-color="#F8EBC8"/><stop offset="1" stop-color="#E8D3A0"/></radialGradient></defs>';
+  const ROSE_COL = { main: ['#F6DC8E', '#C99A3A'], side: ['#B4CBE6', '#5F84B0'], N: ['#F26A6E', '#B8323A'], mark: ['#FFA24D', '#E5620F'] };
   function roseG(opts) {
-    opts = opts || {}; const mark = opts.mark; const arm = (d, len, w) => { const a = CLOCK.indexOf(d) * Math.PI / 4; const x = 60 + Math.sin(a) * len, y = 60 - Math.cos(a) * len; const px = Math.cos(a) * w, py = Math.sin(a) * w; const hot = d === mark; return `<path d="M60 60 L${(60 + px).toFixed(1)} ${(60 + py).toFixed(1)} L${x.toFixed(1)} ${y.toFixed(1)} L${(60 - px).toFixed(1)} ${(60 - py).toFixed(1)} Z" fill="${hot ? '#FF8A3D' : d === 'N' ? '#E5484D' : '#fff'}" stroke="${STROKE}" stroke-width="2"/>`; };
-    const lab = (d, len, size) => { const a = CLOCK.indexOf(d) * Math.PI / 4; return txt((60 + Math.sin(a) * len).toFixed(1), (60 - Math.cos(a) * len + size / 3).toFixed(1), d === mark ? '?' : d, { size }); };
+    opts = opts || {}; const mark = opts.mark, f = (v) => v.toFixed(1);
+    const arm = (d, len, w) => { const a = CLOCK.indexOf(d) * Math.PI / 4, x = 60 + Math.sin(a) * len, y = 60 - Math.cos(a) * len, px = Math.cos(a) * w, py = Math.sin(a) * w;
+      const [lt, dk] = ROSE_COL[d === mark ? 'mark' : d === 'N' ? 'N' : MAIN.includes(d) ? 'main' : 'side'];
+      return `<path d="M60 60 L${f(60 - px)} ${f(60 - py)} L${f(x)} ${f(y)} Z" fill="${lt}"/><path d="M60 60 L${f(60 + px)} ${f(60 + py)} L${f(x)} ${f(y)} Z" fill="${dk}"/>` +
+        `<path d="M60 60 L${f(x)} ${f(y)}" stroke="${STROKE}" stroke-width="1" opacity=".5"/><path d="M60 60 L${f(60 + px)} ${f(60 + py)} L${f(x)} ${f(y)} L${f(60 - px)} ${f(60 - py)} Z" fill="none" stroke="${STROKE}" stroke-width="${d === mark ? 2.2 : 1.8}" stroke-linejoin="round"/>`; };
+    const lab = (d, len, size) => { const a = CLOCK.indexOf(d) * Math.PI / 4; if (d === mark) size = 14; return txt(f(60 + Math.sin(a) * len), f(60 - Math.cos(a) * len + size / 3), d === mark ? '?' : d, { size, fill: d === mark ? '#D2600F' : STROKE }); };
     const side = opts.neben !== false;
-    return `<circle cx="60" cy="60" r="34" fill="#FFF8E1" stroke="#B08D4A" stroke-width="1.5"/>${side ? SIDE.map((d) => arm(d, 30, 5)).join('') : ''}${MAIN.map((d) => arm(d, 42, 7)).join('')}<circle cx="60" cy="60" r="3" fill="${STROKE}"/>${MAIN.map((d) => lab(d, 52, 14)).join('')}${side ? SIDE.map((d) => lab(d, 42, 10)).join('') : ''}`;
+    let ticks = ''; for (let i = 0; i < 32; i++) { const a = i * Math.PI / 16, r0 = i % 4 ? 32.5 : 30.5; ticks += `M${f(60 + Math.sin(a) * r0)} ${f(60 - Math.cos(a) * r0)} L${f(60 + Math.sin(a) * 34.5)} ${f(60 - Math.cos(a) * 34.5)} `; }
+    return `${ROSE_DEFS}<circle cx="61.5" cy="62" r="38" fill="${STROKE}" opacity=".14"/><circle cx="60" cy="60" r="38" fill="url(#kr-brass)" stroke="${STROKE}" stroke-width="2.5"/><circle cx="60" cy="60" r="34.5" fill="url(#kr-face)" stroke="${STROKE}" stroke-width="1.5"/>` +
+      `<path d="${ticks}" stroke="#A8823A" stroke-width="1" stroke-linecap="round"/><circle cx="60" cy="60" r="22" fill="none" stroke="#D9BE84" stroke-width="1"/>` +
+      `${side ? SIDE.map((d) => arm(d, 32, 6.5)).join('') : ''}${MAIN.map((d) => arm(d, 44, 8)).join('')}${SIDE.includes(mark) ? arm(mark, 32, 6.5) : ''}<circle cx="60" cy="60" r="4.5" fill="url(#kr-brass)" stroke="${STROKE}" stroke-width="2"/><circle cx="58.8" cy="58.8" r="1.2" fill="#fff" opacity=".85"/>` +
+      `${MAIN.map((d) => lab(d, 53, 14)).join('')}${side ? SIDE.map((d) => lab(d, 45.5, 10)).join('') : ''}`;
   }
   const roseSVG = (opts) => `<svg ${NS} class="pic" viewBox="-4 -4 128 128" style="max-width:220px" aria-label="Windrose">${roseG(opts)}</svg>`;
   // Schatzkarte: 5 × 5 Felder, Zelt = Start, ✕ = Schatz; clickable cells carry data-cell="Zeile-Spalte"
@@ -4525,16 +4549,38 @@ const MS = (() => {
     }
   }
 
-  // Plan mit Legende: fünf Orte auf einem 3 × 3-Plan
+  // Plan mit Legende: fünf Orte auf einem 3 × 3-Plan; icons fit x ±20, y −30…+16 around their spot
+  const I = (d, fill, w) => `<path d="${d}" fill="${fill}" stroke="${STROKE}" stroke-width="${w || 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
   const PLACES = [
-    { id: 'kirche', name: 'die Kirche', vom: 'von der Kirche', icon: (x, y) => `<rect x="${x - 12}" y="${y - 4}" width="24" height="18" fill="#BCAAA4" stroke="${STROKE}" stroke-width="2"/><path d="M${x - 5} ${y - 4} L${x - 5} ${y - 18} L${x + 5} ${y - 18} L${x + 5} ${y - 4}" fill="#BCAAA4" stroke="${STROKE}" stroke-width="2"/><path d="M${x} ${y - 28} L${x} ${y - 18} M${x - 4} ${y - 24} L${x + 4} ${y - 24}" stroke="${STROKE}" stroke-width="2"/>` },
-    { id: 'schule', name: 'die Schule', vom: 'von der Schule', icon: (x, y) => `<rect x="${x - 15}" y="${y - 6}" width="30" height="20" fill="#FFE082" stroke="${STROKE}" stroke-width="2"/><path d="M${x - 18} ${y - 6} L${x} ${y - 18} L${x + 18} ${y - 6} Z" fill="#E57373" stroke="${STROKE}" stroke-width="2"/><path d="M${x} ${y - 18} L${x} ${y - 30}" stroke="${STROKE}" stroke-width="2"/><path d="M${x} ${y - 30} L${x + 10} ${y - 26} L${x} ${y - 22} Z" fill="#3B82F6"/>` },
-    { id: 'wald', name: 'der Wald', vom: 'vom Wald', icon: (x, y) => [[-10, 2], [8, 0], [-1, -10]].map(([dx, dy]) => `<path d="M${x + dx} ${y + dy + 14} L${x + dx} ${y + dy + 6}" stroke="#6D4C41" stroke-width="3"/><circle cx="${x + dx}" cy="${y + dy}" r="9" fill="#43A047" stroke="#1B5E20" stroke-width="2"/>`).join('') },
-    { id: 'teich', name: 'der Teich', vom: 'vom Teich', icon: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="20" ry="12" fill="#64B5F6" stroke="#1E63B0" stroke-width="2"/>` },
-    { id: 'spielplatz', name: 'der Spielplatz', vom: 'vom Spielplatz', icon: (x, y) => `<path d="M${x - 16} ${y + 14} L${x - 8} ${y - 14} L${x} ${y + 14} M${x + 16} ${y + 14} L${x + 8} ${y - 14} L${x} ${y + 14} M${x - 8} ${y - 14} L${x + 8} ${y - 14}" stroke="#8D6E63" stroke-width="3" fill="none"/><path d="M${x - 4} ${y - 14} L${x - 4} ${y + 4} M${x + 4} ${y - 14} L${x + 4} ${y + 4}" stroke="${STROKE}" stroke-width="1.5"/><rect x="${x - 6}" y="${y + 3}" width="12" height="4" fill="#E53935"/>` },
-    { id: 'baeckerei', name: 'die Bäckerei', vom: 'von der Bäckerei', icon: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="18" ry="11" fill="#C68642" stroke="#7B4A1E" stroke-width="2"/><path d="M${x - 8} ${y - 6} L${x - 4} ${y + 6} M${x} ${y - 7} L${x + 4} ${y + 6} M${x + 8} ${y - 6} L${x + 11} ${y + 3}" stroke="#7B4A1E" stroke-width="2"/>` },
-    { id: 'bahnhof', name: 'der Bahnhof', vom: 'vom Bahnhof', icon: (x, y) => `<path d="M${x - 20} ${y - 5} L${x + 20} ${y - 5} M${x - 20} ${y + 5} L${x + 20} ${y + 5}" stroke="#455A64" stroke-width="3"/>${[-15, -5, 5, 15].map((d) => `<path d="M${x + d} ${y - 9} L${x + d} ${y + 9}" stroke="#8D6E63" stroke-width="3"/>`).join('')}` },
+    { id: 'kirche', name: 'die Kirche', vom: 'von der Kirche', icon: (x, y) => `<g transform="translate(${x} ${y})">${I('M-5 -2 L-5 -11 L13 -11 L18 -2 Z', 'url(#kp-roof)')}${I('M-5 -2 L17 -2 L17 14 L-5 14 Z', 'url(#kp-stone)')}${I('M-16 -14 L-10 -27 L-4 -14 Z', 'url(#kp-copper)')}${I('M-15 -14 L-5 -14 L-5 14 L-15 14 Z', 'url(#kp-stone)')}` +
+      `<path d="M-10 -27 L-10 -32 M-12.5 -30 L-7.5 -30" stroke="${STROKE}" stroke-width="1.6" stroke-linecap="round"/><circle cx="-10" cy="-7" r="2.6" fill="#FFF8E1" stroke="${STROKE}" stroke-width="1.2"/>${I('M-12.5 14 L-12.5 6 Q-10 2.5 -7.5 6 L-7.5 14', '#6D4C41', 1.5)}${[3, 11].map((d) => I(`M${d - 2} 9 L${d - 2} 3 Q${d} 0 ${d + 2} 3 L${d + 2} 9 Z`, '#8EC5F0', 1.3)).join('')}</g>` },
+    { id: 'schule', name: 'die Schule', vom: 'von der Schule', icon: (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 -17 L0 -30" stroke="${STROKE}" stroke-width="1.8" stroke-linecap="round"/>${I('M0 -30 L11 -26.5 L0 -23 Z', '#3F7FE0', 1.4)}${I('M-17 -6 L17 -6 L17 14 L-17 14 Z', 'url(#kp-wall)')}${I('M-20 -5 L0 -18 L20 -5 Z', 'url(#kp-roof)')}` +
+      `${[-12, -6, 6, 12].map((d) => `<rect x="${d - 2}" y="-1" width="4" height="5" fill="#8EC5F0" stroke="${STROKE}" stroke-width="1.1"/>`).join('')}${I('M-3.5 14 L-3.5 5 L3.5 5 L3.5 14', '#C0392B', 1.4)}<circle cx="0" cy="-9.5" r="2.3" fill="#FFF8E1" stroke="${STROKE}" stroke-width="1.1"/></g>` },
+    { id: 'wald', name: 'der Wald', vom: 'vom Wald', icon: (x, y) => `<g transform="translate(${x} ${y})">${[[-1, -10], [-10, 3], [9, 1]].map(([dx, dy]) => `<path d="M${dx} ${dy + 6} L${dx} ${dy + 14}" stroke="#6D4C41" stroke-width="3.2" stroke-linecap="round"/><circle cx="${dx}" cy="${dy}" r="9.5" fill="url(#kp-leaf)" stroke="${STROKE}" stroke-width="2"/><circle cx="${dx - 3}" cy="${dy - 3.5}" r="2.6" fill="#fff" opacity=".35"/>`).join('')}</g>` },
+    { id: 'teich', name: 'der Teich', vom: 'vom Teich', icon: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="1" rx="23" ry="14.5" fill="#B9D88C" stroke="#7FA65A" stroke-width="1.2"/><ellipse cx="0" cy="1" rx="19.5" ry="11.5" fill="url(#kp-water)" stroke="${STROKE}" stroke-width="2"/>` +
+      `<path d="M-9 -3 Q-5 -5.5 -1 -3 M3 4 Q7 1.5 11 4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><path d="M8 -4 A3.4 2.4 0 1 0 11 -6.2 L8 -4 Z" fill="#5FAE4E" stroke="${STROKE}" stroke-width="1"/>` +
+      `<path d="M-19 -2 L-20 -12 M-16.5 -1 L-15 -14 M-14 -1 L-11.5 -9" stroke="#4E7A35" stroke-width="1.6" stroke-linecap="round"/><rect x="-21.2" y="-15" width="2.6" height="5" rx="1.3" fill="#7B4A1E"/><rect x="-16.3" y="-17" width="2.6" height="5" rx="1.3" fill="#7B4A1E"/></g>` },
+    { id: 'spielplatz', name: 'der Spielplatz', vom: 'vom Spielplatz', icon: (x, y) => `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="14" rx="21" ry="4.5" fill="#F1D9A0" stroke="#C9A55C" stroke-width="1"/>` +
+      `<path d="M-5 -13 L-5 4 M5 -13 L5 4" stroke="#5A6474" stroke-width="1.4"/>${I('M-8 2.5 L8 2.5 L8 6 L-8 6 Z', '#E8453C', 1.5)}` +
+      `<path d="M-19 14 L-14 -14 L-9 14 M9 14 L14 -14 L19 14 M-16 -14 L16 -14" fill="none" stroke="${STROKE}" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M-19 14 L-14 -14 L-9 14 M9 14 L14 -14 L19 14 M-16 -14 L16 -14" fill="none" stroke="url(#kp-wood)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>` },
+    { id: 'baeckerei', name: 'die Bäckerei', vom: 'von der Bäckerei', icon: (x, y) => { const d = 'M-8 7 L6.5 -8 C11 -13 19 -10 18 -1 C17 9 9 13 0 13 C-9 13 -17 9 -18 -1 C-19 -10 -11 -13 -6.5 -8 L8 7';
+      return `<g transform="translate(${x} ${y - 2})"><path d="${d}" fill="none" stroke="${STROKE}" stroke-width="9.5" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="url(#kp-bread)" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>` +
+        `${[[-13, -4], [13, -4], [-6, 11], [5, 11.5], [0, -2]].map(([a, b]) => `<rect x="${a - 0.9}" y="${b - 0.9}" width="1.8" height="1.8" rx=".4" fill="#fff"/>`).join('')}</g>`; } },
+    { id: 'bahnhof', name: 'der Bahnhof', vom: 'vom Bahnhof', icon: (x, y) => `<g transform="translate(${x} ${y})">${I('M-13 -12 L13 -12 L13 2 L-13 2 Z', 'url(#kp-wall)')}${I('M-17 -12 L-12 -21 L12 -21 L17 -12 Z', 'url(#kp-roof)')}<circle cx="0" cy="-6" r="3.3" fill="#FFF8E1" stroke="${STROKE}" stroke-width="1.2"/><path d="M0 -6 L0 -8 M0 -6 L1.5 -6" stroke="${STROKE}" stroke-width="1"/>` +
+      `${[-8.5, 8.5].map((d) => `<rect x="${d - 2}" y="-8" width="4" height="6" fill="#8EC5F0" stroke="${STROKE}" stroke-width="1.1"/>`).join('')}` +
+      `${[-17, -8.5, 0, 8.5, 17].map((d) => `<rect x="${d - 1.6}" y="4.5" width="3.2" height="11" rx="1" fill="#9C6B43" stroke="${STROKE}" stroke-width="1"/>`).join('')}<path d="M-21 7.5 L21 7.5 M-21 12.5 L21 12.5" stroke="${STROKE}" stroke-width="3.6" stroke-linecap="round"/><path d="M-21 7.5 L21 7.5 M-21 12.5 L21 12.5" stroke="#AEB8C6" stroke-width="1.6" stroke-linecap="round"/></g>` },
   ];
+  const lg = (id, a, b) => `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
+  const PLAN_DEFS = `<defs>${lg('kp-roof', '#E57361', '#A93C2E')}${lg('kp-stone', '#F2EEE6', '#BDB4A6')}${lg('kp-copper', '#8FD0B8', '#3F8C78')}${lg('kp-wall', '#FFEAA0', '#E8BE52')}${lg('kp-wood', '#F2C27E', '#A8662E')}${lg('kp-bread', '#E8A65A', '#9A5523')}${lg('kp-meadow', '#E1EFC2', '#BFD994')}` +
+    '<radialGradient id="kp-leaf" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#8FD47A"/><stop offset=".6" stop-color="#43A047"/><stop offset="1" stop-color="#2C7A34"/></radialGradient>' +
+    '<radialGradient id="kp-water" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#BFE3FF"/><stop offset=".6" stop-color="#5FA8E8"/><stop offset="1" stop-color="#3478C0"/></radialGradient>' +
+    '<pattern id="kp-paper" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#F7ECCF"/><circle cx="2" cy="3" r=".6" fill="#B89A5E" opacity=".3"/><circle cx="7" cy="7.5" r=".5" fill="#B89A5E" opacity=".25"/><circle cx="8" cy="1.5" r=".4" fill="#fff" opacity=".6"/></pattern>' +
+    '<pattern id="kp-grass" width="12" height="11" patternUnits="userSpaceOnUse"><path d="M3 6 l1 -2.5 l1 2.5 M9 10 l1 -2.5 l1 2.5" fill="none" stroke="#7FA65A" stroke-width=".8" opacity=".55"/></pattern></defs>';
+  // three blocks per row and column, centred on the icon spots 38 / 104 / 170; the gaps between them are the streets
+  const PLAN_BG = `<rect x="7" y="7" width="200" height="200" rx="8" fill="${STROKE}" opacity=".14"/><rect x="4" y="4" width="200" height="200" rx="8" fill="url(#kp-paper)"/>` +
+    [10, 76, 142].map((by) => [10, 76, 142].map((bx) => `<rect x="${bx}" y="${by}" width="56" height="56" rx="7" fill="url(#kp-meadow)" stroke="#9DBB72" stroke-width="1.2"/><rect x="${bx}" y="${by}" width="56" height="56" rx="7" fill="url(#kp-grass)"/>`).join('')).join('') +
+    '<path d="M71 8 L71 200 M137 8 L137 200 M8 71 L200 71 M8 137 L200 137" stroke="#D8C49A" stroke-width="1.2" stroke-dasharray="5 4"/>' +
+    `<rect x="4" y="4" width="200" height="200" rx="8" fill="none" stroke="${STROKE}" stroke-width="2.5"/>`;
   const cap = (s) => s[0].toUpperCase() + s.slice(1);
   function planTask(mod) {
     for (;;) {
@@ -4543,7 +4589,10 @@ const MS = (() => {
       const pairs = []; for (const a of places) for (const b of places) if (a !== b && dirOf(a, b)) pairs.push([a, b, dirOf(a, b)]);
       if (!pairs.length) continue;
       const [a, b, d] = pick(pairs);
-      const svg = `<svg ${NS} class="pic" viewBox="0 0 300 210" aria-label="Plan mit Legende"><rect x="4" y="4" width="200" height="200" rx="8" fill="#DCEDC8" stroke="${STROKE}" stroke-width="2"/><path d="M71 4 L71 204 M137 4 L137 204 M4 71 L204 71 M4 137 L204 137" stroke="#fff" stroke-width="7"/>${places.map(({ p, rc }) => p.icon(38 + rc[1] * 66, 42 + rc[0] * 66)).join('')}<path d="M226 34 L234 14 L242 34 L234 29 Z" fill="${STROKE}"/>${txt(234, 50, 'N', { size: 14 })}${txt(256, 74, 'Legende', { size: 12 })}${places.map(({ p }, i) => `<g transform="translate(228 ${98 + i * 24}) scale(.5)">${p.icon(0, 0)}</g>${txt(244, 102 + i * 24, cap(p.name.split(' ')[1]), { size: 11, anchor: 'start' })}`).join('')}</svg>`;
+      const svg = `<svg ${NS} class="pic" viewBox="0 0 300 210" aria-label="Plan mit Legende">${PLAN_DEFS}${PLAN_BG}${places.map(({ p, rc }) => p.icon(38 + rc[1] * 66, 42 + rc[0] * 66)).join('')}` +
+        `<path d="M234 12 L241.5 36 L234 31 Z" fill="#B8323A" stroke="${STROKE}" stroke-width="1.8" stroke-linejoin="round"/><path d="M234 12 L226.5 36 L234 31 Z" fill="#F26A6E" stroke="${STROKE}" stroke-width="1.8" stroke-linejoin="round"/>${txt(234, 52, 'N', { size: 14 })}` +
+        `<rect x="213" y="61" width="87" height="145" rx="7" fill="${STROKE}" opacity=".12"/><rect x="211" y="59" width="86" height="144" rx="7" fill="url(#kp-paper)" stroke="${STROKE}" stroke-width="2"/>${txt(254, 76, 'Legende', { size: 12 })}<path d="M222 82 L286 82" stroke="#C9AE76" stroke-width="1.2"/>` +
+        `${places.map(({ p }, i) => `<g transform="translate(225 ${100 + i * 21}) scale(.47)">${p.icon(0, 0)}</g>${txt(238, 104 + i * 21, cap(p.name.split(' ')[1]), { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
       // exact direction only, and nothing else lies in that direction, so exactly one answer fits
       const sameDir = places.filter((x) => x !== a && dirOf(a, x) === d);
       if (Math.random() < 0.5 || sameDir.length > 1) {
@@ -4950,22 +4999,49 @@ const MS2 = (() => {
   SI.gen = siGen(SI);
 
   /* ================= SICHER IM VERKEHR (LB 5) ================= */
-  // Verkehrszeichen nach StVO, schematisch im Kasten 0–100
-  const BIKE = (c, w) => `<g fill="none" stroke="${c}" stroke-width="${w || 4}" stroke-linecap="round" stroke-linejoin="round"><circle cx="30" cy="62" r="12"/><circle cx="70" cy="62" r="12"/><path d="M30 62 L46 62 L40 44 L62 44 L70 62 M46 62 L62 44 M38 40 L46 40 M62 44 L60 36 L68 36"/></g>`;
-  const WALKER = (x, y, k, c) => `<g transform="translate(${x} ${y}) scale(${k})" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="0" cy="-26" r="5" fill="${c}"/><path d="M0 -19 L0 0 M0 0 L-7 16 M0 0 L7 16 M0 -14 L-9 -3 M0 -14 L9 -4"/></g>`;
+  // Verkehrszeichen nach StVO im Kasten 0–100: weißer Rand, Tusche-Umriss, Emailglanz von links oben
+  const f1 = (v) => Math.round(v * 10) / 10;
+  const disc = (r) => `M${50 - r} 50 A${r} ${r} 0 1 0 ${50 + r} 50 A${r} ${r} 0 1 0 ${50 - r} 50 Z`;
+  const box = (x, y, w, h, r) => `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + h - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`;
+  const poly = (pts) => 'M' + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join(' L') + ' Z';
+  const around = (pts, k, cx, cy) => poly(pts.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]));
+  const OCT = (R) => poly(Array.from({ length: 8 }, (_, i) => [50 + R * Math.cos((22.5 + 45 * i) * Math.PI / 180), 50 + R * Math.sin((22.5 + 45 * i) * Math.PI / 180)]));
+  const TRI = [[5, 12], [95, 12], [50, 89.9]], DIA = [[50, 3], [97, 50], [50, 97], [3, 50]];
+  const vg = (id, a, b) => `<linearGradient id="vz-${id}" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
+  const SIGN_DEFS = `<defs>${vg('red', '#E8424A', '#B3141E')}${vg('blue', '#3474C8', '#164C94')}${vg('yellow', '#FFD84A', '#EBA600')}${vg('white', '#FFFFFF', '#E3E8EF')}${vg('case', '#4A5560', '#1F262C')}` +
+    '<radialGradient id="vz-sheen" cx="28%" cy="20%" r="90%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#0B1020" stop-opacity=".12"/></radialGradient></defs>';
+  // outer: the whole plate (white rim included); inner: the coloured field
+  const sign = (outer, inner, col, sym) => `${SIGN_DEFS}<path d="${outer}" fill="${STROKE}" opacity=".18" transform="translate(1.5 2.5)"/><path d="${outer}" fill="url(#vz-white)" stroke="${STROKE}" stroke-width="3" stroke-linejoin="round"/>${inner ? `<path d="${inner}" fill="${col}"/>` : ''}${sym}<path d="${outer}" fill="url(#vz-sheen)"/>`;
+  const LINE = (c, w) => `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+  // facing right like on the signs 237 and 254
+  const BIKE = (c, w) => `<g ${LINE(c, w || 4.5)}><circle cx="30" cy="61" r="13"/><circle cx="70" cy="61" r="13"/><path d="M30 61 L47 61 L41 41 M30 61 L42.2 45 L64.4 45 M47 61 L64 45 M70 61 L62 38 L58 33 M62 38 L69 36 M36 39 L47 39"/></g>`;
+  const SANS = 'style="font-family:\'Arial Narrow\',Arial,Helvetica,sans-serif"';
   const SIGN_ART = {
-    stopp: `<path d="M33 8 L67 8 L92 33 L92 67 L67 92 L33 92 L8 67 L8 33 Z" fill="#D32F2F" stroke="#fff" stroke-width="3"/><text x="50" y="59" font-size="23" font-weight="800" text-anchor="middle" fill="#fff">STOP</text>`,
-    vorfahrtgewaehren: '<path d="M6 12 L94 12 L50 92 Z" fill="#D32F2F" stroke="#7A1414" stroke-width="1" stroke-linejoin="round"/><path d="M22 21 L78 21 L50 72 Z" fill="#fff"/>',
-    vorfahrtstrasse: '<path d="M50 4 L96 50 L50 96 L4 50 Z" fill="#fff" stroke="#333" stroke-width="1.5"/><path d="M50 16 L84 50 L50 84 L16 50 Z" fill="#FDD835" stroke="#333" stroke-width="1"/>',
-    radweg: `<circle cx="50" cy="50" r="44" fill="#1565C0" stroke="#fff" stroke-width="3"/>${BIKE('#fff')}`,
-    gehweg: `<circle cx="50" cy="50" r="44" fill="#1565C0" stroke="#fff" stroke-width="3"/>${WALKER(40, 62, 1.15, '#fff')}${WALKER(62, 66, 0.8, '#fff')}<path d="M50 52 L56 55" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>`,
-    zebra: `<rect x="8" y="8" width="84" height="84" rx="6" fill="#1565C0" stroke="#fff" stroke-width="3"/><path d="M50 16 L86 82 L14 82 Z" fill="#fff"/><path d="M30 76 L70 76 M34 70 L66 70" stroke="${STROKE}" stroke-width="3"/>${WALKER(50, 62, 0.85, STROKE)}`,
-    einbahn: '<rect x="4" y="30" width="92" height="40" rx="3" fill="#1565C0" stroke="#fff" stroke-width="2.5"/><path d="M10 42 L68 42 L68 35 L90 50 L68 65 L68 58 L10 58 Z" fill="#fff"/><text x="39" y="53.5" font-size="8.5" font-weight="800" text-anchor="middle" fill="#111">Einbahnstraße</text>',
-    radverbot: `<circle cx="50" cy="50" r="42" fill="#fff" stroke="#D32F2F" stroke-width="9"/>${BIKE('#111')}`,
-    spielstrasse: `<rect x="4" y="16" width="92" height="68" rx="4" fill="#1565C0" stroke="#fff" stroke-width="2.5"/><path d="M12 54 L12 34 L24 24 L36 34 L36 54 Z" fill="#fff"/>${WALKER(48, 62, 0.75, '#fff')}${WALKER(60, 66, 0.55, '#fff')}<circle cx="70" cy="70" r="3.5" fill="#fff"/><path d="M66 78 L70 72 L86 72 L90 78 Z M62 78 L92 78" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>`,
-    radfrei: `<rect x="6" y="26" width="88" height="48" rx="4" fill="#fff" stroke="#111" stroke-width="2.5"/><g transform="translate(-2 18) scale(.62)">${BIKE('#111', 5)}</g><text x="74" y="58" font-size="16" font-weight="800" text-anchor="middle" fill="#111">frei</text>`,
+    stopp: sign(OCT(48), OCT(43.5), 'url(#vz-red)', `<text x="50" y="58.5" font-size="23" font-weight="700" text-anchor="middle" textLength="68" lengthAdjust="spacingAndGlyphs" fill="#fff" ${SANS}>STOP</text>`),
+    vorfahrtgewaehren: sign(poly(TRI), around(TRI, 0.93, 50, 38), 'url(#vz-red)', `<path d="${around(TRI, 0.53, 50, 38)}" fill="url(#vz-white)" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>`),
+    vorfahrtstrasse: sign(poly(DIA), '', '', `<path d="${around(DIA, 0.93, 50, 50)}" fill="none" stroke="#2B2F36" stroke-width="1.2"/><path d="${around(DIA, 0.62, 50, 50)}" fill="url(#vz-yellow)" stroke="#C98E00" stroke-width="1" stroke-linejoin="round"/>`),
+    radweg: sign(disc(47.5), disc(43.5), 'url(#vz-blue)', `<g transform="translate(50 50) scale(.95) translate(-50 -51)">${BIKE('#fff')}</g>`),
+    gehweg: sign(disc(47.5), disc(43.5), 'url(#vz-blue)', `<g fill="#fff"><circle cx="40" cy="25" r="6"/><path d="M35 33 Q40 31 45 33 L46 47 L52 63 L28 63 L34 47 Z"/><circle cx="62" cy="44" r="4.6"/><path d="M58 51 Q62 49.5 66 51 L67 64 L57 64 Z"/></g>` +
+      `<path d="M37 63 L37 79 M43 63 L43 79 M60 63 L59.5 76 M64 63 L65 76" ${LINE('#fff', 4.2)}/><path d="M35.5 36 L31 52 M44.5 36 L52 50 L58.5 53 M66.5 53 L69 60" ${LINE('#fff', 3.6)}/>`),
+    zebra: sign(box(4, 4, 92, 92, 9), box(7.5, 7.5, 85, 85, 6.5), 'url(#vz-blue)', `<path d="M50 13 L87 80 L13 80 Z" fill="#fff" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>` +
+      `<path d="${[0, 1, 2, 3, 4].map((i) => { const x = 22 + i * 12.4; return `M${x} 76 L${f1(x + 7.4)} 76 L${f1(x + 6.4 + (50 - x) * 0.1)} 69 L${f1(x + 1.4 + (50 - x) * 0.1)} 69 Z`; }).join(' ')}" fill="#1A1A1A"/>` +
+      `<circle cx="51" cy="33" r="4.6" fill="#1A1A1A"/><path d="M50 40 L48 54 L43 61 L39 70 M48 54 L54 61 L57 70 M50 43 L44 51 M50 43 L56 49" ${LINE('#1A1A1A', 4.6)}/>`),
+    einbahn: sign(box(3, 33, 94, 34, 4), box(5.5, 35.5, 89, 29, 2.5), 'url(#vz-blue)', `<path d="M9 42.5 L67 42.5 L65.5 37.5 Q65.5 36 67 37 L91 49 Q92.5 50 91 51 L67 63 Q65.5 64 65.5 62.5 L67 57.5 L9 57.5 Z" fill="#fff"/>` +
+      `<text x="38" y="53.4" font-size="10" font-weight="700" text-anchor="middle" textLength="54" lengthAdjust="spacingAndGlyphs" fill="#1A1A1A" ${SANS}>Einbahnstraße</text>`),
+    radverbot: sign(disc(47.5), disc(45), 'url(#vz-red)', `<path d="${disc(36.5)}" fill="url(#vz-white)"/><g transform="translate(50 50) scale(.78) translate(-50 -51)">${BIKE('#1A1A1A', 5)}</g>`),
+    spielstrasse: sign(box(3, 17, 94, 66, 5), box(6, 20, 88, 60, 3), 'url(#vz-blue)', `<g fill="#fff"><path d="M10 64 L10 42 L19.5 33 L29 42 L29 64 Z"/><circle cx="40" cy="38" r="4.2"/><path d="M36.5 44 Q40 42.5 43.5 44 L44.5 56 L35.5 56 Z"/><circle cx="54" cy="51" r="3.4"/><path d="M51.5 56 Q54 55 56.5 56 L57 64 L51 64 Z"/><circle cx="63.5" cy="67" r="3.3"/>` +
+      `<path d="M66 73 L69 65.5 Q70 64 72 64 L84 64 Q86 64 87 65.5 L90 73 Z"/></g><path d="M38 56 L37 70 M42 56 L44 70 M52.5 64 L52 72 M55.5 64 L57 71.5 M43.5 46 L47 53 M36.5 46 L34 53 M56.5 57 L60.5 63" ${LINE('#fff', 3)}/><path d="M64 73 L92 73" ${LINE('#fff', 4.5)}/><circle cx="70.5" cy="74" r="3.2" fill="#fff"/><circle cx="85.5" cy="74" r="3.2" fill="#fff"/>` +
+      `<path d="M15.5 49 L15.5 55 L23.5 55 L23.5 49 Z" fill="url(#vz-blue)"/>`),
+    radfrei: sign(box(7, 19, 86, 62, 5), '', '', `<path d="${box(10.5, 22.5, 79, 55, 3)}" fill="none" stroke="#1A1A1A" stroke-width="2.6"/><g transform="translate(50 42) scale(.56) translate(-50 -51)">${BIKE('#1A1A1A', 6)}</g>` +
+      `<text x="50" y="73" font-size="16" font-weight="700" text-anchor="middle" fill="#1A1A1A" ${SANS}>frei</text>`),
   };
-  const lamp = (lit) => `<rect x="33" y="4" width="34" height="92" rx="8" fill="#263238" stroke="#111" stroke-width="2"/>${[['rot', '#E53935', 21], ['gelb', '#FDD835', 50], ['gruen', '#43A047', 79]].map(([k, c, y]) => `<circle cx="50" cy="${y}" r="11" fill="${k === lit ? c : '#4A5459'}" stroke="#111" stroke-width="1.5"/>`).join('')}`;
+  // traffic light; the lit lamp glows, the others stay dark
+  const LAMPS = [['rot', '#FF5A4E', 20], ['gelb', '#FFD23A', 50], ['gruen', '#3FD27A', 80]];
+  const lamp = (lit) => `${SIGN_DEFS}<rect x="31" y="3" width="38" height="94" rx="9" fill="${STROKE}" opacity=".18" transform="translate(1.5 2.5)"/><rect x="31" y="3" width="38" height="94" rx="9" fill="url(#vz-case)" stroke="${STROKE}" stroke-width="3"/>` +
+    LAMPS.map(([k, c, y]) => { const on = k === lit;
+      return `${on ? `<circle cx="50" cy="${y}" r="16" fill="${c}" opacity=".35"/>` : ''}<circle cx="50" cy="${y}" r="12.5" fill="#111518" stroke="${STROKE}" stroke-width="1.5"/><circle cx="50" cy="${y}" r="10.5" fill="${on ? c : '#3A4248'}"/>` +
+        `${on ? `<circle cx="50" cy="${y}" r="10.5" fill="url(#vz-sheen)"/><circle cx="46" cy="${y - 4}" r="3" fill="#fff" opacity=".8"/>` : `<circle cx="47" cy="${y - 3.5}" r="2" fill="#fff" opacity=".12"/>`}<path d="M37 ${y - 9} Q50 ${y - 18} 63 ${y - 9}" fill="none" stroke="#11161A" stroke-width="3" stroke-linecap="round"/>`; }).join('') +
+    '<rect x="31" y="3" width="38" height="94" rx="9" fill="url(#vz-sheen)" opacity=".7"/>';
   SIGN_ART.ampelrot = lamp('rot'); SIGN_ART.ampelgelb = lamp('gelb'); SIGN_ART.ampelgruen = lamp('gruen');
   const SIGNS = [
     { id: 'stopp', name: 'Stoppschild', mean: 'Stopp: Ganz anhalten und die anderen zuerst fahren lassen' },
@@ -10217,7 +10293,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "items": ["Kreisel und viele Monster sind feiner gezeichnet.", "Hütte, Schulgarten, Markt, Bergwerk und die Kartoffelpflanze sind neu gezeichnet."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "items": ["Glücksrad, Windrose, Ortsplan und Verkehrszeichen sind neu gezeichnet.", "Kreisel und viele Monster sind feiner gezeichnet.", "Hütte, Schulgarten, Markt, Bergwerk und die Kartoffelpflanze sind neu gezeichnet."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -12005,7 +12081,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Verbessert", "it
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'b692dfbd9804';
+  const BUILD = '8d72a882a667';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
