@@ -3409,6 +3409,274 @@ const MONART = (() => {
     return s;
   }
 
+  // Klasse 1/2 Sachkunde: Lotte and her opponents
+  const k12_petals = (x, y, r, len, n, col) => Array.from({ length: n }, (_, i) => `<ellipse cx="${x}" cy="${f1(y - r - len / 2 + 1)}" rx="${f1(len * 0.32)}" ry="${f1(len / 2)}" ${F(col, 1.6)} transform="rotate(${f1((i / n) * 360)} ${x} ${y})"/>`).join('');
+  const k12_flake = (x, y, r, c) => `<path d="M${x} ${f1(y - r)} L${x} ${f1(y + r)} M${f1(x - r * 0.87)} ${f1(y - r / 2)} L${f1(x + r * 0.87)} ${f1(y + r / 2)} M${f1(x - r * 0.87)} ${f1(y + r / 2)} L${f1(x + r * 0.87)} ${f1(y - r / 2)}" fill="none" stroke="${c || '#fff'}" stroke-width="${c ? 4.5 : 2}" stroke-linecap="round"/>`;
+  function lotte(P, o, C) {
+    const e = o.evo;
+    const coat = C.grad('#FFC93C'), skin = C.grad('#F0C29A'), hair = C.grad('#B5532A'), can = C.grad('#3FA06A'), pot = C.grad('#D9744A'), leaf = '#6FAE3E';
+    let s = '';
+    // the sunflower she sowed in spring grows with each stage
+    const top = [84, 60, 32][e], stem = `M20 98 Q16 ${f1((98 + top) / 2)} 20 ${top}`;
+    s += `<path d="${stem}" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="${stem}" fill="none" stroke="${leaf}" stroke-width="3.5" stroke-linecap="round"/>`;
+    const lf = (y, side) => `<path d="M19 ${y} Q${19 + side * 8} ${y - 10} ${19 + side * 15} ${y - 4} Q${19 + side * 8} ${y + 4} 19 ${y} Z" ${F(leaf, 1.8)}/>`;
+    if (e === 0) s += lf(86, -1) + lf(86, 1);
+    else s += lf(88, 1) + lf(78, -1) + (e === 2 ? lf(62, 1) + lf(52, -1) : '');
+    if (e >= 1) { const r = e === 2 ? 8 : 5.5; s += k12_petals(20, top, r, e === 2 ? 10 : 7, e === 2 ? 14 : 10, '#FFD23F') + `<circle cx="20" cy="${top}" r="${r}" ${F(C.grad('#7A4A2A'), 2)}/>`; }
+    if (e === 2) s += sk_bee(40, 16, 0.6);
+    // raincoat
+    s += `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(coat)}/><path d="M60 82 L60 116" ${N(2)}/>`;
+    s += [94, 106].map((y) => `<rect x="54" y="${y - 2}" width="12" height="4" rx="2" ${F('#8A5A2A', 1.6)}/>`).join('');
+    s += `<path d="M42 80 Q48 92 60 86 Q72 92 78 80 Q70 84 60 82 Q50 84 42 80 Z" ${F('#F2B020', 2)}/>`;
+    s += `<path d="M30 92 Q34 88 38 92" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>`;
+    // flower pot on the ground
+    s += `<path d="M8 98 L32 98 L29 116 L11 116 Z" ${F(pot, 2.2)}/><rect x="6" y="94" width="28" height="7" rx="2" ${F('#C8613A', 2.2)}/><ellipse cx="20" cy="94.5" rx="11" ry="1.6" fill="#5A3A22"/>`;
+    // watering can carried in the right hand
+    s += `<path d="M100 104 L114 84" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M100 104 L114 84" fill="none" stroke="#3FA06A" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="114" cy="83" rx="4.5" ry="3" ${F('#2E7E50', 2)} transform="rotate(-55 114 83)"/>`;
+    if (e >= 1) s += sk_drop(116, 96, 2.2) + (e === 2 ? sk_drop(110, 102, 2) : '');
+    s += `<path d="M84 90 Q86 76 96 78 Q104 80 100 92" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M84 90 Q86 76 96 78 Q104 80 100 92" fill="none" stroke="#3FA06A" stroke-width="3.5" stroke-linecap="round"/>`;
+    s += `<path d="M78 92 L104 92 L102 116 L80 116 Z" ${F(can, 2.4)}/><path d="M80 98 L102 98" stroke="#2E7E50" stroke-width="2"/><path d="M84 102 L84 112" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".45"/>`;
+    s += `<ellipse cx="91" cy="80" rx="6" ry="5" ${F(skin, 2)}/>`;
+    s += `<ellipse cx="36" cy="104" rx="6" ry="5" ${F(skin, 2)}/>`;
+    // pigtails with green hair ties
+    s += `<path d="M36 58 Q22 58 20 72 Q28 70 36 66 Z M84 58 Q98 58 100 72 Q92 70 84 66 Z" ${F(hair, 2.2)}/><circle cx="34" cy="61" r="3" ${F('#3FA06A', 1.6)}/><circle cx="86" cy="61" r="3" ${F('#3FA06A', 1.6)}/>`;
+    s += `<ellipse cx="60" cy="57" rx="25" ry="25" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="61" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="61" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    s += `<path d="M34 58 Q30 29 60 29 Q90 29 86 58 Q84 44 76 40 Q70 46 62 41 Q54 47 46 41 Q38 45 34 58 Z" ${F(hair)}/>`;
+    s += `<path d="M46 35 Q54 31 62 32" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".3"/>`;
+    s += shine(47, 54, 5, 3, -20);
+    s += pair(60, 59, 10, 6, { iris: '#4E7A2E' });
+    s += `<path d="M60 63 Q58 68 61 69" ${N(2.2)}/>${M.smile(60, 73, 7)}`;
+    s += [[45, 66], [48, 69], [42, 69], [75, 66], [72, 69], [78, 69]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#A0503A" opacity=".75"/>`).join('');
+    s += blush(60, 68, 16, 4);
+    return s;
+  }
+
+  function karies(P, o, C) {
+    const tooth = C.lin('#FFFFFF', '#DCE3EE'), germ = C.grad('#6B4A3A');
+    let s = `<ellipse cx="60" cy="116" rx="34" ry="3" fill="${OUT}" opacity=".15"/>`;
+    s += `<path d="M14 84 Q12 64 32 64 Q44 64 50 70 L70 70 Q76 64 88 64 Q108 64 106 84 Q104 98 96 104 L92 114 Q86 120 82 114 L76 102 Q60 98 44 102 L38 114 Q34 120 28 114 L24 104 Q16 98 14 84 Z" ${F(tooth)}/>`;
+    s += `<path d="M22 82 Q20 72 30 70" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M90 80 L96 90 L92 96 M28 92 L34 96" fill="none" stroke="#9A8A7A" stroke-width="1.8" stroke-linecap="round"/>`;
+    // pickaxe raised to hack a hole
+    s += `<path d="M86 66 L104 24" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M86 66 L104 24" fill="none" stroke="#9A6236" stroke-width="3.5" stroke-linecap="round"/>`;
+    s += `<path d="M88 18 Q104 16 116 30 Q104 24 100 28 Q96 22 88 18 Z" ${F(C.lin('#D3DAE6', '#7A8494'), 2.2)}/>`;
+    s += `<path d="${mb_puff(60, 56, 28, 24, 11, 9, -Math.PI / 2)}" ${F(germ)}/>`;
+    s += [[42, 46, 3.5], [78, 44, 3], [72, 70, 2.6], [40, 68, 2.4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#4A2E22"/>`).join('');
+    s += eth_arm('M84 62 Q90 58 92 50', '#5A3A2A') + `<circle cx="92" cy="50" r="5" ${F('#7A5444', 2)}/>`;
+    s += eth_arm('M36 64 Q26 66 24 76', '#5A3A2A') + `<circle cx="24" cy="77" r="5" ${F('#7A5444', 2)}/>`;
+    s += shine(46, 42, 6, 3, -25);
+    s += pair(60, 52, 10, 6.5, { brow: 'angry', bw: 3.4, dir: [0.2, 0.25], iris: '#C9A23A' });
+    s += M.fangs(60, 66, 9);
+    return s;
+  }
+
+  function schlammpfuetze(P, o, C) {
+    const mud = C.grad('#8A6236'), boot = C.grad('#E0304A');
+    // a red rubber boot stuck in the mud
+    let s = `<path d="M6 96 Q2 76 24 74 Q34 62 54 68 Q70 58 86 68 Q112 66 114 86 Q120 106 96 110 Q60 118 24 110 Q4 108 6 96 Z" ${F(mud)}/>`;
+    s += `<g transform="rotate(10 92 60)"><path d="M78 30 L96 30 L96 58 Q112 58 114 70 L114 78 L78 78 Z" ${F(boot)}/><rect x="76" y="26" width="22" height="8" rx="2" ${F('#B8203A', 2.2)}/><path d="M83 40 L83 66" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".4"/></g>`;
+    s += `<path d="${mb_puff(94, 80, 22, 6, 9, 5)}" ${F('#7A5430', 2.2)}/>`;
+    s += `<path d="M24 84 Q36 78 48 82 M74 104 Q86 100 98 103" fill="none" stroke="#B9D7EE" stroke-width="3" stroke-linecap="round" opacity=".75"/>`;
+    s += [[14, 60, 3], [26, 50, 2.4], [102, 50, 2.6], [112, 62, 2]].map(([x, y, r]) => sk_drop(x, y, r, '#A87A4C')).join('');
+    s += shine(30, 82, 8, 3, -10);
+    s += pair(52, 90, 11, 6.5, { lid: '#7A5430', lidY: -0.1, brow: 'angry', bw: 3, dir: [0.2, 0.2] });
+    s += M.grin(52, 102, 9);
+    return s;
+  }
+
+  function sonnenbrand(P, o, C) {
+    const sun = C.grad('#FF6A3D');
+    let s = `<path d="${spikes(60, 58, 32, 50, -90, 270, 14)}" ${F('#FFB23F', 2.2)}/>`;
+    s += `<path d="M10 40 q4 -4 8 0 t8 0 M94 92 q4 -4 8 0 t8 0" fill="none" stroke="#FF8A3D" stroke-width="2.4" stroke-linecap="round"/>`;
+    // hot hands reaching out
+    s += eth_arm('M32 72 Q20 80 18 92', '#E8453A') + `<circle cx="18" cy="94" r="6" ${F('#FF6A3D', 2.2)}/>`;
+    s += eth_arm('M88 72 Q100 80 102 92', '#E8453A') + `<circle cx="102" cy="94" r="6" ${F('#FF6A3D', 2.2)}/>`;
+    s += `<circle cx="60" cy="58" r="32" ${F(sun)}/>`;
+    s += shine(46, 40, 8, 4, -30);
+    s += pair(60, 54, 11, 6.5, { look: 'glow', glow: '#FFF3B0', brow: 'angry', bw: 3.4 });
+    s += `<circle cx="38" cy="66" r="6" fill="#B8203A" opacity=".45"/><circle cx="82" cy="66" r="6" fill="#B8203A" opacity=".45"/>`;
+    s += M.smirk(60, 72, 9);
+    // sun cream knocked over
+    s += `<g transform="rotate(-8 60 110)"><rect x="44" y="104" width="26" height="12" rx="4" ${F('#FFFFFF', 2.2)}/><rect x="70" y="106" width="6" height="8" rx="1.5" ${F('#3FA0FF', 2)}/><circle cx="54" cy="110" r="3.5" fill="#FFC93C"/></g>`;
+    return s;
+  }
+
+  function klette(P, o, C) {
+    const burr = C.grad('#9A8A3E'), n = 18;
+    let hooks = '';
+    for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2; hooks += `M${polar(60, 60, 26, a)} L${polar(60, 60, 42, a)} L${polar(60, 60, 38, a + 0.14)} `; }
+    // a strand of red wool pulled from a jumper
+    let s = `<path d="M96 76 Q104 92 96 102 Q90 110 100 116" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M96 76 Q104 92 96 102 Q90 110 100 116" fill="none" stroke="#D9453B" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += `<path d="${hooks}" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="${hooks}" fill="none" stroke="#C9B86A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<circle cx="60" cy="60" r="29" ${F(burr)}/>`;
+    s += `<path d="M42 48 l4 2 M74 42 l3 3 M80 70 l4 1 M40 76 l3 -2 M58 84 l1 3" stroke="#6E5E22" stroke-width="2" stroke-linecap="round"/>`;
+    s += `<path d="M98 112 Q104 104 112 110 Q116 116 108 118 Z" ${F('#D9453B', 2)}/><path d="M102 112 l2 2 M106 110 l2 2" stroke="#9A2A22" stroke-width="1.2"/>`;
+    s += shine(48, 44, 7, 3.5, -30);
+    s += pair(60, 58, 10, 6.5, { brow: 'angry', bw: 3.2, dir: [0.3, 0.1], iris: '#6FAE3E' });
+    s += M.smirk(60, 73, 8);
+    return s;
+  }
+
+  function schnupfen(P, o, C) {
+    const body = C.grad('#A9CF86'), nose = C.grad('#E8516F');
+    let s = `<ellipse cx="60" cy="113" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
+    s += `<path d="M46 100 L44 112 M74 100 L76 112" ${N(4.5)}/><ellipse cx="42" cy="113" rx="7" ry="3" fill="${OUT}"/><ellipse cx="78" cy="113" rx="7" ry="3" fill="${OUT}"/>`;
+    s += `<path d="M60 16 Q96 18 98 58 Q100 100 60 104 Q20 100 22 58 Q24 18 60 16 Z" ${F(body)}/>`;
+    // striped scarf
+    s += `<path d="M26 82 Q60 94 94 82 L95 91 Q60 104 25 91 Z" ${F('#5B8BD9', 2.2)}/><path d="M38 87 L37 96 M52 90 L52 99 M68 90 L68 99 M82 87 L83 96" stroke="#FFF6DD" stroke-width="3"/>`;
+    s += shine(40, 34, 8, 4.5, -30);
+    s += pair(60, 42, 12, 7, { lid: '#8FBA6A', lidY: 0.05, lidRot: -8, dir: [0, 0.2] });
+    s += `<path d="M40 52 Q38 58 41 60 M80 52 Q82 58 79 60" fill="none" stroke="#9FD3FF" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<ellipse cx="60" cy="62" rx="15" ry="11" ${F(nose)}/><ellipse cx="55" cy="58" rx="4" ry="2.5" fill="#fff" opacity=".55"/>`;
+    s += sk_drop(66, 80, 2.8, '#D9F0A0');
+    s += M.wavy(60, 76, 5);
+    // a used tissue in one hand, sneeze spray on the other side
+    s += eth_arm('M28 70 Q16 72 14 60', '#8FBA6A');
+    s += `<path d="M4 50 Q8 40 16 46 Q24 42 22 54 Q24 62 14 62 Q4 62 4 50 Z" ${F('#FFFFFF', 2.2)}/><path d="M10 50 l4 4 M16 48 l-2 5" stroke="#B9C0D0" stroke-width="1.4" stroke-linecap="round"/>`;
+    s += [[96, 58, 2.4], [104, 52, 2], [108, 62, 2.6], [114, 54, 1.8], [102, 68, 1.8], [112, 70, 1.6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" ${F('#D9F0A0', 1.2)}/>`).join('');
+    return s;
+  }
+
+  function schneesturm(P, o, C) {
+    const cl = C.lin('#F4F8FC', '#B9CDE2'), flake = (x, y, r) => k12_flake(x, y, r, OUT) + k12_flake(x, y, r);
+    let s = [[16, 96, 5], [36, 108, 4], [62, 100, 5.5], [86, 110, 4], [104, 98, 4.5], [8, 76, 3.5]].map(([x, y, r]) => flake(x, y, r)).join('');
+    s += `<path d="${mb_puff(54, 50, 42, 30, 13, 12, -Math.PI / 2)}" ${F(cl)}/>`;
+    s += `<path d="M26 74 L30 86 L34 76 M46 80 L49 92 L53 80 M70 80 L73 90 L76 79" ${F('#CFE6F7', 2)}/>`;
+    s += shine(34, 34, 9, 4, -20);
+    // cheeks puffed, blowing ice wind to the right
+    s += `<circle cx="72" cy="62" r="8" fill="#FF9AB0" opacity=".5"/>`;
+    s += pair(50, 48, 11, 7, { brow: 'angry', bw: 3.6, dir: [0.4, 0.1], iris: '#3F7FC8' });
+    s += M.o(82, 64, 8);
+    s += `<path d="M90 58 L116 50 M92 66 L118 68 M90 74 L112 84" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M90 58 L116 50 M92 66 L118 68 M90 74 L112 84" fill="none" stroke="#DDEFFF" stroke-width="2.2" stroke-linecap="round"/>`;
+    s += flake(108, 40, 4) + flake(114, 92, 3.5);
+    // a red mitten carried off by the wind
+    s += `<g transform="rotate(30 100 16)"><path d="M92 26 L92 12 Q92 4 100 4 Q108 4 108 12 L108 26 Z" ${F('#D9453B', 2.2)}/><path d="M92 14 Q86 12 87 18 Q88 22 92 22" ${F('#D9453B', 2)}/><rect x="90" y="24" width="20" height="6" rx="2" ${F('#FFF6DD', 2)}/></g>`;
+    return s;
+  }
+
+  // Klasse 1/2 Ethik: Mats and his opponents
+  function mats(P, o, C) {
+    const e = o.evo;
+    const jumper = C.grad('#3B7DD8'), skin = C.grad('#C98E68'), hair = C.grad('#2A1E18');
+    const body = 'M22 116 Q24 80 60 78 Q96 80 98 116 Z', clip = C.def('clipPath', '', `<path d="${body}"/>`);
+    let s = `<path d="${body}" ${F(jumper)}/>`;
+    s += `<g clip-path="url(#${clip})"><path d="M10 96 Q60 90 110 96 M10 108 Q60 102 110 108" fill="none" stroke="#F4F7FC" stroke-width="4.5"/></g><path d="${body}" ${N()}/>`;
+    s += `<path d="M46 80 Q60 90 74 80" fill="none" stroke="#2A5DAA" stroke-width="3.5" stroke-linecap="round"/>`;
+    // left hand; at stage 3 with a friendship band on the wrist
+    s += `<ellipse cx="32" cy="104" rx="6" ry="5" ${F(skin, 2)}/>`;
+    if (e === 2) s += `<path d="M27 98 L37 98" stroke="${OUT}" stroke-width="5.5" stroke-linecap="round"/><path d="M27 98 L30 98" stroke="#E8516F" stroke-width="3" stroke-linecap="round"/><path d="M31 98 L33 98" stroke="#FFC93C" stroke-width="3"/><path d="M34 98 L37 98" stroke="#6FAE3E" stroke-width="3" stroke-linecap="round"/>`;
+    // home-made lantern on a stick, lit from stage 2
+    s += `<path d="M88 104 L92 30 Q96 24 101 30 L101 36" fill="none" stroke="${OUT}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M88 104 L92 30 Q96 24 101 30 L101 36" fill="none" stroke="#9A6236" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (e >= 1) s += `<circle cx="101" cy="54" r="${e === 2 ? 17 : 15}" fill="#FFE066" opacity="${e === 2 ? 0.4 : 0.25}"/>`;
+    s += `<ellipse cx="101" cy="54" rx="11" ry="13" ${F(e ? C.grad('#FF9A2E') : C.grad('#E9D3A8'), 2.4)}/><path d="M96 42 Q92 54 96 66 M106 42 Q110 54 106 66" fill="none" stroke="${e ? '#D9741A' : '#C9B080'}" stroke-width="1.4"/>`;
+    s += `<rect x="94" y="37" width="14" height="5" rx="1.5" ${F('#5A3A22', 2)}/><rect x="94" y="66" width="14" height="5" rx="1.5" ${F('#5A3A22', 2)}/>`;
+    s += `<path d="${burst(101, 54, 2.6, 6, 5)}" fill="${e ? '#FFF3B0' : '#F6EBD2'}" ${S(1.4)}/>`;
+    s += `<ellipse cx="88" cy="100" rx="6" ry="5" ${F(skin, 2)}/>`;
+    s += `<ellipse cx="60" cy="57" rx="25" ry="25" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    s += `<path d="M35 54 Q32 30 60 29 Q88 30 85 54 Q82 44 76 42 L72 47 L68 40 L62 46 L56 39 L50 46 L46 40 Q38 44 35 54 Z" ${F(hair)}/><path d="M56 30 Q58 22 64 24 Q60 26 62 31" ${F(hair, 2)}/>`;
+    s += `<path d="M44 35 Q52 31 60 31" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".25"/>`;
+    s += shine(47, 54, 5, 3, -20);
+    s += pair(60, 58, 10, 6, { iris: '#6B4423' });
+    s += `<path d="M60 62 Q58 67 61 68" ${N(2.2)}/>${M.smile(60, 72, 7)}`;
+    s += blush(60, 67, 16, 4);
+    return s;
+  }
+
+  function knalltuer(P, o, C) {
+    const wood = C.lin('#C08A4C', '#8A5A2A'), frame = C.lin('#7A4E26', '#5A3418');
+    let s = `<ellipse cx="60" cy="115" rx="40" ry="3" fill="${OUT}" opacity=".15"/>`;
+    s += `<path d="M10 30 L2 28 M8 52 L0 54 M10 76 L2 80 M110 30 L118 28 M112 52 L120 54 M110 76 L118 80" fill="none" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<rect x="18" y="6" width="84" height="110" rx="3" ${F(frame)}/><rect x="25" y="12" width="70" height="102" rx="2" ${F(wood)}/>`;
+    s += `<rect x="33" y="20" width="54" height="38" rx="3" fill="none" stroke="#6E4422" stroke-width="2.4"/><rect x="33" y="66" width="54" height="40" rx="3" fill="none" stroke="#6E4422" stroke-width="2.4"/>`;
+    s += `<path d="M30 30 Q31 70 30 108" fill="none" stroke="#E0B07A" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
+    s += `<circle cx="86" cy="62" r="5" ${F(C.grad('#FFC93C'), 2.2)}/>`;
+    s += pair(60, 40, 12, 7.5, { brow: 'angry', bw: 4, dir: [0, 0.2] });
+    s += M.grin(60, 80, 14);
+    // dust shaken loose by the slam
+    s += `<path d="${mb_puff(12, 110, 9, 5, 6, 4.5)}" ${F('#E3DCCF', 2)}/><path d="${mb_puff(108, 110, 9, 5, 6, 4.5)}" ${F('#E3DCCF', 2)}/>`;
+    return s;
+  }
+
+  function schlechtelaune(P, o, C) {
+    const cl = C.lin('#9AA2B6', '#5E6680'), arm = C.grad('#7E879C');
+    let s = '';
+    for (let i = 0; i < 8; i++) { const x = 24 + i * 10, y = 82 + (i % 2) * 8; s += `<path d="M${x} ${y} l-3 9 M${x - 5} ${y + 16} l-3 9" stroke="#4F8FD8" stroke-width="2.4" stroke-linecap="round"/>`; }
+    s += `<ellipse cx="60" cy="114" rx="34" ry="4" fill="#8FB4E0" opacity=".6"/>`;
+    s += `<path d="${mb_puff(60, 52, 44, 28, 12, 12, -Math.PI / 2)}" ${F(cl)}/>`;
+    s += `<path d="M44 14 Q50 2 58 12 Q64 22 70 8 Q76 0 80 12 Q72 16 66 12 Q58 6 52 16 Q48 22 44 14" fill="none" stroke="${OUT}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += shine(36, 38, 8, 4, -20);
+    s += pair(60, 48, 11, 6.5, { lid: '#7E879C', lidY: -0.05, brow: 'worried', bw: 3.2, dir: [0, 0.3] });
+    s += M.frown(60, 62, 7);
+    s += [12, -12].map((a) => `<g transform="rotate(${a} 60 74)"><rect x="36" y="68" width="48" height="12" rx="6" ${F(arm, 2.4)}/><circle cx="${a > 0 ? 82 : 38}" cy="74" r="6" ${F(arm, 2.4)}/></g>`).join('');
+    return s;
+  }
+
+  function wutanfall(P, o, C) {
+    const body = C.grad('#E8453A');
+    let s = `<ellipse cx="60" cy="114" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
+    s += `<path d="M46 100 L40 112 M74 100 L80 112" ${N(5)}/><ellipse cx="38" cy="113" rx="8" ry="3.5" fill="${OUT}"/><ellipse cx="82" cy="113" rx="8" ry="3.5" fill="${OUT}"/>`;
+    s += `<path d="M18 116 L24 110 M100 116 L94 110 M14 108 L22 106 M106 108 L98 106" fill="none" stroke="${OUT}" stroke-width="2.4" stroke-linecap="round"/>`;
+    // steam out of the top of its head
+    s += `<path d="${mb_puff(34, 14, 9, 7, 6, 5)}" ${F('#F4F7FC', 2)}/><path d="${mb_puff(86, 12, 9, 7, 6, 5)}" ${F('#F4F7FC', 2)}/>`;
+    s += `<path d="M60 18 Q68 28 78 24 Q78 36 90 40 Q100 60 96 80 Q92 104 60 104 Q28 104 24 80 Q20 60 30 40 Q42 36 42 24 Q52 28 60 18 Z" ${F(body)}/>`;
+    s += shine(40, 46, 7, 4, -30);
+    s += eth_arm('M26 64 Q12 56 12 42', '#C8352C') + `<circle cx="12" cy="40" r="7" ${F('#E8453A', 2.2)}/><path d="M8 38 L16 38 M8 42 L15 42" stroke="${OUT}" stroke-width="1.6"/>`;
+    s += eth_arm('M94 64 Q108 56 108 42', '#C8352C') + `<circle cx="108" cy="40" r="7" ${F('#E8453A', 2.2)}/><path d="M104 38 L112 38 M105 42 L112 42" stroke="${OUT}" stroke-width="1.6"/>`;
+    s += pair(60, 56, 12, 7, { brow: 'angry', bw: 4.2, dir: [0, 0.15], iris: '#FFB23F' });
+    s += `<rect x="46" y="72" width="28" height="12" rx="4" ${F('#fff', 2.6)}/><path d="M53 72 L53 84 M60 72 L60 84 M67 72 L67 84 M46 78 L74 78" ${N(1.6)}/>`;
+    return s;
+  }
+
+  function langeweile(P, o, C) {
+    const pot = C.grad('#D9744A'), leaf = '#9AAE4A', stalk = (d) => `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="6.5" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${leaf}" stroke-width="3" stroke-linecap="round"/>`;
+    let s = `<ellipse cx="60" cy="115" rx="34" ry="3" fill="${OUT}" opacity=".15"/>`;
+    // the plant droops over the rim: nobody has watered it
+    s += stalk('M54 52 Q50 24 30 22 Q16 22 14 40') + stalk('M66 52 Q72 32 88 32 Q100 34 100 48');
+    s += `<path d="M44 30 Q36 34 38 44 Q46 40 44 30 Z M78 34 Q84 40 80 48 Q74 42 78 34 Z M100 48 Q94 58 100 62 Q106 56 100 48 Z" ${F('#B5B85A', 1.8)}/>`;
+    s += `<g transform="rotate(170 14 44)">${k12_petals(14, 44, 4, 7, 7, '#D9B8D0')}<circle cx="14" cy="44" r="4" ${F('#C9A23A', 1.6)}/></g>`;
+    s += `<path d="M30 60 L90 60 L82 114 L38 114 Z" ${F(pot)}/><rect x="24" y="48" width="72" height="16" rx="3" ${F('#C8613A')}/><ellipse cx="60" cy="49" rx="32" ry="2" fill="#5A3A22"/>`;
+    s += shine(40, 74, 5, 8, -10);
+    s += pair(60, 76, 11, 6.5, { lid: '#C8613A', lidY: 0.15, dir: [0, 0.3] });
+    s += M.open(60, 90, 10);
+    return s;
+  }
+
+  function heimweh(P, o, C) {
+    const caseG = C.grad('#3F8FA0'), fur = C.grad('#B5793F');
+    let s = `<ellipse cx="60" cy="115" rx="40" ry="3" fill="${OUT}" opacity=".15"/>`;
+    s += `<path d="M46 34 L46 22 Q46 16 52 16 L68 16 Q74 16 74 22 L74 34" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M46 34 L46 22 Q46 16 52 16 L68 16 Q74 16 74 22 L74 34" fill="none" stroke="#5A3A22" stroke-width="3.5" stroke-linecap="round"/>`;
+    // the teddy from home peeks out under the lid
+    s += `<circle cx="28" cy="30" r="6" ${F(fur, 2.2)}/><circle cx="40" cy="28" r="6" ${F(fur, 2.2)}/><path d="M24 40 Q26 24 34 24 Q42 24 44 40 Z" ${F(fur, 2.2)}/><circle cx="30" cy="34" r="1.4" fill="${OUT}"/><circle cx="38" cy="34" r="1.4" fill="${OUT}"/>`;
+    s += `<rect x="14" y="36" width="92" height="70" rx="9" ${F(caseG)}/>`;
+    s += `<path d="M34 36 L34 106 M86 36 L86 106" stroke="#2A6A78" stroke-width="5"/><path d="M14 50 L106 50" stroke="#2A6A78" stroke-width="2.4"/>`;
+    s += `<circle cx="26" cy="110" r="4.5" ${F('#3A3F52', 2)}/><circle cx="94" cy="110" r="4.5" ${F('#3A3F52', 2)}/>`;
+    s += `<g transform="rotate(-10 96 90)"><rect x="86" y="80" width="18" height="18" rx="3" ${F('#FFF6DD', 2)}/><path d="M90 94 L90 88 L95 84 L100 88 L100 94 Z" ${F('#E8553A', 1.4)}/></g>`;
+    s += shine(26, 60, 4, 8, -10);
+    s += pair(60, 66, 11, 7, { brow: 'worried', bw: 3.4, dir: [0, 0.2], iris: '#4A6E9A' });
+    s += `<path d="M47 76 Q44 86 47 92 M73 76 Q76 86 73 92" fill="none" stroke="#9FD3FF" stroke-width="3" stroke-linecap="round"/>`;
+    s += sk_drop(46, 98, 2.6) + M.wavy(60, 88, 6);
+    return s;
+  }
+
+  function grosserstreit(P, o, C) {
+    const dust = C.grad('#D9CBB4');
+    let s = `<ellipse cx="60" cy="115" rx="40" ry="3.5" fill="${OUT}" opacity=".15"/>`;
+    // arms and legs of the two who are fighting stick out of the dust cloud
+    s += eth_arm('M24 46 Q12 34 10 20', '#E9B98E') + `<circle cx="10" cy="18" r="6.5" ${F('#E9B98E', 2.2)}/>`;
+    s += eth_arm('M96 40 Q108 30 112 16', '#A86E48') + `<circle cx="112" cy="14" r="6.5" ${F('#A86E48', 2.2)}/>`;
+    s += eth_arm('M98 72 Q108 76 110 86', '#E9B98E') + `<circle cx="110" cy="89" r="6.5" ${F('#E9B98E', 2.2)}/>`;
+    s += `<path d="M40 90 L30 110 M78 90 L90 108" fill="none" stroke="${OUT}" stroke-width="9" stroke-linecap="round"/><path d="M40 90 L30 110" fill="none" stroke="#3B7DD8" stroke-width="5" stroke-linecap="round"/><path d="M78 90 L90 108" fill="none" stroke="#5E9E4A" stroke-width="5" stroke-linecap="round"/>`;
+    s += `<ellipse cx="26" cy="112" rx="9" ry="4.5" ${F('#E0304A', 2.2)}/><ellipse cx="94" cy="110" rx="9" ry="4.5" ${F('#FFC93C', 2.2)}/>`;
+    s += `<path d="${mb_puff(60, 60, 44, 34, 13, 12, -Math.PI / 2)}" ${F(dust)}/>`;
+    s += `<path d="M30 50 Q40 40 52 46 M70 82 Q82 88 92 78" fill="none" stroke="#B5A68A" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += shine(36, 40, 8, 4, -20);
+    s += pair(42, 60, 7, 5, { brow: 'angry', bw: 3, dir: [0.4, 0] }) + M.roar(42, 72, 7, 8);
+    s += pair(78, 58, 7, 5, { brow: 'angry', bw: 3, dir: [-0.4, 0] }) + M.roar(78, 70, 7, 8);
+    s += spark(60, 30, 6, '#FFE066') + spark(20, 84, 4.5, '#FFE066') + spark(104, 54, 4, '#FFE066');
+    return s;
+  }
+
   const SHAPES = {
     fox, toad, bear, luther, potato,
     sumpfbrocken, regenwicht, streichholzkopf, krabbelstein, dornenigel, moorschlund,
@@ -3422,10 +3690,11 @@ const MONART = (() => {
     pfadfinderin, lampenfieber, trotzkopf, ausrede, schubladendenken, schadenfreude, grosseangst, muellberg, duerre, hochwasser, stromfresser, orkan, kohlequalm,
     schulaerztin, verkehrspolizistin, laerm, blendlicht, qualmwolke, gruppendruck, schlagloch, daemmerung, totwinkel, raser,
     imkerin, heimatforscherin, trampelpfad, trockenheit, plastiktuete, spritzmittel, maehmaschine, strassenwalze, spinnennetz, schimmelfleck, stromausfall, vorurteil, falschmeldung, vergessen,
+    lotte, karies, schlammpfuetze, sonnenbrand, klette, schnupfen, schneesturm, mats, knalltuer, schlechtelaune, wutanfall, langeweile, heimweh, grosserstreit,
   };
   // old shape names (saved games from before the redraw)
   const ALIAS = { blob: 'sumpfbrocken', drop: 'regenwicht', flame: 'streichholzkopf', rock: 'krabbelstein', hedgehog: 'dornenigel', newt: 'lavamolch', jelly: 'nebelqualle', vine: 'ranklerin', bat: 'nachtschwinge', beetle: 'kartoffelkaefer', dragon: 'ofenwurm', ghost: 'zweifler', king: 'rechenkoenig', merchant: 'ablasshaendler', letter: 'buchstabendreher', notebook: 'eselsohr', eraser: 'radierer' };
-  const HEROES = ['fox', 'toad', 'bear', 'luther', 'potato', 'owl', 'beaver', 'horse', 'schaustellerin', 'kuesterin', 'friends', 'pencil', 'ruler', 'muellerin', 'wetterwart', 'kartenzeichnerin', 'imkerin', 'heimatforscherin', 'schulaerztin', 'verkehrspolizistin', 'pfadfinderin', 'teapot', 'bus'];
+  const HEROES = ['fox', 'toad', 'bear', 'luther', 'potato', 'owl', 'beaver', 'horse', 'schaustellerin', 'kuesterin', 'friends', 'pencil', 'ruler', 'muellerin', 'wetterwart', 'kartenzeichnerin', 'imkerin', 'heimatforscherin', 'schulaerztin', 'verkehrspolizistin', 'pfadfinderin', 'teapot', 'bus', 'lotte', 'mats'];
 
 
   // where clothes sit on each hero (drawing coordinates before the stage scaling): head top [x, y, scale],
@@ -3455,6 +3724,8 @@ const MONART = (() => {
     imkerin: { top: [60, 34, 1.1], eyes: [60, 60, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
     heimatforscherin: { top: [60, 32, 1.1], eyes: [60, 59, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
     pfadfinderin: { top: [60, 28, 1.05], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
+    lotte: { top: [60, 30, 1.1], eyes: [60, 59, 10, 6], neck: [60, 81, 44], pack: [24, 84] },
+    mats: { top: [60, 30, 1.1], eyes: [60, 58, 10, 6], neck: [60, 81, 46], pack: [24, 84] },
   };
   const at = (p, body) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
   const STRAW = '#E8C25A';

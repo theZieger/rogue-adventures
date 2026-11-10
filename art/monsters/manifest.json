@@ -299,6 +299,11 @@
   "out": "c1fda3798692e5fe",
   "config": "14e1c93b1e80bcea"
  },
+ "grosserstreit-boss": {
+  "raw": "a074ba05f687ef4a",
+  "out": "0c8f5548eb5aba86",
+  "config": "14e1c93b1e80bcea"
+ },
  "gruppendruck-boss": {
   "raw": "69ca047dbe75443d",
   "out": "93e71c89f6b8f3d8",
@@ -332,6 +337,11 @@
  "heimatforscherin-2": {
   "raw": "41e126f2ada18192",
   "out": "46c041f2b26f684d",
+  "config": "14e1c93b1e80bcea"
+ },
+ "heimweh-elite": {
+  "raw": "a7ca28c17120d8f6",
+  "out": "e6a63a2e61cf002e",
   "config": "14e1c93b1e80bcea"
  },
  "herrdergeisterbahn-boss": {
@@ -409,6 +419,11 @@
   "out": "ca09b0dd6e00c928",
   "config": "14e1c93b1e80bcea"
  },
+ "karies": {
+  "raw": "142b83f0396c3f56",
+  "out": "c01f25887f70ca3c",
+  "config": "14e1c93b1e80bcea"
+ },
  "kartendieb-elite": {
   "raw": "9616892b61ee18ea",
   "out": "78ff91c855b78ee7",
@@ -447,6 +462,16 @@
  "kirmesnebel": {
   "raw": "ffdd49255110ccd4",
   "out": "8fb10b184efae23c",
+  "config": "14e1c93b1e80bcea"
+ },
+ "klette": {
+  "raw": "b02911b89799771d",
+  "out": "331eec2859e52280",
+  "config": "14e1c93b1e80bcea"
+ },
+ "knalltuer": {
+  "raw": "e36ee13f615352bf",
+  "out": "a22feb57391bee2a",
   "config": "14e1c93b1e80bcea"
  },
  "knickheft": {
@@ -524,9 +549,29 @@
   "out": "872c8c0ace2af1ea",
   "config": "14e1c93b1e80bcea"
  },
+ "langeweile": {
+  "raw": "ea14ffd3e9f7ac5b",
+  "out": "cdaf10531bd89c3a",
+  "config": "14e1c93b1e80bcea"
+ },
  "lavamolch": {
   "raw": "6338fcb841d01ad1",
   "out": "8cf50d274ba9471f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lotte-0": {
+  "raw": "7a2bbda984ee6a96",
+  "out": "d30e53d4baf88e8c",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lotte-1": {
+  "raw": "db49742399550b8a",
+  "out": "90949e8a1fdcbd44",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lotte-2": {
+  "raw": "bc31c97e1962914f",
+  "out": "180f7fe7b1ce2839",
   "config": "14e1c93b1e80bcea"
  },
  "luther-0": {
@@ -562,6 +607,21 @@
  "magnetberg-boss": {
   "raw": "4d73c5a72f20aa3a",
   "out": "7baaa72db12d8451",
+  "config": "14e1c93b1e80bcea"
+ },
+ "mats-0": {
+  "raw": "1feba1b066173751",
+  "out": "f9feeabb49948270",
+  "config": "14e1c93b1e80bcea"
+ },
+ "mats-1": {
+  "raw": "7720fa883d7b71f6",
+  "out": "0784c9f149a4f67c",
+  "config": "14e1c93b1e80bcea"
+ },
+ "mats-2": {
+  "raw": "2861ef10bd047b2e",
+  "out": "16f0cb454aae1d28",
   "config": "14e1c93b1e80bcea"
  },
  "mauer-elite": {
@@ -884,6 +944,26 @@
   "out": "33a57c07e1e8ff15",
   "config": "14e1c93b1e80bcea"
  },
+ "schlammpfuetze": {
+  "raw": "5b506e58bbbe0de1",
+  "out": "608c9b4774c98afc",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schlechtelaune": {
+  "raw": "151129e3ff23ab79",
+  "out": "1b32c30e649df10c",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schneesturm-boss": {
+  "raw": "2cbe7b92a5c38aa4",
+  "out": "a8f1d53f779a0998",
+  "config": "14e1c93b1e80bcea"
+ },
+ "schnupfen-elite": {
+  "raw": "316078c8ce9c0947",
+  "out": "3a82930d854e9e13",
+  "config": "14e1c93b1e80bcea"
+ },
  "schotterhaufen": {
   "raw": "7922b8a2ac92cab1",
   "out": "c9931bd0d190d6b5",
@@ -917,6 +997,11 @@
  "schwindler": {
   "raw": "957640b10c7a9e19",
   "out": "f9cdd48a4f675f0e",
+  "config": "14e1c93b1e80bcea"
+ },
+ "sonnenbrand": {
+  "raw": "0e883a37d5521ebe",
+  "out": "a501bf68bcb3fe79",
   "config": "14e1c93b1e80bcea"
  },
  "spaetfrost": {
@@ -1132,6 +1217,11 @@
  "wuehlmaus": {
   "raw": "15ad55416b71e41c",
   "out": "baeabfdc94f17a9b",
+  "config": "14e1c93b1e80bcea"
+ },
+ "wutanfall": {
+  "raw": "63461fb546fe4e6f",
+  "out": "57350f8d1bf44da5",
   "config": "14e1c93b1e80bcea"
  },
  "zankapfel": {
