@@ -6,27 +6,27 @@ const K12 = (() => {
   const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
   const SETS = {
     mathe: set(
-      { id: 'held-mathe12', type: 'normal', shape: 'heimatforscherin', names: ['Held Mathe', 'Held Mathe', 'Held Mathe'], hp: 60, perk: 'crit', desc: 'Platzhalter, bis die Zeichnung fertig ist.' },
+      { id: 'held-mathe12', type: 'normal', shape: 'kauffrau', names: ['Die Kauffrau', 'Die Kauffrau', 'Die Kauffrau'], hp: 65, perk: 'crit', desc: 'Sie führt den Kaufladen der Klasse: Sie zählt Münzen, wiegt Äpfel ab und rechnet Preise zusammen.' },
       [
-        { name: 'Gegner Mathe 1', type: 'normal', shape: 'spinnennetz', hp: 20, atk: 3 },
-        { name: 'Gegner Mathe 2', type: 'wasser', shape: 'schimmelfleck', hp: 22, atk: 3 },
-        { name: 'Gegner Mathe 3', type: 'feuer', shape: 'stromausfall', hp: 22, atk: 3 },
-        { name: 'Gegner Mathe 4', type: 'pflanze', shape: 'vorurteil', hp: 24, atk: 3 },
+        { name: 'Der Wackelturm', type: 'normal', shape: 'wackelturm', hp: 20, atk: 3 },
+        { name: 'Das Maßband', type: 'pflanze', shape: 'massband', hp: 22, atk: 3 },
+        { name: 'Der Schummelwürfel', type: 'feuer', shape: 'schummelwuerfel', hp: 22, atk: 3 },
+        { name: 'Der Kuckuck', type: 'wasser', shape: 'kuckuck', hp: 24, atk: 3 },
       ],
-      { name: 'Gegner Mathe Elite', type: 'normal', shape: 'falschmeldung', hp: 36, atk: 4 },
-      { name: 'Gegner Mathe Boss', acc: 'Gegner Mathe Boss', type: 'wasser', shape: 'vergessen', hp: 55, atk: 5, boss: true },
-      ['Rempler', 'Stups', 'Schubser', 'Kniff']),
+      { name: 'Die schiefe Waage', type: 'normal', shape: 'schiefewaage', hp: 36, atk: 4 },
+      { name: 'Der Kaugummiautomat', acc: 'den Kaugummiautomaten', type: 'feuer', shape: 'kaugummiautomat', hp: 55, atk: 5, boss: true },
+      ['Umkippen', 'Zurückschnellen', 'Sieben Augen', 'Kuckucksruf', 'Waagschale', 'Münzschlucker']),
     deutsch: set(
-      { id: 'held-deutsch12', type: 'normal', shape: 'heimatforscherin', names: ['Held Deutsch', 'Held Deutsch', 'Held Deutsch'], hp: 60, perk: 'crit', desc: 'Platzhalter, bis die Zeichnung fertig ist.' },
+      { id: 'held-deutsch12', type: 'normal', shape: 'lesepatin', names: ['Die Lesepatin', 'Die Lesepatin', 'Die Lesepatin'], hp: 68, perk: 'heal', desc: 'Sie kommt jede Woche in die Klasse, liest mit den Kindern in der Fibel und hört zu, wie sie Wörter lautieren.' },
       [
-        { name: 'Gegner Deutsch 1', type: 'normal', shape: 'spinnennetz', hp: 20, atk: 3 },
-        { name: 'Gegner Deutsch 2', type: 'wasser', shape: 'schimmelfleck', hp: 22, atk: 3 },
-        { name: 'Gegner Deutsch 3', type: 'feuer', shape: 'stromausfall', hp: 22, atk: 3 },
-        { name: 'Gegner Deutsch 4', type: 'pflanze', shape: 'vorurteil', hp: 24, atk: 3 },
+        { name: 'Das Spiegel-S', type: 'wasser', shape: 'spiegels', hp: 20, atk: 3 },
+        { name: 'Die Bastelschere', type: 'normal', shape: 'bastelschere', hp: 22, atk: 3 },
+        { name: 'Die Buchstabensuppe', type: 'feuer', shape: 'buchstabensuppe', hp: 24, atk: 3 },
+        { name: 'Der Papierflieger', type: 'pflanze', shape: 'papierflieger', hp: 20, atk: 3 },
       ],
-      { name: 'Gegner Deutsch Elite', type: 'normal', shape: 'falschmeldung', hp: 36, atk: 4 },
-      { name: 'Gegner Deutsch Boss', acc: 'Gegner Deutsch Boss', type: 'wasser', shape: 'vergessen', hp: 55, atk: 5, boss: true },
-      ['Rempler', 'Stups', 'Schubser', 'Kniff']),
+      { name: 'Der Wackelzahn', type: 'normal', shape: 'wackelzahn', hp: 36, atk: 4 },
+      { name: 'Die Bücherlawine', acc: 'die Bücherlawine', type: 'pflanze', shape: 'buecherlawine', hp: 55, atk: 5, boss: true },
+      ['Spiegelschrift', 'Falscher Schnitt', 'Suppenkelle', 'Bruchlandung', 'Lispeln', 'Bücherrutsch']),
     sachkunde: set(
       { id: 'held-sachkunde12', type: 'pflanze', shape: 'lotte', names: ['Lotte', 'Lotte', 'Lotte'], hp: 65, perk: 'heal', desc: 'Lotte gießt jeden Morgen die Sonnenblume, die sie im Frühling selbst gesät hat.' },
       [
@@ -50,16 +50,16 @@ const K12 = (() => {
       { name: 'Der große Streit', acc: 'den großen Streit', type: 'normal', shape: 'grosserstreit', hp: 55, atk: 5, boss: true },
       ['Türschlag', 'Trübsal', 'Wutgeschrei', 'Dauergähnen', 'Abschiedsschmerz', 'Gezanke']),
     musik: set(
-      { id: 'held-musik12', type: 'normal', shape: 'heimatforscherin', names: ['Held Musik', 'Held Musik', 'Held Musik'], hp: 60, perk: 'crit', desc: 'Platzhalter, bis die Zeichnung fertig ist.' },
+      { id: 'held-musik12', type: 'normal', shape: 'musiklehrerin', names: ['Die Musiklehrerin', 'Die Musiklehrerin', 'Die Musiklehrerin'], hp: 65, perk: 'crit', desc: 'Sie spielt zu jedem Lied Gitarre, und die Kinder klopfen mit Rassel, Triangel und Trommel den Takt.' },
       [
-        { name: 'Gegner Musik 1', type: 'normal', shape: 'spinnennetz', hp: 20, atk: 3 },
-        { name: 'Gegner Musik 2', type: 'wasser', shape: 'schimmelfleck', hp: 22, atk: 3 },
-        { name: 'Gegner Musik 3', type: 'feuer', shape: 'stromausfall', hp: 22, atk: 3 },
-        { name: 'Gegner Musik 4', type: 'pflanze', shape: 'vorurteil', hp: 24, atk: 3 },
+        { name: 'Die Knarrtür', type: 'pflanze', shape: 'knarrtuer', hp: 22, atk: 3 },
+        { name: 'Die gerissene Saite', type: 'normal', shape: 'gerissenesaite', hp: 20, atk: 3 },
+        { name: 'Der Laubbläser', type: 'feuer', shape: 'laubblaeser', hp: 24, atk: 3 },
+        { name: 'Der Wasserhahn', type: 'wasser', shape: 'wasserhahn', hp: 22, atk: 3 },
       ],
-      { name: 'Gegner Musik Elite', type: 'normal', shape: 'falschmeldung', hp: 36, atk: 4 },
-      { name: 'Gegner Musik Boss', acc: 'Gegner Musik Boss', type: 'wasser', shape: 'vergessen', hp: 55, atk: 5, boss: true },
-      ['Rempler', 'Stups', 'Schubser', 'Kniff']),
+      { name: 'Die Pausenklingel', type: 'feuer', shape: 'pausenklingel', hp: 36, atk: 4 },
+      { name: 'Der Presslufthammer', acc: 'den Presslufthammer', type: 'normal', shape: 'presslufthammer', hp: 58, atk: 5, boss: true },
+      ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß']),
   };
   return { SETS };
 })();

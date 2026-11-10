@@ -34,6 +34,16 @@
   "out": "707fee46e71cd25f",
   "config": "14e1c93b1e80bcea"
  },
+ "bastelschere": {
+  "raw": "2d264e20389589ba",
+  "out": "fe5f9fc16dbb3904",
+  "config": "14e1c93b1e80bcea"
+ },
+ "bastelschere-enemy": {
+  "raw": "b1408ee84271c461",
+  "out": "6fd7b276544a979b",
+  "config": "14e1c93b1e80bcea"
+ },
  "bear-0": {
   "raw": "bb75a2dc19e753aa",
   "out": "ca948e8b5eabb4bd",
@@ -102,6 +112,21 @@
  "buchstabendreher-enemy": {
   "raw": "f057e9d18d48e0e4",
   "out": "da87e0b3d039e7fa",
+  "config": "14e1c93b1e80bcea"
+ },
+ "buchstabensuppe": {
+  "raw": "a21bbc2a6abd496e",
+  "out": "39df5eef6d85b3e9",
+  "config": "14e1c93b1e80bcea"
+ },
+ "buchstabensuppe-enemy": {
+  "raw": "bc363df96fa5a954",
+  "out": "0ad59c392b189873",
+  "config": "14e1c93b1e80bcea"
+ },
+ "buecherlawine-boss": {
+  "raw": "eba3b1c55f44b2a8",
+  "out": "d802369a6f786665",
   "config": "14e1c93b1e80bcea"
  },
  "bulldogge": {
@@ -262,6 +287,11 @@
  "funkenrakete": {
   "raw": "c86b202cbae212bf",
   "out": "ebef26e7caec9528",
+  "config": "14e1c93b1e80bcea"
+ },
+ "gerissenesaite": {
+  "raw": "c4caf3896e547671",
+  "out": "4df151075ea4defd",
   "config": "14e1c93b1e80bcea"
  },
  "geruecht-elite": {
@@ -449,6 +479,26 @@
   "out": "4b370ce6363b2c9e",
   "config": "14e1c93b1e80bcea"
  },
+ "kauffrau-0": {
+  "raw": "aa14c269c2220114",
+  "out": "20d494f3aa6a4ef8",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kauffrau-1": {
+  "raw": "5508f4bc2676e5aa",
+  "out": "82d14a051d1e79e7",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kauffrau-2": {
+  "raw": "c0bbcac330ad966e",
+  "out": "dc554f8d6f4785d4",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kaugummiautomat-boss": {
+  "raw": "a0fda2c154053df4",
+  "out": "4483159869e35a86",
+  "config": "14e1c93b1e80bcea"
+ },
  "keil-boss": {
   "raw": "4baf4ebfef8e78dc",
   "out": "f20adfa8e395ae43",
@@ -472,6 +522,11 @@
  "knalltuer": {
   "raw": "e36ee13f615352bf",
   "out": "a22feb57391bee2a",
+  "config": "14e1c93b1e80bcea"
+ },
+ "knarrtuer": {
+  "raw": "1dd26327394bcab5",
+  "out": "c45035a1fc28ede3",
   "config": "14e1c93b1e80bcea"
  },
  "knickheft": {
@@ -502,6 +557,11 @@
  "kritzelei": {
   "raw": "6ef5f52b44ca9bb6",
   "out": "3abbad2453c5cba4",
+  "config": "14e1c93b1e80bcea"
+ },
+ "kuckuck": {
+  "raw": "a3d54bbcea921233",
+  "out": "a0e9a2e7d55fa2b7",
   "config": "14e1c93b1e80bcea"
  },
  "kuerbiskopf": {
@@ -554,9 +614,29 @@
   "out": "cdaf10531bd89c3a",
   "config": "14e1c93b1e80bcea"
  },
+ "laubblaeser": {
+  "raw": "228a519e24caae50",
+  "out": "cd350d876df35f78",
+  "config": "14e1c93b1e80bcea"
+ },
  "lavamolch": {
   "raw": "6338fcb841d01ad1",
   "out": "8cf50d274ba9471f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lesepatin-0": {
+  "raw": "3f44d1ef6690106c",
+  "out": "19375a1ee860d317",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lesepatin-1": {
+  "raw": "c2693178b553af4e",
+  "out": "e059e80eab1f30e7",
+  "config": "14e1c93b1e80bcea"
+ },
+ "lesepatin-2": {
+  "raw": "5565b4b5fb5fe5c2",
+  "out": "12392cdc3b2808d5",
   "config": "14e1c93b1e80bcea"
  },
  "lotte-0": {
@@ -607,6 +687,11 @@
  "magnetberg-boss": {
   "raw": "4d73c5a72f20aa3a",
   "out": "7baaa72db12d8451",
+  "config": "14e1c93b1e80bcea"
+ },
+ "massband": {
+  "raw": "d0091f4dea3080da",
+  "out": "5d0fede9de85956a",
   "config": "14e1c93b1e80bcea"
  },
  "mats-0": {
@@ -689,6 +774,21 @@
   "out": "ae6f82cb5c096385",
   "config": "14e1c93b1e80bcea"
  },
+ "musiklehrerin-0": {
+  "raw": "ed19af477260c4a4",
+  "out": "34088ff60f397804",
+  "config": "14e1c93b1e80bcea"
+ },
+ "musiklehrerin-1": {
+  "raw": "de85fe4b570e2e4c",
+  "out": "85213077fa779bb6",
+  "config": "14e1c93b1e80bcea"
+ },
+ "musiklehrerin-2": {
+  "raw": "3566b84dbde702c8",
+  "out": "dfaf24acf367e918",
+  "config": "14e1c93b1e80bcea"
+ },
  "mutterkorn-elite": {
   "raw": "87706891be1715d6",
   "out": "e56f9fe9044444d7",
@@ -754,6 +854,16 @@
   "out": "a55f972aa6c4225c",
   "config": "14e1c93b1e80bcea"
  },
+ "papierflieger": {
+  "raw": "2ae740b0f9ef1ea3",
+  "out": "fcbdfc89d5c0bdcc",
+  "config": "14e1c93b1e80bcea"
+ },
+ "pausenklingel-elite": {
+  "raw": "46b73acde73b75b8",
+  "out": "ed5ec84e957a7122",
+  "config": "14e1c93b1e80bcea"
+ },
  "pencil-0": {
   "raw": "b0477f414c9e9c32",
   "out": "390c0bad07e6267e",
@@ -817,6 +927,11 @@
  "potato-2": {
   "raw": "0c27acddbc97bb57",
   "out": "a1666aaf8deee874",
+  "config": "14e1c93b1e80bcea"
+ },
+ "presslufthammer-boss": {
+  "raw": "c415bcb44fe39fcc",
+  "out": "5f443430751e422d",
   "config": "14e1c93b1e80bcea"
  },
  "punktdieb": {
@@ -934,6 +1049,11 @@
   "out": "143fb86f952e7abd",
   "config": "14e1c93b1e80bcea"
  },
+ "schiefewaage-elite": {
+  "raw": "2d98bb6d853b7338",
+  "out": "3fad0831e12d1fae",
+  "config": "14e1c93b1e80bcea"
+ },
  "schimmelfleck": {
   "raw": "8ef9c0c00c7d8a41",
   "out": "89df9373203c22c7",
@@ -989,6 +1109,11 @@
   "out": "c4c155e63d102fd8",
   "config": "14e1c93b1e80bcea"
  },
+ "schummelwuerfel": {
+  "raw": "1fc50cd7ef73814a",
+  "out": "9c3c9adf987b5c9b",
+  "config": "14e1c93b1e80bcea"
+ },
  "schweissfunke": {
   "raw": "14204c0ad9a6ca11",
   "out": "bc887317c544ee21",
@@ -1007,6 +1132,16 @@
  "spaetfrost": {
   "raw": "2d78269c4d20a230",
   "out": "3179cfa9e1ba26d7",
+  "config": "14e1c93b1e80bcea"
+ },
+ "spiegels": {
+  "raw": "844cda64f940477d",
+  "out": "76fbdc3a35b7b841",
+  "config": "14e1c93b1e80bcea"
+ },
+ "spiegels-enemy": {
+  "raw": "9ba82940153785d5",
+  "out": "b3caf936740cabaa",
   "config": "14e1c93b1e80bcea"
  },
  "spinnennetz": {
@@ -1184,9 +1319,24 @@
   "out": "18eb2080e447e528",
   "config": "14e1c93b1e80bcea"
  },
+ "wackelturm": {
+  "raw": "17f9b708559c94fd",
+  "out": "4ba0b9bdcc544f5f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "wackelzahn-elite": {
+  "raw": "57a193707644d903",
+  "out": "1d2568c9757835a8",
+  "config": "14e1c93b1e80bcea"
+ },
  "wappenloewe-boss": {
   "raw": "e12b143816acebc5",
   "out": "c30eba7a03340e7f",
+  "config": "14e1c93b1e80bcea"
+ },
+ "wasserhahn": {
+  "raw": "837dc36d8ad78c5a",
+  "out": "6c384cfc7e4e8527",
   "config": "14e1c93b1e80bcea"
  },
  "wetterwart-0": {
