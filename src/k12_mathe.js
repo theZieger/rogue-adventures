@@ -10,7 +10,13 @@
   const { shuffle, pick, rnd } = K;
   const OUT = '#1C2541', NB = ' ';
 
-  const svgOf = (w, h, body, label, attrs) => `<svg viewBox="0 0 ${w} ${h}"${attrs || ''} role="img" aria-label="${label}">${body}</svg>`;
+  // fl(colour): a soft light-to-shade gradient of the colour; svgOf adds the defs a drawing uses
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const fl = (c) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
+  const grad = (c) => `<linearGradient id="km${c}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone('#' + c, 0.32)}"/><stop offset=".5" stop-color="#${c}"/><stop offset="1" stop-color="${tone('#' + c, -0.16)}"/></linearGradient>`;
+  const svgOf = (w, h, body, label, attrs) => { const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u) => u.slice(7, 13)))];
+    return `<svg viewBox="0 0 ${w} ${h}"${attrs || ''} role="img" aria-label="${label}">${used.length ? `<defs>${used.map(grad).join('')}</defs>` : ''}${body}</svg>`; };
+  const gloss = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"/>`;
   const pic = (s) => `<div class="figure">${s}</div>`;
   const height = (px) => ` style="height:${px}px"`;
   // k different numbers close to right, inside lo … hi
@@ -36,16 +42,18 @@
 
   /* ---------- Drawings ---------- */
   const RED = '#E8453C', BLUE = '#3F7FE0';
-  const dot = (x, y, r, fill) => `<circle class="dot" cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${OUT}" stroke-width="1.5"/>`;
+  // counters get a shine; dice pips stay plain ink
+  const dot = (x, y, r, fill) => `<circle class="dot" cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${OUT}" stroke-width="1.5"/>${fill === OUT ? '' : gloss(x - r * 0.3, y - r * 0.35, r * 0.38, r * 0.26)}`;
   // Zehnerfeld (2 × 5) or Zwanzigerfeld (2 × 10), filled row by row: red up to five, then blue
   function fieldSVG(n, cols) {
     const C = 26; let b = '';
     for (let r = 0; r < 2; r++) for (let c = 0; c < cols; c++) { const x = 2 + c * C + (c >= 5 ? 6 : 0), y = 2 + r * C;
       b += `<rect x="${x}" y="${y}" width="${C}" height="${C}" fill="#fff" stroke="${OUT}" stroke-width="1.5"/>${r * cols + c < n ? dot(x + C / 2, y + C / 2, 9, c < 5 ? RED : BLUE) : ''}`; }
+    b += (cols > 5 ? [2, 2 + 5 * C + 6] : [2]).map((x) => `<rect x="${x}" y="2" width="${5 * C}" height="${2 * C}" fill="none" stroke="${OUT}" stroke-width="2.5"/>`).join('');
     return svgOf(cols * C + (cols > 5 ? 10 : 4), 2 * C + 4, b, cols > 5 ? 'Zwanzigerfeld mit Punkten' : 'Zehnerfeld mit Punkten');
   }
   const PIPS = { 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]], 5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [2, 0], [0, 1], [2, 1], [0, 2], [2, 2]] };
-  const diceSVG = (ns) => svgOf(ns.length * 64, 62, ns.map((n, k) => `<rect x="${k * 64 + 3}" y="3" width="56" height="56" rx="10" fill="#fff" stroke="${OUT}" stroke-width="2.5"/>${PIPS[n].map(([c, r]) => dot(k * 64 + 15 + c * 16, 15 + r * 16, 5.5, OUT)).join('')}`).join(''), 'Zwei Würfel');
+  const diceSVG = (ns) => svgOf(ns.length * 64, 64, ns.map((n, k) => `<rect x="${k * 64 + 4}" y="5" width="56" height="56" rx="11" fill="${OUT}" opacity=".18"/><rect x="${k * 64 + 3}" y="3" width="56" height="56" rx="10" fill="#fff" stroke="${OUT}" stroke-width="2.5"/><path d="M${k * 64 + 10} 8 H${k * 64 + 50}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>${PIPS[n].map(([c, r]) => dot(k * 64 + 15 + c * 16, 15 + r * 16, 5.5, OUT)).join('')}`).join(''), 'Zwei Würfel');
   // Zahlenmauer and Rechendreieck in the markup of src/logic.js, so the bot reads them the same way
   const stone = (x, y, w, v) => `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${v === '?' ? '#FFE27A' : '#F3D9B1'}" stroke="${OUT}" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="${OUT}">${v}</text></g>`;
   function mauerTask(m, mod, t, b, r, c) {
@@ -180,7 +188,7 @@
   // a Quadrat is also a Rechteck and a Viereck, a Rechteck also a Viereck: such names never count as wrong
   const IS_ALSO = { quadrat: ['rechteck', 'viereck'], rechteck: ['viereck'] };
   const fits = (shape, name) => shape === name || (IS_ALSO[shape] || []).includes(name);
-  const formG = (k, fill) => `${FORMS[k].draw()} fill="${fill || pick(FILLS)}" stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const formG = (k, fill) => `${FORMS[k].draw()} fill="${fl(fill || pick(FILLS))}" stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
   const formSVG = (k) => svgOf(60, 60, formG(k), 'Form');
   const STAR = 'M30 4 L37.6 19.5 L54.7 22 L42.4 34 L45.3 51 L30 43 L14.7 51 L17.6 34 L5.3 22 L22.4 19.5 Z';
   // things for the Lage tasks: one colour each, so they are easy to tell apart
@@ -194,10 +202,16 @@
   const rowSVG = (ks) => svgOf(210, 74, `<path d="M4 70 H206" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>${ks.map((k, i) => `<g data-at="${i}" data-thing="${k}">${at(8 + i * 68, 6, 1, THINGS[k].g)}</g>`).join('')}`, 'Drei Formen in einer Reihe');
   const shelfSVG = (ks) => svgOf(96, 214, `<rect x="4" y="4" width="88" height="206" rx="4" fill="#F2C27E" stroke="${OUT}" stroke-width="2.5"/>${[72, 140].map((y) => `<path d="M6 ${y} H90" stroke="${OUT}" stroke-width="3"/>`).join('')}${ks.map((k, i) => `<g data-at="${i}" data-thing="${k}">${at(20, 12 + i * 68, 0.95, THINGS[k].g)}</g>`).join('')}`, 'Regal mit drei Fächern', height(170));
   const SOLIDS = { wuerfel: ['Würfel', 'den'], quader: ['Quader', 'den'], kugel: ['Kugel', 'die'] };
+  // isometric view like Die Baustelle (src/logic.js): x to the right, y to the front, z up; faces top, front, right
+  const iso = (x, y, z, k) => `${((x - y) * 12 * k).toFixed(1)} ${((x + y) * 7 * k - z * 14 * k).toFixed(1)}`;
+  const box = (x, y, z, dx, dy, dz, k, fills, cls) => [[[x, y, z + dz], [x + dx, y, z + dz], [x + dx, y + dy, z + dz], [x, y + dy, z + dz]], [[x, y + dy, z], [x + dx, y + dy, z], [x + dx, y + dy, z + dz], [x, y + dy, z + dz]], [[x + dx, y, z], [x + dx, y + dy, z], [x + dx, y + dy, z + dz], [x + dx, y, z + dz]]]
+    .map((f, i) => `<polygon${i === 1 && cls ? ` class="${cls}"` : ''} points="${f.map((p) => iso(...p, k)).join(' ')}" fill="${fl(fills[i])}" stroke="${OUT}" stroke-width="${k > 1 ? 2 : 1.5}" stroke-linejoin="round"/>`).join('');
+  const BLUES = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
+  const SHADE = '<radialGradient id="kmball" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#BFE4FF"/><stop offset=".45" stop-color="#3FA0FF"/><stop offset="1" stop-color="#1F5E9E"/></radialGradient>';
   const solidSVG = (k) => svgOf(68, 62, {
-    wuerfel: `<path d="M10 22 L22 10 L56 10 L44 22 Z" fill="#8FD3FF" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M44 22 L56 10 L56 44 L44 56 Z" fill="#2B78C2" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><rect x="10" y="22" width="34" height="34" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/>`,
-    quader: `<path d="M4 30 L14 20 L64 20 L54 30 Z" fill="#8FD3FF" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M54 30 L64 20 L64 44 L54 54 Z" fill="#2B78C2" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="30" width="50" height="24" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/>`,
-    kugel: `<circle cx="34" cy="31" r="26" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/><path d="M8 31 a26 8 0 0 0 52 0" fill="none" stroke="${OUT}" stroke-width="1.5"/><ellipse cx="25" cy="21" rx="7" ry="4" fill="#fff" opacity=".6" transform="rotate(-30 25 21)"/>`,
+    wuerfel: `<g transform="translate(34 31)">${box(0, 0, 0, 1, 1, 1, 2, BLUES)}</g>`,
+    quader: `<g transform="translate(25.3 37.1)">${box(-0.6, -0.5, 0, 2.2, 1, 1.1, 1.45, BLUES)}</g>`,
+    kugel: `<defs>${SHADE}</defs><ellipse cx="34" cy="57" rx="20" ry="3.5" fill="${OUT}" opacity=".15"/><circle cx="34" cy="30" r="26" fill="url(#kmball)" stroke="${OUT}" stroke-width="2"/><ellipse cx="25" cy="19" rx="7" ry="4" fill="#fff" opacity=".7" transform="rotate(-30 25 19)"/>`,
   }[k], 'Körper');
   const OBJECTS = [['einem Ball', 'kugel'], ['einer Murmel', 'kugel'], ['einer Orange', 'kugel'], ['einem Spielwürfel', 'wuerfel'], ['einem Zuckerwürfel', 'wuerfel'], ['einem Schuhkarton', 'quader'], ['einem Ziegelstein', 'quader'], ['einem Saftkarton', 'quader']];
   const SOLID_FACTS = [['Welcher Körper kann gut rollen?', 'kugel'], ['Welcher Körper hat keine Ecken?', 'kugel'], ['Welcher Körper hat 6 gleich große Quadrate als Flächen?', 'wuerfel'], ['Welcher Körper sieht aus wie ein langer Kasten?', 'quader']];
@@ -206,12 +220,11 @@
   const tokenG = (k) => `${TOKENS[k]} stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
   const tokenSVG = (k) => svgOf(40, 40, `<g data-k="${k}">${tokenG(k)}</g>`, 'Musterteil');
   const PATTERNS = { 1: ['AB', 'ABC'], 2: ['AAB', 'ABB', 'AABB', 'ABAC'] };
-  // a row of cubes seen from the front: every cube shows its front face
+  // a row of towers in the isometric view of Die Baustelle; every cube shows its front face, drawn back to front
   function towerSVG(hs) {
-    const C = 24, D = 8, H = Math.max(...hs); let b = '';
-    hs.forEach((h, c) => { for (let k = 0; k < h; k++) { const x = 2 + c * C, y = 2 + D + (H - k - 1) * C;
-      b += `<path d="M${x + C} ${y} l${D} ${-D} v${C} l${-D} ${D} Z" fill="#B54E2A" stroke="${OUT}" stroke-width="1.5" stroke-linejoin="round"/><path d="M${x} ${y} l${D} ${-D} h${C} l${-D} ${D} Z" fill="#F6A36B" stroke="${OUT}" stroke-width="1.5" stroke-linejoin="round"/><rect class="cube" x="${x}" y="${y}" width="${C}" height="${C}" fill="#D9653B" stroke="${OUT}" stroke-width="1.5"/>`; } });
-    return svgOf(hs.length * C + D + 4, H * C + D + 4, b, 'Würfel in einer Reihe');
+    const H = Math.max(...hs), n = hs.length, k = 1.4; let b = '';
+    hs.forEach((h, x) => { for (let z = 0; z < h; z++) b += box(x, 0, z, 1, 1, 1, k, ['#F6A36B', '#D9653B', '#B54E2A'], 'cube'); });
+    return svgOf((n + 1) * 12 * k + 4, (H * 14 + (n + 1) * 7) * k + 4, `<g transform="translate(${12 * k + 2} ${H * 14 * k + 2})">${b}</g>`, 'Würfel in einer Reihe');
   }
   function genForm(mod, t) {
     if (mod === 'lage') {
@@ -309,11 +322,14 @@
   const h = maker('z100');
   // Zehnerstangen and Einerwürfel
   function blocksSVG(n) {
-    const tens = Math.floor(n / 10), ones = n % 10, U = 11; let b = '';
-    for (let i = 0; i < tens; i++) b += `<g class="ten">${range(0, 9).map((k) => `<rect x="${2 + i * 16}" y="${2 + k * U}" width="${U}" height="${U}" fill="#7CC2FF" stroke="${OUT}" stroke-width="1.2"/>`).join('')}</g>`;
-    const x0 = 2 + tens * 16 + 8;
-    for (let k = 0; k < ones; k++) b += `<rect class="one" x="${x0 + (k % 3) * 14}" y="${2 + 10 * U - (Math.floor(k / 3) + 1) * 14 + 3}" width="${U}" height="${U}" fill="#FFD84A" stroke="${OUT}" stroke-width="1.2"/>`;
-    return svgOf(x0 + 44, 10 * U + 4, b, 'Zehnerstangen und Einerwürfel');
+    const tens = Math.floor(n / 10), ones = n % 10, U = 11, D = 3; let b = '';
+    // a block of h units seen from the front with a little depth: top and right side, then the front squares
+    const block = (x, y, h, c, cls) => `<path d="M${x} ${y} l${D} ${-D} h${U} l${-D} ${D} Z" fill="${tone(c, 0.35)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/><path d="M${x + U} ${y} l${D} ${-D} v${h * U} l${-D} ${D} Z" fill="${tone(c, -0.25)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/>`
+      + range(0, h - 1).map((k) => `<rect${cls ? ` class="${cls}"` : ''} x="${x}" y="${y + k * U}" width="${U}" height="${U}" fill="${fl(c)}" stroke="${OUT}" stroke-width="1.2"/>`).join('') + `<path d="M${x + 2.5} ${y + 2.5} V${y + h * U - 2.5}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".5"/>`;
+    for (let i = 0; i < tens; i++) b += `<g class="ten">${block(2 + i * 17, 2 + D, 10, '#7CC2FF')}</g>`;
+    const x0 = 2 + tens * 17 + 8;
+    for (let k = 0; k < ones; k++) b += block(x0 + (k % 3) * 15, 2 + D + 10 * U - (Math.floor(k / 3) + 1) * 15 + 4, 1, '#FFD84A', 'one');
+    return svgOf(x0 + 48, 10 * U + D + 4, b, 'Zehnerstangen und Einerwürfel');
   }
   function hundredSVG(n) {
     const C = 12; let b = '';
@@ -534,26 +550,39 @@
   const pad = (n) => String(n).padStart(2, '0');
   const komma = (ct) => `${Math.floor(ct / 100)},${pad(ct % 100)}${NB}€`;
   // coins and notes in cent: label, colour, coin radius or note width; sizes follow the real coins and notes.
-  // Euro coins have two metals: 1 € gold ring and silver core, 2 € the other way round.
-  const GOLDC = '#F2C14E', SILVER = '#D3D8E3';
-  const MONEY = { 1: ['1 ct', '#D9864A', 13], 2: ['2 ct', '#D9864A', 15], 5: ['5 ct', '#D9864A', 17], 10: ['10 ct', GOLDC, 16], 20: ['20 ct', GOLDC, 18], 50: ['50 ct', GOLDC, 20],
-    100: ['1 €', GOLDC, 19, SILVER], 200: ['2 €', SILVER, 21, GOLDC], 500: ['5 €', '#C3C7CF', 0, 64], 1000: ['10 €', '#F2A0A0', 0, 67], 2000: ['20 €', '#9CC4F0', 0, 70], 5000: ['50 €', '#F7B877', 0, 73] };
+  // Euro coins have two metals: 1 € silver ring and gold core, 2 € gold ring and silver core.
+  const GOLDC = '#EDBE4A', SILVER = '#D3D8E3', COPPER = '#D9864A';
+  const MONEY = { 1: ['1', 'ct', COPPER, 13], 2: ['2', 'ct', COPPER, 15], 5: ['5', 'ct', COPPER, 17], 10: ['10', 'ct', GOLDC, 16], 20: ['20', 'ct', GOLDC, 18], 50: ['50', 'ct', GOLDC, 20],
+    100: ['1', '€', SILVER, 19, GOLDC], 200: ['2', '€', GOLDC, 21, SILVER], 500: ['5', '€', '#B9BEC8', 0, 64], 1000: ['10', '€', '#EE8E8E', 0, 67], 2000: ['20', '€', '#8FBDEE', 0, 70], 5000: ['50', '€', '#F5AE62', 0, 73] };
   function moneySVG(vals) {
     let x = 4, y = 4, rowH = 0, b = '';
-    for (const v of vals) { const [label, fill, r, extra] = MONEY[v]; const w = r ? 2 * r : extra, hh = r ? 2 * r : Math.round(extra * 0.53); if (x + w > 300) { x = 4; y += rowH + 6; rowH = 0; }
-      const coin = r && `<circle cx="${x + r}" cy="${y + r}" r="${r}" fill="${fill}" stroke="${OUT}" stroke-width="2"/>${extra ? `<circle cx="${x + r}" cy="${y + r}" r="${r - 5}" fill="${extra}" stroke="${OUT}" stroke-width="1"/>` : `<circle cx="${x + r}" cy="${y + r}" r="${r - 2.5}" fill="none" stroke="#fff" stroke-width="1" opacity=".5"/>`}`;
-      const note = !r && `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="4" fill="${fill}" stroke="${OUT}" stroke-width="2"/><path d="M${x + 5} ${y + 5} h${w - 10} v${hh - 10} h${-(w - 10)} Z" fill="none" stroke="#fff" stroke-width="1.2" opacity=".7"/><circle cx="${x + w - 12}" cy="${y + hh / 2}" r="6" fill="#fff" opacity=".45"/>`;
-      b += `<g class="money" data-ct="${v}">${coin || note}<text x="${x + (r ? w / 2 : w / 2 - 5)}" y="${y + hh / 2 + 5}" text-anchor="middle" font-size="${r ? 11 : 15}" font-weight="700" fill="${OUT}">${label}</text></g>`;
+    for (const v of vals) { const [num, unit, fill, r, extra] = MONEY[v]; const w = r ? 2 * r : extra, hh = r ? 2 * r : Math.round(extra * 0.53); if (x + w > 300) { x = 4; y += rowH + 6; rowH = 0; }
+      const cx = x + r, cy = y + r;
+      const coin = r && `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${OUT}" stroke-width="2"/><circle cx="${cx}" cy="${cy}" r="${r - 2.2}" fill="none" stroke="${tone(fill, -0.3)}" stroke-width="1" opacity=".7"/>`
+        + (extra ? `<circle cx="${cx}" cy="${cy}" r="${Math.round(r * 0.66)}" fill="${fl(extra)}" stroke="${OUT}" stroke-width="1.2"/>` : '')
+        + `<path d="M${cx - r * 0.72} ${cy - r * 0.3} A${r * 0.78} ${r * 0.78} 0 0 1 ${cx - r * 0.1} ${cy - r * 0.77}" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>`;
+      // a plain made-up note: frame, big value, a lighter round window; no real banknote design
+      const note = !r && `<rect x="${x + 1}" y="${y + 2}" width="${w}" height="${hh}" rx="4" fill="${OUT}" opacity=".18"/><rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="4" fill="${fl(fill)}" stroke="${OUT}" stroke-width="2"/><rect x="${x + 4}" y="${y + 4}" width="${w - 8}" height="${hh - 8}" rx="2" fill="none" stroke="#fff" stroke-width="1.2" opacity=".75"/>`
+        + `<circle cx="${x + w - 13}" cy="${y + hh / 2}" r="8" fill="#fff" opacity=".4"/><circle cx="${x + w - 13}" cy="${y + hh / 2}" r="8" fill="none" stroke="${tone(fill, -0.35)}" stroke-width="1"/><path d="M${x + 7} ${y + hh - 8} h${w - 34}" stroke="${tone(fill, -0.3)}" stroke-width="1.5" stroke-dasharray="2 2"/>`;
+      const text = r ? `<text x="${cx}" y="${cy + (r > 15 ? 2 : 1.5)}" text-anchor="middle" font-size="${r > 15 ? 13 : 11}" font-weight="700" fill="${OUT}">${num}</text><text x="${cx}" y="${cy + (r > 15 ? 10.5 : 8.5)}" text-anchor="middle" font-size="${r > 15 ? 8 : 6.5}" font-weight="700" fill="${OUT}">${unit}</text>`
+        : `<text x="${x + (w - 26) / 2 + 3}" y="${y + hh / 2 + 5.5}" text-anchor="middle" font-size="16" font-weight="700" fill="${OUT}">${num}${NB}${unit}</text>`;
+      b += `<g class="money" data-ct="${v}">${coin || note}${text}</g>`;
       x += w + 6; rowH = Math.max(rowH, hh); }
-    return svgOf(304, y + rowH + 4, b, 'Geld');
+    return svgOf(304, y + rowH + 6, b, 'Geld');
   }
   // 1 and c hundredths written wrongly: digits swapped, comma one place off, a zero too many
   const mixups = (c, u) => { const right = `1,${pad(c)}${NB}${u}`; return [...new Set([`1,${pad(c).split('').reverse().join('')}${NB}${u}`, `${10 + Math.floor(c / 10)},${c % 10}${NB}${u}`, `10,${pad(c)}${NB}${u}`])].filter((x) => x !== right).slice(0, 2); };
   const coins = (from, k, max) => { let vs; do vs = Array.from({ length: k }, () => pick(from)).sort((a, b) => b - a); while (vs.reduce((a, b) => a + b, 0) > max); return vs; };
   function rulerSVG(cm) {
     const px = 22, x0 = 14, x1 = x0 + cm * px; let marks = '';
-    for (let i = 0; i <= 12; i++) marks += `<path d="M${x0 + i * px} 52 V${i % 5 ? 62 : 66}" stroke="${OUT}" stroke-width="1.5"/><text x="${x0 + i * px}" y="78" text-anchor="middle" font-size="10" fill="${OUT}">${i}</text>`;
-    return svgOf(300, 86, `<rect x="4" y="50" width="292" height="32" rx="4" fill="#F7E3A1" stroke="${OUT}" stroke-width="2"/>${marks}<g class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}"><path d="M${x0} 24 H${x1 - 14} L${x1} 33 L${x1 - 14} 42 H${x0} Z" fill="#FFD84A" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x1 - 5} 30 L${x1} 33 L${x1 - 5} 36 Z" fill="${OUT}"/><path d="M${x0} 24 h6 v18 h-6 Z" fill="#FF8FA3" stroke="${OUT}" stroke-width="2"/></g>`, 'Lineal mit Stift');
+    // cm marks long with a number, half cm medium, mm short
+    for (let i = 0; i <= 120; i++) { const x = (x0 + i * px / 10).toFixed(1), cmMark = i % 10 === 0;
+      marks += `<path d="M${x} 50 V${cmMark ? 64 : i % 5 ? 55 : 59}" stroke="${OUT}" stroke-width="${cmMark ? 1.6 : 0.8}"/>` + (cmMark ? `<text x="${x}" y="77" text-anchor="middle" font-size="11" font-weight="700" fill="${OUT}">${i / 10}</text>` : ''); }
+    const pencil = `<path d="M${x0} 24 H${x1 - 14} L${x1} 33 L${x1 - 14} 42 H${x0} Z" fill="${fl('#FFD84A')}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x0 + 10} 30 H${x1 - 14} M${x0 + 10} 36 H${x1 - 14}" stroke="#E0A800" stroke-width="1"/>`
+      + `<path d="M${x1 - 14} 24 L${x1} 33 L${x1 - 14} 42 Z" fill="${fl('#F5D3A6')}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x1 - 5} 30 L${x1} 33 L${x1 - 5} 36 Z" fill="${OUT}"/>`
+      + `<path d="M${x0} 24 h6 v18 h-6 Z" fill="${fl('#FF8FA3')}" stroke="${OUT}" stroke-width="2"/><path d="M${x0 + 6} 24 h4 v18 h-4 Z" fill="${fl('#C9CEDD')}" stroke="${OUT}" stroke-width="2"/><path d="M${x0 + 12} 27 H${x1 - 16}" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>`;
+    return svgOf(300, 86, `<rect x="4" y="48" width="292" height="34" rx="4" fill="${fl('#F7E3A1')}" stroke="${OUT}" stroke-width="2"/>${marks}<text x="289" y="62" text-anchor="middle" font-size="9" fill="${OUT}">cm</text>`
+      + `<path d="M${x0} 18 V48 M${x1} 18 V48" stroke="${OUT}" stroke-width="1" stroke-dasharray="3 3"/><g class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}">${pencil}</g>`, 'Lineal mit Stift');
   }
   // estimate: first option is right, the others are off by a factor of 10 or more
   const LENGTHS = [['ein Bleistift', 'lang', '15 cm', '15 m', '15 mm'], ['eine Tür', 'hoch', '2 m', '2 cm', '20 m'], ['eine Ameise', 'groß', '5 mm', '5 cm', '5 m'], ['ein Schulheft', 'hoch', '30 cm', '3 m', '3 mm'], ['ein Bus', 'lang', '12 m', '12 cm', '120 m'],
@@ -564,19 +593,25 @@
   const FACTS = [['Wie viele Tage hat eine Woche?', 7], ['Wie viele Monate hat ein Jahr?', 12], ['Wie viele Minuten hat eine Stunde?', 60], ['Wie viele Stunden hat ein Tag?', 24]];
   const ORD = ['erste', 'zweite', 'dritte'];
   function calSVG(mi, first) {
-    const C = 30; let b = `<text x="${3.5 * C + 2}" y="18" text-anchor="middle" font-size="16" font-weight="700" fill="${OUT}">${MONTHS[mi]}</text>`;
-    WD.forEach((d, i) => { b += `<text x="${2 + i * C + C / 2}" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="${i > 4 ? RED : OUT}">${d.slice(0, 2)}</text>`; });
-    for (let d = 1; d <= MDAYS[mi]; d++) { const i = first + d - 1, x = 2 + (i % 7) * C, y = 46 + Math.floor(i / 7) * 26;
-      b += `<g data-day="${d}" data-wd="${i % 7}"><rect x="${x}" y="${y}" width="${C}" height="26" fill="#fff" stroke="#B8C2D9"/><text x="${x + C / 2}" y="${y + 18}" text-anchor="middle" font-size="13" fill="${OUT}">${d}</text></g>`; }
-    return svgOf(7 * C + 4, 46 + Math.ceil((first + MDAYS[mi]) / 7) * 26 + 4, b, `Kalenderblatt ${MONTHS[mi]}`, height(180));
+    const C = 30, W = 7 * C, H = 54 + Math.ceil((first + MDAYS[mi]) / 7) * 26;
+    // paper sheet with a red header and two rings, weekend columns tinted
+    let b = `<rect x="4" y="9" width="${W + 4}" height="${H - 4}" rx="6" fill="${OUT}" opacity=".15"/><rect x="2" y="6" width="${W + 4}" height="${H - 4}" rx="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>`
+      + `<path d="M2 12 Q2 6 8 6 H${W} Q${W + 6} 6 ${W + 6} 12 V30 H2 Z" fill="${fl(RED)}" stroke="${OUT}" stroke-width="2"/><text x="${W / 2 + 4}" y="25" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">${MONTHS[mi]}</text>`
+      + [W * 0.22, W * 0.78].map((x) => `<rect x="${x}" y="1" width="6" height="12" rx="3" fill="${fl('#C9CEDD')}" stroke="${OUT}" stroke-width="1.5"/>`).join('')
+      + `<rect x="${4 + 5 * C}" y="32" width="${2 * C}" height="${H - 32}" fill="#FFECEC"/>`;
+    WD.forEach((d, i) => { b += `<text x="${4 + i * C + C / 2}" y="45" text-anchor="middle" font-size="12" font-weight="700" fill="${i > 4 ? RED : OUT}">${d.slice(0, 2)}</text>`; });
+    for (let d = 1; d <= MDAYS[mi]; d++) { const i = first + d - 1, x = 4 + (i % 7) * C, y = 50 + Math.floor(i / 7) * 26;
+      b += `<g data-day="${d}" data-wd="${i % 7}"><rect x="${x}" y="${y}" width="${C}" height="26" fill="${i % 7 > 4 ? '#FFECEC' : '#fff'}" stroke="#B8C2D9"/><text x="${x + C / 2}" y="${y + 18}" text-anchor="middle" font-size="13" fill="${OUT}">${d}</text></g>`; }
+    return svgOf(W + 10, H + 6, b, `Kalenderblatt ${MONTHS[mi]}`, height(180));
   }
   // Strichliste: four strokes and the fifth across them
   function tallySVG(rows) {
-    let b = '';
+    const H = rows.length * 32 + 6;
+    let b = `<rect x="1" y="1" width="298" height="${H}" rx="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>` + rows.map((_, i) => (i % 2 ? `<rect x="2" y="${4 + i * 32}" width="296" height="32" fill="#F3F6FC"/>` : '')).join('') + `<path d="M94 2 V${H}" stroke="#B8C2D9" stroke-width="1.5"/>`;
     rows.forEach(([label, n], i) => { const y = 8 + i * 32; let s = '';
-      for (let k = 0; k < n; k++) { const grp = Math.floor(k / 5), x = 104 + grp * 40 + (k % 5) * 7; s += k % 5 === 4 ? `<path class="s" d="M${x - 31} ${y + 18} L${x + 1} ${y + 4}" stroke="${OUT}" stroke-width="2.5" stroke-linecap="round"/>` : `<path class="s" d="M${x} ${y} V${y + 22}" stroke="${OUT}" stroke-width="2.5" stroke-linecap="round"/>`; }
-      b += `<g class="tally" data-n="${n}"><text x="4" y="${y + 17}" font-size="14" font-weight="700" fill="${OUT}">${label}</text>${s}</g><path d="M2 ${y + 28} H298" stroke="#B8C2D9"/>`; });
-    return svgOf(300, rows.length * 32 + 8, b, 'Strichliste');
+      for (let k = 0; k < n; k++) { const grp = Math.floor(k / 5), x = 104 + grp * 40 + (k % 5) * 7; s += k % 5 === 4 ? `<path class="s" d="M${x - 31} ${y + 18} L${x + 1} ${y + 4}" stroke="#2B3350" stroke-width="2.6" stroke-linecap="round"/>` : `<path class="s" d="M${x} ${y} L${x + (k % 2 ? 0.6 : -0.4)} ${y + 22}" stroke="#2B3350" stroke-width="2.6" stroke-linecap="round"/>`; }
+      b += `<g class="tally" data-n="${n}"><text x="8" y="${y + 17}" font-size="14" font-weight="700" fill="${OUT}">${label}</text>${s}</g>${i ? `<path d="M2 ${y - 4} H298" stroke="#B8C2D9"/>` : ''}`; });
+    return svgOf(300, H + 2, b, 'Strichliste');
   }
   // label on the chart, what the question says, and the question
   const DATA = [

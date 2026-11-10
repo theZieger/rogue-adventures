@@ -8,83 +8,149 @@ const K12E = (() => {
 
   /* ---------- Zeichnungen ---------- */
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
-  const INK = '#1C2541', WOOD = '#E9A15B', DARK = '#8A5A2B', METAL = '#C9CEDD', GOLD = '#FFD25A', RED = '#E8344A', BLUE = '#7CC2FF', GREEN = '#4FC96A', WHITE = '#FFFFFF', PAPER = '#FFFDF5';
+  const INK = '#1C2541', WOOD = '#E9A15B', DARK = '#8A5A2B', EBONY = '#3B2A26', METAL = '#C9CEDD', GOLD = '#FFD25A', RED = '#E8344A', BLUE = '#7CC2FF', GREEN = '#4FC96A', FIR = '#2E9E57', WHITE = '#FFFFFF', PAPER = '#FFFDF5';
+  // every flat colour becomes a soft light-to-shade gradient of itself (defs added by pic and optPic)
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const USED = new Set();
+  const fl = (c) => (/^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c);
   const ln = (d, w, c) => `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const sh = (d, fill, w) => `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
-  const rect = (x, y, w, h, fill, rx) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fill}" stroke="${INK}" stroke-width="2.5"/>`;
-  const circ = (cx, cy, r, fill, w) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
-  // one outline around overlapping shapes: thick ink first, the fill on top
-  const union = (shapes, fill) => `<g fill="${INK}" stroke="${INK}" stroke-width="5">${shapes}</g><g fill="${fill}">${shapes}</g>`;
+  const sh = (d, fill, w) => `<path d="${d}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
+  const rect = (x, y, w, h, fill, rx, sw) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${sw || 2.5}"/>`;
+  const circ = (cx, cy, r, fill, w) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
+  const oval = (cx, cy, rx, ry, fill, w, rot) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
+  // white gloss: a soft spot or a stroke along the lit edge
+  const gloss = (cx, cy, rx, ry, rot) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
+  const lit = (d, w) => `<path d="${d}" fill="none" stroke="#fff" stroke-width="${w || 2}" stroke-linecap="round" opacity=".6"/>`;
   const tube = (d, w, c) => ln(d, w + 4) + ln(d, w, c);
   const star = (cx, cy, R, r) => 'M' + Array.from({ length: 10 }, (_, i) => { const a = Math.PI / 5 * i - Math.PI / 2, d = i % 2 ? r : R; return `${(cx + d * Math.cos(a)).toFixed(1)} ${(cy + d * Math.sin(a)).toFixed(1)}`; }).join(' L') + 'Z';
+  const flame = (x, y) => sh(`M${x} ${y - 13} Q${x + 6} ${y - 5} ${x} ${y} Q${x - 6} ${y - 5} ${x} ${y - 13} Z`, '#FFB347', 2) + `<path d="M${x} ${y - 8} Q${x + 2.5} ${y - 3} ${x} ${y - 1} Q${x - 2.5} ${y - 3} ${x} ${y - 8} Z" fill="#FFF3B0"/>`;
+  const defs = () => `<defs>${[...USED].map((c) => `<linearGradient id="ke${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
   // question picture with a paper frame, answer pictures plain; labels never name the answer
-  const pic = (inner, label) => `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}"><rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
-  const optPic = (inner, label) => `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${inner}</svg>`;
+  const pic = (inner, label) => `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}">${defs()}<rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
+  const optPic = (inner, label) => `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${defs()}${inner}</svg>`;
   // smaller copy standing on the same ground line (hoch und tief)
   const scaled = (inner, s) => `<g transform="translate(${50 - 50 * s} ${100 - 100 * s}) scale(${s})">${inner}</g>`;
 
   /* Gesichter */
   const SKIN = '#FFD9A8';
-  const HAIR = sh('M14 46 Q18 10 50 11 Q82 10 86 46 Q76 27 50 27 Q24 27 14 46 Z', DARK);
-  const DOTS = circ(37, 54, 4, INK, 0) + circ(63, 54, 4, INK, 0);
+  const HAIR = sh('M14 46 Q18 10 50 11 Q82 10 86 46 Q76 27 50 27 Q24 27 14 46 Z', DARK) + lit('M30 20 Q40 15 52 15', 2.5);
+  const HEAD = (skin) => circ(11, 56, 7, skin) + circ(89, 56, 7, skin) + circ(50, 52, 40, skin, 3) + HAIR;
+  const DOTS = circ(37, 54, 4.5, INK, 0) + circ(63, 54, 4.5, INK, 0) + '<circle cx="38.5" cy="52.5" r="1.4" fill="#fff"/><circle cx="64.5" cy="52.5" r="1.4" fill="#fff"/>';
+  const CHEEKS = '<circle cx="27" cy="66" r="5.5" fill="#FF8A8A" opacity=".5"/><circle cx="73" cy="66" r="5.5" fill="#FF8A8A" opacity=".5"/>';
   const FACES = {
-    froehlich: { word: 'fröhlich', svg: circ(50, 52, 40, SKIN, 3) + HAIR + DOTS + sh('M32 66 Q50 88 68 66 Z', '#B8323F') + `<circle cx="27" cy="66" r="5" fill="#FF8A8A" opacity=".6"/><circle cx="73" cy="66" r="5" fill="#FF8A8A" opacity=".6"/>` },
-    traurig: { word: 'traurig', svg: circ(50, 52, 40, SKIN, 3) + HAIR + DOTS + ln('M28 46 L42 41') + ln('M58 41 L72 46') + ln('M36 78 Q50 67 64 78', 3.5) + sh('M33 60 Q28 69 33 72 Q38 69 33 60 Z', BLUE, 2) },
-    wuetend: { word: 'wütend', svg: circ(50, 52, 40, '#FFB08A', 3) + HAIR + DOTS + ln('M27 40 L43 48', 4.5) + ln('M57 48 L73 40', 4.5) + rect(35, 68, 30, 10, WHITE, 3) + ln('M35 73 H65', 1.5) + ln('M45 68 V78 M55 68 V78', 1.5) },
-    aengstlich: { word: 'ängstlich', svg: circ(50, 52, 40, SKIN, 3) + HAIR + circ(37, 54, 7, WHITE) + circ(63, 54, 7, WHITE) + circ(37, 55, 3, INK, 0) + circ(63, 55, 3, INK, 0) + ln('M29 40 Q36 35 43 40') + ln('M57 40 Q64 35 71 40') + ln('M36 75 q3.5 -4 7 0 t7 0 t7 0 t7 0') + sh('M84 38 Q80 46 84 49 Q88 46 84 38 Z', BLUE, 2) },
+    froehlich: { word: 'fröhlich', svg: HEAD(SKIN) + DOTS + ln('M30 44 Q37 40 44 44', 2.5) + ln('M56 44 Q63 40 70 44', 2.5) + sh('M32 65 Q50 90 68 65 Z', '#B8323F') + '<path d="M36 67 H64 Q62 71 50 71 Q38 71 36 67 Z" fill="#fff"/>' + CHEEKS },
+    traurig: { word: 'traurig', svg: HEAD(SKIN) + DOTS + ln('M28 46 L42 41') + ln('M58 41 L72 46') + ln('M36 78 Q50 67 64 78', 3.5) + sh('M33 60 Q28 69 33 72 Q38 69 33 60 Z', BLUE, 2) },
+    wuetend: { word: 'wütend', svg: HEAD('#FFB08A') + DOTS + ln('M27 40 L43 48', 4.5) + ln('M57 48 L73 40', 4.5) + rect(35, 68, 30, 10, WHITE, 3) + ln('M35 73 H65', 1.5) + ln('M45 68 V78 M55 68 V78', 1.5) },
+    aengstlich: { word: 'ängstlich', svg: HEAD(SKIN) + circ(37, 54, 7.5, WHITE) + circ(63, 54, 7.5, WHITE) + circ(37, 55, 3, INK, 0) + circ(63, 55, 3, INK, 0) + ln('M29 40 Q36 35 43 40') + ln('M57 40 Q64 35 71 40') + ln('M36 75 q3.5 -4 7 0 t7 0 t7 0 t7 0') + sh('M84 34 Q80 42 84 45 Q88 42 84 34 Z', BLUE, 2) },
   };
   const FACE_IDS = Object.keys(FACES);
 
   /* Zeichen der Feste */
   const FESTE = ['Geburtstag', 'Erntedank', 'St. Martin', 'Advent', 'Nikolaus', 'Weihnachten', 'Silvester', 'Ostern'];
+  const candle = (x, y, h, c) => rect(x - 4, y - h, 8, h, c, 1.5, 2) + lit(`M${x - 1.5} ${y - h + 3} V${y - 3}`, 1.5) + ln(`M${x} ${y - h} v-3`, 1.5) + flame(x, y - h - 2);
+  // Ähre: stalk and two rows of grains, tip at (x, y)
+  const ear = (x, y, rot) => `<g transform="rotate(${rot} ${x} ${y})">${ln(`M${x} ${y} V${y + 40}`, 2, '#B8862E')}${[0, 6, 12, 18].map((d) => oval(x - 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, -25) + oval(x + 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, 25)).join('')}${oval(x, y + 1, 2.4, 4, '#F2C14E', 1.2)}</g>`;
+  const heart = 'M0 0 C-4 -6 -17 -9 -17 -20 C-17 -27 -9 -30 -4.5 -26.5 Q-1.5 -24 0 -20 Q1.5 -24 4.5 -26.5 C9 -30 17 -27 17 -20 C17 -9 4 -6 0 0 Z';
   const SYMS = [
-    { id: 'kuchen', fest: 'Geburtstag', note: 'geburtstag', svg: `<ellipse cx="50" cy="88" rx="42" ry="6" fill="${METAL}" stroke="${INK}" stroke-width="2.5"/>` + rect(18, 54, 64, 32, '#FFB3D9', 4)
-      + sh('M18 58 Q18 52 24 52 H76 Q82 52 82 58 Q76 66 70 58 Q64 66 58 58 Q52 66 46 58 Q40 66 34 58 Q28 66 18 58 Z', WHITE)
-      + [30, 47, 64].map((x) => rect(x, 34, 6, 19, BLUE, 1) + sh(`M${x + 3} 20 Q${x + 9} 28 ${x + 3} 32 Q${x - 3} 28 ${x + 3} 20 Z`, GOLD, 2)).join('') },
-    { id: 'korb', fest: 'Erntedank', note: 'erntedank', svg: sh('M50 22 Q58 30 57 40 Q61 54 50 55 Q39 54 43 40 Q42 30 50 22 Z', '#C9E265') + circ(31, 44, 13, RED) + `<ellipse cx="70" cy="44" rx="15" ry="12" fill="#FF8A3D" stroke="${INK}" stroke-width="2.5"/>` + ln('M70 32 V56 M62 34 Q58 44 62 54 M78 34 Q82 44 78 54', 1.8) + ln('M31 31 Q32 26 36 24', 2.5, DARK) + ln('M70 32 Q71 27 74 26', 2.5, '#2E9E57')
-      + sh('M10 52 H90 L79 90 H21 Z', WOOD) + ln('M14 64 H86 M17 76 H83', 2) + ln('M30 52 L32 90 M50 52 V90 M70 52 L68 90', 2) },
-    { id: 'laterne', fest: 'St. Martin', note: 'martin', svg: ln('M50 30 V14 Q50 8 58 8 L92 4', 3, DARK) + ln('M38 32 Q50 18 62 32', 2) + circ(50, 60, 28, '#FF8A3D') + `<circle cx="50" cy="62" r="10" fill="${GOLD}" opacity=".9"/>` + `<ellipse cx="50" cy="60" rx="14" ry="28" fill="none" stroke="${INK}" stroke-width="1.5"/>` + ln('M50 32 V88', 1.5) + rect(37, 28, 26, 7, RED, 2) + rect(40, 85, 20, 6, RED, 2) },
-    { id: 'kranz', fest: 'Advent', note: 'advent', not: ['Weihnachten', 'Nikolaus'], svg: `<ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${INK}" stroke-width="18"/><ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="#2E9E57" stroke-width="13"/>`
-      + [[22, 80], [44, 87], [66, 64], [80, 76]].map(([x, y]) => circ(x, y, 3, RED, 1.5)).join('')
-      + [[32, 62], [68, 62], [24, 80], [76, 80]].map(([x, y]) => rect(x - 4, y - 24, 8, 24, RED, 1) + sh(`M${x} ${y - 36} Q${x + 6} ${y - 29} ${x} ${y - 25} Q${x - 6} ${y - 29} ${x} ${y - 36} Z`, GOLD, 2)).join('') },
-    { id: 'stiefel', fest: 'Nikolaus', note: 'nikolaus', not: ['Advent', 'Weihnachten'], svg: circ(40, 20, 10, '#FF8A3D') + ln('M66 24 L62 36', 3) + circ(67, 15, 9, '#FFB3D9') + sh('M30 28 H64 V62 L84 68 Q93 72 88 86 H30 Z', RED) + rect(25, 22, 44, 12, WHITE, 4) + rect(28, 84, 62, 7, INK, 3) },
-    { id: 'baum', fest: 'Weihnachten', note: 'weihnachten', not: ['Advent'], svg: rect(44, 80, 12, 12, DARK) + sh('M50 44 L86 82 H14 Z', '#2E9E57') + sh('M50 28 L77 62 H23 Z', '#3DB36A') + sh('M50 14 L68 44 H32 Z', GREEN)
-      + [[34, 74, RED], [62, 72, BLUE], [50, 56, GOLD], [40, 50, BLUE], [60, 38, RED]].map(([x, y, c]) => circ(x, y, 4, c, 1.5)).join('') + sh(star(50, 11, 10, 4.5), GOLD, 2) },
-    { id: 'klee', fest: 'Silvester', note: 'silvester', svg: ln('M50 52 Q55 76 68 92', 4.5, '#2E9E57') + union('<circle cx="37" cy="37" r="15"/><circle cx="63" cy="37" r="15"/><circle cx="37" cy="63" r="15"/><circle cx="63" cy="63" r="15"/>', GREEN) + ln('M50 50 L36 36 M50 50 L64 36 M50 50 L36 64 M50 50 L64 64', 1.8, '#2E9E57') },
-    { id: 'ei', fest: 'Ostern', note: 'ostern', svg: sh('M50 12 C70 12 80 44 78 62 C76 80 64 90 50 90 C36 90 24 80 22 62 C20 44 30 12 50 12 Z', GOLD) + ln('M24 56 L31 49 L38 56 L45 49 L52 56 L59 49 L66 56 L73 49 L76 52', 3, RED) + ln('M26 70 H74', 3.5, BLUE) + [[40, 32], [50, 26], [60, 32]].map(([x, y]) => circ(x, y, 3, GREEN, 0)).join('') },
+    { id: 'kuchen', fest: 'Geburtstag', note: 'geburtstag', svg: oval(50, 88, 44, 7, METAL) + rect(16, 54, 68, 32, '#FFB3D9', 5) + ln('M18 74 H82', 2.5, '#E86AA8')
+      + [24, 38, 52, 66, 78].map((x, i) => circ(x, 74, 2, i % 2 ? GOLD : BLUE, 1)).join('')
+      + sh('M16 59 Q16 52 23 52 H77 Q84 52 84 59 Q84 66 79 66 Q75 66 75 61 Q71 68 66 61 Q61 69 56 61 Q51 68 46 61 Q41 69 36 61 Q31 68 26 61 Q24 66 20 66 Q16 66 16 59 Z', WHITE)
+      + lit('M22 80 V60', 2.5) + [30, 50, 70].map((x, i) => candle(x, 54, 18, [BLUE, '#FF8A3D', GREEN][i])).join('') },
+    { id: 'korb', fest: 'Erntedank', note: 'erntedank', svg: ear(20, 6, -24) + ear(80, 6, 24) + ear(50, 2, 0)
+      + sh('M58 20 Q66 28 64 38 Q68 52 58 54 Q48 52 52 38 Q50 28 58 20 Z', '#C9E265') + ln('M58 20 Q58 16 62 14', 2.2, DARK) + gloss(55, 34, 2, 5)
+      + circ(32, 44, 13, RED) + ln('M32 31 Q33 26 37 24', 2.5, DARK) + gloss(27, 39, 3, 4.5, 30)
+      + oval(73, 45, 15, 12, '#FF8A3D') + ln('M73 33 V57 M65 35 Q61 45 65 55 M81 35 Q85 45 81 55', 1.6) + ln('M73 33 Q74 28 77 27', 2.5, FIR)
+      + sh('M8 52 H92 L80 92 H20 Z', WOOD) + ln('M12 65 H88 M16 78 H84', 2, DARK) + ln('M30 52 L33 92 M50 52 V92 M70 52 L67 92', 2, DARK) + rect(6, 48, 88, 8, '#D58A44', 4) + lit('M12 51 H88', 1.5) },
+    { id: 'laterne', fest: 'St. Martin', note: 'martin', svg: ln('M52 22 L66 8 L95 2', 3.5, DARK) + ln('M33 34 Q50 12 67 34', 1.8)
+      + oval(50, 60, 30, 27, '#FF8A3D') + `<ellipse cx="50" cy="62" rx="20" ry="18" fill="#FFD25A" opacity=".75"/><ellipse cx="50" cy="64" rx="10" ry="9" fill="#FFF3B0" opacity=".9"/>`
+      + rect(46.5, 62, 7, 12, WHITE, 1, 1.5) + flame(50, 60)
+      + `<path d="M50 33 Q30 60 50 87 M50 33 Q70 60 50 87 M50 33 Q12 60 50 87 M50 33 Q88 60 50 87" fill="none" stroke="#C85A1E" stroke-width="1.3"/>`
+      + rect(34, 29, 32, 8, RED, 3) + rect(36, 84, 28, 7, RED, 3) + lit('M38 32 H62', 1.5) + circ(66, 8, 2, METAL, 1.2) },
+    { id: 'kranz', fest: 'Advent', note: 'advent', not: ['Weihnachten', 'Nikolaus'], svg: `<ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${INK}" stroke-width="19"/><ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${fl(FIR)}" stroke-width="14"/>`
+      + `<path d="${Array.from({ length: 28 }, (_, i) => { const a = i * Math.PI / 14, x = 50 + 38 * Math.cos(a), y = 72 + 14 * Math.sin(a); return `M${(x - 4).toFixed(1)} ${(y - 3).toFixed(1)} L${(x + 3).toFixed(1)} ${(y + 3).toFixed(1)}`; }).join(' ')}" stroke="#7FD49A" stroke-width="1.4" stroke-linecap="round"/>`
+      + [[22, 62], [80, 64], [64, 85], [34, 85]].map(([x, y]) => circ(x, y, 3, RED, 1.5)).join('')
+      + [[33, 62], [67, 62], [24, 78], [76, 78]].map(([x, y]) => candle(x, y, 22, RED)).join('')
+      + sh('M50 84 Q38 76 38 84 Q38 92 50 86 Z M50 84 Q62 76 62 84 Q62 92 50 86 Z', '#C9283B', 2) + sh('M48 86 L43 97 L47 95 L49 98 L50 87 Z M52 86 L57 97 L53 95 L51 98 L50 87 Z', '#C9283B', 1.5) + circ(50, 85, 3, RED, 1.8) },
+    { id: 'stiefel', fest: 'Nikolaus', note: 'nikolaus', not: ['Advent', 'Weihnachten'], svg: tube('M36 34 V14 Q36 6 43 6 Q50 6 50 13', 4, WHITE) + ln('M36 30 l0 -4 M36 20 l0 -4 M39 8 l3 -2 M48 9 l2 2', 4, RED)
+      + circ(57, 24, 11, '#FF8A3D') + `<circle cx="57" cy="24" r="1.5" fill="${DARK}"/>` + gloss(53, 20, 3, 2.5, -30) + circ(72, 28, 9, RED) + ln('M72 19 Q73 15 76 14', 2, DARK) + gloss(69, 25, 2, 3, 30)
+      + sh('M28 30 H66 V64 L84 69 Q95 73 90 88 H28 Z', RED) + lit('M33 40 V82', 3) + rect(23, 24, 48, 13, WHITE, 6) + rect(26, 86, 66, 7, EBONY, 3) },
+    { id: 'baum', fest: 'Weihnachten', note: 'weihnachten', not: ['Advent'], svg: rect(44, 80, 12, 10, DARK) + rect(34, 88, 32, 8, RED, 2) + sh('M50 42 L88 82 H12 Z', FIR) + sh('M50 27 L78 62 H22 Z', '#3DB36A') + sh('M50 13 L69 44 H31 Z', GREEN)
+      + ln('M27 72 Q50 80 73 70 M33 54 Q50 60 66 52', 2, GOLD)
+      + [[32, 76, RED], [62, 74, BLUE], [50, 57, GOLD], [38, 50, BLUE], [61, 38, RED], [44, 34, GOLD]].map(([x, y, c]) => circ(x, y, 4.5, c, 1.5) + '<circle cx="' + (x - 1.5) + '" cy="' + (y - 1.5) + '" r="1.3" fill="#fff" opacity=".8"/>').join('') + sh(star(50, 11, 11, 4.8), GOLD, 2) },
+    { id: 'klee', fest: 'Silvester', note: 'silvester', svg: ln('M50 48 Q56 76 70 94', 5, INK) + ln('M50 48 Q56 76 70 94', 2.5, FIR)
+      + [45, 135, 225, 315].map((a) => `<g transform="translate(50 46) rotate(${a})">${sh(heart, GREEN, 2.5)}${ln('M0 -3 V-19', 1.5, '#2E9E57')}${lit('M-12 -22 Q-11 -26 -7 -26', 1.8)}</g>`).join('') + circ(50, 46, 2.5, '#2E9E57', 1) },
+    { id: 'ei', fest: 'Ostern', note: 'ostern', svg: sh('M50 10 C71 10 82 44 80 62 C78 81 65 92 50 92 C35 92 22 81 20 62 C18 44 29 10 50 10 Z', GOLD) + ln('M23 54 L30 47 L37 54 L44 47 L51 54 L58 47 L65 54 L72 47 L78 53', 3.5, RED)
+      + ln('M22 70 Q50 76 78 70', 4, BLUE) + [[40, 30], [50, 23], [60, 30], [35, 82], [50, 85], [65, 82]].map(([x, y]) => circ(x, y, 3, GREEN, 1.2)).join('') + gloss(34, 30, 5, 10, 20) },
   ];
   const symFits = (a, b) => a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
 
   /* Instrumente */
   // Handtrommel: flat wooden frame with a skin, played with the hand or a soft beater
-  const drum = sh('M10 48 V60 A40 15 0 0 0 90 60 V48 Z', WOOD) + [18, 34, 50, 66, 82].map((x) => circ(x, x === 50 ? 75 : x === 34 || x === 66 ? 73 : 68, 2, METAL, 1.2)).join('') + `<ellipse cx="50" cy="48" rx="40" ry="15" fill="#FBEBC8" stroke="${INK}" stroke-width="2.5"/><ellipse cx="50" cy="48" rx="33" ry="11" fill="none" stroke="#E6CF9E" stroke-width="1.5"/>`;
-  const recorder = `<g transform="rotate(35 50 50)">` + rect(44, 18, 12, 70, '#F3D6A4', 4) + rect(42, 6, 16, 16, WOOD, 5) + `<rect x="47" y="14" width="6" height="4" fill="${INK}"/>` + [29, 36, 43, 50, 57, 64, 73].map((y) => circ(50, y, 2.4, INK, 0)).join('') + sh('M43 84 L40 95 H60 L57 84 Z', WOOD) + '</g>';
-  const strBody = union('<ellipse cx="40" cy="44" rx="13" ry="13"/><ellipse cx="40" cy="68" rx="16" ry="16"/><rect x="33" y="46" width="14" height="20"/>', '#C8692E')
-    + rect(37, 14, 6, 42, '#3B2A1E', 2) + circ(40, 10, 5, '#C8692E') + ln('M33 60 q-2.5 4 0 9 M47 60 q2.5 4 0 9', 1.8) + rect(34, 64, 12, 3, '#F3D6A4') + sh('M37 74 H43 L42 82 H38 Z', '#3B2A1E', 1.5) + ln('M34.5 17 H37 M34.5 22 H37 M43 17 H45.5 M43 22 H45.5', 2.2) + ln('M38.2 14 V76 M39.4 14 V76 M40.6 14 V76 M41.8 14 V76', 0.6, '#F3D6A4');
+  const drum = sh('M8 46 V58 A42 16 0 0 0 92 58 V46 Z', WOOD) + ln('M8 52 A42 16 0 0 0 92 52', 1.5, DARK)
+    + [18, 34, 50, 66, 82].map((x) => { const y = 55 + 16 * Math.sqrt(1 - ((x - 50) / 42) ** 2); return rect(x - 2.5, (y - 4).toFixed(1), 5, 8, METAL, 1, 1.2); }).join('')
+    + oval(50, 46, 42, 16, '#FBEBC8') + `<ellipse cx="50" cy="46" rx="35" ry="12" fill="none" stroke="#E2C78F" stroke-width="1.5"/>` + lit('M20 41 Q32 34 50 33', 2.5);
+  const recorder = '<g transform="rotate(35 50 50)">' + sh('M44.5 80 L43.5 93 Q50 97 56.5 93 L55.5 80 Z', '#E9C08A') + rect(45, 26, 10, 56, '#F3D6A4', 2)
+    + sh('M44 28 L44 14 Q45 5 50 3 Q55 5 56 14 L56 28 Z', '#E9C08A') + sh('M46.5 17 H53.5 L52.5 21 H47.5 Z', INK, 1) + rect(43.5, 26, 13, 4, '#D9A766', 2, 1.8) + rect(44, 78, 12, 4, '#D9A766', 2, 1.8)
+    + `<ellipse cx="45.3" cy="34" rx="0.9" ry="2.2" fill="${DARK}"/>`
+    + [36, 42, 48, 57, 63].map((y) => `<circle cx="50" cy="${y}" r="2.1" fill="${INK}"/>`).join('') + [[69, 50], [87, 51.5]].map(([y, x]) => `<circle cx="${x - 1.6}" cy="${y}" r="1.2" fill="${INK}"/><circle cx="${x + 1.6}" cy="${y}" r="1.2" fill="${INK}"/>`).join('')
+    + lit('M47 31 V76', 1.5) + '</g>';
+  // violin (Geige) without bow, 42 wide 90 tall, standing on y 92
+  const violinBody = 'M42 42 C49 42 55 45 55 52 C55 57 52 59 50 60 Q48 64 50 69 C54 70 58 74 58 80 C58 88 51 92 42 92 C33 92 26 88 26 80 C26 74 30 70 34 69 Q36 64 34 60 C32 59 29 57 29 52 C29 45 35 42 42 42 Z';
+  const violin = sh(violinBody, '#C8692E') + lit('M31 51 Q32 46 37 44 M29 78 Q29 74 32 72', 2)
+    + ln('M35 63 Q32.5 69 35.5 75 M49 63 Q51.5 69 48.5 75', 1.4) + [[35, 63], [35.5, 75], [49, 63], [48.5, 75]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="${INK}"/>`).join('')
+    + sh('M39.5 10 H44.5 V17 H39.5 Z', '#A9521F', 1.8) + circ(42, 6, 4.2, '#A9521F', 1.8) + ln('M42 6 m-2 0 a2 2 0 1 1 2 2', 1) + [[37, 11], [47, 11], [37, 15], [47, 15]].map(([x, y]) => oval(x, y, 2.6, 1.4, EBONY, 1)).join('')
+    + sh('M40 15 L44 15 L45.2 64 L38.8 64 Z', EBONY, 1.8) + sh('M39.5 78 H44.5 L45.3 88 Q42 90.5 38.7 88 Z', EBONY, 1.8) + sh('M27.5 84 Q29 79 36 80 Q38.5 85 35.5 89 Q30.5 90 27.5 84 Z', EBONY, 1.5)
+    + sh('M36.5 75 H47.5 L46.5 71.5 H37.5 Z', '#F3D6A4', 1.4) + ln([0, 1, 2, 3].map((i) => `M${(40.9 + i * 0.73).toFixed(2)} 15 L${(39.6 + i * 1.6).toFixed(2)} 79`).join(' '), 0.6, '#EDE6D6');
+  // bow: stick, light hair, frog at the lower end
+  const bow = tube('M62 4 L87 93', 2, DARK) + ln('M65.5 7 L84.5 85', 3, INK) + ln('M65.5 7 L84.5 85', 1.6, '#F7F1E1') + sh('M61 2.5 L66.5 3 L66.8 8.5 L63.3 8 Z', '#F3D6A4', 1.2) + rect(81, 82, 6, 9, EBONY, 1.5, 1.5) + `<circle cx="84" cy="86.5" r="1.3" fill="#fff"/>`;
+  // Kontrabass: much taller, sloping shoulders, stands on its spike
+  const bass = sh('M50 36 C53 36 55 37 57 40 L64 51 C67 55 66 58 63 61 Q60 65 62 69 C69 70 73 75 73 81 C73 89 62 93 50 93 C38 93 27 89 27 81 C27 75 31 70 38 69 Q40 65 37 61 C34 58 33 55 36 51 L43 40 C45 37 47 36 50 36 Z', '#B55A24')
+    + lit('M38 53 L44 43 M31 81 Q31 76 35 73', 2.2) + ln('M42.5 66 Q40 72 43 78 M57.5 66 Q60 72 57 78', 1.5) + [[42.5, 66], [43, 78], [57.5, 66], [57, 78]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="${INK}"/>`).join('')
+    + ln('M50 93 V99', 2.5) + sh('M47.5 6 H52.5 V15 H47.5 Z', '#8F431A', 1.8) + circ(50, 4, 3.4, '#8F431A', 1.6) + [[44.5, 8.5], [55.5, 8.5], [44.5, 12.5], [55.5, 12.5]].map(([x, y]) => oval(x, y, 2.4, 1.3, METAL, 1)).join('')
+    + sh('M48.3 13 H51.7 L53.2 67 H46.8 Z', EBONY, 1.8) + sh('M47 80 H53 L54 89 Q50 91.5 46 89 Z', EBONY, 1.8) + sh('M44 76 H56 L55 72.5 H45 Z', '#F3D6A4', 1.4)
+    + ln([0, 1, 2, 3].map((i) => `M${(48.9 + i * 0.73).toFixed(2)} 13 L${(47.4 + i * 1.7).toFixed(2)} 81`).join(' '), 0.7, '#EDE6D6');
   const BARS = ['#E8344A', '#FF8A3D', '#FFD25A', '#4FC96A', '#2BB3A0', '#7CC2FF', '#5B6CFF', '#B07CFF'];
+  // Glockenspiel bars: long and low on the left, short and high on the right
+  const glock = sh('M5 28 L95 40 L95 46 L5 36 Z', DARK, 2) + sh('M5 78 L95 66 L95 72 L5 86 Z', DARK, 2)
+    + BARS.map((c, i) => { const x = 10 + i * 10.4, t = 32 + (x - 5) * 0.133 - 5, b = 82 - (x - 5) * 0.155 + 5; return rect(x, t.toFixed(1), 8, (b - t).toFixed(1), c, 1.5, 2) + lit(`M${x + 2.2} ${(t + 4).toFixed(1)} V${(b - 4).toFixed(1)}`, 1.3) + `<circle cx="${x + 4}" cy="${(t + 4.5).toFixed(1)}" r="1.1" fill="${INK}"/><circle cx="${x + 4}" cy="${(b - 4.5).toFixed(1)}" r="1.1" fill="${INK}"/>`; }).join('');
+  const mallet = (x1, y1, x2, y2) => tube(`M${x1} ${y1} L${x2} ${y2}`, 2.4, WOOD) + circ(x1, y1, 5, RED, 2) + gloss(x1 - 1.5, y1 - 1.5, 1.5, 1.2);
   const INSTR = [
-    { id: 'trommel', name: 'Handtrommel', acc: 'die Handtrommel', fam: 'schlag', how: 'schlagen', svg: drum + tube('M64 40 L90 12', 3, DARK) + circ(61, 43, 6.5, RED) },
-    { id: 'triangel', name: 'Triangel', acc: 'die Triangel', fam: 'schlag', how: 'schlagen', svg: ln('M50 18 V5', 2) + tube('M43 30 L16 78 L84 78 L50 18', 4, METAL) + tube('M72 24 L96 10', 3.5, METAL) },
-    { id: 'klanghoelzer', name: 'Klanghölzer', acc: 'die Klanghölzer', fam: 'schlag', how: 'schlagen', svg: '<g transform="rotate(-30 50 50)">' + [36, 54].map((y) => rect(8, y, 84, 11, WOOD, 5.5) + ln(`M18 ${y + 4} H40 M56 ${y + 7} H82`, 1.2, DARK)).join('') + '</g>' },
-    { id: 'rassel', name: 'Rassel', acc: 'die Rassel', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: '<g transform="rotate(-30 50 55)">' + rect(45, 56, 10, 38, DARK, 4) + `<ellipse cx="50" cy="36" rx="21" ry="25" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>` + ln('M31 38 L37 32 L43 38 L49 32 L55 38 L61 32 L69 38', 2.5, RED) + [[42, 22], [56, 21], [45, 50], [58, 48]].map(([x, y]) => circ(x, y, 2.5, INK, 0)).join('') + '</g>' },
-    { id: 'schellenkranz', name: 'Schellenkranz', acc: 'den Schellenkranz', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: `<circle cx="50" cy="50" r="32" fill="none" stroke="${INK}" stroke-width="16"/><circle cx="50" cy="50" r="32" fill="none" stroke="${WOOD}" stroke-width="11"/>` + [0, 60, 120, 180, 240, 300].map((a) => { const x = 50 + 32 * Math.cos(a * Math.PI / 180), y = 50 + 32 * Math.sin(a * Math.PI / 180); return circ(x.toFixed(1), y.toFixed(1), 6.5, METAL, 2) + circ(x.toFixed(1), y.toFixed(1), 1.8, INK, 0); }).join('') },
-    { id: 'glockenspiel', name: 'Glockenspiel', acc: 'das Glockenspiel', fam: 'schlag', how: 'schlagen', notFam: ['tasten'], notHow: ['Tasten drücken'], svg: tube('M8 36 L90 44', 4, DARK) + tube('M8 76 L90 66', 4, DARK) + BARS.map((c, i) => rect((12 + i * 9.6).toFixed(1), (26 + i * 2.6).toFixed(1), 7.5, (58 - i * 5.2).toFixed(1), c, 1.5)).join('') + tube('M80 91 L95 96', 3, WOOD) + circ(75, 89, 5.5, RED) },
+    { id: 'trommel', name: 'Handtrommel', acc: 'die Handtrommel', fam: 'schlag', how: 'schlagen', svg: drum + tube('M64 40 L90 12', 3, DARK) + circ(61, 43, 7, RED) + gloss(59, 41, 2, 1.5) },
+    { id: 'triangel', name: 'Triangel', acc: 'die Triangel', fam: 'schlag', how: 'schlagen', svg: ln('M50 20 Q45 10 50 4 Q55 10 50 20', 1.8, RED) + rect(45, 1, 10, 5, RED, 2, 1.5)
+      + tube('M25 82 L84 82 L50 22 L18 77', 4, METAL) + lit('M50 27 L80 79', 1.2) + tube('M58 68 L92 46', 2.5, METAL) + rect(84, 45, 12, 6, EBONY, 3, 1.5) },
+    { id: 'klanghoelzer', name: 'Klanghölzer', acc: 'die Klanghölzer', fam: 'schlag', how: 'schlagen', svg: '<g transform="rotate(-28 50 50)">' + [33, 55].map((y) => rect(6, y, 88, 12, WOOD, 6) + oval(88, y + 6, 3, 6, '#F6CC94', 1.8) + lit(`M14 ${y + 3.5} H80`, 1.8) + ln(`M20 ${y + 8} H44 M54 ${y + 8.5} H74`, 1, DARK)).join('') + '</g>' },
+    { id: 'rassel', name: 'Rassel', acc: 'die Rassel', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: '<g transform="rotate(-30 50 55)">' + rect(45, 56, 10, 38, DARK, 4) + ln('M45 66 H55 M45 70 H55', 1.5) + oval(50, 35, 22, 26, '#FF8A3D')
+      + ln('M29 37 L35 31 L41 37 L47 31 L53 37 L59 31 L65 37 L71 33', 3, GOLD) + [[41, 21], [57, 20], [43, 49], [57, 48], [50, 14]].map(([x, y]) => circ(x, y, 2.4, GREEN, 1)).join('') + gloss(40, 25, 4, 7, 20) + '</g>' },
+    { id: 'schellenkranz', name: 'Schellenkranz', acc: 'den Schellenkranz', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: `<path d="M50 14 a36 36 0 1 0 0.01 0 Z M50 27 a23 23 0 1 0 0.01 0 Z" fill="${fl(WOOD)}" fill-rule="evenodd" stroke="${INK}" stroke-width="2.5"/>` + lit('M22 36 Q30 22 44 17', 2.2)
+      + [0, 72, 144, 216, 288].map((a) => `<g transform="translate(${(50 + 29.5 * Math.cos((a - 90) * Math.PI / 180)).toFixed(1)} ${(50 + 29.5 * Math.sin((a - 90) * Math.PI / 180)).toFixed(1)}) rotate(${a})">${rect(-9, -5, 18, 10, '#6B3E1C', 1.5, 1.5)}${circ(-3.2, 0, 4.6, METAL, 1.5)}${circ(3.2, 0, 4.6, METAL, 1.5)}${ln('M-9 0 H9', 1)}</g>`).join('') },
+    { id: 'glockenspiel', name: 'Glockenspiel', acc: 'das Glockenspiel', fam: 'schlag', how: 'schlagen', notFam: ['tasten'], notHow: ['Tasten drücken'], svg: glock + mallet(62, 90, 96, 80) + mallet(74, 96, 98, 90) },
     { id: 'blockfloete', name: 'Blockflöte', acc: 'die Blockflöte', fam: 'blas', how: 'blasen', svg: recorder },
-    { id: 'trompete', name: 'Trompete', acc: 'die Trompete', fam: 'blas', how: 'blasen', notHow: ['Tasten drücken'], svg: tube('M30 52 V66 H66 V52', 4, GOLD) + rect(8, 46, 56, 6, GOLD, 2) + [34, 44, 54].map((x) => rect(x, 32, 7, 22, GOLD, 1) + rect(x - 1, 27, 9, 5, METAL, 1) + circ(x + 3.5, 24, 3, METAL, 2)).join('') + sh('M60 46 L91 30 Q96 49 91 68 L60 52 Z', GOLD) + sh('M3 42 L10 46 V52 L3 56 Z', METAL) },
-    { id: 'gitarre', name: 'Gitarre', acc: 'die Gitarre', fam: 'saiten', how: 'zupfen', notHow: ['schlagen', 'streichen'], svg: rect(44, 3, 12, 14, DARK, 3) + [6, 10, 14].map((y) => circ(41, y, 1.8, METAL, 1) + circ(59, y, 1.8, METAL, 1)).join('') + rect(45.5, 15, 9, 35, DARK, 1)
-      + union('<circle cx="50" cy="50" r="15"/><circle cx="50" cy="74" r="21"/>', WOOD) + circ(50, 58, 6.5, INK, 0) + rect(41, 79, 18, 4, DARK, 1) + ln('M46.6 6 V81 M48 6 V81 M49.4 6 V81 M50.8 6 V81 M52.2 6 V81 M53.6 6 V81', 0.6, PAPER) },
-    { id: 'geige', name: 'Geige', acc: 'die Geige', fam: 'saiten', how: 'streichen', notHow: ['zupfen'], svg: strBody + tube('M62 6 L84 94', 2.5, DARK) + ln('M66 8 L87 90', 1.2, '#BFB7A8') + rect(80, 84, 7, 9, '#3B2A1E', 1) },
-    { id: 'klavier', name: 'Klavier', acc: 'das Klavier', fam: 'tasten', how: 'Tasten drücken', notFam: ['saiten', 'schlag'], notHow: ['schlagen'], svg: rect(10, 14, 80, 46, '#6B3E26', 3) + rect(22, 22, 56, 18, DARK, 2) + rect(12, 72, 6, 20, '#6B3E26') + rect(82, 72, 6, 20, '#6B3E26') + rect(6, 56, 88, 16, WHITE, 1)
-      + ln(Array.from({ length: 10 }, (_, i) => `M${14 + i * 8} 56 V72`).join(' '), 1.2) + [1, 2, 4, 5, 6, 8, 9].map((i) => `<rect x="${3.5 + i * 8}" y="56" width="5" height="9" fill="${INK}"/>`).join('') },
+    { id: 'trompete', name: 'Trompete', acc: 'die Trompete', fam: 'blas', how: 'blasen', notHow: ['Tasten drücken'], svg: tube('M14 48 H78 Q86 48 86 55 Q86 62 78 62 H66', 3.5, GOLD) + tube('M38 58 H26 Q16 58 16 47 Q16 36 26 36 H62', 4, GOLD)
+      + sh('M60 33.5 C72 33 82 27 90 17 L90 55 C82 45 72 39 60 38.5 Z', GOLD) + oval(90, 36, 4.5, 19, '#E9B33A') + lit('M64 33 Q78 30 87 21', 1.5)
+      + tube('M42 66 V72 Q42 76 46 76 H50 Q54 76 54 72 V66', 3, GOLD)
+      + [36, 46, 56].map((x) => rect(x, 29, 8, 37, GOLD, 2, 2) + rect(x - 0.5, 63, 9, 4, '#E9B33A', 1, 1.5) + rect(x + 2.5, 21, 3, 8, METAL, 0.5, 1.2) + oval(x + 4, 20, 5, 2.2, WHITE, 1.5) + lit(`M${x + 2.3} 33 V60`, 1.3)).join('')
+      + sh('M2 44 L6 46 L15 47 V49 L6 50 L2 52 Z', METAL, 1.8) },
+    { id: 'gitarre', name: 'Gitarre', acc: 'die Gitarre', fam: 'saiten', how: 'zupfen', notHow: ['schlagen', 'streichen'], svg: [6, 10.5, 15].map((y) => oval(38.5, y, 2.6, 1.6, METAL, 1) + oval(61.5, y, 2.6, 1.6, METAL, 1)).join('')
+      + sh('M43 2 H57 L56 18 H44 Z', '#6B3E1C', 2) + [6, 10.5, 15].map((y) => `<circle cx="46.5" cy="${y}" r="1" fill="${METAL}"/><circle cx="53.5" cy="${y}" r="1" fill="${METAL}"/>`).join('')
+      + rect(45.5, 18, 9, 34, '#6B3E1C', 1, 2) + ln([22, 25.8, 29.4, 32.8, 36, 39, 41.8, 44.4].map((y) => `M46 ${y} H54`).join(' '), 1, '#D7DCE8') + rect(44.5, 17, 11, 2.2, '#F3EBD8', 0.5, 1)
+      + sh('M50 37.5 C59 37.5 65.5 44 65.5 52 C65.5 58 62 61 61.5 64 C61.5 66 71 69 71 77 C71 89 61 96 50 96 C39 96 29 89 29 77 C29 69 38.5 66 38.5 64 C38 61 34.5 58 34.5 52 C34.5 44 41 37.5 50 37.5 Z', '#F0B46A') + lit('M38 50 Q39 44 44 41 M33 80 Q33 73 37 69', 2)
+      + rect(46, 48, 8, 6, '#6B3E1C', 1, 1.5) + circ(50, 61, 8.5, 'none', 1.5) + circ(50, 61, 6.5, '#2A1A10', 1.5) + rect(41, 79, 18, 4.5, '#6B3E1C', 1.5, 1.8) + ln('M43 80.3 H57', 1, '#F3EBD8')
+      + ln([0, 1, 2, 3, 4, 5].map((i) => `M${(46.6 + i * 1.36).toFixed(2)} 18 V80.5`).join(' '), 0.6, '#F3EBD8') },
+    { id: 'geige', name: 'Geige', acc: 'die Geige', fam: 'saiten', how: 'streichen', notHow: ['zupfen'], svg: violin + bow },
+    { id: 'klavier', name: 'Klavier', acc: 'das Klavier', fam: 'tasten', how: 'Tasten drücken', notFam: ['saiten', 'schlag'], notHow: ['schlagen'], svg: rect(10, 12, 80, 44, '#6B3E26', 3) + rect(6, 7, 88, 7, '#7E4A2E', 2) + rect(20, 19, 60, 20, '#8A5536', 2, 2)
+      + rect(38, 21, 24, 15, PAPER, 1, 1.2) + ln('M41 25 H59 M41 29 H59 M41 33 H59', 0.7, '#9AA3B8') + `<circle cx="45" cy="29" r="1.4" fill="${INK}"/><circle cx="52" cy="25" r="1.4" fill="${INK}"/>` + lit('M14 16 H86', 1.5)
+      + rect(6, 52, 88, 6, '#5B3420', 1, 2) + rect(8, 57, 84, 15, WHITE, 1, 2) + ln(Array.from({ length: 13 }, (_, i) => `M${14 + i * 6} 57 V72`).join(' '), 1)
+      + [0, 1, 3, 4, 5, 7, 8, 10, 11, 12].map((i) => `<rect x="${(12.2 + i * 6).toFixed(1)}" y="57" width="3.6" height="9" rx=".6" fill="${INK}"/>`).join('')
+      + rect(10, 72, 7, 22, '#6B3E26', 1, 2) + rect(83, 72, 7, 22, '#6B3E26', 1, 2) + rect(17, 80, 66, 12, '#5B3420', 1, 2) + rect(43, 89, 5, 4, GOLD, 1, 1.2) + rect(52, 89, 5, 4, GOLD, 1, 1.2) },
   ];
   const FAM = { saiten: 'Saiteninstrument', blas: 'Blasinstrument', schlag: 'Schlaginstrument', tasten: 'Tasteninstrument' };
   const HOWS = ['zupfen', 'streichen', 'blasen', 'schlagen', 'schütteln', 'Tasten drücken'];
-  // hoch und tief: the same drawing small and big; the long bar of the Glockenspiel sounds lower
-  const bar = (w) => rect(50 - w / 2, 42, w, 16, BLUE, 3) + circ(50 - w / 2 + 6, 50, 2, INK, 0) + circ(50 + w / 2 - 6, 50, 2, INK, 0);
+  // hoch und tief: the same drawing small and big; the long bar of the Glockenspiel sounds lower; Geige against Kontrabass
+  const bar = (w) => rect(50 - w / 2, 42, w, 16, BLUE, 3) + lit(`M${50 - w / 2 + 4} 46 H${50 + w / 2 - 4}`, 1.5) + circ(50 - w / 2 + 6, 50, 2, INK, 0) + circ(50 + w / 2 - 6, 50, 2, INK, 0);
   const PAIRS = [
     { id: 'trommel', q: 'Welche Trommel', small: scaled(drum, 0.55), big: drum },
     { id: 'floete', q: 'Welche Flöte', small: scaled(recorder, 0.55), big: recorder },
-    { id: 'bass', q: 'Welches Instrument', small: scaled(strBody, 0.5), big: strBody + ln('M40 84 V97', 2.5) },
+    { id: 'bass', q: 'Welches Instrument', small: `<g transform="translate(32.4 57.5) scale(.42)">${violin}</g>`, big: bass },
     { id: 'platte', q: 'Welche Platte', small: bar(36), big: bar(84) },
   ];
 
