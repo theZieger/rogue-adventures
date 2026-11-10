@@ -500,23 +500,23 @@
   "config": "14e1c93b1e80bcea"
  },
  "laengstenacht-boss": {
-  "raw": "8a6b4475b271ba0f",
-  "out": "b9f8cfbed9189358",
+  "raw": "926bf3d6399e6c06",
+  "out": "bf6642543579097e",
   "config": "14e1c93b1e80bcea"
  },
  "laengstenacht-boss-enemy": {
-  "raw": "23813544a0743a31",
-  "out": "6cd4bf783ea04600",
+  "raw": "842499c4ce7fa1b8",
+  "out": "fe647db25f94de7f",
   "config": "14e1c93b1e80bcea"
  },
  "laerm": {
-  "raw": "87f65d1d048b2e51",
-  "out": "2859aa2d76baff2e",
+  "raw": "742d4a870b15791e",
+  "out": "6bcd86c9e7c79eea",
   "config": "14e1c93b1e80bcea"
  },
  "lampenfieber": {
-  "raw": "356fb441ef651e10",
-  "out": "109fb17dbf92a029",
+  "raw": "be3f22d8dfca3cfb",
+  "out": "872c8c0ace2af1ea",
   "config": "14e1c93b1e80bcea"
  },
  "lavamolch": {
@@ -585,8 +585,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "moewe": {
-  "raw": "4e8d57c22c2d3469",
-  "out": "000449031fee7121",
+  "raw": "7b3b8e180d40adb9",
+  "out": "5765dcf3d8402216",
   "config": "14e1c93b1e80bcea"
  },
  "moorschlund-boss": {
@@ -645,13 +645,13 @@
   "config": "14e1c93b1e80bcea"
  },
  "neidhammel": {
-  "raw": "832fd54d5847c880",
-  "out": "5e24ef4f0e292367",
+  "raw": "e8abc5e8cf926087",
+  "out": "074696692e9b6261",
   "config": "14e1c93b1e80bcea"
  },
  "neidwurm": {
-  "raw": "2101e0f61b83bcfa",
-  "out": "f72debdf02ebed10",
+  "raw": "da70e197d9de1cab",
+  "out": "7e430e10dde5086d",
   "config": "14e1c93b1e80bcea"
  },
  "nieselregen": {
@@ -920,8 +920,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "spinnennetz": {
-  "raw": "828f58c57ec9bd76",
-  "out": "2dfac31feb2c3a46",
+  "raw": "35982bdbe84e5c09",
+  "out": "cf5e445fe648fb8d",
   "config": "14e1c93b1e80bcea"
  },
  "spitzer-elite": {
@@ -980,8 +980,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "taube": {
-  "raw": "c0a84c1ce2cbcd69",
-  "out": "4e0044d7e4baadd3",
+  "raw": "e16c3c577acdf23d",
+  "out": "bfb3823cd41cd9d2",
   "config": "14e1c93b1e80bcea"
  },
  "teapot-0": {
@@ -1000,8 +1000,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "teefleck": {
-  "raw": "d2f92ef0ef41ac7f",
-  "out": "ffc86e6cb4733a91",
+  "raw": "00e1f7813b5e5330",
+  "out": "39bfdb5e048fb521",
   "config": "14e1c93b1e80bcea"
  },
  "telefonzelle": {
@@ -1090,8 +1090,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "vorurteil": {
-  "raw": "af6f053be8583130",
-  "out": "4dbb2a8cf329fff7",
+  "raw": "a61b4f4699c45811",
+  "out": "18eb2080e447e528",
   "config": "14e1c93b1e80bcea"
  },
  "wappenloewe-boss": {
@@ -1125,8 +1125,8 @@
   "config": "14e1c93b1e80bcea"
  },
  "wuehlmaus": {
-  "raw": "329469546abf93c6",
-  "out": "c71f29ac57cd4895",
+  "raw": "15ad55416b71e41c",
+  "out": "baeabfdc94f17a9b",
   "config": "14e1c93b1e80bcea"
  },
  "zankapfel": {
