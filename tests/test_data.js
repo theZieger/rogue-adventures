@@ -1,24 +1,13 @@
 // Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
-require('../src/sachkunde.js'); // registers the Sachkunde units in MK.MODES
-require('../src/sachkunde2.js');
-require('../src/sachkunde3.js');
-require('../src/ethik.js');
-require('../src/musik.js'); // registers Der Konzertsaal in MK.MODES
+const { modes } = require('./units.js');
 const MONART = require('../src/monsters.js');
 const fails = [];
 const fail = (msg) => fails.push(msg);
 const shapes = new Set(MONART.shapes);
 const fs = require('fs');
 const baked = (key) => fs.existsSync(require('path').join(__dirname, '../art/monsters/svg', key + '.svg'));
-
-const modes = {
-  math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, moves: MQ.ENEMY_MOVES, pool: null },
-  bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, worldAttacks: MQ.BAU.WORLD_ATTACKS, pool: null },
-};
-for (const [k, cfg] of Object.entries(MK.MODES)) modes[k] = cfg;
-modes.jahrmarkt = require('../src/jahrmarkt.js').MODE;
 
 for (const [mode, cfg] of Object.entries(modes)) {
   const mods = new Set(Object.keys(cfg.modules));
@@ -135,11 +124,10 @@ for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) l
 
 // parent area: every task type has its one-sentence explanation, every topic its place in the curriculum
 {
-  const ELTERN = require('../src/eltern.js'); const MJ = require('../src/jahrmarkt.js');
-  const modes = Object.assign({ math: { modules: MQ.MODULES }, bau: { modules: MQ.BAU.MODULES }, jahrmarkt: MJ.MODE }, MK.MODES);
+  const ELTERN = require('../src/eltern.js');
   for (const [m, c] of Object.entries(modes)) {
-    if (!ELTERN.PLAN[m]) fail(`eltern.js: PLAN.${m} is missing`);
-    for (const k of Object.keys(c.modules)) if (!(ELTERN.INFO[m] || {})[k]) fail(`eltern.js: INFO.${m}.${k} is missing`);
+    if (!c.plan && !ELTERN.PLAN[m]) fail(`${m}: no place in the curriculum (plan, or PLAN.${m} in eltern.js)`);
+    for (const [k, M] of Object.entries(c.modules)) if (!M.info && !(ELTERN.INFO[m] || {})[k]) fail(`${m}.${k}: no sentence for parents (info, or INFO.${m}.${k} in eltern.js)`);
     for (const k of Object.keys(ELTERN.INFO[m] || {})) if (!c.modules[k]) fail(`eltern.js: INFO.${m}.${k} has no task type`);
   }
   for (const m of Object.keys(ELTERN.INFO)) if (!modes[m]) fail(`eltern.js: INFO.${m} has no topic`);

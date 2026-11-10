@@ -18,6 +18,7 @@ const TIME=+(process.env.TIME||0.01);
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(win){ win.Math.random=prng(SEED); const st=win.setTimeout; win.setTimeout=(fn,ms,...a)=>st.call(win,fn,(ms||0)*TIME,...a); const D=win.Date; win.Date=class extends D { constructor(...a){ super(...(a.length?a:[NOW])); } static now(){ return NOW; } }; if(W3) win.localStorage.setItem('mathquest_run_v1', w3run()); if(OFF) win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ off: { [process.env.MODE]: OFF.split(',') } })); } });
 let runNo=0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window, d = w.document;
+let gradeTry=0; // a unit of another Klasse: try the grade tabs until its subject shows
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms*TIME));
 const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
@@ -154,7 +155,7 @@ async function step(){
   if($('[data-sub]')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
     click($('#stamps')); click($('[data-craft="schild"]')); await solveTask(false); if(!text().includes('Gebaut: Schild')) throw new Error('Werkbank did not build: '+text().slice(0,200)); click($('#next')); click($('#back'));
     click($('#hut')); if(!$('svg.hutroom')) throw new Error('hut did not open'); click($('#back')); return; }
-  if($('[data-sub]')&&!$('.wmap')) { const sub=w.__mq.subjectOf(process.env.MODE||'math'); click($$('[data-sub]').find(b=>b.textContent.includes(sub.subject))); return; }
+  if($('[data-sub]')&&!$('.wmap')) { const sub=w.__mq.subjectOf(process.env.MODE||'math'); if(!sub){ const g=$$('.gradechip'); click(g[gradeTry++%g.length]); return; } click($$('[data-sub]').find(b=>b.textContent.includes(sub.subject))); return; }
   if($('[data-new]')&&!$('.choice')&&!$('.wmap')) { const m=process.env.MODE||'math'; const c=$('[data-cont="'+m+'"]'); if(c){click(c);return;} click($('[data-new="'+m+'"]')); const y=$('.overlay #yes'); if(y) click(y); return; }
   if($('#go')&&$('.choice[data-id]')){ const ch=$$('.choice[data-id]'); click(ch[runNo%ch.length]); click($('#go')); if(!fromPantry){ fromPantry=true; if(!w.__mq.run.items.includes('schild')||w.__mq.meta.pantry.length) throw new Error('pantry not taken into the adventure'); } return; }
   if($('.node.open')){ const nodes=$$('.node.open');

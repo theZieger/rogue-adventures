@@ -211,7 +211,7 @@ const MS = (() => {
       return null;
     };
   }
-  const KO = { modules: KO_MODULES, tut: KO_TUT, notes: KO_NOTES, pool: KO_POOL, worlds: 1, title: 'Die Kornkammer', icon: '🌾', sub: 'Getreidearten, Getreidepflanze, vom Korn zum Brot', school: 'getreide',
+  const KO = { modules: KO_MODULES, tut: KO_TUT, notes: KO_NOTES, pool: KO_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Kornkammer', icon: '🌾', sub: 'Getreidearten, Getreidepflanze, vom Korn zum Brot', school: 'getreide',
     starters: [{ id: 'muellerin', type: 'normal', shape: 'muellerin', names: ['Die Müllerin', 'Die Müllerin', 'Die Müllerin'], hp: 70, desc: 'Sie mahlt in der Wassermühle aus Korn das Mehl für das ganze Dorf.', perk: 'heal',
       attacks: [{ name: 'Sichel', mod: 'parts' }, { name: 'Dreschflegel', mod: 'arten' }, { name: 'Mühlrad', mod: 'brot' }, { name: 'Mehlsack', mod: 'nutzen' }] }],
     extra: { parts: 'Ährenkranz', arten: 'Saatkorn', brot: 'Mahlstein', nutzen: 'Vorratskammer', wert: 'Erntekrone', lt: 'Kornsieb' },
@@ -403,7 +403,7 @@ const MS = (() => {
     return shuffle(fl.concat(st, [urnExperiment()]));
   }
 
-  const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
+  const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
     starters: [{ id: 'wetterwart', type: 'normal', shape: 'wetterwart', names: ['Der Wetterwart', 'Der Wetterwart', 'Der Wetterwart'], hp: 70, desc: 'Er liest jeden Morgen Thermometer, Regenmesser und Windfahne ab und schreibt alles auf.', perk: 'none',
       attacks: [{ name: 'Eiszapfen', mod: 'zustand' }, { name: 'Wasserkessel', mod: 'begriff' }, { name: 'Wolkenzug', mod: 'kreislauf' }, { name: 'Wetterhahn', mod: 'vorhersage' }] }],
     extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender' },
@@ -637,7 +637,7 @@ const MS = (() => {
       return null;
     };
   }
-  const KK = { modules: KK_MODULES, tut: KK_TUT, notes: KK_NOTES, pool: KK_POOL, worlds: 1, title: 'Kompass und Karte', icon: '🧭', sub: 'Himmelsrichtungen, Windrose, Plan mit Legende und die Schatzkarte', swap: { from: 'treasure', to: 'karte' },
+  const KK = { modules: KK_MODULES, tut: KK_TUT, notes: KK_NOTES, pool: KK_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Kompass und Karte', icon: '🧭', sub: 'Himmelsrichtungen, Windrose, Plan mit Legende und die Schatzkarte', swap: { from: 'treasure', to: 'karte' },
     starters: [{ id: 'kartenzeichnerin', type: 'normal', shape: 'kartenzeichnerin', names: ['Die Kartenzeichnerin', 'Die Kartenzeichnerin', 'Die Kartenzeichnerin'], hp: 70, desc: 'Sie vermisst Wege und Felder mit Kompass und Messkette und zeichnet daraus Karten.', perk: 'crit',
       attacks: [{ name: 'Sonnenstand', mod: 'richtung' }, { name: 'Kompassnadel', mod: 'rose' }, { name: 'Messkette', mod: 'plan' }, { name: 'Fernrohr', mod: 'karte' }] }],
     extra: { richtung: 'Polarstern', rose: 'Wetterfahne', plan: 'Grenzstein', karte: 'Wegweiser', lt: 'Merkvers' },

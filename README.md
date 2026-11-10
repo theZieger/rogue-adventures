@@ -56,7 +56,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset).
-- Startseite: Klasse → Fach (Kachel) → Spiel. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
+- Startseite: Klasse → Fach (Kachel) → Thema. Sie baut sich aus `grade` und `subject` der Einheiten selbst auf (siehe „Neue Einheit“).
 - „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Fortsetzen geht es genau dort weiter. Über den Elternbereich lässt sich alles als Spielstand-Code auf ein anderes Gerät mitnehmen.
@@ -88,6 +88,8 @@ build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifes
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
 tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
+src/units/         Einheiten, die nur aus Daten bestehen (Vorlage: _vorlage.js)
+lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
@@ -113,6 +115,21 @@ Inhalte anpassen:
 - Deutsch-Wörter und -Sätze: `src/woerter.js`, Englisch: `src/english.js` (danach `npm run build && npm test`)
 - Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
 - Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
+
+## Neue Einheit
+
+Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst. Startseite, Klassen-Reiter, Elternbereich, Wochenziele,
+Statistik, Spielstand, Tests und der Bot lesen die Einheiten aus einer Liste – es gibt keine zweite Stelle, an der man sie eintragen muss.
+
+**Nur Daten (Fragen, Richtig/Falsch, Lücke, Reihenfolge, Dilemma-Karten):** `src/units/_vorlage.js` kopieren, umbenennen (ohne `_`),
+ausfüllen, `npm run build && npm test && npm run playtest`. Die Vorlage erklärt jedes Feld und wird selbst mitgetestet.
+Die Tests melden, was fehlt (Erklärung, Elternsatz, Zeichnung, doppelte Namen, Frage ohne richtige Antwort).
+
+**Braucht weiterhin Code:**
+- Zeichnungen: jeder neue Held und Gegner in `src/monsters.js`, jedes neue Emoji in `src/icons.js`. Solange darf eine Einheit vorhandene Zeichnungen verwenden.
+- Erzeugte Aufgaben (Rechnen, Uhr, Wörter aus Listen) und Bildaufgaben zum Antippen: eigene Datei wie `src/sachkunde3.js` oder `src/jahrmarkt.js`,
+  die ihre Einheit in `MK.MODES` einträgt (`gen` bzw. `numGen`) und in `build.py` eingebunden wird. Auch sie braucht nur `grade` und `subject`, um auf der Startseite zu erscheinen.
+- Ein neues Fach: eine Zeile in `SUBJECTS` (`src/app.js`).
 
 ## Veröffentlichen (GitHub Pages)
 

@@ -1,4 +1,4 @@
-const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const E=require('../src/ethik.js');const know={};let seq=0;const fails=[];
+const K=require('../src/knowledge.js');const S=require('../src/sachkunde.js');const S2=require('../src/sachkunde2.js');const S3=require('../src/sachkunde3.js');const MU=require('../src/musik.js');const E=require('../src/ethik.js');require('./units.js');const know={};let seq=0;const fails=[];
 for(const [mode,cfg] of Object.entries(K.MODES)){ for(const mod of Object.keys(cfg.modules)){ for(let t=1;t<=cfg.modules[mod].maxTier;t++){ for(let i=0;i<400;i++){ const q=K.generate(mode,mod,t,know,++seq);
  if(q.kind==='choice'||q.kind==='parts'){ if(!q.options.includes(q.answer)) fails.push(JSON.stringify(q)); if(new Set(q.options).size!==q.options.length) fails.push('dup '+q.q); }
  if(q.kind==='order'){ const ids=q.items.map(x=>x.id), texts=q.items.map(x=>x.text);
@@ -17,6 +17,7 @@ for(const [mode,cfg] of Object.entries(K.MODES)){ for(const e of cfg.pool){ cons
   const isTF=e.mod==='rf'||e.rf===true;
   if(e.part!==undefined){ const p=partsOf(e).find(p=>p.id===e.part); if(!p) fails.push(tag+' unknown part'); else if(p.name!==e.a) fails.push(tag+' part name mismatch'); }
   else if(isTF){ if(typeof e.a!=='boolean') fails.push(tag+' T/F answer not boolean'); if(e.a===false&&!(typeof e.why==='string'&&e.why)) fails.push(tag+' false statement without why'); if(e.o) fails.push(tag+' T/F with options'); }
+  else if(e.order){ if(!Array.isArray(e.order)||e.order.length<4||new Set(e.order).size!==e.order.length) fails.push(tag+' order needs at least 4 different steps'); }
   else { if(!Array.isArray(e.o)||e.o.length<2) fails.push(tag+' needs options');
     else { if(!Number.isInteger(e.a)||e.a<0||e.a>=e.o.length) fails.push(tag+' answer index out of range');
       if(new Set(e.o).size!==e.o.length) fails.push(tag+' duplicate options');

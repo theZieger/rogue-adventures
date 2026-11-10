@@ -35,6 +35,8 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   to `main`.** Take screenshots of every affected screen (phone size, 390×844 at 2×) before and after the change,
   publish them side by side as an artifact page, and wait for the go-ahead. Never push visual or copy changes
   to `main` unapproved; a branch is fine for work in progress.
+- New units: see README „Neue Einheit“. A unit that is only questions goes into `src/units/` as plain data (copy `_vorlage.js`);
+  never add a second list of units anywhere – everything reads `grade` and `subject` from the unit itself.
 - Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.js` (key = the emoji) when shown.
   A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.
 - Icons and iOS launch screens (`docs/icons/`, `docs/splash/`) come from `node tools/make_icons.js`

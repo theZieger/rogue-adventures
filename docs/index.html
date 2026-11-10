@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="e7c0fb88f95f">
+<meta name="app-version" content="5fcb1c321cda">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -2152,7 +2152,7 @@ const MJ = (() => {
     { title: 'Die Bank am Riesenrad', text: 'Neben dem Riesenrad steht eine Bank im Schatten. Du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
-  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
   return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG, barhSVG };
 })();
 
@@ -4051,6 +4051,7 @@ const MK = (() => {
     const atTier = cands.filter((p) => (p.t || 1) === tier); if (atTier.length) cands = atTier; // t: 2 marks the harder questions of a module
     if (opts && opts.g) { const topic = cands.filter((p) => p.g === opts.g); if (topic.length) cands = topic; }
     const e = weightedPick(cands, know, seqNow);
+    if (e.order) { const idx = shuffle(e.order.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => ({ id: 'o' + i, text: e.order[i] })); return { kind: 'order', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, items, order: items.map((y) => y.id), display: shuffle(items), qid: e.id + '_' + idx.join('') }; }
     if (mod === 'parts') {
       const part = PARTS.find((p) => p.id === e.part);
       if (tier >= 2) return { kind: 'parts-find', mod, tier: 2, group: 'parts:2', note: 'teile', q: `Tippe auf: ${part.name}`, part: part.id, answer: part.name, qid: e.id + '_find' };
@@ -4061,7 +4062,7 @@ const MK = (() => {
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
     // inline: the options are the parts of a sentence and keep their order
     const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, fig: e.fig, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
@@ -4097,22 +4098,41 @@ const MK = (() => {
   }
 
   const MODES = {
-    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
+    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, grade: 3, subject: 'Ethik', title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
       order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
-    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
+    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, grade: 3, subject: 'Ethik', title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
       order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' },
         { w: 2, items: KJ_OSTERWEG, note: 'ostern', q: 'Tippe die Tage in der Reihenfolge an, in der sie im Jahr kommen.', qid: 'kjo_' }, { w: 2, items: KJ_JAHR, note: 'festkreis', q: 'Tippe die Feste in der Reihenfolge des Kirchenjahrs an: Es beginnt mit dem 1. Advent.', qid: 'kjj_' }] },
-    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
+    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, grade: 3, subject: 'Ethik', title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
       order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
-    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
-    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
-    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
+    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
+    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
+    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
       gen: (mod, tier, know, seq) => (mod === 'zahl' ? zahlTask(tier, know, seq) : mod === 'farbe' ? farbeTask(know, seq) : mod === 'odd' ? oddTask() : null) },
-    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
+    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
       gen: (mod, tier) => (mod === 'reihe' ? reiheTask(tier) : null) },
-    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
+    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, grade: 3, subject: 'Sachkunde', title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
+  // A unit from plain data (src/units/*.js, format in src/units/_vorlage.js): fills in what the engine needs.
+  // Question ids come from the question text, so sorting or adding questions keeps what a child has already learned.
+  const hash = (t) => { let h = 5381; for (const c of t) h = (h * 33 + c.codePointAt(0)) >>> 0; return h.toString(36); };
+  const BANK = { title: 'Die Bank am Weg', text: 'Am Weg steht eine Bank. Hier ruhst du dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] };
+  function addUnit(id, u) {
+    const modules = {}, tut = {}, notes = {}, extra = {}, pool = []; const keys = Object.keys(u.topics);
+    for (const k of keys) {
+      const T = u.topics[k]; const tiers = Math.max(...T.questions.map((q) => q.t || 1));
+      modules[k] = { name: T.name, icon: T.icon, maxTier: tiers, worldCap: [tiers], dmg: T.dmg || 12, info: T.info };
+      for (let t = 1; t <= tiers; t++) tut[k + ':' + t] = { title: T.name, steps: T.explain };
+      notes[k] = { title: T.name, lines: T.note }; extra[k] = T.attack;
+      for (const q of T.questions) pool.push(Object.assign({ id: id + '_' + hash(q.q), mod: k, g: k }, q));
+    }
+    const attacks = keys.slice(0, 4).map((k) => ({ name: extra[k], mod: k }));
+    MODES[id] = { modules, tut, notes, extra, pool, worlds: 1, grade: u.grade, subject: u.subject, title: u.title, icon: u.icon, sub: u.sub, plan: u.plan,
+      starters: u.heroes.map((h) => Object.assign({ hp: 70, names: [h.name, h.name, h.name], attacks }, h)),
+      enemies: { 1: u.enemies }, moves: u.moves, events: (u.events || []).concat([BANK]) };
+  }
+
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, addUnit, shuffle, pick, rnd, weightedPick };
 })();
 
 </script>
@@ -4330,7 +4350,7 @@ const MS = (() => {
       return null;
     };
   }
-  const KO = { modules: KO_MODULES, tut: KO_TUT, notes: KO_NOTES, pool: KO_POOL, worlds: 1, title: 'Die Kornkammer', icon: '🌾', sub: 'Getreidearten, Getreidepflanze, vom Korn zum Brot', school: 'getreide',
+  const KO = { modules: KO_MODULES, tut: KO_TUT, notes: KO_NOTES, pool: KO_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Kornkammer', icon: '🌾', sub: 'Getreidearten, Getreidepflanze, vom Korn zum Brot', school: 'getreide',
     starters: [{ id: 'muellerin', type: 'normal', shape: 'muellerin', names: ['Die Müllerin', 'Die Müllerin', 'Die Müllerin'], hp: 70, desc: 'Sie mahlt in der Wassermühle aus Korn das Mehl für das ganze Dorf.', perk: 'heal',
       attacks: [{ name: 'Sichel', mod: 'parts' }, { name: 'Dreschflegel', mod: 'arten' }, { name: 'Mühlrad', mod: 'brot' }, { name: 'Mehlsack', mod: 'nutzen' }] }],
     extra: { parts: 'Ährenkranz', arten: 'Saatkorn', brot: 'Mahlstein', nutzen: 'Vorratskammer', wert: 'Erntekrone', lt: 'Kornsieb' },
@@ -4522,7 +4542,7 @@ const MS = (() => {
     return shuffle(fl.concat(st, [urnExperiment()]));
   }
 
-  const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
+  const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
     starters: [{ id: 'wetterwart', type: 'normal', shape: 'wetterwart', names: ['Der Wetterwart', 'Der Wetterwart', 'Der Wetterwart'], hp: 70, desc: 'Er liest jeden Morgen Thermometer, Regenmesser und Windfahne ab und schreibt alles auf.', perk: 'none',
       attacks: [{ name: 'Eiszapfen', mod: 'zustand' }, { name: 'Wasserkessel', mod: 'begriff' }, { name: 'Wolkenzug', mod: 'kreislauf' }, { name: 'Wetterhahn', mod: 'vorhersage' }] }],
     extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender' },
@@ -4756,7 +4776,7 @@ const MS = (() => {
       return null;
     };
   }
-  const KK = { modules: KK_MODULES, tut: KK_TUT, notes: KK_NOTES, pool: KK_POOL, worlds: 1, title: 'Kompass und Karte', icon: '🧭', sub: 'Himmelsrichtungen, Windrose, Plan mit Legende und die Schatzkarte', swap: { from: 'treasure', to: 'karte' },
+  const KK = { modules: KK_MODULES, tut: KK_TUT, notes: KK_NOTES, pool: KK_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Kompass und Karte', icon: '🧭', sub: 'Himmelsrichtungen, Windrose, Plan mit Legende und die Schatzkarte', swap: { from: 'treasure', to: 'karte' },
     starters: [{ id: 'kartenzeichnerin', type: 'normal', shape: 'kartenzeichnerin', names: ['Die Kartenzeichnerin', 'Die Kartenzeichnerin', 'Die Kartenzeichnerin'], hp: 70, desc: 'Sie vermisst Wege und Felder mit Kompass und Messkette und zeichnet daraus Karten.', perk: 'crit',
       attacks: [{ name: 'Sonnenstand', mod: 'richtung' }, { name: 'Kompassnadel', mod: 'rose' }, { name: 'Messkette', mod: 'plan' }, { name: 'Fernrohr', mod: 'karte' }] }],
     extra: { richtung: 'Polarstern', rose: 'Wetterfahne', plan: 'Grenzstein', karte: 'Wegweiser', lt: 'Merkvers' },
@@ -5032,7 +5052,7 @@ const MS2 = (() => {
   }
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung; nie eine Wahl, bei der das Kind eine Droge nimmt
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
-  const SI = { modules: SI_MODULES, tut: SI_TUT, notes: SI_NOTES, pool: SI_POOL, worlds: 1, title: 'Die fünf Sinne', icon: '👁️', sub: 'Auge, Ohr, Sinne schützen, Hilfen im Alltag, Nein zu Drogen und Sinnestäuschungen', school: ['auge', 'ohr'], swap: { from: 'event', to: 'taeusch' }, labor: illusionSet,
+  const SI = { modules: SI_MODULES, tut: SI_TUT, notes: SI_NOTES, pool: SI_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die fünf Sinne', icon: '👁️', sub: 'Auge, Ohr, Sinne schützen, Hilfen im Alltag, Nein zu Drogen und Sinnestäuschungen', school: ['auge', 'ohr'], swap: { from: 'event', to: 'taeusch' }, labor: illusionSet,
     starters: [{ id: 'schulaerztin', type: 'normal', shape: 'schulaerztin', names: ['Die Schulärztin', 'Die Schulärztin', 'Die Schulärztin'], hp: 70, desc: 'Sie prüft bei allen Kindern, wie gut sie sehen und hören, und erklärt, wie man Augen und Ohren schützt.', perk: 'heal',
       attacks: [{ name: 'Sehtafel', mod: 'parts' }, { name: 'Stimmgabel', mod: 'sinne' }, { name: 'Ohrenschützer', mod: 'schutz' }, { name: 'Frische Luft', mod: 'drogen' }] }],
     extra: { parts: 'Augenspiegel', sinne: 'Duftprobe', schutz: 'Sonnenhut', hilfe: 'Leitlinie', drogen: 'Klares Nein', lt: 'Merkzettel' },
@@ -5377,7 +5397,7 @@ const MS2 = (() => {
       return null;
     };
   }
-  const VE = { modules: VE_MODULES, tut: VE_TUT, notes: VE_NOTES, pool: VE_POOL, worlds: 1, title: 'Sicher im Verkehr', icon: '🚲', sub: 'Verkehrszeichen, Vorfahrt, das sichere Fahrrad, Schulweg und Helm', school: 'fahrrad',
+  const VE = { modules: VE_MODULES, tut: VE_TUT, notes: VE_NOTES, pool: VE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Sicher im Verkehr', icon: '🚲', sub: 'Verkehrszeichen, Vorfahrt, das sichere Fahrrad, Schulweg und Helm', school: 'fahrrad',
     starters: [{ id: 'verkehrspolizistin', type: 'normal', shape: 'verkehrspolizistin', names: ['Die Verkehrspolizistin', 'Die Verkehrspolizistin', 'Die Verkehrspolizistin'], hp: 70, desc: 'Sie übt mit Schulkindern auf dem Übungsplatz das Radfahren und prüft, ob jedes Fahrrad verkehrssicher ist.', perk: 'crit',
       attacks: [{ name: 'Kelle', mod: 'zeichen' }, { name: 'Trillerpfeife', mod: 'vorfahrt' }, { name: 'Luftpumpe', mod: 'parts' }, { name: 'Warnweste', mod: 'weg' }] }],
     extra: { zeichen: 'Schilderwald', vorfahrt: 'Handzeichen', parts: 'Fahrradcheck', fehlt: 'Werkzeugkasten', weg: 'Schulwegplan', lt: 'Verkehrsfibel' },
@@ -5740,7 +5760,7 @@ const MS3 = (() => {
       return null;
     };
   }
-  const WI = { modules: WI_MODULES, tut: WI_TUT, notes: WI_NOTES, pool: WI_POOL, worlds: 1, title: 'Die Wiese', icon: '🌼', sub: 'Wiesenpflanzen, Stockwerke, wie Kleintiere wachsen, Herbarium und Naturschutz',
+  const WI = { modules: WI_MODULES, tut: WI_TUT, notes: WI_NOTES, pool: WI_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wiese', icon: '🌼', sub: 'Wiesenpflanzen, Stockwerke, wie Kleintiere wachsen, Herbarium und Naturschutz',
     starters: [{ id: 'imkerin', type: 'pflanze', shape: 'imkerin', names: ['Die Imkerin', 'Die Imkerin', 'Die Imkerin'], hp: 70, desc: 'Ihre Bienenkästen stehen am Rand der Wiese. Sie weiß, welche Blumen ihre Bienen besuchen.', perk: 'heal',
       attacks: [{ name: 'Blütenstaub', mod: 'pflanze' }, { name: 'Bienenschwarm', mod: 'stock' }, { name: 'Honigwabe', mod: 'entw' }, { name: 'Imkerpfeife', mod: 'herbar' }] }],
     extra: { pflanze: 'Blütenstaub', stock: 'Bienenschwarm', entw: 'Honigwabe', herbar: 'Imkerpfeife', schutz: 'Blühstreifen', sinne: 'Wiesenduft' },
@@ -5910,7 +5930,7 @@ const MS3 = (() => {
     };
   }
   // Dilemma-Karten wie bei Gute Freunde: jede Wahl bekommt dieselbe Belohnung
-  const FR = { modules: FR_MODULES, tut: FR_TUT, notes: FR_NOTES, pool: FR_POOL, worlds: 1, title: 'Früher und heute', icon: '🕰️', sub: 'Leben auf dem Land früher, Zeitleiste, Sprachen und Feste, Nachschlagen und Prüfen',
+  const FR = { modules: FR_MODULES, tut: FR_TUT, notes: FR_NOTES, pool: FR_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Früher und heute', icon: '🕰️', sub: 'Leben auf dem Land früher, Zeitleiste, Sprachen und Feste, Nachschlagen und Prüfen',
     starters: [{ id: 'heimatforscherin', type: 'normal', shape: 'heimatforscherin', names: ['Die Heimatforscherin', 'Die Heimatforscherin', 'Die Heimatforscherin'], hp: 70, desc: 'Sie sammelt alte Fotos und Geräte für das Heimatmuseum und schreibt auf, was die Großeltern erzählen.', perk: 'crit',
       attacks: [{ name: 'Petroleumlampe', mod: 'geraet' }, { name: 'Fotoalbum', mod: 'zeit' }, { name: 'Weltkarte', mod: 'kultur' }, { name: 'Karteikasten', mod: 'medien' }] }],
     extra: { geraet: 'Petroleumlampe', alltag: 'Schiefertafel', zeit: 'Fotoalbum', kultur: 'Weltkarte', medien: 'Karteikasten', pruefen: 'Zeitungsarchiv' },
@@ -6276,7 +6296,7 @@ const ME = (() => {
   };
 
   const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, tut: TUT, notes: NOTES, pool: POOL, worlds: 2, byWorld: true, worldAttacks: WORLD_ATTACKS, gen,
-    title: 'Ich, wir und die Welt', icon: '🌍', sub: 'Welt 1 „Ich im Wir“: Stärken, Mut, Vorurteile, Gut und Böse. Welt 2 „Wir in der Welt“: Natur, Umwelt, die vier Elemente',
+    grade: 3, subject: 'Ethik', title: 'Ich, wir und die Welt', icon: '🌍', sub: 'Welt 1 „Ich im Wir“: Stärken, Mut, Vorurteile, Gut und Böse. Welt 2 „Wir in der Welt“: Natur, Umwelt, die vier Elemente',
     order: [{ items: VERSOEHNEN, note: 'gutboese', q: 'So versöhnt man sich: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwv_' }, { items: BESSER, note: 'staerken', q: 'So wirst du besser: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwb_' },
       { w: 2, items: ARCHE, note: 'natur', q: 'Die Bibel erzählt von Noah: Tippe die Teile in der richtigen Reihenfolge an.', qid: 'iwa_' }, { w: 2, items: PAPIER, note: 'bewahren', q: 'Vom Altpapier zum neuen Heft: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'iwp_' }] };
   K.MODES.ichwelt = MODE;
@@ -6659,7 +6679,7 @@ const MU = (() => {
     return null;
   }
 
-  const MODE = { modules: MODULES, tut: TUT, notes: NOTES, pool: POOL, worlds: 1, title: 'Der Konzertsaal', icon: '🎻', sub: 'Noten und Takt, Tonhöhen, Instrumente, Komponisten und Musik der Welt', gen,
+  const MODE = { modules: MODULES, tut: TUT, notes: NOTES, pool: POOL, worlds: 1, grade: 3, subject: 'Musik', title: 'Der Konzertsaal', icon: '🎻', sub: 'Noten und Takt, Tonhöhen, Instrumente, Komponisten und Musik der Welt', gen,
     starters: [{ id: 'dirigentin', type: 'normal', shape: 'dirigentin', names: ['Die Dirigentin', 'Die Dirigentin', 'Die Dirigentin'], hp: 75, desc: 'Sie leitet das Orchester. Mit dem Taktstock zeigt sie Takt, Tempo und Lautstärke. Treffer machen ihr weniger.', perk: 'tank',
       attacks: [{ name: 'Taktstock', mod: 'noten' }, { name: 'Metronom', mod: 'takt' }, { name: 'Stimmgabel', mod: 'ton' }, { name: 'Notenpult', mod: 'instr' }] }],
     extra: { noten: 'Notenbalken', takt: 'Taktstrich', ton: 'Tonleiter', instr: 'Orchestergraben', begriffe: 'Fortissimo', komp: 'Partitur', laender: 'Konzertreise', lt: 'Notenheft' },
@@ -6685,6 +6705,7 @@ const MU = (() => {
   K.MODES.musik = MODE;
   return { MODE, VALUES, TONES, INSTR, FAM, HOW, KOMP, WORLD, DANCES, TERMS, FACTS, makeBar, noteSVG };
 })();
+
 
 </script>
 <script>
@@ -10862,40 +10883,20 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (() => {
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
-  const MODES = {
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
-    ethik: MK.MODES.ethik,
-    kirchenjahr: MK.MODES.kirchenjahr,
-    kartoffel: MK.MODES.kartoffel,
-    woerterwerkstatt: MK.MODES.woerterwerkstatt,
-    satzbaustelle: MK.MODES.satzbaustelle,
-    kornkammer: MK.MODES.kornkammer,
-    wetterstation: MK.MODES.wetterstation,
-    kompass: MK.MODES.kompass,
-    wiese: MK.MODES.wiese,
-    frueher: MK.MODES.frueher,
-    freunde: MK.MODES.freunde,
-    teestube: MK.MODES.teestube,
-    doppeldecker: MK.MODES.doppeldecker,
-    ichwelt: MK.MODES.ichwelt,
+  // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES (README „Neue Einheit“).
+  const MODES = Object.assign({
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
+    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
     jahrmarkt: MJ.MODE,
-    sinne: MK.MODES.sinne,
-    verkehr: MK.MODES.verkehr,
-    musik: MK.MODES.musik,
-  };
-  const MODE_KEYS = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
-  // the title screen builds itself from this list
-  const CURRICULUM = [
-    { grade: 3, label: 'Klasse 3', subjects: [
-      { subject: 'Mathe', icon: '🔢', modes: ['math', 'bau', 'jahrmarkt'] },
-      { subject: 'Deutsch', icon: '📖', modes: ['woerterwerkstatt', 'satzbaustelle'] },
-      { subject: 'Ethik', icon: '🕊️', modes: ['ethik', 'kirchenjahr', 'freunde', 'ichwelt'] },
-      { subject: 'Sachkunde', icon: '🌱', modes: ['kartoffel', 'kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher', 'sinne', 'verkehr'] },
-      { subject: 'Musik', icon: '🎵', modes: ['musik'] },
-      { subject: 'Englisch', icon: '💬', modes: ['teestube', 'doppeldecker'] },
-    ] },
-  ];
+  }, MK.MODES);
+  // the Monsterbuch and the hero lists keep this order; new units follow in the order they register
+  const FIRST = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
+  const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
+  // the title screen builds itself from grade and subject of the units
+  const SUBJECTS = { Mathe: '🔢', Deutsch: '📖', Ethik: '🕊️', Sachkunde: '🌱', Musik: '🎵', Englisch: '💬' };
+  const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort().map((grade) => ({ grade, label: 'Klasse ' + grade,
+    subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject) })).filter((x) => x.modes.length) }));
+  const INFO = (m, k) => MODES[m].modules[k].info || ELTERN.INFO[m][k];
   let mode = 'math';
   const CFG = () => MODES[mode];
   const MODULES_OF = () => CFG().modules;
@@ -11613,7 +11614,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
-  const readsIn = (m) => CURRICULUM.some((g) => g.subjects.some((s) => ['Deutsch', 'Ethik'].includes(s.subject) && s.modes.includes(m)));
+  const readsIn = (m) => ['Deutsch', 'Ethik'].includes(MODES[m].subject);
   // same enemy, weak spot and HP on every device in this week
   function weekBossSpec(world) {
     const r = MQ.seeded(weekly().week + ':' + mode + ':' + world); const pool = CFG().enemies[world].normal; const e = pool[Math.floor(r() * pool.length)];
@@ -12620,13 +12621,13 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
           + (CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : '')
           + card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach. Dort sehen Sie, was jede Aufgabenart übt, und können Themen, Helden und Aufgabenarten ein- oder ausschalten.')}${S.map((s, i) => { const vis = s.modes.filter(shown).length;
             return `<button class="pnav" data-pf="${i}"><span class="ptext"><b>${s.icon} ${esc(s.subject)}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`; }).join('')}`);
-        const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = ELTERN.PLAN[m];
+        const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = c.plan || ELTERN.PLAN[m];
         return `<button class="pback" id="pback">${ico('back')}Alle Fächer</button>`
           + (s.modes.length > 1 ? card(`${s.icon} ${esc(s.subject)}`, sw(s.modes.some(shown), `data-hidesub="${pAt.subj}"`, 'Fach anzeigen', '<span>Ausgeschaltet erscheint das ganze Fach nicht mehr auf der Startseite.</span>') + msg)
             + `<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => `<button role="tab" data-pm="${x}" aria-selected="${x === m}" class="${shown(x) ? '' : 'off'}">${MODES[x].icon} ${esc(MODES[x].title)}</button>`).join('')}</div>` : '')
           + card(`${c.icon} ${esc(c.title)}`, `<p>${esc(c.sub)}</p>${plan ? `<p class="pplan"><b>Lehrplan Sachsen:</b> ${esc(plan)}</p>` : ''}${sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen', '<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>')}${msg}`)
           + (c.starters.length > 1 ? card('Helden', `${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, esc(x.names[0]), `<span>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</span>`)).join('')}${msg}`) : '')
-          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
+          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(INFO(m, k))}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
       },
       how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
         + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Jedes Abenteuer beginnt auf Stufe 1.</p>')
@@ -12662,7 +12663,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
     on('[data-pm]', (b) => { const x = $('.pchips').scrollLeft; pAt.mode = b.dataset.pm; redraw('.pchips [aria-selected=true]'); $('.pchips').scrollLeft = x; });
     on('[data-info]', (b) => { const m = pAt.mode || curGrade().subjects[pAt.subj].modes[0]; const k = b.dataset.info; const M = MODES[m].modules[k];
       const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
-      const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>${esc(ELTERN.INFO[m][k])}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => `${tiers.length > 1 ? `<h4>Stufe ${t}: ${esc(x.title)}</h4>` : ''}<ol>${x.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`).join('')}<button class="btn" id="ok">Schließen</button>`);
+      const ov = modal(`<h2>${M.icon} ${esc(M.name)}</h2><p>${esc(INFO(m, k))}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => `${tiers.length > 1 ? `<h4>Stufe ${t}: ${esc(x.title)}</h4>` : ''}<ol>${x.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`).join('')}<button class="btn" id="ok">Schließen</button>`);
       $('#ok', ov).onclick = () => ov.remove(); $('#ok', ov).focus({ preventScroll: true }); });
     const newPin = () => setPin(() => screenParent('appsec', back), () => screenParent('appsec', back));
     on('#pnew, #pset, #pchange', newPin);
@@ -12754,7 +12755,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'e7c0fb88f95f';
+  const BUILD = '5fcb1c321cda';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

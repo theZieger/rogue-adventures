@@ -244,7 +244,7 @@ const MS2 = (() => {
   }
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung; nie eine Wahl, bei der das Kind eine Droge nimmt
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
-  const SI = { modules: SI_MODULES, tut: SI_TUT, notes: SI_NOTES, pool: SI_POOL, worlds: 1, title: 'Die fünf Sinne', icon: '👁️', sub: 'Auge, Ohr, Sinne schützen, Hilfen im Alltag, Nein zu Drogen und Sinnestäuschungen', school: ['auge', 'ohr'], swap: { from: 'event', to: 'taeusch' }, labor: illusionSet,
+  const SI = { modules: SI_MODULES, tut: SI_TUT, notes: SI_NOTES, pool: SI_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die fünf Sinne', icon: '👁️', sub: 'Auge, Ohr, Sinne schützen, Hilfen im Alltag, Nein zu Drogen und Sinnestäuschungen', school: ['auge', 'ohr'], swap: { from: 'event', to: 'taeusch' }, labor: illusionSet,
     starters: [{ id: 'schulaerztin', type: 'normal', shape: 'schulaerztin', names: ['Die Schulärztin', 'Die Schulärztin', 'Die Schulärztin'], hp: 70, desc: 'Sie prüft bei allen Kindern, wie gut sie sehen und hören, und erklärt, wie man Augen und Ohren schützt.', perk: 'heal',
       attacks: [{ name: 'Sehtafel', mod: 'parts' }, { name: 'Stimmgabel', mod: 'sinne' }, { name: 'Ohrenschützer', mod: 'schutz' }, { name: 'Frische Luft', mod: 'drogen' }] }],
     extra: { parts: 'Augenspiegel', sinne: 'Duftprobe', schutz: 'Sonnenhut', hilfe: 'Leitlinie', drogen: 'Klares Nein', lt: 'Merkzettel' },
@@ -589,7 +589,7 @@ const MS2 = (() => {
       return null;
     };
   }
-  const VE = { modules: VE_MODULES, tut: VE_TUT, notes: VE_NOTES, pool: VE_POOL, worlds: 1, title: 'Sicher im Verkehr', icon: '🚲', sub: 'Verkehrszeichen, Vorfahrt, das sichere Fahrrad, Schulweg und Helm', school: 'fahrrad',
+  const VE = { modules: VE_MODULES, tut: VE_TUT, notes: VE_NOTES, pool: VE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Sicher im Verkehr', icon: '🚲', sub: 'Verkehrszeichen, Vorfahrt, das sichere Fahrrad, Schulweg und Helm', school: 'fahrrad',
     starters: [{ id: 'verkehrspolizistin', type: 'normal', shape: 'verkehrspolizistin', names: ['Die Verkehrspolizistin', 'Die Verkehrspolizistin', 'Die Verkehrspolizistin'], hp: 70, desc: 'Sie übt mit Schulkindern auf dem Übungsplatz das Radfahren und prüft, ob jedes Fahrrad verkehrssicher ist.', perk: 'crit',
       attacks: [{ name: 'Kelle', mod: 'zeichen' }, { name: 'Trillerpfeife', mod: 'vorfahrt' }, { name: 'Luftpumpe', mod: 'parts' }, { name: 'Warnweste', mod: 'weg' }] }],
     extra: { zeichen: 'Schilderwald', vorfahrt: 'Handzeichen', parts: 'Fahrradcheck', fehlt: 'Werkzeugkasten', weg: 'Schulwegplan', lt: 'Verkehrsfibel' },

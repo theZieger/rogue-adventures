@@ -1180,6 +1180,7 @@ const MK = (() => {
     const atTier = cands.filter((p) => (p.t || 1) === tier); if (atTier.length) cands = atTier; // t: 2 marks the harder questions of a module
     if (opts && opts.g) { const topic = cands.filter((p) => p.g === opts.g); if (topic.length) cands = topic; }
     const e = weightedPick(cands, know, seqNow);
+    if (e.order) { const idx = shuffle(e.order.map((_, i) => i)).slice(0, 4).sort((a, b) => a - b); const items = idx.map((i) => ({ id: 'o' + i, text: e.order[i] })); return { kind: 'order', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, items, order: items.map((y) => y.id), display: shuffle(items), qid: e.id + '_' + idx.join('') }; }
     if (mod === 'parts') {
       const part = PARTS.find((p) => p.id === e.part);
       if (tier >= 2) return { kind: 'parts-find', mod, tier: 2, group: 'parts:2', note: 'teile', q: `Tippe auf: ${part.name}`, part: part.id, answer: part.name, qid: e.id + '_find' };
@@ -1190,7 +1191,7 @@ const MK = (() => {
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
     // inline: the options are the parts of a sentence and keep their order
     const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, fig: e.fig, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
@@ -1226,21 +1227,40 @@ const MK = (() => {
   }
 
   const MODES = {
-    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
+    ethik: { modules: L_MODULES, starters: L_STARTERS, extra: L_EXTRA, enemies: L_ENEMIES, events: L_EVENTS, moves: L_MOVES, tut: L_TUT, notes: L_NOTES, pool: L_POOL, worlds: 1, grade: 3, subject: 'Ethik', title: 'Luthers Weg', icon: '⛪', sub: 'Martin Luther und die Reformation',
       order: [{ items: L_EVENTS_ORDER, note: 'leben', q: 'Tippe die Ereignisse in der richtigen Reihenfolge an.', qid: 'ord_' }] },
-    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
+    kirchenjahr: { modules: L_MODULES, starters: KJ_STARTERS, extra: KJ_EXTRA, enemies: KJ_ENEMIES, events: KJ_EVENTS, moves: KJ_MOVES, tut: KJ_TUT, notes: KJ_NOTES, pool: KJ_POOL, worlds: 2, byWorld: true, worldAttacks: KJ_WORLD_ATTACKS, grade: 3, subject: 'Ethik', title: 'Das Kirchenjahr', icon: '🕯️', sub: 'Von Buß- und Bettag bis Weihnachten, in Welt 2 von der Fastenzeit bis Pfingsten',
       order: [{ items: KJ_GEBOTE, note: 'gebote', q: 'Tippe die Gebote in der richtigen Reihenfolge an: zuerst das mit der kleinsten Nummer.', qid: 'kjg_' }, { items: KJ_STORY, note: 'weihnachten', q: 'Tippe die Teile der Weihnachtsgeschichte in der richtigen Reihenfolge an.', qid: 'kjw_' },
         { w: 2, items: KJ_OSTERWEG, note: 'ostern', q: 'Tippe die Tage in der Reihenfolge an, in der sie im Jahr kommen.', qid: 'kjo_' }, { w: 2, items: KJ_JAHR, note: 'festkreis', q: 'Tippe die Feste in der Reihenfolge des Kirchenjahrs an: Es beginnt mit dem 1. Advent.', qid: 'kjj_' }] },
-    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
+    freunde: { modules: L_MODULES, starters: F_STARTERS, extra: F_EXTRA, enemies: F_ENEMIES, events: F_EVENTS, moves: F_MOVES, tut: F_TUT, notes: F_NOTES, pool: F_POOL, worlds: 1, grade: 3, subject: 'Ethik', title: 'Gute Freunde', icon: '🤝', sub: 'Freundschaft, Streitregeln, Goldene Regel, Wahrheit und Vertrauen',
       order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
-    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
-    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
-    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
+    woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
+    satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
+    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
       gen: (mod, tier, know, seq) => (mod === 'zahl' ? zahlTask(tier, know, seq) : mod === 'farbe' ? farbeTask(know, seq) : mod === 'odd' ? oddTask() : null) },
-    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
+    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
       gen: (mod, tier) => (mod === 'reihe' ? reiheTask(tier) : null) },
-    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
+    kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, grade: 3, subject: 'Sachkunde', title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
-  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };
+  // A unit from plain data (src/units/*.js, format in src/units/_vorlage.js): fills in what the engine needs.
+  // Question ids come from the question text, so sorting or adding questions keeps what a child has already learned.
+  const hash = (t) => { let h = 5381; for (const c of t) h = (h * 33 + c.codePointAt(0)) >>> 0; return h.toString(36); };
+  const BANK = { title: 'Die Bank am Weg', text: 'Am Weg steht eine Bank. Hier ruhst du dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] };
+  function addUnit(id, u) {
+    const modules = {}, tut = {}, notes = {}, extra = {}, pool = []; const keys = Object.keys(u.topics);
+    for (const k of keys) {
+      const T = u.topics[k]; const tiers = Math.max(...T.questions.map((q) => q.t || 1));
+      modules[k] = { name: T.name, icon: T.icon, maxTier: tiers, worldCap: [tiers], dmg: T.dmg || 12, info: T.info };
+      for (let t = 1; t <= tiers; t++) tut[k + ':' + t] = { title: T.name, steps: T.explain };
+      notes[k] = { title: T.name, lines: T.note }; extra[k] = T.attack;
+      for (const q of T.questions) pool.push(Object.assign({ id: id + '_' + hash(q.q), mod: k, g: k }, q));
+    }
+    const attacks = keys.slice(0, 4).map((k) => ({ name: extra[k], mod: k }));
+    MODES[id] = { modules, tut, notes, extra, pool, worlds: 1, grade: u.grade, subject: u.subject, title: u.title, icon: u.icon, sub: u.sub, plan: u.plan,
+      starters: u.heroes.map((h) => Object.assign({ hp: 70, names: [h.name, h.name, h.name], attacks }, h)),
+      enemies: { 1: u.enemies }, moves: u.moves, events: (u.events || []).concat([BANK]) };
+  }
+
+  return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, addUnit, shuffle, pick, rnd, weightedPick };
 })();
 if (typeof module !== 'undefined') module.exports = MK;
