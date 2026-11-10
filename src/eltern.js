@@ -172,6 +172,30 @@ const ELTERN = (() => {
       laender: 'Fragen zu Instrumenten und Tänzen aus anderen Ländern.',
       lt: LT,
     },
+    ichdu1: {
+      gefuehl: 'Ihr Kind erkennt die Gefühle fröhlich, traurig, wütend und ängstlich an einem gezeichneten Gesicht und in kleinen Alltagsszenen.',
+      hoeflich: 'Wann sagt man bitte, danke oder Entschuldigung? Ihr Kind wählt die höfliche Antwort.',
+      familie: 'Familien sind verschieden: Ihr Kind lernt ohne Wertung Wörter wie Großfamilie, Patchworkfamilie, Regenbogenfamilie und Adoption kennen.',
+      mc: 'Kleine Alltagsfragen zum Anderssein, zu Regeln in der Klasse, zu Streit und Versöhnung und dazu, niemanden auszuschließen.',
+      rf: 'Ihr Kind hört einen Satz über sich und die anderen und entscheidet: richtig oder falsch?',
+      ord: 'Ihr Kind bringt vier Schritte in die richtige Reihenfolge, zum Beispiel wie man sich nach einem Streit versöhnt.',
+    },
+    feste2: {
+      fest: 'Fragen zu Geburtstag, Erntedank, St. Martin, Advent, Nikolaus, Weihnachten, Silvester und Ostern, dazu die Geschichten von Martin, Weihnachten und Ostern in der richtigen Reihenfolge.',
+      symbol: 'Ihr Kind ordnet Zeichen wie Laterne, Adventskranz oder Osterei dem passenden Fest zu, oft als Bild.',
+      jahr: 'Wann im Jahr ist welches Fest? Ihr Kind beantwortet Fragen dazu und bringt Feste in die Reihenfolge des Jahres.',
+      natur: 'Fragen zum Staunen über Sonne, Mond, Sterne und kleine Tiere und dazu, wie man Natur und Tiere schützt.',
+      wachsen: 'Werden, wachsen, vergehen: Ihr Kind ordnet Lebensläufe wie vom Samen zur Frucht oder vom Ei zum Schmetterling.',
+      rf: 'Ihr Kind hört einen Satz zu Festen oder zur Natur und entscheidet: richtig oder falsch?',
+    },
+    instrumente2: {
+      bild: 'Ihr Kind erkennt Instrumente auf einem Bild, darunter die Orff-Instrumente aus dem Musikunterricht.',
+      familie: 'Ihr Kind ordnet Instrumente den Familien zu: Saiten-, Blas-, Schlag- und Tasteninstrumente.',
+      spielen: 'Wie spielt man ein Instrument: zupfen, streichen, blasen, schlagen, schütteln oder Tasten drücken?',
+      laut: 'Welche Musik passt wozu? Laut und leise, schnell und langsam, ohne Töne an Beispielen erklärt.',
+      hoch: 'Hohe und tiefe Töne: Große Instrumente klingen tiefer als kleine, auch im Bildvergleich.',
+      stimme: 'Männer-, Frauen- und Kinderstimmen, Solo und Chor, Haltung und Atmung beim Singen.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n, name) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -196,6 +220,9 @@ const ELTERN = (() => {
     musik: 'Musik, Klasse 3, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“. Notenwerte, Takt und Notennamen stehen so nicht im Lehrplan der Klasse 3, sie folgen den Arbeitsblättern aus dem Unterricht.',
     teestube: 'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Animals“, „Food and drink“ und „My body and my clothes“.',
     doppeldecker: 'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Me, my family and my friends“, „At school“ und „Around the year“.',
+    ichdu1: 'Ethik, Klasse 1/2, Lernbereich 1 „Ich im Wir“ und Lernbereich 2 „Miteinander“.',
+    feste2: 'Ethik, Klasse 1/2, Lernbereich 3 „Voneinander“ und Lernbereich 4 „Wir in der Welt“. Religiöse Feste werden beschreibend erklärt.',
+    instrumente2: 'Musik, Klasse 1/2, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Instrumente und Gesangsstimmen, Lautstärke und Tempo) und Lernbereich 2 (Tonhöhe). Welche Instrumente vorkommen, legt der Lehrplan nicht fest; hier sind es die Orff-Instrumente der Schule und einige bekannte Instrumente.',
   };
   return { INFO, PLAN };
 })();

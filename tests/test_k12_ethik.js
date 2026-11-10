@@ -1,5 +1,79 @@
-// Klasse 1/2 ethik: checks beyond the generic ones in test_knowledge.js and test_data.js
+// Klasse 1/2 ethik (and the Musik unit of Klasse 2): checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
+const fail = (m) => fails.push(m);
+const MK = require('../src/knowledge.js');
+const ICONS = require('../src/icons.js');
 require('./units.js');
+const E = require('../src/k12_ethik.js');
+
+const UNITS = { ichdu1: [1, 'Ethik'], feste2: [2, 'Ethik'], instrumente2: [2, 'Musik'] };
+const words = (s) => s.split(/\s+/).filter((w) => /[a-zäöüß0-9]/i.test(w)).length;
+const icon = (e) => ICONS[e.replace(/️/g, '')];
+let seq = 0;
+const samples = {};
+for (const [m, [grade, subject]] of Object.entries(UNITS)) {
+  const c = MK.MODES[m];
+  if (!c) { fail(m + ': not registered'); continue; }
+  if (c.grade !== grade || c.subject !== subject || c.worlds !== 1) fail(`${m}: grade, subject or worlds wrong`);
+  const mods = Object.keys(c.modules);
+  if (mods.length < 4 || mods.length > 7) fail(`${m}: ${mods.length} task types`);
+  if (c.events.length < 4) fail(`${m}: fewer than 4 events`);
+  if (subject === 'Ethik' && c.events.filter((e) => e.dilemma).length < 4) fail(`${m}: fewer than 4 dilemma cards`);
+  for (const e of [c.icon].concat(mods.map((k) => c.modules[k].icon))) if (!icon(e)) fail(`${m}: emoji ${e} has no drawn icon`);
+  // read aloud in grade 1/2: short questions, at most three short answers
+  const qids = new Set(), perNote = {};
+  samples[m] = [];
+  for (const mod of mods) for (let i = 0; i < 500; i++) {
+    const t = MK.generate(m, mod, 1, {}, ++seq);
+    samples[m].push(t); qids.add(t.qid); (perNote[t.note] = perNote[t.note] || new Set()).add(t.qid);
+    if (words(t.q) > 12) fail(`${m}: question longer than 12 words: ${t.q}`);
+    if (t.kind === 'choice') {
+      if (t.options.length < 2 || t.options.length > 3) fail(`${m}: ${t.options.length} options in ${t.qid}`);
+      if (t.options.filter((o) => o === t.answer).length !== 1) fail(`${m}: answer not exactly once in ${t.qid}`);
+      if (!t.svgOpts && t.options.some((o) => words(o) > 7)) fail(`${m}: long option in ${t.qid}`);
+    } else if (t.kind === 'order') { if (t.items.length !== 4 || t.items.some((x) => words(x.text) > 8)) fail(`${m}: order items in ${t.qid}`); }
+    else fail(`${m}: unexpected task kind ${t.kind}`);
+  }
+  if (qids.size < 40) fail(`${m}: only ${qids.size} different questions`);
+  for (const n of Object.keys(c.notes)) if (!perNote[n] || perNote[n].size < 3) fail(`${m}: note ${n} has fewer than 3 questions`);
+  for (const p of c.pool) if (!p.id.startsWith({ ichdu1: 'k1e', feste2: 'k2f', instrumente2: 'k2m' }[m])) fail(`${m}: question id ${p.id} without unit prefix`);
+}
+
+// pictures: each drawing is unique, and a picture task has exactly one fitting answer
+const uniq = (name, list) => { if (new Set(list).size !== list.length) fail(name + ': two drawings are the same'); };
+uniq('faces', Object.values(E.FACES).map((f) => f.svg)); uniq('symbols', E.SYMS.map((s) => s.svg)); uniq('instruments', E.INSTR.map((i) => i.svg));
+const byPic = (list, svg) => list.filter((x) => svg.includes(x.svg));
+for (const t of samples.ichdu1.filter((x) => x.mod === 'gefuehl')) {
+  if (t.face && E.FACES[t.face].word !== t.answer) fail('face picture and answer differ: ' + t.qid);
+  if (t.faces) { const want = t.faces.map((id) => E.FACES[id].svg); if (t.options.some((o) => want.filter((s) => o.includes(s)).length !== 1)) fail('face options unclear: ' + t.qid); if (!t.answer.includes(E.FACES[t.faces[0]].svg) || !t.q.includes(E.FACES[t.faces[0]].word)) fail('face tap answer: ' + t.qid); }
+}
+for (const t of samples.feste2.filter((x) => x.mod === 'symbol')) {
+  if (t.sym) { const s = E.SYMS.find((x) => x.id === t.sym); if (byPic(E.SYMS, t.pic).length !== 1 || t.answer !== s.fest || t.options.some((o) => o !== s.fest && !E.symFits(s, { fest: o }))) fail('symbol picture: ' + t.qid); }
+  if (t.syms) { const ss = t.syms.map((id) => E.SYMS.find((x) => x.id === id)); if (t.options.some((o) => byPic(E.SYMS, o).length !== 1) || !t.answer.includes(ss[0].svg) || ss.slice(1).some((x) => !E.symFits(ss[0], x))) fail('symbol tap: ' + t.qid); }
+}
+for (const t of samples.instrumente2) {
+  if (t.instr) {
+    const hits = byPic(E.INSTR, t.pic); const i = hits[0];
+    if (hits.length !== 1 || i.id !== t.instr) { fail('instrument picture unclear: ' + t.qid); continue; }
+    const right = { bild: i.name, familie: E.FAM[i.fam], spielen: i.how }[t.mod];
+    if (t.answer !== right) fail(`instrument ${i.id}: answer ${t.answer}, expected ${right}`);
+    const also = t.options.filter((o) => o !== right && (o === i.name || o === i.how || o === E.FAM[i.fam] || (i.notHow || []).includes(o) || (i.notFam || []).some((f) => E.FAM[f] === o)));
+    if (also.length) fail(`instrument ${i.id}: option ${also} is also right`);
+  }
+  if (t.instrs) { if (t.options.some((o) => byPic(E.INSTR, o).length !== 1) || byPic(E.INSTR, t.answer)[0].acc !== t.q.slice(10, -1)) fail('instrument tap: ' + t.qid); }
+  if (t.sizes) { const k = t.options.indexOf(t.answer); const want = t.q.includes('tiefer') ? 2 : 1; if (t.sizes[k] !== want) fail('hoch/tief: wrong size picked in ' + t.qid); }
+}
+if (E.INSTR.length < 10) fail('fewer than 10 instruments');
+for (const id of ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel']) if (!E.INSTR.some((i) => i.id === id)) fail('Orff instrument missing: ' + id);
+for (const i of E.INSTR) { if (!E.FAM[i.fam] || !E.HOWS.includes(i.how)) fail('instrument data: ' + i.id); if (Object.keys(E.FAM).filter((f) => f !== i.fam && !(i.notFam || []).includes(f)).length < 1) fail('no wrong family for ' + i.id); }
+
+// order: festivals by date, every order list long enough and without repeats
+if (E.JAHR.some((x, i) => i && E.JAHR[i - 1].m >= x.m)) fail('JAHR is not in calendar order');
+for (const o of E.ORDER1.concat(E.WACHSEN, E.FESTORD, [{ items: E.JAHR }])) {
+  if (o.items.length < 4) fail('order list shorter than 4: ' + o.items[0].text);
+  if (new Set(o.items.map((x) => x.id)).size !== o.items.length || new Set(o.items.map((x) => x.text)).size !== o.items.length) fail('order list repeats: ' + o.items[0].text);
+}
+for (const t of samples.feste2.filter((x) => x.group === 'jahrord:1')) { const ms = t.order.map((id) => E.JAHR.find((x) => x.id === id).m); if (ms.some((v, i) => i && ms[i - 1] >= v)) fail('jahr order task: ' + t.qid); }
+
 console.log('k12 ethik fails', fails.length, fails);
 if (fails.length) process.exit(1);
