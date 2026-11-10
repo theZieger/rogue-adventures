@@ -9,14 +9,17 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-10
 
 ### Neu
+- Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.
+- Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.
 - Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.
-- Der Knopf mit dem Lautsprecher liest dir jede Aufgabe mit ihren Antworten vor.
-- Eltern können Fächer, Themen und Helden ausblenden und sehen zu jeder Aufgabenart, was sie übt.
 
 ### Verbessert
-- Der Elternbereich ist neu geordnet in Überblick, Inhalte und Einstellungen und fragt vor jedem Löschen nach.
+- Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.
 - Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
-- Viele Bilder sind neu gezeichnet, kleine Symbole sehen überall gleich aus, und Zeichnungen in Aufgaben sind klarer.
+- Viele Bilder sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen.
+
+### Behoben
+- Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen.
 
 ## 2026-11-09
 

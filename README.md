@@ -1,6 +1,6 @@
 # Lernquest 🎒
 
-Ein Roguelike-Lernspiel für Grundschüler (ca. 3. Klasse) – Monster, Karte, Attacken.
+Ein Roguelike-Lernspiel für Grundschüler (Klasse 1 bis 3) – Monster, Karte, Attacken.
 Jede Attacke ist eine Aufgabe: richtig gelöst = Treffer, falsch = der Gegner schlägt zu.
 Komplett in einer HTML-Datei, kein Server, kein Account. Deutsch.
 
@@ -44,6 +44,27 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
 | 🎻 Der Konzertsaal | Musik, nur zum Anschauen (keine Töne): Notenwerte und Pausen (Bilder, in Stufe 2 rechnen), Takt ergänzen (2/4, 3/4, Stufe 2 auch 4/4 mit Pausen), Tonhöhen c bis c im Violinschlüssel, Instrumente und ihre Familien, wie der Ton entsteht, piano/forte/crescendo, Komponisten (Bach, Mozart, Beethoven, Robert und Clara Schumann, Wagner) mit Reihenfolge nach Geburtsjahr, Instrumente und Tänze anderer Länder |
 
+Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von selbst vorgelesen; je Fach ein gemeinsamer Held mit Gegnern in `src/klasse12.js`):
+
+| Klasse | Modus | Inhalt |
+|---|---|---|
+| 1 | 🧮 Zahlen bis 20 | Punkte zählen (Zehnerfeld, Würfel), zerlegen, vergleichen, Nachbarzahlen, verdoppeln und halbieren, plus und minus bis 20 mit Zehnerübergang, Zahlenmauern |
+| 1 | 🔷 Formen und Lage | Links, rechts, oben, unten, zwischen; Dreieck, Viereck, Rechteck, Quadrat, Kreis; Würfel, Quader, Kugel; Muster fortsetzen; Würfeltürme |
+| 1 | 🔤 Laute und Buchstaben | Anlaut zum Bild, Selbstlaute und Mitlaute, wo hörst du den Laut, Silben zählen, Abc, Reimwörter; kurze Lesestube-Texte |
+| 1 | 🙂 Mein Körper | Körperteile (Bild zum Antippen, Zeichenschule), Hände waschen und Zähne putzen, gesund essen, Kleidung zum Wetter, Nein sagen, Erste Hilfe und Notruf 112 – Dilemma-Karten |
+| 1 | 📅 Durch das Jahr | Jahreszeiten, Monate, Wochentage, Tageslauf, Uhr (volle und halbe Stunde), Wetterzeichen, sicherer Schulweg |
+| 1 | 🙂 Ich und die anderen | Gefühle an Gesichtern, bitte und danke, Familien sind verschieden, Regeln, streiten und versöhnen – Dilemma-Karten |
+| 2 | 🔢 Zahlen bis 100 | Zehner und Einer, Hunderterfeld, Zahlenstrahl, gerade und ungerade, Zahlenfolgen, plus und minus bis 100, ergänzen, Rechendreiecke, Zauberquadrat |
+| 2 | ✖️ Malnehmen und Teilen | Reihen mit 2, 5 und 10, Nachbaraufgaben, Punktefelder, teilen als Umkehrung, Sachaufgaben |
+| 2 | 📏 Geld, Länge und Zeit | Euro und Cent (auch 1,50 €), mm, cm, dm, m, Uhr auf 5 Minuten, Kalender, Strichliste und Säulendiagramm, sicher/möglich/unmöglich |
+| 2 | 📝 Richtig schreiben | st/sp, nk, qu, x, ie, doppelte Mitlaute, verlängern und ableiten, groß und klein, Satzzeichen, Wörterbuch, häufige kleine Wörter; Lesestube |
+| 2 | 🏷️ Wörter und Sätze | Nomen, Verb, Adjektiv, Artikel, Einzahl und Mehrzahl, zusammengesetzte Nomen, Wortfamilie, Wortfeld, drei Satzarten |
+| 2 | 🌳 Bäume und Blumen | Laub- und Nadelbäume an Blatt und Frucht, Teile von Baum und Pflanze, Frühblüher, Keimung, Kern-, Stein- und Beerenobst, Garten |
+| 2 | 🕊 Tiere bei uns | Vögel erkennen, Zug- und Standvögel, Nestbau, Heimtiere pflegen, Bauernhof, kleine Tiere draußen |
+| 2 | 💡 Licht, Luft und Wasser | Licht und Schatten, Sonne, Mond und Sterne, Luft und Schall, Thermometer, löslich und unlöslich, Warnzeichen; Forscherlabor |
+| 2 | 🕯️ Feste und die Welt | Geburtstag, Erntedank, St. Martin, Advent, Nikolaus, Weihnachten nach Lukas, Ostern; Staunen über die Natur, werden und wachsen – Dilemma-Karten |
+| 2 | 🥁 Der Musikraum | Welches Instrument ist das (als Bild)? Instrumentenfamilien, wie man es spielt, laut und leise, hoch und tief, Stimmen |
+
 - Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff.
 - Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
 - Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
@@ -78,6 +99,8 @@ src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Ka
 src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
 src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
 src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
+src/klasse12.js    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
+src/k12_*.js       Klasse-1/2-Einheiten je Fach (Mathe, Deutsch, Sachkunde, Ethik und Musik)
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)

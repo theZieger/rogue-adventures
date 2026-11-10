@@ -280,7 +280,7 @@ const MS3 = (() => {
     { id: 'wisi6', mod: 'sinne', g: 'sinne', q: 'Mit welchem Sinn hörst du das Summen der Bienen?', o: ['Mit dem Hören', 'Mit dem Tasten', 'Mit dem Schmecken'], a: 0 },
     { id: 'wisi7', mod: 'sinne', g: 'sinne', q: 'Was spürst du, wenn du mit geschlossenen Augen über die Gräser streichst?', o: ['Wie weich oder rau sie sind', 'Welche Farbe sie haben', 'Wie sie heißen'], a: 0 },
     { id: 'wisi8', mod: 'sinne', g: 'sinne', q: 'Warum solltest du auf einer blühenden Wiese vorsichtig barfuß laufen?', o: ['Auf den Blüten sitzen Bienen', 'Das Gras ist zu heiß', 'Die Wiese ist zu laut'], a: 0 },
-    { id: 'wisi9', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne hat der Mensch?', o: ['5', '3', '7'], a: 0 },
+    { id: 'wisi9', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne lernst du in der Schule kennen?', o: ['5', '3', '7'], a: 0 },
   ];
   const WI_MODULES = {
     pflanze: { name: 'Wiesenpflanzen', icon: '🌼', maxTier: 2, worldCap: [2], dmg: 12 },
@@ -362,7 +362,7 @@ const MS3 = (() => {
     ['Kohleofen im Zimmer', 'Heizung'], ['Pferdewagen', 'Auto'], ['Plumpsklo im Hof', 'Toilette mit Spülung'], ['Waschschüssel und Krug', 'Dusche'],
   ];
   const LINES = [
-    { qid: 'zlver_', note: 'zeit', q: 'Was gab es zuerst? Tippe vom ältesten zum neuesten an.', items: [{ id: 'v1', text: 'Pferdewagen' }, { id: 'v2', text: 'Dampflok' }, { id: 'v3', text: 'Auto' }, { id: 'v4', text: 'Elektroauto' }] },
+    { qid: 'zlver_', note: 'zeit', q: 'Was gab es zuerst? Tippe vom ältesten zum neuesten an.', items: [{ id: 'v1', text: 'Pferdewagen' }, { id: 'v2', text: 'Dampflok' }, { id: 'v3', text: 'Auto' }, { id: 'v4', text: 'Auto, das von selbst fährt' }] },
     { qid: 'zlnach_', note: 'zeit', q: 'Wie haben Menschen sich Nachrichten geschickt? Tippe vom ältesten zum neuesten an.', items: [{ id: 'n1', text: 'Brief' }, { id: 'n2', text: 'Telefon' }, { id: 'n3', text: 'Handy' }, { id: 'n4', text: 'Smartphone' }] },
     { qid: 'zllic_', note: 'zeit', q: 'Womit wurde es abends hell? Tippe vom ältesten zum neuesten an.', items: [{ id: 'l1', text: 'Kerze' }, { id: 'l2', text: 'Petroleumlampe' }, { id: 'l3', text: 'Glühbirne' }, { id: 'l4', text: 'LED-Lampe' }] },
     { qid: 'zlmus_', note: 'zeit', q: 'Womit hörte man Musik? Tippe vom ältesten zum neuesten an.', items: [{ id: 'u1', text: 'Grammophon' }, { id: 'u2', text: 'Kassettenrekorder' }, { id: 'u3', text: 'CD-Spieler' }, { id: 'u4', text: 'Musik aus dem Internet' }] },
@@ -415,7 +415,7 @@ const MS3 = (() => {
     { id: 'fral7', mod: 'alltag', g: 'berufe', q: 'Was machte früher der Schmied?', o: ['Er schmiedete Hufeisen und Werkzeug aus Eisen', 'Er backte Brot', 'Er nähte Kleider'], a: 0 },
     { id: 'fral8', mod: 'alltag', g: 'berufe', q: 'Früher arbeiteten viel mehr Menschen in der Landwirtschaft als heute.', rf: true, a: true },
     { id: 'fral9', mod: 'alltag', g: 'berufe', q: 'Wer arbeitet heute außer Haus?', o: ['Frauen und Männer', 'Nur Männer', 'Nur Frauen'], a: 0 },
-    { id: 'fral10', mod: 'alltag', g: 'berufe', q: 'Früher arbeiteten meist nur die Männer außer Haus.', rf: true, a: true },
+    { id: 'fral10', mod: 'alltag', g: 'berufe', q: 'Vor etwa 100 Jahren arbeiteten meist nur die Männer außer Haus.', rf: true, a: true },
     { id: 'fral11', mod: 'alltag', g: 'berufe', q: 'Welchen Beruf gab es früher noch nicht?', o: ['Programmiererin am Computer', 'Bäcker', 'Müllerin'], a: 0 },
     { id: 'fral12', mod: 'alltag', g: 'kinder', q: 'Wen kannst du fragen, wenn du wissen willst, wie Kinder früher gelebt haben?', o: ['Oma und Opa', 'Ein Baby', 'Den Wetterbericht'], a: 0 },
     { id: 'fral13', mod: 'alltag', g: 'kinder', q: 'Wo kann man sich Dinge aus früherer Zeit ansehen?', o: ['Im Heimatmuseum', 'Im Supermarkt', 'Im Schwimmbad'], a: 0 },

@@ -58,12 +58,14 @@ Passt gut zu Fragen und Dilemma-Karten.
 Fast alles ist Singen, Musizieren und Bewegen. Als Fragen übbar bleibt wenig: Instrumente und Stimmen erkennen, laut/leise,
 schnell/langsam, Wiederholung und Gegensatz. Noten und Komponisten stehen in Klasse 1/2 nicht im Pflichtteil.
 
-## 2. Was schon gebaut ist
+## 2. Was schon gebaut ist (Stand 2026-11-10)
 
-- Jede Einheit trägt `grade` und `subject`; Startseite, Klassen-Reiter, Statistik, Spielstand, Tests und Bot
-  bauen sich daraus selbst auf. Eine Einheit mit `grade: 1` oder `2` erzeugt den Klassen-Reiter von allein.
-- Eine eigene Ebene für Einheiten aus reinen Daten wurde gebaut und wieder verworfen (Entscheidung des Eigentümers):
-  neue Einheiten entstehen wie bisher als Code-Datei, siehe README „Neue Einheit“.
+- Alle 16 Einheiten aus Abschnitt 4 sind gebaut (Mathe M1–M5, Deutsch D1–D3 plus Lesestube-Texte für Klasse 1 und 2,
+  Sachkunde S1–S5, Ethik E1–E2, Musik „Der Musikraum“), dazu je Fach ein gemeinsamer Held mit sechs Gegnern.
+- Getrennte Reiter für Klasse 1 und 2; die Einrichtung fragt nach der Klasse.
+- Vorlesen (Teil von T1): Knopf bei jeder Aufgabe, in Klasse 1 und 2 von selbst.
+- Ethik und Musik wurden fachlich geprüft und korrigiert (Weihnachten nach Lukas, Familienformen, Instrumente, Stimmen).
+- Offen aus Abschnitt 3: T6 (kürzere Abenteuer für Klasse 1/2) und alles, was die Lehrer-Prüfung ergibt.
 
 ## 3. Was vor den Inhalten an der Technik fehlt
 

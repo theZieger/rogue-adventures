@@ -116,7 +116,7 @@ const MS2 = (() => {
   };
   const SI_POOL = partPool('auge', 'parts', 'auge', 'sa_').concat(partPool('ohr', 'parts', 'ohr', 'so_'), [
     // Die fünf Sinne
-    { id: 'sise1', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne hat der Mensch?', o: ['5', '3', '10'], a: 0 },
+    { id: 'sise1', mod: 'sinne', g: 'sinne', q: 'Wie viele Sinne lernst du in der Schule kennen?', o: ['5', '3', '10'], a: 0 },
     { id: 'sise2', mod: 'sinne', g: 'sinne', q: 'Welches ist das größte Sinnesorgan?', o: ['Die Haut', 'Das Auge', 'Die Nase'], a: 0 },
     { id: 'sise3', mod: 'sinne', g: 'sinne', q: 'Wohin schicken die Sinnesorgane ihre Meldungen?', o: ['An das Gehirn', 'An den Magen', 'An die Füße'], a: 0 },
     { id: 'sise4', mod: 'sinne', g: 'sinne', q: 'Was kann die Zunge schmecken?', o: ['Süß, sauer, salzig und bitter', 'Laut und leise', 'Hell und dunkel'], a: 0 },

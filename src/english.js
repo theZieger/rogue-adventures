@@ -115,8 +115,8 @@ const ENG = {
   luecken: [
     ['I have ___ a dog.', 'got', 'get', 'go'],
     ['This is my ___.', 'sister', 'blue', 'sing'],
-    ['Can I have an ___, please?', 'apple', 'banana', 'cake'],
-    ['Can I have a ___, please?', 'sandwich', 'egg', 'ice cream'],
+    ['Can I have an ___, please?', 'apple', 'chair', 'Friday'],
+    ['Can I have a ___, please?', 'sandwich', 'Monday', 'green'],
     ['Sit ___, please.', 'down', 'open', 'blue'],
     ['Open your ___.', 'books', 'red', 'go'],
     ['Close the ___, please.', 'door', 'happy', 'eat'],

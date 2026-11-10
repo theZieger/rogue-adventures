@@ -20,6 +20,7 @@ sach2 = strip_exports((SRC / "sachkunde2.js").read_text(encoding="utf-8"), "MS2"
 sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3")
 ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
 musik = strip_exports((SRC / "musik.js").read_text(encoding="utf-8"), "MU")
+k12 = strip_exports((SRC / "klasse12.js").read_text(encoding="utf-8"), "K12") + "\n" + "\n".join((SRC / f"k12_{f}.js").read_text(encoding="utf-8") for f in ["mathe", "deutsch", "sachkunde", "ethik"])
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 icons = strip_exports((SRC / "icons.js").read_text(encoding="utf-8"), "ICONS")
 eltern = strip_exports((SRC / "eltern.js").read_text(encoding="utf-8"), "ELTERN")
@@ -76,7 +77,7 @@ html = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lernquest – Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde</title>
-<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 3): Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde. Funktioniert offline.">
+<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 1 bis 3): Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde. Funktioniert offline.">
 <meta name="theme-color" content="#1C2541">
 <meta name="color-scheme" content="dark">
 <meta name="format-detection" content="telephone=no">
@@ -125,6 +126,9 @@ html = f"""<!DOCTYPE html>
 </script>
 <script>
 {musik}
+</script>
+<script>
+{k12}
 </script>
 <script>
 {mon}

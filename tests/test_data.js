@@ -82,14 +82,17 @@ for (const [mode, cfg] of Object.entries(modes)) {
 const TEXTE = require('../src/texte.js');
 if (TEXTE.length < 12) fail('Lesestube: fewer than 12 texts');
 const KINDS = ['Fabel', 'Sachtext', 'Witz', 'Sprichwort', 'Gedicht', 'Erzählung', 'Anleitung', 'Rezept', 'Lexikon', 'Sage'];
-for (const k of KINDS) if (!TEXTE.some((t) => t.kind === k)) fail('Lesestube: no ' + k);
+for (const k of KINDS) if (!TEXTE.some((t) => t.kind === k && !t.grade)) fail('Lesestube: no ' + k);
+// shorter texts for younger readers; grade 1 and 2 texts have two questions
+const WORDS = { 1: [8, 30], 2: [20, 60], 3: [60, 120] };
 if (TEXTE.filter((t) => t.kind === 'Gedicht').some((t) => !t.by)) fail('Lesestube: a poem needs its author (by)');
 TEXTE.forEach((t) => {
   const words = t.text.split(/\s+/).filter((x) => /[a-zäöüß0-9]/i.test(x)).length;
-  if (words < 60 || words > 120) fail(`Lesestube ${t.id}: ${words} words`);
+  const [lo, hi] = WORDS[t.grade || 3] || [0, -1];
+  if (words < lo || words > hi) fail(`Lesestube ${t.id}: ${words} words for grade ${t.grade || 3}`);
   if (!t.title || !KINDS.includes(t.kind)) fail(`Lesestube ${t.id}: title or kind`);
   if (/["']/.test(t.text + t.title + (t.by || ''))) fail(`Lesestube ${t.id}: use German quotes „…“ and ’`);
-  if (!Array.isArray(t.qs) || t.qs.length !== 3) fail(`Lesestube ${t.id}: needs 3 questions`);
+  if (!Array.isArray(t.qs) || t.qs.length !== (t.grade ? 2 : 3)) fail(`Lesestube ${t.id}: needs ${t.grade ? 2 : 3} questions`);
   (t.qs || []).forEach((q, i) => {
     if (!q.q || !Array.isArray(q.o) || q.o.length < 3) fail(`Lesestube ${t.id} q${i}: at least 3 options`);
     else if (new Set(q.o).size !== q.o.length) fail(`Lesestube ${t.id} q${i}: duplicate option`);
@@ -99,12 +102,14 @@ TEXTE.forEach((t) => {
 TEXTE.map((t) => t.id).filter((x, i, a) => a.indexOf(x) !== i).forEach((x) => fail('Lesestube: duplicate id ' + x));
 
 // the monster book and saved runs identify enemies by name, heroes by id
-const enemyNames = [], heroIds = [];
+// a name or id may appear in several units only for the same opponent or hero (Klasse 1/2 share one set per subject;
+// each unit gives the shared hero its own attacks)
+const seen = new Map();
+const same = (what, key, sig) => { const k = what + ':' + key; if (seen.has(k) && seen.get(k) !== sig) fail(`duplicate ${what}: ${key}`); seen.set(k, sig); };
 for (const cfg of Object.values(modes)) {
-  for (const set of Object.values(cfg.enemies)) enemyNames.push(...set.normal.map((e) => e.name), set.elite.name, set.boss.name);
-  heroIds.push(...cfg.starters.map((s) => s.id));
+  for (const set of Object.values(cfg.enemies)) for (const e of set.normal.concat([set.elite, set.boss])) same('enemy name', e.name, JSON.stringify([e.shape, e.type, e.hp, e.atk]));
+  for (const s of cfg.starters) same('hero id', s.id, JSON.stringify([s.shape, s.names, s.type]));
 }
-for (const [what, list] of [['enemy name', enemyNames], ['hero id', heroIds]]) list.filter((x, i) => list.indexOf(x) !== i).forEach((x) => fail(`duplicate ${what}: ${x}`));
 
 // Kleiderkammer: every hero shape can wear every piece, and the result is well-formed SVG with the piece drawn
 {
