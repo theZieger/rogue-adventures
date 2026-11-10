@@ -86,6 +86,9 @@ const MONART = (() => {
     for (let i = 0; i < n; i++) { const t = i / (n - 1), u = 1 - t; s += fn(u * u * p0[0] + 2 * u * t * p1[0] + t * t * p2[0], u * u * p0[1] + 2 * u * t * p1[1] + t * t * p2[1], i, t); }
     return s;
   }
+  // gradient with free stops [[offset, color, opacity?]]; attrs e.g. 'x2="0" y2="1"' or 'cx=".4" cy=".3" r=".7"'
+  const gr = (C, kind, attrs, stops) => `url(#${C.def(kind + 'Gradient', attrs, stops.map(([t, c, a]) => `<stop offset="${t}" stop-color="${c}"${a == null ? '' : ` stop-opacity="${a}"`}/>`).join(''))})`;
+  const polar = (cx, cy, r, a) => `${f1(cx + r * Math.cos(a))} ${f1(cy + r * Math.sin(a))}`;
   const qmark = (x, y, k, c) => `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-5 -5 Q-5 -12 1 -12 Q7 -12 7 -6 Q7 -2 2 0 Q0 1 0 4" fill="none" stroke="${c || '#FFE066'}" stroke-width="3.4" stroke-linecap="round"/><circle cx="0" cy="9.5" r="2.1" fill="${c || '#FFE066'}"/></g>`;
 
   function fox(P, o, C) {
@@ -1145,30 +1148,31 @@ const MONART = (() => {
   }
 
   function jahrmarktwespe(P, o, C) {
-    const yel = C.grad('#FFC93C'), blk = '#2A2433', wing = C.lin('#F4FBFF', '#BFE3FF');
-    let s = '';
-    // candy floss she has stolen
-    s += jm_limb('M34 86 L18 52', '#F4E6CC', 3);
-    s += `<path d="M6 46 Q2 34 12 30 Q14 20 24 24 Q32 18 36 28 Q44 32 38 42 Q38 52 26 52 Q14 56 6 46 Z" ${F(C.grad('#FF9EC4'), 2.2)}/><path d="M12 38 Q16 32 22 34 M24 44 Q30 40 32 32" fill="none" stroke="#FFD3E6" stroke-width="2.4" stroke-linecap="round"/>`;
-    // wings
-    s += `<ellipse cx="72" cy="30" rx="14" ry="22" ${F(wing, 2.2)} opacity=".92" transform="rotate(28 72 30)"/><ellipse cx="90" cy="38" rx="11" ry="18" ${F(wing, 2.2)} opacity=".92" transform="rotate(52 90 38)"/>`;
-    s += `<path d="M68 22 Q74 32 74 46 M86 34 Q90 40 92 48" fill="none" stroke="#9CC8E8" stroke-width="1.6" stroke-linecap="round"/>`;
-    // legs
-    s += `<path d="M58 84 L52 100 L46 104 M68 86 L68 104 L62 110 M78 84 L86 100 L84 108" fill="none" stroke="${OUT}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const yel = C.grad('#FFC93C'), amber = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#FFE36A'], [0.45, '#FFC23A'], [1, '#E0891A']]), blk = '#2A2433', wing = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#FFFFFF', 0.95], [1, '#9FD4F5', 0.75]]), dark = C.grad('#4A4458');
+    let s = `<ellipse cx="70" cy="113" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
+    // glassy wings with veins
+    s += `<ellipse cx="74" cy="30" rx="13" ry="25" ${F(wing, 2.2)} transform="rotate(30 74 30)"/><ellipse cx="92" cy="42" rx="10" ry="19" ${F(wing, 2.2)} transform="rotate(56 92 42)"/>`;
+    s += `<path d="M64 46 Q70 30 80 12 M70 38 L82 30 M66 30 L74 22 M84 50 Q94 40 104 32 M90 46 L100 46" fill="none" stroke="#7FB4D8" stroke-width="1.3" stroke-linecap="round" opacity=".8"/><path d="M76 16 Q80 12 84 14" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>`;
     // striped abdomen with stinger
-    s += `<path d="M104 104 L114 112 L100 110 Z" ${F('#4A4458', 2)}/>`;
-    s += `<g transform="rotate(32 84 86)"><ellipse cx="84" cy="86" rx="25" ry="17" ${F(yel)}/>`;
-    s += `<path d="M72 70 Q66 86 72 102 L80 103 Q74 86 80 69 Z M88 69 Q82 86 88 103 L96 101 Q90 86 95 71 Z" fill="${blk}"/><path d="M104 76 Q108 86 104 96 Q100 86 100 76 Z" fill="${blk}"/>`;
-    s += `<ellipse cx="84" cy="86" rx="25" ry="17" ${N()}/>${shine(80, 76, 8, 3, 0)}</g>`;
-    // thorax and head
-    s += `<ellipse cx="62" cy="76" rx="14" ry="12" ${F(C.grad('#4A4458'))}/>`;
-    s += jm_limb('M52 78 L36 86', '#4A4458', 3.5);
-    s += `<path d="M42 38 Q36 22 28 18 M58 36 Q62 20 72 14" ${N(2.6)}/><circle cx="28" cy="18" r="3" fill="${OUT}"/><circle cx="72" cy="14" r="3" fill="${OUT}"/>`;
-    s += `<circle cx="48" cy="56" r="21" ${F(yel)}/>`;
-    s += `<path d="M30 46 Q48 30 66 46 Q58 40 48 40 Q38 40 30 46 Z" fill="${blk}"/>`;
-    s += shine(38, 48, 5, 3, -25);
-    s += pair(48, 56, 9, 6, { brow: 'angry', bw: 3.2, iris: '#3C8A3A' });
-    s += M.smirk(48, 68, 7);
+    s += `<path d="M100 96 L114 108 L98 102 Z" ${F('#3A3448', 2)}/>`;
+    const clip = C.def('clipPath', '', '<ellipse cx="84" cy="82" rx="25" ry="16.5" transform="rotate(32 84 82)"/>');
+    s += `<ellipse cx="84" cy="82" rx="25" ry="16.5" fill="${amber}" transform="rotate(32 84 82)"/><g clip-path="url(#${clip})" fill="${blk}">${[72, 85, 98].map((x) => `<path d="M${x} 50 q-8 30 4 64 l7 0 q-12 -34 -4 -64 Z" transform="rotate(32 84 82)"/>`).join('')}</g>`;
+    s += `<ellipse cx="84" cy="82" rx="25" ry="16.5" ${N(3)} transform="rotate(32 84 82)"/><ellipse cx="80" cy="72" rx="9" ry="3" fill="#fff" opacity=".45" transform="rotate(32 80 72)"/>`;
+    // legs
+    s += `<path d="M56 80 L50 96 L44 100 M64 82 L64 100 L58 106 M72 80 L82 96 L80 104" fill="none" stroke="${OUT}" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 96 L44 100 M64 100 L58 106 M82 96 L80 104" fill="none" stroke="#FFC93C" stroke-width="1.6" stroke-linecap="round"/>`;
+    // fuzzy thorax
+    s += `<ellipse cx="62" cy="70" rx="14" ry="12.5" ${F(dark, 2.8)}/><path d="M54 62 l-1 -3 M60 59 l0 -3 M66 60 l1 -3 M72 64 l3 -2" ${N(1.6)}/><path d="M52 66 Q56 60 62 59 Q58 64 56 70 Z M68 60 Q74 62 75 68 Q71 66 67 66 Z" fill="#FFC93C" ${S(1.4)}/><path d="M57 75 Q62 78 68 76" fill="none" stroke="#8C84A4" stroke-width="1.6" stroke-linecap="round"/>`;
+    // candy floss she has pinched, on its stick
+    s += `<path d="M30 92 L16 46" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M30 92 L16 46" stroke="#F4E6CC" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += `<path d="M4 38 Q-1 28 7 24 Q8 14 17 16 Q24 10 29 18 Q37 20 33 30 Q34 40 24 41 Q18 47 11 43 Q3 45 4 38 Z" ${F(gr(C, 'radial', 'cx=".35" cy=".3" r=".8"', [[0, '#FFE3F0'], [0.5, '#FF9EC4'], [1, '#E46A9E']]), 2.4)}/>`;
+    s += `<path d="M9 31 Q12 24 19 26 M18 36 Q25 34 27 26 M9 40 Q14 38 16 34" fill="none" stroke="#FFF1F7" stroke-width="2" stroke-linecap="round"/>`;
+    s += jm_limb('M54 76 Q40 84 28 82', '#4A4458', 3) + `<circle cx="27" cy="81" r="3.5" ${F('#FFC93C', 1.8)}/>`;
+    // head
+    s += `<path d="M38 36 Q34 20 24 14 M54 34 Q60 18 70 12" ${N(2.6)}/><circle cx="24" cy="14" r="3" fill="${OUT}"/><circle cx="70" cy="12" r="3" fill="${OUT}"/>`;
+    s += `<circle cx="46" cy="52" r="20" ${F(yel, 3)}/><path d="M28 44 Q46 26 64 44 Q56 38 46 38 Q36 38 28 44 Z" fill="${blk}"/>`;
+    s += shine(36, 45, 5, 2.5, -25);
+    s += pair(46, 53, 9, 6, { brow: 'angry', bw: 3.2, iris: '#3C8A3A', dir: [-0.3, 0.1] });
+    s += M.smirk(46, 65, 7) + `<path d="M37 67 Q34 70 35 73 M55 67 Q58 70 57 73" ${N(2.2)}/><path d="M30 58 l-3 1 M62 58 l3 1 M31 63 l-3 2 M61 63 l3 2" stroke="#C9921E" stroke-width="1.4" stroke-linecap="round"/>`;
     return s;
   }
 
@@ -1217,24 +1221,28 @@ const MONART = (() => {
   }
 
   function kuerbiskopf(P, o, C) {
-    const pump = C.grad('#F28A22'), rib = '#C9601A', leaf = '#4FA84A';
-    let s = '';
-    s += `<ellipse cx="60" cy="110" rx="44" ry="6" fill="${OUT}" opacity=".18"/>`;
-    // vine arms
-    s += jm_limb('M22 74 Q8 70 10 56', '#4F9A3A', 4) + jm_limb('M98 74 Q112 72 112 60', '#4F9A3A', 4);
-    s += `<path d="M10 56 Q4 50 8 46 Q12 50 10 56 Z M112 60 Q118 54 114 50 Q110 54 112 60 Z" ${F(leaf, 1.8)}/>`;
-    // pumpkin body
-    s += `<path d="M60 30 Q36 24 22 42 Q10 62 18 86 Q26 108 50 108 Q60 112 70 108 Q94 108 102 86 Q110 62 98 42 Q84 24 60 30 Z" ${F(pump)}/>`;
-    s += `<path d="M42 32 Q30 56 34 80 Q36 98 48 106 M78 32 Q90 56 86 80 Q84 98 72 106 M60 32 Q56 70 60 108" fill="none" stroke="${rib}" stroke-width="2.6" stroke-linecap="round"/>`;
-    s += shine(34, 48, 8, 4, -35);
-    // stem, curl and leaf
-    s += `<path d="M54 32 Q54 16 62 10 L68 14 Q62 20 64 32 Z" ${F(C.lin('#7A9A3A', '#4E6A26'), 2.2)}/>`;
-    s += `<path d="M66 16 Q80 8 84 18 Q86 26 78 26" ${N(2.4)}/><path d="M50 22 Q36 10 28 18 Q34 30 50 26 Z" ${F(leaf, 2.2)}/><path d="M48 24 Q38 20 32 20" fill="none" stroke="#2E7A36" stroke-width="1.6"/>`;
-    // prize rosette: biggest pumpkin of the fair
-    s += `<path d="M90 82 L86 102 L92 98 L96 104 L98 84 Z" ${F('#3B7DD8', 1.8)}/><circle cx="94" cy="80" r="8" ${F('#3B7DD8', 2)}/><circle cx="94" cy="80" r="4" ${F('#FFC93C', 1.6)}/>`;
-    s += pair(58, 62, 13, 7.5, { brow: 'angry', bw: 3.4, iris: '#C9601A' });
-    s += `<path d="M60 70 L56 76 L64 76 Z" fill="${rib}" ${S(1.8)}/>`;
-    s += `<path d="M38 84 Q58 98 80 84 L76 90 L70 87 L64 93 L58 88 L52 93 L46 87 L42 90 Z" ${F('#7A2340', 2.4)}/>`;
+    const rib = '#B8541A', leaf = C.grad('#5FB04F'), vine = '#4F8A33';
+    const lobe = (c) => C.grad(c);
+    let s = `<ellipse cx="60" cy="111" rx="46" ry="5.5" fill="${OUT}" opacity=".2"/>`;
+    s += jm_limb('M22 76 Q8 72 9 58', vine, 4) + jm_limb('M98 76 Q112 74 112 62', vine, 4);
+    s += `<path d="M9 58 Q2 50 7 44 Q13 48 9 58 Z M112 62 Q119 55 115 49 Q109 54 112 62 Z" ${F(leaf, 1.8)}/>`;
+    // ribbed lobes, back to front
+    s += `<path d="M30 36 Q6 40 8 72 Q10 104 40 108 Q50 82 46 40 Q40 34 30 36 Z" ${F(lobe('#E0741A'), 3)}/><path d="M90 36 Q114 40 112 72 Q110 104 80 108 Q70 82 74 40 Q80 34 90 36 Z" ${F(lobe('#E0741A'), 3)}/>`;
+    s += `<path d="M44 32 Q22 44 24 74 Q26 104 52 110 Q62 80 58 34 Q50 30 44 32 Z" ${F(lobe('#F28A22'), 2.6)}/><path d="M76 32 Q98 44 96 74 Q94 104 68 110 Q58 80 62 34 Q70 30 76 32 Z" ${F(lobe('#F28A22'), 2.6)}/>`;
+    s += `<path d="M60 31 Q42 34 40 70 Q42 106 60 111 Q78 106 80 70 Q78 34 60 31 Z" ${F(lobe('#FF9A2E'), 2.6)}/>`;
+    s += `<path d="M18 52 Q14 64 16 78 M102 52 Q106 64 104 78" fill="none" stroke="#FFC070" stroke-width="2" stroke-linecap="round" opacity=".55"/>`;
+    s += shine(32, 50, 7, 3.5, -40) + shine(50, 42, 4, 2, -30);
+    // twisted stem, curl and leaf
+    s += `<path d="M53 34 Q52 18 60 10 L68 13 Q62 22 66 34 Q60 37 53 34 Z" ${F(C.lin('#8AA845', '#55702A'), 2.4)}/><path d="M57 30 Q57 20 62 14 M62 32 Q61 24 64 18" fill="none" stroke="#3E5A1E" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="64.5" cy="11.5" rx="4.5" ry="2" fill="#C9D98A" ${S(1.8)} transform="rotate(20 64.5 11.5)"/>`;
+    s += `<path d="M68 18 Q82 8 86 18 Q88 26 80 26 Q76 24 79 21" ${N(2.2)}/>`;
+    s += `<path d="M52 22 Q38 8 26 16 Q32 32 52 26 Z" ${F(leaf, 2.4)}/><path d="M50 24 Q40 20 30 18 M42 21 L38 26 M40 20 L38 15" fill="none" stroke="#2E7A36" stroke-width="1.4" stroke-linecap="round"/>`;
+    // carved grin that glows from inside
+    s += `<path d="M36 82 Q58 98 84 82 L80 90 L73 87 L66 95 L59 89 L52 95 L46 87 L40 90 Z" ${F(gr(C, 'radial', 'cx=".5" cy=".3" r=".7"', [[0, '#FFF3A0'], [0.6, '#FFB52E'], [1, '#C8501A']]), 2.4)}/>`;
+    s += pair(60, 62, 14, 7.5, { brow: 'angry', bw: 3.4, iris: '#B8541A' });
+    s += `<path d="M60 70 L56.5 76 L63.5 76 Z" fill="${rib}" ${S(1.8)}/>`;
+    // first prize rosette
+    s += `<path d="M90 86 L84 106 L90 102 L93 108 L97 90 Z M98 86 L100 106 L104 100 L109 104 L103 86 Z" ${F('#2F6CC8', 1.8)}/>`;
+    s += `<path d="${burst(96, 82, 7, 10, 12)}" ${F('#3B7DD8', 2)}/><circle cx="96" cy="82" r="6" ${F(C.grad('#FFC93C'), 1.8)}/>` + C.glyph(96, `<path d="M95 79.5 L97 78.5 L97 85.5" fill="none" stroke="${OUT}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`);
     return s;
   }
 
@@ -1477,31 +1485,43 @@ const MONART = (() => {
   }
 
   function friends(P, o, C) {
-    const skin = C.grad('#F6CDA6'), skin2 = C.grad('#E8B48A');
-    let s = '';
+    const e = o.evo, up = e >= 1;
+    const skin = C.grad('#F6CDA6'), skin2 = C.grad('#E8B48A'), red = C.grad('#D8572A'), dress = C.grad('#FFC23F'), shirt = C.grad('#4A8FE0');
+    let s = up ? `<ellipse cx="60" cy="114" rx="46" ry="4" fill="${OUT}" opacity=".16"/>` : '';
+    // the rainbow the two have grown into at the last stage
+    const arc = (r) => `M${60 - r} 54 A${r} ${r} 0 0 1 ${60 + r} 54`;
+    if (e === 2) s += `<path d="${arc(43)}" fill="none" stroke="${OUT}" stroke-width="26"/>` + [['#FF8A7A', 52], ['#FFC93C', 46], ['#7BD88F', 40], ['#6FB6F2', 34]].map(([c, r]) => `<path d="${arc(r)}" fill="none" stroke="${c}" stroke-width="${r === 52 || r === 34 ? 5 : 6.2}"/>`).join('') +
+      `<path d="M4 54 Q2 46 10 46 Q12 40 18 44 Q24 42 24 50 Q28 54 22 56 L8 56 Q2 58 4 54 Z M96 54 Q94 46 102 46 Q104 40 110 44 Q116 42 116 50 Q120 54 114 56 L100 56 Q94 58 96 54 Z" ${F(C.lin('#FFFFFF', '#DCE6F5'), 2.2)}/>`;
     // Ida (left): red pigtails, yellow dress
-    s += `<path d="M22 116 Q22 82 40 80 Q56 82 58 116 Z" ${F(C.grad('#FFC23F'))}/><path d="M32 82 L40 92 L48 82" ${N(2)}/>`;
+    s += `<path d="M22 116 Q22 82 40 80 Q56 82 58 116 Z" ${F(dress)}/><path d="M32 82 L40 92 L48 82" ${N(2)}/>`;
+    if (up) s += `<path d="M32 82 L40 92 L48 82 Q40 86 32 82 Z" fill="#fff" ${S(2)}/>` + `<path d="M30 98h0M46 104h0M36 110h0M50 92h0" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".85"/>` + `<path d="M26 112 Q40 108 56 112" fill="none" stroke="#E0A22A" stroke-width="1.6" stroke-dasharray="2.5 2.5"/>`;
     // Ole (right): blue shirt with a stripe
-    s += `<path d="M62 116 Q62 82 80 80 Q98 82 98 116 Z" ${F(C.grad('#4A8FE0'))}/><path d="M64 100 Q80 104 97 100" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/>`;
+    s += `<path d="M62 116 Q62 82 80 80 Q98 82 98 116 Z" ${F(shirt)}/><path d="M64 100 Q80 104 97 100" fill="none" stroke="#fff" stroke-width="4" opacity=".75"/>`;
+    if (up) s += `<path d="M63 108 Q80 112 97 108" fill="none" stroke="#fff" stroke-width="2.4" opacity=".6"/><path d="M72 81 L80 88 L88 81" ${F('#2F6CC8', 2)}/>${e === 2 ? `<path d="${burst(88, 94, 2.2, 5, 5)}" ${F('#FFC93C', 1.4)}/>` : ''}`;
     // holding hands in the middle
     s += eth_arm('M50 88 Q56 100 60 101', '#F6CDA6') + eth_arm('M70 88 Q64 100 60 101', '#E8B48A');
     s += `<circle cx="60" cy="101" r="5.5" ${F(skin, 2)}/>`;
+    if (up) s += `<path d="M54 97 Q55 102 54 106" fill="none" stroke="${OUT}" stroke-width="4.6" stroke-linecap="round"/><path d="M54 97 Q55 102 54 106" fill="none" stroke="#FF6E8E" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="2 2"/><path d="M66 97 Q65 102 66 106" fill="none" stroke="${OUT}" stroke-width="4.6" stroke-linecap="round"/><path d="M66 97 Q65 102 66 106" fill="none" stroke="#3FBF7F" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="2 2"/>`;
     s += eth_arm('M28 88 Q22 98 24 106', '#F6CDA6') + eth_arm('M92 88 Q98 98 96 106', '#E8B48A');
     // Ida's pigtails
-    s += `<path d="M24 50 Q12 54 14 70 Q22 64 26 58 Z M56 50 Q68 54 66 70 Q58 64 54 58 Z" ${F(C.grad('#D8572A'), 2.2)}/><circle cx="24" cy="52" r="3" ${F('#3FBF7F', 1.8)}/><circle cx="56" cy="52" r="3" ${F('#3FBF7F', 1.8)}/>`;
+    s += `<path d="M24 50 Q12 54 14 70 Q22 64 26 58 Z M56 50 Q68 54 66 70 Q58 64 54 58 Z" ${F(red, 2.2)}/><circle cx="24" cy="52" r="3" ${F('#3FBF7F', 1.8)}/><circle cx="56" cy="52" r="3" ${F('#3FBF7F', 1.8)}/>`;
+    if (up) s += `<path d="M17 58 Q16 64 17 67 M63 58 Q64 64 63 67" fill="none" stroke="#A83A18" stroke-width="1.4" stroke-linecap="round"/>`;
     s += `<circle cx="40" cy="58" r="18" ${F(skin)}/>`;
-    s += `<path d="M22 56 Q20 38 40 38 Q60 38 58 56 Q50 46 40 48 Q30 46 22 56 Z" ${F(C.grad('#D8572A'), 2.4)}/>`;
+    s += `<path d="M22 56 Q20 38 40 38 Q60 38 58 56 Q50 46 40 48 Q30 46 22 56 Z" ${F(red, 2.4)}/>`;
+    if (up) s += `<path d="M30 44 Q36 41 42 42 M44 42 Q50 43 53 47" fill="none" stroke="#F08A5A" stroke-width="1.8" stroke-linecap="round"/>`;
+    if (e === 2) s += `<g transform="translate(52 42)" fill="#fff" ${S(1.2)}>${[0, 72, 144, 216, 288].map((r) => `<ellipse cy="-3" rx="2.4" ry="3.4" transform="rotate(${r})"/>`).join('')}<circle r="2" fill="#FFC93C"/></g>`;
     s += shine(33, 52, 4, 2.5, -20);
-    s += pair(40, 60, 7, 4.5, { dir: [0.35, 0.1] });
+    s += pair(40, 60, 7, 4.5, { dir: [0.35, 0.1], iris: up ? '#3F9A5A' : null });
     s += M.smile(40, 69, 5) + blush(40, 66, 11, 3);
     // Ole: messy blond hair
     s += `<circle cx="80" cy="58" r="18" ${F(skin2)}/>`;
     s += `<path d="M62 56 Q60 40 72 39 L70 32 L78 38 L80 30 L85 38 L92 33 L89 41 Q100 44 98 56 Q92 46 86 48 Q80 44 74 49 Q68 46 62 56 Z" ${F(C.grad('#F2CC55'), 2.4)}/>`;
+    if (up) s += `<path d="M74 41 L77 46 M82 38 L83 44 M90 44 L88 48" fill="none" stroke="#C99A2E" stroke-width="1.6" stroke-linecap="round"/>` + `<path d="M72 64h0M75 66h0M85 66h0M88 64h0" stroke="#B8754A" stroke-width="1.8" stroke-linecap="round"/>`;
     s += shine(73, 52, 4, 2.5, -20);
-    s += pair(80, 60, 7, 4.5, { dir: [-0.35, 0.1] });
+    s += pair(80, 60, 7, 4.5, { dir: [-0.35, 0.1], iris: up ? '#4A7FC4' : null });
     s += M.grin(80, 68, 6) + blush(80, 66, 11, 3);
-    s += `<path d="M76 70 l0 0" ${N(1)}/>`;
-    s += `<path d="M53 30 Q53 25 57 25 Q60 25 60 29 Q60 25 63 25 Q67 25 67 30 Q67 35 60 39 Q53 35 53 30 Z" ${F('#FF6E8E', 2)}/>`;
+    s += up ? `<path d="M51 28 Q51 22 56 22 Q60 22 60 27 Q60 22 64 22 Q69 22 69 28 Q69 34 60 39 Q51 34 51 28 Z" ${F(C.grad('#FF6E8E'), 2.2)}/><ellipse cx="55.5" cy="26" rx="2.2" ry="1.4" fill="#fff" opacity=".8" transform="rotate(-30 55.5 26)"/>`
+      : `<path d="M53 30 Q53 25 57 25 Q60 25 60 29 Q60 25 63 25 Q67 25 67 30 Q67 35 60 39 Q53 35 53 30 Z" ${F('#FF6E8E', 2)}/>`;
     return s;
   }
 
@@ -2159,20 +2179,27 @@ const MONART = (() => {
   }
 
   function kritzelei(P, o, C) {
-    const ink = '#2E6BD8';
+    const ink = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#3D7BE8'], [1, '#1E3A9A']]);
     let d = '';
-    for (let i = 0; i <= 220; i++) {
-      const t = (i / 220) * Math.PI * 2, x = 60 + 30 * Math.cos(t) + 11 * Math.cos(11 * t + 0.6), y = 66 + 28 * Math.sin(t) + 11 * Math.sin(11 * t + 0.6) * (0.85 + 0.15 * Math.cos(3 * t));
+    for (let i = 0; i <= 200; i++) {
+      const t = (i / 200) * Math.PI * 2, x = 58 + 27 * Math.cos(t) + 10 * Math.cos(11 * t + 0.6), y = 60 + 25 * Math.sin(t) + 10 * Math.sin(11 * t + 0.6) * (0.85 + 0.15 * Math.cos(3 * t));
       d += `${i ? 'L' : 'M'}${f1(x)} ${f1(y)} `;
     }
-    let s = `<ellipse cx="60" cy="112" rx="30" ry="4" fill="${OUT}" opacity=".16"/>`;
-    s += `<ellipse cx="60" cy="66" rx="42" ry="40" fill="#DDEEFF" ${S(2.2)}/>`;
-    s += `<path d="${d}" fill="none" stroke="#7FB2F5" stroke-width="5" stroke-linejoin="round" opacity=".6"/><path d="${d}" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linejoin="round"/>`;
-    s += `<path d="M98 82 Q110 90 104 100 Q98 106 104 112" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
-    s += `<g transform="rotate(30 102 98)"><rect x="98" y="70" width="9" height="30" rx="2" ${F('#3A8AD8', 2.2)}/><path d="M98 100 L107 100 L102.5 108 Z" ${F('#E6E9F0', 2)}/><rect x="98" y="66" width="9" height="6" rx="2" ${F('#1C2541', 2)}/></g>`;
-    s += `<ellipse cx="60" cy="62" rx="24" ry="17" fill="#fff" opacity=".85"/>`;
-    s += pair(60, 58, 10, 7, { dir: [0.3, 0.1], brow: 'up', bw: 2.8 }) + M.grin(60, 70, 7);
-    s += de_limb('M22 72 Q12 70 10 60', ink, 2) + de_limb('M30 98 L26 110 M50 104 L48 112', ink, 2);
+    let s = `<ellipse cx="58" cy="113" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
+    // a torn page from an exercise book
+    s += `<g transform="rotate(-7 60 60)"><path d="M14 18 L100 18 L100 96 L94 100 L88 95 L81 101 L74 96 L67 101 L60 96 L53 100 L46 95 L39 101 L32 96 L25 100 L19 95 L14 99 Z" ${F(C.lin('#FFFFFF', '#E8EEF8'), 2.4)}/>`;
+    s += [32, 44, 56, 68, 80].map((y) => `<path d="M16 ${y} L98 ${y}" stroke="#9CC2EE" stroke-width="1.2"/>`).join('') + `<path d="M26 19 L26 96" stroke="#F08A8A" stroke-width="1.4"/></g>`;
+    // the scribble itself, pressed hard
+    s += `<path d="${d}" fill="none" stroke="#9CC2F5" stroke-width="7" stroke-linejoin="round" opacity=".45"/><path d="${d}" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linejoin="round"/>`;
+    s += `<path d="M30 92 q-4 8 2 12 q6 3 3 8 M52 92 q2 8 -3 12 q-5 4 0 8" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<path d="M30 58 q-10 -2 -12 -10 q-1 -6 4 -6 q4 1 0 6" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+    // ballpoint pen it is drawing with, trailing fresh ink
+    s += `<path d="M86 74 Q96 84 92 94 Q88 102 96 106" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<g transform="rotate(32 100 84)"><rect x="95" y="52" width="10" height="34" rx="2.5" ${F(C.lin('#5A9AF0', '#2A5FC0'), 2.4)}/><rect x="95" y="76" width="10" height="9" fill="#E9EEF8" ${S(2)}/><path d="M95 85 L105 85 L100.8 95 L99.2 95 Z" ${F(C.lin('#E4E9F0', '#9AA3C2'), 2)}/><circle cx="100" cy="95.5" r="1.2" fill="#1E3A9A"/><path d="M103 50 L103 68" stroke="#E4E9F0" stroke-width="2.4" stroke-linecap="round"/><path d="M103 50 L103 68" ${N(1)}/><rect x="94" y="48" width="12" height="6" rx="2" ${F('#1C2541', 2)}/><path d="M97 58 L97 74" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".55"/></g>`;
+    s += [[14, 24, 5], [104, 22, 3.5]].map(([x, y, r]) => `<path d="M${x} ${y - r} Q${x + r * 0.4} ${y - r * 0.4} ${x + r} ${y} Q${x + r * 0.5} ${y + r * 0.5} ${x} ${y + r} Q${x - r * 0.5} ${y + r * 0.6} ${x - r} ${y} Q${x - r * 0.6} ${y - r * 0.5} ${x} ${y - r} Z" fill="#2A4FB8"/><circle cx="${f1(x - r * 0.3)}" cy="${f1(y - r * 0.35)}" r="${f1(r * 0.25)}" fill="#fff" opacity=".7"/>`).join('');
+    // a clean spot for the face
+    s += `<ellipse cx="58" cy="58" rx="22" ry="16" fill="${gr(C, 'radial', '', [[0.6, '#fff', 0.95], [1, '#fff', 0]])}"/>`;
+    s += pair(58, 55, 10, 6.5, { dir: [0.3, 0.1], brow: 'up', bw: 2.8, iris: '#3D7BE8' }) + M.tongue(58, 66, 7);
     return s;
   }
 
@@ -2441,22 +2468,32 @@ const MONART = (() => {
   }
 
   function kornkaefer(P, o, C) {
-    const shell = C.grad('#8A5A32'), head = C.grad('#6E4426'), grain = C.grad('#E8C25A');
-    let s = `<ellipse cx="60" cy="112" rx="46" ry="5" fill="#5A3A22" opacity=".25"/>`;
-    s += `<path d="M42 88 L34 110 L28 112 M62 92 L60 112 L54 113 M82 90 L92 110 L98 111" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
-    s += `<ellipse cx="46" cy="74" rx="36" ry="24" ${F(shell)} transform="rotate(6 46 74)"/>`;
-    s += `<path d="M18 70 Q46 64 78 78" fill="none" stroke="#5A3A20" stroke-width="2.2" stroke-linecap="round"/>`;
-    s += [[26, 62], [36, 58], [48, 58], [60, 62], [24, 80], [36, 82], [48, 84], [60, 84], [70, 72]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.8" fill="#4A2E18"/>`).join('');
-    s += shine(34, 60, 10, 4, -8);
-    s += `<ellipse cx="80" cy="70" rx="14" ry="16" ${F(head)}/>`;
-    // the long weevil snout with elbowed antennae
-    s += `<path d="M90 70 Q104 74 112 90" fill="none" stroke="${OUT}" stroke-width="10" stroke-linecap="round"/><path d="M90 70 Q104 74 112 90" fill="none" stroke="#7A4C2A" stroke-width="5.5" stroke-linecap="round"/>`;
-    s += `<path d="M102 78 L104 60 L114 48" ${N(2.4)}/><ellipse cx="115" cy="46" rx="3" ry="4.5" fill="${OUT}" transform="rotate(35 115 46)"/>`;
-    s += eye(84, 62, 7, { dir: [0.35, 0.1], brow: 'angry', bw: 3, side: 1 });
-    s += `<path d="M78 78 Q84 82 90 78" ${N(2.4)}/>`;
-    // the grain kernel it is nibbling
-    s += `<g transform="rotate(-20 106 104)"><ellipse cx="106" cy="104" rx="11" ry="7" ${F(grain, 2.2)}/><path d="M97 104 Q106 100 115 104" fill="none" stroke="#C9921E" stroke-width="1.6"/></g><path d="M108 96 Q112 99 115 97" fill="none" stroke="#C9921E" stroke-width="2"/>`;
-    s += `<circle cx="14" cy="104" r="2.4" fill="#E8C25A" ${S(1.4)}/><circle cx="8" cy="98" r="1.6" fill="#E8C25A"/>`;
+    const chitin = gr(C, 'radial', 'cx=".34" cy=".24" r=".85"', [[0, '#E39A62'], [0.3, '#A85A2C'], [0.75, '#5E2C14'], [1, '#6E3A1E']]), head = gr(C, 'radial', 'cx=".35" cy=".3" r=".8"', [[0, '#D08A56'], [0.5, '#8A4A24'], [1, '#4E2810']]), grain = C.grad('#EBC45C');
+    // jointed leg: thick upper part, thin lower part, knee knob, little foot
+    const leg = (pts, col, k) => { const d = 'M' + pts.map((p) => p.join(' ')).join(' L');
+      return `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${f1(6.5 * k)}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${f1(3 * k)}" stroke-linecap="round" stroke-linejoin="round"/>` +
+        pts.slice(1, -1).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${f1(2.6 * k)}" fill="${col}" ${S(1.4)}/>`).join(''); };
+    let s = `<ellipse cx="60" cy="112" rx="48" ry="4.5" fill="#5A3A22" opacity=".22"/>`;
+    s += leg([[30, 84], [20, 96], [16, 110]], '#3A1C0C', 0.85) + leg([[54, 88], [50, 100], [46, 111]], '#3A1C0C', 0.85);
+    // wing case: grooves, rows of pits, a long gloss stripe
+    s += `<path d="M8 70 Q10 48 38 46 Q64 46 72 62 Q76 82 58 90 Q30 96 14 86 Q6 80 8 70 Z" ${F(chitin, 3)}/>`;
+    s += [[-11, 0.8], [-4, 1], [4, 1], [11, 0.8]].map(([dy, k]) => `<path d="M${14} ${70 + dy} Q40 ${f1(66 + dy * 1.3)} ${70} ${f1(68 + dy * k)}" fill="none" stroke="#3A1608" stroke-width="1.2" opacity=".55"/>`).join('');
+    s += [[-7.5], [0], [7.5]].map(([dy]) => along([16, 70 + dy], [40, 66 + dy * 1.3], [68, 68 + dy * 0.9], 8, (x, y) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="1.1" fill="#2A1006" opacity=".6"/>`)).join('');
+    s += `<path d="M10 70 Q40 63 74 68" ${N(2)}/><path d="M16 58 Q30 50 52 51" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".6"/><path d="M58 53 Q64 55 67 59" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".45"/><path d="M20 86 Q38 91 56 87" fill="none" stroke="#F0A878" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>`;
+    s += leg([[44, 88], [38, 100], [30, 111]], '#5A2C14', 1) + leg([[64, 84], [70, 98], [66, 111]], '#5A2C14', 1);
+    // pitted neck shield and big head
+    s += `<path d="M66 56 Q78 48 88 56 Q92 70 84 80 Q72 84 66 76 Q62 66 66 56 Z" ${F(chitin, 2.6)}/>${[[72, 61], [79, 58], [75, 69], [83, 66], [71, 76], [80, 75]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#2A1006" opacity=".6"/>`).join('')}<path d="M70 56 Q76 52 82 53" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>`;
+    s += `<circle cx="92" cy="58" r="13" ${F(head, 2.8)}/>`;
+    // the snout (Rüssel), straight and long, with elbowed clubbed feelers half way along
+    const sn = 'M101 63 Q110 68 113 82';
+    s += `<path d="${sn}" fill="none" stroke="${OUT}" stroke-width="10" stroke-linecap="round"/><path d="${sn}" fill="none" stroke="#8A4A24" stroke-width="5.5" stroke-linecap="round"/><path d="M103 63 Q108 66 110 72" fill="none" stroke="#E8A878" stroke-width="1.6" stroke-linecap="round"/>`;
+    s += `<path d="M109 71 L115 56 L110 42" ${N(2.2)}/><ellipse cx="109" cy="38.5" rx="2.8" ry="4.2" fill="#5A2C14" ${S(1.6)} transform="rotate(-15 109 38.5)"/>`;
+    // front legs clutching the kernel, snout biting in
+    s += `<g transform="rotate(-18 104 92)"><path d="M93 92 Q93 84 104 84 Q115 84 115 91 Q113 93 112 95 Q104 99 96 97 Q93 95 93 92 Z" ${F(grain, 2.4)}/><path d="M95 91.5 Q104 88.5 112 91.5" fill="none" stroke="#B8861A" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="99" cy="88" rx="3" ry="1.4" fill="#fff" opacity=".7"/></g>`;
+    s += leg([[80, 78], [90, 88], [98, 96]], '#5A2C14', 1) + leg([[76, 82], [82, 96], [94, 102]], '#5A2C14', 1);
+    s += eye(92, 55, 8.5, { dir: [0.35, 0.15], brow: 'angry', bw: 3.2, side: 1, iris: '#D99A1E', lid: '#9A5530', lidY: -0.7, lidRot: 14 });
+    s += `<path d="M84 66 Q89 70 95 67" ${N(2.2)}/>`;
+    s += `<circle cx="116" cy="100" r="1.6" fill="#F5E6B0" ${S(1)}/><circle cx="110" cy="108" r="1.2" fill="#F5E6B0" ${S(1)}/><circle cx="6" cy="102" r="2" fill="#EBC45C" ${S(1.2)}/>`;
     return s;
   }
 
@@ -2644,20 +2681,31 @@ const MONART = (() => {
   }
 
   function elster(P, o, C) {
-    const black = C.grad('#2E3448'), white = C.grad('#FFFFFF'), tail = C.lin('#3E8FA8', '#2A3F7A');
-    let s = `<ellipse cx="52" cy="112" rx="34" ry="4" fill="${OUT}" opacity=".18"/>`;
-    s += `<path d="M44 82 L4 108 L10 114 L50 92 Z" ${F(tail)}/><path d="M42 86 L8 110" stroke="#7FD0E0" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>`;
-    s += `<path d="M48 96 L46 110 M58 96 L60 110 M42 110 L50 110 M56 110 L64 110" ${N(3)}/>`;
-    s += `<path d="M30 76 Q32 52 56 48 Q80 48 82 70 Q82 96 56 98 Q34 98 30 76 Z" ${F(black)}/>`;
-    s += `<path d="M56 64 Q80 62 80 76 Q78 94 58 96 Q50 82 56 64 Z" ${F(white, 2.2)}/>`;
-    s += `<path d="M30 74 Q30 60 44 56 Q56 58 58 72 Q52 90 36 88 Q30 84 30 74 Z" ${F(black, 2.2)}/><path d="M36 64 Q42 60 50 62 Q44 70 36 72 Z" ${F('#FFFFFF', 1.8)}/><path d="M34 80 Q42 84 52 78" fill="none" stroke="#3E8FA8" stroke-width="2.4" stroke-linecap="round"/>`;
-    s += `<circle cx="78" cy="40" r="18" ${F(black)}/>`;
-    s += shine(72, 30, 6, 3, -20);
-    s += `<path d="M94 38 L114 42 L94 48 Z" ${F('#3A3A46', 2.2)}/>`;
-    // stolen shiny ring in the beak
-    s += `<circle cx="110" cy="52" r="7" fill="none" stroke="${OUT}" stroke-width="5.5"/><circle cx="110" cy="52" r="7" fill="none" stroke="#FFC93C" stroke-width="2.6"/><path d="M105 45 L110 40 L115 45 L110 48 Z" ${F('#5FD0F0', 1.6)}/>${spark(102, 36, 3.5, '#FFE066')}${spark(118, 60, 2.4, '#FFE066')}`;
-    s += eye(84, 38, 6.5, { dir: [0.35, 0.1], brow: 'angry', bw: 3, side: 1, iris: '#4A9A6A' });
-    s += `<path d="M16 34 l0 0" />${spark(22, 24, 2.6, '#FFE066')}`;
+    const black = C.grad('#2E3448'), white = C.grad('#FFFFFF'), sheen = gr(C, 'linear', 'x1=".2" y1="0" x2=".8" y2="1"', [[0, '#3A6FA8'], [0.5, '#24305E'], [1, '#2A2440']]);
+    const tail = gr(C, 'linear', 'x1="1" y1="0" x2="0" y2="1"', [[0, '#2A3F7A'], [0.5, '#2E8F8A'], [1, '#5A3F8A']]);
+    const paper = C.lin('#FFF6DE', '#E9D4A6'), goldR = C.grad('#F2C23C');
+    let s = `<ellipse cx="62" cy="113" rx="36" ry="4" fill="${OUT}" opacity=".18"/>`;
+    // long graduated tail
+    s += `<path d="M42 76 Q22 80 4 90 Q1 96 7 96 Q28 92 50 88 Z" ${F(tail, 2.6)}/><path d="M40 80 Q22 85 7 92 M46 85 Q30 88 14 93" fill="none" stroke="#9BE0E8" stroke-width="1.4" stroke-linecap="round" opacity=".55"/>`;
+    // rolled map it stands on
+    s += `<path d="M34 100 L96 100 Q102 100 102 106 Q102 112 96 112 L34 112 Z" ${F(paper, 2.4)}/><ellipse cx="34" cy="106" rx="5" ry="6" ${F('#F5E6C0', 2.4)}/><path d="M34 103 a2.4 3 0 1 0 0.1 0" ${N(1.6)}/>`;
+    s += `<path d="M46 106 q6 -4 12 0 t12 0" fill="none" stroke="#D9453B" stroke-width="1.8" stroke-dasharray="3 2.4" stroke-linecap="round"/><path d="M80 103 l5 5 M85 103 l-5 5" stroke="#D9453B" stroke-width="2" stroke-linecap="round"/>`;
+        // body: black back, white belly
+    s += `<path d="M34 78 Q36 54 62 50 Q88 50 90 72 Q90 96 64 98 Q40 98 34 78 Z" ${F(black, 3)}/>`;
+    s += `<path d="M62 64 Q86 62 86 78 Q84 94 64 96 Q56 84 62 64 Z" fill="${white}"/><path d="M68 74 q4 2 8 0 M66 82 q5 2 10 0 M68 89 q4 1.5 7 0" fill="none" stroke="#D3DAEE" stroke-width="1.6" stroke-linecap="round"/>`;
+    // folded wing: layered feathers, white shoulder patch, blue-green sheen
+    s += `<path d="M34 76 Q32 60 48 56 Q62 58 64 72 Q60 88 44 92 Q34 88 34 76 Z" ${F(sheen, 2.4)}/>`;
+    s += `<path d="M40 62 Q50 56 61 63 Q50 66 41 68 Z" ${F(white, 1.8)}/>`;
+    s += `<path d="M38 82 Q46 86 56 80 M40 88 Q48 90 58 84 M44 74 Q52 76 60 72" fill="none" stroke="#7FD0E0" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>`;
+    s += `<path d="M56 94 L54 101 M68 94 L70 101 M49 101 Q54 98 59 101 M65 101 Q70 98 75 101" ${N(3)}/>`;
+    // head
+    s += `<circle cx="82" cy="40" r="18" ${F(black, 3)}/><path d="M68 34 Q72 25 84 24" fill="none" stroke="#7FA8E0" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><path d="M66 42 Q66 46 68 49" fill="none" stroke="#8A6AD0" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
+    s += `<path d="M98 36 L116 41 L98 47 Z" ${F(C.lin('#4A4F66', '#1C2033'), 2.4)}/><path d="M98 41.5 L112 41.5" ${N(1.4)}/>`;
+    // stolen compass dangling from the beak
+    s += `<path d="M110 44 Q112 50 108 54" ${N(1.8)}/><circle cx="106" cy="66" r="11" ${F(goldR, 2.6)}/><circle cx="106" cy="66" r="7.5" ${F('#FDFBF4', 1.8)}/>`;
+    s += `<path d="M106 59.5 L108 66 L106 72.5 L104 66 Z" fill="#D9453B"/><path d="M106 66 L108 66 L106 72.5 L104 66 Z" fill="#9AA3C2"/><circle cx="106" cy="66" r="1.2" fill="${OUT}"/><circle cx="106" cy="54" r="2.4" ${F('#F2C23C', 1.6)}/>`;
+    s += spark(118, 56, 3.5, '#FFE066') + spark(92, 70, 2.6, '#FFE066');
+    s += eye(86, 37, 6.5, { dir: [0.4, 0.15], brow: 'angry', bw: 3, side: 1, iris: '#4A9A6A' });
     return s;
   }
 
@@ -2805,18 +2853,33 @@ const MONART = (() => {
     return s;
   }
   function bulldogge(P, o, C) {
-    const fur = C.grad('#D9B48A');
-    let s = `<ellipse cx="60" cy="112" rx="40" ry="5" fill="${OUT}" opacity=".16"/>`;
-    s += `<path d="M22 112 Q16 82 28 70 L92 70 Q104 82 98 112 Z" ${F(fur)}/>`;
-    s += `<path d="M30 76 Q60 86 90 76 L90 82 Q60 92 30 82 Z" ${F('#D9453B', 2.2)}/>${[42, 60, 78].map((x) => `<circle cx="${x}" cy="${x === 60 ? 87 : 85}" r="2.6" ${F('#E6E9F0', 1.4)}/>`).join('')}`;
-    s += `<path d="M18 30 Q8 20 14 10 Q26 14 34 26 Z M102 30 Q112 20 106 10 Q94 14 86 26 Z" ${F('#B38A60')}/>`;
-    s += `<path d="M14 54 Q12 22 60 20 Q108 22 106 54 Q106 80 60 80 Q14 80 14 54 Z" ${F(fur)}/>`;
-    s += `<path d="M44 30 Q60 26 76 30 M48 36 Q60 33 72 36" fill="none" stroke="#B38A60" stroke-width="2.2" stroke-linecap="round"/>`;
-    s += `<ellipse cx="60" cy="64" rx="26" ry="14" ${F('#F2DCC0', 2.2)}/>`;
-    s += `<ellipse cx="60" cy="54" rx="8" ry="5" ${F('#2E3448', 2)}/><circle cx="57" cy="52.5" r="1.6" fill="#fff" opacity=".7"/>`;
-    s += `<path d="M38 70 Q60 62 82 70" ${N(3)}/><path d="M42 69 L44 61 L48 67 Z M78 69 L76 61 L72 67 Z" ${F('#fff', 1.6)}/>`;
-    s += shine(34, 34, 7, 3.5, -25);
-    s += pair(60, 42, 15, 6.5, { brow: 'angry', bw: 3.4, iris: '#7A4A2A' });
+    const fawn = C.grad('#D9A066'), fawnD = '#A8743F', cream = C.grad('#FBF3E6'), nose = C.grad('#3A3F55'), collar = C.lin('#E2533F', '#A8302A'), gold = C.grad('#F2C23C');
+    let s = `<ellipse cx="60" cy="113" rx="42" ry="5" fill="${OUT}" opacity=".18"/>`;
+    // sitting body with haunches
+    s += `<path d="M24 113 Q14 100 22 86 Q28 74 40 72 L80 72 Q92 74 98 86 Q106 100 96 113 Z" ${F(fawn, 3)}/>`;
+    s += `<path d="M44 74 Q60 70 76 74 Q78 96 70 113 L50 113 Q42 96 44 74 Z" fill="${cream}"/>`;
+    s += `<path d="M26 104 Q24 94 30 88 M94 104 Q96 94 90 88" fill="none" stroke="${fawnD}" stroke-width="2" stroke-linecap="round"/>`;
+    // stocky front legs and white paws
+    s += [44, 76].map((x) => `<path d="M${x - 8} 84 Q${x - 9} 100 ${x - 8} 108 L${x + 8} 108 Q${x + 9} 100 ${x + 7} 84 Z" ${F(fawn, 2.6)}/><path d="M${x - 10} 113 Q${x - 11} 104 ${x} 104 Q${x + 11} 104 ${x + 10} 113 Z" ${F(cream, 2.4)}/><path d="M${x - 3.5} 108 L${x - 3.5} 112 M${x + 3.5} 108 L${x + 3.5} 112" ${N(1.6)}/>`).join('');
+    s += `<path d="M54 86 l2 3 M62 90 l-2 3 M57 96 l2 3" stroke="#E4D3BC" stroke-width="1.6" stroke-linecap="round"/>`;
+    // red leather collar, gold studs and a round tag
+    s += `<path d="M30 70 Q60 82 90 70 L91 78 Q60 90 29 78 Z" ${F(collar, 2.4)}/>${[38, 50, 70, 82].map((x) => `<circle cx="${x}" cy="${f1(76.5 + 4.4 * Math.sin(((x - 30) / 60) * Math.PI))}" r="1.8" fill="#FFE07A" ${S(1)}/>`).join('')}`;
+    s += `<circle cx="60" cy="90" r="6" ${F(gold, 2.2)}/><path d="M57 88 L63 92 M57 92 L63 88" stroke="#B5851A" stroke-width="1.4" stroke-linecap="round"/><circle cx="58" cy="88" r="1.2" fill="#fff" opacity=".8"/>`;
+    // rose ears
+    s += `<path d="M26 26 Q12 16 3 26 Q10 29 13 40 Q18 31 30 32 Z M94 26 Q108 16 117 26 Q110 29 107 40 Q102 31 90 32 Z" ${F(C.grad('#9A6638'), 2.6)}/><path d="M6 27 Q14 24 22 28 M114 27 Q106 24 98 28" fill="none" stroke="#D98A7A" stroke-width="2" stroke-linecap="round"/>`;
+    // broad head
+    s += `<path d="M12 50 Q12 20 60 19 Q108 20 108 50 Q110 72 94 80 Q60 92 26 80 Q10 72 12 50 Z" ${F(fawn, 3)}/>`;
+    s += `<path d="M56 20 Q54 34 50 44 L70 44 Q66 34 64 20 Z" fill="${cream}" opacity=".9"/>`;
+    s += `<path d="M42 28 Q50 24 56 28 M64 28 Q70 24 78 28 M47 34 Q52 31 56 33 M64 33 Q68 31 73 34" fill="none" stroke="${fawnD}" stroke-width="2" stroke-linecap="round"/>`;
+    s += `<path d="M18 46 l4 2 M16 54 l4 1 M102 46 l-4 2 M104 54 l-4 1" stroke="${fawnD}" stroke-width="1.6" stroke-linecap="round"/>`;
+    s += shine(32, 32, 8, 3.5, -25);
+    // heavy jowls, underbite with two little teeth
+    s += `<path d="M32 70 Q24 54 44 52 Q56 52 60 58 Q64 52 76 52 Q96 54 88 70 Q84 82 60 82 Q36 82 32 70 Z" ${F(cream, 2.6)}/>`;
+    s += `<path d="M44 74 Q60 84 76 74 Q74 70 60 71 Q46 70 44 74 Z" ${F('#7A2340', 2.2)}/><path d="M47 74 L49 68 L52 73 Z M73 74 L71 68 L68 73 Z" ${F('#fff', 1.4)}/>`;
+    s += `<path d="M60 63 L60 69 M50 66 Q55 70 60 69 Q65 70 70 66" ${N(2.2)}/>`;
+    s += [[46, 62], [50, 65], [70, 65], [74, 62]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r=".9" fill="#B89C80"/>`).join('');
+    s += `<path d="M50 57 Q50 51 60 51 Q70 51 70 57 Q68 63 60 64 Q52 63 50 57 Z" ${F(nose, 2.2)}/><path d="M55 58 q1.5 1.5 3 0 M62 58 q1.5 1.5 3 0" stroke="#11152A" stroke-width="1.6" stroke-linecap="round" fill="none"/><ellipse cx="56" cy="54" rx="3" ry="1.4" fill="#fff" opacity=".65"/>`;
+    s += pair(60, 40, 16, 6.5, { lid: '#C98E55', lidY: -0.1, lidRot: 12, iris: '#7A4A2A', brow: 'angry', bw: 3.2, browColor: '#6E4426' });
     return s;
   }
   function pfeifkessel(P, o, C) {
@@ -3017,15 +3080,31 @@ const MONART = (() => {
   }
 
   function blendlicht(P, o, C) {
-    const core = C.grad('#FFF3A0');
-    let s = `<circle cx="60" cy="62" r="52" fill="#FFE45C" opacity=".22"/>`;
-    s += Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; const r1 = 34, r2 = i % 2 ? 50 : 56; return `<path d="M${f1(60 + Math.cos(a) * r1)} ${f1(62 + Math.sin(a) * r1)} L${f1(60 + Math.cos(a + 0.12) * r2)} ${f1(62 + Math.sin(a + 0.12) * r2)} L${f1(60 + Math.cos(a - 0.12) * r2)} ${f1(62 + Math.sin(a - 0.12) * r2)} Z" ${F('#FFD23C', 2)}/>`; }).join('');
-    s += `<circle cx="60" cy="62" r="34" ${F(core)}/>`;
-    s += shine(48, 48, 10, 5, -25);
-    // squinting eyes: it is too bright even for itself
-    s += `<path d="M40 58 L52 62 L40 66 M80 58 L68 62 L80 66" ${N(3.2)}/>`;
-    s += M.grin(60, 74, 10);
-    s += spark(20, 22, 6, '#fff') + spark(102, 100, 5, '#fff');
+    const halo = gr(C, 'radial', '', [[0, '#FFFDE8', 0.95], [0.42, '#FFE45C', 0.5], [1, '#FFC93C', 0]]);
+    const core = gr(C, 'radial', 'cx=".36" cy=".3" r=".78"', [[0, '#FFFFFF'], [0.38, '#FFF4B0'], [0.82, '#FFD23C'], [1, '#EFA62A']]);
+    const ray = gr(C, 'radial', 'cx="60" cy="58" r="56" gradientUnits="userSpaceOnUse"', [[0.5, '#FFE98A'], [1, '#FFA51E']]);
+    const beam = (v) => gr(C, 'linear', v ? 'x2="0" y2="1"' : '', [[0, '#fff', 0], [0.5, '#fff', 1], [1, '#fff', 0]]);
+    const lens = C.lin('#3E4C80', '#121731');
+    let s = `<ellipse cx="60" cy="114" rx="24" ry="3.5" fill="${OUT}" opacity=".14"/><circle cx="60" cy="58" r="58" fill="${halo}"/>`;
+    // swept rays like a glare that turns
+    s += Array.from({ length: 10 }, (_, i) => {
+      const a = (i / 10) * Math.PI * 2 - Math.PI / 2, r2 = i % 2 ? 46 : 56, w = i % 2 ? 0.13 : 0.17;
+      return `<path d="M${polar(60, 58, 30, a - w)} Q${polar(60, 58, r2 * 0.8, a - w * 0.2)} ${polar(60, 58, r2, a + 0.1)} Q${polar(60, 58, r2 * 0.72, a + w * 1.1)} ${polar(60, 58, 30, a + w)} Z" ${F(ray, 2)}/>`;
+    }).join('');
+    s += `<path d="M2 58 L60 55 L118 58 L60 61 Z" fill="${beam(0)}"/><path d="M60 0 L62.5 58 L60 116 L57.5 58 Z" fill="${beam(1)}"/>`;
+    s += `<circle cx="60" cy="58" r="31" ${F(core, 3)}/><circle cx="60" cy="58" r="25" fill="none" stroke="#fff" stroke-width="2" opacity=".55"/>`;
+    s += `<path d="M40 44 Q46 34 58 32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>`;
+    // peeks over its own sunglasses: too bright even for itself
+    s += pair(60, 52, 10, 5.5, { lid: '#FFE27A', lidY: -0.15, lidRot: -6, brow: 'up', bw: 2.6, iris: '#C98A1A', dir: [0.1, -0.25] });
+    const lensL = 'M38 56 L56 56 Q57 56 56.6 58.5 Q55.4 67 47.5 67 Q39.6 67 38.4 58.5 Q38 56 38 56 Z';
+    s += `<path d="${lensL}" ${F(lens, 2.4)}/><path d="${lensL}" ${F(lens, 2.4)} transform="matrix(-1 0 0 1 120 0)"/>`;
+    s += `<path d="M30 55 L38 56.5 M56 57 Q60 54.5 64 57 M82 56.5 L90 55" ${N(2.6)}/>`;
+    s += `<path d="M42 64 L48 57.5 M45.5 65.5 L50.5 59.5 M71 64 L77 57.5 M74.5 65.5 L79.5 59.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".55"/>`;
+    s += `<path d="M50 75 Q60 83 71 73" ${N(3)}/><path d="M66 77.4 L69 79.6 L70.4 76" fill="#fff" ${S(1.6)}/>`;
+    s += blush(60, 72, 19, 4);
+    // lens-flare ghosts along the glare axis
+    s += [[88, 86, 6, '#7FD8FF', 0.4], [100, 98, 3.5, '#FF9EC4', 0.45], [30, 28, 4, '#B9F2A0', 0.35]].map(([x, y, r, c, a]) => `<path d="${Array.from({ length: 6 }, (_, k) => (k ? 'L' : 'M') + polar(x, y, r, k * Math.PI / 3)).join(' ')} Z" fill="${c}" opacity="${a}"/>`).join('');
+    s += spark(16, 20, 6, '#fff') + spark(106, 18, 4, '#fff');
     return s;
   }
 
@@ -3396,6 +3475,8 @@ const MONART = (() => {
     const id = opts.id || 'mg' + (uid++); const defs = []; let n = 0;
     const C = {
       grad(c) { const k = `${id}_${n++}`; defs.push(`<radialGradient id="${k}" cx="36%" cy="30%" r="80%">${CLASSIC ? `<stop offset="0" stop-color="${shade(c, 0.38)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -0.32)}"/>` : `<stop offset="0" stop-color="${shade(c, 0.42)}"/><stop offset=".5" stop-color="${c}"/><stop offset=".86" stop-color="${shade(c, -0.3)}"/><stop offset="1" stop-color="${shade(c, -0.14)}"/>`}</radialGradient>`); return `url(#${k})`; },
+      // any other paint server or clip path: returns its id
+      def(tag, attrs, inner) { const k = `${id}_${n++}`; defs.push(`<${tag} id="${k}" ${attrs}>${inner}</${tag}>`); return k; },
       lin(a, b) { const k = `${id}_${n++}`; defs.push(`<linearGradient id="${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`); return `url(#${k})`; },
       // counter-mirror glyphs on mirrored (enemy) sprites so „?“ stays readable
       glyph(x, svg) { return /\benemy\b/.test(cls || '') ? `<g transform="translate(${2 * x} 0) scale(-1 1)">${svg}</g>` : svg; },
@@ -3451,26 +3532,46 @@ const MONART = (() => {
     return dress(render(shape, color, evo, cls, { ...opts, bare }), shape, evo, opts.outfit);
   }
   // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
-  // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS
-  const DISC = { leicht: ['#E8C38A', 5], schwer: ['#9A6A45', 10], eisen: ['#A3ABB8', 8] };
+  // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS.
+  // Light and outline stay outside the spin group so the gloss does not turn with the disc.
+  const DISC = { // face light/mid/dark, grain colour, side thickness
+    leicht: [['#F6DDB0', '#E2B878', '#B0803F'], '#C08A4C', 5],
+    schwer: [['#C48E62', '#8A5A36', '#4E301A'], '#5E3A1E', 10],
+    eisen: [['#F4F7FB', '#B4BCC8', '#69727F'], null, 8],
+  };
   const around = (n, f) => Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
   const pt = (r, a) => `${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}`;
+  const steel = (g) => g('linear', '', [[0, '#7A8494'], [0.28, '#F4F7FB'], [0.55, '#AEB7C4'], [1, '#5E6878']]);
   const TIP = {
-    stahl: `<path d="M50 70 L70 70 L60 102 Z" fill="#B8C0CC" ${S(3)}/>`,
-    gummi: `<path d="M50 70 L70 70 L66 94 Q60 103 54 94 Z" fill="#3A3D4A" ${S(3)}/>`,
-    kugel: `<path d="M52 70 L68 70 L63 88 L57 88 Z" fill="#B8C0CC" ${S(3)}/><circle cx="60" cy="95" r="7" fill="#E4E9F0" ${S(3)}/><circle cx="57.5" cy="92.5" r="2" fill="#fff"/>`,
+    stahl: (g) => `<path d="M50 70 L70 70 L60 102 Z" fill="${steel(g)}" ${S(3)}/><path d="M55 74 L59.5 96" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>`,
+    gummi: (g) => `<path d="M50 70 L70 70 L66 94 Q60 103 54 94 Z" fill="${g('linear', '', [[0, '#2A2D38'], [0.3, '#6A6F80'], [1, '#22252E']])}" ${S(3)}/>` +
+      `<path d="M51.5 78 Q60 81 68.5 78 M52.5 85 Q60 88 67.5 85 M53.5 92 Q60 95 66.5 92" fill="none" stroke="#14161D" stroke-width="1.6" stroke-linecap="round"/><path d="M55 74 L56 95" stroke="#9AA0B4" stroke-width="2" stroke-linecap="round" opacity=".5"/>`,
+    kugel: (g) => `<path d="M52 70 L68 70 L63 88 L57 88 Z" fill="${steel(g)}" ${S(3)}/>` +
+      `<circle cx="60" cy="95" r="7.5" fill="${g('radial', 'cx=".35" cy=".3" r=".75"', [[0, '#FFFFFF'], [0.35, '#D6DCE6'], [0.8, '#6E7888'], [1, '#9AA3B2']])}" ${S(3)}/><circle cx="57.5" cy="92.5" r="2" fill="#fff"/><path d="M55 98 Q60 101.5 65 98" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>`,
   };
   const RING = {
-    zahn: '<circle r="30" fill="none" stroke="#5A6070" stroke-width="8" stroke-dasharray="6 4"/>',
-    welle: `<path d="M${around(48, (a) => pt(30 + 3.5 * Math.sin(8 * a), a) + ' L').slice(0, -2)}Z" fill="none" stroke="#2E86AB" stroke-width="6"/>`,
-    flamme: around(10, (a) => `<path d="M${pt(24, a - 0.2)} L${pt(42, a + 0.12)} L${pt(24, a + 0.25)} Z" fill="#FF8A3D" stroke="#C8401A" stroke-width="2"/>`),
+    zahn: (g) => `<path d="M${around(16, (a) => `${pt(30, a - 0.1)} L${pt(36, a - 0.06)} L${pt(36, a + 0.06)} L${pt(30, a + 0.1)} L`).slice(0, -2)}Z M23 0 A23 23 0 1 0 -23 0 A23 23 0 1 0 23 0 Z" fill="${g('radial', 'cx="0" cy="0" r="36" gradientUnits="userSpaceOnUse"', [[0.6, '#5E6878'], [0.8, '#C8CFDA'], [1, '#7A8494']])}" fill-rule="evenodd" stroke="#1C2541" stroke-width="3"/>`,
+    welle: (g) => { const wave = (r, k) => `M${around(48, (a) => pt(r + k * Math.sin(8 * a), a) + ' L').slice(0, -2)}Z`;
+      return `<path d="${wave(34, 3.5)} ${wave(26, 3.5)}" fill="${g('radial', 'cx="0" cy="0" r="38" gradientUnits="userSpaceOnUse"', [[0.65, '#1E5F8A'], [0.82, '#4FB3E8'], [1, '#2E86AB']])}" fill-rule="evenodd" stroke="#1C2541" stroke-width="2.6"/><path d="${wave(31.5, 3.5)}" fill="none" stroke="#C6EEFF" stroke-width="2" stroke-dasharray="7 9"/>`; },
+    flamme: (g) => `<g fill="${g('radial', 'cx="0" cy="0" r="44" gradientUnits="userSpaceOnUse"', [[0.5, '#FFE066'], [0.72, '#FF8A3D'], [1, '#D8401A']])}" stroke="#1C2541" stroke-width="2.4" stroke-linejoin="round">${around(10, (a) => `<path d="M${pt(24, a - 0.24)} Q${pt(36, a - 0.2)} ${pt(44, a + 0.16)} Q${pt(34, a + 0.12)} ${pt(24, a + 0.26)} Z"/>`)}</g>` +
+      around(10, (a) => `<path d="M${pt(26, a - 0.08)} Q${pt(33, a)} ${pt(37, a + 0.1)}" fill="none" stroke="#FFF3B0" stroke-width="2" stroke-linecap="round"/>`),
   };
   function topSVG(color, parts, cls) {
-    const [fill, th] = DISC[parts.disc] || DISC.leicht; const dark = shade(fill, -0.3);
-    return `<svg class="mon top ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><g transform="translate(0 14)">${TIP[parts.tip] || TIP.stahl}
-      <ellipse cx="60" cy="${66 + th}" rx="44" ry="15" fill="${dark}" ${S(3)}/><rect x="16" y="66" width="88" height="${th}" fill="${dark}"/><path d="M16 66v${th}M104 66v${th}" ${S(3)}/>
-      <g transform="translate(60 66) scale(1 .34)"><g class="spin"><circle r="44" fill="${fill}" stroke="#1C2541" stroke-width="6"/>${around(4, (a) => `<circle cx="${pt(37, a).replace(' ', '" cy="')}" r="3.5" fill="${dark}"/>`)}${RING[parts.ring] || RING.zahn}<circle r="15" fill="${color}" stroke="#1C2541" stroke-width="5"/><circle cx="10" r="4" fill="#fff" opacity=".7"/></g></g>
-      <rect x="54" y="30" width="12" height="34" rx="5" fill="${color}" ${S(3)}/><ellipse cx="60" cy="30" rx="9" ry="4" fill="${shade(color, 0.35)}" ${S(2.5)}/></g></svg>`;
+    const [face, grain, th] = DISC[parts.disc] || DISC.leicht, id = 'tp' + (uid++), defs = [];
+    const g = (kind, attrs, stops) => { const k = `${id}_${defs.length}`; defs.push(`<${kind}Gradient id="${k}" ${attrs}>${stops.map(([t, c]) => `<stop offset="${t}" stop-color="${c}"/>`).join('')}</${kind}Gradient>`); return `url(#${k})`; };
+    const faceG = g('radial', 'cx="0" cy="0" r="44" gradientUnits="userSpaceOnUse"', [[0, face[0]], [0.7, face[1]], [1, face[2]]]);
+    const sideG = g('linear', '', [[0, face[2]], [0.22, face[0]], [0.6, face[1]], [1, face[2]]]);
+    const stem = g('linear', '', [[0, shade(color, -0.25)], [0.3, shade(color, 0.45)], [0.6, color], [1, shade(color, -0.4)]]);
+    const tip = (TIP[parts.tip] || TIP.stahl)(g), ring = (RING[parts.ring] || RING.zahn)(g);
+    // turned wood shows growth rings, brushed steel fine circles; the four pins make the spin visible
+    const texture = grain ? [40, 34, 29, 21].map((r, i) => `<circle r="${r}" fill="none" stroke="${grain}" stroke-width="${i % 2 ? 1.2 : 2}" opacity=".55"/>`).join('') + around(3, (a) => `<path d="M${pt(38, a)} A38 38 0 0 1 ${pt(38, a + 0.9)}" fill="none" stroke="${grain}" stroke-width="3" opacity=".45"/>`)
+      : [42, 39, 36, 33, 20, 17].map((r, i) => `<circle r="${r}" fill="none" stroke="${i % 2 ? '#fff' : '#5E6878'}" stroke-width="1" opacity=".5"/>`).join('');
+    const pins = around(4, (a) => `<circle cx="${pt(38.5, a).replace(' ', '" cy="')}" r="3.5" fill="${grain ? '#4A2E18' : '#E4E9F0'}" stroke="#1C2541" stroke-width="1.6"/>`);
+    return `<svg class="mon top ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><defs>${defs.join('')}</defs><g transform="translate(0 14)">${/\bfallen\b/.test(cls || '') ? '' : '<ellipse cx="60" cy="102" rx="12" ry="2.5" fill="#1C2541" opacity=".18"/>'}${tip}
+      <path d="M16 66 v${th} a44 15 0 0 0 88 0 v${-th} Z" fill="${sideG}" ${S(3)}/>${grain ? `<path d="M18 ${70 + th / 2} a42 14 0 0 0 84 0" fill="none" stroke="${grain}" stroke-width="1.2" opacity=".6"/>` : `<path d="M22 ${69 + th / 2} a40 13 0 0 0 30 10" fill="none" stroke="#fff" stroke-width="1.6" opacity=".7"/>`}
+      <g transform="translate(60 66) scale(1 .34)"><g class="spin"><circle r="44" fill="${faceG}"/>${texture}${pins}${ring}<circle r="15" fill="${color}" stroke="#1C2541" stroke-width="4"/></g></g>
+      <ellipse cx="60" cy="66" rx="44" ry="15" fill="none" ${S(3)}/><path d="M24 62 Q34 54 52 53" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+      <rect x="54" y="30" width="12" height="34" rx="5" fill="${stem}" ${S(3)}/><path d="M55 40 h10 M55 44 h10 M55 48 h10" stroke="${shade(color, -0.45)}" stroke-width="1.2" opacity=".6"/><ellipse cx="60" cy="30" rx="8.5" ry="3.8" fill="${shade(color, 0.45)}" ${S(2.4)}/><ellipse cx="57.5" cy="29.4" rx="3" ry="1.2" fill="#fff" opacity=".8"/></g></svg>`;
   }
   /* ---------- Der Konzertsaal (musik.js) ---------- */
   const mu_note = (x, y, k, c) => `<g transform="translate(${x} ${y}) scale(${k})"><ellipse cx="0" cy="0" rx="5" ry="3.6" transform="rotate(-20)" fill="${c || OUT}"/><path d="M4.4 -1 V-18 Q9 -14 10 -9" fill="none" stroke="${c || OUT}" stroke-width="2" stroke-linecap="round"/></g>`;
@@ -3509,19 +3610,31 @@ const MONART = (() => {
     return s;
   }
   function holzwurm(P, o, C) {
-    const wood = C.lin('#C98A4E', '#9A5E2E'), worm = C.grad('#F2D8B0');
-    let s = `<ellipse cx="60" cy="113" rx="44" ry="4" fill="${OUT}" opacity=".16"/>`;
-    // a violin scroll block with bore holes
-    s += `<path d="M12 112 L16 70 Q18 60 30 58 L96 58 Q108 60 108 72 L108 112 Z" ${F(wood)}/>`;
-    s += `<path d="M24 74 Q50 70 96 76 M20 94 Q56 88 104 96" fill="none" stroke="#8A5228" stroke-width="1.8" stroke-linecap="round"/>`;
-    s += [[30, 84, 3], [86, 102, 3.5], [96, 70, 2.5], [40, 104, 2.5]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#4A2E18"/>`).join('');
-    s += `<ellipse cx="60" cy="66" rx="13" ry="7" fill="#4A2E18"/>`;
-    s += [[46, 50, 9], [52, 38, 10], [62, 28, 12]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" ${F(worm)}/>`).join('').replace(/^/, `<path d="M60 66 Q44 58 46 50" fill="none" stroke="${OUT}" stroke-width="20" stroke-linecap="round"/><path d="M60 66 Q44 58 46 50" fill="none" stroke="#F2D8B0" stroke-width="15" stroke-linecap="round"/>`);
-    s += `<ellipse cx="66" cy="26" rx="18" ry="16" ${F(worm)}/>`;
-    s += shine(58, 18, 5, 2.5, -20);
-    s += pair(66, 24, 7, 5, { dir: [0.4, 0.2], brow: 'angry', bw: 2.8 });
-    s += `<path d="M64 34 L80 34 L78 40 L66 40 Z" ${F('#7A2340', 2)}/><path d="M68 34 L70 38 L72 34 L74 38 L76 34" fill="#fff"/>`;
-    s += [[86, 46], [92, 54], [30, 52]].map(([x, y]) => `<rect x="${x}" y="${y}" width="5" height="3" rx="1" fill="#E3B57A" ${S(1.2)} transform="rotate(25 ${x} ${y})"/>`).join('');
+    const varnish = gr(C, 'radial', 'cx=".38" cy=".3" r=".8"', [[0, '#F0A85A'], [0.45, '#C8702A'], [0.9, '#7E3A14'], [1, '#8E4A1E']]), worm = C.grad('#F6D5B4'), ebony = C.lin('#3A3448', '#17141F');
+    const body = 'M60 46 C40 46 24 48 24 62 C24 70 33 72 33 78 C33 84 20 88 20 98 C20 109 40 111 60 111 C80 111 100 109 100 98 C100 88 87 84 87 78 C87 72 96 70 96 62 C96 48 80 46 60 46 Z';
+    let s = `<ellipse cx="60" cy="113" rx="44" ry="4" fill="${OUT}" opacity=".18"/>`;
+    // the body of a violin, gnawed through
+    s += `<path d="${body}" ${F(varnish, 3)}/><path d="${body}" fill="none" stroke="#5A2A10" stroke-width="1.4" transform="translate(6 7.5) scale(.9)"/>`;
+    s += [30, 36, 42, 78, 84, 90].map((x) => `<path d="M${x} ${x < 60 ? 54 : 54} L${x + 1} 104" stroke="#FFD9A0" stroke-width="1" opacity=".35"/>`).join('');
+    s += `<path d="M30 56 Q34 50 44 50" fill="none" stroke="#FFE3B8" stroke-width="2.6" stroke-linecap="round" opacity=".7"/>`;
+    s += [38, 82].map((x) => `<path d="M${x + 3} 70 Q${x - 3} 76 ${x} 84 Q${x + 3} 92 ${x - 3} 98" fill="none" stroke="#2A1408" stroke-width="2.6" stroke-linecap="round"/><circle cx="${x + 3}" cy="70" r="2" fill="#2A1408"/><circle cx="${x - 3}" cy="98" r="2" fill="#2A1408"/>`).join('');
+    s += `<path d="M52 46 L68 46 L66 70 L54 70 Z" ${F(ebony, 2.2)}/><path d="M50 98 L70 98 L67 110 L53 110 Z" ${F(ebony, 2.2)}/><path d="M46 86 Q60 80 74 86 L72 89 L48 89 Z" ${F('#F2D9A6', 1.8)}/>`;
+    s += `<path d="M56 46 L57 98 M59 46 L59.5 98 M61 46 L60.5 98 M64 46 L63 98" stroke="#E8ECF4" stroke-width=".9"/>`;
+    // bore holes and crumbs
+    s += [[30, 92, 2.6], [90, 70, 2.2], [92, 100, 2.8], [44, 104, 1.8]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#2A1408"/><path d="M${x - r} ${y + r * 0.6} A${r} ${r} 0 0 0 ${x + r} ${y + r * 0.6}" fill="none" stroke="#F0A85A" stroke-width="1" opacity=".6"/>`).join('');
+    s += `<ellipse cx="38" cy="58" rx="9" ry="5" fill="#2A1408" ${S(2)}/>`;
+    // the worm wriggling out, ringed body
+    const path = 'M38 58 Q30 48 34 38 Q38 28 50 26';
+    s += `<path d="${path}" fill="none" stroke="${OUT}" stroke-width="17" stroke-linecap="round"/><path d="${path}" fill="none" stroke="#F2CBA4" stroke-width="11.5" stroke-linecap="round"/><path d="${path}" fill="none" stroke="#FCE6CE" stroke-width="4" stroke-linecap="round" transform="translate(-2 -1)"/>`;
+    s += along([38, 58], [30, 48], [34, 38], 4, (x, y, i) => i && i < 3 ? `<path d="M${f1(x - 6)} ${f1(y - 1.5)} Q${f1(x)} ${f1(y + 2)} ${f1(x + 6)} ${f1(y - 1)}" fill="none" stroke="#C99A72" stroke-width="1.8" stroke-linecap="round"/>` : '');
+    s += `<ellipse cx="58" cy="26" rx="17" ry="15" ${F(worm, 2.8)}/>`;
+    s += shine(51, 18, 5, 2.5, -20);
+    s += pair(58, 23, 7, 5, { dir: [0.4, 0.15], brow: 'angry', bw: 2.8 });
+    s += `<path d="M60 32 Q66 37 73 31" ${N(2.4)}/><path d="M63 33.5 L64 37 L67 34.5 Z" fill="#fff" ${S(1.2)}/>`;
+    // a curled shaving in its mouth, more flying off
+    s += `<path d="M72 32 Q80 28 82 34 Q82 40 76 38 Q74 35 78 34" fill="#F2D29A" ${S(1.6)}/>`;
+    s += [[94, 30, 25], [102, 42, -20], [16, 30, 40]].map(([x, y, r]) => `<path d="M${x} ${y} q4 -3 7 0 q-1 4 -5 3" fill="#F2D29A" ${S(1.3)} transform="rotate(${r} ${x} ${y})"/>`).join('');
+    s += blush(58, 31, 12, 3);
     return s;
   }
   function quietschgeige(P, o, C) {
@@ -3568,20 +3681,27 @@ const MONART = (() => {
     return s;
   }
   function krachmacher(P, o, C) {
-    const brass = C.grad('#E8B23A'), body = C.grad('#B5442E');
-    let s = `<ellipse cx="60" cy="114" rx="42" ry="4" fill="${OUT}" opacity=".18"/>`;
-    s += `<path d="M40 96 L36 114 M80 96 L84 114" ${N(5)}/>`;
-    s += `<ellipse cx="60" cy="72" rx="34" ry="32" ${F(body)}/>`;
-    // arms with crashing cymbals
-    s += `<path d="M30 70 Q16 64 14 50 M90 70 Q104 64 106 50" fill="none" stroke="${OUT}" stroke-width="9" stroke-linecap="round"/><path d="M30 70 Q16 64 14 50 M90 70 Q104 64 106 50" fill="none" stroke="#B5442E" stroke-width="5" stroke-linecap="round"/>`;
-    s += `<ellipse cx="14" cy="44" rx="14" ry="5" ${F(brass)} transform="rotate(-20 14 44)"/><ellipse cx="106" cy="44" rx="14" ry="5" ${F(brass)} transform="rotate(20 106 44)"/>`;
-    s += `<path d="M2 26 l-2 -8 M12 24 l2 -10 M22 28 l6 -8 M98 28 l-6 -8 M108 24 l-2 -10 M118 26 l2 -8" ${N(2.4)}/>`;
-    // a brass horn bell for a mouth, the crown of a noisy king
-    s += `<path d="M36 40 L42 24 L52 36 L60 18 L68 36 L78 24 L84 40 Z" ${F(brass)}/>`;
-    s += shine(44, 52, 8, 4, -25);
-    s += pair(60, 58, 12, 7, { look: 'glow', glow: '#FFE45C', brow: 'angry', bw: 4 });
-    s += `<path d="M48 76 L72 76 L80 98 Q60 106 40 98 Z" ${F(brass)}/><ellipse cx="60" cy="98" rx="20" ry="5" ${F('#7A2340')}/>`;
-    s += mu_note(98, 92, 0.9, '#FFE066') + mu_note(14, 88, 0.8, '#FFE066');
+    const brass = C.grad('#E8B23A'), lacquer = C.grad('#C8402E'), skin = gr(C, 'radial', 'cx=".38" cy=".32" r=".75"', [[0, '#FFFFFF'], [0.6, '#F6ECD6'], [1, '#D9C8A4']]), shoe = C.grad('#3A3448');
+    let s = `<ellipse cx="60" cy="114" rx="44" ry="4.5" fill="${OUT}" opacity=".2"/>`;
+    s += `<path d="M42 96 L40 108 M78 96 L80 108" ${N(5)}/><path d="M28 113 Q28 104 40 104 Q48 104 48 113 Z M72 113 Q72 104 80 104 Q92 104 92 113 Z" ${F(shoe, 2.4)}/>`;
+    // horns on top, blaring
+    const horn = (x, y, r) => `<g transform="rotate(${r} ${x} ${y})"><path d="M${x - 3} ${y} L${x - 3} ${y - 12} L${x - 9} ${y - 22} L${x + 9} ${y - 22} L${x + 3} ${y - 12} L${x + 3} ${y} Z" ${F(brass, 2.4)}/><ellipse cx="${x}" cy="${y - 22}" rx="9" ry="3" ${F('#7A4A12', 2.2)}/></g>`;
+    s += horn(40, 42, -28) + horn(60, 36, 0) + horn(80, 42, 28);
+    s += `<path d="M16 10 l-4 -5 M24 6 l0 -5 M54 4 l-2 -4 M66 4 l2 -4 M96 6 l0 -5 M104 10 l4 -5" ${N(2.4)}/>`;
+    // the bass drum: shell, red hoop with brass lugs, drum head as face
+    s += `<circle cx="66" cy="70" r="34" ${F(C.grad('#8E2A1E'), 3)}/>`;
+    s += Array.from({ length: 5 }, (_, i) => { const a = -1.1 + i * 0.55; return `<path d="M${polar(58, 68, 34, a)} L${polar(66, 70, 34, a)}" ${N(2)}/><rect x="-2.2" y="-3.6" width="4.4" height="7.2" rx="1.5" ${F('#F2C23C', 1.4)} transform="translate(${polar(66.5, 70, 33, a)}) rotate(${f1(a * 57.3)})"/>`; }).join('');
+    s += `<circle cx="58" cy="68" r="34" ${F(lacquer, 3)}/>`;
+    s += `<circle cx="58" cy="68" r="30.5" fill="none" stroke="#F2C23C" stroke-width="2.4"/>`;
+    s += `<circle cx="58" cy="68" r="26" ${F(skin, 2.6)}/>`;
+    s += shine(46, 52, 7, 3.5, -30);
+    // cymbals clashed overhead
+    s += `<path d="M28 72 Q12 64 14 42 M90 70 Q108 62 106 42" fill="none" stroke="${OUT}" stroke-width="9" stroke-linecap="round"/><path d="M28 72 Q12 64 14 42 M90 70 Q108 62 106 42" fill="none" stroke="#C8402E" stroke-width="5" stroke-linecap="round"/>`;
+    s += [[14, 36, -24], [106, 36, 24]].map(([x, y, r]) => `<g transform="rotate(${r} ${x} ${y})"><ellipse cx="${x}" cy="${y}" rx="15" ry="5.5" ${F(brass, 2.4)}/><ellipse cx="${x}" cy="${y}" rx="9" ry="3" fill="none" stroke="#B5851A" stroke-width="1.2"/><ellipse cx="${x}" cy="${y - 1.5}" rx="3" ry="2" ${F('#F7D774', 1.6)}/><path d="M${x - 11} ${y - 1} Q${x - 6} ${y - 4} ${x} ${y - 4}" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/></g>`).join('');
+    s += `<path d="M2 26 l-2 -6 M6 18 l1 -8 M118 26 l2 -6 M114 18 l-1 -8" ${N(2.4)}/>`;
+    s += pair(58, 60, 11, 6.5, { look: 'glow', glow: '#FFE45C', brow: 'angry', bw: 4 });
+    s += M.roar(58, 74, 11, 12);
+    s += mu_note(104, 92, 0.9, '#FFE066') + mu_note(14, 96, 0.8, '#FFE066');
     return s;
   }
   Object.assign(SHAPES, { dirigentin, misston, holzwurm, quietschgeige, hustenreiz, donnerpauke, krachmacher });

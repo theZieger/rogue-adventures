@@ -9,7 +9,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-10
 
 ### Verbessert
-- Viele Monster sind feiner gezeichnet.
+- Kreisel und viele Monster sind feiner gezeichnet.
 - Die Bilder der Zeichenschule (Auge, Ohr, Fahrrad, Stockwerke der Wiese) und die Wiesenpflanzen sind neu gezeichnet.
 
 ## 2026-11-09
