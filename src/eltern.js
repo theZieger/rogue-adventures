@@ -196,6 +196,32 @@ const ELTERN = (() => {
       hoch: 'Hohe und tiefe Töne: Große Instrumente klingen tiefer als kleine, auch im Bildvergleich.',
       stimme: 'Männer-, Frauen- und Kinderstimmen, Solo und Chor, Haltung und Atmung beim Singen.',
     },
+    laute1: {
+      anlaut: 'Ihr Kind hört den ersten Laut eines Wortes zum Bild und findet den Buchstaben dazu.',
+      laute: 'Selbstlaute, Umlaute und Mitlaute unterscheiden und einen fehlenden Selbstlaut im Wort ergänzen.',
+      lautpos: 'Hört Ihr Kind den Laut am Anfang, in der Mitte oder am Ende des Wortes?',
+      silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben.',
+      alphabet: 'Das Abc sicher können: welcher Buchstabe davor, danach oder in der Lücke steht.',
+      reim: 'Wörter finden, die sich reimen: Haus – Maus.',
+    },
+    schreiben2: {
+      besonders: 'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie.',
+      doppel: 'Nach kurzem Selbstlaut steht ein doppelter Mitlaut: Sonne, nicht Sone.',
+      verl: 'd oder t am Ende? Verlängern hilft: Hund – Hunde. Ä und äu leitet Ihr Kind von a und au ab: Baum – Bäume.',
+      gross: 'Satzanfang, Nomen und Namen groß schreiben: Ihr Kind wählt den richtig geschriebenen Satz.',
+      satzz: 'Punkt, Fragezeichen oder Ausrufezeichen am Satzende setzen.',
+      alphabet: 'Wörter nach dem Abc ordnen, auch nach dem zweiten Buchstaben, wie im Wörterbuch.',
+      kleinw: 'Häufige kleine Wörter wie und, mit, nicht richtig schreiben.',
+    },
+    woerter2: {
+      wortart: 'Nomen, Verb, Adjektiv und Artikel unterscheiden, später Grundform und Personalform von Verben.',
+      mehrzahl: 'Einzahl und Mehrzahl von Nomen bilden und erkennen: der Baum, die Bäume.',
+      artikel: 'Den passenden Artikel finden: der, die, das und ein, eine.',
+      zus: 'Aus zwei Nomen wird eines. Der Artikel kommt vom letzten Wort: die Haustür.',
+      familie: 'Verwandte Wörter mit gleichem Wortstamm erkennen, später Vorsilben wie auf-, be-, ver-.',
+      feld: 'Wörter mit ähnlicher Bedeutung sammeln: sagen, rufen, flüstern.',
+      satzart: 'Aussagesatz, Fragesatz und Aufforderungssatz unterscheiden.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n, name) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -223,6 +249,9 @@ const ELTERN = (() => {
     ichdu1: 'Ethik, Klasse 1/2, Lernbereich 1 „Ich im Wir“ und Lernbereich 2 „Miteinander“.',
     feste2: 'Ethik, Klasse 1/2, Lernbereich 3 „Voneinander“ und Lernbereich 4 „Wir in der Welt“. Religiöse Feste werden beschreibend erklärt.',
     instrumente2: 'Musik, Klasse 1/2, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Instrumente und Gesangsstimmen, Lautstärke und Tempo) und Lernbereich 2 (Tonhöhe). Welche Instrumente vorkommen, legt der Lehrplan nicht fest; hier sind es die Orff-Instrumente der Schule und einige bekannte Instrumente.',
+    laute1: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Lernbereich 3 „Lesen“: Laute, Buchstaben, Silben und Alphabet.',
+    schreiben2: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Sächsischer Rechtschreibrahmen.',
+    woerter2: 'Deutsch, Klasse 1/2, Lernbereich 5 „Sprache und Sprachgebrauch untersuchen“.',
   };
   return { INFO, PLAN };
 })();
