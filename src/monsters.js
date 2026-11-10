@@ -2741,41 +2741,53 @@ const MONART = (() => {
     return s;
   }
   function moewe(P, o, C) {
-    const white = C.grad('#FFFFFF'), wing = C.grad('#B9C1D2'), beak = C.lin('#FFD84A', '#F29A2E'), leg = '#F2A23A', tip = '#2E3448';
+    const white = C.lin('#FFFFFF', '#DCE2EC'), head = C.lin('#FFFFFF', '#E6EAF2'), wing = C.lin('#D6DCE6', '#A9B2C4'), beak = C.lin('#FFE45C', '#F2B42E'), leg = '#F2B49A', tip = '#2E3448';
     let s = de_ground(30);
     s += de_limb('M52 96 L50 108', leg, 3) + de_limb('M68 96 L70 108', leg, 3);
     s += `<path d="M42 111 Q50 104 58 111 Z M62 111 Q70 104 78 111 Z" ${F(leg, 2.2)}/>`;
-    // one wing flung up behind, the other folded at its side
-    s += `<path d="M40 66 Q14 58 4 28 Q26 30 44 52 Z" ${F(wing)}/><path d="M4 28 Q14 29 22 35 Q14 40 12 46 Q6 38 4 28 Z" ${F(tip, 2.2)}/><circle cx="11" cy="34" r="1.6" fill="#fff"/>`;
-    s += `<path d="M18 46 Q28 50 36 58 M24 40 Q32 44 40 52" fill="none" stroke="#8C95A8" stroke-width="1.8" stroke-linecap="round"/>`;
+    // one wing flung up behind: pale grey, layered, black tip with a white spot
+    s += `<path d="M42 66 Q16 60 4 28 Q28 30 46 52 Z" ${F(wing)}/>`;
+    s += `<path d="M4 28 Q14 29 22 35 Q15 39 12 45 Q6 38 4 28 Z" ${F(tip, 2.2)}/><circle cx="11" cy="34" r="1.7" fill="#fff"/>`;
+    s += `<path d="M14 42 Q22 46 22 52 M22 38 Q30 42 31 49 M30 36 Q38 42 39 50" fill="none" stroke="#8C95A8" stroke-width="1.8" stroke-linecap="round"/>`;
     s += `<path d="M28 80 Q28 54 58 52 Q88 54 92 80 Q92 102 60 102 Q28 102 28 80 Z" ${F(white)}/>`;
-    s += `<path d="M44 84 q3 3 6 0 M56 90 q3 3 6 0 M50 96 q3 3 6 0" fill="none" stroke="#C9D0DE" stroke-width="1.8" stroke-linecap="round"/>`;
-    s += `<path d="M66 64 Q90 60 100 84 L106 90 Q92 96 74 88 Q62 80 66 64 Z" ${F(wing)}/><path d="M96 82 L106 90 Q100 93 92 92 Z" fill="${tip}"/>`;
-    s += `<path d="M72 72 Q84 72 92 82 M70 79 Q80 81 88 88" fill="none" stroke="#7E879A" stroke-width="1.8" stroke-linecap="round"/>`;
-    s += `<circle cx="60" cy="38" r="19" ${F(white)}/>`;
-    s += shine(50, 28, 6, 3, -25);
+    s += `<path d="M34 72 Q40 60 52 58" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`;
+    s += `<path d="M44 86 q3 3 6 0 M56 92 q3 3 6 0 M48 96 q3 3 6 0" fill="none" stroke="#C3CAD8" stroke-width="1.6" stroke-linecap="round"/>`;
+    // folded wing in three rows of feathers
+    s += `<path d="M64 64 Q90 60 100 84 L108 92 Q92 98 74 90 Q60 80 64 64 Z" ${F(wing)}/>`;
+    s += `<path d="M66 74 q5 -4 9 0 q5 -4 9 0 q5 -3 8 2 M68 82 q5 -4 9 0 q5 -4 9 0 q4 -2 8 3" fill="none" stroke="#8C95A8" stroke-width="1.8" stroke-linecap="round"/>`;
+    s += `<path d="M96 84 L108 92 Q101 96 92 94 Z" fill="${tip}"/><circle cx="101" cy="91" r="1.3" fill="#fff"/>`;
+    // round head with a sloping forehead into the bill
+    s += `<path d="M42 44 Q40 20 60 19 Q76 19 79 34 L80 44 Q76 58 60 58 Q44 58 42 44 Z" ${F(head)}/>`;
+    s += shine(50, 27, 6, 3, -25);
     // the biscuit it snatched from a tea table
     s += `<circle cx="100" cy="50" r="10" ${F(C.grad('#E2A85A'), 2.4)}/>`;
     s += [[96, 46], [102, 54], [96, 55], [104, 47]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.4" fill="#8A4E22"/>`).join('');
-    s += `<path d="M76 36 L102 42 Q100 47 94 47 L76 46 Z" ${F(beak, 2.4)}/><path d="M78 42 L96 43" ${N(1.6)}/><circle cx="92" cy="45" r="1.8" fill="#E0413A"/>`;
-    s += pair(60, 36, 8.5, 5.8, { brow: 'angry', bw: 3, iris: '#F2C53D', pupil: 0.3, dir: [0.4, 0] });
+    s += `<path d="M77 35 L102 41 Q101 47 94 47 L78 47 Z" ${F(beak, 2.4)}/><path d="M80 42 L96 43" ${N(1.6)}/><circle cx="92" cy="45" r="2.2" fill="#E0413A"/>`;
+    // gull eye: pale yellow iris inside a red ring
+    s += pair(60, 36, 8.5, 5.6, { brow: 'angry', bw: 3, iris: '#F6E27A', pupil: 0.28, dir: [0.4, 0] });
+    s += [53.7, 70.7].map((x) => `<circle cx="${x}" cy="36" r="4" fill="none" stroke="#E0413A" stroke-width="1.2"/>`).join('');
     s += `<path d="M106 62 l2 2 M100 66 l1 2" stroke="#C88A44" stroke-width="2.4" stroke-linecap="round"/>`;
     return s;
   }
   function teefleck(P, o, C) {
-    const tea = C.grad('#B06A2C'), china = C.grad('#FFFFFF');
+    const tea = C.lin('#ECB86A', '#B8722E'), china = C.grad('#FFFFFF'), saucer = C.lin('#FFFFFF', '#D3DAEE');
     let s = `<ellipse cx="60" cy="112" rx="52" ry="4" fill="${OUT}" opacity=".14"/>`;
-    // the tipped-over cup it came from
-    s += `<g transform="rotate(-28 80 34)"><path d="M64 20 L96 20 Q94 44 80 44 Q66 44 64 20 Z" ${F(china, 2.4)}/><path d="M96 24 Q106 26 102 35 Q100 39 93 37" fill="none" ${S(2.4)}/><path d="M66 28 Q73 24 80 28 Q87 32 94 28" fill="none" stroke="${BLUE}" stroke-width="2" stroke-linecap="round"/><ellipse cx="80" cy="20" rx="16" ry="3.5" ${F('#8A4E22', 2.2)}/></g>`;
-    s += `<path d="M66 40 Q62 50 64 58" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M66 40 Q62 50 64 58" fill="none" stroke="#B06A2C" stroke-width="3.4" stroke-linecap="round"/>`;
-    s += `<path d="M10 100 Q4 86 18 82 Q18 64 38 64 Q46 52 62 58 Q80 50 90 64 Q110 64 108 82 Q118 92 110 104 Q96 112 60 110 Q22 112 10 100 Z" ${F(tea)}/>`;
-    s += `<path d="M22 98 Q40 92 58 99 Q76 105 98 96 M30 88 Q38 84 46 88" fill="none" stroke="#D9A066" stroke-width="2.2" stroke-linecap="round" opacity=".8"/>`;
-    s += `<path d="M30 72 Q38 66 48 68" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".45"/>`;
-    // a tea bag tag dangling over the edge
-    s += `<path d="M96 66 Q104 72 106 80" ${N(1.6)}/><rect x="101" y="80" width="11" height="10" rx="1.5" ${F('#F6E7C8', 2)} transform="rotate(12 106 85)"/>`;
-    s += [[14, 66, 3], [24, 52, 2.4], [108, 54, 2.8]].map(([x, y, r]) => sk_drop(x, y, r, '#B06A2C')).join('');
-    s += pair(56, 80, 12, 7.5, { brow: 'angry', bw: 3, dir: [0.25, 0.15], iris: '#C77A2E' });
-    s += M.tongue(56, 94, 8);
+    // white saucer seen from above, the stain lies flat on it
+    s += `<ellipse cx="60" cy="96" rx="54" ry="17" ${F(saucer)}/><ellipse cx="60" cy="94" rx="40" ry="11" fill="none" stroke="#C3CBE2" stroke-width="2"/><path d="M14 98 Q60 116 106 98" fill="none" stroke="${BLUE}" stroke-width="2" stroke-linecap="round" opacity=".7"/>`;
+    s += `<path d="M18 92 Q14 84 26 82 Q30 74 46 77 Q58 72 70 77 Q86 72 94 80 Q106 82 102 92 Q104 102 88 102 Q74 108 58 104 Q40 108 30 102 Q16 102 18 92 Z" fill="${tea}" opacity=".85" ${S(2.4)}/>`;
+    // tea stains dry darker at the rim
+    s += `<path d="M22 92 Q20 86 29 85 Q33 78 46 80 Q58 76 70 80 Q85 76 91 83 Q100 85 98 92 Q100 99 87 99 Q73 104 58 101 Q41 104 31 99 Q21 99 22 92 Z" fill="none" stroke="#7A4218" stroke-width="2" opacity=".55"/>`;
+    s += `<path d="M30 86 Q40 82 50 83" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/><path d="M74 98 Q82 98 88 95" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".4"/>`;
+    s += [[10, 90, 2.4], [110, 88, 2], [104, 104, 1.6]].map(([x, y, r]) => `<ellipse cx="${x}" cy="${y}" rx="${r * 1.4}" ry="${r}" fill="#B87434" opacity=".8" ${S(1.6)}/>`).join('');
+    // tilted cup above, drips running down into the stain
+    s += `<g transform="rotate(-32 78 26)"><path d="M62 14 L94 14 Q92 38 78 38 Q64 38 62 14 Z" ${F(china, 2.4)}/><path d="M94 18 Q104 20 100 29 Q98 33 91 31" fill="none" ${S(2.4)}/><path d="M64 22 Q71 18 78 22 Q85 26 92 22" fill="none" stroke="${BLUE}" stroke-width="2" stroke-linecap="round"/><ellipse cx="78" cy="14" rx="16" ry="3.5" ${F('#B06A2C', 2.2)}/></g>`;
+    s += `<path d="M64 36 Q60 50 62 70" fill="none" stroke="${OUT}" stroke-width="6.4" stroke-linecap="round"/><path d="M64 36 Q60 50 62 70" fill="none" stroke="#C47E3A" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<ellipse cx="62" cy="78" rx="9" ry="2.6" fill="none" stroke="#FFF1D6" stroke-width="1.6" opacity=".8"/><ellipse cx="62" cy="78" rx="15" ry="4.4" fill="none" stroke="#FFF1D6" stroke-width="1.2" opacity=".5"/>`;
+    s += sk_drop(54, 60, 2.4, '#C47E3A') + sk_drop(70, 64, 2, '#C47E3A');
+    s += `<path d="M96 22 Q90 14 96 8 Q102 2 96 -4" fill="none" stroke="#C9D3EA" stroke-width="3" stroke-linecap="round"/>`;
+    // the face sits in the glossy surface
+    s += pair(46, 88, 10, 5.6, { brow: 'angry', bw: 2.8, dir: [0.25, 0.1], iris: '#C77A2E' });
+    s += M.smirk(48, 97, 6);
     return s;
   }
   function umklappschirm(P, o, C) {
