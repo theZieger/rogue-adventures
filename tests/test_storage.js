@@ -17,6 +17,7 @@ function open(storage, opts) {
     beforeParse(w) {
       for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message));
       if (opts.zip) Object.assign(w, { CompressionStream, DecompressionStream, Response, TextEncoder });
+      if (opts.voice) { w.said = []; w.speechSynthesis = { getVoices: () => [opts.voice], cancel() {}, speak(u) { w.said.push(u.text); } }; w.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } }; }
       if (opts.now) { const D = w.Date, now = Date.parse(opts.now); w.Date = class extends D { constructor(...a) { super(...(a.length ? a : [now])); } static now() { return now; } }; }
     },
   });
@@ -1256,6 +1257,23 @@ function topCases() {
   q.click('[data-goal="0"]');
   if (q.w.__mq.weeklyGoals()[0].mod !== 'sub') { check(!!q.$('.overlay #yes') && !!q.$('.overlay #cont'), 'a running hero without the attack asks first'); q.click('.overlay #cont'); }
   check(q.errors.length === 0 && q.w.__mq.run && q.w.__mq.run.mode === 'math' && !!q.dump()[RUN], 'keep playing resumes the running adventure');
+}
+
+// Vorlesen: an old save gets the switch turned on; the button only appears with a German voice on the device
+{
+  const toTask = (p) => { p.click('[data-new="math"]'); p.click('.choice[data-id]'); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')][0]); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); p.click('.atk'); const ok2 = p.$('.overlay #tutok'); if (ok2) ok2.click(); };
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.speak; old.setup = { done: true, skipped: true, at: '' };
+  const store = { [META]: JSON.stringify(old) };
+  const p = open(store, { voice: { localService: true, lang: 'de-DE' } }); toTask(p);
+  check(p.w.__mq.meta.speak === true && !!p.d.querySelector('.task .speak'), 'old save: reading aloud is on and the task has its button');
+  p.d.querySelector('.task .speak').click();
+  check(p.w.said.length === 1 && p.w.said[0].length > 0 && !/[−·]|= ?\?/.test(p.w.said[0]) && p.errors.length === 0, 'the button reads the task, signs spoken as words');
+  const net = open(store, { voice: { localService: false, lang: 'de-DE' } }); toTask(net);
+  check(!net.d.querySelector('.task .speak') && net.errors.length === 0, 'a voice from the network is never used');
+  const off = open({ [META]: JSON.stringify(Object.assign({}, old, { speak: false })) }, { voice: { localService: true, lang: 'de-DE' } }); toTask(off);
+  check(!off.d.querySelector('.task .speak') && !!off.d.querySelector('.task .tut'), 'switched off by parents: no button');
+  const none = open(store); toTask(none);
+  check(!none.d.querySelector('.task .speak') && none.errors.length === 0, 'a device without speech shows no button');
 }
 
 reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(() => {
