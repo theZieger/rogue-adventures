@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="04c96ba8db07">
+<meta name="app-version" content="34fcdafe8fa7">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -290,6 +290,7 @@ p { margin: 8px 0; }
 .plant .part { transition: filter .2s; }
 .plant .part.glow { filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 10px #FFC93C); }
 .plant .part.glow * { stroke: #E0A800; stroke-width: 3; }
+.plant .part.glow .hitarea { stroke: none; }
 .plant.clickable .part { cursor: pointer; }
 .plant.clickable .part:hover, .plant.clickable .part:focus-visible { filter: drop-shadow(0 0 5px #3FA0FF); outline: none; }
 .plant .part.reveal { filter: drop-shadow(0 0 6px #FFC93C) drop-shadow(0 0 10px #FFC93C); }
@@ -4707,19 +4708,38 @@ const MS2 = (() => {
     stepOf: { lid: 1, iris: 2, pupille: 3, wimpern: 4, braue: 5, traenen: 6 },
     steps: ['Zeichne die Form des Auges und darüber das Augenlid.', 'Zeichne in die Mitte einen Kreis: die Regenbogenhaut.', 'Male in die Mitte der Regenbogenhaut die schwarze Pupille.', 'Zeichne die Wimpern an den Rand des Augenlids.', 'Zeichne über das Auge die Augenbraue.', 'Zeichne am Augenwinkel zwei Tränen.'],
     ask: () => 'Wie heißt der leuchtende Teil des Auges?', find: (p) => `Tippe auf: ${p.name}` };
-  // a point on the upper edge of the eye (quadratic curve from 60|110 over 150|44 to 240|110)
-  const lidAt = (t) => [(1 - t) ** 2 * 60 + 2 * t * (1 - t) * 150 + t * t * 240, (1 - t) ** 2 * 110 + 2 * t * (1 - t) * 44 + t * t * 110];
-  const lashes = () => [0.14, 0.26, 0.38, 0.5, 0.62, 0.74, 0.86].map((t) => { const [x, y] = lidAt(t); const dx = (t - 0.5) * 22; return `M${x.toFixed(1)} ${y.toFixed(1)} q${(dx * 0.4).toFixed(1)} -10 ${dx.toFixed(1)} -16`; }).join(' ');
-  EYE.svg = (opts) => partsSVG(EYE, opts, (g) => `
-    <rect width="300" height="200" rx="14" fill="#F7D9BC"/>
-    <path d="M60 110 Q150 44 240 110 Q150 170 60 110 Z" fill="#FFFFFF" stroke="${STROKE}" stroke-width="2.5"/>
-    ${g('iris', `<circle cx="150" cy="108" r="30" fill="#4E8FD0" stroke="#24508A" stroke-width="2.5"/>${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${(150 + Math.cos(a) * 15).toFixed(1)} ${(108 + Math.sin(a) * 15).toFixed(1)} L${(150 + Math.cos(a) * 27).toFixed(1)} ${(108 + Math.sin(a) * 27).toFixed(1)}" stroke="#2F6DB0" stroke-width="1.5"/>`; }).join('')}`)}
-    ${g('pupille', `<circle cx="150" cy="108" r="13" fill="#111"/><circle cx="145" cy="102" r="4" fill="#fff"/>`)}
-    ${g('lid', `<path d="M56 110 Q150 20 244 110 Q150 44 56 110 Z" fill="#EDBE95" stroke="${STROKE}" stroke-width="2.5"/><path d="M84 88 Q150 50 216 88" stroke="#C99A72" stroke-width="2" fill="none"/>`)}
-    ${g('wimpern', `<path d="${lashes()}" stroke="#2B1D14" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M96 152 l-4 8 M150 142 l0 9 M204 152 l4 8" stroke="#2B1D14" stroke-width="2.4" stroke-linecap="round"/>${HIT('M60 104 Q150 30 240 104 L240 70 Q150 4 60 70 Z')}`)}
-    ${g('braue', `<path d="M74 52 Q150 4 232 48" stroke="#6B4423" stroke-width="13" fill="none" stroke-linecap="round"/>${HIT('M64 56 Q150 -10 242 52 L242 30 Q150 -24 64 34 Z')}`)}
-    ${g('traenen', `<path d="M52 122 Q60 136 60 142 A8 8 0 0 1 44 142 Q44 136 52 122 Z" fill="#8FD0FF" stroke="#2A6CB0" stroke-width="2"/><path d="M46 158 Q52 168 52 172 A6 6 0 0 1 40 172 Q40 168 46 158 Z" fill="#8FD0FF" stroke="#2A6CB0" stroke-width="2"/>${HIT('M30 118 L70 118 L70 184 L30 184 Z')}`)}`,
-  [['braue', 296, 22, 'end'], ['lid', 250, 84], ['wimpern', 6, 60], ['iris', 296, 168, 'end', [176, 126]], ['pupille', 150, 192, 'middle'], ['traenen', 74, 176]]);
+  // points on the edges of the eye opening: quadratic curves from 60|110 over 150|cy to 240|110 (cy 44 above, 170 below)
+  const lidAt = (t, cy) => [(1 - t) ** 2 * 60 + 2 * t * (1 - t) * 150 + t * t * 240, (1 - t) ** 2 * 110 + 2 * t * (1 - t) * cy + t * t * 110];
+  const f1 = (v) => v.toFixed(1);
+  // texture strokes sit in style="" so a glowing part keeps them (the glow rule recolours stroke attributes only)
+  const tex = (d, c, w, o) => `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round"${o ? ` opacity="${o}"` : ''}/>`;
+  const lashes = (cy, ts, len) => ts.map((t) => { const [x, y] = lidAt(t, cy), dx = (t - 0.5) * 26, l = len * (1 - Math.abs(t - 0.5)) * (cy < 110 ? -1 : 1); return `M${f1(x)} ${f1(y)} q${f1(dx * 0.1)} ${f1(l * 0.8)} ${f1(dx)} ${f1(l)}`; }).join(' ');
+  const ray = (cx, cy, n, r0, r1, odd) => Array.from({ length: n }, (_, i) => { const a = (i * 2 + odd) * Math.PI / n + (i % 3) * 0.04, a1 = r0 + (i % 3), b = r1 - (i % 4) * 2.5; return `M${f1(cx + Math.cos(a) * a1)} ${f1(cy + Math.sin(a) * a1)} L${f1(cx + Math.cos(a) * b)} ${f1(cy + Math.sin(a) * b)}`; }).join(' ');
+  const EYE_OPEN = 'M60 110 Q150 44 240 110 Q150 170 60 110 Z';
+  EYE.svg = (opts) => partsSVG(EYE, opts, (g) => `<defs>
+    <radialGradient id="eySk" cx="45%" cy="40%" r="75%"><stop offset="0" stop-color="#FBE3CB"/><stop offset=".6" stop-color="#F3CDAA"/><stop offset="1" stop-color="#E2AE88"/></radialGradient>
+    <radialGradient id="eySo" cx="50%" cy="55%" r="50%"><stop offset=".55" stop-color="#C98466" stop-opacity=".32"/><stop offset="1" stop-color="#C98466" stop-opacity="0"/></radialGradient>
+    <radialGradient id="eyWh" cx="50%" cy="62%" r="58%"><stop offset=".5" stop-color="#FFFFFF"/><stop offset=".85" stop-color="#F1EBEC"/><stop offset="1" stop-color="#DCCFD3"/></radialGradient>
+    <radialGradient id="eyIr" cx="50%" cy="50%" r="50%"><stop offset=".3" stop-color="#C79A4E"/><stop offset=".48" stop-color="#7FAE9A"/><stop offset=".62" stop-color="#4E95C4"/><stop offset=".86" stop-color="#2F6EA3"/><stop offset="1" stop-color="#1A3E63"/></radialGradient>
+    <radialGradient id="eyPu" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#2C3350"/><stop offset="1" stop-color="#0A0D18"/></radialGradient>
+    <linearGradient id="eyLd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6D3B2"/><stop offset=".7" stop-color="#EBB792"/><stop offset="1" stop-color="#D99878"/></linearGradient>
+    <linearGradient id="eyBr" x1="0" y1="0" x2="1" y2=".3"><stop offset="0" stop-color="#5A3820"/><stop offset=".55" stop-color="#7A4E2C"/><stop offset="1" stop-color="#9A6A42"/></linearGradient>
+    <radialGradient id="eyTr" cx="38%" cy="62%" r="65%"><stop offset="0" stop-color="#F4FCFF"/><stop offset=".6" stop-color="#A9DCF6"/><stop offset="1" stop-color="#5FA8DA"/></radialGradient>
+    <clipPath id="eyCl"><path d="${EYE_OPEN}"/></clipPath></defs>
+    <rect width="300" height="200" rx="14" fill="url(#eySk)"/>
+    <ellipse cx="150" cy="104" rx="128" ry="78" fill="url(#eySo)"/>
+    <path d="M44 118 Q150 196 256 114" fill="none" stroke="#D7A07E" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+    <path d="M58 116 Q150 182 242 114 Q150 170 58 116 Z" fill="#E7A99A" opacity=".8"/>
+    <path d="${EYE_OPEN}" fill="url(#eyWh)"/>
+    <g clip-path="url(#eyCl)"><ellipse cx="68" cy="111" rx="9" ry="6" fill="#E88E95"/><ellipse cx="66" cy="109" rx="3" ry="1.8" fill="#fff" opacity=".7"/><path d="M200 128 Q214 122 226 116 M96 128 Q86 122 80 117" fill="none" stroke="#E3A3A8" stroke-width="1" opacity=".6"/></g>
+    ${g('iris', `<g clip-path="url(#eyCl)"><circle cx="150" cy="108" r="31" fill="url(#eyIr)" stroke="#173757" stroke-width="2.5"/>${tex(ray(150, 108, 36, 14, 29, 0), '#D8F0FA', 0.9, 0.55)}${tex(ray(150, 108, 36, 14, 28, 1), '#1F4F7E', 0.9, 0.5)}${tex(Array.from({ length: 29 }, (_, i) => { const a = i * Math.PI / 14, r = i % 2 ? 16.5 : 19; return `${i ? 'L' : 'M'}${f1(150 + Math.cos(a) * r)} ${f1(108 + Math.sin(a) * r)}`; }).join('') + 'Z', '#E7C27A', 1.1, 0.7)}</g>`)}
+    ${g('pupille', `<circle cx="150" cy="108" r="12.5" fill="url(#eyPu)" stroke="#05070D" stroke-width="1.5"/><ellipse cx="142" cy="99" rx="5.5" ry="4.5" fill="#fff" transform="rotate(-25 142 99)"/><circle cx="160" cy="116" r="2.2" fill="#fff" opacity=".85"/>`)}
+    ${g('lid', `<g clip-path="url(#eyCl)"><path d="M60 110 Q150 44 240 110 Q150 66 60 110 Z" style="stroke:none" fill="#6E4A52" opacity=".22"/></g><path d="M52 110 Q150 4 248 110 Q150 42 52 110 Z" fill="url(#eyLd)" stroke="${STROKE}" stroke-width="2.5" stroke-linejoin="round"/>${tex('M70 100 Q150 40 230 100', '#C8876A', 2, 0.7)}${tex('M104 62 Q150 44 194 58', '#FFF4E6', 3.5, 0.55)}`)}
+    <path d="M60 110 Q150 170 240 110" fill="none" stroke="${STROKE}" stroke-width="2.5" stroke-linecap="round"/>
+    ${g('wimpern', `<path d="${lashes(44, [0.08, 0.16, 0.24, 0.32, 0.4, 0.48, 0.56, 0.64, 0.72, 0.8, 0.88, 0.95], 18)}" stroke="#2B1D14" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="${lashes(170, [0.22, 0.34, 0.46, 0.58, 0.7, 0.8, 0.88], 7)}" stroke="#3A2A1E" stroke-width="1.4" fill="none" stroke-linecap="round"/>${HIT('M60 104 Q150 30 240 104 L246 80 Q150 4 54 80 Z')}`)}
+    ${g('braue', `<path d="M66 52 Q70 34 102 24 Q160 6 238 34 Q240 40 232 40 Q166 24 112 38 Q84 46 74 56 Q66 60 66 52 Z" fill="url(#eyBr)" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/>${tex(Array.from({ length: 20 }, (_, i) => { const t = 0.03 + i * 0.045, x = (1 - t) ** 2 * 72 + 2 * t * (1 - t) * 140 + t * t * 234, y = (1 - t) ** 2 * 52 + 2 * t * (1 - t) * 8 + t * t * 37; return `M${f1(x - 3)} ${f1(y + 3 - t * 2)} l${f1(6 + t * 3)} ${f1(-5 + t * 4)}`; }).join(' '), '#3C2414', 1.2, 0.7)}${tex('M110 28 Q160 14 210 24', '#B88A60', 1.6, 0.6)}${HIT('M60 62 Q150 0 244 44 L244 18 Q150 -20 60 30 Z')}`)}
+    ${g('traenen', `<path d="M52 120 Q61 134 61 141 A9 9 0 0 1 43 141 Q43 134 52 120 Z" fill="url(#eyTr)" stroke="${STROKE}" stroke-width="2"/><path d="M46 157 Q53 167 53 172 A7 7 0 0 1 39 172 Q39 167 46 157 Z" fill="url(#eyTr)" stroke="${STROKE}" stroke-width="2"/><ellipse cx="48.5" cy="137" rx="2" ry="3.5" fill="#fff" style="stroke:none"/><circle cx="43.5" cy="169" r="1.6" fill="#fff" style="stroke:none"/>${HIT('M30 118 L70 118 L70 184 L30 184 Z')}`)}`,
+  [['braue', 296, 22, 'end'], ['lid', 296, 76, 'end', [230, 92]], ['wimpern', 6, 60, 'start', [84, 80]], ['iris', 296, 168, 'end', [176, 126]], ['pupille', 150, 192, 'middle', [150, 123]], ['traenen', 74, 176]]);
 
   const EAR_PARTS = [
     { id: 'muschel', name: 'Ohrmuschel', desc: 'Der Teil außen am Kopf. Sie fängt den Schall auf wie ein Trichter.', tip: 'Der Teil ist außen am Kopf.' },
@@ -4732,17 +4752,30 @@ const MS2 = (() => {
     stepOf: { muschel: 1, gang: 2, trommelfell: 3, knochen: 4, schnecke: 5 },
     steps: ['Zeichne außen die Ohrmuschel. Sie sieht aus wie ein Trichter.', 'Zeichne den Gehörgang nach innen.', 'Zeichne am Ende des Gangs das Trommelfell.', 'Zeichne dahinter drei winzige Knochen: die Gehörknöchelchen.', 'Zeichne ganz innen die Hörschnecke.'],
     ask: () => 'Wie heißt der leuchtende Teil des Ohrs?', find: (p) => `Tippe auf: ${p.name}` };
-  EAR.svg = (opts) => partsSVG(EAR, opts, (g) => `
-    <rect width="300" height="200" rx="14" fill="#F7D9BC"/>
-    <path d="M64 20 L300 20 L300 190 L64 190 Q80 150 70 106 Q80 60 64 20 Z" fill="#EFE6D8" stroke="#B9A88E" stroke-width="2"/>
-    <ellipse cx="190" cy="104" rx="32" ry="30" fill="#FFF8EE" stroke="#B9A88E" stroke-width="1.5"/>
-    <path d="M246 112 Q270 118 300 110" stroke="#F0B429" stroke-width="5" fill="none" stroke-linecap="round"/>
-    ${g('muschel', `<path d="M74 58 Q40 10 18 60 Q4 104 28 146 Q42 170 62 158 Q72 150 64 134 Q52 116 72 114 L72 96 Q48 84 74 58 Z" fill="#F2BE98" stroke="${STROKE}" stroke-width="2.5"/><path d="M58 50 Q34 36 28 70 Q24 100 40 128" stroke="#C98E66" stroke-width="2.5" fill="none" stroke-linecap="round"/>`)}
-    ${g('gang', `<path d="M70 94 Q110 90 160 96 L160 116 Q110 120 70 116 Z" fill="#F4B8A8" stroke="${STROKE}" stroke-width="2.5"/><circle cx="104" cy="112" r="3" fill="#D9A441"/>`)}
-    ${g('trommelfell', `<ellipse cx="162" cy="106" rx="4" ry="20" fill="#F7E3B0" stroke="${STROKE}" stroke-width="2.5"/>${HIT('M152 82 L172 82 L172 130 L152 130 Z')}`)}
-    ${g('knochen', `<g fill="#FFFDF5" stroke="${STROKE}" stroke-width="2"><path d="M166 112 L176 92 Q180 84 186 88 Q190 92 184 98 L170 116 Z"/><path d="M184 86 Q196 78 202 88 Q204 96 196 100 Q188 98 184 86 Z"/><path d="M198 98 L212 98 L216 116 L194 116 Z M200 102 L210 102 L212 112 L198 112 Z" fill-rule="evenodd"/></g>${HIT('M164 78 L220 78 L220 122 L164 122 Z')}`)}
-    ${g('schnecke', `<path d="M218 112 a22 22 0 1 1 22 22 a16 16 0 1 1 -16 -16 a10 10 0 1 1 10 10 a5 5 0 1 1 -5 -5" fill="none" stroke="#2A8CA8" stroke-width="7" stroke-linecap="round"/><path d="M218 112 a22 22 0 1 1 22 22 a16 16 0 1 1 -16 -16 a10 10 0 1 1 10 10 a5 5 0 1 1 -5 -5" fill="none" stroke="#BFE8F2" stroke-width="3" stroke-linecap="round"/>${HIT('M214 82 L268 82 L268 140 L214 140 Z')}`)}`,
-  [['muschel', 8, 188], ['gang', 112, 84, 'middle'], ['trommelfell', 160, 150, 'middle'], ['knochen', 196, 66, 'middle'], ['schnecke', 244, 162, 'middle']]);
+  // the cochlea: two turns spiralling in from the oval window (left) to its tip
+  const COCHLEA = Array.from({ length: 49 }, (_, i) => { const a = Math.PI + i * Math.PI / 12, r = 27 - i * 0.4; return `${i ? 'L' : 'M'}${f1(246 + Math.cos(a) * r)} ${f1(112 - Math.sin(a) * r)}`; }).join('');
+  EAR.svg = (opts) => partsSVG(EAR, opts, (g) => `<defs>
+    <radialGradient id="eaSk" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FBE0C6"/><stop offset=".6" stop-color="#F2C29C"/><stop offset="1" stop-color="#DFA27C"/></radialGradient>
+    <linearGradient id="eaBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F9DEC4"/><stop offset="1" stop-color="#EDC3A0"/></linearGradient>
+    <linearGradient id="eaBn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6EEDF"/><stop offset="1" stop-color="#E4D6BE"/></linearGradient>
+    <pattern id="eaDt" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1" fill="#CDBB9C"/><circle cx="9" cy="8" r=".8" fill="#D6C6AA"/><circle cx="5" cy="10" r=".6" fill="#C7B393"/></pattern>
+    <radialGradient id="eaAi" cx="45%" cy="40%" r="65%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3E1EE"/></radialGradient>
+    <linearGradient id="eaCa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C77468"/><stop offset=".35" stop-color="#F6C3B4"/><stop offset=".7" stop-color="#EDA796"/><stop offset="1" stop-color="#B9645A"/></linearGradient>
+    <radialGradient id="eaCo" cx="60%" cy="40%" r="70%"><stop offset="0" stop-color="#C47460"/><stop offset="1" stop-color="#E8A688"/></radialGradient>
+    <linearGradient id="eaDr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF7EC"/><stop offset="1" stop-color="#D9C3CF"/></linearGradient>
+    <radialGradient id="eaOs" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFDF6"/><stop offset=".6" stop-color="#F3E6C8"/><stop offset="1" stop-color="#D8C298"/></radialGradient>
+    <linearGradient id="eaSn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9FDCEB"/><stop offset="1" stop-color="#4FA8C4"/></linearGradient></defs>
+    <rect width="300" height="200" rx="14" fill="url(#eaBg)"/>
+    <path d="M64 20 L300 20 L300 190 L64 190 Q80 150 70 106 Q80 60 64 20 Z" fill="url(#eaBn)"/><path d="M64 20 L300 20 L300 190 L64 190 Q80 150 70 106 Q80 60 64 20 Z" fill="url(#eaDt)" stroke="#B49F80" stroke-width="2"/>
+    <path d="M168 76 Q190 64 214 76 Q224 92 220 116 Q214 134 192 136 Q170 134 166 118 Z" fill="url(#eaAi)" stroke="#B9A88E" stroke-width="1.5"/>
+    <path d="M190 134 Q186 160 176 190 L192 190 Q198 160 202 134 Z" fill="#EFD7CF" stroke="#C9AFA2" stroke-width="1.2"/>
+    <path d="M252 118 Q272 128 300 120" fill="none" stroke="${STROKE}" stroke-width="7" stroke-linecap="round"/><path d="M252 118 Q272 128 300 120" fill="none" stroke="#F2C14E" stroke-width="4" stroke-linecap="round"/><path d="M256 117 Q272 125 298 118" fill="none" stroke="#FFE7A0" stroke-width="1.2"/>
+    ${g('muschel', `<path d="M74 46 C66 18 38 8 20 28 C6 46 8 84 16 110 C22 128 30 136 30 152 C30 170 40 180 52 178 C64 176 68 164 66 150 C64 138 70 128 72 120 Z" fill="url(#eaSk)" stroke="${STROKE}" stroke-width="2.8" stroke-linejoin="round"/>${tex('M66 40 C58 24 38 20 28 34 C18 50 20 82 26 104 C30 118 38 126 40 142', '#FFEBDA', 4, 0.7)}${tex('M68 44 C60 30 40 26 31 38 C22 52 23 82 29 104 C33 118 41 126 43 142', '#C98466', 2, 0.9)}${tex('M62 56 C52 48 42 54 40 68 C38 84 42 96 50 108 M48 60 C44 48 50 40 60 42', '#D49274', 3)}${tex('M60 54 C51 47 43 52 42 66', '#FFF0E2', 1.5, 0.8)}<path d="M50 84 C40 92 42 112 54 118 C62 122 70 116 72 112 L72 92 C66 84 58 80 50 84 Z" fill="url(#eaCo)" stroke="#9E5A48" stroke-width="1.5"/><path d="M72 116 Q80 118 78 108" fill="none" stroke="${STROKE}" stroke-width="2" stroke-linecap="round"/>${tex('M38 160 Q44 170 54 168', '#E89C8A', 3, 0.5)}`)}
+    ${g('gang', `<path d="M66 96 C96 88 128 98 160 94 L160 118 C128 122 96 112 66 118 Z" fill="url(#eaCa)" stroke="${STROKE}" stroke-width="2.5" stroke-linejoin="round"/>${tex('M76 101 C100 96 130 104 156 101', '#FFE1D6', 2, 0.8)}${tex('M72 96 l4 5 M80 94 l3 5 M76 118 l3 -5 M84 116 l2 -5', '#9E5A48', 1)}<ellipse cx="104" cy="113" rx="5" ry="2.8" fill="#D9A441" stroke="#9E7424" stroke-width="1"/><ellipse cx="103" cy="112" rx="1.8" ry="1" fill="#FFE29A" style="stroke:none"/>`)}
+    ${g('trommelfell', `<ellipse cx="163" cy="106" rx="4.5" ry="20" fill="url(#eaDr)" stroke="${STROKE}" stroke-width="2.2" transform="rotate(-10 163 106)"/><path d="M163 108 L166 120 L161 120 Z" fill="#fff" opacity=".9" style="stroke:none"/>${HIT('M152 82 L172 82 L172 130 L152 130 Z')}`)}
+    ${g('knochen', `<g fill="url(#eaOs)" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"><path d="M163 119 Q161 113 164 108 L170 90 Q167 78 175 71 Q185 66 189 75 Q191 85 181 89 L174 92 L169 113 Q167 120 163 119 Z"/><path d="M188 73 Q195 64 205 68 L214 63 Q217 70 208 77 Q209 86 204 92 L202 104 Q204 109 199 111 Q194 110 196 104 L196 93 Q190 90 188 83 Z"/><path d="M198 105 L203 104 Q208 97 216 97 L220 97 L220 123 L216 123 Q208 123 203 115 L198 114 Z M206 110 Q209 103 215 102 L215 118 Q209 117 206 112 Z" fill-rule="evenodd"/></g>${tex('M172 76 Q176 71 182 72 M193 70 Q198 67 203 70 M208 101 Q212 99 216 99', '#FFFFFF', 1.5, 0.9)}${HIT('M162 72 L222 72 L222 122 L162 122 Z')}`)}
+    ${g('schnecke', `<ellipse cx="225" cy="110" rx="7" ry="11" fill="url(#eaSn)" stroke="${STROKE}" stroke-width="2"/><path d="${COCHLEA}" fill="none" stroke="${STROKE}" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round"/><path d="${COCHLEA}" fill="none" style="stroke:url(#eaSn);stroke-width:7.5" stroke-linecap="round" stroke-linejoin="round"/>${tex(COCHLEA, '#DDF4FA', 1.6, 0.8)}${HIT('M214 80 L278 80 L278 144 L214 144 Z')}`)}`,
+  [['muschel', 8, 192], ['gang', 112, 84, 'middle'], ['trommelfell', 160, 150, 'middle', [163, 128]], ['knochen', 196, 54, 'middle', [194, 66]], ['schnecke', 250, 162, 'middle', [250, 143]]]);
   PLANTS.auge = EYE; PLANTS.ohr = EAR;
 
   const SENSES = [
@@ -5041,32 +5074,60 @@ const MS2 = (() => {
     { id: 'speichen', name: 'Speichenreflektoren', desc: 'Gelbe Reflektoren in den Speichen, an jedem Rad zwei. Statt ihnen gehen auch weiße Streifen an den Reifen.', tip: 'Der Teil ist in den Rädern.' },
     { id: 'pedal', name: 'Pedalreflektoren', desc: 'Gelbe Reflektoren an beiden Pedalen.', tip: 'Der Teil ist an den Pedalen.' },
   ];
-  const wheel = (cx) => `<circle cx="${cx}" cy="140" r="46" fill="none" stroke="#333" stroke-width="7"/><circle cx="${cx}" cy="140" r="42" fill="none" stroke="#777" stroke-width="1.5"/>${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${cx} 140 L${(cx + Math.cos(a) * 42).toFixed(1)} ${(140 + Math.sin(a) * 42).toFixed(1)}" stroke="#AAB2BD" stroke-width="1"/>`; }).join('')}<circle cx="${cx}" cy="140" r="4" fill="#555"/>`;
-  const spokeRefl = (cx) => [-0.6, 2.5].map((a) => { const x = cx + Math.cos(a) * 28, y = 140 + Math.sin(a) * 28; return `<rect x="${(x - 7).toFixed(1)}" y="${(y - 3.5).toFixed(1)}" width="14" height="7" rx="2" fill="#FFB300" stroke="#8A5A00" stroke-width="1.5" transform="rotate(${(a * 180 / Math.PI).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }).join('');
+  const pol = (cx, cy, a, r) => `${f1(cx + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r)}`;
+  // tyre with tread and sheen, silver rim, 18 crossed spokes
+  const wheel = (cx) => `<circle cx="${cx}" cy="140" r="46" fill="none" stroke="${STROKE}" stroke-width="10.5"/><circle cx="${cx}" cy="140" r="46" fill="none" stroke="#3B404C" stroke-width="7.5"/><circle cx="${cx}" cy="140" r="49.2" fill="none" stroke="#5B6271" stroke-width="1.6" stroke-dasharray="2.2 2.4"/><path d="M${pol(cx, 140, 3.5, 47)} A47 47 0 0 1 ${pol(cx, 140, 4.6, 47)}" fill="none" stroke="#9AA3B4" stroke-width="1.8" stroke-linecap="round"/>`
+    + `<circle cx="${cx}" cy="140" r="40.5" fill="none" stroke="url(#bkRm)" stroke-width="3.6"/><circle cx="${cx}" cy="140" r="38.6" fill="none" stroke="#6E7887" stroke-width=".8"/>`
+    + `<path d="${Array.from({ length: 18 }, (_, i) => { const a = i * Math.PI / 9; return `M${pol(cx, 140, a + (i % 2 ? 0.5 : -0.5), 5)} L${pol(cx, 140, a, 38.5)}`; }).join('')}" stroke="#B9C2CF" stroke-width="1"/>`
+    + `<path d="${Array.from({ length: 6 }, (_, i) => { const a = 3.4 + i * 0.16; return `M${pol(cx, 140, a + 0.5, 6)} L${pol(cx, 140, a, 37)}`; }).join('')}" stroke="#F4F7FB" stroke-width="1"/>`
+    + `<circle cx="${cx}" cy="140" r="6.5" fill="url(#bkHb)" stroke="${STROKE}" stroke-width="1.5"/><circle cx="${cx}" cy="140" r="2" fill="#4A5260"/>`;
+  // frame tube: ink edge, coloured body, a thin glossy line along the top
+  const tube = (d, w, c, hi) => `<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="${d}" stroke="${STROKE}" stroke-width="${w + 3}"/><path d="${d}" stroke="${c}" stroke-width="${w}"/><path d="${d}" stroke="${hi}" stroke-width="1.3" opacity=".8" transform="translate(-.6 -1.3)"/></g>`;
+  const glint = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" style="stroke:none"/>`;
+  const amber = (x, y, w, h, rot) => `<g transform="rotate(${rot} ${x} ${y})"><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="2" fill="url(#bkAm)" stroke="${STROKE}" stroke-width="1.5"/>${tex(`M${x - w / 2 + 3} ${y - h / 2 + 1.5} L${x - w / 2 + 3} ${y + h / 2 - 1.5} M${x} ${y - h / 2 + 1.5} L${x} ${y + h / 2 - 1.5} M${x + w / 2 - 3} ${y - h / 2 + 1.5} L${x + w / 2 - 3} ${y + h / 2 - 1.5}`, '#B86E00', 0.8, 0.7)}${glint(x - w / 2 + 2.5, y - h / 2 + 2, 1.1)}</g>`;
+  const spokeRefl = (cx) => [-0.6, 2.5].map((a) => amber(+f1(cx + Math.cos(a) * 26), +f1(140 + Math.sin(a) * 26), 15, 7, f1(a * 180 / Math.PI))).join('');
+  const caliper = (x, y, rot) => `<g transform="rotate(${rot} ${x} ${y})"><path d="M${x - 7} ${y - 3} Q${x} ${y - 8} ${x + 7} ${y - 3} L${x + 6} ${y + 6} L${x + 3} ${y + 6} L${x + 3} ${y} L${x - 3} ${y} L${x - 3} ${y + 6} L${x - 6} ${y + 6} Z" fill="url(#bkDk)" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/><rect x="${x - 5.5}" y="${y + 4}" width="3" height="4" fill="#7A4A32"/><rect x="${x + 2.5}" y="${y + 4}" width="3" height="4" fill="#7A4A32"/></g>`;
   const BIKEP = { label: 'Fahrrad', box: '-30 -6 380 246', parts: BIKE_PARTS, qid: 'vr_', note: 'fahrrad', poolQ: 'Wie heißt dieser Teil des Fahrrads?', tap: 'den Teil am Fahrrad',
     stepOf: { klingel: 1, vbremse: 2, hbremse: 2, licht: 3, frontrefl: 3, ruecklicht: 4, rueckstrahler: 4, speichen: 5, pedal: 5 },
     steps: ['Zeichne zwei Räder, den Rahmen, den Sattel, den Lenker und daran die Klingel.', 'Zeichne die zwei Bremsen: eine am Vorderrad, eine am Hinterrad.', 'Zeichne vorn den Scheinwerfer und darunter den weißen Reflektor.', 'Zeichne hinten das rote Rücklicht und den roten Rückstrahler.', 'Zeichne die gelben Reflektoren in die Speichen und an die Pedale.'],
     ask: () => 'Wie heißt der leuchtende Teil am Fahrrad?', find: (p) => `Tippe auf: ${p.name}` };
-  BIKEP.svg = (opts) => partsSVG(BIKEP, opts, (g) => `
-    <rect x="-30" y="-6" width="380" height="246" rx="12" fill="#EEF3F8"/>
-    ${wheel(80)}${wheel(240)}
-    <g stroke="#2E7D9A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M80 140 L150 146 L128 78 L80 140 M128 78 L214 82 L150 146"/></g>
-    <path d="M214 82 L240 140" stroke="#5A6470" stroke-width="5" stroke-linecap="round"/>
-    <path d="M214 82 L208 62 L192 58" stroke="#5A6470" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M192 58 L180 60" stroke="#333" stroke-width="7" stroke-linecap="round"/>
-    <path d="M128 78 L124 66" stroke="#5A6470" stroke-width="5" stroke-linecap="round"/><path d="M106 62 Q122 56 138 62 Q124 70 106 62 Z" fill="#333"/>
-    <path d="M124 84 L56 88 L80 140" stroke="#8A939E" stroke-width="3.5" fill="none" stroke-linejoin="round"/>
-    <circle cx="150" cy="146" r="10" fill="none" stroke="#555" stroke-width="3"/><path d="M150 146 L166 170 M150 146 L136 124" stroke="#444" stroke-width="5" stroke-linecap="round"/>
-    <rect x="158" y="168" width="20" height="7" rx="2" fill="#555"/><rect x="126" y="120" width="20" height="7" rx="2" fill="#555"/>
-    ${g('klingel', `<path d="M196 56 L196 50" stroke="#555" stroke-width="2"/><circle cx="196" cy="47" r="7" fill="#FFC93C" stroke="${STROKE}" stroke-width="2"/>${HIT('M184 34 L208 34 L208 58 L184 58 Z')}`)}
-    ${g('vbremse', `<path d="M186 62 L180 68" stroke="#111" stroke-width="3" stroke-linecap="round"/><path d="M186 64 Q206 76 230 96" stroke="#111" stroke-width="1.5" fill="none"/><rect x="226" y="90" width="12" height="10" rx="2" fill="#111" transform="rotate(25 232 95)"/>${HIT('M218 82 L246 82 L246 108 L218 108 Z')}`)}
-    ${g('hbremse', `<path d="M188 60 Q160 76 110 90" stroke="#111" stroke-width="1.5" fill="none"/><rect x="100" y="88" width="12" height="10" rx="2" fill="#111" transform="rotate(-35 106 93)"/>${HIT('M92 80 L120 80 L120 106 L92 106 Z')}`)}
-    ${g('licht', `<path d="M218 66 L232 62 L232 78 L218 74 Z" fill="#fff" stroke="${STROKE}" stroke-width="2"/><path d="M238 62 L254 56 M238 70 L256 70 M238 78 L254 84" stroke="#FFD54F" stroke-width="3" stroke-linecap="round"/>${HIT('M214 52 L258 52 L258 88 L214 88 Z')}`)}
-    ${g('frontrefl', `<rect x="222" y="98" width="9" height="14" rx="2" fill="#fff" stroke="${STROKE}" stroke-width="2"/><path d="M224 102 L229 102 M224 106 L229 106" stroke="#B0BEC5" stroke-width="1.2"/>${HIT('M216 94 L238 94 L238 116 L216 116 Z')}`)}
-    ${g('ruecklicht', `<rect x="44" y="80" width="12" height="10" rx="2" fill="#E53935" stroke="${STROKE}" stroke-width="2"/><path d="M40 78 L28 72 M40 85 L26 85 M40 92 L28 98" stroke="#FF8A80" stroke-width="3" stroke-linecap="round"/>${HIT('M22 66 L58 66 L58 94 L22 94 Z')}`)}
-    ${g('rueckstrahler', `<rect x="40" y="96" width="16" height="13" rx="2" fill="#C62828" stroke="${STROKE}" stroke-width="2"/><path d="M42 100 L54 100 M42 104 L54 104 M48 97 L48 108" stroke="#FF8A80" stroke-width="1"/>${HIT('M34 94 L60 94 L60 114 L34 114 Z')}`)}
+  BIKEP.svg = (opts) => partsSVG(BIKEP, opts, (g) => `<defs>
+    <linearGradient id="bkSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4EEF6"/><stop offset="1" stop-color="#F6F1E6"/></linearGradient>
+    <linearGradient id="bkGr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DCD3C2"/><stop offset="1" stop-color="#EDE6D8"/></linearGradient>
+    <linearGradient id="bkFr" gradientUnits="userSpaceOnUse" x1="0" y1="70" x2="0" y2="150"><stop offset="0" stop-color="#4FB0CC"/><stop offset="1" stop-color="#1E6482"/></linearGradient>
+    <linearGradient id="bkRm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2F5F9"/><stop offset=".5" stop-color="#AEB7C4"/><stop offset="1" stop-color="#E1E6EE"/></linearGradient>
+    <radialGradient id="bkHb" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#8E98A6"/></radialGradient>
+    <linearGradient id="bkDk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B6372"/><stop offset="1" stop-color="#22262F"/></linearGradient>
+    <linearGradient id="bkAm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD866"/><stop offset=".55" stop-color="#FFAA1F"/><stop offset="1" stop-color="#E07800"/></linearGradient>
+    <linearGradient id="bkRd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF7A6B"/><stop offset=".55" stop-color="#E0302C"/><stop offset="1" stop-color="#A11C1C"/></linearGradient>
+    <linearGradient id="bkWh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9D2DE"/></linearGradient>
+    <radialGradient id="bkGl" cx="40%" cy="40%" r="60%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#FFF6C8"/><stop offset="1" stop-color="#F2D36B"/></radialGradient>
+    <linearGradient id="bkBm" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFE680" stop-opacity=".75"/><stop offset="1" stop-color="#FFE680" stop-opacity="0"/></linearGradient>
+    <radialGradient id="bkBe" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFF4B8"/><stop offset=".5" stop-color="#F2BE3A"/><stop offset="1" stop-color="#A8720E"/></radialGradient>
+    <linearGradient id="bkSd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7A5038"/><stop offset="1" stop-color="#3A2418"/></linearGradient></defs>
+    <rect x="-30" y="-6" width="380" height="246" rx="12" fill="url(#bkSky)"/><path d="M-30 190 L350 190 L350 228 Q350 240 338 240 L-18 240 Q-30 240 -30 228 Z" fill="url(#bkGr)"/><path d="M-30 190 L350 190" stroke="#C4B8A2" stroke-width="1.5"/>
+    <ellipse cx="160" cy="192" rx="128" ry="5" fill="${STROKE}" opacity=".14"/>
+    <g id="bkW">${wheel(80)}</g><use href="#bkW" x="160"/>
+    <path d="M80 135 L150 135 M80 145 L150 157" fill="none" stroke="${STROKE}" stroke-width="3.4" stroke-linecap="round"/><path d="M80 135 L150 135 M80 145 L150 157" fill="none" stroke="#9AA4B2" stroke-width="2" stroke-dasharray="2.4 1.2"/>
+    <circle cx="150" cy="146" r="12" fill="none" stroke="${STROKE}" stroke-width="1.6" stroke-dasharray="2 1.4"/><circle cx="150" cy="146" r="10.5" fill="none" stroke="${STROKE}" stroke-width="4"/><circle cx="150" cy="146" r="10.5" fill="none" stroke="url(#bkRm)" stroke-width="2.4"/><circle cx="80" cy="140" r="5.5" fill="none" stroke="#5B6372" stroke-width="2"/>
+    ${tube('M124 84 L56 88 L80 140', 2.4, '#AEB7C4', '#F2F5F9')}
+    ${tube('M214 82 L208 64 L190 58', 3.5, '#AEB7C4', '#F2F5F9')}${tube('M219 94 Q230 118 240 140', 4, '#AEB7C4', '#F2F5F9')}${tube('M128 76 L124 63', 3.5, '#AEB7C4', '#F2F5F9')}
+    ${tube('M80 140 L150 146 L128 78 L80 140 M128 78 L214 82 M150 146 L217 90 M214 82 L219 94', 5.5, 'url(#bkFr)', '#A6E0EE')}
+    <path d="M190 58 L180 60" stroke="${STROKE}" stroke-width="9" stroke-linecap="round"/><path d="M190 58 L180 60" stroke="#3B404C" stroke-width="6" stroke-linecap="round"/><path d="M188 56.8 L182 58" stroke="#7D8595" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M102 61 Q104 55 118 56 Q132 56 141 59 Q144 64 137 66 Q124 68 109 67 Q100 66 102 61 Z" fill="url(#bkSd)" stroke="${STROKE}" stroke-width="2.2" stroke-linejoin="round"/><path d="M108 59 Q120 57 134 59" fill="none" stroke="#B88A6A" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M214 75 L219 72" stroke="${STROKE}" stroke-width="4" stroke-linecap="round"/><path d="M214 75 L219 72" stroke="#AEB7C4" stroke-width="2" stroke-linecap="round"/>
+    ${tube('M150 146 L166 170 M150 146 L136 124', 3, '#AEB7C4', '#F2F5F9')}<circle cx="150" cy="146" r="3.5" fill="url(#bkHb)" stroke="${STROKE}" stroke-width="1.4"/>
+    <rect x="158" y="168" width="20" height="7" rx="2" fill="url(#bkDk)" stroke="${STROKE}" stroke-width="1.5"/><rect x="126" y="120" width="20" height="7" rx="2" fill="url(#bkDk)" stroke="${STROKE}" stroke-width="1.5"/>
+    ${g('klingel', `<path d="M196 58 L196 53" stroke="${STROKE}" stroke-width="2.4"/><path d="M196 56 L203 53" stroke="#5B6372" stroke-width="2" stroke-linecap="round"/><path d="M188 52 Q188 39 196 39 Q204 39 204 52 Z" fill="url(#bkBe)" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/><circle cx="196" cy="38" r="1.8" fill="url(#bkBe)" stroke="${STROKE}" stroke-width="1.2"/>${glint(192.5, 44, 1.8)}${HIT('M182 30 L210 30 L210 60 L182 60 Z')}`)}
+    ${g('vbremse', `<path d="M186 61 L181 70" stroke="${STROKE}" stroke-width="2.6" stroke-linecap="round"/><path d="M186 64 Q208 68 220 90" fill="none" stroke="#2E333D" stroke-width="1.6"/>${caliper(221, 95, 24)}${HIT('M208 84 L234 84 L234 108 L208 108 Z')}`)}
+    ${g('hbremse', `<path d="M188 61 L184 71" stroke="${STROKE}" stroke-width="2.6" stroke-linecap="round"/><path d="M188 63 Q199 70 200 85 L134 83 Q119 85 111 96" fill="none" stroke="#2E333D" stroke-width="1.6"/>${caliper(109, 101, -38)}${HIT('M96 86 L122 86 L122 112 L96 112 Z')}`)}
+    ${g('licht', `<path d="M233 59 L268 46 L268 86 L233 75 Z" fill="url(#bkBm)" style="stroke:none"/><path d="M218 62 L229 59 Q236 59 236 67 Q236 75 229 75 L218 72 Z" fill="url(#bkDk)" stroke="${STROKE}" stroke-width="2" stroke-linejoin="round"/><ellipse cx="234" cy="67" rx="3.2" ry="7.6" fill="url(#bkGl)" stroke="${STROKE}" stroke-width="1.6"/>${glint(233.2, 63.5, 1.2)}<path d="M221 63.5 L228 61.5" stroke="#8D96A6" stroke-width="1.2" stroke-linecap="round"/>${HIT('M214 50 L262 50 L262 80 L214 80 Z')}`)}
+    ${g('frontrefl', `<rect x="230" y="104" width="10" height="16" rx="2.5" fill="url(#bkWh)" stroke="${STROKE}" stroke-width="2"/>${tex('M232 109 L238 109 M232 114 L238 114 M235 106 L235 118', '#AEB9C8', 0.8)}${glint(232.6, 106.6, 1.1)}<path d="M228 109 L231 109" stroke="#5B6372" stroke-width="2"/>${HIT('M224 98 L246 98 L246 126 L224 126 Z')}`)}
+    ${g('ruecklicht', `<path d="M40 76 L24 70 M40 83 L22 83 M40 90 L24 96" stroke="#FF8A80" stroke-width="3" stroke-linecap="round" opacity=".85"/><path d="M58 80 L46 79 Q41 79 41 84 Q41 89 46 89 L58 88 Z" fill="url(#bkDk)" stroke="${STROKE}" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="44" cy="84" rx="3" ry="5" fill="url(#bkRd)" stroke="${STROKE}" stroke-width="1.5"/>${glint(43.4, 81.5, 1)}${HIT('M20 66 L60 66 L60 92 L20 92 Z')}`)}
+    ${g('rueckstrahler', `<rect x="39" y="95" width="17" height="15" rx="2.5" fill="url(#bkRd)" stroke="${STROKE}" stroke-width="2"/>${tex('M41 99 L54 99 M41 103 L54 103 M41 107 L54 107 M43.5 96.5 L43.5 109 M47.5 96.5 L47.5 109 M51.5 96.5 L51.5 109', '#FF9A8E', 0.7, 0.8)}${glint(42, 97.6, 1.3)}${HIT('M34 93 L60 93 L60 114 L34 114 Z')}`)}
     ${g('speichen', `${spokeRefl(80)}${spokeRefl(240)}`)}
-    ${g('pedal', `<rect x="161" y="169" width="7" height="5" rx="1" fill="#FFB300"/><rect x="129" y="121" width="7" height="5" rx="1" fill="#FFB300"/><rect x="169" y="169" width="7" height="5" rx="1" fill="#FFB300"/><rect x="137" y="121" width="7" height="5" rx="1" fill="#FFB300"/>${HIT('M122 114 L182 114 L182 182 L122 182 Z')}`)}`,
-  [['klingel', 196, 30, 'middle'], ['licht', 262, 18, 'start', [236, 62]], ['vbremse', 346, 82, 'end', [240, 94]], ['hbremse', 106, 34, 'middle', [106, 88]], ['ruecklicht', -26, 52, 'start', [46, 80]], ['rueckstrahler', -26, 232, 'start', [46, 110]], ['frontrefl', 346, 232, 'end', [228, 112]], ['speichen', 132, 214, 'middle', [216, 158]], ['pedal', 182, 196]]);
+    ${g('pedal', `${[[161, 169], [169, 169], [129, 121], [137, 121]].map(([x, y]) => `<rect x="${x}" y="${y}" width="7" height="5" rx="1.2" fill="url(#bkAm)" stroke="${STROKE}" stroke-width="1"/>${glint(x + 1.8, y + 1.5, 0.9)}`).join('')}${HIT('M122 114 L182 114 L182 182 L122 182 Z')}`)}`,
+  [['klingel', 196, 26, 'middle'], ['licht', 262, 18, 'start', [236, 60]], ['vbremse', 346, 82, 'end', [226, 94]], ['hbremse', 86, 34, 'middle', [107, 94]], ['ruecklicht', -26, 52, 'start', [44, 78]], ['rueckstrahler', -26, 232, 'start', [44, 110]], ['frontrefl', 346, 232, 'end', [238, 121]], ['speichen', 132, 214, 'middle', [217, 157]], ['pedal', 182, 196]]);
   PLANTS.fahrrad = BIKEP;
   function missingTask(mod) {
     const p = pick(BIKE_PARTS); const others = shuffle(BIKE_PARTS.filter((x) => x !== p)).slice(0, 2).map((x) => x.name);
@@ -11718,7 +11779,7 @@ const CHANGELOG = [{"date": "2026-11-09", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '04c96ba8db07';
+  const BUILD = '34fcdafe8fa7';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
