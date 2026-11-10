@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="0ede17f24b18">
+<meta name="app-version" content="776a23125e42">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -509,7 +509,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .tmsg:empty { display: none; }
 .btn.danger { background: var(--red); color: #fff; }
 .pcard .grades { justify-content: flex-start; margin-top: 6px; }
-.pcard .gradechip { color: var(--ink); border-color: var(--ink-soft); }
+.pcard .gradechip, .card .gradechip { color: var(--ink); border-color: var(--ink-soft); }
+.card .grades { margin-top: 6px; }
 .parentbtn .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 2px var(--bg2); }
 .codebox { display: block; width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 8px 10px; font: 14px/1.35 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: #fff; word-break: break-all; resize: vertical; margin-bottom: 8px; }
 .codebox:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
@@ -15125,7 +15126,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
       <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div>
-      <div class="card"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${gradeTabs()}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`);
+      <div class="card" style="margin-top:12px"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${gradeTabs()}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`);
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenSetup(); }; });
     $('#setpin').onclick = () => setPin(screenTitle, screenSetup);
     $('#setload').onclick = () => screenParent('load', screenSetup);
@@ -16473,7 +16474,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '0ede17f24b18';
+  const BUILD = '776a23125e42';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

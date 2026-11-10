@@ -453,7 +453,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .tmsg:empty { display: none; }
 .btn.danger { background: var(--red); color: #fff; }
 .pcard .grades { justify-content: flex-start; margin-top: 6px; }
-.pcard .gradechip { color: var(--ink); border-color: var(--ink-soft); }
+.pcard .gradechip, .card .gradechip { color: var(--ink); border-color: var(--ink-soft); }
+.card .grades { margin-top: 6px; }
 .parentbtn .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 2px var(--bg2); }
 .codebox { display: block; width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 8px 10px; font: 14px/1.35 ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: #fff; word-break: break-all; resize: vertical; margin-bottom: 8px; }
 .codebox:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
