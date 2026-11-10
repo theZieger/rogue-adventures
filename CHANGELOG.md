@@ -19,7 +19,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Viele Bilder sind neu gezeichnet, und kleine Symbole sehen überall gleich aus.
 
 ### Behoben
-- Einige Aufgaben waren unklar oder hatten zwei richtige Antworten, zum Beispiel an der Waage und beim Parallelogramm.
+- Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen.
 
 ## 2026-11-09
 

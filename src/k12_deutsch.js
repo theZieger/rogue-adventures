@@ -74,7 +74,7 @@ const K12D = (() => {
   const LAUTPOS = [['mond', 'M', 0], ['baum', 'M', 2], ['tomate', 'M', 1], ['maus', 'S', 2], ['haus', 'H', 0], ['haus', 'S', 2], ['ball', 'B', 0], ['ball', 'L', 2],
     ['fisch', 'F', 0], ['tisch', 'T', 0], ['igel', 'G', 1], ['igel', 'L', 2], ['ente', 'N', 1], ['rakete', 'R', 0], ['rakete', 'K', 1], ['leiter', 'L', 0], ['kerze', 'Z', 1],
     ['kerze', 'K', 0], ['wolke', 'L', 1], ['wolke', 'W', 0], ['hut', 'T', 2], ['hut', 'H', 0], ['gabel', 'B', 1], ['gabel', 'L', 2], ['pilz', 'L', 1], ['pilz', 'P', 0], ['zitrone', 'Z', 0],
-    ['krone', 'N', 1], ['nest', 'N', 0], ['nest', 'T', 2], ['blume', 'M', 1], ['topf', 'F', 2], ['sonne', 'S', 0], ['wal', 'W', 0], ['wal', 'L', 2], ['apfel', 'A', 0], ['apfel', 'L', 2], ['tasse', 'T', 0], ['herz', 'H', 0], ['herz', 'Z', 2]];
+    ['krone', 'N', 1], ['nest', 'N', 0], ['nest', 'T', 2], ['blume', 'M', 1], ['sonne', 'S', 0], ['wal', 'W', 0], ['wal', 'L', 2], ['apfel', 'A', 0], ['apfel', 'L', 2], ['tasse', 'T', 0], ['herz', 'H', 0], ['herz', 'Z', 2]];
   const POS = ['am Anfang', 'in der Mitte', 'am Ende'];
   const SILBEN = PIC_IDS.map((id) => [PICS[id].w, PICS[id].syl, id]).concat([['Schule', 'Schu-le'], ['Tafel', 'Ta-fel'], ['Fenster', 'Fens-ter'], ['Hund', 'Hund'], ['Kinder', 'Kin-der'],
     ['Lineal', 'Li-ne-al'], ['Elefant', 'E-le-fant'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
@@ -84,15 +84,18 @@ const K12D = (() => {
   const REIME = [['Haus', 'Maus', 'Laus'], ['Hand', 'Sand', 'Wand'], ['Topf', 'Kopf', 'Knopf'], ['Ball', 'Stall', 'Knall'], ['Fisch', 'Tisch'], ['Hose', 'Rose', 'Dose'],
     ['Nase', 'Hase', 'Vase'], ['Bein', 'Stein', 'Schwein'], ['Kuh', 'Schuh'], ['Baum', 'Traum', 'Schaum'], ['Krone', 'Zitrone', 'Bohne'], ['Tanne', 'Kanne', 'Pfanne'],
     ['Hut', 'gut', 'Mut'], ['Zug', 'Krug'], ['Nest', 'Fest'], ['Bett', 'nett'], ['Sonne', 'Tonne'], ['Ei', 'zwei', 'drei'], ['Brot', 'rot', 'Boot'], ['Wal', 'Schal']];
+  // Ei and Bein sound too alike to be wrong answers for each other
+  const ALIKE = ['Ei', 'Bein'];
+  const alike = (g, h) => ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
   const PIC_REIME = [['haus', 'maus'], ['fisch', 'tisch'], ['krone', 'zitrone']];
   // first vowel of a picture word, if it is a single vowel (not au, ei, ie)
   const vowelGap = (w) => { const i = w.search(/[aeiou]/i); return /^(au|ei|eu|ie)/i.test(w.slice(i, i + 2)) ? null : i; };
   const DIPH = { haus: 'au', maus: 'au', baum: 'au', leiter: 'ei' };
 
   const L1_ITEMS = {
-    anlaut: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 1, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
-    anlaut2: PIC_IDS.map((id) => ({ id: 'l1ab_' + id, make: (qid) => { const wrong = []; for (const x of shuffle(PIC_IDS)) if (wrong.length < 2 && first(x) !== first(id) && !wrong.some((y) => first(y) === first(x))) wrong.push(x);
-      return choice('anlaut', 2, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
+    anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
+    anlaut: PIC_IDS.map((id) => ({ id: 'l1ab_' + id, make: (qid) => { const wrong = []; for (const x of shuffle(PIC_IDS)) if (wrong.length < 2 && first(x) !== first(id) && !wrong.some((y) => first(y) === first(x))) wrong.push(x);
+      return choice('anlaut', 1, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
     laute: VOW.map((v) => ({ id: 'l1sl_' + v, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, { why: 'Selbstlaute sind A, E, I, O, U.' }) }))
       .concat(CONS.map((c) => ({ id: 'l1ml_' + c, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Mitlaut?', c, others(VOW, [], 2), qid, { why: `${c} ist ein Mitlaut. Selbstlaute sind A, E, I, O, U.` }) })))
       .concat(Object.keys(UML).map((u) => ({ id: 'l1ul_' + u, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Umlaut?', u, [UML[u], pick(CONS)], qid, { why: 'Umlaute haben zwei Punkte: Ä, Ö, Ü.' }) })))
@@ -108,11 +111,11 @@ const K12D = (() => {
     lautpos: LAUTPOS.map(([id, l, pos]) => ({ id: 'l1lp_' + id + l, make: (qid) => choice('lautpos', 1, 'lautpos', `Wo hörst du das ${l} in „${PICS[id].w}“?`, POS[pos], POS.filter((_, j) => j !== pos), qid, { pic: picOf(id) }) })),
     silben: SILBEN.map(([w, syl, id]) => ({ id: 'l1si_' + w, make: (qid) => { const n = syl.split('-').length; const a = SYL[n - 1];
       return choice('silben', 1, 'silben', `Wie viele Silben hat „${w}“?`, a, others(n === 4 ? SYL : SYL.slice(0, 3), [a], 2), qid, Object.assign({ why: `${syl}: ${a}.` }, id ? { pic: picOf(id) } : {})); } })),
-    alphabet: ABC.slice(1, 24).map((x, i) => ({ id: 'l1na_' + x, make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe kommt nach ${x}?`, ABC[i + 2], [ABC[i], ABC[i + 3]], qid, { why: `${ABC[i]}, ${x}, ${ABC[i + 2]}` }) }))
-      .concat(ABC.slice(2, 25).map((x, i) => ({ id: 'l1vo_' + x, make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe kommt vor ${x}?`, ABC[i + 1], [ABC[i + 3], ABC[i]], qid, { why: `${ABC[i + 1]}, ${x}, ${ABC[i + 3]}` }) }))),
-    alphabet2: ABC.slice(1, 22).map((x, j) => { const i = j + 1; return { id: 'l1fe_' + ABC[i + 2], make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe fehlt? ${ABC[i]}, ${ABC[i + 1]}, ___, ${ABC[i + 3]}`, ABC[i + 2], [ABC[i - 1], ABC[i + 4]], qid, { why: ABC.slice(i, i + 4).join(', ') }) }; }),
+    alphabet2: ABC.slice(1, 24).map((x, i) => ({ id: 'l1na_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt nach ${x}?`, ABC[i + 2], [ABC[i], ABC[i + 3]], qid, { why: `${ABC[i]}, ${x}, ${ABC[i + 2]}` }) }))
+      .concat(ABC.slice(2, 25).map((x, i) => ({ id: 'l1vo_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt vor ${x}?`, ABC[i + 1], [ABC[i + 3], ABC[i]], qid, { why: `${ABC[i + 1]}, ${x}, ${ABC[i + 3]}` }) }))),
+    alphabet: ABC.slice(1, 22).map((x, j) => { const i = j + 1; return { id: 'l1fe_' + ABC[i + 2], make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe fehlt? ${ABC[i]}, ${ABC[i + 1]}, ___, ${ABC[i + 3]}`, ABC[i + 2], [ABC[i - 1], ABC[i + 4]], qid, { why: ABC.slice(i, i + 4).join(', ') }) }; }),
     reim: REIME.flatMap((g, gi) => g.map((w) => ({ id: 'l1re_' + w, make: (qid) => {
-      const wrong = shuffle(REIME.filter((_, j) => j !== gi)).slice(0, 2).map((x) => pick(x));
+      const wrong = shuffle(REIME.filter((x, j) => j !== gi && !alike(g, x))).slice(0, 2).map((x) => pick(x));
       return choice('reim', 1, 'reim', `Was reimt sich auf „${w}“?`, pick(g.filter((x) => x !== w)), wrong, qid);
     } })))
       .concat(PIC_REIME.flatMap((pair) => pair.map((id) => ({ id: 'l1rb_' + id, make: (qid) => { const partner = pair.find((x) => x !== id);
@@ -128,14 +131,14 @@ const K12D = (() => {
     reim: { title: 'Reimwörter', lines: ['Reimwörter klingen am Ende gleich: Haus – Maus.', 'Nur der Anfang ist anders: H-aus, M-aus.', 'Sprich beide Wörter laut. Klingt das Ende gleich?'] },
   };
   const L1_TUT = {
-    'anlaut:1': { title: 'Der erste Buchstabe', steps: ['Schau dir das Bild an. Wie heißt das Ding?', 'Sprich das Wort langsam. Welchen Laut hörst du zuerst?', 'Beispiel: Sonne. Sssonne. Zuerst hörst du ein S.', 'Tippe auf den Buchstaben.'] },
-    'anlaut:2': { title: 'Das passende Bild', steps: ['Ein Buchstabe ist vorgegeben.', 'Sprich zu jedem Bild das Wort. Welches fängt mit dem Buchstaben an?', 'Beispiel: M. Mond fängt mit M an, Ball und Sonne nicht.', 'Tippe auf das Bild.'] },
+    'anlaut:2': { title: 'Der erste Buchstabe', steps: ['Schau dir das Bild an. Wie heißt das Ding?', 'Sprich das Wort langsam. Welchen Laut hörst du zuerst?', 'Beispiel: Sonne. Sssonne. Zuerst hörst du ein S.', 'Tippe auf den Buchstaben.'] },
+    'anlaut:1': { title: 'Das passende Bild', steps: ['Ein Buchstabe ist vorgegeben.', 'Sprich zu jedem Bild das Wort. Welches fängt mit dem Buchstaben an?', 'Beispiel: M. Mond fängt mit M an, Ball und Sonne nicht.', 'Tippe auf das Bild.'] },
     'laute:1': { title: 'Selbstlaut oder Mitlaut', steps: ['Selbstlaute sind A, E, I, O, U.', 'Umlaute haben zwei Punkte: Ä, Ö, Ü. Alle anderen sind Mitlaute.', 'Beispiel: M ist ein Mitlaut, O ist ein Selbstlaut.', 'Tippe auf die richtige Antwort.'] },
     'laute:2': { title: 'Der fehlende Laut', steps: ['Im Wort fehlt ein Selbstlaut oder ein Zwielaut.', 'Sprich das Wort zum Bild langsam. Was hörst du an der Lücke?', 'Beispiel: M__nd. Mooond. Es fehlt ein o.', 'Tippe auf den fehlenden Laut.'] },
     'lautpos:1': { title: 'Wo hörst du den Laut?', steps: ['Sprich das Wort langsam, Laut für Laut.', 'Ist der Laut ganz vorn, ganz hinten oder in der Mitte?', 'Beispiel: M in Baum. B-au-m. Das M hörst du am Ende.', 'Tippe auf die richtige Stelle.'] },
     'silben:1': { title: 'Silben klatschen', steps: ['Sprich das Wort und klatsche dazu.', 'Jedes Klatschen ist eine Silbe.', 'Beispiel: To-ma-te. Dreimal klatschen, also 3 Silben.', 'Tippe auf die richtige Zahl.'] },
-    'alphabet:1': { title: 'Das Abc', steps: ['Sag das Abc auf, bis du zum Buchstaben kommst.', 'Welcher Buchstabe kommt direkt davor, welcher direkt danach?', 'Beispiel: nach D kommt E. Vor D kommt C.', 'Tippe auf den Buchstaben.'] },
-    'alphabet:2': { title: 'Lücke im Abc', steps: ['In der Reihe fehlt ein Buchstabe.', 'Sag die Reihe auf und hör auf die Lücke.', 'Beispiel: D, E, __, G. Es fehlt das F.', 'Tippe auf den fehlenden Buchstaben.'] },
+    'alphabet:2': { title: 'Das Abc', steps: ['Sag das Abc auf, bis du zum Buchstaben kommst.', 'Welcher Buchstabe kommt direkt davor, welcher direkt danach?', 'Beispiel: nach D kommt E. Vor D kommt C.', 'Tippe auf den Buchstaben.'] },
+    'alphabet:1': { title: 'Lücke im Abc', steps: ['In der Reihe fehlt ein Buchstabe.', 'Sag die Reihe auf und hör auf die Lücke.', 'Beispiel: D, E, __, G. Es fehlt das F.', 'Tippe auf den fehlenden Buchstaben.'] },
     'reim:1': { title: 'Reimwörter', steps: ['Reimwörter klingen am Ende gleich.', 'Sprich das Wort und jede Antwort laut.', 'Beispiel: Haus reimt sich auf Maus, nicht auf Hund.', 'Tippe auf das Reimwort.'] },
   };
   const L1_MODULES = {
@@ -155,7 +158,7 @@ const K12D = (() => {
       { title: 'Der Morgenkreis', text: 'Im Morgenkreis klatscht die Klasse Silben. Jetzt bist du dran. Klappt es, bekommst du einen Schild.', opts: [{ label: 'Klatschen', task: 'silben', win: { item: 'schild' }, lose: { hp: -4 } }, { label: 'Zuschauen', effect: {} }] },
       { title: 'Das Gedicht an der Tafel', text: 'An der Tafel steht ein Gedicht. Am Ende einer Zeile fehlt das Reimwort. Findest du es, klebt Frau Klein dir ein Fleißbienchen ins Heft.', opts: [{ label: 'Reimwort suchen', task: 'reim', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Buchstabenreihe', text: 'Über der Tafel hängen die Buchstaben von A bis Z. Einer ist heruntergefallen. Hängst du ihn an die richtige Stelle, bekommst du eine Lupe.', opts: [{ label: 'Aufhängen', task: 'alphabet', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Liegen lassen', effect: {} }] },
-      { title: 'Der Hörtest', text: 'Die Schulärztin sagt Wörter ganz leise. Du sollst sagen, wo du einen Laut hörst. Für die richtige Antwort gibt es einen Keks.', opts: [{ label: 'Zuhören', task: 'lautpos', win: { item: 'keks' }, lose: { xp: 5 } }, { label: 'Später', effect: {} }] },
+      { title: 'Der Hörtest', text: 'Die Schulärztin sagt Wörter ganz leise. Du sollst sagen, wo du einen Laut hörst. Für die richtige Antwort gibt es eine Chilischote.', opts: [{ label: 'Zuhören', task: 'lautpos', win: { item: 'keks' }, lose: { xp: 5 } }, { label: 'Später', effect: {} }] },
       { title: 'Die Leseecke', text: 'In der Leseecke liegen Kissen und Bilderbücher. Du ruhst dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] });
   LAUTE1.gen = (mod, tier, know, seq) => {
@@ -165,7 +168,7 @@ const K12D = (() => {
 
   /* ================= KLASSE 2: Richtig schreiben ================= */
   // [richtig, falsch, Merkmal]
-  const BESONDERS = [['Stuhl', 'Schtuhl', 'st'], ['Stein', 'Schtein', 'st'], ['Straße', 'Schtraße', 'st'], ['stehen', 'schtehen', 'st'], ['Stift', 'Schtift', 'st'], ['Stern', 'Schtern', 'st'],
+  const BESONDERS = [['Stuhl', 'Schtuhl', 'st'], ['Stein', 'Schtein', 'st'], ['Straße', 'Schtraße', 'st'], ['Stiefel', 'Schtiefel', 'st'], ['Stift', 'Schtift', 'st'], ['Stern', 'Schtern', 'st'],
     ['Spinne', 'Schpinne', 'sp'], ['springen', 'schpringen', 'sp'], ['Sport', 'Schport', 'sp'], ['Spiegel', 'Schpiegel', 'sp'],
     ['Bank', 'Bangk', 'nk'], ['Onkel', 'Ongkel', 'nk'], ['trinken', 'tringken', 'nk'], ['Schrank', 'Schrangk', 'nk'], ['danken', 'dangken', 'nk'], ['krank', 'krangk', 'nk'],
     ['Quelle', 'Kwelle', 'qu'], ['Qualle', 'Kwalle', 'qu'], ['quaken', 'kwaken', 'qu'], ['Quark', 'Kwark', 'qu'], ['bequem', 'bekwem', 'qu'],
@@ -198,9 +201,9 @@ const K12D = (() => {
     ['Im Winter fällt viel [Schnee].', 'n'], ['Ben wohnt an der [Elbe].', 'e'], ['Heute kommt [Frau Richter] zu Besuch.', 'e'], ['Der kleine [Igel] schläft.', 'n'], ['Ich trinke gern [Milch].', 'n']];
   const SATZZ = [['Ich gehe heute in die Schule', '.'], ['Der Hund schläft im Korb', '.'], ['Mama kocht eine Suppe', '.'], ['Wir haben zwei Hasen', '.'], ['Im Sommer ist es warm', '.'], ['Lisa malt einen Baum', '.'],
     ['Wie heißt du', '?'], ['Wo wohnst du', '?'], ['Kommst du mit', '?'], ['Hast du einen Stift', '?'], ['Was malst du', '?'], ['Wann beginnt die Pause', '?'],
-    ['Pass auf', '!'], ['Komm schnell her', '!'], ['Hör mir zu', '!'], ['Mach bitte die Tür zu', '!'], ['Hilfe', '!'], ['Räum dein Zimmer auf', '!']];
+    ['Pass auf', '!'], ['Hilfe', '!'], ['Aua', '!'], ['Achtung', '!'], ['Hurra', '!']];
   const MARKS = { '.': 'Punkt .', '?': 'Fragezeichen ?', '!': 'Ausrufezeichen !' };
-  const WHY_Z = { '.': 'Der Satz erzählt etwas. Am Ende steht ein Punkt.', '?': 'Der Satz fragt etwas. Am Ende steht ein Fragezeichen.', '!': 'Der Satz ist eine Bitte, eine Aufforderung oder ein Ruf. Am Ende steht ein Ausrufezeichen.' };
+  const WHY_Z = { '.': 'Der Satz erzählt etwas. Am Ende steht ein Punkt.', '?': 'Der Satz fragt etwas. Am Ende steht ein Fragezeichen.', '!': 'Das ist ein Ausruf. Am Ende steht ein Ausrufezeichen.' };
   // Wörterbuch: in each group the second letters differ, no umlaut in the first two letters
   const ABC_WORDS = { A: ['Affe', 'Ameise', 'Apfel', 'Arm', 'Auto'], B: ['Ball', 'Bett', 'Biene', 'Boot', 'Brot', 'Buch'], F: ['Fahrrad', 'Feder', 'Fisch', 'Fuchs', 'Frosch', 'Flasche'],
     H: ['Hase', 'Heft', 'Himmel', 'Hose', 'Hund'], K: ['Kamm', 'Kerze', 'Kind', 'Krone', 'Kuh', 'Kleid'], L: ['Lampe', 'Leiter', 'Licht', 'Loch', 'Luft'], M: ['Maus', 'Mehl', 'Milch', 'Mond', 'Mund'],
@@ -224,8 +227,8 @@ const K12D = (() => {
     ['Ich will ___ mit.', 'auch', 'auh'], ['Möchtest du Saft ___ Tee?', 'oder', 'oda'], ['___ gehen wir nach Hause.', 'Dann', 'Dan'], ['Das ist ___ Fahrrad.', 'mein', 'main'],
     ['Der Hund wohnt ___.', 'hier', 'hir'], ['___ heißt du?', 'Wie', 'Wi'], ['Wo ist ___ Tasche?', 'die', 'di'], ['Ich ___ sieben Jahre alt.', 'bin', 'bien'], ['___ spielen Fußball.', 'Wir', 'Wier'],
     ['Gib ___ bitte das Buch.', 'mir', 'mier'], ['Ich habe ___ Hunger.', 'immer', 'imer'], ['Der Ball liegt ___ dem Bett.', 'unter', 'unta'], ['Die Lampe hängt ___ dem Tisch.', 'über', 'üba'],
-    ['Das Buch ist ___ Opa.', 'von', 'fon'], ['___ wohnst du?', 'Wo', 'Woh'], ['Lisa ist ___ da.', 'schon', 'schohn'], ['Ich möchte ___ Eis.', 'mehr', 'mer'], ['Das Geschenk ist ___ dich.', 'für', 'führ'],
-    ['___ ist mein Freund.', 'Er', 'Ehr'], ['Wir gehen ___ Hause.', 'zu', 'zuh'], ['Ich male ___ Bild.', 'ein', 'ain'], ['Was machst ___ da?', 'du', 'duh'], ['Ich habe ___ Hund.', 'einen', 'ainen'],
+    ['Das Buch ist ___ Opa.', 'von', 'fon'], ['___ wohnst du?', 'Wo', 'Woh'], ['Lisa ist ___ da.', 'schon', 'schohn'], ['Ich möchte ___ Eis.', 'mehr', 'mer'], ['Das Geschenk ist ___ dich.', 'für', 'fur'],
+    ['___ ist mein Freund.', 'Er', 'Ehr'], ['Ich bleibe heute ___ Hause.', 'zu', 'zuh'], ['Ich male ___ Bild.', 'ein', 'ain'], ['Was machst ___ da?', 'du', 'duh'], ['Ich habe ___ Hund.', 'einen', 'ainen'],
     ['Das Eis ist ___ für dich.', 'nur', 'nuhr'], ['Ich bin ___ dir.', 'bei', 'bai'], ['Wir fahren ___ das Meer.', 'an', 'ann']];
   const S2_POOL = [];
   BESONDERS.forEach(([r, f, k]) => S2_POOL.push({ id: 's2be_' + r, mod: 'besonders', g: k === 'ie' || k === 'i' ? 'ie' : 'besonders', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0, why: WHY_B[k] }));
@@ -243,7 +246,7 @@ const K12D = (() => {
     doppel: { title: 'Doppelte Mitlaute', lines: ['Sprich das Wort in Silben: Son-ne.', 'Ist der Selbstlaut kurz, hörst du den Mitlaut in beiden Silben. Du schreibst ihn doppelt: Sonne.', 'Ist der Selbstlaut lang, schreibst du ihn nur einmal: Ho-se.', 'Bei kurzen Wörtern hilft Verlängern: Ball, die Bäl-le.'] },
     verl: { title: 'Verlängern und ableiten', lines: ['Am Wortende klingen d und t, g und k, b und p gleich.', 'Verlängere das Wort, dann hörst du den Unterschied: der Hund, die Hun-de. Bei gelb hilft: der gel-be Ball.', 'Hörst du e oder eu, kann es auch ä oder äu sein. Such ein verwandtes Wort mit a oder au.', 'Baum, also Bäume. Apfel, also Äpfel. Gibt es keins, schreibst du e oder eu.'] },
     gross: { title: 'Groß schreiben', lines: ['Den Satzanfang schreibt man groß.', 'Nomen schreibt man groß: der Hund, die Blume. Vor ein Nomen passt der, die oder das.', 'Namen schreibt man groß: Tom, Frau Richter, Dresden, die Elbe.'] },
-    satzz: { title: 'Satzzeichen', lines: ['Am Ende eines Satzes steht ein Satzschlusszeichen.', 'Punkt: Der Satz erzählt etwas. Ich male ein Bild.', 'Fragezeichen: Der Satz fragt etwas. Wie heißt du?', 'Ausrufezeichen: eine Bitte, eine Aufforderung oder ein Ruf. Komm her!'] },
+    satzz: { title: 'Satzzeichen', lines: ['Am Ende eines Satzes steht ein Satzschlusszeichen.', 'Punkt: Der Satz erzählt etwas. Ich male ein Bild.', 'Fragezeichen: Der Satz fragt etwas. Wie heißt du?', 'Ausrufezeichen: Jemand ruft etwas laut. Hilfe! Pass auf!'] },
     alphabet: { title: 'Das Wörterbuch', lines: ['Im Wörterbuch stehen die Wörter nach dem Abc.', 'Zuerst zählt der erste Buchstabe: Apfel, Ball, Fisch.', 'Ist er gleich, zählt der zweite: Ball, Bett, Biene, Brot.'] },
     kleinw: { title: 'Häufige kleine Wörter', lines: ['Kleine Wörter wie und, mit, nicht und ist kommen in fast jedem Text vor.', 'Man schreibt sie immer gleich. Präge dir ihr Wortbild ein.', 'Beispiele: und, mit, ist, nicht, auch, oder, dann, hier, wie, die, bin, mir, über, von.'] },
   };
@@ -253,7 +256,7 @@ const K12D = (() => {
     'verl:1': { title: 'Verlängern', steps: ['Am Ende fehlt ein Buchstabe: d oder t, g oder k, b oder p.', 'Verlängere das Wort, dann hörst du ihn.', 'Beispiel: der Hun_ wird zu die Hun-de. Du hörst ein d, also: Hund.', 'Tippe auf den fehlenden Buchstaben.'] },
     'verl:2': { title: 'Ableiten', steps: ['Zwei Schreibweisen: mit ä oder e, mit äu oder eu.', 'Such ein verwandtes Wort mit a oder au.', 'Beispiel: Bäume oder Beume? Es kommt von Baum, also: Bäume.', 'Tippe auf das richtige Wort.'] },
     'gross:1': { title: 'Groß oder klein', steps: ['Drei Sätze, nur einer ist richtig geschrieben.', 'Ist der Satzanfang groß? Sind alle Nomen und Namen groß?', 'Beispiel: Der Hund bellt laut. „Der“ steht am Anfang, „Hund“ ist ein Nomen.', 'Tippe auf den richtigen Satz.'] },
-    'satzz:1': { title: 'Satzzeichen', steps: ['Am Satzende fehlt ein Zeichen.', 'Erzählt der Satz etwas? Punkt. Fragt er? Fragezeichen. Ist es eine Bitte oder ein Ruf? Ausrufezeichen.', 'Beispiel: Wie heißt du? Das ist eine Frage.', 'Tippe auf das passende Zeichen.'] },
+    'satzz:1': { title: 'Satzzeichen', steps: ['Am Satzende fehlt ein Zeichen.', 'Erzählt der Satz etwas? Punkt. Fragt er? Fragezeichen. Ruft jemand laut? Ausrufezeichen.', 'Beispiel: Wie heißt du? Das ist eine Frage.', 'Tippe auf das passende Zeichen.'] },
     'alphabet:1': { title: 'Wörterbuch', steps: ['Die Wörter sollen in die Reihenfolge wie im Wörterbuch.', 'Schau auf den ersten Buchstaben und sag das Abc auf.', 'Beispiel: Fisch, Apfel, Ball wird zu Apfel, Ball, Fisch.', 'Tippe die Wörter der Reihe nach an. Nochmal tippen nimmt ein Wort wieder heraus.'] },
     'alphabet:2': { title: 'Wörterbuch: der zweite Buchstabe', steps: ['Alle Wörter fangen mit demselben Buchstaben an.', 'Dann entscheidet der zweite Buchstabe.', 'Beispiel: Brot, Ball, Bett. Zweite Buchstaben r, a, e. Also: Ball, Bett, Brot.', 'Tippe die Wörter der Reihe nach an.'] },
     'kleinw:1': { title: 'Kleine Wörter', steps: ['Im Satz fehlt ein kleines Wort.', 'Zwei Schreibweisen, nur eine ist richtig. Diese Wörter merkst du dir.', 'Beispiel: Tim und Lea malen. Richtig ist „und“, nicht „unt“.', 'Tippe auf das richtige Wort.'] },
@@ -267,7 +270,8 @@ const K12D = (() => {
     alphabet: { name: 'Wörterbuch', icon: '📖', maxTier: 2, worldCap: [2], dmg: 16 },
     kleinw: { name: 'Kleine Wörter', icon: '🗒️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
-  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
+  // the options sound alike or give the answer away when read aloud
+  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
     modules: S2_MODULES, tut: S2_TUT, notes: S2_NOTES, pool: S2_POOL,
     starters: hero([{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }]),
     extra: { besonders: 'Wörterkartei', doppel: 'Silbengelenk', verl: 'Verlängerung', gross: 'Großbuchstabe', satzz: 'Schlusspunkt', alphabet: 'Daumenregister', kleinw: 'Blitzlesekarte' },
@@ -275,8 +279,8 @@ const K12D = (() => {
       { title: 'Das Diktat', text: 'Auf dem Lehrertisch liegt ein Diktat. Findest du das richtig geschriebene Wort, bekommst du einen Schild.', opts: [{ label: 'Nachsehen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Liegen lassen', effect: {} }] },
       { title: 'Der Brief an Oma', text: 'Du schreibst Oma einen Brief. Am Ende eines Satzes fehlt noch ein Zeichen. Setzt du das richtige, bekommst du einen Trank.', opts: [{ label: 'Weiterschreiben', task: 'satzz', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Später', effect: {} }] },
       { title: 'Das Klassenwörterbuch', text: 'Herr Lange sortiert neue Wortkarten in das Klassenwörterbuch. Hilfst du ihm, schenkt er dir eine Lupe.', opts: [{ label: 'Helfen', task: 'alphabet', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
-      { title: 'Der Einkaufszettel', text: 'Auf Papas Einkaufszettel steht ein Wort falsch. Wenn du es findest, bekommst du einen Keks.', opts: [{ label: 'Nachsehen', task: 'doppel', win: { item: 'keks' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
-      { title: 'Die Wortkartei', text: 'In der Wortkartei sind die Karten mit d und t durcheinander. Sortierst du eine richtig ein, klebt dir Herr Lange ein Fleißbienchen ins Heft.', opts: [{ label: 'Sortieren', task: 'verl', win: { item: 'stern' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Das Wörterheft', text: 'Deine Freundin schreibt Wörter in ihr Heft. Bei einem weiß sie nicht: ein Mitlaut oder zwei? Zeigst du ihr das richtige Wort, bekommst du eine Chilischote.', opts: [{ label: 'Helfen', task: 'doppel', win: { item: 'keks' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Die Wortkartei', text: 'In der Wortkartei stehen knifflige Wörter: Hund oder Hunt? Findest du die richtige Schreibweise, klebt dir Herr Lange ein Fleißbienchen ins Heft.', opts: [{ label: 'Nachsehen', task: 'verl', win: { item: 'stern' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Der Schulgarten', text: 'Im Schulgarten steht eine Bank unter dem Apfelbaum. Du setzt dich und ruhst dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] });
   SCHREIBEN2.gen = (mod, tier) => (mod !== 'alphabet' ? null : tier === 1 && Math.random() < 0.4 ? abcFirst() : abcOrder(tier));
@@ -406,7 +410,7 @@ const K12D = (() => {
       { title: 'Im Zoo', text: 'Beim Ausflug in den Zoo zählt ihr die Tiere: ein Löwe, zwei Löwen. Die Tierpflegerin fragt dich nach der Mehrzahl und gibt dir einen Schild.', opts: [{ label: 'Antworten', task: 'mehrzahl', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Erzählkiste', text: 'In der Erzählkiste liegen Wortkarten für „sagen“ und „gehen“. Sortierst du eine richtig ein, bekommst du eine Lupe.', opts: [{ label: 'Sortieren', task: 'feld', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Später', effect: {} }] },
       { title: 'Die Fragestunde', text: 'Frau Wolf hat Sätze an die Tafel geschrieben: Fragen, Bitten und Aussagen. Wer eine Satzart erkennt, bekommt ein Fleißbienchen.', opts: [{ label: 'Mitmachen', task: 'satzart', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Zuhören (+5 LP)', effect: { hp: 5 } }] },
-      { title: 'Der Bastelnachmittag', text: 'Beim Basteln entstehen neue Wörter: Papier und Hut, Schere und Kleber. Bildest du ein zusammengesetztes Nomen, gibt es einen Keks.', opts: [{ label: 'Mitmachen', task: 'zus', win: { item: 'keks' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Der Bastelnachmittag', text: 'Beim Basteln entstehen neue Wörter: Papier und Hut, Schere und Kleber. Bildest du ein zusammengesetztes Nomen, gibt es eine Chilischote.', opts: [{ label: 'Mitmachen', task: 'zus', win: { item: 'keks' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Hofpause', text: 'Es klingelt zur Hofpause. Du setzt dich auf die Mauer und isst dein Pausenbrot.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] });
 

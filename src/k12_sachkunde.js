@@ -13,8 +13,8 @@ const MSK12 = (() => {
 
   /* ---------- helpers ---------- */
   // pool rows: [question, [answer, wrong, wrong]] or [statement, true] or [statement, false, why].
-  // ids follow the position in the list, so new questions go at the end.
-  const P = (pre, mod, g, rows) => rows.map((r, i) => Object.assign({ id: pre + (i + 1), mod, g, q: r[0] }, Array.isArray(r[1]) ? { o: r[1], a: 0 } : { rf: true, a: r[1], why: r[2] || '' }));
+  // ids follow the position in the list, so new questions go at the end and a deleted one stays as null.
+  const P = (pre, mod, g, rows) => rows.flatMap((r, i) => !r ? [] : Object.assign({ id: pre + (i + 1), mod, g, q: r[0] }, Array.isArray(r[1]) ? { o: r[1], a: 0 } : { rf: true, a: r[1], why: r[2] || '' }));
   const unit = (o) => Object.assign(o, { worlds: 1, subject: 'Sachkunde', enemies: SET.enemies, moves: SET.moves,
     starters: [Object.assign({}, SET.hero, { attacks: o.attacks })], extra: Object.fromEntries(Object.entries(o.modules).map(([k, m]) => [k, m.atk])) });
   const mod = (name, icon, atk, dmg, maxTier) => ({ name, icon, atk, maxTier: maxTier || 1, worldCap: [maxTier || 1], dmg });
@@ -154,10 +154,10 @@ const MSK12 = (() => {
     zaehne: { title: 'Zähne putzen', lines: ['Putze morgens und abends etwa 2 Minuten.', 'Erst die Kauflächen, dann die Außenflächen, dann die Innenflächen.', 'Danach spuckst du die Zahnpasta aus.', 'Jeder hat seine eigene Zahnbürste. Alle paar Monate gibt es eine neue.', 'Zweimal im Jahr schaut die Zahnärztin nach deinen Zähnen.'] },
     essen: { title: 'Gesund essen', lines: ['Ein gutes Frühstück gibt dir Kraft für die Schule.', 'In die Brotdose gehören Vollkornbrot, Obst oder Gemüse.', 'Iss jeden Tag fünfmal Obst oder Gemüse.', 'Grundnahrungsmittel sind zum Beispiel Brot, Kartoffeln, Milch und Gemüse.', 'Süßigkeiten nur ab und zu und nur wenig.', 'Werbung will dir etwas verkaufen. Sie zeigt oft Süßes.'] },
     trinken: { title: 'Viel trinken', lines: ['Trinke über den Tag verteilt etwa 6 Gläser.', 'Wasser löscht den Durst am besten.', 'In Limonade und Cola steckt viel Zucker.'] },
-    kleidung: { title: 'Kleidung zum Wetter', lines: ['Regen: Regenjacke und Gummistiefel.', 'Schnee und Frost: Mütze, Schal und Handschuhe.', 'Sonne und Hitze: Sonnenhut, T-Shirt und Sonnencreme.', 'Wenn es mal warm, mal kalt ist: mehrere dünne Schichten.', 'Im Dunkeln: helle Sachen und Reflektoren.'] },
+    kleidung: { title: 'Kleidung zum Wetter', lines: ['Regen: Regenjacke und Gummistiefel.', 'Schnee und Frost: Mütze, Schal und Handschuhe.', 'Sonne und Hitze: Sonnenhut, T-Shirt und Sonnencreme.', 'Morgens kühl, mittags warm: mehrere dünne Schichten.', 'Im Dunkeln: helle Sachen und Reflektoren.'] },
     nein: { title: 'Nein sagen', lines: ['Dein Körper gehört dir.', 'Du darfst Nein sagen, auch zu Erwachsenen.', 'Gute Geheimnisse machen Freude, zum Beispiel ein Geschenk.', 'Ein Geheimnis, das dir Angst oder Bauchweh macht, darfst du immer erzählen.', 'Erzähle es Mama, Papa, der Lehrerin oder einem anderen Erwachsenen, dem du vertraust.', 'Nummer gegen Kummer: 116 111. Der Anruf kostet nichts.'] },
     erstehilfe: { title: 'Erste Hilfe', lines: ['Bei jeder Verletzung: einen Erwachsenen holen.', 'Kleine Wunde: sauber machen, ein Pflaster darauf.', 'Nasenbluten: Kopf nach vorn beugen, kalten Lappen in den Nacken.', 'Kleine Verbrennung: unter kühles, fließendes Wasser halten. Kein Eis, keine Butter.', 'Im Erste-Hilfe-Kasten sind Pflaster und Verband.'] },
-    notruf: { title: 'Der Notruf', lines: ['112: Feuerwehr und Rettungsdienst.', '110: Polizei.', 'Sag, wo du bist und was passiert ist.', 'Leg erst auf, wenn die Leitstelle es sagt.', 'Der Notruf kostet nichts und ist nur für echte Notfälle.'] },
+    notruf: { title: 'Der Notruf', lines: ['112: Feuerwehr und Rettungsdienst.', '110: Polizei.', 'Sag, wo du bist und was passiert ist.', 'Leg erst auf, wenn die Person am Telefon es sagt.', 'Der Notruf kostet nichts und ist nur für echte Notfälle.'] },
   };
   const KO_POOL = partPool('koerper12', 'parts', 'koerper', 'sk1k_kt_').concat(partPool('gesicht12', 'parts', 'gesicht', 'sk1k_kg_'),
     P('sk1k_pf', 'pflege', 'pflege', [
@@ -185,7 +185,7 @@ const MSK12 = (() => {
     ]),
     P('sk1k_es', 'essen', 'essen', [
       ['Was gehört in eine gesunde Brotdose?', ['Vollkornbrot und Apfel', 'Chips und Kekse', 'Schokoriegel']],
-      ['Wie oft am Tag isst du Obst oder Gemüse?', ['Fünfmal', 'Nie', 'Einmal pro Woche']],
+      ['Wie oft am Tag sollst du Obst oder Gemüse essen?', ['Fünfmal', 'Nie', 'Einmal pro Woche']],
       ['Was ist ein Grundnahrungsmittel?', ['Brot', 'Gummibärchen', 'Limonade']],
       ['Süßigkeiten darfst du essen, aber nur wenig.', true],
       ['Woraus wird Brot gebacken?', ['Aus Mehl', 'Aus Zucker', 'Aus Milch']],
@@ -193,8 +193,8 @@ const MSK12 = (() => {
       ['Was ist Gemüse?', ['Die Möhre', 'Die Banane', 'Die Kirsche']],
       ['Was ist Obst?', ['Der Apfel', 'Die Gurke', 'Die Kartoffel']],
       ['Warum ist ein Frühstück wichtig?', ['Es gibt dir Kraft', 'Es macht dich müde', 'Es ist unwichtig']],
-      ['Was willst du mit Obst vor dem Essen tun?', ['Waschen', 'Wegwerfen', 'Einfrieren']],
-      ['Welches ist ein Gewürzkraut?', ['Schnittlauch', 'Tulpe', 'Efeu']],
+      ['Was machst du mit Obst, bevor du es isst?', ['Waschen', 'Wegwerfen', 'Einfrieren']],
+      null,
       ['Beim Essen sitzt du am Tisch und nimmst dir Zeit.', true],
       ['Was will Werbung im Fernsehen?', ['Dir etwas verkaufen', 'Dir helfen', 'Dich gesund machen']],
       ['Was in der Werbung gezeigt wird, ist immer gesund.', false, 'Werbung will etwas verkaufen. Oft zeigt sie Süßes.'],
@@ -203,7 +203,7 @@ const MSK12 = (() => {
       ['Was löscht den Durst am besten?', ['Wasser', 'Limonade', 'Cola']],
       ['Du solltest jeden Tag genug trinken.', true],
       ['In Limonade steckt viel Zucker.', true],
-      ['Wie viele Gläser trinkst du ungefähr am Tag?', ['Etwa 6 Gläser', '1 Glas', '30 Gläser']],
+      ['Wie viele Gläser sollst du ungefähr am Tag trinken?', ['Etwa 6 Gläser', '1 Glas', '30 Gläser']],
       ['Trinken brauchst du nur im Sommer.', false, 'Dein Körper braucht jeden Tag Wasser, auch im Winter.'],
     ]),
     P('sk1k_kl', 'kleidung', 'kleidung', [
@@ -212,7 +212,7 @@ const MSK12 = (() => {
       ['Warum ziehst du im Winter Handschuhe an?', ['Gegen kalte Hände', 'Zum Schwimmen', 'Gegen Sonnenbrand']],
       ['Bei Regen ziehst du Sandalen an.', false, 'Bei Regen halten Gummistiefel die Füße trocken.'],
       ['Was ziehst du im Herbst an, wenn es kühl ist?', ['Eine warme Jacke', 'Eine Badehose', 'Nur ein Unterhemd']],
-      ['Was hilft, wenn es mal warm, mal kalt ist?', ['Mehrere dünne Schichten', 'Nur ein T-Shirt', 'Ein dicker Wintermantel']],
+      ['Morgens ist es kühl, mittags warm. Was ziehst du an?', ['Mehrere dünne Schichten', 'Nur ein T-Shirt', 'Ein dicker Wintermantel']],
       ['Was setzt du bei großer Hitze auf?', ['Einen Sonnenhut', 'Eine Wollmütze', 'Eine Taucherbrille']],
       ['Eine Mütze schützt im Winter die Ohren vor Kälte.', true],
       ['Wozu ist ein Regenschirm gut?', ['Er hält dich trocken', 'Er wärmt dich', 'Er leuchtet']],
@@ -227,7 +227,7 @@ const MSK12 = (() => {
       ['Wie lautet die Nummer gegen Kummer?', ['116 111', '110', '112']],
       ['Bei der Nummer gegen Kummer kostet der Anruf nichts.', true],
       ['Ein Geschenk für Mama ist ein gutes Geheimnis.', true],
-      ['Was ist mutig?', ['Hilfe holen', 'Alles für dich behalten', 'Trotzdem mitmachen']],
+      ['Dir ist bei etwas mulmig. Was ist mutig?', ['Hilfe holen', 'Alles für dich behalten', 'Trotzdem mitmachen']],
       ['Wenn dir jemand wehtut, bist du schuld.', false, 'Du bist nie schuld. Erzähl es einem Erwachsenen, dem du vertraust.'],
       ['Ein Kind hört nicht auf, obwohl du „Stopp“ sagst. Was tust du?', ['Hilfe holen', 'Lachen', 'Still sein']],
       ['Du darfst Nein sagen, auch zu Erwachsenen.', true],
@@ -249,7 +249,7 @@ const MSK12 = (() => {
       ['Welche Nummer hat die Polizei?', ['110', '112', '116 111']],
       ['Den Notruf kannst du auch ohne Geld anrufen.', true],
       ['Was sagst du beim Notruf?', ['Wo du bist', 'Deine Lieblingsfarbe', 'Wie spät es ist']],
-      ['Beim Notruf legst du erst auf, wenn die Leitstelle es sagt.', true],
+      ['Beim Notruf legst du erst auf, wenn man es dir sagt.', true],
       ['Den Notruf darf man zum Spaß wählen.', false, 'Der Notruf ist nur für echte Notfälle. Sonst fehlt die Hilfe woanders.'],
     ]));
   const KO_TUT = {
@@ -269,7 +269,7 @@ const MSK12 = (() => {
       if (m === 'parts') return plantTask(cfg, 'koerper12', m, tier, know, seq, opts);
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
-      if (m === 'pflege' && r < 0.3) return Math.random() < 0.5 ? orderTask(m, 'pflegeord:1', 'pflege', 'Wie wäschst du die Hände? Tippe der Reihe nach an.', HAENDE, 'sk1k_ohand_')
+      if (m === 'pflege' && r < 0.3) return Math.random() < 0.5 ? orderTask(m, 'pflegeord:1', 'pflege', 'Wie wäschst du die Hände? Tippe der Reihe nach an.', HAENDE, 'sk1k_ohand_', 5)
         : orderTask(m, 'pflegeord:1', 'zaehne', 'Wie putzt du die Zähne? Tippe der Reihe nach an.', ZAEHNE, 'sk1k_ozahn_');
       if (m === 'essen' && r < 0.35) { const h = pick(HEALTHY), s = shuffle(SWEET).slice(0, 2);
         return { kind: 'choice', mod: m, tier: 1, group: 'essen:2', note: 'essen', q: 'Was ist gesund? Tippe darauf.', options: shuffle([h].concat(s)).map(foodSVG), answer: foodSVG(h), svgOpts: true, why: 'Gesund ist zum Beispiel das:', qid: 'sk1k_food_' + h }; }
@@ -289,7 +289,7 @@ const MSK12 = (() => {
     events: [
       ask('Beim Kinderarzt', 'Die Kinderärztin misst, wie groß du bist. Sie fragt dich nach deinem Körper und schenkt dir einen Trank.', 'parts', 'koerper', { item: 'trank' }, { hp: -6 }),
       ask('Das Zahnputzplakat', 'Im Waschraum der Schule hängt ein Plakat mit einer Zahnbürste. Die Schulzahnärztin gibt dir einen Schild für eine richtige Antwort.', 'pflege', 'zaehne', { item: 'schild' }),
-      ask('Das Klassenfrühstück', 'Heute frühstückt die Klasse zusammen. Die Lehrerin fragt dich nach gesundem Essen und gibt dir eine Chilischote.', 'essen', 'essen', { item: 'keks' }, { xp: 5 }),
+      ask('Das Klassenfrühstück', 'Heute frühstückt die Klasse zusammen. Die Lehrerin fragt dich nach gesundem Essen. Für eine richtige Antwort klebt sie dir ein Fleißbienchen ins Heft.', 'essen', 'essen', { item: 'stern' }, { xp: 5 }),
       ask('Der Erste-Hilfe-Kasten', 'Der Hausmeister zeigt dir den Erste-Hilfe-Kasten. Er fragt dich, was man bei kleinen Verletzungen tut.', 'hilfe', 'erstehilfe', { item: 'engel' }),
       ask('Die Garderobe', 'An der Garderobe hängen Jacken, Mützen und Regenhosen. Ein Junge fragt dich, was man bei welchem Wetter anzieht.', 'kleidung', 'kleidung', { xp: 20 }, { xp: 5 }),
       rest('Die Turnhalle', 'In der Turnhalle liegen dicke Matten. Hier ruhst du dich aus.'),
@@ -323,10 +323,10 @@ const MSK12 = (() => {
   const timeName = (h, half) => (half ? `halb ${hourName(h + 1)}` : `${hourName(h)} Uhr`);
   const JA_NOTES = {
     zeiten: { title: 'Die Jahreszeiten', lines: ['Frühling: März, April, Mai. Die ersten Blumen blühen, die Bäume bekommen Blätter.', 'Sommer: Juni, Juli, August. Es ist warm, die Tage sind lang.', 'Herbst: September, Oktober, November. Die Blätter werden bunt und fallen ab. Viele Vögel ziehen in den Süden.', 'Winter: Dezember, Januar, Februar. Es ist kalt, manchmal schneit es. Laubbäume sind kahl.'] },
-    monate: { title: 'Die Monate', lines: ['Ein Jahr hat 12 Monate und 365 Tage.', MONTHS.join(', ') + '.', 'Der Februar hat die wenigsten Tage.', 'Ein Monat hat ungefähr 4 Wochen.'] },
+    monate: { title: 'Die Monate', lines: ['Ein Jahr hat 12 Monate.', MONTHS.join(', ') + '.', 'Der Februar hat die wenigsten Tage.', 'Ein Monat hat ungefähr 4 Wochen.'] },
     woche: { title: 'Die Woche', lines: ['Eine Woche hat 7 Tage.', DAYS.join(', ') + '.', 'Samstag und Sonntag sind das Wochenende.', 'Vorgestern, gestern, heute, morgen, übermorgen.'] },
     tag: { title: 'Mein Tag', lines: ['Morgens geht die Sonne auf. Du stehst auf und frühstückst.', 'Mittags steht die Sonne am höchsten.', 'Nachmittags machst du Hausaufgaben und spielst.', 'Abends geht die Sonne unter. Es gibt Abendbrot.', 'Nachts siehst du Mond und Sterne. Du schläfst etwa 10 Stunden.'] },
-    uhr: { title: 'Die Uhr', lines: ['Der kleine Zeiger zeigt die Stunde.', 'Zeigt der große Zeiger auf die 12, ist es eine volle Stunde, zum Beispiel 3 Uhr.', 'Zeigt der große Zeiger auf die 6, ist es halb. Halb 4 ist eine halbe Stunde vor 4 Uhr.', 'Ein Tag hat 24 Stunden, eine Stunde hat 60 Minuten.'] },
+    uhr: { title: 'Die Uhr', lines: ['Der kleine Zeiger zeigt die Stunde.', 'Zeigt der große Zeiger auf die 12, ist es eine volle Stunde, zum Beispiel 3 Uhr.', 'Zeigt der große Zeiger auf die 6, ist es halb. Halb 4 ist eine halbe Stunde vor 4 Uhr.'] },
     wetter: { title: 'Das Wetter', lines: [Object.values(WX).map((w) => w.name).join(', ') + ': Diese Zeichen hängen an der Wetterwand.', 'Das Thermometer zeigt, wie warm es ist.', 'Bei Gewitter gehst du in ein Haus. Stell dich nie unter einen einzelnen Baum.', 'Bei Nebel siehst du nicht weit. Auf nasser Straße bremsen Autos schlechter.'] },
     weg: { title: 'Sicher zur Schule', lines: ['Am Bordstein bleibst du stehen. Du schaust links, rechts und noch einmal links. Ist alles frei, gehst du zügig geradeaus.', 'Am sichersten gehst du an der Ampel oder am Zebrastreifen über die Straße.', 'Rot heißt warten, Grün heißt gehen.', 'An der Haltestelle wartest du mit Abstand zur Straße, bis der Bus hält.', 'Im Dunkeln trägst du helle Sachen und Reflektoren.'] },
     fremde: { title: 'Nicht mit Fremden mitgehen', lines: ['Mit Fremden gehst du nie mit und steigst nie in ein fremdes Auto.', 'Sag laut „Nein!“ und geh weg.', 'Erzähle es sofort deinen Eltern oder der Lehrerin.'] },
@@ -351,7 +351,7 @@ const MSK12 = (() => {
       ['Wie viele Monate hat ein Jahr?', ['12', '7', '4']],
       ['Was ist der erste Monat im Jahr?', ['Januar', 'Dezember', 'März']],
       ['Was ist der letzte Monat im Jahr?', ['Dezember', 'Januar', 'November']],
-      ['Wie viele Tage hat ein Jahr?', ['365', '7', '30']],
+      null,
       ['Welcher Monat hat die wenigsten Tage?', ['Februar', 'Juli', 'Dezember']],
       ['Silvester ist am letzten Tag im Dezember.', true],
       ['Ein Monat hat ungefähr 4 Wochen.', true],
@@ -383,15 +383,15 @@ const MSK12 = (() => {
       ['Welcher Zeiger zeigt die Stunden?', ['Der kleine Zeiger', 'Der große Zeiger', 'Keiner']],
       ['Wohin zeigt der große Zeiger bei „halb“?', ['Auf die 6', 'Auf die 12', 'Auf die 3']],
       ['Um 3 Uhr zeigt der große Zeiger auf die ___.', ['12', '3', '6']],
-      ['Wie viele Stunden hat ein Tag?', ['24', '12', '60']],
-      ['Wie viele Minuten hat eine Stunde?', ['60', '100', '24']],
+      null,
+      null,
       ['Halb 8 ist eine halbe Stunde vor 8 Uhr.', true],
       ['Um halb 5 zeigt der kleine Zeiger genau auf die 5.', false, 'Um halb 5 steht der kleine Zeiger zwischen der 4 und der 5.'],
       ['Was ist eine halbe Stunde nach 9 Uhr?', ['halb 10', 'halb 9', '10 Uhr']],
       ['Es ist 7 Uhr. Wie spät ist es eine Stunde später?', ['8 Uhr', '6 Uhr', 'halb 8']],
       ['Womit siehst du, wie spät es ist?', ['Mit der Uhr', 'Mit dem Lineal', 'Mit dem Thermometer']],
       ['Wo stehen um 12 Uhr beide Zeiger?', ['Beide auf der 12', 'Beide auf der 6', 'Auf 3 und 9']],
-    ]),
+    ]).map((p) => (['sk1j_uh2', 'sk1j_uh6', 'sk1j_uh7', 'sk1j_uh8'].includes(p.id) ? Object.assign(p, { t: 2 }) : p)), // „halb“ comes on tier 2
     P('sk1j_we', 'wetter', 'wetter', [
       ['Womit misst man, wie warm es ist?', ['Mit dem Thermometer', 'Mit der Uhr', 'Mit der Waage']],
       ['Was fällt im Winter oft vom Himmel?', ['Schnee', 'Blätter', 'Sand']],
@@ -430,7 +430,8 @@ const MSK12 = (() => {
     'kalenderord:1': { title: 'Der Reihe nach', steps: ['Tage oder Monate sind durcheinander.', 'Sprich die Reihe leise mit: Montag, Dienstag, Mittwoch …', 'Tippe sie in dieser Reihenfolge an.'] },
     'tag:1': { title: 'Mein Tag', steps: ['Morgens, mittags, abends, nachts: Was passiert wann?', 'Beispiel: Steht die Sonne ganz oben, ist es mittags.', 'Tippe auf die richtige Antwort.'] },
     'tagord:1': { title: 'Mein Tag der Reihe nach', steps: ['Die Dinge eines Tages sind durcheinander.', 'Was machst du zuerst? Fang mit dem Morgen an.', 'Tippe der Reihe nach bis zum Abend.'] },
-    'uhr:1': { title: 'Die Uhr', steps: ['Der kleine Zeiger zeigt die Stunde.', 'Steht der große Zeiger auf der 12, ist es „Uhr“. Steht er auf der 6, ist es „halb“.', 'Beispiel: Kleiner Zeiger zwischen 3 und 4, großer auf der 6: halb 4.'] },
+    'uhr:1': { title: 'Die Uhr', steps: ['Der kleine Zeiger zeigt die Stunde.', 'Steht der große Zeiger auf der 12, ist es eine volle Stunde.', 'Beispiel: Kleiner Zeiger auf der 3, großer auf der 12: 3 Uhr.'] },
+    'uhr:2': { title: 'Halbe Stunden', steps: ['Steht der große Zeiger auf der 6, ist es „halb“.', 'Der kleine Zeiger steht dann zwischen zwei Zahlen. Du sagst „halb“ und die größere Zahl.', 'Beispiel: Kleiner Zeiger zwischen 3 und 4, großer auf der 6: halb 4.'] },
     'wetter:1': { title: 'Wetterzeichen', steps: ['Manchmal siehst du ein Wetterzeichen.', 'Beispiel: Eine Wolke mit Tropfen bedeutet Regen.', 'Tippe auf das passende Wetter.'] },
     'weg:1': { title: 'Sicher zur Schule', steps: ['Fragen zum Schulweg, zur Ampel und zur Haltestelle.', 'Beispiel: Am Bordstein bleibst du stehen und schaust zuerst nach links.', 'Tippe auf die richtige Antwort.'] },
     'wegord:1': { title: 'Über die Straße', steps: ['Die Schritte sind durcheinander.', 'Zuerst bleibst du am Bordstein stehen.', 'Dann links, rechts, noch einmal links schauen. Zuletzt gehst du.'] },
@@ -446,7 +447,7 @@ const MSK12 = (() => {
       }
       if (m === 'kalender') {
         if (r < 0.25) { const d = rnd(0, 6), k = rnd(0, 3), off = [1, -1, 2, -2][k], word = ['morgen', 'gestern', 'übermorgen', 'vorgestern'][k], a = DAYS[(d + off + 7) % 7];
-          return choice(m, 'woche', `Heute ist ${DAYS[d]}. Welcher Tag ist ${word}?`, a, others(DAYS.filter((x) => x !== DAYS[d]), a), 'sk1j_dw_' + d + k); }
+          return choice(m, 'woche', `Heute ist ${DAYS[d]}. Welcher Tag ${off < 0 ? 'war' : 'ist'} ${word}?`, a, others(DAYS.filter((x) => x !== DAYS[d]), a), 'sk1j_dw_' + d + k); }
         if (r < 0.45) { const mo = rnd(0, 11), after = Math.random() < 0.6, a = MONTHS[(mo + (after ? 1 : 11)) % 12];
           return choice(m, 'monate', `Welcher Monat kommt ${after ? 'nach dem' : 'vor dem'} ${MONTHS[mo]}?`, a, others(MONTHS.filter((x) => x !== MONTHS[mo]), a), 'sk1j_mn_' + mo + (after ? 'n' : 'v')); }
         if (r < 0.6) return Math.random() < 0.5 ? orderTask(m, 'kalenderord:1', 'woche', 'Tippe die Wochentage der Reihe nach an.', DAYS.map((text, i) => ({ id: 'd' + i, text })), 'sk1j_od_')
@@ -458,9 +459,9 @@ const MSK12 = (() => {
         if (r < 0.55) return orderTask(m, 'tagord:1', 'tag', 'Was machst du zuerst? Tippe der Reihe nach an.', TAG, 'sk1j_ot_');
       }
       if (m === 'uhr' && r < 0.7) {
-        const h = rnd(1, 12), half = Math.random() < 0.5, a = timeName(h, half);
+        const h = rnd(1, 12), half = tier >= 2 && Math.random() < 0.6, a = timeName(h, half);
         const wrong = half ? [`halb ${hourName(h)}`, `${hourName(h)} Uhr`, `${hourName(h + 1)} Uhr`] : [`halb ${hourName(h)}`, `${hourName(h + 1)} Uhr`, `halb ${hourName(h + 1)}`];
-        return choice(m, 'uhr', 'Wie spät ist es?', a, shuffle(wrong).slice(0, 2), 'sk1j_uhr_' + h + (half ? 'h' : ''), { pic: J.clockSVG(h % 12, half ? 30 : 0), time: [h, half] });
+        return choice(m, 'uhr', 'Wie spät ist es?', a, shuffle(wrong).slice(0, 2), 'sk1j_uhr_' + h + (half ? 'h' : ''), { pic: J.clockSVG(h % 12, half ? 30 : 0), time: [h, half], tier: tier >= 2 ? 2 : 1, group: tier >= 2 ? 'uhr:2' : 'uhr:1' });
       }
       if (m === 'wetter' && r < 0.6) { const k = pick(Object.keys(WX)); return choice(m, 'wetter', 'Welches Wetter zeigt das Zeichen?', WX[k].name, others(Object.values(WX), WX[k]).map((x) => x.name), 'sk1j_wx_' + k, { pic: wxSVG(k) }); }
       if (m === 'weg') {
@@ -472,7 +473,7 @@ const MSK12 = (() => {
   }
   const JA = unit({ grade: 1, title: 'Durch das Jahr', icon: '📅', sub: 'Jahreszeiten, Monate, Wochentage, die Uhr, Wetterzeichen und der sichere Schulweg',
     modules: { zeiten: mod('Jahreszeiten', '🌳', 'Herbstlaub', 12), kalender: mod('Monate und Wochentage', '📅', 'Kalenderblatt', 12), tag: mod('Mein Tag', '☀', 'Wecker', 10),
-      uhr: mod('Die Uhr', '🕰', 'Kuckucksuhr', 14), wetter: mod('Wetterzeichen', '🌦', 'Regenschirm', 12), weg: mod('Sicher zur Schule', '🚦', 'Zebrastreifen', 14) },
+      uhr: mod('Die Uhr', '🕰', 'Kuckucksuhr', 14, 2), wetter: mod('Wetterzeichen', '🌦', 'Regenschirm', 12), weg: mod('Sicher zur Schule', '🚦', 'Zebrastreifen', 14) },
     attacks: [{ name: 'Herbstlaub', mod: 'zeiten' }, { name: 'Kalenderblatt', mod: 'kalender' }, { name: 'Kuckucksuhr', mod: 'uhr' }, { name: 'Zebrastreifen', mod: 'weg' }],
     tut: JA_TUT, notes: JA_NOTES, pool: JA_POOL,
     events: [
@@ -687,7 +688,7 @@ const MSK12 = (() => {
       ['Nach der Gartenarbeit wäschst du dir die Hände.', true],
       ['Was braucht ein Beet, wenn es lange nicht regnet?', ['Wasser', 'Schnee', 'Sand']],
       ['Was machen Regenwürmer im Beet?', ['Sie lockern die Erde', 'Sie fressen Gemüse', 'Sie gießen']],
-      ['Welche Samen legst du gut einzeln in die Erde?', ['Bohnen und Erbsen', 'Mehl', 'Puderzucker']],
+      ['Welche Samen legst du gut einzeln in die Erde?', ['Bohnen und Erbsen', 'Möhrensamen', 'Kressesamen']],
       ['Wann erntet man Kartoffeln?', ['Im Herbst', 'Im Winter', 'Im Frühling']],
     ]));
   const BA_TUT = {
@@ -718,7 +719,7 @@ const MSK12 = (() => {
       if (m === 'frueh' && r < 0.5) { const f = pick(SPRING); return choice(m, 'frueh', 'Wie heißt dieser Frühblüher?', f.name, others(SPRING, f).map((x) => x.name), 'sk2b_fb_' + f.id, { pic: flowerSVG(f.id) }); }
       if (m === 'keim' && r < 0.35) return orderTask(m, 'keimord:1', 'keim', 'Wie wächst eine Bohne? Tippe der Reihe nach an.', KEIM, 'sk2b_ok_');
       if (m === 'obst') {
-        if (r < 0.4) { const [name, k] = pick(OBST); return choice(m, 'obst', `Zu welchem Obst gehört ${art(name)} ${name}?`, OBST_ART[k], Object.values(OBST_ART).filter((x) => x !== OBST_ART[k]), 'sk2b_oa_' + name); }
+        if (r < 0.4) { const [name, k] = pick(OBST); return choice(m, 'obst', `Ist ${art(name)} ${name} Kernobst, Steinobst oder Beerenobst?`, OBST_ART[k], Object.values(OBST_ART).filter((x) => x !== OBST_ART[k]), 'sk2b_oa_' + name); }
         if (r < 0.55) return orderTask(m, 'obstord:1', 'obst', 'Von der Blüte zur Frucht: Tippe der Reihe nach an.', BLUETE, 'sk2b_ob_');
       }
       if (m === 'garten' && r < 0.3) return orderTask(m, 'gartenord:1', 'garten', 'So säst du Bohnen. Tippe der Reihe nach an.', SAEN, 'sk2b_os_');
@@ -737,10 +738,10 @@ const MSK12 = (() => {
       ask('Das Keimglas', 'Auf der Fensterbank steht ein Glas mit keimenden Bohnen. Die Lehrerin kennt eine Eselsbrücke und verrät sie dir.', 'keim', 'keim', { item: 'lupe' }, { xp: 5 }),
       ask('Der Stadtpark', 'Im Stadtpark blühen die ersten Krokusse. Ein Gärtner fragt dich nach den Frühblühern.', 'frueh', 'frueh', { xp: 20 }, { xp: 5 }),
       rest('Der Baumstumpf', 'Am Waldrand steht ein breiter Baumstumpf. Du zählst die Jahresringe und ruhst dich aus.'),
-      dil('Der Blumenstrauß', 'Im Park blühen viele Tulpen. Deine Schwester will für Mama einen Strauß pflücken.', [
-        ['Wir malen Mama ein Tulpenbild.', 'Mama hängt das Bild an den Kühlschrank. Die Tulpen im Park blühen weiter.', 'Welche Geschenke kann man selbst machen?'],
-        ['Wir fragen den Gärtner.', 'Der Gärtner erklärt: Die Tulpen sind für alle da. Er schenkt euch eine Tulpenzwiebel für den Balkon.', 'Warum gehören Blumen im Park allen?'],
-        ['Wir pflücken eine Tulpe.', 'Die Tulpe welkt schnell. Im Beet fehlt jetzt eine Blüte.', 'Was ist schöner: eine Blume im Beet oder in der Vase?']]),
+      dil('Der junge Baum', 'Auf dem Schulhof steht ein frisch gepflanzter Baum. Dein Freund will einen Zweig abbrechen, als Zauberstab.', [
+        ['Wir suchen einen Stock am Boden.', 'Unter der alten Linde liegen viele Stöcke. Ihr findet einen, der sogar noch schöner ist.', 'Wo findest du Stöcke, ohne einen Baum zu verletzen?'],
+        ['Ich sage ihm, dass der Baum noch klein ist.', 'Dein Freund nickt. Zusammen gießt ihr den Baum mit der Gießkanne.', 'Was braucht ein junger Baum zum Wachsen?'],
+        ['Ich schaue weg.', 'Der Zweig knackt ab. Am Baum bleibt eine Wunde, und den Zauberstab wirft dein Freund bald weg.', 'Was passiert mit einem Baum, wenn ein Zweig abbricht?']]),
     ] });
   BA.gen = baGen(BA);
 
@@ -772,7 +773,7 @@ const MSK12 = (() => {
     { q: 'Welcher Vogel baut sein Nest auf Dächern und Masten?', has: ['storch'] },
     { q: 'Welcher Vogel klebt sein Nest aus Lehm in den Stall?', has: ['schwalbe'] },
     { q: 'Welcher Vogel brütet gern im Nistkasten?', has: ['meise'], skip: ['spatz'] },
-    { q: 'Welcher Vogel fliegt im Herbst nach Afrika?', has: ['storch', 'schwalbe'] },
+    { q: 'Welcher Vogel fliegt im Herbst nach Afrika?', has: ['storch', 'schwalbe'], skip: ['rotkehlchen'] },
     { q: 'Welcher kleine braune Vogel badet gern im Staub?', has: ['spatz'], skip: ['amsel'] },
   ];
   const SMALL = {
@@ -799,7 +800,7 @@ const MSK12 = (() => {
       ['Welche Farbe hat das Amselmännchen?', ['Schwarz', 'Gelb', 'Weiß']],
       ['Welche Farbe hat der Bauch der Kohlmeise?', ['Gelb', 'Rot', 'Schwarz']],
       ['Welcher Vogel lebt gern in Gruppen in der Stadt?', ['Spatz', 'Storch', 'Kuckuck']],
-      ['Woran erkennst du einen Vogel?', ['An Gefieder und Form', 'An seinem Namen', 'An der Uhrzeit']],
+      ['Woran erkennst du einen Vogel?', ['An Gefieder und Form', 'An seinem Alter', 'An seinem Gewicht']],
       ['Welcher große Vogel klappert mit dem Schnabel?', ['Storch', 'Rotkehlchen', 'Meise']],
     ]),
     P('sk2t_zu', 'zug', 'zug', [
@@ -950,7 +951,7 @@ const MSK12 = (() => {
   const ghsSVG = (k) => pic('0 0 80 80', `<path d="M40 4 L76 40 L40 76 L4 40 Z" fill="#fff" stroke="#E8344A" stroke-width="5" stroke-linejoin="round"/>${GHS[k].art}`, 'Warnzeichen', 120);
   // Forscherlabor: erst vermuten, dann zeigt das Bild das Ergebnis
   const glass = (label, state) => pic('0 0 200 150', `<rect x="56" y="24" width="88" height="118" rx="8" fill="#E3F2FD" ${ln(2.5)}/><rect x="58" y="52" width="84" height="88" rx="6" fill="#64B5F6" opacity="${state === 'klar' ? 0.4 : 0.6}"/>${state === 'unten' ? `<path d="M62 136 Q80 124 100 130 Q120 124 138 136 Z" fill="#C9A26A" ${ln(1.6)}/>` : ''}${state === 'oben' ? `<rect x="${100 - Math.max(34, label.length * 4 + 10)}" y="8" width="${2 * Math.max(34, label.length * 4 + 10)}" height="20" rx="10" fill="#FFE0B2" ${ln(2)}/>` : ''}${state === 'oben' ? S.txt(100, 22, label, { size: 12 }) : S.txt(100, 18, label, { size: 12 })}`, 'Glas mit Wasser', 220);
-  const SOLVE = [['Zucker', true], ['Salz', true], ['Sand', false], ['Kieselsteine', false], ['Mehl', false], ['Brausepulver', true]];
+  const SOLVE = [['Zucker', true], ['Salz', true], ['Sand', false], ['Kieselsteine', false], ['Mehl', false, 'nicht auf. Das Wasser wird milchig, später sinkt das Mehl auf den Boden.'], ['Brausepulver', true]];
   const SHINE = [['eine Glasscheibe', 'Die Glasscheibe', true], ['ein Holzbrett', 'Das Holzbrett', false], ['Klarsichtfolie', 'Die Klarsichtfolie', true], ['ein Stück Pappe', 'Die Pappe', false], ['Alufolie', 'Die Alufolie', false]];
   const lamp = (label, through) => pic('0 0 200 110', `<rect x="8" y="44" width="34" height="20" rx="4" fill="#8E96B5" ${ln(2)}/><path d="M42 40 L52 34 V74 L42 68 Z" fill="#C9CEDD" ${ln(2)}/><path d="M52 42 L96 46 M52 66 L96 62" stroke="#FFD43B" stroke-width="3"/><rect x="96" y="22" width="10" height="66" fill="#F2E3C6" ${ln(2)}/>${S.txt(101, 104, label, { size: 11 })}<rect x="176" y="10" width="10" height="90" fill="#E3DED0" ${ln(2)}/>${through ? `<path d="M106 46 L176 52 M106 62 L176 58" stroke="#FFD43B" stroke-width="3"/><ellipse cx="174" cy="55" rx="5" ry="12" fill="#FFE27A"/>` : through === false ? '<ellipse cx="174" cy="55" rx="5" ry="12" fill="#3A3F4F" opacity=".5"/>' : ''}`, 'Taschenlampe und Wand', 260);
   const AIR = [
@@ -959,7 +960,7 @@ const MSK12 = (() => {
     { q: 'Du lässt ein glattes Blatt Papier und eine Papierkugel fallen. Was landet zuerst?', opts: ['Die Papierkugel', 'Das glatte Blatt', 'Beide gleich'], a: 0, note: 'Die Papierkugel landet zuerst. Das glatte Blatt wird von der Luft stärker gebremst.' },
   ];
   function laborSet() {
-    const sol = shuffle(SOLVE).slice(0, 2).map(([x, l]) => ({ kind: 'loesen', topic: 'loesen', q: `Du rührst ${x} in ein Glas Wasser. Löst es sich auf?`, opts: ['Löst sich auf', 'Löst sich nicht'], a: l ? 0 : 1, note: `${x} löst sich ${l ? 'im Wasser auf. Du siehst es nicht mehr, aber es ist noch da.' : 'nicht auf. Es sinkt auf den Boden.'}`, pic: glass(x, 'oben'), after: glass(x, l ? 'klar' : 'unten') }));
+    const sol = shuffle(SOLVE).slice(0, 2).map(([x, l, not]) => ({ kind: 'loesen', topic: 'loesen', q: `Du rührst ${x} in ein Glas Wasser. Löst es sich auf?`, opts: ['Löst sich auf', 'Löst sich nicht'], a: l ? 0 : 1, note: `${x} löst sich ${l ? 'im Wasser auf. Du siehst es nicht mehr, aber es ist noch da.' : not || 'nicht auf. Es sinkt auf den Boden.'}`, pic: glass(x, 'oben'), after: glass(x, l ? 'klar' : 'unten') }));
     const li = shuffle(SHINE).slice(0, 2).map(([acc, nom, d]) => ({ kind: 'licht', topic: 'licht', q: `Du hältst ${acc} vor die Taschenlampe. Kommt das Licht hindurch?`, opts: ['Licht kommt durch', 'Kein Licht kommt durch'], a: d ? 0 : 1, note: `${nom} ist ${d ? 'durchsichtig. Das Licht kommt hindurch.' : 'undurchsichtig. Dahinter ist ein Schatten.'}`, pic: lamp(nom.replace(/^(Die|Das) /, '')), after: lamp(nom.replace(/^(Die|Das) /, ''), d) }));
     const air = Object.assign({ kind: 'luft', topic: 'luft' }, pick(AIR));
     return shuffle(sol.concat(li, [air]));
@@ -970,7 +971,7 @@ const MSK12 = (() => {
     himmel: { title: 'Sonne, Mond und Sterne', lines: ['Die Sonne ist ein Stern. Sie gibt uns Licht und Wärme.', 'Der Mond leuchtet nicht selbst. Er wirft das Licht der Sonne zurück.', 'Der Mond kreist um die Erde. Von Vollmond zu Vollmond dauert es etwa einen Monat.', 'Am Tag ist die Sonne so hell, dass du die anderen Sterne nicht siehst.', 'Ein Sternbild ist eine Gruppe von Sternen, zum Beispiel der Große Wagen.'] },
     luft: { title: 'Luft und Wind', lines: ['Luft ist unsichtbar, aber sie ist überall und braucht Platz.', 'Warme Luft dehnt sich aus.', 'Luft bremst: Darum fällt ein Fallschirm langsam.', 'Wind ist bewegte Luft. Er treibt Windräder und Segelboote an.', 'Bei Sturm können Äste herabfallen.'] },
     schall: { title: 'Schall', lines: ['Töne entstehen, wenn etwas schwingt, zum Beispiel die Luft in einer Flöte.', 'Ein Echo ist ein Ruf, der von einer Wand zurückkommt.', 'Beim Gewitter siehst du zuerst den Blitz, dann hörst du den Donner.', 'Fledermäuse rufen und hören auf das Echo. So finden sie im Dunkeln ihren Weg.'] },
-    thermo: { title: 'Das Thermometer', lines: ['Das Thermometer zeigt die Temperatur in Grad Celsius (°C).', 'Die Linie mit den Zahlen heißt Skala.', 'Wird es wärmer, steigt die rote Flüssigkeit.', 'Bei 0 °C gefriert Wasser zu Eis. Das ist der Gefrierpunkt.', 'Über 0 °C schmilzt Eis. Das ist der Schmelzpunkt, auch bei 0 °C.', 'Minus 5 Grad heißt: 5 Grad unter null.'] },
+    thermo: { title: 'Das Thermometer', lines: ['Das Thermometer zeigt die Temperatur in Grad Celsius (°C).', 'Die Linie mit den Zahlen heißt Skala.', 'Wird es wärmer, steigt die rote Flüssigkeit.', 'Bei 0 °C gefriert Wasser zu Eis. Das ist der Gefrierpunkt.', 'Bei 0 °C schmilzt Eis auch wieder zu Wasser. Das ist der Schmelzpunkt.', 'Minus 5 Grad heißt: 5 Grad unter null.'] },
     loesen: { title: 'Wasser löst', lines: ['Zucker und Salz lösen sich in Wasser auf. Sand, Kieselsteine und Mehl nicht.', 'In warmem Wasser und beim Umrühren geht es schneller.', 'Sand trennst du mit einem Filter vom Wasser.', 'Verdunstet Salzwasser, bleiben Salzkristalle übrig.', 'Öl und Wasser mischen sich nicht.'] },
     sparen: { title: 'Wasser sparen', lines: ['Wasser brauchen wir zum Trinken, Kochen und Waschen.', 'Beim Zähneputzen drehst du den Hahn zu.', 'Duschen braucht weniger Wasser als ein volles Bad.', 'Blumen gießt du mit Regenwasser.', 'In manchen Ländern ist sauberes Wasser knapp.'] },
     gefahr: { title: 'Gefährliche Flüssigkeiten', lines: ['Warnzeichen haben einen roten Rand in Form einer Raute.', Object.values(GHS).map((g) => g.mean).join(', ') + '.', 'Putzmittel stehen hoch und verschlossen in ihrer eigenen Flasche.', 'Unbekannte Flaschen fasst du nicht an. Hol einen Erwachsenen.', 'Spritzt etwas ins Auge: mit viel Wasser ausspülen und Hilfe holen.'] },

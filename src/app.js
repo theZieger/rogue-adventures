@@ -380,7 +380,7 @@
   function readAloud(container, bottom) {
     if (!voice()) return;
     $('.tut', container).insertAdjacentHTML('beforebegin', '<button class="tut speak" type="button" aria-label="Vorlesen">🔊</button>');
-    const read = () => speak([...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(bottom || container).querySelectorAll('.opt, .oitem')].map((e) => e.textContent.trim()).filter(Boolean).join('. '));
+    const read = () => speak([...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim()).filter(Boolean).join('. '));
     $('.speak', container).onclick = read;
     if (CFG().grade < 3) read();
   }

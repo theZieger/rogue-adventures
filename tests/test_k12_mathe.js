@@ -17,7 +17,6 @@ const sum = (a) => a.reduce((x, y) => x + y, 0);
 const WD = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const ECKEN = { Dreieck: 3, Kreis: 0, Quadrat: 4, Rechteck: 4, Viereck: 4 };
-const SOLID = { 'Ecken Würfel': 8, 'Ecken Quader': 8, 'Flächen Würfel': 6, 'Flächen Quader': 6, 'Ecken Kugel': 0 };
 const CHANGE = { '1 € 10-ct': 10, '1 € 20-ct': 5, '1 € 50-ct': 2, '2 € 1-€': 2, '2 € 50-ct': 4, '5 € 1-€': 5, '10 € 2-€': 5, '10 € 1-€': 10, '1 € 5-ct': 20 };
 const FACTS = { Woche: 7, Jahr: 12, Stunde: 60, Tag: 24 };
 
@@ -44,6 +43,7 @@ function solve(q) {
   if (q.seq) { const d = q.seq[1] - q.seq[0]; if (q.seq.some((x, i) => i && x - q.seq[i - 1] !== d)) return null; return [1, 2, 3].map((k) => q.seq[3] + k * d); }
   if (svg.includes('class="mauer')) {
     const v = dv(svg), n = v.map(Number), k = v.indexOf('?');
+    if (q.qid.startsWith('z20_mauer1') && Math.max(...q.answers, ...n.filter((x) => x === x)) > 10) fail('Klasse 1 Zahlenmauer over 10 on tier 1: ' + q.qid);
     const rules = svg.includes('data-tri') ? [[3, 0, 1], [4, 1, 2], [5, 0, 2]] : [[3, 0, 1], [4, 1, 2], [5, 3, 4]]; const r = rules.find((x) => x.includes(k));
     return [r[0] === k ? n[r[1]] + n[r[2]] : n[r[0]] - n[r[1] === k ? r[2] : r[1]]];
   }
@@ -69,13 +69,13 @@ function solve(q) {
   if (svg.includes('data-form')) { const want = { Dreiecke: 'dreieck', Kreise: 'kreis', Quadrate: 'quadrat' }[ask.match(/viele (\w+)/)[1]]; return [count(svg, new RegExp(`data-form="${want}"`, 'g'))]; }
   let m;
   if ((m = ask.match(/^Wie viele Ecken hat (?:das|der) (Dreieck|Kreis|Quadrat|Rechteck|Viereck)\?$/))) return [ECKEN[m[1]]];
-  if ((m = ask.match(/^Wie viele (Ecken|Flächen) hat (?:der|die) ([^?]+)\?$/))) return [SOLID[m[1] + ' ' + m[2]]];
   if (svg.includes('class="dot"')) { const n = count(svg, /class="dot"/g); return ask.includes('fehlen bis 100') ? [100 - n] : [n]; }
   if (story) {
     const n = nums(story);
     if ((m = story.match(/wechselst (\d+ €) in ([\d]+-(?:ct|€))-Münzen/))) return [CHANGE[m[1] + ' ' + m[2]]];
     if (story.includes('zurück')) return [n[1] - n[0]];
-    if ((m = story.match(/^Von (\d+):(\d+) Uhr bis (\d+):(\d+) Uhr/))) return [60 * m[3] + +m[4] - 60 * m[1] - +m[2]];
+    if ((m = story.match(/^Von (\d+) Uhr bis (\d+) Uhr/))) return [m[2] - m[1]];
+    if ((m = story.match(/^Von (\d+):(\d+) Uhr bis (\d+):(\d+) Uhr/))) { if (m[1] !== m[3]) fail('time span across the full hour: ' + story); return [60 * m[3] + +m[4] - 60 * m[1] - +m[2]]; }
     if (story.startsWith('Wie viele')) return [FACTS[story.match(/(\w+)\?$/)[1]]];
     if (q.op === '·') return [n[0] * n[1]];
     if (q.op === ':') return n[0] % n[1] ? null : [n[0] / n[1]];
@@ -118,6 +118,9 @@ for (const [mode, max] of Object.entries(UNITS)) {
     const words = [q.q, q.ask, q.story, (q.fig || '').match(/class="question">([^<]*)/)?.[1]].filter(Boolean).join(' ');
     for (const part of [q.q, q.ask, q.story].filter(Boolean)) if (part.split(/\s+/).filter((w) => /[a-zäöüß]/i.test(w)).length > 12) fail(`more than 12 words: ${part}`);
     if (/\d,\d/.test(words + (q.text || '') + (q.options || []).join(' ')) && mode !== 'groessen2') fail(`comma number outside money and length: ${tag}`);
+    // Klasse 1 crosses ten only in rechnen tier 3
+    if (mode === 'zahlen20' && t < 3 && ['zerlegen', 'vergleich'].includes(mod)) { const s = plain(q.text || q.q || ''); let m;
+      if (((m = s.match(/(\d+) \+ (\d+)/)) && +m[1] < 10 && +m[2] < 10 && +m[1] + +m[2] > 10) || ((m = s.match(/^(\d+) = (\d+) \+ \?$/)) && +m[2] < 10 && m[1] - m[2] < 10 && +m[1] > 10)) fail('crosses ten: ' + s); }
     if (g1) for (const n of nums([words, q.text, ...(q.svgOpts ? [] : q.options || [])].join(' '))) if (n > 20) fail(`Klasse 1 number over 20 in ${tag}: ${n}`);
     if (q.kind === 'num') {
       if (!q.answers.every((a) => Number.isInteger(a) && a >= 0)) fail(`answer not a whole number ≥ 0: ${tag} ${q.answers}`);

@@ -75,13 +75,14 @@
     if (mod === 'zerlegen') {
       if (t === 1) { const s = rnd(3, 10), a = rnd(1, s - 1); return z.num(mod, t, 'zerlegen', [s - a], { text: Math.random() < 0.5 ? `${s} = ${a} + ?` : `${s} = ? + ${a}`, ask: 'Welche Zahl fehlt?' }); }
       if (Math.random() < 0.4) { const s = rnd(11, 20); return z.num(mod, t, 'zehn', [s - 10], { text: `${s} = 10 + ?`, ask: 'Welche Zahl fehlt?' }); }
-      const s = rnd(11, 18), a = rnd(s - 9, 9); return z.num(mod, t, 'zerlegen', [s - a], { text: `${s} = ${a} + ?`, ask: 'Welche Zahl fehlt?' });
+      // tier 2 stays without crossing ten, like rechnen tier 2
+      const s = rnd(12, 19), a = rnd(11, s - 1); return z.num(mod, t, 'zerlegen', [s - a], { text: `${s} = ${a} + ?`, ask: 'Welche Zahl fehlt?' });
     }
     if (mod === 'vergleich') {
       let left;
       if (t === 1) { const v = rnd(0, 10); left = { txt: `${v}`, v }; }
       else if (Math.random() < 0.4) { const v = rnd(0, 20); left = { txt: `${v}`, v }; }
-      else { const a = rnd(1, 10), b = rnd(1, 20 - a); left = { txt: `${a} + ${b}`, v: a + b }; }
+      else { const e = rnd(0, 8), a = 10 + e, b = rnd(1, 9 - e); left = Math.random() < 0.5 ? { txt: `${a} + ${b}`, v: a + b } : { txt: `${b} + ${a}`, v: a + b }; }
       const w = Math.random() < 0.25 ? left.v : near(left.v, 0, t === 1 ? 10 : 20, 1)[0]; const right = { txt: `${w}`, v: w };
       const [A, B] = Math.random() < 0.5 ? [left, right] : [right, left]; const sign = A.v < B.v ? '<' : A.v > B.v ? '>' : '=';
       const sum = [A, B].find((x) => x.txt.includes('+'));
@@ -113,8 +114,8 @@
       else if (plus) { a = rnd(2, 9); b = rnd(11 - a, 9); } else { a = rnd(11, 18); b = rnd(a - 9, 9); }
       return z.num(mod, t, plus ? 'plus' : 'minus', [plus ? a + b : a - b], { text: `${a} ${plus ? '+' : '−'} ${b} = ?`, k12: false });
     }
-    // mauer: bottom row small enough that the top stone stays at most 20
-    let b; do b = [rnd(1, 6), rnd(1, 5), rnd(1, 6)]; while (b[0] + 2 * b[1] + b[2] > 20 || b[0] + 2 * b[1] + b[2] < 6);
+    // mauer: the top stone stays at most 10 on tier 1, at most 20 on tier 2
+    let b; do b = [rnd(1, 6), rnd(1, 5), rnd(1, 6)]; while (b[0] + 2 * b[1] + b[2] > (t === 1 ? 10 : 20) || b[0] + 2 * b[1] + b[2] < 6);
     const r = t === 1 ? rnd(1, 2) : Math.random() < 0.7 ? 0 : 1;
     return mauerTask(z, mod, t, b, r, rnd(0, 2 - r));
   }
@@ -135,7 +136,7 @@
       'menge:1': { title: 'Punkte zählen', steps: ['Ein Zehnerfeld hat zwei Reihen mit je 5 Kästchen.', 'Eine volle Reihe sind 5 Punkte. Zähle von 5 aus weiter.', 'Beispiel: oben 5 Punkte, unten 2 Punkte. Das sind 7.'] },
       'menge:2': { title: 'Das Zwanzigerfeld', steps: ['Im Zwanzigerfeld hat jede Reihe 10 Kästchen.', 'Die obere Reihe ist voll: Das sind 10 Punkte.', 'Beispiel: oben 10, unten 4 Punkte. Das sind 14.'] },
       'zerlegen:1': { title: 'Zahlen zerlegen', steps: ['Eine Zahl kann man in zwei Teile zerlegen.', 'Beispiel: 7 = 3 + 4. Zu 3 fehlen noch 4 bis 7.', 'Zähle von der kleinen Zahl bis zur großen weiter.'] },
-      'zerlegen:2': { title: 'Zerlegen bis 20', steps: ['Zahlen ab 10 bestehen aus 10 und dem Rest.', 'Beispiel: 16 = 10 + 6.', 'Bei 15 = 8 + ? rechnest du: Von 8 bis 10 sind es 2, dann noch 5. Zusammen 7.'] },
+      'zerlegen:2': { title: 'Zerlegen bis 20', steps: ['Zahlen ab 10 bestehen aus 10 und dem Rest.', 'Beispiel: 16 = 10 + 6.', 'Bei 17 = 13 + ? schaust du auf die Einer: 7 = 3 + 4. Es fehlen 4.'] },
       'vergleich:1': { title: 'Größer, kleiner, gleich', steps: ['< heißt kleiner als. > heißt größer als. = heißt gleich.', 'Die offene Seite zeigt immer zur größeren Zahl.', 'Beispiel: 3 < 8, denn 3 ist kleiner als 8.'] },
       'vergleich:2': { title: 'Aufgaben vergleichen', steps: ['Rechne zuerst die Plusaufgabe aus.', 'Beispiel: 4 + 5 ___ 8. Es ist 4 + 5 = 9.', '9 ist größer als 8. Also: 4 + 5 > 8.'] },
       'nachbar:1': { title: 'Nachbarzahlen', steps: ['Jede Zahl hat zwei Nachbarn.', 'Davor steht die Zahl, die um 1 kleiner ist. Danach die Zahl, die um 1 größer ist.', 'Beispiel: Die Nachbarn von 12 sind 11 und 13.'] },
@@ -198,9 +199,8 @@
     quader: `<path d="M4 30 L14 20 L64 20 L54 30 Z" fill="#8FD3FF" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M54 30 L64 20 L64 44 L54 54 Z" fill="#2B78C2" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><rect x="4" y="30" width="50" height="24" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/>`,
     kugel: `<circle cx="34" cy="31" r="26" fill="#3FA0FF" stroke="${OUT}" stroke-width="2"/><path d="M8 31 a26 8 0 0 0 52 0" fill="none" stroke="${OUT}" stroke-width="1.5"/><ellipse cx="25" cy="21" rx="7" ry="4" fill="#fff" opacity=".6" transform="rotate(-30 25 21)"/>`,
   }[k], 'Körper');
-  const OBJECTS = [['einem Ball', 'kugel'], ['einer Murmel', 'kugel'], ['einer Orange', 'kugel'], ['einem Spielwürfel', 'wuerfel'], ['einem Zuckerwürfel', 'wuerfel'], ['einem Schuhkarton', 'quader'], ['einem Ziegelstein', 'quader'], ['einer Milchtüte', 'quader']];
+  const OBJECTS = [['einem Ball', 'kugel'], ['einer Murmel', 'kugel'], ['einer Orange', 'kugel'], ['einem Spielwürfel', 'wuerfel'], ['einem Zuckerwürfel', 'wuerfel'], ['einem Schuhkarton', 'quader'], ['einem Ziegelstein', 'quader'], ['einem Saftkarton', 'quader']];
   const SOLID_FACTS = [['Welcher Körper kann gut rollen?', 'kugel'], ['Welcher Körper hat keine Ecken?', 'kugel'], ['Welcher Körper hat 6 gleich große Quadrate als Flächen?', 'wuerfel'], ['Welcher Körper sieht aus wie ein langer Kasten?', 'quader']];
-  const SOLID_COUNTS = [['Ecken', 'wuerfel', 8], ['Ecken', 'quader', 8], ['Flächen', 'wuerfel', 6], ['Flächen', 'quader', 6], ['Ecken', 'kugel', 0]];
   // pattern pieces: shape and colour together, so the pattern also works without telling colours apart
   const TOKENS = { kreis: `<circle cx="20" cy="20" r="15" fill="${BLUE}"`, dreieck: '<path d="M20 4 L36 34 L4 34 Z" fill="#FFD84A"', quadrat: `<rect x="6" y="6" width="28" height="28" fill="${RED}"`, stern: `<path d="${STAR}" transform="translate(-2 -1) scale(.73)" fill="#8FE3A0"`, raute: '<path d="M20 3 L36 20 L20 37 L4 20 Z" fill="#C3A6FF"' };
   const tokenG = (k) => `${TOKENS[k]} stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
@@ -251,9 +251,8 @@
         return f.choice(mod, t, 'finden', `Tippe auf ${SOLIDS[k][1]} ${SOLIDS[k][0]}.`, opts[0], opts.slice(1), { svgOpts: true, solid: k, why: `So sieht ${SOLIDS[k][1].replace('den', 'der')} ${SOLIDS[k][0]} aus:` });
       }
       const r = Math.random();
-      if (r < 0.4) { const [o, k] = pick(OBJECTS); return f.choice(mod, t, 'ding', `Welcher Körper passt zu ${o}?`, SOLIDS[k][0], names.filter((x) => x !== SOLIDS[k][0]), { why: `Die Form passt zu ${SOLIDS[k][1] === 'den' ? 'einem' : 'einer'} ${SOLIDS[k][0]}.` }); }
-      if (r < 0.7) { const [q, k] = pick(SOLID_FACTS); return f.choice(mod, t, 'merkmal', q, SOLIDS[k][0], names.filter((x) => x !== SOLIDS[k][0])); }
-      const [what, k, n] = pick(SOLID_COUNTS); return f.num(mod, t, 'zaehlen', [n], { svg: solidSVG(k), ask: `Wie viele ${what} hat ${SOLIDS[k][1] === 'den' ? 'der' : 'die'} ${SOLIDS[k][0]}?`, solid: k, what });
+      if (r < 0.6) { const [o, k] = pick(OBJECTS); return f.choice(mod, t, 'ding', `Welcher Körper passt zu ${o}?`, SOLIDS[k][0], names.filter((x) => x !== SOLIDS[k][0]), { why: `Die Form passt zu ${SOLIDS[k][1] === 'den' ? 'einem' : 'einer'} ${SOLIDS[k][0]}.` }); }
+      const [q, k] = pick(SOLID_FACTS); return f.choice(mod, t, 'merkmal', q, SOLIDS[k][0], names.filter((x) => x !== SOLIDS[k][0]));
     }
     if (mod === 'muster') {
       const unit = pick(PATTERNS[t]); const letters = [...new Set(unit)]; const kinds = shuffle(Object.keys(TOKENS)); const of = (ch) => kinds[letters.indexOf(ch)];
@@ -284,7 +283,7 @@
       'formen:1': { title: 'Formen erkennen', steps: ['Dreieck: drei Ecken. Kreis: rund, keine Ecken.', 'Quadrat: vier gleich lange Seiten.', 'Rechteck: zwei lange und zwei kurze Seiten.'] },
       'formen:2': { title: 'Ecken und Vierecke', steps: ['Jede Form mit vier Ecken ist ein Viereck. Quadrat und Rechteck sind besondere Vierecke.', 'Zähle die Ecken mit dem Finger: Das Dreieck hat 3.', 'Beim Zählen tippst du jede Form nur einmal an.'] },
       'koerper:1': { title: 'Würfel, Quader, Kugel', steps: ['Ein Würfel hat 6 gleich große Quadrate als Flächen.', 'Ein Quader sieht aus wie ein Kasten. Seine Flächen sind nicht alle gleich groß.', 'Eine Kugel ist rund und hat keine Ecken.'] },
-      'koerper:2': { title: 'Körper um uns herum', steps: ['Ein Ball ist eine Kugel. Ein Schuhkarton ist ein Quader.', 'Würfel und Quader haben 8 Ecken und 6 Flächen.', 'Manche Ecken sind im Bild versteckt. Denk sie dir hinten dazu.'] },
+      'koerper:2': { title: 'Körper um uns herum', steps: ['Ein Ball ist eine Kugel. Ein Schuhkarton ist ein Quader.', 'Eine Kugel kann rollen. Würfel und Quader rollen nicht.', 'Schau, welche Form das Ding hat.'] },
       'muster:1': { title: 'Muster fortsetzen', steps: ['Ein Muster wiederholt sich immer wieder.', 'Beispiel: Kreis, Dreieck, Kreis, Dreieck. Danach kommt wieder ein Kreis.', 'Sprich das Muster leise mit.'] },
       'muster:2': { title: 'Längere Muster', steps: ['Suche das Stück, das sich wiederholt.', 'Beispiel: Kreis, Kreis, Stern, Kreis, Kreis, Stern. Das Stück ist Kreis, Kreis, Stern.', 'Zähle, wo du im Stück gerade bist.'] },
       'bauen:1': { title: 'Würfel zählen', steps: ['Zähle jeden Turm von unten nach oben.', 'Rechne dann alle Türme zusammen.', 'Beispiel: 2 Würfel und 3 Würfel sind 5 Würfel.'] },
@@ -293,7 +292,7 @@
     notes: {
       lage: { title: 'Wo ist was?', lines: ['links – Mitte – rechts', 'oben – Mitte – unten'] },
       formen: { title: 'Flache Formen', lines: ['Dreieck: 3 Ecken', 'Quadrat und Rechteck: 4 Ecken', 'Kreis: keine Ecke'] },
-      koerper: { title: 'Körper', lines: ['Würfel und Quader: 8 Ecken, 6 Flächen', 'Kugel: rund, keine Ecke'] },
+      koerper: { title: 'Körper', lines: ['Würfel: 6 gleich große Quadrate', 'Quader: wie ein Kasten', 'Kugel: rund, keine Ecke'] },
       muster: { title: 'Muster', lines: ['Ein Muster wiederholt sich.', 'Suche das Stück, das immer wiederkommt.'] },
       bauen: { title: 'Würfel zählen', lines: ['Jeden Turm von unten zählen.', 'Dann alle Türme zusammenrechnen.'] },
     },
@@ -366,8 +365,8 @@
         const right = one(); let w; do w = [rnd(1, 99), rnd(1, 99)]; while (w.some((n) => odd(n) === !want) || w[0] === w[1]);
         return h.choice(mod, t, 'welche', `Welche Zahl ist ${want ? 'gerade' : 'ungerade'}?`, `${right}`, w.map(String), { why: `${right} endet auf ${right % 10}.` });
       }
-      if (r < 0.85) { const n = 2 * rnd(6, 50); return h.num(mod, t, 'halbieren', [n / 2], { text: `${n}`, ask: 'Halbiere die Zahl.', k12: false }); }
-      const n = rnd(6, 50); return h.num(mod, t, 'verdoppeln', [2 * n], { text: `${n}`, ask: 'Verdopple die Zahl.', k12: false });
+      if (r < 0.85) { const n = 2 * (t === 1 ? rnd(3, 20) : rnd(21, 49)); return h.num(mod, t, 'halbieren', [n / 2], { text: `${n}`, ask: 'Halbiere die Zahl.', k12: false }); }
+      const n = t === 1 ? rnd(6, 20) : rnd(21, 50); return h.num(mod, t, 'verdoppeln', [2 * n], { text: `${n}`, ask: 'Verdopple die Zahl.', k12: false });
     }
     if (mod === 'folge') {
       let step, start;
@@ -403,7 +402,7 @@
     modules: {
       stelle: { name: 'Zehner und Einer', icon: '🧮', maxTier: 2, worldCap: [2], dmg: 10 },
       zehner: { name: 'Zahlenstrahl', icon: '↔️', maxTier: 1, worldCap: [1], dmg: 10 },
-      gerade: { name: 'Gerade und ungerade', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 10 },
+      gerade: { name: 'Gerade und ungerade', icon: '✌️', maxTier: 2, worldCap: [2], dmg: 10 },
       folge: { name: 'Zahlenfolgen', icon: '📶', maxTier: 2, worldCap: [2], dmg: 12 },
       plus: { name: 'Plus bis 100', icon: '➕', maxTier: 3, worldCap: [3], dmg: 14 },
       minus: { name: 'Minus bis 100', icon: '➖', maxTier: 3, worldCap: [3], dmg: 14 },
@@ -415,7 +414,8 @@
       'stelle:1': { title: 'Zehner und Einer', steps: ['Eine Stange hat 10 Würfel: Das ist ein Zehner. Ein einzelner Würfel ist ein Einer.', 'Zähle erst die Zehner: 10, 20, 30. Dann die Einer dazu.', 'Beispiel: 4 Stangen und 7 Würfel sind 47. 47 hat 4 Zehner und 7 Einer.'] },
       'stelle:2': { title: 'Das Hunderterfeld', steps: ['Das Hunderterfeld hat 10 Reihen mit je 10 Punkten.', 'Jede volle Reihe ist ein Zehner. Zähle die vollen Reihen, dann die Punkte in der letzten Reihe.', 'Bis 100 fehlen die leeren Kreise: 100 − 63 = 37.'] },
       'zehner:1': { title: 'Nachbarzehner und Zahlenstrahl', steps: ['Die Nachbarzehner von 47 sind 40 und 50.', 'Auf dem Zahlenstrahl ist jeder Strich eine Zahl weiter. Der lange Strich in der Mitte ist die 5.', 'Beispiel: Der Pfeil steht 2 Striche hinter der 30. Er zeigt auf 32.'] },
-      'gerade:1': { title: 'Gerade und ungerade', steps: ['Gerade Zahlen enden auf 0, 2, 4, 6 oder 8. Ungerade auf 1, 3, 5, 7 oder 9.', 'Gerade Zahlen kann man halbieren, ohne dass etwas übrig bleibt.', 'Beispiel: 46 ist gerade. 46 halbiert ist 23, denn 23 + 23 = 46.'] },
+      'gerade:1': { title: 'Gerade und ungerade', steps: ['Gerade Zahlen enden auf 0, 2, 4, 6 oder 8. Ungerade auf 1, 3, 5, 7 oder 9.', 'Gerade Zahlen kann man halbieren, ohne dass etwas übrig bleibt.', 'Beispiel: 36 ist gerade. 36 halbiert ist 18, denn 18 + 18 = 36.'] },
+      'gerade:2': { title: 'Große Zahlen halbieren', steps: ['Halbiere erst die Zehner, dann die Einer.', 'Beispiel: 86 halbiert. 80 halbiert ist 40, 6 halbiert ist 3. Also 43.', 'Bei 74 zerlegst du anders: 74 = 60 + 14. Halbiert sind das 30 und 7. Also 37.'] },
       'folge:1': { title: 'In Schritten zählen', steps: ['Schau, wie viel von einer Zahl zur nächsten dazukommt.', 'Beispiel: 15, 20, 25, 30. Es kommen immer 5 dazu.', 'Weiter geht es mit 35, 40, 45.'] },
       'folge:2': { title: 'Zahlenfolgen', steps: ['Manchmal kommt etwas dazu, manchmal geht etwas weg.', 'Beispiel: 80, 75, 70, 65. Es gehen immer 5 weg.', 'Weiter geht es mit 60, 55, 50.'] },
       'plus:1': { title: 'Plus mit Zehnern', steps: ['Zehner rechnest du wie Einer: 30 + 40 = 70, denn 3 + 4 = 7.', 'Einer dazu: 34 + 5. Rechne 4 + 5 = 9, also 39.', 'Zehner dazu: 34 + 20. Rechne 30 + 20 = 50, also 54.'] },
@@ -458,7 +458,7 @@
   const STORIES_MAL = [
     (a, b) => [`${a} Teller mit je ${b} Äpfeln. Wie viele Äpfel sind es?`],
     (a, b) => [`${a} Kinder haben je ${b} Murmeln. Wie viele Murmeln sind das zusammen?`],
-    (a, b) => [`Ein Heft kostet ${b} €. Wie viel kosten ${a} Hefte?`, ['€']],
+    (a, b) => { const [one, many] = { 2: ['Ein Heft', 'Hefte'], 5: ['Eine Kinokarte', 'Kinokarten'], 10: ['Ein Buch', 'Bücher'] }[b]; return [`${one} kostet ${b} €. Wie viel kosten ${a} ${many}?`, ['€']]; },
     (a, b) => [`In ${a} Tüten sind je ${b} Brötchen. Wie viele Brötchen sind es?`],
   ];
   const STORIES_TEIL = [
@@ -556,8 +556,8 @@
     return svgOf(300, 86, `<rect x="4" y="50" width="292" height="32" rx="4" fill="#F7E3A1" stroke="${OUT}" stroke-width="2"/>${marks}<g class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}"><path d="M${x0} 24 H${x1 - 14} L${x1} 33 L${x1 - 14} 42 H${x0} Z" fill="#FFD84A" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/><path d="M${x1 - 5} 30 L${x1} 33 L${x1 - 5} 36 Z" fill="${OUT}"/><path d="M${x0} 24 h6 v18 h-6 Z" fill="#FF8FA3" stroke="${OUT}" stroke-width="2"/></g>`, 'Lineal mit Stift');
   }
   // estimate: first option is right, the others are off by a factor of 10 or more
-  const LENGTHS = [['ein Bleistift', '15 cm', '15 m', '15 mm'], ['eine Tür', '2 m', '2 cm', '20 m'], ['eine Ameise', '5 mm', '5 cm', '5 m'], ['ein Schulheft', '30 cm', '3 m', '3 mm'], ['ein Bus', '12 m', '12 cm', '120 m'],
-    ['eine Büroklammer', '3 cm', '3 m', '3 mm'], ['ein Kind aus der 2. Klasse', '1,25 m', '12 cm', '12 m'], ['ein Radiergummi', '4 cm', '4 m', '4 mm'], ['ein Fußballtor', '7 m', '7 cm', '70 m']];
+  const LENGTHS = [['ein Bleistift', 'lang', '15 cm', '15 m', '15 mm'], ['eine Tür', 'hoch', '2 m', '2 cm', '20 m'], ['eine Ameise', 'groß', '5 mm', '5 cm', '5 m'], ['ein Schulheft', 'hoch', '30 cm', '3 m', '3 mm'], ['ein Bus', 'lang', '12 m', '12 cm', '120 m'],
+    ['eine Büroklammer', 'lang', '3 cm', '3 m', '3 mm'], ['ein Kind aus der 2. Klasse', 'groß', '1,25 m', '12 cm', '12 m'], ['ein Radiergummi', 'lang', '4 cm', '4 m', '4 mm'], ['ein Fußballtor', 'breit', '7 m', '7 cm', '70 m']];
   const WD = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
   const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
   const MDAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -613,11 +613,16 @@
       if (r < 0.3) { const c = 5 * rnd(1, 19); return g.num(mod, t, 'komma', [100 + c], { text: `1,${pad(c)} m = ? cm`, long: true }); }
       if (r < 0.5) { const c = rnd(1, 99); return g.num(mod, t, 'zwei', [100 + c], { text: `1 m ${c} cm = ? cm`, long: true }); }
       if (r < 0.7) { const c = 5 * rnd(1, 19), cm = 100 + c; return g.choice(mod, t, 'schreiben', `Wie schreibt man ${cm} cm mit Komma?`, `1,${pad(c)}${NB}m`, mixups(c, 'm'), { why: `${cm} cm = 1 m und ${c} cm = 1,${pad(c)}${NB}m` }); }
-      const e = pick(LENGTHS); return g.choice(mod, t, 'schaetzen', `Wie lang ist ungefähr ${e[0]}?`, e[1], e.slice(2), { why: `${e[0][0].toUpperCase() + e[0].slice(1)}: ungefähr ${e[1]}.` });
+      const [thing, adj, right, ...wrong] = pick(LENGTHS); return g.choice(mod, t, 'schaetzen', `Wie ${adj} ist ungefähr ${thing}?`, right, wrong, { why: `${thing[0].toUpperCase() + thing.slice(1)}: ungefähr ${right}.` });
     }
     if (mod === 'uhr') {
       const hh = rnd(1, 12), mm = t === 1 ? pick([0, 30, 15, 45]) : 5 * rnd(0, 11); const show = `${hh}:${pad(mm)} Uhr`;
-      if (t === 2 && Math.random() < 0.25) { const s = 5 * rnd(0, 6), d = 5 * rnd(2, 9), h0 = rnd(7, 15), e = s + d; return g.num(mod, t, 'dauer', [d], { story: `Von ${h0}:${pad(s)} Uhr bis ${h0 + Math.floor(e / 60)}:${pad(e % 60)} Uhr. Wie viele Minuten sind das?`, labels: ['Minuten'] }); }
+      // spans stay inside one hour (Klasse 2 does not count across the full hour yet), or are whole hours
+      if (t === 2 && Math.random() < 0.25) {
+        const h0 = rnd(7, 14);
+        if (Math.random() < 0.3) { const n = rnd(1, 4); return g.num(mod, t, 'stunden', [n], { story: `Von ${h0} Uhr bis ${h0 + n} Uhr. Wie viele Stunden sind das?`, labels: ['Stunden'] }); }
+        const d = 5 * rnd(2, 9), s = 5 * rnd(0, 11 - d / 5); return g.num(mod, t, 'dauer', [d], { story: `Von ${h0}:${pad(s)} Uhr bis ${h0}:${pad(s + d)} Uhr. Wie viele Minuten sind das?`, labels: ['Minuten'] });
+      }
       if (t === 2 && Math.random() < 0.35) {
         // hands mixed up, the minutes read from the other side, the hour after
         const wrong = [...new Set([`${mm / 5 || 12}:${pad((hh % 12) * 5)} Uhr`, `${hh}:${pad(mm % 30 ? 60 - mm : 30 - mm)} Uhr`, `${(hh % 12) + 1}:${pad(mm)} Uhr`])].filter((x) => x !== show).slice(0, 2);
