@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="4fc0ae77a45c">
+<meta name="app-version" content="2ae215b5ec82">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -8026,7 +8026,7 @@ const K12E = (() => {
     { id: 'korb', fest: 'Erntedank', note: 'erntedank', svg: sh('M50 22 Q58 30 57 40 Q61 54 50 55 Q39 54 43 40 Q42 30 50 22 Z', '#C9E265') + circ(31, 44, 13, RED) + `<ellipse cx="70" cy="44" rx="15" ry="12" fill="#FF8A3D" stroke="${INK}" stroke-width="2.5"/>` + ln('M70 32 V56 M62 34 Q58 44 62 54 M78 34 Q82 44 78 54', 1.8) + ln('M31 31 Q32 26 36 24', 2.5, DARK) + ln('M70 32 Q71 27 74 26', 2.5, '#2E9E57')
       + sh('M10 52 H90 L79 90 H21 Z', WOOD) + ln('M14 64 H86 M17 76 H83', 2) + ln('M30 52 L32 90 M50 52 V90 M70 52 L68 90', 2) },
     { id: 'laterne', fest: 'St. Martin', note: 'martin', svg: ln('M50 30 V14 Q50 8 58 8 L92 4', 3, DARK) + ln('M38 32 Q50 18 62 32', 2) + circ(50, 60, 28, '#FF8A3D') + `<circle cx="50" cy="62" r="10" fill="${GOLD}" opacity=".9"/>` + `<ellipse cx="50" cy="60" rx="14" ry="28" fill="none" stroke="${INK}" stroke-width="1.5"/>` + ln('M50 32 V88', 1.5) + rect(37, 28, 26, 7, RED, 2) + rect(40, 85, 20, 6, RED, 2) },
-    { id: 'kranz', fest: 'Advent', note: 'advent', not: ['Weihnachten'], svg: `<ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${INK}" stroke-width="18"/><ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="#2E9E57" stroke-width="13"/>`
+    { id: 'kranz', fest: 'Advent', note: 'advent', not: ['Weihnachten', 'Nikolaus'], svg: `<ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="${INK}" stroke-width="18"/><ellipse cx="50" cy="72" rx="38" ry="14" fill="none" stroke="#2E9E57" stroke-width="13"/>`
       + [[22, 80], [44, 87], [66, 64], [80, 76]].map(([x, y]) => circ(x, y, 3, RED, 1.5)).join('')
       + [[32, 62], [68, 62], [24, 80], [76, 80]].map(([x, y]) => rect(x - 4, y - 24, 8, 24, RED, 1) + sh(`M${x} ${y - 36} Q${x + 6} ${y - 29} ${x} ${y - 25} Q${x - 6} ${y - 29} ${x} ${y - 36} Z`, GOLD, 2)).join('') },
     { id: 'stiefel', fest: 'Nikolaus', note: 'nikolaus', not: ['Advent', 'Weihnachten'], svg: circ(40, 20, 10, '#FF8A3D') + ln('M66 24 L62 36', 3) + circ(67, 15, 9, '#FFB3D9') + sh('M30 28 H64 V62 L84 68 Q93 72 88 86 H30 Z', RED) + rect(25, 22, 44, 12, WHITE, 4) + rect(28, 84, 62, 7, INK, 3) },
@@ -8049,7 +8049,7 @@ const K12E = (() => {
     { id: 'klanghoelzer', name: 'Klanghölzer', acc: 'die Klanghölzer', fam: 'schlag', how: 'schlagen', svg: [-28, 28].map((r) => `<rect x="10" y="44" width="80" height="12" rx="6" transform="rotate(${r} 50 50)" fill="${WOOD}" stroke="${INK}" stroke-width="2.5"/>`).join('') },
     { id: 'rassel', name: 'Rassel', acc: 'die Rassel', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: '<g transform="rotate(-30 50 55)">' + rect(45, 56, 10, 38, DARK, 4) + `<ellipse cx="50" cy="36" rx="21" ry="25" fill="${GOLD}" stroke="${INK}" stroke-width="2.5"/>` + ln('M31 38 L37 32 L43 38 L49 32 L55 38 L61 32 L69 38', 2.5, RED) + [[42, 22], [56, 21], [45, 50], [58, 48]].map(([x, y]) => circ(x, y, 2.5, INK, 0)).join('') + '</g>' },
     { id: 'schellenkranz', name: 'Schellenkranz', acc: 'den Schellenkranz', fam: 'schlag', how: 'schütteln', notHow: ['schlagen'], svg: `<circle cx="50" cy="50" r="32" fill="none" stroke="${INK}" stroke-width="16"/><circle cx="50" cy="50" r="32" fill="none" stroke="${WOOD}" stroke-width="11"/>` + [0, 60, 120, 180, 240, 300].map((a) => { const x = 50 + 32 * Math.cos(a * Math.PI / 180), y = 50 + 32 * Math.sin(a * Math.PI / 180); return circ(x.toFixed(1), y.toFixed(1), 6.5, METAL, 2) + circ(x.toFixed(1), y.toFixed(1), 1.8, INK, 0); }).join('') },
-    { id: 'glockenspiel', name: 'Glockenspiel', acc: 'das Glockenspiel', fam: 'schlag', how: 'schlagen', svg: tube('M8 36 L90 44', 4, DARK) + tube('M8 76 L90 66', 4, DARK) + BARS.map((c, i) => rect((12 + i * 9.6).toFixed(1), (26 + i * 2.6).toFixed(1), 7.5, (58 - i * 5.2).toFixed(1), c, 1.5)).join('') + tube('M80 91 L95 96', 3, WOOD) + circ(75, 89, 5.5, RED) },
+    { id: 'glockenspiel', name: 'Glockenspiel', acc: 'das Glockenspiel', fam: 'schlag', how: 'schlagen', notFam: ['tasten'], notHow: ['Tasten drücken'], svg: tube('M8 36 L90 44', 4, DARK) + tube('M8 76 L90 66', 4, DARK) + BARS.map((c, i) => rect((12 + i * 9.6).toFixed(1), (26 + i * 2.6).toFixed(1), 7.5, (58 - i * 5.2).toFixed(1), c, 1.5)).join('') + tube('M80 91 L95 96', 3, WOOD) + circ(75, 89, 5.5, RED) },
     { id: 'blockfloete', name: 'Blockflöte', acc: 'die Blockflöte', fam: 'blas', how: 'blasen', svg: recorder },
     { id: 'trompete', name: 'Trompete', acc: 'die Trompete', fam: 'blas', how: 'blasen', notHow: ['Tasten drücken'], svg: tube('M30 52 V66 H66 V52', 4, GOLD) + rect(8, 46, 56, 6, GOLD, 2) + [34, 44, 54].map((x) => rect(x, 32, 7, 22, GOLD, 1) + rect(x - 1, 27, 9, 5, METAL, 1) + circ(x + 3.5, 24, 3, METAL, 2)).join('') + sh('M60 46 L91 30 Q96 49 91 68 L60 52 Z', GOLD) + sh('M3 42 L10 46 V52 L3 56 Z', METAL) },
     { id: 'gitarre', name: 'Gitarre', acc: 'die Gitarre', fam: 'saiten', how: 'zupfen', notHow: ['schlagen', 'streichen'], svg: rect(44, 4, 12, 12, DARK, 3) + circ(41, 8, 2, METAL, 1) + circ(59, 8, 2, METAL, 1) + circ(41, 13, 2, METAL, 1) + circ(59, 13, 2, METAL, 1) + rect(45.5, 14, 9, 36, DARK, 1)
@@ -8089,7 +8089,7 @@ const K12E = (() => {
   const NOTES1 = {
     einmalig: { title: 'Ich bin einmalig', lines: ['Jeder Mensch ist einmalig. Dich gibt es nur einmal.', 'Deine Fingerabdrücke hat niemand sonst.', 'Jeder kann etwas gut. Manches fällt schwer, das darf so sein.', 'Was du noch nicht kannst, kannst du üben.', 'Menschen sind verschieden: groß und klein, laut und leise.', 'Manche Kinder sitzen im Rollstuhl, hören schlecht oder tragen eine Brille. Sie gehören dazu wie alle.'] },
     gefuehle: { title: 'Gefühle', lines: ['Fröhlich: Du lachst und freust dich.', 'Traurig: Du möchtest weinen.', 'Wütend: Du ärgerst dich sehr.', 'Ängstlich: Du hast Angst und fühlst dich unsicher.', 'Alle Gefühle sind erlaubt. Man sieht sie oft am Gesicht.', 'Wenn du wütend bist: tief atmen, kurz weggehen, darüber reden. Hauen ist nicht erlaubt.', 'Über Gefühle reden hilft.'] },
-    familie: { title: 'Familien sind verschieden', lines: ['Kleinfamilie: Eltern und ihre Kinder. Manchmal gibt es nur eine Mama oder nur einen Papa.', 'Großfamilie: Auch Oma, Opa, Tante oder Onkel wohnen mit im Haus.', 'Patchworkfamilie: Mama oder Papa hat einen neuen Partner. Kinder aus beiden Familien leben zusammen.', 'Regenbogenfamilie: Ein Kind hat zwei Mamas oder zwei Papas.', 'Adoption: Ein Kind bekommt neue Eltern, die für immer für es sorgen.', 'In jeder Familie ist wichtig: sich lieb haben, sich aufeinander verlassen und einander helfen.'] },
+    familie: { title: 'Familien sind verschieden', lines: ['Kleinfamilie: Eltern und ihre Kinder. Manche Kinder wohnen mit einer Mama oder einem Papa allein. Das ist auch eine Familie.', 'Großfamilie: Auch Oma, Opa, Tante oder Onkel wohnen mit im Haus.', 'Patchworkfamilie: Mama oder Papa hat einen neuen Partner. Oft bringt jeder Kinder mit.', 'Regenbogenfamilie: Ein Kind hat zwei Mamas oder zwei Papas.', 'Adoption: Ein Kind bekommt neue Eltern, die für immer für es sorgen.', 'In jeder Familie ist wichtig: sich lieb haben, sich aufeinander verlassen und einander helfen.'] },
     hoeflich: { title: 'Bitte, danke, Entschuldigung', lines: ['„Bitte“ sagst du, wenn du etwas möchtest.', '„Danke“ sagst du, wenn du etwas bekommst oder dir jemand hilft.', '„Entschuldigung“ sagst du, wenn du etwas falsch gemacht hast.', '„Guten Morgen“ oder „Hallo“ sagst du zur Begrüßung, „Tschüss“ zum Abschied.', 'Höflich ist auch: anklopfen, zuhören, ausreden lassen, die Tür aufhalten.'] },
     regeln: { title: 'Regeln', lines: ['Regeln helfen, dass alle gut zusammen lernen und sich wohlfühlen.', 'Gesprächsregeln: Ich melde mich. Ich lasse andere ausreden. Ich höre zu.', 'Im Schulhaus gehen wir langsam, damit sich niemand wehtut.', 'Wir räumen gemeinsam auf.', 'Fällt dir eine Regel schwer, kannst du um Hilfe bitten.'] },
     streit: { title: 'Streiten und versöhnen', lines: ['Streit kommt vor. Wichtig ist, wie man ihn löst.', 'Erst eine Pause machen und ruhig werden.', 'Dann sagt jeder, was ihn ärgert. Der andere hört zu.', 'Wer etwas falsch gemacht hat, entschuldigt sich.', 'Sich versöhnen heißt: wieder Frieden schließen.', 'Niemand darf ausgeschlossen werden. Fragt Kinder, die allein sind, ob sie mitmachen wollen.'] },
@@ -8113,7 +8113,7 @@ const K12E = (() => {
 
     { id: 'k1em1', mod: 'mc', g: 'einmalig', q: 'Was hat kein anderer Mensch auf der Welt?', o: ['Deine Fingerabdrücke', 'Zwei Augen', 'Eine Nase'], a: 0 },
     { id: 'k1em2', mod: 'mc', g: 'einmalig', q: 'Mia kann noch nicht Rad fahren. Was hilft?', o: ['Üben', 'Gleich aufgeben', 'Andere auslachen'], a: 0 },
-    { id: 'k1em3', mod: 'mc', g: 'einmalig', q: 'Ben sitzt im Rollstuhl. Kann er dein Freund sein?', o: ['Ja, natürlich', 'Nein'], a: 0 },
+    { id: 'k1em3', mod: 'mc', g: 'einmalig', q: 'Ben sitzt im Rollstuhl. Was könnt ihr zusammen machen?', o: ['Zusammen lachen und spielen', 'Gar nichts'], a: 0 },
     { id: 'k1em4', mod: 'mc', g: 'einmalig', q: 'Lena hört schlecht. Wie hilfst du ihr?', o: ['Sie anschauen und deutlich sprechen', 'Leise flüstern', 'Wegschauen'], a: 0 },
     { id: 'k1em5', mod: 'mc', g: 'einmalig', q: 'Tom malt gut, Ida rechnet gut. Was stimmt?', o: ['Jeder kann etwas gut', 'Nur Tom kann etwas'], a: 0 },
     { id: 'k1em6', mod: 'mc', g: 'einmalig', q: 'Ein Kind sieht anders aus als du. Was tust du?', o: ['Freundlich sein', 'Es auslachen', 'Es wegschicken'], a: 0 },
@@ -8122,16 +8122,16 @@ const K12E = (() => {
     { id: 'k1er7', mod: 'rf', g: 'einmalig', q: 'Was man noch nicht kann, kann man üben.', a: true },
     { id: 'k1er8', mod: 'rf', g: 'einmalig', q: 'Kinder mit Brille gehören nicht dazu.', a: false, why: 'Alle Kinder gehören dazu, mit oder ohne Brille.' },
 
-    { id: 'k1ef1', mod: 'familie', g: 'familie', q: 'Mia wohnt nur mit ihren zwei Mamas. Welche Familie ist das?', o: ['Regenbogenfamilie', 'Großfamilie'], a: 0 },
-    { id: 'k1ef2', mod: 'familie', g: 'familie', q: 'Paul wohnt mit Eltern, Oma, Opa und Tante. Welche Familie?', o: ['Großfamilie', 'Regenbogenfamilie'], a: 0 },
-    { id: 'k1ef3', mod: 'familie', g: 'familie', q: 'Mamas neuer Mann bringt seine Tochter mit. Welche Familie ist das?', o: ['Patchworkfamilie', 'Großfamilie'], a: 0 },
+    { id: 'k1ef1', mod: 'familie', g: 'familie', q: 'Mia wohnt mit ihren zwei Mamas. Wie nennt man so eine Familie?', o: ['Regenbogenfamilie', 'Großfamilie'], a: 0 },
+    { id: 'k1ef2', mod: 'familie', g: 'familie', q: 'Paul wohnt mit Eltern, Oma, Opa und Tante. Welche Familie?', o: ['Großfamilie', 'Kleinfamilie'], a: 0 },
+    { id: 'k1ef3', mod: 'familie', g: 'familie', q: 'Lea wohnt mit Mama, Mamas neuem Mann und seiner Tochter. Welche Familie?', o: ['Patchworkfamilie', 'Großfamilie'], a: 0 },
     { id: 'k1ef4', mod: 'familie', g: 'familie', q: 'Ein Kind bekommt für immer neue Eltern. Wie heißt das?', o: ['Adoption', 'Geburtstag', 'Umzug'], a: 0 },
-    { id: 'k1ef5', mod: 'familie', g: 'familie', q: 'Ole wohnt nur mit seinem Papa. Ist das eine Familie?', o: ['Ja', 'Nein'], a: 0 },
+    { id: 'k1ef5', mod: 'familie', g: 'familie', q: 'Ole wohnt mit seinem Papa. Was stimmt?', o: ['Sie sind eine Familie.', 'Sie sind nur zu Besuch.'], a: 0 },
     { id: 'k1ef6', mod: 'familie', g: 'familie', q: 'Was ist in jeder Familie wichtig?', o: ['Sich lieb haben und helfen', 'Gleich aussehen', 'Viele Kinder haben'], a: 0 },
     { id: 'k1ef7', mod: 'familie', g: 'familie', q: 'Wer kann in einer Familie mithelfen?', o: ['Alle, auch die Kinder', 'Nur die Erwachsenen'], a: 0 },
     { id: 'k1ef8', mod: 'familie', g: 'familie', q: 'Wie viele Menschen gehören zu einer Familie?', o: ['Das ist verschieden', 'Immer vier', 'Immer zwei'], a: 0 },
     { id: 'k1ef9', mod: 'familie', g: 'familie', q: 'Nur Eltern und Kinder wohnen zusammen. Wie heißt das?', o: ['Kleinfamilie', 'Großfamilie'], a: 0 },
-    { id: 'k1ef10', mod: 'familie', g: 'familie', q: 'Lina ist adoptiert. Was stimmt?', o: ['Ihre Eltern sorgen für immer für sie', 'Sie gehört nicht richtig dazu'], a: 0 },
+    { id: 'k1ef10', mod: 'familie', g: 'familie', q: 'Lina ist adoptiert. Was stimmt?', o: ['Ihre Eltern sorgen für immer für sie', 'Ihre Eltern sorgen nur eine Woche für sie'], a: 0 },
     { id: 'k1er9', mod: 'rf', g: 'familie', q: 'Alle Familien sehen gleich aus.', a: false, why: 'Familien sind verschieden. Jede ist eine richtige Familie.' },
     { id: 'k1er10', mod: 'rf', g: 'familie', q: 'In einer Großfamilie wohnen oft Oma und Opa mit.', a: true },
 
@@ -8241,11 +8241,11 @@ const K12E = (() => {
     martin: { title: 'St. Martin', lines: ['Martin lebte vor langer Zeit. Er war ein römischer Soldat.', 'An einem kalten Tag traf er einen frierenden Bettler. Martin teilte seinen Mantel mit dem Schwert und gab ihm eine Hälfte.', 'Später wurde Martin Bischof. Eine Legende erzählt: Er versteckte sich in einem Gänsestall, weil er nicht Bischof werden wollte. Die Gänse schnatterten und verrieten ihn.', 'Am 11. November denken viele an Martin. Kinder ziehen mit Laternen durch die Straßen.', 'Martin erinnert uns: helfen, teilen, danken.'] },
     advent: { title: 'Advent', lines: ['Advent heißt Ankunft. Christen warten auf das Fest der Geburt von Jesus.', 'Die Adventszeit hat vier Sonntage vor Weihnachten.', 'Auf dem Adventskranz brennt an jedem Adventssonntag eine Kerze mehr.', 'Der Adventskalender hat 24 Türchen, bis zum 24. Dezember.', 'Advent ist eine Zeit der Stille, der Vorfreude und des Wartens.'] },
     nikolaus: { title: 'Nikolaus', lines: ['Am 6. Dezember ist Nikolaustag.', 'Nikolaus lebte vor langer Zeit. Er war Bischof in der Stadt Myra. Sie liegt heute in der Türkei.', 'Er half armen Menschen und schenkte heimlich. Eine Legende erzählt: Er warf nachts Goldstücke für drei arme Mädchen durch das Fenster.', 'Darum stellen Kinder am Abend vorher ihre geputzten Stiefel vor die Tür.'] },
-    weihnachten: { title: 'Weihnachten', lines: ['An Weihnachten feiern Christen die Geburt von Jesus.', 'Lukas erzählt in der Bibel: Maria und Josef mussten nach Bethlehem gehen.', 'In der Herberge war kein Platz. Jesus wurde in einem Stall geboren und in eine Futterkrippe gelegt.', 'Ein Engel erzählte den Hirten auf dem Feld davon. Die Hirten gingen zum Stall und fanden das Kind.', 'Heiligabend ist am 24. Dezember. Viele schmücken einen Weihnachtsbaum und beschenken sich.'] },
+    weihnachten: { title: 'Weihnachten', lines: ['An Weihnachten feiern Christen die Geburt von Jesus.', 'Lukas erzählt in der Bibel: Maria und Josef mussten nach Bethlehem gehen.', 'In der Herberge war kein Platz. Maria legte das Kind in eine Futterkrippe. Viele stellen sich dazu einen Stall vor.', 'Ein Engel erzählte den Hirten auf dem Feld davon. Die Hirten gingen zum Stall und fanden das Kind.', 'Heiligabend ist am 24. Dezember. Viele schmücken einen Weihnachtsbaum und beschenken sich.'] },
     silvester: { title: 'Silvester und Neujahr', lines: ['Silvester ist am 31. Dezember, dem letzten Tag des Jahres. Der Tag heißt nach dem Heiligen Silvester.', 'Um Mitternacht beginnt das neue Jahr. Am 1. Januar ist Neujahr.', 'Man wünscht sich Glück für das neue Jahr.', 'Glückssymbole sind das Kleeblatt mit vier Blättern, der Schornsteinfeger, das Glücksschwein und das Hufeisen.', 'Viele nehmen sich etwas vor. Das heißt ein guter Vorsatz.'] },
     ostern: { title: 'Ostern', lines: ['An Ostern feiern Christen, dass Jesus von den Toten auferstanden ist.', 'Die Bibel erzählt: Am Karfreitag starb Jesus am Kreuz. Am Ostersonntag war sein Grab leer.', 'Ostern ist im Frühling, im März oder April.', 'Das Ei ist ein Zeichen für neues Leben. Kinder suchen bunte Ostereier.', 'Weitere Osterbräuche: Osterhase, Osterfeuer und Osterlamm.'] },
     jahr: { title: 'Feste im Jahr', lines: ['1. Januar: Neujahr', 'März oder April: Ostern', 'Anfang Oktober: Erntedank', '11. November: St. Martin', 'Ende November oder Anfang Dezember: 1. Advent', '6. Dezember: Nikolaus', '24. Dezember: Heiligabend, dann Weihnachten', '31. Dezember: Silvester', 'Den Geburtstag feiert jeder an seinem eigenen Tag.'] },
-    staunen: { title: 'Staunen über die Natur', lines: ['Die Sonne gibt Licht und Wärme. Ohne sie gäbe es kein Leben auf der Erde.', 'Der Mond leuchtet nicht selbst. Die Sonne strahlt ihn an. Mal sehen wir ihn rund, mal als schmale Sichel.', 'Sterne sind Sonnen, die sehr weit weg sind.', 'Ein Regenbogen entsteht, wenn die Sonne in Regentropfen scheint. Für viele Menschen ist er ein Zeichen der Hoffnung.', 'Jede Schneeflocke ist ein Eiskristall mit sechs Spitzen.', 'Kleine Tiere, große Meister: Die Spinne webt ein Netz, die Biene baut Waben aus Wachs.'] },
+    staunen: { title: 'Staunen über die Natur', lines: ['Die Sonne gibt Licht und Wärme. Ohne sie gäbe es kein Leben auf der Erde.', 'Der Mond leuchtet nicht selbst. Die Sonne strahlt ihn an. Mal sehen wir ihn rund, mal als schmale Sichel.', 'Sterne sind Sonnen, die sehr weit weg sind.', 'Ein Regenbogen entsteht, wenn die Sonne in Regentropfen scheint. Für viele Menschen ist er ein Zeichen der Hoffnung.', 'Jeder Schneekristall hat sechs Spitzen.', 'Kleine Tiere, große Meister: Die Spinne webt ein Netz, die Biene baut Waben aus Wachs.'] },
     schuetzen: { title: 'Natur und Tiere schützen', lines: ['Müll gehört in den Mülleimer, nicht in den Wald.', 'Blumen im Park und auf der Wiese lässt man stehen. Dort finden Bienen Futter.', 'Vogelnester und junge Tiere nicht anfassen und nicht stören.', 'Wasser und Strom sparen schützt die Natur.', 'Ein Insektenhotel und eine Blumenwiese helfen Bienen und Käfern.', 'Wer ein Haustier hat, sorgt jeden Tag für Futter, Wasser und Pflege.'] },
     wachsen: { title: 'Werden, wachsen, vergehen', lines: ['Aus einem Samen wird ein Keimling, dann eine Pflanze. Sie blüht und bildet Früchte mit neuen Samen.', 'Eine Pflanze braucht Wasser, Licht, Erde und Wärme.', 'Aus dem Ei schlüpft eine Raupe. Sie wird zur Puppe, dann schlüpft ein Schmetterling.', 'Aus dem Froschlaich werden Kaulquappen. Sie bekommen Beine und werden zu Fröschen.', 'Menschen wachsen auch: Baby, Kind, Erwachsener, alter Mensch.', 'Alles Leben vergeht einmal. Ein Blatt fällt im Herbst und wird zu Erde. Daraus wächst Neues.', 'Tiere können sich von der Stelle bewegen. Pflanzen bleiben an ihrem Platz.'] },
   };
@@ -8262,14 +8262,14 @@ const K12E = (() => {
     { id: 'k2ff9', mod: 'fest', g: 'martin', q: 'Welche Tiere verrieten Martin in der Legende?', o: ['Gänse', 'Hühner', 'Katzen'], a: 0 },
     { id: 'k2ff10', mod: 'fest', g: 'martin', q: 'Was war Martin, als er den Mantel teilte?', o: ['Ein Soldat', 'Ein Bäcker', 'Ein König'], a: 0 },
     { id: 'k2ff11', mod: 'fest', g: 'advent', q: 'Was heißt das Wort Advent?', o: ['Ankunft', 'Abschied', 'Abendessen'], a: 0 },
-    { id: 'k2ff12', mod: 'fest', g: 'advent', q: 'Wie viele Kerzen hat der Adventskranz?', o: ['Vier', 'Zwei', 'Sieben'], a: 0 },
+    { id: 'k2ff12', mod: 'fest', g: 'advent', q: 'Wie viele Kerzen hat ein Adventskranz meistens?', o: ['Vier', 'Zwei', 'Sieben'], a: 0 },
     { id: 'k2ff13', mod: 'fest', g: 'advent', q: 'Wie viele Türchen hat ein Adventskalender meistens?', o: ['24', '12', '31'], a: 0 },
     { id: 'k2ff14', mod: 'fest', g: 'advent', q: 'Was für eine Zeit ist der Advent?', o: ['Eine Zeit des Wartens und der Vorfreude', 'Die Zeit der Ernte', 'Die Zeit der Sommerferien'], a: 0 },
     { id: 'k2ff15', mod: 'fest', g: 'nikolaus', q: 'Wo war Nikolaus Bischof?', o: ['In Myra', 'In Rom', 'In Berlin'], a: 0 },
     { id: 'k2ff16', mod: 'fest', g: 'nikolaus', q: 'Was stellen Kinder am Abend vor dem Nikolaustag vor die Tür?', o: ['Ihre geputzten Stiefel', 'Ihre Schultasche', 'Einen Weihnachtsbaum'], a: 0 },
     { id: 'k2ff17', mod: 'fest', g: 'nikolaus', q: 'Wem half Nikolaus?', o: ['Armen Menschen', 'Nur dem König'], a: 0 },
     { id: 'k2ff18', mod: 'fest', g: 'weihnachten', q: 'Was feiern Christen an Weihnachten?', o: ['Die Geburt von Jesus', 'Die Ernte', 'Das neue Jahr'], a: 0 },
-    { id: 'k2ff19', mod: 'fest', g: 'weihnachten', q: 'Wo wurde Jesus geboren, wie Lukas erzählt?', o: ['In einem Stall', 'In einem Schloss', 'In einem Zelt'], a: 0 },
+    { id: 'k2ff19', mod: 'fest', g: 'weihnachten', q: 'Wo kam Jesus zur Welt, wie man es oft erzählt?', o: ['In einem Stall', 'In einem Schloss', 'In einem Zelt'], a: 0 },
     { id: 'k2ff20', mod: 'fest', g: 'weihnachten', q: 'Wohin legte Maria das Kind?', o: ['In eine Futterkrippe', 'In ein Himmelbett', 'In einen Korb'], a: 0 },
     { id: 'k2ff21', mod: 'fest', g: 'weihnachten', q: 'Wem erzählte der Engel von der Geburt?', o: ['Den Hirten', 'Den Soldaten', 'Den Fischern'], a: 0 },
     { id: 'k2ff22', mod: 'fest', g: 'weihnachten', q: 'In welche Stadt gingen Maria und Josef?', o: ['Nach Bethlehem', 'Nach Myra', 'Nach Rom'], a: 0 },
@@ -8301,7 +8301,7 @@ const K12E = (() => {
     { id: 'k2fn2', mod: 'natur', g: 'staunen', q: 'Warum leuchtet der Mond?', o: ['Die Sonne strahlt ihn an.', 'Er hat eine Lampe.', 'Er brennt.'], a: 0 },
     { id: 'k2fn3', mod: 'natur', g: 'staunen', q: 'Was sind Sterne?', o: ['Sonnen, die sehr weit weg sind', 'Lampen am Himmel', 'Glühwürmchen'], a: 0 },
     { id: 'k2fn4', mod: 'natur', g: 'staunen', q: 'Wann siehst du einen Regenbogen?', o: ['Wenn die Sonne in den Regen scheint', 'Mitten in der Nacht', 'Wenn es schneit'], a: 0 },
-    { id: 'k2fn5', mod: 'natur', g: 'staunen', q: 'Wie viele Spitzen hat eine Schneeflocke?', o: ['Sechs', 'Drei', 'Zehn'], a: 0 },
+    { id: 'k2fn5', mod: 'natur', g: 'staunen', q: 'Wie viele Spitzen hat ein Schneekristall?', o: ['Sechs', 'Drei', 'Zehn'], a: 0 },
     { id: 'k2fn6', mod: 'natur', g: 'staunen', q: 'Wer baut Waben aus Wachs?', o: ['Die Biene', 'Die Spinne', 'Die Ameise'], a: 0 },
     { id: 'k2fn7', mod: 'natur', g: 'staunen', q: 'Wer webt ein Netz?', o: ['Die Spinne', 'Die Biene', 'Der Regenwurm'], a: 0 },
     { id: 'k2fn8', mod: 'natur', g: 'staunen', q: 'Wofür ist der Regenbogen für viele Menschen ein Zeichen?', o: ['Für Hoffnung', 'Für Streit', 'Für Hunger'], a: 0 },
@@ -8315,16 +8315,16 @@ const K12E = (() => {
     { id: 'k2fw2', mod: 'wachsen', g: 'wachsen', q: 'Was wächst aus einem Samen?', o: ['Eine Pflanze', 'Ein Stein', 'Ein Vogel'], a: 0 },
     { id: 'k2fw3', mod: 'wachsen', g: 'wachsen', q: 'Was schlüpft aus der Puppe?', o: ['Ein Schmetterling', 'Eine Raupe', 'Ein Frosch'], a: 0 },
     { id: 'k2fw4', mod: 'wachsen', g: 'wachsen', q: 'Was wird aus einer Kaulquappe?', o: ['Ein Frosch', 'Ein Fisch', 'Ein Vogel'], a: 0 },
-    { id: 'k2fw5', mod: 'wachsen', g: 'wachsen', q: 'Was kann ein Tier, aber eine Pflanze nicht?', o: ['Von der Stelle laufen', 'Wachsen', 'Wasser brauchen'], a: 0 },
+    { id: 'k2fw5', mod: 'wachsen', g: 'wachsen', q: 'Was kann ein Tier, aber eine Pflanze nicht?', o: ['Sich von der Stelle bewegen', 'Wachsen', 'Wasser brauchen'], a: 0 },
     { id: 'k2fw6', mod: 'wachsen', g: 'wachsen', q: 'Was passiert mit dem Laub im Herbst?', o: ['Es fällt ab und wird zu Erde.', 'Es wird blau.', 'Es fliegt in den Süden.'], a: 0 },
     { id: 'k2fw7', mod: 'wachsen', g: 'wachsen', q: 'Was schlüpft aus einem Hühnerei?', o: ['Ein Küken', 'Eine Raupe', 'Ein Kätzchen'], a: 0 },
 
     { id: 'k2fr1', mod: 'rf', g: 'martin', q: 'Martin teilte seinen Mantel mit einem Bettler.', a: true },
     { id: 'k2fr2', mod: 'rf', g: 'nikolaus', q: 'Nikolaustag ist am 24. Dezember.', a: false, why: 'Nikolaustag ist am 6. Dezember.' },
-    { id: 'k2fr3', mod: 'rf', g: 'advent', q: 'Der Adventskranz hat vier Kerzen.', a: true },
+    { id: 'k2fr3', mod: 'rf', g: 'advent', q: 'Der Adventskranz hat meistens vier Kerzen.', a: true },
     { id: 'k2fr4', mod: 'rf', g: 'ostern', q: 'Ostern ist im Herbst.', a: false, why: 'Ostern ist im Frühling, im März oder April.' },
     { id: 'k2fr5', mod: 'rf', g: 'erntedank', q: 'Beim Erntedankfest sagen Menschen Danke für die Ernte.', a: true },
-    { id: 'k2fr6', mod: 'rf', g: 'weihnachten', q: 'Lukas erzählt, dass Jesus in einem Stall geboren wurde.', a: true },
+    { id: 'k2fr6', mod: 'rf', g: 'weihnachten', q: 'Lukas erzählt: Maria legte das Kind in eine Futterkrippe.', a: true },
     { id: 'k2fr7', mod: 'rf', g: 'staunen', q: 'Der Mond leuchtet von selbst.', a: false, why: 'Der Mond leuchtet nicht selbst. Die Sonne strahlt ihn an.' },
     { id: 'k2fr8', mod: 'rf', g: 'wachsen', q: 'Pflanzen brauchen Licht zum Wachsen.', a: true },
     { id: 'k2fr9', mod: 'rf', g: 'wachsen', q: 'Aus einer Raupe wird ein Schmetterling.', a: true },
@@ -8335,7 +8335,7 @@ const K12E = (() => {
   // m: Monat.Tag, nur für die Reihenfolge (der 1. Advent liegt immer zwischen dem 27. November und dem 3. Dezember)
   const JAHR = [['Neujahr', 1.01], ['Ostern', 3.22], ['Erntedank', 10.01], ['St. Martin', 11.11], ['1. Advent', 11.27], ['Nikolaus', 12.06], ['Weihnachten', 12.24], ['Silvester', 12.31]].map(([text, m], i) => ({ id: 'fj' + (i + 1), text, m }));
   const FESTORD = [
-    { items: steps('fl', ['Maria und Josef gehen nach Bethlehem.', 'In der Herberge ist kein Platz.', 'Jesus wird im Stall geboren.', 'Ein Engel erscheint den Hirten.', 'Die Hirten finden das Kind in der Krippe.']), note: 'weihnachten', q: 'Die Weihnachtsgeschichte nach Lukas: Tippe der Reihe nach an.' },
+    { items: steps('fl', ['Maria und Josef gehen nach Bethlehem.', 'In der Herberge ist kein Platz.', 'Jesus wird geboren und in eine Krippe gelegt.', 'Ein Engel erscheint den Hirten.', 'Die Hirten finden das Kind in der Krippe.']), note: 'weihnachten', q: 'Die Weihnachtsgeschichte nach Lukas: Tippe der Reihe nach an.' },
     { items: steps('fm', ['Martin reitet als Soldat durch die Kälte.', 'Am Stadttor friert ein Bettler.', 'Martin teilt seinen Mantel mit dem Schwert.', 'Er gibt dem Bettler eine Hälfte.', 'Später wird Martin Bischof.']), note: 'martin', q: 'Die Geschichte von Martin: Tippe der Reihe nach an.' },
     { items: steps('fo', ['Jesus stirbt am Karfreitag am Kreuz.', 'Er wird in ein Grab gelegt.', 'Am Ostersonntag ist das Grab leer.', 'Christen feiern die Auferstehung.']), note: 'ostern', q: 'Was die Bibel von Ostern erzählt: Tippe der Reihe nach an.' },
   ];
@@ -8421,11 +8421,11 @@ const K12E = (() => {
   /* ======================= Klasse 2 Musik: Der Musikraum ======================= */
   const NOTES3 = {
     instrumente: { title: 'Instrumente aus dem Musikraum', lines: ['In der Schule spielen Kinder oft Orff-Instrumente: Handtrommel, Triangel, Klanghölzer, Rassel, Schellenkranz und Glockenspiel.', 'Die Handtrommel hat ein Fell. Die Triangel ist ein Dreieck aus Metall.', 'Klanghölzer sind zwei runde Stäbe aus Holz. Man schlägt sie aneinander.', 'Rassel und Schellenkranz schüttelt man.', 'Das Glockenspiel hat Platten aus Metall. Man schlägt mit einem Schlägel darauf.', 'Weitere Instrumente: Blockflöte, Trompete, Gitarre, Geige und Klavier.'] },
-    familien: { title: 'Instrumentenfamilien', lines: ['Saiteninstrumente haben Saiten: Gitarre, Geige und Kontrabass.', 'Blasinstrumente: Man bläst hinein, zum Beispiel in Blockflöte und Trompete.', 'Schlaginstrumente schlägt oder schüttelt man: Trommel, Triangel, Klanghölzer, Glockenspiel, Rassel und Schellenkranz.', 'Tasteninstrumente haben Tasten: Klavier und Orgel.'] },
+    familien: { title: 'Instrumentenfamilien', lines: ['Saiteninstrumente haben Saiten: Gitarre, Geige und Kontrabass.', 'Blasinstrumente: Man bläst hinein, zum Beispiel in Blockflöte und Trompete.', 'Schlaginstrumente schlägt oder schüttelt man: Trommel, Triangel, Klanghölzer, Glockenspiel, Rassel und Schellenkranz.', 'Tasteninstrumente haben Tasten: Klavier und Orgel.', 'Im Klavier sind auch Saiten. Weil man es mit Tasten spielt, zählt es zu den Tasteninstrumenten.'] },
     spielen: { title: 'So spielt man', lines: ['Zupfen: Die Finger ziehen an der Saite und lassen sie los. So spielt man Gitarre.', 'Streichen: Ein Bogen streicht über die Saiten. So spielt man Geige.', 'Blasen: Man bläst Luft hinein. So spielt man Blockflöte und Trompete.', 'Schlagen: mit der Hand oder einem Schlägel. So spielt man Trommel, Triangel und Glockenspiel.', 'Schütteln: So spielt man Rassel und Schellenkranz.', 'Tasten drücken: So spielt man Klavier.'] },
     laut: { title: 'Laut und leise, schnell und langsam', lines: ['Musik kann laut, mittellaut oder leise sein.', 'Ein Schlaflied singt man leise und langsam.', 'Ein Marsch oder ein Gewitter in der Musik klingt laut.', 'Musik kann schnell, mäßig oder langsam sein.', 'Zu einer flinken Maus passt schnelle Musik, zu einer Schnecke langsame.'] },
     hoch: { title: 'Hohe und tiefe Töne', lines: ['Große Instrumente klingen meist tief, kleine Instrumente hoch.', 'Der Kontrabass klingt tief, die Geige hoch.', 'Eine große Trommel brummt tief, eine kleine klingt höher.', 'Beim Glockenspiel klingen lange Platten tief und kurze Platten hoch.', 'Ein Bär brummt tief, eine Maus piepst hoch.'] },
-    stimmen: { title: 'Stimmen', lines: ['Die Stimme ist auch ein Instrument. Jeder hat sie immer dabei.', 'Männer singen meist am tiefsten. Frauen singen höher. Kinder singen meist am höchsten.', 'Singt einer allein, heißt das Solo. Singen viele zusammen, ist das ein Chor.', 'Singt die ganze Klasse, ist das Klassengesang.', 'Vor dem Singen: aufrecht stehen oder sitzen und ruhig atmen.'] },
+    stimmen: { title: 'Stimmen', lines: ['Die Stimme ist auch ein Instrument. Jeder hat sie immer dabei.', 'Männer haben meist die tiefsten Stimmen. Frauen- und Kinderstimmen klingen höher.', 'Singt einer allein, heißt das Solo. Singen viele zusammen, ist das ein Chor.', 'Singt die ganze Klasse zusammen, singt sie wie ein Chor.', 'Vor dem Singen: aufrecht stehen oder sitzen und ruhig atmen.'] },
   };
   const POOL3 = [
     { id: 'k2mf1', mod: 'familie', g: 'familien', q: 'Welches Instrument hat Saiten?', o: ['Die Gitarre', 'Die Trommel', 'Die Blockflöte'], a: 0 },
@@ -8459,10 +8459,10 @@ const K12E = (() => {
     { id: 'k2mh5', mod: 'hoch', g: 'hoch', q: 'Welche Platte am Glockenspiel klingt höher?', o: ['Die kurze Platte', 'Die lange Platte'], a: 0 },
     { id: 'k2mh6', mod: 'hoch', g: 'hoch', q: 'Welche Trommel klingt tiefer?', o: ['Die große Trommel', 'Die kleine Trommel'], a: 0 },
     { id: 'k2mv1', mod: 'stimme', g: 'stimmen', q: 'Wer singt meist am tiefsten?', o: ['Ein Mann', 'Eine Frau', 'Ein Kind'], a: 0 },
-    { id: 'k2mv2', mod: 'stimme', g: 'stimmen', q: 'Wer singt meist am höchsten?', o: ['Ein Kind', 'Ein Mann'], a: 0 },
+    { id: 'k2mv2', mod: 'stimme', g: 'stimmen', q: 'Wer hat meist die höhere Stimme?', o: ['Ein Kind', 'Ein Mann'], a: 0 },
     { id: 'k2mv3', mod: 'stimme', g: 'stimmen', q: 'Ein Kind singt ganz allein. Wie heißt das?', o: ['Solo', 'Chor'], a: 0 },
     { id: 'k2mv4', mod: 'stimme', g: 'stimmen', q: 'Viele Menschen singen zusammen. Wie heißt das?', o: ['Chor', 'Solo'], a: 0 },
-    { id: 'k2mv5', mod: 'stimme', g: 'stimmen', q: 'Die ganze Klasse singt zusammen. Wie heißt das?', o: ['Klassengesang', 'Solo'], a: 0 },
+    { id: 'k2mv5', mod: 'stimme', g: 'stimmen', q: 'Die ganze Klasse singt zusammen. Ist das ein Solo?', o: ['Nein, das ist ein Chor.', 'Ja, das ist ein Solo.'], a: 0 },
     { id: 'k2mv6', mod: 'stimme', g: 'stimmen', q: 'Singt eine Frau höher als ein Mann?', o: ['Ja, meistens', 'Nein, nie'], a: 0 },
     { id: 'k2mv7', mod: 'stimme', g: 'stimmen', q: 'Wie stehst du beim Singen?', o: ['Aufrecht und locker', 'Krumm und gebückt'], a: 0 },
     { id: 'k2mv8', mod: 'stimme', g: 'stimmen', q: 'Welches Instrument hat jeder Mensch immer dabei?', o: ['Die Stimme', 'Die Trompete', 'Das Klavier'], a: 0 },
@@ -8503,7 +8503,7 @@ const K12E = (() => {
       'spielen:1': { title: 'So spielt man', steps: ['Überlege: Was muss man tun, damit das Instrument klingt?', 'Gitarre: zupfen. Geige: streichen. Flöte und Trompete: blasen.', 'Trommel und Triangel: schlagen. Rassel: schütteln. Klavier: Tasten drücken.', 'Tippe auf die richtige Antwort.'] },
       'laut:1': { title: 'Laut und leise', steps: ['Stell dir die Musik vor: Wer oder was kommt darin vor?', 'Ein schlafendes Baby braucht leise Musik, ein Gewitter klingt laut.', 'Eine Maus huscht schnell, eine Schnecke kriecht langsam.', 'Tippe auf die passende Antwort.'] },
       'hoch:1': { title: 'Hoch und tief', steps: ['Große Instrumente klingen tief, kleine Instrumente hoch.', 'Bei zwei Bildern vergleichst du die Größe: Das größere klingt tiefer.', 'Beim Glockenspiel klingt die lange Platte tief, die kurze hoch.', 'Tippe auf die richtige Antwort.'] },
-      'stimme:1': { title: 'Stimmen', steps: ['Männer singen meist am tiefsten, Kinder am höchsten.', 'Einer singt allein: Solo. Viele singen zusammen: Chor.', 'Tippe auf die richtige Antwort.'] },
+      'stimme:1': { title: 'Stimmen', steps: ['Männerstimmen sind meist tief, Frauen- und Kinderstimmen höher.', 'Einer singt allein: Solo. Viele singen zusammen: Chor.', 'Tippe auf die richtige Antwort.'] },
     },
     notes: NOTES3, pool: POOL3, gen: gen3,
     events: [
@@ -15316,7 +15316,7 @@ const CHANGELOG = [{"date": "2026-11-10", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '4fc0ae77a45c';
+  const BUILD = '2ae215b5ec82';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
