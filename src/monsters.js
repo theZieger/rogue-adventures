@@ -1143,7 +1143,7 @@ const MONART = (() => {
   }
 
   function jahrmarktwespe(P, o, C) {
-    const yel = C.grad('#FFC93C'), blk = '#2A2433', wing = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#FFFFFF', 0.95], [1, '#9FD4F5', 0.75]]), dark = C.grad('#4A4458');
+    const yel = C.grad('#FFC93C'), amber = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#FFE36A'], [0.45, '#FFC23A'], [1, '#E0891A']]), blk = '#2A2433', wing = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [[0, '#FFFFFF', 0.95], [1, '#9FD4F5', 0.75]]), dark = C.grad('#4A4458');
     let s = `<ellipse cx="70" cy="113" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
     // glassy wings with veins
     s += `<ellipse cx="74" cy="30" rx="13" ry="25" ${F(wing, 2.2)} transform="rotate(30 74 30)"/><ellipse cx="92" cy="42" rx="10" ry="19" ${F(wing, 2.2)} transform="rotate(56 92 42)"/>`;
@@ -1151,12 +1151,12 @@ const MONART = (() => {
     // striped abdomen with stinger
     s += `<path d="M100 96 L114 108 L98 102 Z" ${F('#3A3448', 2)}/>`;
     const clip = C.def('clipPath', '', '<ellipse cx="84" cy="82" rx="25" ry="16.5" transform="rotate(32 84 82)"/>');
-    s += `<ellipse cx="84" cy="82" rx="25" ry="16.5" fill="${yel}" transform="rotate(32 84 82)"/><g clip-path="url(#${clip})" fill="${blk}">${[72, 85, 98].map((x) => `<path d="M${x} 50 q-8 30 4 64 l7 0 q-12 -34 -4 -64 Z" transform="rotate(32 84 82)"/>`).join('')}</g>`;
+    s += `<ellipse cx="84" cy="82" rx="25" ry="16.5" fill="${amber}" transform="rotate(32 84 82)"/><g clip-path="url(#${clip})" fill="${blk}">${[72, 85, 98].map((x) => `<path d="M${x} 50 q-8 30 4 64 l7 0 q-12 -34 -4 -64 Z" transform="rotate(32 84 82)"/>`).join('')}</g>`;
     s += `<ellipse cx="84" cy="82" rx="25" ry="16.5" ${N(3)} transform="rotate(32 84 82)"/><ellipse cx="80" cy="72" rx="9" ry="3" fill="#fff" opacity=".45" transform="rotate(32 80 72)"/>`;
     // legs
     s += `<path d="M56 80 L50 96 L44 100 M64 82 L64 100 L58 106 M72 80 L82 96 L80 104" fill="none" stroke="${OUT}" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 96 L44 100 M64 100 L58 106 M82 96 L80 104" fill="none" stroke="#FFC93C" stroke-width="1.6" stroke-linecap="round"/>`;
     // fuzzy thorax
-    s += `<ellipse cx="62" cy="70" rx="14" ry="12.5" ${F(dark, 2.8)}/><path d="M54 62 l-1 -3 M60 59 l0 -3 M66 60 l1 -3 M72 64 l3 -2" ${N(1.6)}/><path d="M55 66 Q60 62 66 64" fill="none" stroke="#8C84A4" stroke-width="1.6" stroke-linecap="round"/>`;
+    s += `<ellipse cx="62" cy="70" rx="14" ry="12.5" ${F(dark, 2.8)}/><path d="M54 62 l-1 -3 M60 59 l0 -3 M66 60 l1 -3 M72 64 l3 -2" ${N(1.6)}/><path d="M52 66 Q56 60 62 59 Q58 64 56 70 Z M68 60 Q74 62 75 68 Q71 66 67 66 Z" fill="#FFC93C" ${S(1.4)}/><path d="M57 75 Q62 78 68 76" fill="none" stroke="#8C84A4" stroke-width="1.6" stroke-linecap="round"/>`;
     // candy floss she has pinched, on its stick
     s += `<path d="M30 92 L16 46" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M30 92 L16 46" stroke="#F4E6CC" stroke-width="2.4" stroke-linecap="round"/>`;
     s += `<path d="M4 38 Q-1 28 7 24 Q8 14 17 16 Q24 10 29 18 Q37 20 33 30 Q34 40 24 41 Q18 47 11 43 Q3 45 4 38 Z" ${F(gr(C, 'radial', 'cx=".35" cy=".3" r=".8"', [[0, '#FFE3F0'], [0.5, '#FF9EC4'], [1, '#E46A9E']]), 2.4)}/>`;
@@ -2440,28 +2440,32 @@ const MONART = (() => {
   }
 
   function kornkaefer(P, o, C) {
-    const shell = gr(C, 'radial', 'cx=".34" cy=".26" r=".8"', [[0, '#D9925A'], [0.35, '#9A5A30'], [0.85, '#5E3418'], [1, '#6E4020']]), head = C.grad('#7A4826'), grain = C.grad('#EBC45C'), leg = '#4A2A16';
-    let s = `<ellipse cx="62" cy="112" rx="48" ry="4.5" fill="#5A3A22" opacity=".22"/>`;
-    // far legs, darker
-    s += `<path d="M36 86 L28 98 L22 110 M58 90 L54 102 L50 112 M78 88 L86 100 L90 111" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M36 86 L28 98 L22 110 M58 90 L54 102 L50 112 M78 88 L86 100 L90 111" fill="none" stroke="#3A2010" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
-    // ridged wing case with rows of pits
-    s += `<path d="M10 72 Q12 52 40 50 Q66 50 74 66 Q78 84 60 92 Q32 98 16 88 Q8 82 10 72 Z" ${F(shell, 3)}/>`;
-    s += `<path d="M12 72 Q40 66 74 72" ${N(2)}/>`;
-    s += [[0, -12], [1, -6], [2, 6], [3, 12]].map(([k, dy]) => along([18, 72 + dy * 0.9], [42, 70 + dy * 1.2], [68, 72 + dy * 0.7], 7, (x, y) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="1.3" fill="#3A1E0C" opacity=".7"/>`)).join('');
-    s += `<path d="M18 62 Q32 54 50 55" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/><path d="M24 86 Q40 90 56 86" fill="none" stroke="#E8A878" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>`;
-    // near legs with little claws
-    s += `<path d="M44 90 L40 102 L32 112 M64 88 L68 100 L64 112 M74 82 L88 92 L100 104" fill="none" stroke="${OUT}" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 90 L40 102 L32 112 M64 88 L68 100 L64 112 M74 82 L88 92 L100 104" fill="none" stroke="${leg}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
-    // pronotum and head
-    s += `<path d="M66 60 Q78 52 88 60 Q92 72 84 82 Q72 86 66 78 Q62 70 66 60 Z" ${F(shell, 2.6)}/>${[[72, 64], [79, 62], [76, 71], [83, 69], [72, 77]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="#3A1E0C" opacity=".7"/>`).join('')}`;
-    s += `<circle cx="92" cy="64" r="11" ${F(head, 2.6)}/>`;
-    // the long snout bending down to the kernel, elbowed clubbed feelers
-    s += `<path d="M100 68 Q110 74 112 88" fill="none" stroke="${OUT}" stroke-width="9" stroke-linecap="round"/><path d="M100 68 Q110 74 112 88" fill="none" stroke="#8A5230" stroke-width="5" stroke-linecap="round"/><path d="M103 69 Q108 72 110 78" fill="none" stroke="#C98A5A" stroke-width="1.6" stroke-linecap="round"/>`;
-    s += `<path d="M107 74 L104 58 L114 46" ${N(2.2)}/><ellipse cx="115" cy="44" rx="2.6" ry="4" fill="${OUT}" transform="rotate(35 115 44)"/>`;
-    s += eye(92, 61, 6, { dir: [0.4, 0.15], brow: 'angry', bw: 2.8, side: 1, iris: '#C98A1A' });
-    s += `<path d="M86 72 Q90 75 95 72" ${N(2.2)}/>`;
-    // the wheat kernel with a bite out of it
-    s += `<g transform="rotate(-24 104 102)"><path d="M93 102 Q93 95 104 95 Q115 95 115 101 Q112 103 111 106 Q104 109 96 107 Q93 105 93 102 Z" ${F(grain, 2.2)}/><path d="M95 102 Q104 99 111 102" fill="none" stroke="#B8861A" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="99" cy="99" rx="3" ry="1.4" fill="#fff" opacity=".6"/></g>`;
-    s += `<circle cx="96" cy="112" r="1.6" fill="#F5E6B0" ${S(1)}/><circle cx="118" cy="104" r="1.3" fill="#F5E6B0" ${S(1)}/><circle cx="8" cy="104" r="2" fill="#EBC45C" ${S(1.2)}/>`;
+    const chitin = gr(C, 'radial', 'cx=".34" cy=".24" r=".85"', [[0, '#E39A62'], [0.3, '#A85A2C'], [0.75, '#5E2C14'], [1, '#6E3A1E']]), head = gr(C, 'radial', 'cx=".35" cy=".3" r=".8"', [[0, '#D08A56'], [0.5, '#8A4A24'], [1, '#4E2810']]), grain = C.grad('#EBC45C');
+    // jointed leg: thick upper part, thin lower part, knee knob, little foot
+    const leg = (pts, col, k) => { const d = 'M' + pts.map((p) => p.join(' ')).join(' L');
+      return `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${f1(6.5 * k)}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${f1(3 * k)}" stroke-linecap="round" stroke-linejoin="round"/>` +
+        pts.slice(1, -1).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${f1(2.6 * k)}" fill="${col}" ${S(1.4)}/>`).join(''); };
+    let s = `<ellipse cx="60" cy="112" rx="48" ry="4.5" fill="#5A3A22" opacity=".22"/>`;
+    s += leg([[30, 84], [20, 96], [16, 110]], '#3A1C0C', 0.85) + leg([[54, 88], [50, 100], [46, 111]], '#3A1C0C', 0.85);
+    // wing case: grooves, rows of pits, a long gloss stripe
+    s += `<path d="M8 70 Q10 48 38 46 Q64 46 72 62 Q76 82 58 90 Q30 96 14 86 Q6 80 8 70 Z" ${F(chitin, 3)}/>`;
+    s += [[-11, 0.8], [-4, 1], [4, 1], [11, 0.8]].map(([dy, k]) => `<path d="M${14} ${70 + dy} Q40 ${f1(66 + dy * 1.3)} ${70} ${f1(68 + dy * k)}" fill="none" stroke="#3A1608" stroke-width="1.2" opacity=".55"/>`).join('');
+    s += [[-7.5], [0], [7.5]].map(([dy]) => along([16, 70 + dy], [40, 66 + dy * 1.3], [68, 68 + dy * 0.9], 8, (x, y) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="1.1" fill="#2A1006" opacity=".6"/>`)).join('');
+    s += `<path d="M10 70 Q40 63 74 68" ${N(2)}/><path d="M16 58 Q30 50 52 51" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" opacity=".6"/><path d="M58 53 Q64 55 67 59" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".45"/><path d="M20 86 Q38 91 56 87" fill="none" stroke="#F0A878" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>`;
+    s += leg([[44, 88], [38, 100], [30, 111]], '#5A2C14', 1) + leg([[64, 84], [70, 98], [66, 111]], '#5A2C14', 1);
+    // pitted neck shield and big head
+    s += `<path d="M66 56 Q78 48 88 56 Q92 70 84 80 Q72 84 66 76 Q62 66 66 56 Z" ${F(chitin, 2.6)}/>${[[72, 61], [79, 58], [75, 69], [83, 66], [71, 76], [80, 75]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#2A1006" opacity=".6"/>`).join('')}<path d="M70 56 Q76 52 82 53" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/>`;
+    s += `<circle cx="92" cy="58" r="13" ${F(head, 2.8)}/>`;
+    // the snout (Rüssel), straight and long, with elbowed clubbed feelers half way along
+    const sn = 'M101 63 Q110 68 113 82';
+    s += `<path d="${sn}" fill="none" stroke="${OUT}" stroke-width="10" stroke-linecap="round"/><path d="${sn}" fill="none" stroke="#8A4A24" stroke-width="5.5" stroke-linecap="round"/><path d="M103 63 Q108 66 110 72" fill="none" stroke="#E8A878" stroke-width="1.6" stroke-linecap="round"/>`;
+    s += `<path d="M109 71 L115 56 L110 42" ${N(2.2)}/><ellipse cx="109" cy="38.5" rx="2.8" ry="4.2" fill="#5A2C14" ${S(1.6)} transform="rotate(-15 109 38.5)"/>`;
+    // front legs clutching the kernel, snout biting in
+    s += `<g transform="rotate(-18 104 92)"><path d="M93 92 Q93 84 104 84 Q115 84 115 91 Q113 93 112 95 Q104 99 96 97 Q93 95 93 92 Z" ${F(grain, 2.4)}/><path d="M95 91.5 Q104 88.5 112 91.5" fill="none" stroke="#B8861A" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="99" cy="88" rx="3" ry="1.4" fill="#fff" opacity=".7"/></g>`;
+    s += leg([[80, 78], [90, 88], [98, 96]], '#5A2C14', 1) + leg([[76, 82], [82, 96], [94, 102]], '#5A2C14', 1);
+    s += eye(92, 55, 8.5, { dir: [0.35, 0.15], brow: 'angry', bw: 3.2, side: 1, iris: '#D99A1E', lid: '#9A5530', lidY: -0.7, lidRot: 14 });
+    s += `<path d="M84 66 Q89 70 95 67" ${N(2.2)}/>`;
+    s += `<circle cx="116" cy="100" r="1.6" fill="#F5E6B0" ${S(1)}/><circle cx="110" cy="108" r="1.2" fill="#F5E6B0" ${S(1)}/><circle cx="6" cy="102" r="2" fill="#EBC45C" ${S(1.2)}/>`;
     return s;
   }
 
@@ -2667,7 +2671,7 @@ const MONART = (() => {
     s += `<path d="M38 82 Q46 86 56 80 M40 88 Q48 90 58 84 M44 74 Q52 76 60 72" fill="none" stroke="#7FD0E0" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>`;
     s += `<path d="M56 94 L54 101 M68 94 L70 101 M49 101 Q54 98 59 101 M65 101 Q70 98 75 101" ${N(3)}/>`;
     // head
-    s += `<circle cx="82" cy="40" r="18" ${F(black, 3)}/><path d="M70 30 Q76 25 84 25" fill="none" stroke="#6C9BD2" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>`;
+    s += `<circle cx="82" cy="40" r="18" ${F(black, 3)}/><path d="M68 34 Q72 25 84 24" fill="none" stroke="#7FA8E0" stroke-width="2.6" stroke-linecap="round" opacity=".75"/><path d="M66 42 Q66 46 68 49" fill="none" stroke="#8A6AD0" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
     s += `<path d="M98 36 L116 41 L98 47 Z" ${F(C.lin('#4A4F66', '#1C2033'), 2.4)}/><path d="M98 41.5 L112 41.5" ${N(1.4)}/>`;
     // stolen compass dangling from the beak
     s += `<path d="M110 44 Q112 50 108 54" ${N(1.8)}/><circle cx="106" cy="66" r="11" ${F(goldR, 2.6)}/><circle cx="106" cy="66" r="7.5" ${F('#FDFBF4', 1.8)}/>`;
