@@ -533,13 +533,17 @@
   const g = maker('gr2');
   const pad = (n) => String(n).padStart(2, '0');
   const komma = (ct) => `${Math.floor(ct / 100)},${pad(ct % 100)}${NB}€`;
-  // coins and notes in cent; label, colour, coin radius (0 = note)
-  const MONEY = { 1: ['1 ct', '#D9864A', 13], 2: ['2 ct', '#D9864A', 15], 5: ['5 ct', '#D9864A', 17], 10: ['10 ct', '#F2C14E', 16], 20: ['20 ct', '#F2C14E', 18], 50: ['50 ct', '#F2C14E', 20],
-    100: ['1 €', '#C9CEDD', 19], 200: ['2 €', '#C9CEDD', 21], 500: ['5 €', '#C8D3C0', 0], 1000: ['10 €', '#F2A0A0', 0], 2000: ['20 €', '#9CC4F0', 0], 5000: ['50 €', '#F7C58A', 0] };
+  // coins and notes in cent: label, colour, coin radius or note width; sizes follow the real coins and notes.
+  // Euro coins have two metals: 1 € gold ring and silver core, 2 € the other way round.
+  const GOLDC = '#F2C14E', SILVER = '#D3D8E3';
+  const MONEY = { 1: ['1 ct', '#D9864A', 13], 2: ['2 ct', '#D9864A', 15], 5: ['5 ct', '#D9864A', 17], 10: ['10 ct', GOLDC, 16], 20: ['20 ct', GOLDC, 18], 50: ['50 ct', GOLDC, 20],
+    100: ['1 €', GOLDC, 19, SILVER], 200: ['2 €', SILVER, 21, GOLDC], 500: ['5 €', '#C3C7CF', 0, 64], 1000: ['10 €', '#F2A0A0', 0, 67], 2000: ['20 €', '#9CC4F0', 0, 70], 5000: ['50 €', '#F7B877', 0, 73] };
   function moneySVG(vals) {
     let x = 4, y = 4, rowH = 0, b = '';
-    for (const v of vals) { const [label, fill, r] = MONEY[v]; const w = r ? 2 * r : 70, hh = r ? 2 * r : 38; if (x + w > 300) { x = 4; y += rowH + 6; rowH = 0; }
-      b += `<g class="money" data-ct="${v}">${r ? `<circle cx="${x + r}" cy="${y + r}" r="${r}" fill="${fill}" stroke="${OUT}" stroke-width="2"/>${v >= 100 ? `<circle cx="${x + r}" cy="${y + r}" r="${r - 5}" fill="#F2C14E" stroke="${OUT}" stroke-width="1"/>` : ''}` : `<rect x="${x}" y="${y}" width="70" height="38" rx="4" fill="${fill}" stroke="${OUT}" stroke-width="2"/>`}<text x="${x + w / 2}" y="${y + hh / 2 + 4}" text-anchor="middle" font-size="${r ? 11 : 15}" font-weight="700" fill="${OUT}">${label}</text></g>`;
+    for (const v of vals) { const [label, fill, r, extra] = MONEY[v]; const w = r ? 2 * r : extra, hh = r ? 2 * r : Math.round(extra * 0.53); if (x + w > 300) { x = 4; y += rowH + 6; rowH = 0; }
+      const coin = r && `<circle cx="${x + r}" cy="${y + r}" r="${r}" fill="${fill}" stroke="${OUT}" stroke-width="2"/>${extra ? `<circle cx="${x + r}" cy="${y + r}" r="${r - 5}" fill="${extra}" stroke="${OUT}" stroke-width="1"/>` : `<circle cx="${x + r}" cy="${y + r}" r="${r - 2.5}" fill="none" stroke="#fff" stroke-width="1" opacity=".5"/>`}`;
+      const note = !r && `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="4" fill="${fill}" stroke="${OUT}" stroke-width="2"/><path d="M${x + 5} ${y + 5} h${w - 10} v${hh - 10} h${-(w - 10)} Z" fill="none" stroke="#fff" stroke-width="1.2" opacity=".7"/><circle cx="${x + w - 12}" cy="${y + hh / 2}" r="6" fill="#fff" opacity=".45"/>`;
+      b += `<g class="money" data-ct="${v}">${coin || note}<text x="${x + (r ? w / 2 : w / 2 - 5)}" y="${y + hh / 2 + 5}" text-anchor="middle" font-size="${r ? 11 : 15}" font-weight="700" fill="${OUT}">${label}</text></g>`;
       x += w + 6; rowH = Math.max(rowH, hh); }
     return svgOf(304, y + rowH + 4, b, 'Geld');
   }
