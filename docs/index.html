@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="270845762693">
+<meta name="app-version" content="07fde974c603">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -7135,7 +7135,7 @@ const K12 = (() => {
   return { SETS };
 })();
 
-// Klasse 1 und 2, Mathe: Zahlen bis 20 und Formen (Klasse 1); Zahlen bis 100, Malnehmen und Teilen, Größen (Klasse 2).
+// Klasse 1 und 2, Mathe: Zahlen bis 20 und Formen (Klasse 1); Zahlen bis 100, Malnehmen und Teilen, Größen, Formen und Flächen (Klasse 2).
 // Units register themselves in MK.MODES (pattern: src/sachkunde3.js) and share hero and opponents (K12.SETS.mathe).
 // Number tasks marked k12 are typed in by the bot from task.answers; tests/test_k12_mathe.js recomputes those answers
 // from the text and the pictures. Unmarked ones (sums, Zahlenmauer, Bauplan, Zahlenfolge) the bot works out itself.
@@ -7209,6 +7209,17 @@ const K12 = (() => {
 
   /* ================= ZAHLEN BIS 20 (Klasse 1) ================= */
   const z = maker('z20');
+  const sum = (a) => a.reduce((x, y) => x + y, 0);
+  // Rechengeschichten: a things, b come or go. Numbers are digits, so only the words count towards the 12.
+  const STORY_PLUS = [(a, b) => `Auf dem Ast sitzen ${a} Vögel. ${b} kommen dazu. Wie viele sind es jetzt?`, (a, b) => `Im Korb liegen ${a} Äpfel. Opa legt ${b} dazu. Wie viele sind es jetzt?`, (a, b) => `Im Sandkasten sind ${a} Kinder. ${b} kommen dazu. Wie viele sind es jetzt?`];
+  const STORY_MINUS = [(a, b) => `Auf dem Ast sitzen ${a} Vögel. ${b} fliegen weg. Wie viele bleiben?`, (a, b) => `Im Bus sitzen ${a} Kinder. ${b} steigen aus. Wie viele bleiben?`, (a, b) => `Auf dem Teller liegen ${a} Erdbeeren. Mia isst ${b}. Wie viele bleiben?`];
+  // counters in rows of ten: plus shows a red and b blue, minus shows a with the last b crossed out
+  function storySVG(a, b, plus) {
+    const n = plus ? a + b : a, C = 24; let s = '';
+    for (let i = 0; i < n; i++) { const c = i % 10, x = 14 + c * C + (c >= 5 ? 8 : 0), y = 14 + Math.floor(i / 10) * C;
+      s += dot(x, y, 9, plus && i >= a ? BLUE : RED) + (!plus && i >= a - b ? `<path class="gone" d="M${x - 10} ${y - 10} L${x + 10} ${y + 10} M${x + 10} ${y - 10} L${x - 10} ${y + 10}" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>` : ''); }
+    return svgOf(Math.min(n, 10) * C + (n > 5 ? 12 : 4), Math.ceil(n / 10) * C + 4, s, plus ? 'Punkte, blaue kommen dazu' : 'Punkte, durchgestrichene sind weg');
+  }
   function genZ20(mod, t) {
     if (mod === 'menge') {
       const lo = t === 1 ? 1 : 11, hi = t === 1 ? 10 : 20, cols = t === 1 ? 5 : 10; const r = Math.random();
@@ -7259,13 +7270,33 @@ const K12 = (() => {
       else if (plus) { a = rnd(2, 9); b = rnd(11 - a, 9); } else { a = rnd(11, 18); b = rnd(a - 9, 9); }
       return z.num(mod, t, plus ? 'plus' : 'minus', [plus ? a + b : a - b], { text: `${a} ${plus ? '+' : '−'} ${b} = ?`, k12: false });
     }
+    if (mod === 'geschichte') {
+      const plus = Math.random() < 0.5; let a, b;
+      // level 2 goes up to 20 but never across the ten: in Klasse 1 only „Plus und minus“ level 3 does that
+      if (t === 1) { if (plus) { a = rnd(2, 8); b = rnd(2, 10 - a); } else { a = rnd(4, 10); b = rnd(2, a - 1); } }
+      else if (plus) { a = rnd(11, 17); b = rnd(2, 19 - a); } else { a = rnd(12, 19); b = rnd(2, a - 10); }
+      const ask = (plus ? pick(STORY_PLUS) : pick(STORY_MINUS))(a, b);
+      return z.num(mod, t, plus ? 'dazu' : 'weg', [plus ? a + b : a - b], { svg: storySVG(a, b, plus), ask });
+    }
+    if (mod === 'zahlwort') {
+      const n = t === 1 ? rnd(1, 10) : rnd(11, 20);
+      if (Math.random() < 0.5) return z.num(mod, t, 'lesen', [n], { word: true, text: Q.numWord(n) });
+      return z.choice(mod, t, 'schreiben', `Wie schreibt man ${n} als Wort?`, Q.numWord(n), near(n, t === 1 ? 1 : 11, t === 1 ? 10 : 20, 2).map(Q.numWord), { why: `${n} schreibt man ${Q.numWord(n)}.` });
+    }
+    if (mod === 'geld') {
+      if (t === 1) { let vs; do vs = coins([100, 200, 500, 1000], rnd(2, 4), 2000); while (sum(vs) < 300); return z.num(mod, t, 'euro', [sum(vs) / 100], { svg: moneySVG(vs), ask: 'Wie viel Geld ist das?', labels: ['€'] }); }
+      if (Math.random() < 0.6) { let vs; do vs = coins([1, 2, 5, 10], rnd(2, 4), 20); while (sum(vs) < 4); return z.num(mod, t, 'cent', [sum(vs)], { svg: moneySVG(vs), ask: 'Wie viel Geld ist das?', labels: ['ct'] }); }
+      const pay = pick([10, 20]), p = rnd(pay / 2, pay - 1);
+      return z.num(mod, t, 'rueckgeld', [pay - p], { story: `${pick(['Ein Ball', 'Ein Buch', 'Ein Puzzle', 'Eine Mütze'])} kostet ${p}${NB}€. Du gibst ${pay}${NB}€. Wie viel bekommst du zurück?`, labels: ['€'] });
+    }
+    if (mod === 'strahl') { const from = t === 1 ? 0 : 10; let a; do a = from + rnd(1, 9); while (a === from + 5); return z.num(mod, t, 'pfeil', [a], { svg: lineSVG(from, a), ask: 'Welche Zahl zeigt der Pfeil?' }); }
     // mauer: the top stone stays at most 10 on tier 1, at most 20 on tier 2
     let b; do b = [rnd(1, 6), rnd(1, 5), rnd(1, 6)]; while (b[0] + 2 * b[1] + b[2] > (t === 1 ? 10 : 20) || b[0] + 2 * b[1] + b[2] < 6);
     const r = t === 1 ? rnd(1, 2) : Math.random() < 0.7 ? 0 : 1;
     return mauerTask(z, mod, t, b, r, rnd(0, 2 - r));
   }
   register('zahlen20', {
-    grade: 1, title: 'Zahlen bis 20', icon: '🧮', sub: 'Punkte zählen, zerlegen, vergleichen, verdoppeln, plus und minus bis 20',
+    grade: 1, title: 'Zahlen bis 20', icon: '🧮', sub: 'Punkte zählen, Zahlwörter, zerlegen, vergleichen, plus und minus, Rechengeschichten und Geld bis 20',
     modules: {
       menge: { name: 'Blitzblick', icon: '🎲', maxTier: 2, worldCap: [2], dmg: 10 },
       zerlegen: { name: 'Zahlen zerlegen', icon: '🧩', maxTier: 2, worldCap: [2], dmg: 12 },
@@ -7274,9 +7305,13 @@ const K12 = (() => {
       dopp: { name: 'Verdoppeln und halbieren', icon: '🪞', maxTier: 2, worldCap: [2], dmg: 12 },
       rechnen: { name: 'Plus und minus', icon: '➕', maxTier: 3, worldCap: [3], dmg: 14 },
       mauer: { name: 'Zahlenmauern', icon: '🧱', maxTier: 2, worldCap: [2], dmg: 14 },
+      geschichte: { name: 'Rechengeschichten', icon: '📖', maxTier: 2, worldCap: [2], dmg: 12 },
+      zahlwort: { name: 'Zahlwörter', icon: '🔤', maxTier: 2, worldCap: [2], dmg: 10 },
+      geld: { name: 'Geld bis 20 €', icon: '🪙', maxTier: 2, worldCap: [2], dmg: 12 },
+      strahl: { name: 'Zahlenstrahl', icon: '📏', maxTier: 2, worldCap: [2], dmg: 10 },
     },
     attacks: [{ name: 'Würfelwurf', mod: 'menge' }, { name: 'Schüttelbox', mod: 'zerlegen' }, { name: 'Perlenschnur', mod: 'rechnen' }, { name: 'Mauerstein', mod: 'mauer' }],
-    extra: { menge: 'Würfelwurf', zerlegen: 'Schüttelbox', vergleich: 'Waagebalken', nachbar: 'Hausnummer', dopp: 'Spiegelbild', rechnen: 'Perlenschnur', mauer: 'Mauerstein' },
+    extra: { menge: 'Würfelwurf', zerlegen: 'Schüttelbox', vergleich: 'Waagebalken', nachbar: 'Hausnummer', dopp: 'Spiegelbild', rechnen: 'Perlenschnur', mauer: 'Mauerstein', geschichte: 'Bilderbuch', zahlwort: 'Wortkarte', geld: 'Spardose', strahl: 'Hüpfspur' },
     tut: {
       'menge:1': { title: 'Punkte zählen', steps: ['Ein Zehnerfeld hat zwei Reihen mit je 5 Kästchen.', 'Eine volle Reihe sind 5 Punkte. Zähle von 5 aus weiter.', 'Beispiel: oben 5 Punkte, unten 2 Punkte. Das sind 7.'] },
       'menge:2': { title: 'Das Zwanzigerfeld', steps: ['Im Zwanzigerfeld hat jede Reihe 10 Kästchen.', 'Die obere Reihe ist voll: Das sind 10 Punkte.', 'Beispiel: oben 10, unten 4 Punkte. Das sind 14.'] },
@@ -7293,6 +7328,14 @@ const K12 = (() => {
       'rechnen:3': { title: 'Über die 10', steps: ['Rechne zuerst bis zur 10, dann weiter.', 'Beispiel: 8 + 5. Von 8 bis 10 sind es 2, dann noch 3. Also 13.', 'Beispiel: 13 − 5. Von 13 bis 10 sind es 3, dann noch 2 weg. Also 8.', 'Die Umkehraufgabe zu 8 + 5 = 13 ist 13 − 5 = 8.'] },
       'mauer:1': { title: 'Zahlenmauern', steps: ['Zwei Steine nebeneinander ergeben zusammen den Stein darüber.', 'Beispiel: unten 2 und 3, darüber 5.', 'Rechne von unten nach oben.'] },
       'mauer:2': { title: 'Steine unten finden', steps: ['Fehlt ein Stein unten, rechnest du minus.', 'Beispiel: Oben steht 9, unten links 4. Dann fehlt 9 − 4 = 5.', 'Prüfe: 4 + 5 = 9.'] },
+      'geschichte:1': { title: 'Rechengeschichten', steps: ['Lies die Geschichte und schau dir das Bild an.', 'Kommen welche dazu, rechnest du plus: 3 Vögel, 2 kommen dazu. 3 + 2 = 5.', 'Gehen welche weg, rechnest du minus. Die durchgestrichenen Punkte sind weg.'] },
+      'geschichte:2': { title: 'Geschichten bis 20', steps: ['Die Zahlen werden größer, der Weg bleibt gleich.', 'Dazu heißt plus: 12 Äpfel, 5 dazu. 12 + 5 = 17.', 'Weg heißt minus: 15 Kinder, 4 steigen aus. 15 − 4 = 11.'] },
+      'zahlwort:1': { title: 'Zahlwörter bis 10', steps: ['Jede Zahl hat einen Namen: 1 eins, 2 zwei, 3 drei.', 'Weiter geht es mit vier, fünf, sechs, sieben, acht, neun, zehn.', 'Lies das Wort leise und tippe die Zahl.'] },
+      'zahlwort:2': { title: 'Zahlwörter bis 20', steps: ['Nach zehn kommen elf und zwölf.', 'Danach hörst du zuerst die Einer, dann die Zehn: dreizehn ist 13, siebzehn ist 17.', 'Achtung: sechzehn und siebzehn schreibt man kürzer als sechs und sieben. Nach neunzehn kommt zwanzig.'] },
+      'geld:1': { title: 'Euro zählen', steps: ['Es gibt Münzen zu 1 € und 2 € und Scheine zu 5 € und 10 €.', 'Fang mit dem größten Schein an und zähle die anderen dazu.', 'Beispiel: 10 €, 5 € und 2 € sind 17 €.'] },
+      'geld:2': { title: 'Cent und Rückgeld', steps: ['Kleine Münzen sind Cent: 1 ct, 2 ct, 5 ct und 10 ct.', 'Zähle sie wie Euro: 10 ct und 5 ct und 2 ct sind 17 ct.', 'Rückgeld: Der Ball kostet 7 €, du gibst 10 €. Von 7 bis 10 sind es 3 €.'] },
+      'strahl:1': { title: 'Der Zahlenstrahl', steps: ['Auf dem Zahlenstrahl ist jeder Strich eine Zahl weiter.', 'Der lange Strich in der Mitte ist die 5.', 'Beispiel: Der Pfeil steht 2 Striche hinter der 5. Er zeigt auf 7.'] },
+      'strahl:2': { title: 'Zahlenstrahl bis 20', steps: ['Dieser Zahlenstrahl geht von 10 bis 20.', 'Der lange Strich in der Mitte ist die 15.', 'Beispiel: Der Pfeil steht 3 Striche hinter der 10. Er zeigt auf 13.'] },
     },
     notes: {
       menge: { title: 'Zehnerfeld', lines: ['Eine Reihe im Zehnerfeld hat 5 Kästchen.', 'Zwei volle Reihen sind 10.'] },
@@ -7302,12 +7345,17 @@ const K12 = (() => {
       dopp: { title: 'Verdoppeln', lines: ['Verdoppeln: 6 + 6 = 12', 'Halbieren: 12 = 6 + 6'] },
       rechnen: { title: 'Über die 10', lines: ['8 + 5 = 8 + 2 + 3 = 13', '13 − 5 = 13 − 3 − 2 = 8'] },
       mauer: { title: 'Zahlenmauer', lines: ['Zwei Steine zusammen ergeben den Stein darüber.', 'Fehlt unten ein Stein: oben minus daneben.'] },
+      geschichte: { title: 'Rechengeschichten', lines: ['dazu: plus', 'weg: minus'] },
+      zahlwort: { title: 'Zahlwörter', lines: ['eins, zwei, drei, vier, fünf, sechs, sieben, acht, neun, zehn', 'elf, zwölf, dreizehn, vierzehn, fünfzehn, sechzehn, siebzehn, achtzehn, neunzehn, zwanzig'] },
+      geld: { title: 'Geld', lines: ['Münzen: 1 € und 2 €', 'Scheine: 5 € und 10 €', 'kleine Münzen: Cent (ct)'] },
+      strahl: { title: 'Zahlenstrahl', lines: ['Jeder Strich ist eine Zahl weiter.', 'Der lange Strich in der Mitte ist die 5 oder die 15.'] },
     },
     events: [
       ev('Der Würfelbecher', 'Ein Junge würfelt mit zwei Würfeln. Zählst du die Punkte, schenkt er dir einen Trank.', 'Punkte zählen', 'menge', { item: 'trank' }, { hp: -5 }),
       ev('Die Hausnummern', 'An einem Haus fehlt die Nummer. Die Nachbarn fragen dich, welche es ist.', 'Nummer finden', 'nachbar', { xp: 20 }, { xp: 5 }),
       ev('Die Gartenmauer', 'Ein Maurer baut eine Mauer aus Zahlensteinen. Findest du den fehlenden Stein, leiht er dir einen Schild.', 'Stein finden', 'mauer', { item: 'schild' }, { hp: -5 }),
       ev('Die Bäckerei', 'Die Bäckerin zählt Brötchen in Tüten. Rechne mit, dann verrät sie dir eine Eselsbrücke.', 'Mitrechnen', 'rechnen', { item: 'lupe' }, { xp: 5 }),
+      ev('Der Kaufmannsladen', 'Im Klassenzimmer steht ein Kaufmannsladen. Zählst du das Geld in der Kasse, bekommst du einen Schild.', 'Geld zählen', 'geld', { item: 'schild' }, { hp: -5 }),
       restEv('Die Leseecke', 'In der Klasse liegt eine Ecke voller Kissen. Hier ruhst du dich aus.'),
     ],
   }, genZ20);
@@ -7546,12 +7594,27 @@ const K12 = (() => {
       if (t === 3 && Math.random() < 0.3) return h.num(mod, t, 'luecke', [b], { text: `${a + b} − ? = ${a}`, k12: false });
       return h.num(mod, t, 'minus', [a], { text: `${a + b} − ${b} = ?`, k12: false });
     }
+    if (mod === 'vergleich') {
+      // tier 1: Zehner plus Zehner against a number, tier 2: two sums close to each other
+      const split = (s) => { const a = rnd(11, s - 11); return { txt: `${a} + ${s - a}`, v: s }; };
+      let A, B;
+      if (t === 1) { const a = 10 * rnd(1, 8), b = 10 * rnd(1, 10 - a / 10), w = Math.min(100, a + b + pick([0, 0, -10, 10, -1, 1])); A = { txt: `${a} + ${b}`, v: a + b }; B = { txt: `${w}`, v: w }; }
+      else { const s = rnd(30, 95); A = split(s); do B = split(s + pick([0, 0, -2, -1, 1, 2])); while (B.v > 100 || B.txt === A.txt); }
+      [A, B] = shuffle([A, B]); const sign = A.v < B.v ? '<' : A.v > B.v ? '>' : '=';
+      const why = [A, B].filter((x) => x.txt.includes('+')).map((x) => `${x.txt} = ${x.v}. `).join('') + `${A.v} ist ${{ '<': 'kleiner als', '>': 'größer als', '=': 'genauso groß wie' }[sign]} ${B.v}.`;
+      return h.choice(mod, t, t === 1 ? 'zehner' : 'summen', `${A.txt} ___ ${B.txt}`, sign, [], { options: ['<', '>', '='], why });
+    }
+    if (mod === 'mauer') {
+      let b; do b = [rnd(3, 30), rnd(3, 25), rnd(3, 30)]; while (b[0] + 2 * b[1] + b[2] > 100 || b[0] + 2 * b[1] + b[2] < 30);
+      const r = t === 1 ? rnd(1, 2) : Math.random() < 0.7 ? 0 : 1;
+      return mauerTask(h, mod, t, b, r, rnd(0, 2 - r));
+    }
     // dreieck: Rechendreieck, in tier 2 also the Zauberquadrat
     if (t === 2 && Math.random() < 0.5) return magicTask(t);
     const hi = t === 1 ? 25 : 45; return triTask(h, mod, t, [rnd(1, hi), rnd(1, hi), rnd(1, hi)], t === 1 ? rnd(3, 5) : rnd(0, 2));
   }
   register('zahlen100', {
-    grade: 2, title: 'Zahlen bis 100', icon: '🔢', sub: 'Zehner und Einer, Zahlenstrahl, gerade Zahlen, Zahlenfolgen, plus und minus bis 100',
+    grade: 2, title: 'Zahlen bis 100', icon: '🔢', sub: 'Zehner und Einer, Zahlenstrahl, gerade Zahlen, Zahlenfolgen, Zahlenmauern, plus und minus bis 100',
     modules: {
       stelle: { name: 'Zehner und Einer', icon: '🧮', maxTier: 2, worldCap: [2], dmg: 10 },
       zehner: { name: 'Zahlenstrahl', icon: '↔️', maxTier: 1, worldCap: [1], dmg: 10 },
@@ -7560,9 +7623,11 @@ const K12 = (() => {
       plus: { name: 'Plus bis 100', icon: '➕', maxTier: 3, worldCap: [3], dmg: 14 },
       minus: { name: 'Minus bis 100', icon: '➖', maxTier: 3, worldCap: [3], dmg: 14 },
       dreieck: { name: 'Rechendreiecke', icon: '🔺', maxTier: 2, worldCap: [2], dmg: 16 },
+      vergleich: { name: 'Größer oder kleiner', icon: '⚖️', maxTier: 2, worldCap: [2], dmg: 12 },
+      mauer: { name: 'Zahlenmauern bis 100', icon: '🧱', maxTier: 2, worldCap: [2], dmg: 14 },
     },
     attacks: [{ name: 'Zehnerstange', mod: 'stelle' }, { name: 'Hunderterkette', mod: 'plus' }, { name: 'Rückwärtsschritt', mod: 'minus' }, { name: 'Dreieckszacke', mod: 'dreieck' }],
-    extra: { stelle: 'Zehnerstange', zehner: 'Zehnersprung', gerade: 'Paarweise', folge: 'Hüpfkästchen', plus: 'Hunderterkette', minus: 'Rückwärtsschritt', dreieck: 'Dreieckszacke' },
+    extra: { stelle: 'Zehnerstange', zehner: 'Zehnersprung', gerade: 'Paarweise', folge: 'Hüpfkästchen', plus: 'Hunderterkette', minus: 'Rückwärtsschritt', dreieck: 'Dreieckszacke', vergleich: 'Balkenwaage', mauer: 'Ziegelmauer' },
     tut: {
       'stelle:1': { title: 'Zehner und Einer', steps: ['Eine Stange hat 10 Würfel: Das ist ein Zehner. Ein einzelner Würfel ist ein Einer.', 'Zähle erst die Zehner: 10, 20, 30. Dann die Einer dazu.', 'Beispiel: 4 Stangen und 7 Würfel sind 47. 47 hat 4 Zehner und 7 Einer.'] },
       'stelle:2': { title: 'Das Hunderterfeld', steps: ['Das Hunderterfeld hat 10 Reihen mit je 10 Punkten.', 'Jede volle Reihe ist ein Zehner. Zähle die vollen Reihen, dann die Punkte in der letzten Reihe.', 'Bis 100 fehlen die leeren Kreise: 100 − 63 = 37.'] },
@@ -7578,6 +7643,10 @@ const K12 = (() => {
       'minus:2': { title: 'Minus bis 100', steps: ['Über den Zehner: 43 − 5. Bis 40 sind es 3, dann noch 2 weg. Also 38.', 'Zwei Zahlen mit Zehnern: 59 − 25. Erst 59 − 20 = 39, dann − 5 = 34.', 'Prüfe mit Plus: 34 + 25 = 59.'] },
       'minus:3': { title: 'Minus in Schritten', steps: ['65 − 27: Erst die Zehner weg, 65 − 20 = 45.', 'Dann die Einer: 45 − 5 = 40, dann noch 2 weg. Also 38.', 'Bei 65 − ? = 38 fragst du: Was muss weg, damit 38 übrig bleibt?'] },
       'dreieck:1': { title: 'Rechendreiecke', steps: ['Innen stehen drei Zahlen. Außen steht, was die zwei Zahlen innen daneben zusammen ergeben.', 'Beispiel: innen 12 und 7. Außen dazwischen steht 19.', 'Fehlt außen eine Zahl, rechnest du plus.'] },
+      'vergleich:1': { title: 'Größer, kleiner, gleich', steps: ['Rechne zuerst die Plusaufgabe aus: 30 + 40 = 70.', 'Dann vergleiche: 70 ___ 69. 70 ist größer, also 30 + 40 > 69.', 'Die offene Seite von < und > zeigt immer zur größeren Zahl.'] },
+      'vergleich:2': { title: 'Zwei Summen vergleichen', steps: ['Rechne beide Seiten aus.', 'Beispiel: 34 + 25 ___ 31 + 27. Links 59, rechts 58.', '59 ist größer als 58. Also: 34 + 25 > 31 + 27.'] },
+      'mauer:1': { title: 'Zahlenmauern bis 100', steps: ['Zwei Steine nebeneinander ergeben zusammen den Stein darüber.', 'Beispiel: unten 23 und 15, darüber 38.', 'Rechne in Schritten: 23 + 10 = 33, dann + 5 = 38.'] },
+      'mauer:2': { title: 'Steine unten finden', steps: ['Fehlt ein Stein unten, rechnest du minus.', 'Beispiel: Oben steht 52, unten links 24. Dann fehlt 52 − 24 = 28.', 'Prüfe mit Plus: 24 + 28 = 52.'] },
       'dreieck:2': { title: 'Rätsel mit Rechendreiecken', steps: ['Fehlt innen eine Zahl, rechnest du minus: außen 30, innen daneben 12. Dann fehlt 30 − 12 = 18.', 'Im Zauberquadrat ergibt jede Reihe und jede Spalte dieselbe Zahl.', 'Rechne die zwei Zahlen neben dem Fragezeichen zusammen. Was fehlt bis zur Summe, ist die Lösung.'] },
     },
     notes: {
@@ -7588,12 +7657,15 @@ const K12 = (() => {
       plus: { title: 'Plus in Schritten', lines: ['38 + 27 = 38 + 20 + 7', '58 + 7 = 58 + 2 + 5 = 65'] },
       minus: { title: 'Minus in Schritten', lines: ['65 − 27 = 65 − 20 − 7', '45 − 7 = 45 − 5 − 2 = 38'] },
       dreieck: { title: 'Rechendreieck', lines: ['Außen: die zwei Zahlen innen daneben zusammen.', 'Fehlt innen etwas: außen minus innen.'] },
+      vergleich: { title: 'Zeichen', lines: ['< kleiner als, > größer als, = gleich', 'Erst ausrechnen, dann vergleichen.'] },
+      mauer: { title: 'Zahlenmauer', lines: ['Zwei Steine zusammen ergeben den Stein darüber.', 'Fehlt unten ein Stein: oben minus daneben.'] },
     },
     events: [
       ev('Der Bücherturm', 'In der Schulbücherei stapelt ein Bibliothekar Bücher in Zehnerpacken. Zählst du mit, gibt er dir einen Trank.', 'Mitzählen', 'stelle', { item: 'trank' }, { hp: -5 }),
       ev('Das Hüpfkästchen', 'Auf dem Schulhof sind Zahlen auf den Boden gemalt. Ein Mädchen fragt, wie die Reihe weitergeht.', 'Weiterzählen', 'folge', { xp: 20 }, { xp: 5 }),
       ev('Die Schulkasse', 'Die Sekretärin zählt das Geld für den Wandertag. Rechnest du mit, verrät sie dir eine Eselsbrücke.', 'Mitrechnen', 'plus', { item: 'lupe' }, { xp: 5 }),
       ev('Das Rätselheft', 'Auf einer Bank liegt ein Heft mit Rechendreiecken. Löst du eins, findest du darin einen Schild.', 'Rätsel lösen', 'dreieck', { item: 'schild' }, { hp: -5 }),
+      ev('Die Schulhofmauer', 'Der Hausmeister repariert die Mauer am Schulhof. Auf den Steinen stehen Zahlen, einer fehlt.', 'Stein finden', 'mauer', { xp: 20 }, { xp: 5 }),
       restEv('Die Bank im Schulgarten', 'Unter dem Apfelbaum im Schulgarten steht eine Bank. Du ruhst dich aus.'),
     ],
   }, genZ100);
@@ -7640,21 +7712,35 @@ const K12 = (() => {
       const d = t === 1 ? pick(CORE) : pick([3, 4, 6, 7, 8, 9]), q = rnd(1, 10);
       return m.num(mod, t, 'teilen', [q], t === 1 ? { text: `${d * q} : ${d} = ?`, k12: false } : { text: `${d * q} : ${d} = ?`, ask: `Tipp: ? · ${d} = ${d * q}`, k12: false });
     }
+    if (mod === 'strategie') {
+      let a, b; do { a = rnd(2, 10); b = rnd(2, 10); } while (a === b);
+      if (t === 1) {
+        if (Math.random() < 0.5) return m.num(mod, t, 'tausch', [a], { text: `${a} · ${b} = ${b} · ?`, ask: 'Tausche die Zahlen. Das Ergebnis bleibt gleich.' });
+        return m.choice(mod, t, 'tauschwahl', `Welche Aufgabe ist die Tauschaufgabe zu ${a} · ${b}?`, `${b} · ${a}`, [`${a} + ${b}`, `${a * b} : ${a}`], { why: `Bei der Tauschaufgabe tauschen die Zahlen ihren Platz: ${a} · ${b} = ${b} · ${a} = ${a * b}.` });
+      }
+      const r = Math.random();
+      if (r < 0.35) return m.choice(mod, t, 'umkehr', `Welche Aufgabe ist die Umkehraufgabe zu ${a} · ${b} = ${a * b}?`, `${a * b} : ${b}`, [`${a * b} − ${b}`, `${b} · ${a}`], { why: `Die Umkehraufgabe rechnet zurück: ${a * b} : ${b} = ${a}.` });
+      // Quadratzahl and its neighbours: 7 · 6 = 6 · 6 + 6
+      const q = rnd(3, 9), n = q + pick([-1, 1]);
+      if (r < 0.65) return m.num(mod, t, 'quadrat', [n * q], { text: `${n} · ${q} = ?`, ask: `Tipp: ${q} · ${q} = ${q * q}` });
+      return m.num(mod, t, 'quadratluecke', [q], { text: n > q ? `${n} · ${q} = ${q} · ${q} + ?` : `${n} · ${q} = ${q} · ${q} − ?`, ask: 'Welche Zahl fehlt?' });
+    }
     // sach: tier 1 malnehmen, tier 2 teilen
     if (t === 1) { const a = rnd(2, 9), b = pick(CORE); const [story, labels] = pick(STORIES_MAL)(a, b); return m.num(mod, t, 'mal', [a * b], { story, labels, op: '·' }); }
     const k = pick([2, 3, 4, 5, 10]), q = rnd(2, 9); return m.num(mod, t, 'teilen', [q], { story: pick(STORIES_TEIL)(k * q, k), op: ':' });
   }
   register('malteilen', {
-    grade: 2, title: 'Malnehmen und Teilen', icon: '✖️', sub: 'Die Reihen mit 2, 5 und 10, Nachbaraufgaben, Punktefelder, teilen und Sachaufgaben',
+    grade: 2, title: 'Malnehmen und Teilen', icon: '✖️', sub: 'Die Reihen mit 2, 5 und 10, Nachbar-, Tausch- und Umkehraufgaben, Punktefelder, teilen und Sachaufgaben',
     modules: {
       reihe: { name: 'Reihen 2, 5, 10', icon: '✖️', maxTier: 2, worldCap: [2], dmg: 12 },
       nachbar: { name: 'Nachbaraufgaben', icon: '🔄', maxTier: 2, worldCap: [2], dmg: 14 },
       bild: { name: 'Punktefelder', icon: '🔘', maxTier: 1, worldCap: [1], dmg: 10 },
       teilen: { name: 'Teilen', icon: '➗', maxTier: 2, worldCap: [2], dmg: 14 },
       sach: { name: 'Sachaufgaben', icon: '🧺', maxTier: 2, worldCap: [2], dmg: 16 },
+      strategie: { name: 'Tauschen und Umkehren', icon: '🪞', maxTier: 2, worldCap: [2], dmg: 14 },
     },
     attacks: [{ name: 'Zehnerpack', mod: 'reihe' }, { name: 'Eierkarton', mod: 'bild' }, { name: 'Kuchenteller', mod: 'teilen' }, { name: 'Einkaufskorb', mod: 'sach' }],
-    extra: { reihe: 'Zehnerpack', nachbar: 'Nachbarhaus', bild: 'Eierkarton', teilen: 'Kuchenteller', sach: 'Einkaufskorb' },
+    extra: { reihe: 'Zehnerpack', nachbar: 'Nachbarhaus', bild: 'Eierkarton', teilen: 'Kuchenteller', sach: 'Einkaufskorb', strategie: 'Wendekarte' },
     tut: {
       'reihe:1': { title: 'Malaufgaben', steps: ['3 · 5 heißt: dreimal die 5. Also 5 + 5 + 5 = 15.', 'In der Reihe mit 10 hängst du eine 0 an: 4 · 10 = 40.', 'Die Fünferreihe ist die Hälfte der Zehnerreihe: 4 · 5 = 20, die Hälfte von 40.'] },
       'reihe:2': { title: 'Die fehlende Zahl', steps: ['Bei 5 · ? = 35 fragst du: Wie oft passt die 5 in 35?', 'Zähle in Fünferschritten: 5, 10, 15, 20, 25, 30, 35. Das sind 7 Schritte.', 'Also 5 · 7 = 35.'] },
@@ -7664,6 +7750,8 @@ const K12 = (() => {
       'teilen:1': { title: 'Teilen', steps: ['20 : 5 heißt: 20 in Fünfer aufteilen.', 'Frag dich: Wie oft passt die 5 in die 20? 4 · 5 = 20.', 'Also 20 : 5 = 4.'] },
       'teilen:2': { title: 'Teilen mit der Umkehraufgabe', steps: ['Zu jeder Geteiltaufgabe gehört eine Malaufgabe.', '24 : 4 = ? Frag dich: ? · 4 = 24.', '6 · 4 = 24. Also 24 : 4 = 6.'] },
       'sach:1': { title: 'Sachaufgaben', steps: ['Lies genau: Wie viele Gruppen gibt es, und wie viele sind in jeder?', '4 Teller mit je 5 Äpfeln: 4 · 5 = 20.', 'Schreib nur die Zahl in das Feld.'] },
+      'strategie:1': { title: 'Die Tauschaufgabe', steps: ['Beim Malnehmen darfst du die Zahlen tauschen. Das Ergebnis bleibt gleich.', 'Beispiel: 3 · 5 = 15 und 5 · 3 = 15.', 'Das hilft: 9 · 2 ist schwer, 2 · 9 = 18 kennst du.'] },
+      'strategie:2': { title: 'Quadrataufgaben und Umkehraufgaben', steps: ['Bei einer Quadrataufgabe sind beide Zahlen gleich: 6 · 6 = 36.', 'Die Nachbarn: 7 · 6 ist eine 6 mehr, also 36 + 6 = 42. 5 · 6 ist eine 6 weniger, also 30.', 'Die Umkehraufgabe zu 4 · 6 = 24 ist 24 : 6 = 4.'] },
       'sach:2': { title: 'Sachaufgaben mit Teilen', steps: ['Wird etwas gerecht verteilt, rechnest du geteilt.', '15 Bonbons an 3 Kinder: 15 : 3 = 5. Jedes Kind bekommt 5.', 'Prüfe mit der Malaufgabe: 3 · 5 = 15.'] },
     },
     notes: {
@@ -7672,6 +7760,7 @@ const K12 = (() => {
       bild: { title: 'Punktefeld', lines: ['Reihen mal Punkte in einer Reihe.', '3 Reihen mit je 4 Punkten: 3 · 4'] },
       teilen: { title: 'Teilen', lines: ['24 : 4 = 6, denn 6 · 4 = 24.'] },
       sach: { title: 'Sachaufgaben', lines: ['je … zusammen: mal', 'gerecht verteilen: geteilt'] },
+      strategie: { title: 'Tauschen und Umkehren', lines: ['Tauschaufgabe: 3 · 5 = 5 · 3', '7 · 6 = 6 · 6 + 6', 'Umkehraufgabe: 4 · 6 = 24, 24 : 6 = 4'] },
     },
     events: [
       ev('Der Eierstand', 'Auf dem Wochenmarkt packt eine Bäuerin Eier in Kartons. Zählst du mit, schenkt sie dir einen Trank.', 'Mitzählen', 'bild', { item: 'trank' }, { hp: -5 }),
@@ -7759,6 +7848,7 @@ const K12 = (() => {
   const EVENTS = [['Du würfelst eine 7.', 'unmöglich'], ['Du würfelst eine Zahl unter 7.', 'sicher'], ['Du würfelst eine 6.', 'möglich'], ['Nach Montag kommt Dienstag.', 'sicher'], ['Morgen regnet es.', 'möglich'],
     ['Eine Katze fliegt zum Mond.', 'unmöglich'], ['Eine Münze zeigt Zahl.', 'möglich'], ['Nach dem Winter kommt der Frühling.', 'sicher'], ['Ein Jahr hat 13 Monate.', 'unmöglich'], ['Du würfelst eine gerade Zahl.', 'möglich']];
   const SMU = ['sicher', 'möglich', 'unmöglich'];
+  const PAIRS = [(a, b) => `Du hast ${a} Hosen und ${b} T-Shirts. Wie viele Paare kannst du bilden?`, (a, b) => `Du hast ${a} Mützen und ${b} Schals. Wie viele Paare kannst du bilden?`, (a, b) => `${a} Sorten Eis, ${b} Sorten Soße. Wie viele Paare kannst du bilden?`];
   function genGr2(mod, t) {
     if (mod === 'geld') {
       const r = Math.random();
@@ -7831,6 +7921,12 @@ const K12 = (() => {
       if (Math.random() < 0.5) return g.num(mod, t, 'saeule', [vals[i]], { fig: fig(D.read(say(D.rows[i]))), rows: D.rows, vals });
       return g.num(mod, t, 'mehr', [vals[hi] - vals[lo]], { fig: fig(D.diff(say(D.rows[hi]), say(D.rows[lo]))), rows: D.rows, vals });
     }
+    if (mod === 'kombi') {
+      if (t === 1) { const a = rnd(2, 4), b = rnd(2, 5); return g.num(mod, t, 'paare', [a * b], { story: pick(PAIRS)(a, b) }); }
+      if (Math.random() < 0.5) { const n = rnd(3, 6); return g.num(mod, t, 'hand', [n * (n - 1) / 2], { story: `${n} Kinder. Jedes gibt jedem anderen einmal die Hand. Wie viele Handschläge?` }); }
+      const ds = shuffle(range(1, 9)).slice(0, rnd(3, 4)).sort(); const list = ds.slice(0, -1).join(', ') + ' und ' + ds[ds.length - 1];
+      return g.num(mod, t, 'ziffern', [ds.length * (ds.length - 1)], { story: `Zweistellige Zahlen aus ${list}, jede Ziffer nur einmal. Wie viele gibt es?` });
+    }
     // zufall: Glücksrad from the Jahrmarkt, or a sentence from everyday life
     if (Math.random() < 0.35) { const [s, a] = pick(EVENTS); return g.choice(mod, t, 'satz', `${s} Sicher, möglich oder unmöglich?`, a, [], { options: SMU, why: { sicher: 'Das passiert auf jeden Fall.', möglich: 'Das kann passieren, muss aber nicht.', unmöglich: 'Das kann nie passieren.' }[a] }); }
     const n = pick([4, 6, 8]), cols = shuffle(Object.keys(COLORS)), kind = pick(SMU), k = rnd(2, 3);
@@ -7841,7 +7937,7 @@ const K12 = (() => {
       why: cnt === n ? `Alle Felder sind ${COLORS[c].toLowerCase()}.` : cnt ? `${cnt} von ${n} Feldern sind ${COLORS[c].toLowerCase()}.` : `Kein Feld ist ${COLORS[c].toLowerCase()}.` });
   }
   register('groessen2', {
-    grade: 2, title: 'Geld, Länge und Zeit', icon: '📏', sub: 'Euro und Cent, Zentimeter und Meter, Uhr und Kalender, Strichlisten und Zufall',
+    grade: 2, title: 'Geld, Länge und Zeit', icon: '📏', sub: 'Euro und Cent, Zentimeter und Meter, Uhr und Kalender, Strichlisten, Zufall und Kombinationen',
     modules: {
       geld: { name: 'Euro und Cent', icon: '🪙', maxTier: 2, worldCap: [2], dmg: 12 },
       laenge: { name: 'Längen', icon: '📏', maxTier: 2, worldCap: [2], dmg: 12 },
@@ -7849,9 +7945,10 @@ const K12 = (() => {
       kalender: { name: 'Tage und Monate', icon: '📅', maxTier: 2, worldCap: [2], dmg: 10 },
       daten: { name: 'Strichliste und Diagramm', icon: '📊', maxTier: 2, worldCap: [2], dmg: 12 },
       zufall: { name: 'Sicher oder möglich', icon: '🎲', maxTier: 1, worldCap: [1], dmg: 10 },
+      kombi: { name: 'Kombinationen', icon: '🔀', maxTier: 2, worldCap: [2], dmg: 14 },
     },
     attacks: [{ name: 'Sparschwein', mod: 'geld' }, { name: 'Maßband', mod: 'laenge' }, { name: 'Weckerklingeln', mod: 'uhr' }, { name: 'Säulenturm', mod: 'daten' }],
-    extra: { geld: 'Sparschwein', laenge: 'Maßband', uhr: 'Weckerklingeln', kalender: 'Kalenderblatt', daten: 'Säulenturm', zufall: 'Kreiselwurf' },
+    extra: { geld: 'Sparschwein', laenge: 'Maßband', uhr: 'Weckerklingeln', kalender: 'Kalenderblatt', daten: 'Säulenturm', zufall: 'Kreiselwurf', kombi: 'Kleiderschrank' },
     tut: {
       'geld:1': { title: 'Geld zählen', steps: ['Fang mit dem größten Schein oder der größten Münze an.', 'Zähle dann die kleineren dazu.', 'Beispiel: 10 €, 5 € und 2 € sind 17 €.'] },
       'geld:2': { title: 'Euro und Cent', steps: ['1 € = 100 ct. 1,50 € heißt 1 Euro und 50 Cent, also 150 ct.', 'Wechseln: 1 € sind zum Beispiel 5 Münzen zu 20 ct.', 'Rückgeld: Der Ball kostet 13 €, du gibst 20 €. Von 13 bis 20 sind es 7 €.'] },
@@ -7863,6 +7960,8 @@ const K12 = (() => {
       'kalender:2': { title: 'Monate und Kalender', steps: ['Ein Jahr hat 12 Monate, von Januar bis Dezember.', 'Im Kalenderblatt steht jeder Wochentag in einer Spalte.', 'Suche das Datum und schau oben in der Spalte nach dem Wochentag.'] },
       'daten:1': { title: 'Strichlisten', steps: ['In einer Strichliste ist jeder Strich ein Kind.', 'Vier Striche und ein Strich quer sind 5.', 'Zähle in Fünfern und dann die einzelnen Striche dazu: 5, 10, 11, 12.'] },
       'daten:2': { title: 'Säulendiagramme', steps: ['Geh vom oberen Ende der Säule waagerecht nach links zur Zahl.', 'Die Linien zählen in Zweierschritten: 2, 4, 6, 8.', '„Wie viele mehr“: Ziehe den kleineren Wert vom größeren ab.'] },
+      'kombi:1': { title: 'Kombinationen', steps: ['2 Hosen und 3 T-Shirts: Zu jeder Hose passt jedes T-Shirt.', 'Zur ersten Hose gibt es 3 Paare, zur zweiten noch einmal 3.', 'Zusammen sind es 3 + 3 = 6 Paare, also 2 · 3 = 6.'] },
+      'kombi:2': { title: 'Alle Möglichkeiten finden', steps: ['Schreib die Möglichkeiten der Reihe nach auf, dann fehlt keine.', 'Händeschütteln bei 4 Kindern: A mit B, C, D. B mit C, D. C mit D. Das sind 3 + 2 + 1 = 6.', 'Zahlen aus 1, 2 und 3: 12, 13, 21, 23, 31, 32. Das sind 6.'] },
       'zufall:1': { title: 'Sicher, möglich, unmöglich', steps: ['Sicher: Es passiert auf jeden Fall.', 'Möglich: Es kann passieren, muss aber nicht.', 'Unmöglich: Es kann nie passieren. Auf dem Glücksrad zählst du die Felder jeder Farbe.'] },
     },
     notes: {
@@ -7872,15 +7971,148 @@ const K12 = (() => {
       kalender: { title: 'Zeit', lines: ['1 Woche = 7 Tage, 1 Jahr = 12 Monate', '1 Tag = 24 Stunden, 1 Stunde = 60 Minuten'] },
       daten: { title: 'Strichliste', lines: ['Vier Striche und einer quer sind 5.'] },
       zufall: { title: 'Zufall', lines: ['sicher: passiert immer', 'möglich: kann passieren', 'unmöglich: passiert nie'] },
+      kombi: { title: 'Kombinationen', lines: ['2 Hosen, 3 T-Shirts: 2 · 3 = 6 Paare', 'Der Reihe nach aufschreiben, dann fehlt keine.'] },
     },
     events: [
       ev('Der Kiosk', 'Am Kiosk vor der Schule zählt die Verkäuferin ihre Kasse. Zählst du mit, schenkt sie dir einen Trank.', 'Mitzählen', 'geld', { item: 'trank' }, { hp: -5 }),
       ev('Die Schulglocke', 'Der Hausmeister will wissen, wie spät es auf der großen Uhr ist. Er gibt dir einen Schild für die richtige Zeit.', 'Uhr lesen', 'uhr', { item: 'schild' }, { hp: -5 }),
       ev('Der Klassenkalender', 'An der Tafel hängt der Klassenkalender. Die Lehrerin fragt nach einem Tag und verrät dir eine Eselsbrücke.', 'Antworten', 'kalender', { item: 'lupe' }, { xp: 5 }),
       ev('Die Umfrage', 'Die Klasse hat eine Strichliste gemacht. Liest du sie richtig, bekommst du eine Chilischote.', 'Liste lesen', 'daten', { item: 'keks' }, { hp: -5 }),
+      ev('Die Garderobe', 'In der Garderobe hängen Mützen und Schals. Ein Junge fragt, wie viele Paare er bilden kann.', 'Mitzählen', 'kombi', { xp: 20 }, { xp: 5 }),
       restEv('Die Hofpause', 'Es klingelt zur Hofpause. Du setzt dich auf die Treppe und ruhst dich aus.'),
     ],
   }, genGr2);
+
+  /* ================= FORMEN UND FLÄCHEN (Klasse 2) ================= */
+  const f2 = maker('form2');
+  const deg = (a) => [Math.cos(a * Math.PI / 180), -Math.sin(a * Math.PI / 180)];
+  const r1 = (v) => Math.round(v * 10) / 10;
+  // squares on a grid like Die Baustelle; axes: [name, colour, vertical] through the middle of the grid
+  function axisSVG(cells, R, Cn, axes) {
+    const P = 16, W = Cn + 2, H = R + 2; let b = '';
+    for (let i = 0; i <= W; i++) b += `<path d="M${i * P} 0 V${H * P}" stroke="#C9D3E8"/>`;
+    for (let i = 0; i <= H; i++) b += `<path d="M0 ${i * P} H${W * P}" stroke="#C9D3E8"/>`;
+    b += cells.map(([r, c]) => `<rect class="sq" x="${(c + 1) * P}" y="${(r + 1) * P}" width="${P}" height="${P}" fill="#FFE08A" stroke="${OUT}" stroke-width="1.5"/>`).join('');
+    b += axes.map(([name, col, vert]) => { const [x1, y1, x2, y2] = vert ? [W * P / 2, 0, W * P / 2, H * P] : [0, H * P / 2, W * P, H * P / 2];
+      return `<path class="axis" data-name="${name}" d="M${x1} ${y1} L${x2} ${y2}" stroke="${col}" stroke-width="3" stroke-dasharray="6 4"/><text x="${vert ? x1 + 8 : x2 - 6}" y="${vert ? 13 : y1 - 5}" text-anchor="${vert ? 'start' : 'end'}" font-size="13" font-weight="700" fill="${col}">${name}</text>`; }).join('');
+    return svgOf(W * P, H * P, b, 'Figur mit zwei Linien', height(150));
+  }
+  // a connected half next to the axis (columns 0 … k−1, touching column k−1), mirrored to the right
+  function symShape(R, k) {
+    const has = (cs, p) => cs.some((q) => q[0] === p[0] && q[1] === p[1]);
+    const L = [[rnd(0, R - 1), k - 1]], n = rnd(3, 6);
+    while (L.length < n) { const [r, c] = pick(L); const p = pick([[r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]]); if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !has(L, p)) L.push(p); }
+    return L.concat(L.map(([r, c]) => [r, 2 * k - 1 - c]));
+  }
+  // an angle from the corner (0, 0): legs as lines, so the test can measure them
+  function angleSVG(a, rot) {
+    const leg = (d) => { const [x, y] = deg(d); return `<line class="leg" x1="0" y1="0" x2="${r1(x * 52)}" y2="${r1(y * 52)}" stroke="${OUT}" stroke-width="4" stroke-linecap="round"/>`; };
+    return svgOf(124, 124, `<g transform="translate(62 62)">${leg(rot)}${leg(rot + a)}<circle cx="0" cy="0" r="4" fill="${RED}" stroke="${OUT}" stroke-width="1.5"/></g>`, 'Winkel');
+  }
+  // Gerade: arrow at both ends; Strecke: a point at both ends; Strahl: a point and an arrow
+  const LINES = { gerade: ['tip', 'tip'], strecke: ['pt', 'pt'], strahl: ['pt', 'tip'] };
+  const LNAME = { gerade: ['Gerade', 'Geraden', 'die'], strecke: ['Strecke', 'Strecken', 'die'], strahl: ['Strahl', 'Strahlen', 'den'] };
+  function lineG(kind, a, cx, cy) {
+    const [dx, dy] = deg(a), L = 48; let b = `<path d="M${r1(cx - dx * L)} ${r1(cy - dy * L)} L${r1(cx + dx * L)} ${r1(cy + dy * L)}" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`;
+    LINES[kind].forEach((end, i) => { const s = i ? 1 : -1, x = cx + s * dx * L, y = cy + s * dy * L;
+      b += end === 'pt' ? `<circle class="pt" cx="${r1(x)}" cy="${r1(y)}" r="4.5" fill="${RED}" stroke="${OUT}" stroke-width="1.5"/>`
+        : `<path class="tip" d="M${r1(x + s * dx * 10)} ${r1(y + s * dy * 10)} L${r1(x - dy * 6)} ${r1(y + dx * 6)} L${r1(x + dy * 6)} ${r1(y - dx * 6)} Z" fill="${OUT}" stroke="${OUT}" stroke-width="1.5" stroke-linejoin="round"/>`; });
+    return `<g class="lin">${b}</g>`;
+  }
+  const lineSVG1 = (kind) => svgOf(140, 84, lineG(kind, pick([0, 15, -15, 30, -30]), 70, 42), 'Linie');
+  // a Würfel or Quader big enough to mark one corner, edge or face; the marked part is the only element with class="mark"
+  const CUBE = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
+  function solidMarkSVG(quader, mark) {
+    const [dx, dy, dz, k] = quader ? [2, 1, 1.2, 2.2] : [1, 1, 1, 3], P = (x, y, z) => iso(x * dx, y * dy, z * dz, k);
+    const top = [[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], front = [[0, 1, 0], [1, 1, 0], [1, 1, 1], [0, 1, 1]], right = [[1, 0, 0], [1, 1, 0], [1, 1, 1], [1, 0, 1]];
+    let m = '';
+    if (mark === 'Ecke') { const [x, y] = P(...pick([[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1], [0, 1, 0], [1, 1, 0], [1, 0, 0]])).split(' '); m = `<circle class="mark" cx="${x}" cy="${y}" r="6" fill="${RED}" stroke="${OUT}" stroke-width="1.5"/>`; }
+    if (mark === 'Kante') { const [p, q] = pick([[[0, 0, 1], [1, 0, 1]], [[1, 0, 1], [1, 1, 1]], [[0, 1, 1], [1, 1, 1]], [[0, 0, 1], [0, 1, 1]], [[0, 1, 0], [1, 1, 0]], [[1, 1, 0], [1, 0, 0]], [[0, 1, 0], [0, 1, 1]], [[1, 1, 0], [1, 1, 1]], [[1, 0, 0], [1, 0, 1]]]); m = `<path class="mark" d="M${P(...p)} L${P(...q)}" stroke="${RED}" stroke-width="6" stroke-linecap="round"/>`; }
+    if (mark === 'Fläche') m = `<polygon class="mark" points="${pick([top, front, right]).map((p) => P(...p)).join(' ')}" fill="${RED}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
+    const w = (dx + dy) * 12 * k, hgt = ((dx + dy) * 7 + dz * 14) * k;
+    return svgOf(w + 16, hgt + 16, `<g transform="translate(${dy * 12 * k + 8} ${dz * 14 * k + 8})">${box(0, 0, 0, dx, dy, dz, k, CUBE)}${m}</g>`, quader ? 'Quader' : 'Würfel', height(130));
+  }
+  const EKF = { Ecken: [8, 'Ecke'], Kanten: [12, 'Kante'], Flächen: [6, 'Fläche'] };
+  function genForm2(mod, t) {
+    if (mod === 'spiegel') {
+      if (t === 1) { const w = Q.BAU.generate('spiegel', 1); return f2.choice(mod, t, 'pruefen', w.q, w.answer, w.options.filter((o) => o !== w.answer), { options: w.options, pic: w.pic, cols: 2, why: w.why }); }
+      // exactly one of the two lines is a Spiegelachse; the figure reaches across both, so neither is ruled out at a glance
+      const R = 4, k = 3; let cells; do cells = symShape(R, k); while (cells.every(([r, c]) => cells.some(([r2, c2]) => r2 === R - 1 - r && c2 === c)) || !cells.some(([r]) => r < R / 2) || !cells.some(([r]) => r >= R / 2));
+      const flat = Math.random() < 0.5, shown = flat ? cells.map(([r, c]) => [c, r]) : cells;
+      const [right, other] = shuffle(['A', 'B']); const cols = shuffle([RED, BLUE]);
+      const svg = flat ? axisSVG(shown, 2 * k, R, [[right, cols[0], false], [other, cols[1], true]]) : axisSVG(shown, R, 2 * k, [[right, cols[0], true], [other, cols[1], false]]);
+      return f2.choice(mod, t, 'achse', 'Welche Linie ist die Spiegelachse?', `Linie ${right}`, [`Linie ${other}`], { options: ['Linie A', 'Linie B'], pic: pic(svg), cols: 2, why: `Klappst du die Figur an Linie ${right} um, passen beide Hälften genau aufeinander.` });
+    }
+    if (mod === 'lage') {
+      if (t === 2) { const w = Q.BAU.generate('lage', 1); return f2.choice(mod, t, 'parallel', w.q, w.answer, [], { options: w.options, pic: w.pic, why: w.why }); }
+      const rot = pick([0, 15, 30, 45, 60, 90, 120, 150, 180, 210]), wrong = () => pick([45, 60, 120, 135]);
+      if (Math.random() < 0.5) { const right = Math.random() < 0.5; return f2.choice(mod, t, 'winkel', 'Ist das ein rechter Winkel?', right ? 'ja' : 'nein', [right ? 'nein' : 'ja'], { options: ['ja', 'nein'], pic: pic(angleSVG(right ? 90 : wrong(), rot)), cols: 2, why: right ? 'Die Ecke passt genau wie die Ecke eines Blatts Papier.' : 'Die Ecke ist spitzer oder stumpfer als die Ecke eines Blatts Papier.' }); }
+      const ws = shuffle([45, 60, 120, 135]).slice(0, 2); const opts = [90].concat(ws).map((a) => angleSVG(a, pick([0, 30, 90, 180])));
+      return f2.choice(mod, t, 'finden', 'Tippe auf den rechten Winkel.', opts[0], opts.slice(1), { svgOpts: true, why: 'So sieht ein rechter Winkel aus:' });
+    }
+    if (mod === 'linien') {
+      const kinds = Object.keys(LINES);
+      if (t === 1) { const k = pick(kinds); return f2.choice(mod, t, 'name', 'Wie heißt diese Linie?', LNAME[k][0], kinds.filter((x) => x !== k).map((x) => LNAME[x][0]), { options: kinds.map((x) => LNAME[x][0]), pic: pic(lineSVG1(k)), why: { gerade: 'Pfeile an beiden Enden: Die Gerade geht immer weiter.', strecke: 'Zwei Endpunkte: Die Strecke hört an beiden Enden auf.', strahl: 'Ein Anfangspunkt und ein Pfeil: Der Strahl geht nur in eine Richtung weiter.' }[k] }); }
+      const k = pick(kinds);
+      if (Math.random() < 0.5) { const opts = [k].concat(kinds.filter((x) => x !== k)).map(lineSVG1); return f2.choice(mod, t, 'finden', `Tippe auf ${LNAME[k][2]} ${LNAME[k][0]}.`, opts[0], opts.slice(1), { svgOpts: true, why: `So sieht ${LNAME[k][2] === 'den' ? 'der' : 'die'} ${LNAME[k][0]} aus:` }); }
+      let ks; do ks = Array.from({ length: rnd(4, 6) }, () => pick(kinds)); while (!ks.includes(k));
+      const g = ks.map((x, i) => lineG(x, pick([0, 20, -20]), 70 + (i % 2) * 140, 34 + Math.floor(i / 2) * 64)).join('');
+      return f2.num(mod, t, 'zaehlen', [ks.filter((x) => x === k).length], { svg: svgOf(280, Math.ceil(ks.length / 2) * 64 + 4, g, 'Viele Linien', height(170)), ask: `Wie viele ${LNAME[k][1]} siehst du?` });
+    }
+    if (mod === 'bauen') {
+      const w = Q.BAU.generate(t === 1 ? 'wz' : 'fq', t === 1 ? 2 : 1);
+      if (t === 1) return f2.num(mod, t, 'bauplan', w.answers, { svg: w.svg, ask: w.ask, plan: w.plan, k12: false });
+      const [rows, cols] = [w.plan.length, w.plan[0].length];
+      return f2.num(mod, t, 'quader', w.answers, { svg: w.svg, ask: `Der Quader soll ${cols} lang, ${rows} breit, ${w.full} hoch werden. Wie viele Würfel fehlen?`, plan: w.plan, full: w.full, k12: false });
+    }
+    // koerper: Ecke, Kante, Fläche of Würfel and Quader
+    const what = pick(Object.keys(EKF)), solid = pick(['Würfel', 'Quader']);
+    if (t === 1) {
+      if (Math.random() < 0.5) { const mk = pick(Object.values(EKF).map((x) => x[1])); return f2.choice(mod, t, 'markiert', 'Was ist rot markiert?', mk, Object.values(EKF).map((x) => x[1]).filter((x) => x !== mk), { options: ['Ecke', 'Kante', 'Fläche'], pic: pic(solidMarkSVG(solid === 'Quader', mk)), why: { Ecke: 'Eine Ecke ist ein Punkt, an dem Kanten zusammenstoßen.', Kante: 'Eine Kante ist eine Linie, an der zwei Flächen zusammenstoßen.', Fläche: 'Eine Fläche ist eine Seite des Körpers.' }[mk] }); }
+      return f2.num(mod, t, 'zaehlen', [EKF[what][0]], { svg: solidMarkSVG(solid === 'Quader'), ask: `Wie viele ${what} hat der ${solid}?` });
+    }
+    if (Math.random() < 0.3) return f2.choice(mod, t, 'form', 'Welche Form haben die Flächen eines Würfels?', 'Quadrate', ['Kreise', 'Dreiecke'], { why: 'Ein Würfel hat 6 gleich große Quadrate als Flächen.' });
+    const n = rnd(2, 5); return f2.num(mod, t, 'mehrere', [n * EKF[what][0]], { text: `${n} Würfel`, ask: `Wie viele ${what} haben sie zusammen?` });
+  }
+  register('formen2', {
+    grade: 2, title: 'Formen und Flächen', icon: '🦋', sub: 'Spiegelachsen, rechte Winkel, Gerade und Strecke, Würfelgebäude, Ecken und Kanten',
+    modules: {
+      spiegel: { name: 'Achsensymmetrie', icon: '🦋', maxTier: 2, worldCap: [2], dmg: 12 },
+      lage: { name: 'Rechter Winkel und parallel', icon: '📐', maxTier: 2, worldCap: [2], dmg: 12 },
+      linien: { name: 'Gerade, Strecke, Strahl', icon: '↗️', maxTier: 2, worldCap: [2], dmg: 10 },
+      bauen: { name: 'Würfelgebäude', icon: '🧊', maxTier: 2, worldCap: [2], dmg: 14 },
+      koerper: { name: 'Ecken, Kanten, Flächen', icon: '📦', maxTier: 2, worldCap: [2], dmg: 12 },
+    },
+    attacks: [{ name: 'Faltschnitt', mod: 'spiegel' }, { name: 'Faltwinkel', mod: 'lage' }, { name: 'Steckwürfel', mod: 'bauen' }, { name: 'Kantenmodell', mod: 'koerper' }],
+    extra: { spiegel: 'Faltschnitt', lage: 'Faltwinkel', linien: 'Kreidestrich', bauen: 'Steckwürfel', koerper: 'Kantenmodell' },
+    tut: {
+      'spiegel:1': { title: 'Achsensymmetrie', steps: ['Eine Figur ist achsensymmetrisch, wenn beide Hälften beim Umklappen genau aufeinanderpassen.', 'Die Linie dazwischen heißt Spiegelachse.', 'Prüfe Reihe für Reihe: Jedes Kästchen braucht auf der anderen Seite ein Spiegelbild, gleich weit weg von der Linie.'] },
+      'spiegel:2': { title: 'Die Spiegelachse finden', steps: ['Stell dir vor, du faltest das Blatt an einer Linie.', 'Passen beide Hälften genau aufeinander, ist die Linie eine Spiegelachse.', 'Prüfe beide Linien. Nur eine passt.'] },
+      'lage:1': { title: 'Der rechte Winkel', steps: ['Falte ein Blatt Papier zweimal. Die Ecke ist ein rechter Winkel.', 'Ein rechter Winkel sieht aus wie die Ecke eines Hefts.', 'Ist die Ecke spitzer oder stumpfer, ist es kein rechter Winkel.'] },
+      'lage:2': { title: 'Parallel und senkrecht', steps: ['Parallel: Die Linien sind überall gleich weit voneinander entfernt. Sie treffen sich nie.', 'Senkrecht: Die Linien treffen sich in einem rechten Winkel.', 'Treffen sich die Linien schräg, sind sie weder parallel noch senkrecht.'] },
+      'linien:1': { title: 'Gerade, Strecke, Strahl', steps: ['Eine Strecke hat zwei Endpunkte. Sie hört an beiden Enden auf.', 'Ein Strahl hat einen Anfangspunkt und geht in eine Richtung immer weiter. Das zeigt der Pfeil.', 'Eine Gerade geht in beide Richtungen immer weiter. Sie hat zwei Pfeile.'] },
+      'linien:2': { title: 'Linien unterscheiden', steps: ['Schau auf die Enden jeder Linie.', 'Zwei Punkte: Strecke. Ein Punkt und ein Pfeil: Strahl. Zwei Pfeile: Gerade.', 'Beim Zählen tippst du jede Linie nur einmal an.'] },
+      'bauen:1': { title: 'Würfelgebäude', steps: ['Der Bauplan zeigt das Gebäude von oben. Die Zahl sagt, wie viele Würfel dort übereinander stehen.', 'Eine 0 heißt: Dort steht kein Würfel.', 'Rechne alle Zahlen zusammen: 3 + 0 + 2 + 4 = 9.'] },
+      'bauen:2': { title: 'Quader ergänzen', steps: ['Im fertigen Quader stehen überall gleich viele Würfel übereinander. Die gestrichelte Linie zeigt ihn.', 'Rechne für jedes Feld: Wie viele fehlen bis oben?', 'Beispiel: Der Quader wird 2 hoch. Im Bauplan steht 1, 2, 0, 2. Es fehlen 1 + 0 + 2 + 0 = 3.'] },
+      'koerper:1': { title: 'Ecken, Kanten, Flächen', steps: ['Eine Fläche ist eine Seite des Körpers. Ein Würfel hat 6 Flächen.', 'Eine Kante ist die Linie, wo zwei Flächen zusammenstoßen. Ein Würfel hat 12 Kanten.', 'Eine Ecke ist der Punkt, wo Kanten zusammenstoßen. Ein Würfel hat 8 Ecken. Ein Quader hat genauso viele.'] },
+      'koerper:2': { title: 'Mehrere Würfel', steps: ['Ein Würfel hat 8 Ecken, 12 Kanten und 6 Flächen.', 'Bei 3 Würfeln rechnest du dreimal so viel: 3 · 8 = 24 Ecken.', 'Die Flächen eines Würfels sind gleich große Quadrate.'] },
+    },
+    notes: {
+      spiegel: { title: 'Spiegelachse', lines: ['Umklappen: Beide Hälften passen genau aufeinander.', 'Gleich weit weg von der Linie, auf beiden Seiten.'] },
+      lage: { title: 'Winkel und Linien', lines: ['rechter Winkel: wie die Ecke eines Hefts', 'parallel: treffen sich nie', 'senkrecht: treffen sich im rechten Winkel'] },
+      linien: { title: 'Linien', lines: ['Strecke: zwei Endpunkte', 'Strahl: ein Anfangspunkt, ein Pfeil', 'Gerade: zwei Pfeile'] },
+      bauen: { title: 'Bauplan', lines: ['Die Zahl sagt, wie viele Würfel übereinander stehen.', 'Alle Zahlen zusammen: alle Würfel.'] },
+      koerper: { title: 'Würfel und Quader', lines: ['8 Ecken', '12 Kanten', '6 Flächen'] },
+    },
+    events: [
+      ev('Der Faltschnitt', 'Am Basteltisch faltet ein Mädchen Papier und schneidet eine Figur aus. Sie fragt dich nach der Spiegelachse.', 'Helfen', 'spiegel', { item: 'trank' }, { hp: -5 }),
+      ev('Das Fensterkreuz', 'Der Hausmeister prüft mit einem Geodreieck die Fenster. Hilfst du ihm, verrät er dir eine Eselsbrücke.', 'Prüfen', 'lage', { item: 'lupe' }, { xp: 5 }),
+      ev('Die Kreidelinien', 'Auf dem Schulhof malt ein Junge Linien mit Kreide. Er will wissen, wie sie heißen.', 'Antworten', 'linien', { xp: 20 }, { xp: 5 }),
+      ev('Die Bauecke', 'In der Bauecke steht ein Gebäude aus Steckwürfeln. Zählst du die Würfel, bekommst du einen Schild.', 'Würfel zählen', 'bauen', { item: 'schild' }, { hp: -5 }),
+      ev('Die Kiste im Werkraum', 'Im Werkraum klebt ein Lehrer die Kanten einer Kiste ab. Zählst du mit, bekommst du eine Chilischote.', 'Mitzählen', 'koerper', { item: 'keks' }, { hp: -5 }),
+      restEv('Die Fensterbank', 'Auf der breiten Fensterbank im Flur scheint die Sonne. Du ruhst dich aus.'),
+    ],
+  }, genForm2);
 })();
 
 // Klasse 1 und 2, Deutsch: Laute und Buchstaben (Kl. 1), Richtig schreiben und Wörter und Sätze (Kl. 2).
@@ -15178,6 +15410,10 @@ const ELTERN = (() => {
       dopp: 'Zahlen bis 10 verdoppeln und gerade Zahlen bis 20 halbieren.',
       rechnen: 'Plus und minus bis 20, später über die 10, mit Tausch- und Umkehraufgaben.',
       mauer: 'Kleine Zahlenmauern: zwei Steine ergeben zusammen den Stein darüber.',
+      geschichte: 'Kurze Rechengeschichten mit Bild: Kommen welche dazu, wird plus gerechnet, gehen welche weg, minus.',
+      zahlwort: 'Zahlwörter von eins bis zwanzig lesen und der Zahl zuordnen.',
+      geld: 'Münzen und Scheine bis 20 € zählen, später Cent bis 20 ct und Rückgeld.',
+      strahl: 'Zahlen am Zahlenstrahl von 0 bis 20 ablesen.',
     },
     formen1: {
       lage: 'Oben, unten, links, rechts, neben und zwischen an Bildern beschreiben.',
@@ -15194,6 +15430,8 @@ const ELTERN = (() => {
       plus: 'Plus bis 100 in Schritten, ohne schriftliches Rechnen, dazu Ergänzen bis zum Zehner und bis 100.',
       minus: 'Minus bis 100 in Schritten, ohne schriftliches Rechnen, dazu Lückenaufgaben.',
       dreieck: 'Rechendreiecke und Zauberquadrate: fehlende Zahlen durch Plus und Minus finden.',
+      vergleich: 'Zahlen und Plusaufgaben bis 100 mit <, > und = vergleichen.',
+      mauer: 'Zahlenmauern bis 100: oben plus rechnen, fehlende Steine unten mit minus finden.',
     },
     malteilen: {
       reihe: 'Die Malaufgaben der Reihen mit 2, 5 und 10, auch mit fehlender Zahl.',
@@ -15201,6 +15439,7 @@ const ELTERN = (() => {
       bild: 'Malaufgaben in Punktefeldern erkennen: Reihen mal Punkte in einer Reihe.',
       teilen: 'Teilen als Umkehrung des Malnehmens, zuerst mit 2, 5 und 10.',
       sach: 'Kurze Sachaufgaben zum Malnehmen und gerechten Verteilen.',
+      strategie: 'Rechenwege beim Malnehmen: Tauschaufgaben, Quadrataufgaben und ihre Nachbarn (7 · 6 = 6 · 6 + 6), Umkehraufgaben.',
     },
     groessen2: {
       geld: 'Geld zählen, Euro und Cent umrechnen, mit Komma schreiben, wechseln und Rückgeld berechnen.',
@@ -15209,6 +15448,14 @@ const ELTERN = (() => {
       kalender: 'Wochentage und Monate in der richtigen Reihenfolge, Daten am Kalenderblatt ablesen.',
       daten: 'Strichlisten und Säulendiagramme lesen und damit rechnen.',
       zufall: 'Entscheiden, ob etwas sicher, möglich oder unmöglich ist.',
+      kombi: 'Kombinationen zählen: Paare aus Hosen und T-Shirts, Händeschütteln, zweistellige Zahlen aus Ziffern.',
+    },
+    formen2: {
+      spiegel: 'Achsensymmetrie: prüfen, ob eine Figur zur Linie symmetrisch ist, und die Spiegelachse finden.',
+      lage: 'Rechte Winkel erkennen und entscheiden, ob zwei Linien parallel oder senkrecht zueinander liegen.',
+      linien: 'Gerade, Strecke und Strahl an Endpunkten und Pfeilen unterscheiden und zählen.',
+      bauen: 'Würfelgebäude mit Bauplan zählen und einen Quader zu Ende bauen.',
+      koerper: 'Ecken, Kanten und Flächen von Würfel und Quader erkennen und zählen.',
     },
     koerper1: {
       parts: 'Körperteile und Teile des Gesichts im Bild benennen und antippen, mit Zeichenschule.',
@@ -15280,11 +15527,12 @@ const ELTERN = (() => {
     laute1: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Lernbereich 3 „Lesen“: Laute, Buchstaben, Silben und Alphabet.',
     schreiben2: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Sächsischer Rechtschreibrahmen.',
     woerter2: 'Deutsch, Klasse 1/2, Lernbereich 5 „Sprache und Sprachgebrauch untersuchen“.',
-    zahlen20: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 20.',
+    zahlen20: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 20. Geld bis 20 € gehört zu Lernbereich 3 „Größen und Messen“.',
     formen1: 'Mathematik, Klasse 1/2, Lernbereich 1 „Raum und Form“.',
     zahlen100: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 100, ohne schriftliches Rechnen.',
     malteilen: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“: Malnehmen und Teilen, sicher in den Reihen mit 2, 5 und 10.',
-    groessen2: 'Mathematik, Klasse 1/2, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“.',
+    groessen2: 'Mathematik, Klasse 1/2, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“ mit ersten Kombinationen.',
+    formen2: 'Mathematik, Klasse 1/2, Lernbereich 1 „Raum und Form“: Achsensymmetrie, lineare Figuren, rechter Winkel, Würfelgebäude und Baupläne, Würfel und Quader.',
     koerper1: 'Sachunterricht, Klasse 1/2, Lernbereich 2 „Mein Körper und meine Gesundheit“.',
     jahr1: 'Sachunterricht, Klasse 1/2, Lernbereich 5 „Begegnung mit Raum und Zeit“, dazu die Jahreszeiten aus Lernbereich 3 und die Wetterzeichen aus Lernbereich 4.',
     baeume2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
@@ -17315,7 +17563,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '270845762693';
+  const BUILD = '07fde974c603';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
