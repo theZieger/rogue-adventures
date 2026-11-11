@@ -36,15 +36,16 @@ const K12D = (() => {
     haus: { w: 'Haus', syl: 'Haus', svg: rect(14, 30, 36, 26, '#F4E3C3') + p('M8 32 L32 10 L56 32 Z', RED) + rect(28, 40, 9, 16, BRN) + rect(17, 36, 8, 8, BLU) + rect(41, 36, 7, 7, BLU) },
     maus: { w: 'Maus', syl: 'Maus', svg: line('M52 46 Q62 42 58 32', O, 2) + el(36, 44, 18, 11, GRY) + ci(19, 38, 10, GRY) + ci(21, 27, 7, '#D3D7E2') + `<circle cx="21" cy="27" r="3.5" fill="#F7A8B8"/>` + `<circle cx="15" cy="36" r="1.8" fill="${O}"/>` + ci(9.5, 41, 2.2, '#F7A8B8') + line('M10 44 L2 47 M10 42 L1 42', O, 1) + shine(30, 38, 5, 3) },
     ball: { w: 'Ball', syl: 'Ball', svg: ci(32, 32, 22, RED) + p('M11 27 Q32 40 53 27 L54 35 Q32 48 10 35 Z', '#fff') + shine(24, 18, 5, 3) },
-    fisch: { w: 'Fisch', syl: 'Fisch', svg: p('M42 32 L58 20 L58 44 Z', '#FF9F43') + p('M24 23 Q30 14 38 23 Z', '#FF9F43') + el(28, 32, 19, 12, '#FF9F43') + ci(17, 29, 3, '#fff') + `<circle cx="16.5" cy="29" r="1.4" fill="${O}"/>` + line('M28 24 Q32 32 28 40', O, 1.5) + shine(24, 26, 4, 2) },
+    // not orange: that would be a Goldfisch
+    fisch: { w: 'Fisch', syl: 'Fisch', svg: p('M42 32 L58 20 L58 44 Z', '#3DBFA8') + p('M24 23 Q30 14 38 23 Z', '#3DBFA8') + el(28, 32, 19, 12, '#3DBFA8') + ci(17, 29, 3, '#fff') + `<circle cx="16.5" cy="29" r="1.4" fill="${O}"/>` + line('M28 24 Q32 32 28 40', O, 1.5) + shine(24, 26, 4, 2) },
     tisch: { w: 'Tisch', syl: 'Tisch', svg: rect(18, 22, 4, 26, '#9A5E2E', 1) + rect(50, 22, 4, 26, '#9A5E2E', 1) + rect(8, 30, 5, 26, '#B8763E', 1) + rect(42, 30, 5, 26, '#B8763E', 1) + p('M48 26 L58 16 V20 L48 30 Z', '#B8763E') + rect(4, 26, 44, 4, '#C98A4E') + p('M4 26 L14 16 H58 L48 26 Z', '#E5B47A') },
     apfel: { w: 'Apfel', syl: 'Ap-fel', svg: line('M32 20 Q32 12 36 7', O, 3) + p('M32 20 C20 12 8 20 10 34 C12 48 22 56 32 52 C42 56 52 48 54 34 C56 20 44 12 32 20 Z', RED) + p('M35 13 Q43 5 49 11 Q43 17 35 13 Z', GRN) + shine(20, 28, 4, 6) },
     igel: { w: 'Igel', syl: 'I-gel', svg: line('M24 50 L23 56 M46 50 L47 56', O, 3) + p(spikes, '#5A3E22', 1.5) + el(36, 40, 21, 13, '#8A5530') + p('M20 48 Q10 48 3 43 Q8 35 20 33 Z', '#E9C9A0') + ci(4, 43, 2, O) + `<circle cx="12" cy="40" r="1.6" fill="${O}"/>` },
-    uhr: { w: 'Uhr', syl: 'Uhr', svg: `<circle cx="32" cy="32" r="25" fill="${BLU}" stroke="${O}" stroke-width="2"/>` + ci(32, 32, 20, '#fff') + around(12, 32, 32, (x, y, a) => line(`M${r1(x + Math.cos(a) * 16)} ${r1(y + Math.sin(a) * 16)} L${r1(x + Math.cos(a) * 18.5)} ${r1(y + Math.sin(a) * 18.5)}`, O, 1.5)) + line('M32 32 L32 17 M32 32 L23 37', O, 3) + ci(32, 32, 2, O) },
-    // a mallard on the water: a yellow duck would be a Quietscheente or a Küken
-    ente: { w: 'Ente', syl: 'En-te', svg: p('M2 52 Q8 48 14 52 T26 52 T38 52 T50 52 T62 52 V60 H2 Z', BLU, 1.5) + p('M14 36 Q12 52 30 53 H46 Q56 51 61 34 Q55 38 49 36 Q40 30 26 33 Z', '#B8BECC') + p('M14 36 Q13 46 22 50 Q26 40 24 33 Z', '#8A5530')
-      + p('M30 38 Q42 32 52 38 Q44 47 32 44 Z', '#8E96B5') + p('M47 38 L54 41 L49 43 Z', '#3F6FD9', 1.2) + p('M58 30 Q62 31 61 34 Q58 34 57 32 Z', O, 1) + p('M13 35 Q11 26 12 22 L22 22 Q22 30 24 33 Z', '#2E8B57')
-      + line('M12.5 31 Q18 34 23.5 31', '#fff', 2.2) + ci(17, 18, 8, '#2E8B57') + p('M10 17 Q2 17 1 21 Q4 23 11 21 Z', YEL, 1.6) + `<circle cx="15" cy="16" r="1.6" fill="${O}"/><circle cx="15.5" cy="15.5" r=".5" fill="#fff"/>` + shine(19, 13, 3, 1.6) + shine(34, 36, 6, 1.6) },
+    // a flying saucer with dome and lights: a spaceship with fins would be a Rakete
+    ufo: { w: 'Ufo', syl: 'U-fo', svg: line('M18 40 L12 52 M46 40 L52 52', O, 2.5) + line('M32 15 L32 7', O, 2) + ci(32, 6, 2.6, RED) + p('M18 32 Q18 15 32 15 Q46 15 46 32 Z', '#BFE3FF') + el(32, 35, 29, 9, GRY) + p('M5 34 Q32 42 59 34 Q58 40 32 44 Q6 40 5 34 Z', '#8E96B5', 1.5)
+      + [[11, 38], [21.5, 40.5], [32, 41.5], [42.5, 40.5], [53, 38]].map(([x, y]) => ci(x, y, 2.3, YEL)).join('') + shine(26, 22, 3, 4.5) + shine(20, 32, 6, 1.4) },
+    elefant: { w: 'Elefant', syl: 'E-le-fant', svg: line('M58 32 Q63 38 60 44', O, 2) + rect(40, 42, 8, 16, '#9AA1B3', 3) + rect(50, 40, 7, 16, '#9AA1B3', 3) + el(40, 34, 20, 15, GRY) + rect(26, 42, 8, 16, GRY, 3) + ci(20, 27, 13, GRY)
+      + p('M10 30 Q4 42 6 54 Q8 58 12 56 Q11 46 17 36 Z', GRY) + p('M13 39 Q14 45 20 45 Q17 42 17 38 Z', '#fff', 1.2) + p('M24 14 Q38 12 39 28 Q38 42 26 40 Q21 28 24 14 Z', '#9AA1B3') + `<circle cx="15" cy="25" r="1.7" fill="${O}"/>` + shine(44, 26, 7, 2.5) + shine(16, 19, 3, 1.6) },
     rakete: { w: 'Rakete', syl: 'Ra-ke-te', svg: p('M26 48 Q32 63 38 48 Z', '#FFB347') + p('M21 36 L11 52 L21 48 Z', RED) + p('M43 36 L53 52 L43 48 Z', RED) + p('M32 4 Q44 16 44 36 L44 48 L20 48 L20 36 Q20 16 32 4 Z', '#E9EEF6') + p('M32 4 Q39 10 42 19 L22 19 Q25 10 32 4 Z', RED) + ci(32, 30, 5, BLU) },
     banane: { w: 'Banane', syl: 'Ba-na-ne', svg: p('M10 14 Q12 44 38 50 Q52 52 58 44 Q50 46 40 42 Q22 34 17 13 Z', YEL) + p('M10 14 L11 8 L17 13 Z', '#8A5530') + line('M20 22 Q26 38 42 44', '#E0A800', 1.5) },
     tomate: { w: 'Tomate', syl: 'To-ma-te', svg: el(32, 37, 23, 19, RED) + p('M32 14 L36 20 L45 18 L38 24 L32 22 L26 24 L19 18 L28 20 Z', GRN) + line('M32 14 L32 8', O, 3) + shine(22, 30, 5, 3) },
@@ -53,19 +54,24 @@ const K12D = (() => {
     wolke: { w: 'Wolke', syl: 'Wol-ke', svg: p('M14 46 Q3 46 5 35 Q7 26 18 28 Q20 15 33 18 Q43 11 49 24 Q61 24 59 37 Q58 46 48 46 Z', '#E9EEF6') + shine(26, 26, 5, 3) },
     hut: { w: 'Hut', syl: 'Hut', svg: p('M18 40 Q16 24 22 15 Q32 11 42 15 Q48 24 46 40 Z', '#9A6A3E') + line('M24 16 Q32 22 40 16', '#5A3E22', 1.6) + p('M17.5 33 H46.5 L47 40 H17 Z', '#3E2A1C') + p('M3 42 Q6 35 17 38 H47 Q58 35 61 42 Q58 50 32 50 Q6 50 3 42 Z', '#9A6A3E') + line('M8 43 Q32 47 56 43', '#5A3E22', 1.2) + shine(23, 26, 2, 7) },
     gabel: { w: 'Gabel', syl: 'Ga-bel', svg: rect(29, 32, 6, 28, GRY, 3) + [19, 26.5, 34, 41].map((x) => rect(x, 4, 4, 20, GRY, 2)).join('') + p('M18 22 Q18 35 32 35 Q46 35 46 22 Z', GRY) },
-    pilz: { w: 'Pilz', syl: 'Pilz', svg: p('M24 36 L22 58 L42 58 L40 36 Z', '#FFF3D6') + p('M6 38 Q8 10 32 10 Q56 10 58 38 Z', RED) + `<g fill="#fff">${[[20, 24, 4], [36, 18, 3.5], [46, 30, 3], [30, 30, 3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` },
+    pinsel: { w: 'Pinsel', syl: 'Pin-sel', svg: `<g transform="rotate(40 32 32)">${rect(28, -2, 8, 34, BLU, 4) + rect(27, 31, 10, 10, GRY, 1) + line('M27.5 35 H36.5', '#8E96B5', 1.2) + p('M27 41 Q25 52 32 62 Q39 52 37 41 Z', '#8A5530') + p('M28.3 51 Q32 54 35.7 51 Q35 57 32 62 Q29 57 28.3 51 Z', RED, 1.2) + shine(30.5, 12, 1.2, 8)}</g>` },
     zitrone: { w: 'Zitrone', syl: 'Zi-tro-ne', svg: p('M3 34 Q6 30 9 28 Q16 16 32 16 Q48 16 55 28 Q58 30 61 34 Q58 38 55 40 Q48 52 32 52 Q16 52 9 40 Q6 38 3 34 Z', YEL) + p('M32 16 Q35 5 46 6 Q43 15 32 16 Z', GRN) + shine(22, 26, 6, 3) },
-    krone: { w: 'Krone', syl: 'Kro-ne', svg: p('M8 50 L8 18 L20 32 L32 10 L44 32 L56 18 L56 50 Z', YEL) + rect(8, 42, 48, 9, '#F0A500') + ci(32, 46.5, 2.6, RED) + ci(19, 46.5, 2.2, BLU) + ci(45, 46.5, 2.2, BLU) + ci(8, 16, 2.5, YEL) + ci(32, 8, 2.5, YEL) + ci(56, 16, 2.5, YEL) },
+    // a cheese wedge with holes: a round wheel could be a Torte
+    kaese: { w: 'Käse', syl: 'Kä-se', svg: p('M4 38 L44 18 L60 30 Z', '#FFE27A') + p('M4 38 L60 30 V50 L4 47 Z', YEL) + `<g fill="#E0A800">${[[18, 42, 3.4, 2.4], [36, 39, 4.5, 3.2], [51, 43, 3, 2.2], [27, 45.5, 2, 1.4], [44, 26, 3.6, 1.6], [32, 31, 2.6, 1.2]].map(([x, y, rx, ry]) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`).join('')}</g>` + shine(40, 22, 4, 1.2) },
     baum: { w: 'Baum', syl: 'Baum', svg: rect(27, 36, 10, 24, BRN, 2) + p('M14 40 Q4 36 8 26 Q6 14 18 12 Q24 2 36 6 Q48 4 52 16 Q62 22 56 32 Q58 42 46 42 Q32 46 14 40 Z', GRN) + shine(22, 20, 6, 3) },
-    nest: { w: 'Nest', syl: 'Nest', svg: el(32, 31, 27, 10, '#8A5530') + el(32, 31, 20, 6.5, '#5A3E22') + el(24, 30, 5, 6.5, '#BFE3FF') + el(40, 30, 5, 6.5, '#BFE3FF') + el(32, 28, 5, 6.5, '#BFE3FF') + shine(30, 25, 1.5, 2.4) + shine(22, 27, 1.5, 2.4) + shine(38, 27, 1.5, 2.4)
-      + p('M5 32 Q6 57 32 58 Q58 57 59 32 Q50 41 32 41 Q14 41 5 32 Z', '#B8763E')
-      + line('M3 34 Q20 46 46 40 M14 42 Q34 52 60 36 M7 44 Q24 54 48 50 M18 54 Q40 52 56 44 M10 38 Q30 36 52 46 M2 30 L9 36 M62 30 L55 37 M8 25 L15 31 M56 25 L50 30', '#6E4320', 1.4) },
+    nashorn: { w: 'Nashorn', syl: 'Nas-horn', svg: line('M58 34 Q63 38 61 44', O, 2) + rect(44, 42, 8, 14, '#8E96B5', 3) + el(39, 36, 21, 14, '#A3A9B8') + rect(30, 42, 8, 14, '#A3A9B8', 3) + rect(52, 42, 7, 13, '#8E96B5', 3)
+      + p('M27 25 Q14 25 6 37 Q3 46 12 47 L28 46 Q33 36 27 25 Z', '#A3A9B8') + p('M7 37 Q3 26 9 15 Q12 27 15 35 Z', '#F4E3C3') + p('M16 30 Q16 24 20 21 Q21 27 21 30 Z', '#F4E3C3', 1.5) + p('M25 26 Q24 17 29 16 Q31 22 29 28 Z', '#A3A9B8')
+      + `<circle cx="19" cy="35" r="1.6" fill="${O}"/>` + line('M8 43 Q11 45 14 44', O, 1.5) + line('M43 27 Q44 36 42 46', '#8E96B5', 1.4) + shine(46, 28, 6, 2.2) },
     herz: { w: 'Herz', syl: 'Herz', svg: p('M32 55C14 42 5 32 5 22a13 13 0 0 1 27-4 13 13 0 0 1 27 4c0 10-9 20-27 33Z', RED) + shine(17, 18, 5, 3) },
     blume: { w: 'Blume', syl: 'Blu-me', svg: line('M32 34 L32 60', O, 5) + line('M32 34 L32 60', GRN, 2.5) + p('M32 50 Q42 40 50 46 Q42 54 32 50 Z', GRN) + around(6, 32, 22, (x, y, a) => ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7')) + ci(32, 22, 6.5, YEL) },
-    tasse: { w: 'Tasse', syl: 'Tas-se', svg: el(30, 54, 27, 6, '#E9EEF6') + line('M46 32 Q58 30 56 40 Q53 47 42 45', O, 7) + line('M46 32 Q58 30 56 40 Q53 47 42 45', '#fff', 3) + p('M8 26 H52 Q52 50 30 52 Q8 50 8 26 Z', '#fff') + p('M9 32 H51 Q50 38 49 40 H11 Q10 38 9 32 Z', BLU, 1.5) + el(30, 26, 22, 3.5, '#C9A27A') + line('M22 19 Q18 14 22 9 M34 19 Q30 14 34 9', '#8E96B5', 2) },
+    tiger: { w: 'Tiger', syl: 'Ti-ger', svg: ci(15, 16, 7, '#FF9F43') + ci(49, 16, 7, '#FF9F43') + `<circle cx="15" cy="16" r="3.3" fill="#F4E3C3"/><circle cx="49" cy="16" r="3.3" fill="#F4E3C3"/>` + el(32, 35, 25, 22, '#FF9F43')
+      + line('M32 14 L32 22 M24 15 L26 22 M40 15 L38 22 M8 30 L16 33 M8 39 L15 39 M56 30 L48 33 M56 39 L49 39 M11 47 L17 45 M53 47 L47 45', O, 2.8) + el(26, 46, 8, 7, '#fff') + el(38, 46, 8, 7, '#fff')
+      + `<circle cx="23" cy="31" r="2.6" fill="${O}"/><circle cx="41" cy="31" r="2.6" fill="${O}"/><circle cx="24" cy="30" r=".8" fill="#fff"/><circle cx="42" cy="30" r=".8" fill="#fff"/>` + p('M28 39 H36 L32 44 Z', '#F7A8B8', 1.5) + line('M32 44 V48', O, 1.5) + shine(22, 21, 4, 2) },
     ananas: { w: 'Ananas', syl: 'A-na-nas', svg: p('M32 26 L16 8 L27 15 L25 1 L32 12 L39 1 L37 15 L48 8 Z', GRN) + el(32, 42, 16, 20, '#FFC94D') + `<g stroke="#B8763E" stroke-width="1.5">${[[26, 32], [38, 32], [32, 40], [22, 44], [42, 44], [26, 50], [38, 50], [32, 56], [32, 26]].map(([x, y]) => `<path d="M${x - 2.5} ${y - 2.5} L${x + 2.5} ${y + 2.5} M${x + 2.5} ${y - 2.5} L${x - 2.5} ${y + 2.5}"/>`).join('')}</g>` },
-    wal: { w: 'Wal', syl: 'Wal', svg: line('M20 20 Q18 12 12 9 M20 20 Q22 12 28 9 M20 20 V8', '#2478D6', 2.5) + p('M42 42 Q54 36 53 22 Q46 22 41 15 Q50 14 55 18 Q58 13 63 11 Q61 20 57 24 Q59 38 47 47 Z', '#3F7FC7') + p('M3 40 Q3 23 24 22 Q42 22 50 37 Q46 51 28 52 Q5 53 3 40 Z', '#4A90D9') + p('M7 45 Q24 50 45 44 Q38 51 27 51 Q12 51 7 45 Z', '#BFE3FF', 1.5) + line('M4 41 Q11 43 17 41', O, 1.5) + p('M24 46 Q30 54 36 50 Q32 46 24 46 Z', '#3F7FC7', 1.5) + `<circle cx="13" cy="35" r="2" fill="${O}"/>` + shine(24, 28, 7, 2.5) },
-    topf: { w: 'Topf', syl: 'Topf', svg: rect(4, 29, 9, 5, '#8E96B5', 2) + rect(51, 29, 9, 5, '#8E96B5', 2) + rect(11, 25, 42, 30, GRY, 4) + p('M9 26 Q32 12 55 26 Z', '#C9CEDD') + ci(32, 16, 3, '#8E96B5') + shine(20, 34, 2, 6) },
+    wuerfel: { w: 'Würfel', syl: 'Wür-fel', svg: p('M10 24 L22 12 H54 L42 24 Z', '#F4F6FA') + p('M42 24 L54 12 V44 L42 56 Z', '#C9CEDD') + rect(10, 24, 32, 32, '#fff', 2)
+      + `<g fill="${O}">${[[17, 31], [35, 31], [26, 40], [17, 49], [35, 49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3"/>`).join('')}<ellipse cx="32" cy="18" rx="3.4" ry="1.8"/><ellipse cx="46" cy="27" rx="1.6" ry="2.8"/><ellipse cx="50" cy="40" rx="1.6" ry="2.8"/></g>` },
+    trommel: { w: 'Trommel', syl: 'Trom-mel', svg: p('M10 26 V48 Q32 60 54 48 V26 Z', RED) + p('M10 46 Q32 56 54 46 V50 Q32 61 10 50 Z', YEL) + line('M12 32 L19 50 L26 34 L32 53 L38 34 L45 50 L52 32', '#fff', 1.8)
+      + el(32, 26, 22, 7, YEL) + el(32, 26, 19, 5, '#F4E3C3') + line('M6 4 L28 23 M58 4 L36 23', O, 5) + line('M6 4 L28 23 M58 4 L36 23', '#E5B47A', 3) + ci(6, 4, 2.8, '#E5B47A') + ci(58, 4, 2.8, '#E5B47A') + shine(16, 36, 1.6, 6) },
   };
   const DEFS = `<defs>${[...USED].map((c) => `<linearGradient id="kd${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
   const svgOf = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${DEFS}${PICS[id].svg}</svg>`;
@@ -82,12 +88,12 @@ const K12D = (() => {
   const CONS = 'BDFGHKLMNPRSTWZ'.split('');
   // Lautposition: the letter is heard exactly once in the word
   const LAUTPOS = [['mond', 'M', 0], ['baum', 'M', 2], ['tomate', 'M', 1], ['maus', 'S', 2], ['haus', 'H', 0], ['haus', 'S', 2], ['ball', 'B', 0], ['ball', 'L', 2],
-    ['fisch', 'F', 0], ['tisch', 'T', 0], ['igel', 'G', 1], ['igel', 'L', 2], ['ente', 'N', 1], ['rakete', 'R', 0], ['rakete', 'K', 1], ['leiter', 'L', 0], ['kerze', 'Z', 1],
-    ['kerze', 'K', 0], ['wolke', 'L', 1], ['wolke', 'W', 0], ['hut', 'T', 2], ['hut', 'H', 0], ['gabel', 'B', 1], ['gabel', 'L', 2], ['pilz', 'L', 1], ['pilz', 'P', 0], ['zitrone', 'Z', 0],
-    ['krone', 'N', 1], ['nest', 'N', 0], ['nest', 'T', 2], ['blume', 'M', 1], ['sonne', 'S', 0], ['wal', 'W', 0], ['wal', 'L', 2], ['apfel', 'A', 0], ['apfel', 'L', 2], ['tasse', 'T', 0], ['herz', 'H', 0], ['herz', 'Z', 2]];
+    ['fisch', 'F', 0], ['tisch', 'T', 0], ['igel', 'G', 1], ['igel', 'L', 2], ['elefant', 'F', 1], ['rakete', 'R', 0], ['rakete', 'K', 1], ['leiter', 'L', 0], ['kerze', 'Z', 1],
+    ['kerze', 'K', 0], ['wolke', 'L', 1], ['wolke', 'W', 0], ['hut', 'T', 2], ['hut', 'H', 0], ['gabel', 'B', 1], ['gabel', 'L', 2], ['pinsel', 'L', 2], ['pinsel', 'P', 0], ['zitrone', 'Z', 0],
+    ['kaese', 'S', 1], ['nashorn', 'S', 1], ['ufo', 'F', 1], ['blume', 'M', 1], ['sonne', 'S', 0], ['wuerfel', 'W', 0], ['wuerfel', 'L', 2], ['apfel', 'A', 0], ['apfel', 'L', 2], ['tiger', 'T', 0], ['trommel', 'R', 1], ['herz', 'H', 0], ['herz', 'Z', 2]];
   const POS = ['am Anfang', 'in der Mitte', 'am Ende'];
   const SILBEN = PIC_IDS.map((id) => [PICS[id].w, PICS[id].syl, id]).concat([['Schule', 'Schu-le'], ['Tafel', 'Ta-fel'], ['Fenster', 'Fens-ter'], ['Hund', 'Hund'], ['Kinder', 'Kin-der'],
-    ['Lineal', 'Li-ne-al'], ['Elefant', 'E-le-fant'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
+    ['Lineal', 'Li-ne-al'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
     ['Sofa', 'So-fa'], ['Hose', 'Ho-se'], ['Schaf', 'Schaf'], ['Melone', 'Me-lo-ne'], ['Garten', 'Gar-ten'], ['Brot', 'Brot'], ['Schokolade', 'Scho-ko-la-de']]);
   const SYL = ['1 Silbe', '2 Silben', '3 Silben', '4 Silben'];
   // rhyme groups: words of one group rhyme, words of different groups don't
@@ -97,9 +103,9 @@ const K12D = (() => {
   // Ei and Bein sound too alike to be wrong answers for each other
   const ALIKE = ['Ei', 'Bein'];
   const alike = (g, h) => ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
-  const PIC_REIME = [['haus', 'maus'], ['fisch', 'tisch'], ['krone', 'zitrone']];
-  // first vowel of a picture word, if it is a single vowel (not au, ei, ie)
-  const vowelGap = (w) => { const i = w.search(/[aeiou]/i); return /^(au|ei|eu|ie)/i.test(w.slice(i, i + 2)) ? null : i; };
+  const PIC_REIME = [['haus', 'maus'], ['fisch', 'tisch']];
+  // first vowel of a picture word, if it is a single vowel (not au, ei, ie, not an umlaut)
+  const vowelGap = (w) => { const i = w.search(/[aeiouäöü]/i); return /^(au|ei|eu|ie|[äöü])/i.test(w.slice(i, i + 2)) ? null : i; };
   const DIPH = { haus: 'au', maus: 'au', baum: 'au', leiter: 'ei' };
 
   const L1_ITEMS = {
