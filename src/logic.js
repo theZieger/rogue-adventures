@@ -576,6 +576,7 @@ const MQ = (() => {
     spiegel: { name: 'Achsensymmetrie', icon: '🦋', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     bewegung: { name: 'Spiegeln, drehen, schieben', icon: '🔄', maxTier: 1, worldCap: [1, 1], dmg: 12 },
     vieleck: { name: 'Dreiecke und Vierecke', icon: '🔷', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    ansicht: { name: 'Ansichten', icon: '🧱', maxTier: 2, worldCap: [1, 2], dmg: 14 },
   };
   const INK = '#1C2541', LINE = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
   const svgFig = (x, y, w, h, body, label) => `<svg viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
@@ -615,6 +616,34 @@ const MQ = (() => {
     const [rows, cols] = t === 1 ? pick([[2, 2], [2, 3]]) : pick([[2, 3], [3, 3]]); const full = t === 1 ? 2 : 3; let plan;
     do plan = Array.from({ length: rows }, () => Array.from({ length: cols }, () => rnd(0, full))); while (sum(plan.flat()) < 2 || rows * cols * full - sum(plan.flat()) < 2);
     return task('', [rows * cols * full - sum(plan.flat())], { svg: figPair(plan, full), ask: `Der Quader soll ${cols} Würfel lang, ${rows} breit und ${full} hoch werden. Wie viele Würfel fehlen?`, plan, full, sig: JSON.stringify(plan) });
+  }
+
+  // a view is a list of rows from top to bottom, '#' = square. Seen from the right, the front row is on the left.
+  const colView = (hs) => { const H = Math.max(...hs); return Array.from({ length: H }, (_, i) => hs.map((h) => (h >= H - i ? '#' : '.')).join('')); };
+  const sideHs = { vorn: (plan) => plan[0].map((_, c) => Math.max(...plan.map((row) => row[c]))), rechts: (plan) => plan.map((row) => Math.max(...row)).reverse() };
+  const VIEWS = { vorn: (plan) => colView(sideHs.vorn(plan)), rechts: (plan) => colView(sideHs.rechts(plan)), oben: (plan) => plan.map((row) => row.map((n) => (n ? '#' : '.')).join('')) };
+  const trimView = (rows) => {
+    const cols = rows[0].length, used = (c) => rows.some((r) => r[c] === '#'); let c0 = 0, c1 = cols - 1; while (!used(c0)) c0++; while (!used(c1)) c1--;
+    return rows.filter((r) => r.includes('#')).map((r) => r.slice(c0, c1 + 1));
+  };
+  function viewSVG(rows, W, H) {
+    const S = 14, ox = (W - rows[0].length) * S / 2, oy = (H - rows.length) * S;
+    return svgFig(-2, -2, W * S + 4, H * S + 4, rows.flatMap((row, r) => [...row].map((ch, c) => (ch === '#' ? `<rect x="${ox + c * S}" y="${oy + r * S}" width="${S}" height="${S}" fill="${BRICK[0]}" ${LINE}/>` : ''))).join(''), 'Ansicht aus Quadraten');
+  }
+  function genAnsicht(t) {
+    const side = t === 1 ? pick(['vorn', 'oben']) : pick(['vorn', 'oben', 'rechts']); let plan;
+    do { const [rows, cols] = t === 1 ? pick([[2, 2], [2, 3]]) : pick([[2, 3], [3, 3], [3, 2]]); plan = Array.from({ length: rows }, () => Array.from({ length: cols }, () => rnd(0, 3))); }
+    while (plan.flat().filter((n) => !n).length > t || plan.some((row) => row.every((n) => !n)) || plan[0].some((_, c) => plan.every((row) => !row[c])));
+    const right = trimView(VIEWS[side](plan)), mirror = (v) => v.map((r) => [...r].reverse().join(''));
+    const others = shuffle(Object.keys(VIEWS).filter((k) => k !== side).map((k) => VIEWS[k](plan)).concat([mirror(VIEWS[side](plan))], side === 'oben' ? [VIEWS.oben(plan).slice().reverse()] : []));
+    // fallback: one column a square higher or lower, or one square of the top view added or taken away
+    const near = shuffle(side === 'oben' ? plan.flatMap((row, r) => row.map((_, c) => VIEWS.oben(plan.map((x, i) => x.map((n, j) => (i === r && j === c ? (n ? 0 : 1) : n)))))).filter((v) => v.join('').includes('#'))
+      : sideHs[side](plan).flatMap((h, i, hs) => [h - 1, h + 1].filter((x) => x >= 1 && x <= 4).map((x) => colView(hs.map((y, j) => (j === i ? x : y))))));
+    const views = [right], keys = new Set([right.join('|')]);
+    for (const v of others.concat(near).map(trimView)) if (views.length < 3 && !keys.has(v.join('|'))) { keys.add(v.join('|')); views.push(v); }
+    const W = Math.max(...views.map((v) => v[0].length)), H = Math.max(...views.map((v) => v.length)), order = shuffle([0, 1, 2]);
+    const options = order.map((i) => viewSVG(views[i], W, H));
+    return { kind: 'choice', q: `Welches Bild zeigt das Gebäude von ${side}?`, pic: figPair(plan), options, answer: options[order.indexOf(0)], views: order.map((i) => views[i]), plan, side, svgOpts: true, why: `So sieht das Gebäude von ${side} aus:`, sig: side + JSON.stringify(plan) };
   }
 
   // the 11 nets of a cube; rows separated by |, # is a square
@@ -918,7 +947,7 @@ const MQ = (() => {
 
   function bauGenerate(mod, tier) {
     tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
-    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang, flaeche: genFlaeche, spiegel: genSpiegel, bewegung: genBewegung, vieleck: genVieleck }[mod](tier);
+    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang, flaeche: genFlaeche, spiegel: genSpiegel, bewegung: genBewegung, vieleck: genVieleck, ansicht: genAnsicht }[mod](tier);
     if (!tk.kind) tk.kind = 'num';
     if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
     // one tutorial per task type, a second one where a tier brings something new
@@ -939,6 +968,8 @@ const MQ = (() => {
     'bewegung:1': { title: 'Spiegeln, drehen, schieben', steps: ['Verschoben: Die Figur liegt genauso da wie vorher, nur an einer anderen Stelle.', 'Gedreht: Die Figur wurde um eine Ecke gedreht, zum Beispiel eine Vierteldrehung. Sie wurde nicht umgeklappt.', 'Gespiegelt: Die Figur wurde umgeklappt. Zeigt bei einem L der Fuß vorher nach rechts und jetzt nach links, ist es gespiegelt.'] },
     'vieleck:1': { title: 'Dreiecke und Vierecke', steps: ['Quadrat: vier gleich lange Seiten und vier rechte Winkel. Rechteck: vier rechte Winkel, gegenüber gleich lange Seiten.', 'Parallelogramm: Gegenüberliegende Seiten sind parallel. Hat es rechte Winkel, ist es ein Rechteck.', 'Dreiecke haben drei Ecken. Beim Dreieck mit rechtem Winkel bilden zwei Seiten eine Ecke wie bei einem Blatt Papier.', 'Beispiel: 3 Kästchen lang, 3 Kästchen hoch, alle Ecken rechte Winkel: Das ist ein Quadrat.'] },
     'vieleck:2': { title: 'Eigenschaften von Vierecken', steps: ['Rechteck und Quadrat haben vier rechte Winkel und zwei Paar parallele Seiten.', 'Ein Parallelogramm hat auch zwei Paar parallele Seiten. Das Parallelogramm im Bild hat keinen rechten Winkel.', 'Ein Dreieck mit rechtem Winkel hat genau 1 rechten Winkel. Ein Dreieck hat nie parallele Seiten.'] },
+    'ansicht:1': { title: 'Ansichten', steps: ['Bauplan und Bild zeigen dasselbe Gebäude. Unten im Bauplan ist vorn.', 'Von oben siehst du jedes Feld, auf dem mindestens ein Würfel steht. Von vorn siehst du in jeder Spalte den höchsten Turm.', 'Bauplan 2, 1 hinten und 1, 3 vorn: Von vorn sind die Türme 2 und 3 Würfel hoch.', 'Tippe auf das passende Bild.'] },
+    'ansicht:2': { title: 'Ansicht von rechts', steps: ['Jetzt schaust du auch von der rechten Seite auf das Gebäude.', 'Von rechts siehst du in jeder Reihe des Bauplans den höchsten Turm. Die vordere Reihe ist dann links, die hintere rechts.', 'Bauplan hinten 1, 2 und vorn 3, 1: Von rechts siehst du links einen Turm mit 3 Würfeln, rechts einen mit 2.', 'Tippe auf das passende Bild.'] },
     'umfang:1': { title: 'Umfang', steps: ['Der Umfang ist der Weg einmal ganz um die Fläche herum.', 'Zähle jede Kästchenseite am Rand. Starte an einer Ecke und fahre mit dem Finger herum.', 'Rechteck 3 Kästchen lang und 2 hoch: 3 + 2 + 3 + 2 = 10. Der Umfang ist 10 Kästchenseiten.'] },
   };
   const BAU = {
@@ -946,7 +977,7 @@ const MQ = (() => {
     STARTERS: [{ id: 'biber', type: 'wasser', shape: 'beaver', names: ['Dammbiber', 'Brückenbiber', 'Brückenbiber'], hp: 75, desc: 'Ein Biber mit Bauhelm. Misst jeden Stamm aus, bevor er ihn zersägt.', perk: 'tank',
       attacks: [{ name: 'Ziegelstapel', mod: 'wz' }, { name: 'Bauklotzwurf', mod: 'koerper' }, { name: 'Lotschnur', mod: 'lage' }, { name: 'Zollstock', mod: 'umfang' }] }],
     WORLD_ATTACKS: { 2: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] },
-    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock', flaeche: 'Bodenplatten', spiegel: 'Fensterflügel', bewegung: 'Drehkran', vieleck: 'Winkeleisen' },
+    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock', flaeche: 'Bodenplatten', spiegel: 'Fensterflügel', bewegung: 'Drehkran', vieleck: 'Winkeleisen', ansicht: 'Grundriss' },
     ENEMIES: {
       1: {
         normal: [

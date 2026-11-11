@@ -132,6 +132,13 @@ for(let t=1;t<=3;t++) for(let i=0;i<400;i++){ const tk=M.generate('riddle',t); c
     if(mod==='lage'){ const d=((tk.angles[1]-tk.angles[0])%180+180)%180; check(tk.answer===(d===0?'parallel':d===90?'senkrecht':'weder noch'),'lage',tk.angles); }
     if(mod==='netz'&&t===2){ const ok=tk.rects.map(boxFolds); check(ok.filter(Boolean).length===1&&ok[tk.options.indexOf(tk.answer)],'quadernetz: only the answer folds to a Quader',tk.rects);
       check(tk.options.every((o,i)=>(o.match(/<rect/g)||[]).length===tk.rects[i].length),'quadernetz: picture shows every face',tk.rects); }
+    if(mod==='ansicht'){ const P=tk.plan, R=P.length, C=P[0].length; check(t===2||tk.side!=='rechts','ansicht: von rechts only in tier 2');
+      const hs=tk.side==='vorn'?[...Array(C)].map((_,c)=>Math.max(...P.map(row=>row[c]))):[...Array(R)].map((_,r)=>Math.max(...P[R-1-r]));
+      const want=norm(tk.side==='oben'?P.flatMap((row,r)=>row.map((n,c)=>n?[r,c]:null)).filter(Boolean):hs.flatMap((h,x)=>[...Array(h)].map((_,z)=>[-z,x])));
+      const got=tk.views.map(v=>norm(v.flatMap((row,r)=>[...row].map((ch,c)=>ch==='#'?[r,c]:null)).filter(Boolean)));
+      check(got.filter(k=>k===want).length===1&&got[tk.options.indexOf(tk.answer)]===want,'ansicht: only the answer shows the building '+tk.side,P);
+      check(new Set(got).size===3,'ansicht: three different pictures',tk.views);
+      check(tk.options.every((o,i)=>(o.match(/<rect/g)||[]).length===tk.views[i].join('').split('#').length-1),'ansicht: picture shows every square',tk.views); }
     if(mod==='flaeche'&&t===1){ check(tk.answers[0]===tk.area.length&&(tk.svg.match(/<rect/g)||[]).length===tk.area.length&&tk.area.length>=5,'flaeche count',tk.area); }
     if(mod==='flaeche'&&t===2){ const [a,b]=tk.figs; check(tk.answer===(a.length===b.length?'Beide gleich groß':a.length>b.length?'Figur A':'Figur B'),'flaeche compare',tk.figs);
       check(B.shapeKey(a)!==B.shapeKey(b)&&(tk.pic.match(/<rect/g)||[]).length===a.length+b.length,'flaeche: two different shapes, both drawn',tk.figs); if(a.length===b.length) equalAreas++; }

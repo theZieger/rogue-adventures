@@ -44,6 +44,7 @@ const ELTERN = (() => {
       spiegel: 'Passen beide Hälften einer Figur beim Umklappen genau aufeinander?',
       bewegung: 'Ihr Kind erkennt, ob eine Figur verschoben, gedreht oder gespiegelt wurde.',
       vieleck: 'Quadrat, Rechteck, Parallelogramm und Dreiecke an Seiten und Winkeln erkennen.',
+      ansicht: 'Wie sieht ein Würfelgebäude von vorn, von oben oder von rechts aus? Ihr Kind wählt das passende Bild.',
     },
     jahrmarkt: {
       uhr: 'Die Zeigeruhr lesen, erst volle und halbe Stunden, später auf die Minute, dazu Zeitspannen.',
@@ -72,10 +73,13 @@ const ELTERN = (() => {
       stamm: 'Verwandte Wörter erkennen. Sie werden im Wortstamm gleich geschrieben: fahren, Fahrer.',
       trenn: 'Wörter am Zeilenende nach Silben trennen: Fens-ter.',
       komma: 'Komma bei Aufzählungen und vor „aber“ und „denn“ richtig setzen.',
+      grund: 'Unter welchem Wort steht es im Wörterbuch? er lief – laufen, die Bäume – der Baum.',
+      vokal: 'Merkwörter mit doppeltem Selbstlaut richtig schreiben: Boot, Meer, Haar.',
+      sachsen: 'Zum Schmunzeln: sächsische Mundartwörter wie Bemme oder Plinse auf Hochdeutsch.',
     },
     satzbaustelle: {
       wortart: 'Ihr Kind bestimmt, ob ein Wort Nomen, Verb, Adjektiv, Pronomen oder Artikel ist.',
-      zeit: 'Passiert es jetzt (Präsens) oder ist es schon vorbei (Präteritum)?',
+      zeit: 'Passiert es jetzt (Präsens) oder ist es schon vorbei (Präteritum)? Später helfen Zeitwörter wie gestern und jetzt.',
       steig: 'Adjektive steigern: klein, kleiner, am kleinsten. Dazu „als“ und „wie“.',
       satzglied: 'Im Satz finden: Wer tut etwas (Subjekt) und was tut er (Prädikat)?',
       umstell: 'Die Teile eines Satzes umstellen, sodass wieder ein richtiger Satz entsteht.',
@@ -85,6 +89,9 @@ const ELTERN = (() => {
       weglass: 'Welches Wort kann wegfallen, ohne dass der Satz falsch wird?',
       pronomen: 'Aus Einzahl wird Mehrzahl: ich lache – wir lachen.',
       redensart: 'Ihr Kind erklärt, was eine Redensart wie „Schwein haben“ wirklich meint.',
+      praedikat: 'Verben mit zwei Teilen im Satz finden: Lea räumt ihr Zimmer auf – aufräumen.',
+      anrede: 'Im Brief Erwachsene mit Sie und Ihnen anreden, Freunde und Familie mit du.',
+      begleiter: 'Artikelwörter wie mein, dieser, jeder und kein passend zum Nomen wählen: meine Tasche, mit meinem Ball.',
     },
     teestube: {
       en_de: 'Ein englisches Wort lesen und das deutsche Wort dazu finden.',
@@ -122,6 +129,7 @@ const ELTERN = (() => {
       kreislauf: 'Den Weg des Wassers im Bild erklären: Meer, Wolken, Regen, Fluss.',
       vorhersage: 'Eine Wetterkarte für vier Tage lesen: Wetter und Temperatur.',
       regel: 'Alte Wettersprüche der Bauern ergänzen. Der Reim hilft.',
+      forschen: 'Wie man einen Versuch plant: Frage, Vermutung, Versuch, Beobachtung, Ergebnis. Dazu Schwimmen und Sinken.',
     },
     kompass: {
       richtung: 'Norden, Osten, Süden und Westen kennen und wissen, wo die Sonne wann steht.',

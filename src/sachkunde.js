@@ -264,7 +264,8 @@ const MS = (() => {
     kreislauf: { title: 'Der Wasserkreislauf', lines: CYCLE_PARTS.map((p, i) => `${i + 1}. ${p.desc}`) },
     wetter: { title: 'Wetter und Wettervorhersage', lines: ['Zum Wetter gehören Temperatur, Niederschlag, Wind und Bewölkung.', 'Die Temperatur misst man mit dem Thermometer in Grad Celsius (°C).', 'Unter 0 °C spricht man von Minusgraden: −3 °C ist kälter als 0 °C.', 'Regen, Schnee und Hagel heißen zusammen Niederschlag. Man misst ihn mit dem Regenmesser.', 'Die Windfahne zeigt, woher der Wind weht. Meteorologen machen die Wettervorhersage.'] },
     regeln: { title: 'Bauernregeln', lines: ['Bauernregeln sind alte Sprüche über das Wetter.', 'Sie beruhen auf Beobachtungen der Bauern, stimmen aber nicht immer.', '„Abendrot – Schönwetterbot’.“ – „Morgenrot – Schlechtwetterbot’.“', '„April, April, der macht, was er will.“', '„Ist der Mai kühl und nass, füllt’s dem Bauern Scheun’ und Fass.“'] },
-    schwimmen: { title: 'Schwimmen und Sinken', lines: ['Was leichter ist als gleich viel Wasser, schwimmt.', 'Was schwerer ist als gleich viel Wasser, sinkt.', 'Luft im Inneren hilft beim Schwimmen: Korken, Apfel und Tischtennisball schwimmen.', 'Metall, Glas und Stein sinken.'] },
+    schwimmen: { title: 'Schwimmen und Sinken', lines: ['Was leichter ist als gleich viel Wasser, schwimmt.', 'Was schwerer ist als gleich viel Wasser, sinkt.', 'Luft im Inneren hilft beim Schwimmen: Korken, Apfel und Tischtennisball schwimmen.', 'Metall, Glas und Stein sinken.', 'Auch die Form zählt: Eine Knetkugel sinkt, ein Knetschiffchen schwimmt. Deshalb schwimmt auch ein Schiff aus Stahl.', 'Salzwasser trägt besser: Ein frisches Ei sinkt im Leitungswasser und schwimmt in sehr salzigem Wasser.'] },
+    experiment: { title: 'Ein Versuch Schritt für Schritt', lines: ['1. Frage: Was willst du herausfinden?', '2. Vermutung: Was glaubst du, bevor du es ausprobierst?', '3. Versuch: Du probierst es aus. Ändere nur eine Sache, alles andere bleibt gleich.', '4. Beobachtung: Was passiert wirklich? Schau genau hin und schreib es auf.', '5. Ergebnis: Was hast du herausgefunden? Stimmte deine Vermutung?'] },
     zufall: { title: 'Wahrscheinlich oder nicht?', lines: ['Sind in einem Beutel mehr rote als blaue Kugeln, ziehst du wahrscheinlich eine rote.', 'Sicher ist das aber nicht – es kann auch eine blaue kommen.', 'Sind gleich viele rote Kugeln in zwei gleich großen Beuteln, ist die Chance in beiden gleich.'] },
   };
   const WE_POOL = partPool('kreislauf', 'kreislauf', 'kreislauf', 'wk_').concat([
@@ -312,7 +313,29 @@ const MS = (() => {
     { id: 'werg10', mod: 'regel', g: 'regeln', q: 'Gewitter im Mai, singt der Bauer ___.', o: ['Juchhei', 'Ade', 'Hallo'], a: 0 },
     { id: 'werg11', mod: 'regel', g: 'regeln', q: 'Bauernregeln stimmen immer.', rf: true, a: false, why: 'Sie beruhen auf alten Beobachtungen und stimmen nicht immer.' },
     { id: 'werg12', mod: 'regel', g: 'regeln', q: 'Was sagt die Regel „Abendrot – Schönwetterbot’“?', o: ['Ist der Himmel abends rot, wird das Wetter schön', 'Morgens regnet es immer', 'Im Mai ist es kalt'], a: 0 },
+    // Forschen: Schwimmen und Sinken, ein Versuch Schritt für Schritt
+    { id: 'wefo1', mod: 'forschen', g: 'schwimmen', q: 'Eine Kugel aus Knete sinkt. Wie bringst du dieselbe Knete zum Schwimmen?', o: ['Ich forme ein Schiffchen mit hohem Rand daraus', 'Ich drücke die Kugel noch fester zusammen', 'Ich mache die Kugel größer'], a: 0 },
+    { id: 'wefo2', mod: 'forschen', g: 'schwimmen', q: 'Ob etwas schwimmt, hängt nur davon ab, woraus es ist.', rf: true, a: false, why: 'Auch die Form zählt: Eine Knetkugel sinkt, ein Knetschiffchen schwimmt.' },
+    { id: 'wefo3', mod: 'forschen', g: 'schwimmen', q: 'Warum schwimmt ein großes Schiff aus Stahl?', o: ['Es ist innen hohl und voller Luft', 'Stahl ist leichter als Wasser', 'Es fährt zu schnell, um zu sinken'], a: 0 },
+    { id: 'wefo4', mod: 'forschen', g: 'schwimmen', q: 'Ein frisches Ei sinkt im Leitungswasser. Was passiert, wenn du sehr viel Salz im Wasser auflöst?', o: ['Das Ei steigt nach oben und schwimmt', 'Das Ei sinkt noch schneller', 'Das Ei löst sich auf'], a: 0 },
+    { id: 'wefo5', mod: 'forschen', g: 'schwimmen', q: 'Im Toten Meer ist sehr viel Salz. Dort kann man sich aufs Wasser legen, ohne unterzugehen.', rf: true, a: true },
+    { id: 'wefo6', mod: 'forschen', g: 'schwimmen', q: 'In welchem Wasser schwimmt ein frisches Ei?', o: ['In sehr salzigem Wasser', 'In Leitungswasser', 'In warmem Leitungswasser'], a: 0 },
+    { id: 'wefo7', mod: 'forschen', g: 'experiment', q: 'Womit beginnt ein Versuch?', o: ['Mit einer Frage', 'Mit dem Ergebnis', 'Mit der Beobachtung'], a: 0 },
+    { id: 'wefo8', mod: 'forschen', g: 'experiment', q: 'Was ist eine Vermutung?', o: ['Was du glaubst, bevor du es ausprobierst', 'Was du beim Versuch siehst', 'Was am Ende herauskommt'], a: 0 },
+    { id: 'wefo9', mod: 'forschen', g: 'experiment', q: '„Ich glaube, die Knetkugel geht unter.“ Welcher Schritt ist das?', o: ['Die Vermutung', 'Die Beobachtung', 'Das Ergebnis'], a: 0 },
+    { id: 'wefo10', mod: 'forschen', g: 'experiment', q: '„Die Kugel liegt auf dem Boden des Glases.“ Welcher Schritt ist das?', o: ['Die Beobachtung', 'Die Vermutung', 'Die Frage'], a: 0 },
+    { id: 'wefo11', mod: 'forschen', g: 'experiment', q: '„Ob Knete schwimmt, hängt von ihrer Form ab.“ Welcher Schritt ist das?', o: ['Das Ergebnis', 'Die Frage', 'Die Vermutung'], a: 0 },
+    { id: 'wefo12', mod: 'forschen', g: 'experiment', q: 'Wenn die Vermutung nicht stimmt, war der Versuch umsonst.', rf: true, a: false, why: 'Auch dann hast du etwas herausgefunden. Vermutungen dürfen falsch sein.' },
+    { id: 'wefo13', mod: 'forschen', g: 'experiment', q: 'Du willst wissen, ob Salz dem Ei beim Schwimmen hilft. Was gehört zu einem fairen Versuch?', o: ['Gleiches Ei, gleiches Glas, nur einmal mit und einmal ohne Salz', 'Ein großes Ei ins Salzwasser, ein kleines ins Leitungswasser', 'Ganz viele Sachen auf einmal ändern'], a: 0 },
+    { id: 'wefo14', mod: 'forschen', g: 'experiment', q: 'Warum macht man einen Versuch oft mehrmals?', o: ['Um sicher zu sein, dass das Ergebnis stimmt', 'Damit die Vermutung richtig wird', 'Weil man sonst nichts aufschreiben darf'], a: 0 },
+    { id: 'wefo15', mod: 'forschen', g: 'experiment', q: 'Bei der Beobachtung schreibst du auf, was wirklich passiert, auch wenn du etwas anderes vermutet hast.', rf: true, a: true },
   ]);
+  const STEPS = ['Frage', 'Vermutung', 'Versuch', 'Beobachtung', 'Ergebnis'].map((t) => ({ id: 'fs_' + t, text: t }));
+  const EXPERIMENTS = [
+    ['Schwimmt ein Ei auch in Salzwasser?', 'Ich glaube, das Ei geht unter.', 'Ich rühre viel Salz in ein Glas Wasser und lege das Ei hinein.', 'Das Ei steigt nach oben.', 'In sehr salzigem Wasser schwimmt ein Ei.'],
+    ['Kann Knete schwimmen?', 'Ich glaube, Knete geht immer unter.', 'Ich lege eine Knetkugel ins Wasser, danach ein Schiffchen aus derselben Knete.', 'Die Kugel sinkt, das Schiffchen schwimmt.', 'Ob Knete schwimmt, hängt von ihrer Form ab.'],
+    ['Wo trocknet ein nasses Tuch schneller?', 'Ich glaube, in der Sonne.', 'Ich hänge ein Tuch in die Sonne und ein gleiches in den Schatten.', 'Das Tuch in der Sonne ist zuerst trocken.', 'In der Wärme verdunstet Wasser schneller.'],
+  ].map((x, i) => x.map((text, j) => ({ id: `fx${i}_${j}`, text })));
   // Wettervorhersage-Karte: vier Tage, jedes Symbol höchstens einmal, alle Temperaturen verschieden (sonst wären Fragen mehrdeutig)
   const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
   const WX = {
@@ -345,6 +368,7 @@ const MS = (() => {
     kreislauf: { name: 'Wasserkreislauf', icon: '🔄', maxTier: 2, worldCap: [2], dmg: 14 },
     vorhersage: { name: 'Wettervorhersage', icon: '🌦️', maxTier: 1, worldCap: [1], dmg: 12 },
     regel: { name: 'Bauernregeln', icon: '📜', maxTier: 1, worldCap: [1], dmg: 10 },
+    forschen: { name: 'Forschen und Versuche', icon: '🔬', maxTier: 1, worldCap: [1], dmg: 14 },
   };
   const WE_TUT = {
     'zustand:1': { title: 'Fest, flüssig, gasförmig', steps: ['Wasser gibt es in drei Formen.', 'Fest: Eis, Schnee, Hagel. Flüssig: Wasser, Regen, Tau. Gasförmig: Wasserdampf.', 'Tippe auf die richtige Antwort.'] },
@@ -352,6 +376,8 @@ const MS = (() => {
     'kreislauf:1': { title: 'Wasserkreislauf', steps: ['Im Bild sind fünf Stellen nummeriert. Eine davon leuchtet gelb.', 'Folge dem Wasser: Es verdunstet, bildet Wolken, der Wind treibt sie weiter, es regnet, Flüsse bringen das Wasser zurück ins Meer.', 'Tippe auf den Satz, der zur Nummer passt.'] },
     'kreislauf:2': { title: 'Wasserkreislauf: Stelle finden', steps: ['Jetzt andersherum: Oben steht, was passiert.', 'Tippe im Bild auf die passende Stelle.', 'Beginne beim Meer und folge dem Wasser.'] },
     'vorhersage:1': { title: 'Wettervorhersage', steps: ['Die Karte zeigt vier Tage: oben der Tag, in der Mitte das Wetter, unten die Temperatur.', 'Sonne, Wolken, Regentropfen oder Schneeflocken zeigen das Wetter. −2 °C heißt: 2 Grad unter null.', 'Lies genau ab und tippe auf die Antwort.'] },
+    'forschen:1': { title: 'Forschen und Versuche', steps: ['So gehen Forscher vor: Frage, Vermutung, Versuch, Beobachtung, Ergebnis.', 'Ob etwas schwimmt, hängt vom Stoff ab, aber auch von der Form und davon, wie salzig das Wasser ist.', 'Beispiel: Eine Knetkugel sinkt. Als Schiffchen schwimmt dieselbe Knete.', 'Tippe auf die richtige Antwort.'] },
+    'forschord:1': { title: 'Versuch ordnen', steps: ['Die Schritte eines Versuchs sind durcheinander.', 'Erst die Frage, dann die Vermutung, dann der Versuch. Danach schreibst du auf, was du beobachtest, und am Ende das Ergebnis.', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
     'regel:1': { title: 'Bauernregeln', steps: ['Bauernregeln sind alte Sprüche über das Wetter. Oft reimen sie sich.', 'Im Spruch fehlt ein Wort (___). Der Reim hilft dir.', 'Tippe auf das Wort, das passt.'] },
   };
   function weGen(cfg) {
@@ -361,6 +387,11 @@ const MS = (() => {
       if (mod === 'zustand' && Math.random() < 0.6) { const w = pick(WATER); return choice(mod, 'zustand', `${w.label}: Ist das fest, flüssig oder gasförmig?`, STATES[w.s], STATES.filter((_, i) => i !== w.s), 'wzst_' + w.id); }
       if (mod === 'begriff' && Math.random() < 0.4) { const x = pick(TERMS); return choice(mod, 'begriffe', `${x.ex} Wie heißt das?`, x.t, shuffle(TERMS.filter((y) => y !== x)).slice(0, 2).map((y) => y.t), 'wterm_' + x.t); }
       if (mod === 'vorhersage' && Math.random() < 0.7) return forecastTask(mod);
+      if (mod === 'forschen' && Math.random() < 0.35) {
+        const i = rnd(-1, EXPERIMENTS.length - 1);
+        return i < 0 ? orderTask(mod, 'forschord:1', 'experiment', 'So forschst du: Tippe die Schritte der Reihe nach an.', STEPS, 'wfs_', 5)
+          : orderTask(mod, 'forschord:1', 'experiment', 'Ein Versuch: Tippe die Sätze in der richtigen Reihenfolge an – Frage, Vermutung, Versuch, Beobachtung, Ergebnis.', EXPERIMENTS[i], `wfx${i}_`, 5);
+      }
       return null;
     };
   }
@@ -381,6 +412,9 @@ const MS = (() => {
     { label: 'Orange mit Schale', acc: 'eine Orange mit Schale', nom: 'Die Orange mit Schale', f: true, why: 'In der dicken Schale stecken viele Luftbläschen.' },
     { label: 'Geschälte Orange', acc: 'eine geschälte Orange', nom: 'Die geschälte Orange', f: false, why: 'Ohne die luftige Schale ist die Orange schwerer als gleich viel Wasser.' },
     { label: 'Frisches Ei', acc: 'ein frisches Ei', nom: 'Das frische Ei', f: false, why: 'Ein frisches Ei ist schwerer als gleich viel Wasser.' },
+    { label: 'Ei im Salzwasser', acc: 'ein frisches Ei', into: 'in sehr salziges Wasser', nom: 'Das frische Ei', f: true, why: 'Salzwasser ist schwerer als Leitungswasser. Darin schwimmt das Ei, das im Leitungswasser sinkt.' },
+    { label: 'Knetkugel', acc: 'eine Kugel aus Knete', nom: 'Die Knetkugel', f: false, why: 'Knete ist schwerer als gleich viel Wasser.' },
+    { label: 'Knetschiffchen', acc: 'ein Schiffchen aus Knete mit hohem Rand', nom: 'Das Knetschiffchen', f: true, why: 'Es ist innen hohl und voller Luft. Dieselbe Knete, die als Kugel sinkt, schwimmt als Schiffchen.' },
   ];
   function tankSVG(label, where) {
     const y = where === 'oben' ? 46 : where === 'unten' ? 112 : 2;
@@ -398,7 +432,7 @@ const MS = (() => {
     return { kind: 'urne', topic: 'zufall', q: 'Du ziehst mit geschlossenen Augen eine Kugel. Aus welchem Beutel bekommst du wahrscheinlicher eine rote?', opts: ['Beutel 1', 'Beutel 2', 'Beide gleich'], a, note, pic: urnSVG({ r: r1, n }, { r: r2, n }), r: [r1, r2], n };
   }
   function laborSet() {
-    const fl = shuffle(FLOAT).slice(0, 2).map((x) => ({ kind: 'float', topic: 'schwimmen', q: `Du legst ${x.acc} ins Wasser. Schwimmt es oder sinkt es?`, opts: ['Schwimmt', 'Sinkt'], a: x.f ? 0 : 1, note: `${x.nom} ${x.f ? 'schwimmt' : 'sinkt'}. ${x.why}`, pic: tankSVG(x.label, null), after: tankSVG(x.label, x.f ? 'oben' : 'unten') }));
+    const fl = shuffle(FLOAT).slice(0, 2).map((x) => ({ kind: 'float', topic: 'schwimmen', q: `Du legst ${x.acc} ${x.into || 'ins Wasser'}. Schwimmt es oder sinkt es?`, opts: ['Schwimmt', 'Sinkt'], a: x.f ? 0 : 1, note: `${x.nom} ${x.f ? 'schwimmt' : 'sinkt'}. ${x.why}`, pic: tankSVG(x.label, null), after: tankSVG(x.label, x.f ? 'oben' : 'unten') }));
     const st = shuffle(WATER).slice(0, 2).map((w) => ({ kind: 'state', topic: 'zustand', q: `${w.label}: fest, flüssig oder gasförmig?`, opts: STATES.slice(), a: w.s, note: w.note }));
     return shuffle(fl.concat(st, [urnExperiment()]));
   }
@@ -406,7 +440,7 @@ const MS = (() => {
   const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
     starters: [{ id: 'wetterwart', type: 'normal', shape: 'wetterwart', names: ['Der Wetterwart', 'Der Wetterwart', 'Der Wetterwart'], hp: 70, desc: 'Er liest jeden Morgen Thermometer, Regenmesser und Windfahne ab und schreibt alles auf.', perk: 'none',
       attacks: [{ name: 'Eiszapfen', mod: 'zustand' }, { name: 'Wasserkessel', mod: 'begriff' }, { name: 'Wolkenzug', mod: 'kreislauf' }, { name: 'Wetterhahn', mod: 'vorhersage' }] }],
-    extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender' },
+    extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender', forschen: 'Messbecher' },
     enemies: { 1: {
       normal: [
         { name: 'Nieselregen', type: 'wasser', shape: 'nieselregen', hp: 24, atk: 3 },
@@ -662,6 +696,6 @@ const MS = (() => {
   KK.gen = kkGen(KK);
 
   K.MODES.kornkammer = KO; K.MODES.wetterstation = WE; K.MODES.kompass = KK;
-  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
+  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, STEPS, EXPERIMENTS, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
 })();
 if (typeof module !== 'undefined') module.exports = MS;

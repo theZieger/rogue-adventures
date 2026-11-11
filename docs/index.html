@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="6a473d49b8ad">
+<meta name="app-version" content="906749c00c86">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1351,6 +1351,7 @@ const MQ = (() => {
     spiegel: { name: 'Achsensymmetrie', icon: '🦋', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     bewegung: { name: 'Spiegeln, drehen, schieben', icon: '🔄', maxTier: 1, worldCap: [1, 1], dmg: 12 },
     vieleck: { name: 'Dreiecke und Vierecke', icon: '🔷', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    ansicht: { name: 'Ansichten', icon: '🧱', maxTier: 2, worldCap: [1, 2], dmg: 14 },
   };
   const INK = '#1C2541', LINE = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
   const svgFig = (x, y, w, h, body, label) => `<svg viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
@@ -1390,6 +1391,34 @@ const MQ = (() => {
     const [rows, cols] = t === 1 ? pick([[2, 2], [2, 3]]) : pick([[2, 3], [3, 3]]); const full = t === 1 ? 2 : 3; let plan;
     do plan = Array.from({ length: rows }, () => Array.from({ length: cols }, () => rnd(0, full))); while (sum(plan.flat()) < 2 || rows * cols * full - sum(plan.flat()) < 2);
     return task('', [rows * cols * full - sum(plan.flat())], { svg: figPair(plan, full), ask: `Der Quader soll ${cols} Würfel lang, ${rows} breit und ${full} hoch werden. Wie viele Würfel fehlen?`, plan, full, sig: JSON.stringify(plan) });
+  }
+
+  // a view is a list of rows from top to bottom, '#' = square. Seen from the right, the front row is on the left.
+  const colView = (hs) => { const H = Math.max(...hs); return Array.from({ length: H }, (_, i) => hs.map((h) => (h >= H - i ? '#' : '.')).join('')); };
+  const sideHs = { vorn: (plan) => plan[0].map((_, c) => Math.max(...plan.map((row) => row[c]))), rechts: (plan) => plan.map((row) => Math.max(...row)).reverse() };
+  const VIEWS = { vorn: (plan) => colView(sideHs.vorn(plan)), rechts: (plan) => colView(sideHs.rechts(plan)), oben: (plan) => plan.map((row) => row.map((n) => (n ? '#' : '.')).join('')) };
+  const trimView = (rows) => {
+    const cols = rows[0].length, used = (c) => rows.some((r) => r[c] === '#'); let c0 = 0, c1 = cols - 1; while (!used(c0)) c0++; while (!used(c1)) c1--;
+    return rows.filter((r) => r.includes('#')).map((r) => r.slice(c0, c1 + 1));
+  };
+  function viewSVG(rows, W, H) {
+    const S = 14, ox = (W - rows[0].length) * S / 2, oy = (H - rows.length) * S;
+    return svgFig(-2, -2, W * S + 4, H * S + 4, rows.flatMap((row, r) => [...row].map((ch, c) => (ch === '#' ? `<rect x="${ox + c * S}" y="${oy + r * S}" width="${S}" height="${S}" fill="${BRICK[0]}" ${LINE}/>` : ''))).join(''), 'Ansicht aus Quadraten');
+  }
+  function genAnsicht(t) {
+    const side = t === 1 ? pick(['vorn', 'oben']) : pick(['vorn', 'oben', 'rechts']); let plan;
+    do { const [rows, cols] = t === 1 ? pick([[2, 2], [2, 3]]) : pick([[2, 3], [3, 3], [3, 2]]); plan = Array.from({ length: rows }, () => Array.from({ length: cols }, () => rnd(0, 3))); }
+    while (plan.flat().filter((n) => !n).length > t || plan.some((row) => row.every((n) => !n)) || plan[0].some((_, c) => plan.every((row) => !row[c])));
+    const right = trimView(VIEWS[side](plan)), mirror = (v) => v.map((r) => [...r].reverse().join(''));
+    const others = shuffle(Object.keys(VIEWS).filter((k) => k !== side).map((k) => VIEWS[k](plan)).concat([mirror(VIEWS[side](plan))], side === 'oben' ? [VIEWS.oben(plan).slice().reverse()] : []));
+    // fallback: one column a square higher or lower, or one square of the top view added or taken away
+    const near = shuffle(side === 'oben' ? plan.flatMap((row, r) => row.map((_, c) => VIEWS.oben(plan.map((x, i) => x.map((n, j) => (i === r && j === c ? (n ? 0 : 1) : n)))))).filter((v) => v.join('').includes('#'))
+      : sideHs[side](plan).flatMap((h, i, hs) => [h - 1, h + 1].filter((x) => x >= 1 && x <= 4).map((x) => colView(hs.map((y, j) => (j === i ? x : y))))));
+    const views = [right], keys = new Set([right.join('|')]);
+    for (const v of others.concat(near).map(trimView)) if (views.length < 3 && !keys.has(v.join('|'))) { keys.add(v.join('|')); views.push(v); }
+    const W = Math.max(...views.map((v) => v[0].length)), H = Math.max(...views.map((v) => v.length)), order = shuffle([0, 1, 2]);
+    const options = order.map((i) => viewSVG(views[i], W, H));
+    return { kind: 'choice', q: `Welches Bild zeigt das Gebäude von ${side}?`, pic: figPair(plan), options, answer: options[order.indexOf(0)], views: order.map((i) => views[i]), plan, side, svgOpts: true, why: `So sieht das Gebäude von ${side} aus:`, sig: side + JSON.stringify(plan) };
   }
 
   // the 11 nets of a cube; rows separated by |, # is a square
@@ -1693,7 +1722,7 @@ const MQ = (() => {
 
   function bauGenerate(mod, tier) {
     tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
-    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang, flaeche: genFlaeche, spiegel: genSpiegel, bewegung: genBewegung, vieleck: genVieleck }[mod](tier);
+    const tk = { wz: genWz, fq: genFq, netz: genNetz, koerper: genKoerper, band: genBand, lage: genLage, umfang: genUmfang, flaeche: genFlaeche, spiegel: genSpiegel, bewegung: genBewegung, vieleck: genVieleck, ansicht: genAnsicht }[mod](tier);
     if (!tk.kind) tk.kind = 'num';
     if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
     // one tutorial per task type, a second one where a tier brings something new
@@ -1714,6 +1743,8 @@ const MQ = (() => {
     'bewegung:1': { title: 'Spiegeln, drehen, schieben', steps: ['Verschoben: Die Figur liegt genauso da wie vorher, nur an einer anderen Stelle.', 'Gedreht: Die Figur wurde um eine Ecke gedreht, zum Beispiel eine Vierteldrehung. Sie wurde nicht umgeklappt.', 'Gespiegelt: Die Figur wurde umgeklappt. Zeigt bei einem L der Fuß vorher nach rechts und jetzt nach links, ist es gespiegelt.'] },
     'vieleck:1': { title: 'Dreiecke und Vierecke', steps: ['Quadrat: vier gleich lange Seiten und vier rechte Winkel. Rechteck: vier rechte Winkel, gegenüber gleich lange Seiten.', 'Parallelogramm: Gegenüberliegende Seiten sind parallel. Hat es rechte Winkel, ist es ein Rechteck.', 'Dreiecke haben drei Ecken. Beim Dreieck mit rechtem Winkel bilden zwei Seiten eine Ecke wie bei einem Blatt Papier.', 'Beispiel: 3 Kästchen lang, 3 Kästchen hoch, alle Ecken rechte Winkel: Das ist ein Quadrat.'] },
     'vieleck:2': { title: 'Eigenschaften von Vierecken', steps: ['Rechteck und Quadrat haben vier rechte Winkel und zwei Paar parallele Seiten.', 'Ein Parallelogramm hat auch zwei Paar parallele Seiten. Das Parallelogramm im Bild hat keinen rechten Winkel.', 'Ein Dreieck mit rechtem Winkel hat genau 1 rechten Winkel. Ein Dreieck hat nie parallele Seiten.'] },
+    'ansicht:1': { title: 'Ansichten', steps: ['Bauplan und Bild zeigen dasselbe Gebäude. Unten im Bauplan ist vorn.', 'Von oben siehst du jedes Feld, auf dem mindestens ein Würfel steht. Von vorn siehst du in jeder Spalte den höchsten Turm.', 'Bauplan 2, 1 hinten und 1, 3 vorn: Von vorn sind die Türme 2 und 3 Würfel hoch.', 'Tippe auf das passende Bild.'] },
+    'ansicht:2': { title: 'Ansicht von rechts', steps: ['Jetzt schaust du auch von der rechten Seite auf das Gebäude.', 'Von rechts siehst du in jeder Reihe des Bauplans den höchsten Turm. Die vordere Reihe ist dann links, die hintere rechts.', 'Bauplan hinten 1, 2 und vorn 3, 1: Von rechts siehst du links einen Turm mit 3 Würfeln, rechts einen mit 2.', 'Tippe auf das passende Bild.'] },
     'umfang:1': { title: 'Umfang', steps: ['Der Umfang ist der Weg einmal ganz um die Fläche herum.', 'Zähle jede Kästchenseite am Rand. Starte an einer Ecke und fahre mit dem Finger herum.', 'Rechteck 3 Kästchen lang und 2 hoch: 3 + 2 + 3 + 2 = 10. Der Umfang ist 10 Kästchenseiten.'] },
   };
   const BAU = {
@@ -1721,7 +1752,7 @@ const MQ = (() => {
     STARTERS: [{ id: 'biber', type: 'wasser', shape: 'beaver', names: ['Dammbiber', 'Brückenbiber', 'Brückenbiber'], hp: 75, desc: 'Ein Biber mit Bauhelm. Misst jeden Stamm aus, bevor er ihn zersägt.', perk: 'tank',
       attacks: [{ name: 'Ziegelstapel', mod: 'wz' }, { name: 'Bauklotzwurf', mod: 'koerper' }, { name: 'Lotschnur', mod: 'lage' }, { name: 'Zollstock', mod: 'umfang' }] }],
     WORLD_ATTACKS: { 2: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] },
-    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock', flaeche: 'Bodenplatten', spiegel: 'Fensterflügel', bewegung: 'Drehkran', vieleck: 'Winkeleisen' },
+    EXTRA: { wz: 'Ziegelstapel', fq: 'Mauerlücke', netz: 'Faltkarton', koerper: 'Bauklotzwurf', band: 'Fliesenband', lage: 'Lotschnur', umfang: 'Zollstock', flaeche: 'Bodenplatten', spiegel: 'Fensterflügel', bewegung: 'Drehkran', vieleck: 'Winkeleisen', ansicht: 'Grundriss' },
     ENEMIES: {
       1: {
         normal: [
@@ -2190,6 +2221,11 @@ const MJ = (() => {
   grosssaetze  'Satz mit [Nomen]': das Nomen ist ein Gefühl, eine Farbe oder ein Verb oder Adjektiv als Nomen
                (die Freude, das Rot, das Lachen) und das einzige Wort im Satz, das man großschreiben muss –
                außer dem Satzanfang und Nomen, die schon groß dastehen
+  grundform    [Wortform, Grundform, falsch, falsch]: Verbform → Grundform (er lief → laufen) oder Nomen in der
+               Mehrzahl → Einzahl mit Artikel (die Bäume → der Baum); die falschen sind keine Grundform dieses Worts
+  doppelvokal  [richtig, falsch] – Merkwort mit aa, ee oder oo; falsch = mit nur einem Selbstlaut
+  saechsisch   [sächsisches Wort, Bedeutung, falsch, falsch, Erklärung]: nur Wörter, die in Sachsen wirklich so
+               gesagt werden
 
   SATZBAUSTELLE (Sprache untersuchen)
   nomen, verben, adjektive, pronomen   Wortarten; die Nomen werden auch für „Groß oder klein“ und „Artikel“ benutzt
@@ -2209,6 +2245,14 @@ const MJ = (() => {
                nur Verben, die ein Objekt brauchen (tragen, brauchen, besuchen, mögen …)
   personen     regelmäßige Verben für die Personalpronomen: du …st, er …t (Stamm endet nicht auf s, ß, z, t oder d)
   redensarten  [Redensart oder Sprichwort, Bedeutung, falsch, falsch, Herkunft oder '' wenn unbekannt]
+  trennbar     ['Satz mit [Verb] und [Verbteil] in Klammern.', Grundform]: das Prädikat hat zwei Teile (räumt … auf);
+               zwischen den Teilen steht mindestens ein Wort
+  zeitwoerter  ['Zeitwort ___ Rest.', Präsens, Präteritum]: der Satz beginnt mit Gestern, Damals, Früher oder Vorhin
+               (dann Präteritum) oder mit Jetzt oder Morgen (dann Präsens)
+  anrede       [Brief an …, Satz mit ___, richtig, falsch, falsch]: Sie, Ihnen, Ihr an Erwachsene, die man siezt;
+               du, dich, dir, dein an Kinder und die Familie. Die falschen Wörter passen nicht zur Person.
+  begleiter    [Satz mit ___, richtiges Artikelwort, falsch, falsch]: mein, dein, unser, dieser, jeder, kein;
+               die falschen Formen passen nicht zum Nomen
 */
 const MW = {
   doppel: [
@@ -2356,6 +2400,42 @@ const MW = {
     'Ich wünsche dir alles [Gute] zum Geburtstag.', 'Wir haben etwas [Schönes] erlebt.', 'Das [Singen] im Chor gefällt mir.',
     'Die [Ruhe] im Wald tut gut.', 'Vor [Müdigkeit] fallen mir die Augen zu.', 'Die [Kälte] kriecht in meine Finger.',
   ],
+  grundform: [
+    ['er lief', 'laufen', 'liefen', 'läufen'], ['sie ging', 'gehen', 'gingen', 'gangen'], ['er hat gesungen', 'singen', 'gesingen', 'sungen'],
+    ['er fährt', 'fahren', 'fähren', 'fährten'], ['sie las', 'lesen', 'lasen', 'lisen'], ['er schrieb', 'schreiben', 'schrieben', 'schriben'],
+    ['sie aß', 'essen', 'aßen', 'äßen'], ['er nimmt', 'nehmen', 'nimmen', 'nahmen'], ['du siehst', 'sehen', 'siehen', 'sahen'],
+    ['er trank', 'trinken', 'tranken', 'trankten'], ['sie half', 'helfen', 'halfen', 'hilfen'], ['er hat geschlafen', 'schlafen', 'geschlafen', 'schliefen'],
+    ['wir sind geschwommen', 'schwimmen', 'geschwommen', 'schwommen'], ['er gibt', 'geben', 'giben', 'gaben'], ['sie kam', 'kommen', 'kamen', 'kämen'],
+    ['er fand', 'finden', 'fanden', 'fänden'], ['sie saß', 'sitzen', 'saßen', 'säßen'], ['er flog', 'fliegen', 'flogen', 'flögen'],
+    ['du hast gerufen', 'rufen', 'gerufen', 'riefen'], ['sie wusste', 'wissen', 'wussten', 'wussen'], ['er trägt', 'tragen', 'trägen', 'trugen'],
+    ['er rannte', 'rennen', 'rannten', 'ranten'],
+    ['die Bäume', 'der Baum', 'der Bäum', 'der Baume'], ['die Mäuse', 'die Maus', 'die Mäus', 'die Mause'], ['die Häuser', 'das Haus', 'das Häus', 'das Hauser'],
+    ['die Bücher', 'das Buch', 'das Büch', 'das Bucher'], ['die Hände', 'die Hand', 'die Händ', 'die Hande'], ['die Äpfel', 'der Apfel', 'der Äpfel', 'der Apf'],
+    ['die Züge', 'der Zug', 'der Züg', 'der Zuge'], ['die Kälber', 'das Kalb', 'das Kälb', 'das Kalber'], ['die Gänse', 'die Gans', 'die Gäns', 'die Ganse'],
+    ['die Wälder', 'der Wald', 'der Wäld', 'der Walder'], ['die Füße', 'der Fuß', 'der Füß', 'der Fuße'], ['die Blätter', 'das Blatt', 'das Blätt', 'das Blatter'],
+  ],
+  doppelvokal: [
+    ['das Boot', 'das Bot'], ['das Meer', 'das Mer'], ['das Haar', 'das Har'], ['der See', 'der Se'], ['das Moos', 'das Mos'],
+    ['der Tee', 'der Te'], ['der Saal', 'der Sal'], ['das Paar', 'das Par'], ['der Zoo', 'der Zo'], ['das Beet', 'das Bet'],
+    ['der Klee', 'der Kle'], ['die Fee', 'die Fe'], ['der Schnee', 'der Schne'], ['leer', 'ler'], ['die Idee', 'die Ide'],
+    ['der Aal', 'der Al'], ['das Moor', 'das Mor'], ['die Beere', 'die Bere'], ['der Kaffee', 'der Kaffe'],
+  ],
+  saechsisch: [
+    ['die Bemme', 'die Scheibe Brot mit Belag', 'der Becher mit Kakao', 'die Mütze mit Bommel', 'Eine Bemme ist ein belegtes Brot, zum Beispiel ein Butterbrot.'],
+    ['die Fettbemme', 'das Brot mit Schmalz', 'der dicke Kater', 'die Butterdose', 'Eine Fettbemme ist eine Brotscheibe mit Schmalz darauf.'],
+    ['die Plinse', 'der Eierkuchen', 'die Pflaume', 'der Pinsel', 'Plinsen sind dünne Eierkuchen aus der Pfanne.'],
+    ['nu', 'ja', 'nein', 'nie', '„Nu“ sagt man in Sachsen für „ja“: „Kommst du mit?“ – „Nu!“'],
+    ['die Gusche', 'der Mund', 'die Gurke', 'die Dusche', 'Gusche ist ein derbes Wort für den Mund.'],
+    ['die Hitsche', 'die Fußbank', 'die Hitze', 'der Schlitten', 'Eine Hitsche ist eine niedrige Fußbank, auf die man sich auch setzen kann.'],
+    ['ditschen', 'eintauchen', 'niesen', 'flüstern', 'Wer den Keks in den Kakao tunkt, ditscht ihn.'],
+    ['der Nischel', 'der Kopf', 'die Nase', 'der Nagel', 'In Chemnitz nennen viele das große Kopf-Denkmal in der Innenstadt den Nischel.'],
+    ['der Blümchenkaffee', 'sehr dünner Kaffee', 'Kaffee mit Blüten darin', 'Tee aus Blumen', 'Der Kaffee ist so dünn, dass man das Blümchen am Boden der Tasse sieht.'],
+    ['die Plauze', 'der Bauch', 'die Pause', 'der Pullover', 'Wer viel gegessen hat, hat eine volle Plauze.'],
+    ['der Feez', 'der Spaß', 'die Fee', 'der Streit', '„Feez machen“ heißt Spaß und Unsinn machen.'],
+    ['das Gelumpe', 'altes Zeug, das keiner braucht', 'ein Schatz aus Gold und Silber', 'Gemüse aus dem Garten', 'Gelumpe ist alter Kram, der nur herumliegt.'],
+    ['mähren', 'trödeln', 'mähen', 'malen', '„Mähr nicht so rum!“ heißt: Trödel nicht so!'],
+    ['der Ranft', 'das Endstück vom Brot', 'der Ranzen für die Schule', 'die Ranke am Zaun', 'Der Ranft ist das Anfangs- oder Endstück vom Brot, der Kanten.'],
+  ],
 
   nomen: [
     'der Hund', 'die Katze', 'das Buch', 'der Bleistift', 'die Schule', 'der Baum', 'die Blume', 'das Fenster', 'der Tisch',
@@ -2498,6 +2578,51 @@ const MW = {
     ['Was du heute kannst besorgen, das verschiebe nicht auf morgen.', 'Erledige deine Aufgaben gleich und nicht erst später.', 'Kaufe heute immer doppelt ein.', 'Morgen ist alles besser.', ''],
     ['Stille Wasser sind tief.', 'Ruhige Menschen wissen und können oft mehr, als man denkt.', 'In stillen Seen kann man nicht baden.', 'Man soll nicht ins Wasser springen.', ''],
     ['Wer zuletzt lacht, lacht am besten.', 'Wer am Ende gewinnt, freut sich am meisten.', 'Man soll nicht über Witze lachen.', 'Wer langsam versteht, hat mehr Spaß.', ''],
+  ],
+  trennbar: [
+    ['Lea [räumt] ihr Zimmer [auf].', 'aufräumen'], ['Der Zug [kommt] pünktlich [an].', 'ankommen'], ['Tim [ruft] seine Oma [an].', 'anrufen'],
+    ['Mama [kauft] im Supermarkt [ein].', 'einkaufen'], ['Die Sonne [geht] am Abend [unter].', 'untergehen'], ['Mia [zieht] ihre Jacke [an].', 'anziehen'],
+    ['Der Bus [fährt] um acht Uhr [ab].', 'abfahren'], ['Ben [hebt] den Stift [auf].', 'aufheben'], ['Die Lehrerin [liest] eine Geschichte [vor].', 'vorlesen'],
+    ['Papa [macht] das Licht [aus].', 'ausmachen'], ['Lukas [steigt] in den Bus [ein].', 'einsteigen'], ['Paul [schreibt] das Gedicht [ab].', 'abschreiben'],
+    ['Ich [stehe] um sieben Uhr [auf].', 'aufstehen'], ['Emma [lädt] ihre Freunde zum Geburtstag [ein].', 'einladen'], ['Der Bäcker [macht] den Laden um sechs Uhr [auf].', 'aufmachen'],
+    ['Jonas [packt] seine Schultasche [ein].', 'einpacken'], ['Die Katze [schläft] auf dem Sofa [ein].', 'einschlafen'], ['Lena [malt] das Bild bunt [aus].', 'ausmalen'],
+    ['Opa [holt] uns vom Bahnhof [ab].', 'abholen'], ['Die Klasse [hört] der Lehrerin genau [zu].', 'zuhören'], ['Ich [schalte] den Fernseher [aus].', 'ausschalten'],
+    ['Die Klasse [fängt] mit dem Lesen [an].', 'anfangen'],
+  ],
+  zeitwoerter: [
+    ['Gestern ___ wir ins Schwimmbad.', 'gehen', 'gingen'], ['Jetzt ___ Mia ihre Hausaufgaben.', 'macht', 'machte'], ['Morgen ___ Opa zu Besuch.', 'kommt', 'kam'],
+    ['Damals ___ die Kinder auf Schiefertafeln.', 'schreiben', 'schrieben'], ['Früher ___ man die Wäsche mit der Hand.', 'wäscht', 'wusch'], ['Vorhin ___ das Telefon.', 'klingelt', 'klingelte'],
+    ['Gestern ___ es den ganzen Tag.', 'regnet', 'regnete'], ['Jetzt ___ der Bus um die Ecke.', 'biegt', 'bog'], ['Morgen ___ wir einen Ausflug.', 'machen', 'machten'],
+    ['Damals ___ Oma auf einem Bauernhof.', 'wohnt', 'wohnte'], ['Gestern ___ ich ein spannendes Buch.', 'lese', 'las'], ['Jetzt ___ die Sonne durch die Wolken.', 'scheint', 'schien'],
+    ['Früher ___ die Menschen bei Kerzenlicht.', 'lesen', 'lasen'], ['Morgen ___ Lena ihren Geburtstag.', 'feiert', 'feierte'], ['Vorhin ___ Ben einen Igel im Garten.', 'sieht', 'sah'],
+    ['Gestern ___ der Hund die ganze Nacht.', 'bellt', 'bellte'], ['Jetzt ___ wir ein Lied.', 'singen', 'sangen'], ['Damals ___ es noch keine Handys.', 'gibt', 'gab'],
+    ['Morgen ___ die Ferien.', 'beginnen', 'begannen'], ['Früher ___ die Bauern mit Pferden auf dem Feld.', 'arbeiten', 'arbeiteten'], ['Gestern ___ Paul sein Fahrrad.', 'putzt', 'putzte'],
+    ['Jetzt ___ die Katze in der Sonne.', 'liegt', 'lag'],
+  ],
+  anrede: [
+    ['Frau Weber, deine Lehrerin', 'Liebe Frau Weber, ich danke ___ für die schöne Klassenfahrt.', 'Ihnen', 'dir', 'ihnen'],
+    ['Herrn Lange, euren Nachbarn', 'Lieber Herr Lange, können ___ bitte meine Katze füttern?', 'Sie', 'du', 'sie'],
+    ['Herrn Lange, euren Nachbarn', 'Lieber Herr Lange, ich wünsche ___ gute Besserung.', 'Ihnen', 'dir', 'Sie'],
+    ['Frau Weber, deine Lehrerin', 'Liebe Frau Weber, haben ___ meinen Brief bekommen?', 'Sie', 'du', 'ihr'],
+    ['Frau Schmidt, die Schulleiterin', 'Sehr geehrte Frau Schmidt, ich möchte ___ zu unserem Schulfest einladen.', 'Sie', 'dich', 'Ihnen'],
+    ['Frau Schmidt, die Schulleiterin', 'Sehr geehrte Frau Schmidt, wie geht es ___?', 'Ihnen', 'dir', 'Sie'],
+    ['Herrn Lange, euren Nachbarn', 'Lieber Herr Lange, vielen Dank für ___ Hilfe.', 'Ihre', 'deine', 'ihre'],
+    ['den Bürgermeister', 'Sehr geehrter Herr Bürgermeister, ich habe eine Frage an ___.', 'Sie', 'dich', 'sie'],
+    ['Frau Weber, deine Lehrerin', 'Liebe Frau Weber, ___ Geschichte hat mir gut gefallen.', 'Ihre', 'deine', 'ihre'],
+    ['Max, deinen Freund', 'Lieber Max, ich vermisse ___ sehr.', 'dich', 'Sie', 'Ihnen'],
+    ['Ida, deine Freundin', 'Liebe Ida, kommst ___ am Samstag zu meinem Geburtstag?', 'du', 'Sie', 'ihr'],
+    ['Max, deinen Freund', 'Lieber Max, ich schicke ___ ein Foto von meinem Hund.', 'dir', 'Ihnen', 'Sie'],
+    ['Ida, deine Freundin', 'Liebe Ida, wie war ___ Urlaub?', 'dein', 'Ihr', 'Ihre'],
+    ['deine Oma', 'Liebe Oma, ich freue mich auf ___!', 'dich', 'Sie', 'Ihnen'],
+    ['deinen Opa', 'Lieber Opa, danke für ___ Brief!', 'deinen', 'Ihren', 'ihren'],
+    ['Lena, deine Freundin', 'Liebe Lena, hast ___ Lust, mit mir zu basteln?', 'du', 'Sie', 'ihr'],
+  ],
+  begleiter: [
+    ['___ Fahrrad ist rot.', 'Mein', 'Meine', 'Meinen'], ['Ist das ___ Mütze?', 'deine', 'dein', 'deinen'], ['___ Kind bekommt einen Apfel.', 'Jedes', 'Jeder', 'Jede'],
+    ['___ Hund gehört meiner Tante.', 'Dieser', 'Diese', 'Dieses'], ['Ich mag ___ Buch sehr.', 'dieses', 'dieser', 'diese'], ['___ Tasche ist schwer.', 'Meine', 'Mein', 'Meinen'],
+    ['Hast du ___ Turnbeutel dabei?', 'deinen', 'dein', 'deine'], ['___ Blume im Garten blüht.', 'Jede', 'Jeder', 'Jedes'], ['Wir besuchen ___ Oma.', 'unsere', 'unser', 'unseren'],
+    ['___ Lehrer ist nett.', 'Unser', 'Unsere', 'Unseren'], ['Ich habe ___ Hunger.', 'keinen', 'kein', 'keine'], ['In ___ Schachtel liegen Murmeln.', 'dieser', 'diese', 'dieses'],
+    ['Ich spiele mit ___ Ball.', 'meinem', 'meinen', 'meine'], ['___ Morgen trinke ich Milch.', 'Jeden', 'Jeder', 'Jedes'],
   ],
 };
 
@@ -3792,6 +3917,10 @@ const MK = (() => {
   W.grosssaetze.forEach((x) => { const word = x.match(/\[(.+?)\]/)[1]; const shown = x.replace(`[${word}]`, word.toLowerCase());
     const small = shown.split(' ').slice(1).map((w) => w.replace(/[.,!?]/g, '')).filter((w) => w && w !== word.toLowerCase() && w === w.toLowerCase());
     W_POOL.push({ id: 'gs_' + x, t: 2, mod: 'gross', g: 'gross', q: `Welches Wort schreibt man groß? „${shown}“`, o: [word.toLowerCase()].concat(shuffle(small).slice(0, 2)), a: 0, why: `„${word}“ ist hier ein Nomen. Nomen schreibt man groß.` }); });
+  W.grundform.forEach(([f, r, f1, f2]) => W_POOL.push({ id: 'gf_' + f, mod: 'grund', g: 'grund', q: `Unter welchem Wort findest du „${f}“ im Wörterbuch?`, o: [r, f1, f2], a: 0,
+    why: ARTS.includes(r.split(' ')[0]) ? `Nomen stehen in der Einzahl im Wörterbuch: ${r}.` : `Verben stehen in der Grundform im Wörterbuch: ${r}.` }));
+  W.doppelvokal.forEach(([r, f]) => W_POOL.push({ id: 'dv_' + r, mod: 'vokal', g: 'vokal', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0, why: `Merkwort mit doppeltem Selbstlaut: ${r}.` }));
+  W.saechsisch.forEach(([w, m, f1, f2, more]) => W_POOL.push({ id: 'sx_' + w, mod: 'sachsen', g: 'sachsen', q: `Was heißt das sächsische Wort „${w}“?`, o: [m, f1, f2], a: 0, more }));
   // dictionary order only needs the first three letters; woerter.js keeps those free of umlauts
   const abcKey = (w) => w.slice(0, 3).toLowerCase();
   function abcTask() {
@@ -3813,6 +3942,9 @@ const MK = (() => {
     trenn: { title: 'Worttrennung', lines: ['Man trennt nach Sprechsilben: Gar-ten, Blu-me.', 'Von mehreren Mitlauten kommt nur der letzte in die neue Zeile: Kin-der, Kat-ze, Fens-ter.', 'ck, ch, sch und ph bleiben zusammen: Zu-cker, Ku-chen, Ta-sche.', 'Ein einzelner Buchstabe am Anfang oder Ende wird nicht abgetrennt: Ele-fant, nicht E-lefant.'] },
     komma: { title: 'Komma und Doppelpunkt', lines: ['Bei Aufzählungen steht zwischen den Teilen ein Komma: Äpfel, Birnen und Nüsse.', 'Vor „und“ und „oder“ in der Aufzählung steht kein Komma.', 'Vor „aber“ und „denn“ steht ein Komma: Ich bleibe zu Hause, denn ich bin krank.', 'Vor der wörtlichen Rede steht nach dem Begleitsatz ein Doppelpunkt: Tom ruft: „Der Bus kommt!“'] },
     rede: { title: 'Wörtliche Rede', lines: ['Was jemand sagt, steht in Anführungszeichen: „…“.', 'Der Begleitsatz sagt, wer spricht. Danach steht ein Doppelpunkt.', 'Das Satzzeichen der Rede steht vor dem schließenden Anführungszeichen: Mia sagt: „Ich komme mit.“'] },
+    grund: { title: 'Nachschlagen in der Grundform', lines: ['Im Wörterbuch stehen Verben in der Grundform: er lief → laufen, sie hat gesungen → singen.', 'Nomen stehen in der Einzahl: die Bäume → der Baum.', 'Frag dich: Wie heißt es bei „wir“ und jetzt? Wir laufen. Das ist die Grundform.'] },
+    vokal: { title: 'Doppelte Selbstlaute', lines: ['Manche Wörter schreibt man mit aa, ee oder oo: das Haar, der See, das Boot.', 'Man hört den Unterschied nicht. Diese Merkwörter musst du dir einprägen.', 'Aus aa wird nie ää: das Paar, das Pärchen; der Saal, die Säle.'] },
+    sachsen: { title: 'Sächsische Wörter', lines: ['In Sachsen sprechen viele Menschen Mundart. Manche Wörter gibt es fast nur hier.', 'Die Bemme ist ein belegtes Brot, die Plinse ein Eierkuchen, „nu“ heißt ja.', 'Mundart ist kein Fehler. In Aufsätzen und Diktaten schreibst du aber Hochdeutsch.'] },
   };
   const W_MODULES = {
     doppel: { name: 'Doppelt, ck, tz', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
@@ -3825,6 +3957,9 @@ const MK = (() => {
     stamm: { name: 'Wortfamilie', icon: '🌳', maxTier: 2, worldCap: [2], dmg: 12 },
     trenn: { name: 'Worttrennung', icon: '✂️', maxTier: 1, worldCap: [1], dmg: 12 },
     komma: { name: 'Komma und Doppelpunkt', icon: '🖋️', maxTier: 1, worldCap: [1], dmg: 14 },
+    grund: { name: 'Grundform nachschlagen', icon: '🔍', maxTier: 1, worldCap: [1], dmg: 12 },
+    vokal: { name: 'aa, ee, oo', icon: '🔤', maxTier: 1, worldCap: [1], dmg: 10 },
+    sachsen: { name: 'Sächsische Wörter', icon: '🗺️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
   const W_TUT = {
     'doppel:1': { title: 'Doppelt, ck, tz', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort langsam. Ist der Selbstlaut kurz, folgt ein doppelter Mitlaut, ck oder tz.', 'Beispiel: „die Sonne“ oder „die Sone“? Das o ist kurz, also: die Sonne.', 'Tippe auf das richtige Wort.'] },
@@ -3839,12 +3974,15 @@ const MK = (() => {
     'trenn:1': { title: 'Worttrennung', steps: ['Ein Wort passt nicht mehr in die Zeile. Wo setzt du den Trennstrich?', 'Sprich das Wort in Silben. ck, ch, sch und ph bleiben zusammen, st wird getrennt.', 'Beispiel: Zucker → Zu-cker. Fenster → Fens-ter.', 'Tippe auf das richtig getrennte Wort.'] },
     'komma:1': { title: 'Komma und Doppelpunkt', steps: ['Drei Sätze, nur einer hat die Satzzeichen an der richtigen Stelle.', 'Aufzählung: Komma zwischen den Teilen, vor „und“ keins. Vor „aber“ und „denn“ steht ein Komma.', 'Beispiel: Ich kaufe Äpfel, Birnen und Nüsse.', 'Tippe auf den richtigen Satz.'] },
     'rede:1': { title: 'Wörtliche Rede', steps: ['Jemand sagt etwas. Wo gehören die Anführungszeichen hin?', 'Nur das Gesagte steht in „…“. Davor steht der Begleitsatz mit Doppelpunkt.', 'Beispiel: Mia sagt: „Ich komme mit.“', 'Tippe auf den richtig geschriebenen Satz.'] },
+    'grund:1': { title: 'Grundform nachschlagen', steps: ['Im Wörterbuch steht nicht jede Form eines Worts. Du suchst die Grundform.', 'Verben: Setze „wir“ davor und sag es für jetzt. Nomen: Nimm die Einzahl.', 'Beispiel: „er lief“ → wir laufen → laufen. „die Bäume“ → der Baum.', 'Tippe auf das Wort, unter dem du nachschlägst.'] },
+    'vokal:1': { title: 'aa, ee, oo', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Manche Wörter schreibt man mit doppeltem Selbstlaut. Hören kann man das nicht, man muss es sich merken.', 'Beispiel: „das Boot“ oder „das Bot“? Merkwort: das Boot.', 'Tippe auf das richtig geschriebene Wort.'] },
+    'sachsen:1': { title: 'Sächsische Wörter', steps: ['In Sachsen gibt es Wörter, die man anderswo kaum kennt.', 'Welches hochdeutsche Wort meint dasselbe?', 'Beispiel: „Ich esse eine Bemme.“ Eine Bemme ist ein belegtes Brot.', 'Tippe auf die Bedeutung.'] },
   };
   const W_STARTERS = [
     { id: 'graphit', type: 'normal', shape: 'pencil', names: ['Graphit', 'Graphit', 'Graphit'], hp: 65, desc: 'Ein Bleistift mit frisch gespitzter Mine. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Doppelstrich', mod: 'doppel' }, { name: 'Silbenbogen', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Daumenregister', mod: 'abc' }] },
   ];
-  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen', stamm: 'Wurzelgriff', trenn: 'Trennstrich', komma: 'Beistrich' };
+  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen', stamm: 'Wurzelgriff', trenn: 'Trennstrich', komma: 'Beistrich', grund: 'Stichwortsuche', vokal: 'Bootssteg', sachsen: 'Fettbemme' };
   const W_ENEMIES = {
     1: {
       normal: [
@@ -3925,9 +4063,32 @@ const MK = (() => {
     [['wir', f.ich], ['ihr', f.du]].forEach(([k, r]) => S_POOL.push({ id: `pp_${v}_${k}`, mod: 'pronomen', g: 'pronomen', q: `Setze in die Einzahl: „${f[k]}“`, o: [r].concat([f.ich, f.du, f.er].filter((x) => x !== r)).slice(0, 3), a: 0 }));
   });
   W.redensarten.forEach(([r, m, f1, f2, h]) => S_POOL.push({ id: 'ra_' + r, mod: 'redensart', g: 'redensart', q: `Was bedeutet „${r}“?`, o: [m, f1, f2], a: 0, more: h }));
+  // 'Lea [räumt] ihr Zimmer [auf].' → words, the verb's index and the separated part's index
+  const TRENNBAR = W.trennbar.map(([s, inf]) => { const ws = s.replace(/[.!?]$/, '').split(' '); const v = ws.findIndex((w) => w.startsWith('[')); const p = ws.length - 1;
+    return { s: s.replace(/[[\]]/g, ''), ws: ws.map((w) => w.replace(/[[\]]/g, '')), v, p, inf }; });
+  TRENNBAR.forEach(({ s, ws, v, p, inf }) => {
+    const verb = ws[v], part = ws[p], mid = pick(ws.slice(v + 1, p)); const pair = `${verb} … ${part}`;
+    S_POOL.push({ id: 'tp_' + s, mod: 'praedikat', g: 'praedikat', q: `Welche Wörter bilden zusammen das Prädikat? „${s}“`, o: [pair].concat(shuffle([verb, `${verb} … ${mid}`, `${mid} … ${part}`]).slice(0, 2)), a: 0,
+      why: `„${verb}“ steht an zweiter Stelle, „${part}“ ganz am Ende. Zusammen bilden sie das Prädikat: ${inf}.` });
+    S_POOL.push({ id: 'ti_' + s, mod: 'praedikat', g: 'praedikat', q: `Wie heißt das Verb aus „${s}“ in der Grundform?`, o: [inf, inf.slice(part.length), part + verb], a: 0, why: `${pair} → ${inf}` });
+  });
+  // the time word at the start decides the tense; Jetzt and Morgen go with the Präsens
+  const PAST_WORDS = ['Gestern', 'Damals', 'Früher', 'Vorhin'], NOW_WORDS = ['Jetzt', 'Morgen'];
+  W.zeitwoerter.forEach(([s, p, t]) => {
+    const tw = s.split(' ')[0]; const past = PAST_WORDS.includes(tw); const r = past ? t : p;
+    S_POOL.push({ id: 'zw_' + s, t: 2, mod: 'zeit', g: 'zeit', q: `Welche Form passt? ${s}`, o: past ? [t, p] : [p, t], a: 0,
+      why: past ? `„${tw}“ zeigt: Es ist schon vorbei. Also Präteritum: ${t}.` : tw === 'Jetzt' ? `„Jetzt“ zeigt: Es passiert gerade. Also Präsens: ${p}.` : `„Morgen“ ist noch nicht passiert. Dafür nimmt man oft das Präsens: ${p}.` });
+    S_POOL.push({ id: 'zx_' + s, t: 2, mod: 'zeit', g: 'zeit', q: `Welches Zeitwort passt? ${s.replace(tw, '___').replace('___ ___', '___ ' + r)}`, o: [tw].concat(shuffle(past ? NOW_WORDS : PAST_WORDS).slice(0, 2)), a: 0 });
+  });
+  W.anrede.forEach(([to, s, r, f1, f2]) => S_POOL.push({ id: 'an_' + s, mod: 'anrede', g: 'anrede', q: `Brief an ${to}: ${s}`, o: [r, f1, f2], a: 0,
+    why: /^(Sie|Ihne|Ihr)/.test(r) ? 'Erwachsene, die du mit „Sie“ ansprichst, redest du auch im Brief mit Sie, Ihnen und Ihr an. Diese Wörter schreibt man groß.' : 'Freunde und die Familie sprichst du mit du, dich, dir und dein an.' }));
+  [['Wen sprichst du mit „Sie“ an?', 'den Schulleiter', 'deine Freundin', 'deinen Bruder'], ['Wen sprichst du mit „du“ an?', 'deine Oma', 'die Ärztin', 'den Busfahrer'],
+    ['Wie schreibt man „Sie“, wenn man jemanden höflich anredet?', 'Immer groß', 'Immer klein', 'Nur am Satzanfang groß'], ['Was schreibst du in einem Brief an deine Lehrerin?', 'Ich danke Ihnen.', 'Ich danke dir.', 'Ich danke ihnen.']]
+    .forEach(([q, r, f1, f2], i) => S_POOL.push({ id: 'ad_' + i, mod: 'anrede', g: 'anrede', q, o: [r, f1, f2], a: 0 }));
+  W.begleiter.forEach(([s, r, f1, f2]) => S_POOL.push({ id: 'bg_' + s, mod: 'begleiter', g: 'begleiter', q: `Welches Artikelwort passt? ${s}`, o: [r, f1, f2], a: 0, why: s.replace('___', r) }));
   const S_NOTES = {
     wortart: { title: 'Wortarten', lines: ['Nomen sind Namen für Menschen, Tiere und Dinge: der Hund, die Schule.', 'Verben sagen, was jemand tut: laufen, lesen.', 'Adjektive sagen, wie etwas ist: groß, bunt.', 'Pronomen stehen für ein Nomen: ich, du, er, sie, es, wir, ihr.', 'Artikel begleiten ein Nomen: der, die, das, ein, eine.'] },
-    zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.'] },
+    zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.', 'Zeitwörter helfen: gestern, damals, früher, vorhin → Präteritum. Jetzt → Präsens.', 'Was erst morgen passiert, sagt man oft im Präsens: Morgen kommt Opa.'] },
     steig: { title: 'Steigerung', lines: ['Grundstufe: groß. Mehrstufe: größer. Meiststufe: am größten.', 'Nach der Mehrstufe vergleicht man mit „als“: Der Turm ist höher als das Haus.', 'Mit „so“ und der Grundstufe vergleicht man mit „wie“: Lea ist so groß wie Ben.'] },
     satzglied: { title: 'Subjekt und Prädikat', lines: ['Das Prädikat ist das Verb im Satz. Es sagt, was jemand tut: Der Hund schläft.', 'Das Subjekt findest du mit der Frage „Wer oder was?“: Wer schläft? Der Hund.', 'Im Aussagesatz steht das Prädikat an zweiter Stelle.'] },
     umstell: { title: 'Umstellprobe', lines: ['Satzglieder sind Wörter, die beim Umstellen zusammenbleiben.', 'Der Hund | schläft | im Korb. Umgestellt: Im Korb | schläft | der Hund.', 'Das Prädikat bleibt an zweiter Stelle.'] },
@@ -3936,11 +4097,14 @@ const MK = (() => {
     ersatz: { title: 'Ersatzprobe', lines: ['Eine Nominalgruppe kann man durch ein Pronomen ersetzen: Der kleine Hund bellt. → Er bellt.', 'der → er, die → sie, das → es. Mehrere → sie.', 'Paul und ich → wir. Lena und du → ihr.'] },
     weglass: { title: 'Weglassprobe', lines: ['Manche Wörter kann man weglassen, und der Satz bleibt richtig: Lena trägt heute eine Mütze. → Lena trägt eine Mütze.', 'Oft sind das Adjektive (der kleine Hund) oder Angaben zu Ort und Zeit (im Garten, am Sonntag).', 'Subjekt und Prädikat kann man nie weglassen.'] },
     pronomen: { title: 'Personalpronomen', lines: ['Einzahl: ich, du, er, sie, es.', 'Mehrzahl: wir, ihr, sie.', 'Das Verb ändert sich mit: ich lache, wir lachen, du lachst, ihr lacht.'] },
+    praedikat: { title: 'Zweiteiliges Prädikat', lines: ['Manche Verben teilen sich im Satz: aufräumen → Lea räumt ihr Zimmer auf.', 'Der eine Teil steht an zweiter Stelle, der andere ganz am Ende. Zusammen sind sie das Prädikat.', 'Die Grundform setzt du wieder zusammen: räumt … auf → aufräumen.'] },
+    anrede: { title: 'Anrede im Brief', lines: ['Erwachsene, die du siezt, redest du mit Sie, Ihnen, Ihr an. Diese Wörter schreibt man immer groß.', 'Freunde und Familie redest du mit du, dich, dir, dein an.', 'Liebe Frau Weber, ich danke Ihnen. – Lieber Max, ich vermisse dich.'] },
+    begleiter: { title: 'Artikelwörter', lines: ['Artikelwörter begleiten ein Nomen, so wie der, die, das: mein Fahrrad, dieser Hund, jedes Kind, kein Hunger.', 'Sie passen sich dem Nomen an: mein Fahrrad, meine Tasche, mit meinem Ball.', 'Probe: Setze der, die oder das ein. Der Hund → dieser Hund, das Kind → jedes Kind.'] },
     redensart: { title: 'Redensarten und Sprichwörter', lines: ['Eine Redensart meint etwas anderes, als die Wörter sagen: „Schwein haben“ heißt Glück haben.', 'Ein Sprichwort ist ein ganzer Satz mit einem Rat: „Übung macht den Meister.“', 'Viele kommen aus alter Zeit. Woher, steht nach der Antwort.'] },
   };
   const S_MODULES = {
     wortart: { name: 'Wortarten', icon: '🏷️', maxTier: 1, worldCap: [1], dmg: 12 },
-    zeit: { name: 'Zeitformen', icon: '⏳', maxTier: 1, worldCap: [1], dmg: 12 },
+    zeit: { name: 'Zeitformen', icon: '⏳', maxTier: 2, worldCap: [2], dmg: 12 },
     steig: { name: 'Steigerung', icon: '📶', maxTier: 1, worldCap: [1], dmg: 12 },
     satzglied: { name: 'Subjekt und Prädikat', icon: '🎯', maxTier: 1, worldCap: [1], dmg: 14 },
     umstell: { name: 'Umstellprobe', icon: '🔀', maxTier: 1, worldCap: [1], dmg: 16 },
@@ -3950,6 +4114,9 @@ const MK = (() => {
     weglass: { name: 'Weglassprobe', icon: '🧽', maxTier: 1, worldCap: [1], dmg: 14 },
     pronomen: { name: 'Personalpronomen', icon: '👥', maxTier: 1, worldCap: [1], dmg: 12 },
     redensart: { name: 'Redensarten', icon: '💭', maxTier: 1, worldCap: [1], dmg: 12 },
+    praedikat: { name: 'Zweiteiliges Prädikat', icon: '🧩', maxTier: 1, worldCap: [1], dmg: 14 },
+    anrede: { name: 'Anrede im Brief', icon: '💌', maxTier: 1, worldCap: [1], dmg: 12 },
+    begleiter: { name: 'Artikelwörter', icon: '📝', maxTier: 1, worldCap: [1], dmg: 12 },
   };
   const S_TUT = {
     'wortart:1': { title: 'Wortarten', steps: ['Zu welcher Wortart gehört das Wort?', 'Nomen: der Hund. Verb: laufen. Adjektiv: bunt. Pronomen: er. Artikel: der, ein.', 'Beispiel: „schnell“. Wie ist etwas? Schnell. Also ein Adjektiv.', 'Tippe auf die richtige Wortart.'] },
@@ -3963,13 +4130,17 @@ const MK = (() => {
     'ersatz:2': { title: 'Ersatzprobe rückwärts', steps: ['Jetzt steht ein Pronomen im Satz. Für welche Nominalgruppe steht es?', 'Prüfe das Pronomen und das Verb: „Er bellt“ passt zu einem Wort mit „der“, „Sie spielen“ zu mehreren.', 'Beispiel: Er bellt laut. → Der kleine Hund bellt laut. „Die Kinder bellt laut“ passt nicht.', 'Tippe auf die passende Nominalgruppe.'] },
     'weglass:1': { title: 'Weglassprobe', steps: ['Ein Wort oder Satzglied kann weg, und der Satz bleibt richtig.', 'Lies den Satz ohne das Wort. Fehlt dann etwas Wichtiges?', 'Beispiel: Lena trägt heute eine Mütze. Ohne „heute“: Lena trägt eine Mütze. Ohne „eine Mütze“: Lena trägt heute. Das geht nicht.', 'Tippe auf das Wort oder Satzglied, das wegkann.'] },
     'pronomen:1': { title: 'Einzahl und Mehrzahl', steps: ['Aus einer Person werden mehrere oder aus mehreren eine.', 'ich → wir, du → ihr, er, sie, es → sie. Das Verb ändert sich mit.', 'Beispiel: Ich lache. → Wir lachen.', 'Tippe auf den richtigen Satz.'] },
+    'zeit:2': { title: 'Zeitwörter', steps: ['Zeitwörter verraten, wann etwas passiert.', 'Gestern, damals, früher, vorhin: Es ist vorbei, also Präteritum. Jetzt und morgen: Präsens.', 'Beispiel: Gestern ___ wir ins Schwimmbad. gehen oder gingen? Gestern ist vorbei, also: gingen.', 'Tippe auf das Wort, das passt.'] },
+    'praedikat:1': { title: 'Zweiteiliges Prädikat', steps: ['Manche Verben teilen sich im Satz in zwei Teile.', 'Ein Teil steht an zweiter Stelle, der andere ganz am Ende des Satzes.', 'Beispiel: Lea räumt ihr Zimmer auf. Das Prädikat ist „räumt … auf“, die Grundform „aufräumen“.', 'Tippe auf die richtige Antwort.'] },
+    'anrede:1': { title: 'Anrede im Brief', steps: ['Lies, an wen der Brief geht.', 'Erwachsene, die du siezt: Sie, Ihnen, Ihr – immer groß. Freunde und Familie: du, dich, dir, dein.', 'Beispiel: Liebe Frau Weber, ich danke ___. Richtig ist „Ihnen“.', 'Tippe auf das Wort, das passt.'] },
+    'begleiter:1': { title: 'Artikelwörter', steps: ['Artikelwörter wie mein, dein, unser, dieser, jeder und kein stehen vor einem Nomen.', 'Sie müssen zum Nomen passen. Probe: Welcher Artikel gehört zum Nomen?', 'Beispiel: das Fahrrad → mein Fahrrad. die Tasche → meine Tasche.', 'Tippe auf das Artikelwort, das passt.'] },
     'redensart:1': { title: 'Redensarten', steps: ['Redensarten meinen etwas anderes, als die Wörter sagen.', 'Überlege: Wann sagt man das? Was ist dann passiert?', 'Beispiel: „Schwein haben“ sagt man, wenn jemand Glück hatte. Ein Schwein ist gar nicht da.', 'Tippe auf die Bedeutung.'] },
   };
   const S_STARTERS = [
     { id: 'elle', type: 'wasser', shape: 'ruler', names: ['Elle', 'Elle', 'Elle'], hp: 80, desc: 'Ein Holzlineal, 30 Zentimeter lang. Hält viel aus.', perk: 'tank',
       attacks: [{ name: 'Farbmarker', mod: 'wortart' }, { name: 'Fragetest', mod: 'satzglied' }, { name: 'Umstellschub', mod: 'umstell' }, { name: 'Sortierkasten', mod: 'ober' }] },
   ];
-  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn', ersatz: 'Stellvertreter', weglass: 'Tafelschwamm', pronomen: 'Namensruf', redensart: 'Volksmund' };
+  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn', ersatz: 'Stellvertreter', weglass: 'Tafelschwamm', pronomen: 'Namensruf', redensart: 'Volksmund', praedikat: 'Satzklammer', anrede: 'Briefkopf', begleiter: 'Klebezettel' };
   const S_ENEMIES = {
     1: {
       normal: [
@@ -4486,7 +4657,8 @@ const MS = (() => {
     kreislauf: { title: 'Der Wasserkreislauf', lines: CYCLE_PARTS.map((p, i) => `${i + 1}. ${p.desc}`) },
     wetter: { title: 'Wetter und Wettervorhersage', lines: ['Zum Wetter gehören Temperatur, Niederschlag, Wind und Bewölkung.', 'Die Temperatur misst man mit dem Thermometer in Grad Celsius (°C).', 'Unter 0 °C spricht man von Minusgraden: −3 °C ist kälter als 0 °C.', 'Regen, Schnee und Hagel heißen zusammen Niederschlag. Man misst ihn mit dem Regenmesser.', 'Die Windfahne zeigt, woher der Wind weht. Meteorologen machen die Wettervorhersage.'] },
     regeln: { title: 'Bauernregeln', lines: ['Bauernregeln sind alte Sprüche über das Wetter.', 'Sie beruhen auf Beobachtungen der Bauern, stimmen aber nicht immer.', '„Abendrot – Schönwetterbot’.“ – „Morgenrot – Schlechtwetterbot’.“', '„April, April, der macht, was er will.“', '„Ist der Mai kühl und nass, füllt’s dem Bauern Scheun’ und Fass.“'] },
-    schwimmen: { title: 'Schwimmen und Sinken', lines: ['Was leichter ist als gleich viel Wasser, schwimmt.', 'Was schwerer ist als gleich viel Wasser, sinkt.', 'Luft im Inneren hilft beim Schwimmen: Korken, Apfel und Tischtennisball schwimmen.', 'Metall, Glas und Stein sinken.'] },
+    schwimmen: { title: 'Schwimmen und Sinken', lines: ['Was leichter ist als gleich viel Wasser, schwimmt.', 'Was schwerer ist als gleich viel Wasser, sinkt.', 'Luft im Inneren hilft beim Schwimmen: Korken, Apfel und Tischtennisball schwimmen.', 'Metall, Glas und Stein sinken.', 'Auch die Form zählt: Eine Knetkugel sinkt, ein Knetschiffchen schwimmt. Deshalb schwimmt auch ein Schiff aus Stahl.', 'Salzwasser trägt besser: Ein frisches Ei sinkt im Leitungswasser und schwimmt in sehr salzigem Wasser.'] },
+    experiment: { title: 'Ein Versuch Schritt für Schritt', lines: ['1. Frage: Was willst du herausfinden?', '2. Vermutung: Was glaubst du, bevor du es ausprobierst?', '3. Versuch: Du probierst es aus. Ändere nur eine Sache, alles andere bleibt gleich.', '4. Beobachtung: Was passiert wirklich? Schau genau hin und schreib es auf.', '5. Ergebnis: Was hast du herausgefunden? Stimmte deine Vermutung?'] },
     zufall: { title: 'Wahrscheinlich oder nicht?', lines: ['Sind in einem Beutel mehr rote als blaue Kugeln, ziehst du wahrscheinlich eine rote.', 'Sicher ist das aber nicht – es kann auch eine blaue kommen.', 'Sind gleich viele rote Kugeln in zwei gleich großen Beuteln, ist die Chance in beiden gleich.'] },
   };
   const WE_POOL = partPool('kreislauf', 'kreislauf', 'kreislauf', 'wk_').concat([
@@ -4534,7 +4706,29 @@ const MS = (() => {
     { id: 'werg10', mod: 'regel', g: 'regeln', q: 'Gewitter im Mai, singt der Bauer ___.', o: ['Juchhei', 'Ade', 'Hallo'], a: 0 },
     { id: 'werg11', mod: 'regel', g: 'regeln', q: 'Bauernregeln stimmen immer.', rf: true, a: false, why: 'Sie beruhen auf alten Beobachtungen und stimmen nicht immer.' },
     { id: 'werg12', mod: 'regel', g: 'regeln', q: 'Was sagt die Regel „Abendrot – Schönwetterbot’“?', o: ['Ist der Himmel abends rot, wird das Wetter schön', 'Morgens regnet es immer', 'Im Mai ist es kalt'], a: 0 },
+    // Forschen: Schwimmen und Sinken, ein Versuch Schritt für Schritt
+    { id: 'wefo1', mod: 'forschen', g: 'schwimmen', q: 'Eine Kugel aus Knete sinkt. Wie bringst du dieselbe Knete zum Schwimmen?', o: ['Ich forme ein Schiffchen mit hohem Rand daraus', 'Ich drücke die Kugel noch fester zusammen', 'Ich mache die Kugel größer'], a: 0 },
+    { id: 'wefo2', mod: 'forschen', g: 'schwimmen', q: 'Ob etwas schwimmt, hängt nur davon ab, woraus es ist.', rf: true, a: false, why: 'Auch die Form zählt: Eine Knetkugel sinkt, ein Knetschiffchen schwimmt.' },
+    { id: 'wefo3', mod: 'forschen', g: 'schwimmen', q: 'Warum schwimmt ein großes Schiff aus Stahl?', o: ['Es ist innen hohl und voller Luft', 'Stahl ist leichter als Wasser', 'Es fährt zu schnell, um zu sinken'], a: 0 },
+    { id: 'wefo4', mod: 'forschen', g: 'schwimmen', q: 'Ein frisches Ei sinkt im Leitungswasser. Was passiert, wenn du sehr viel Salz im Wasser auflöst?', o: ['Das Ei steigt nach oben und schwimmt', 'Das Ei sinkt noch schneller', 'Das Ei löst sich auf'], a: 0 },
+    { id: 'wefo5', mod: 'forschen', g: 'schwimmen', q: 'Im Toten Meer ist sehr viel Salz. Dort kann man sich aufs Wasser legen, ohne unterzugehen.', rf: true, a: true },
+    { id: 'wefo6', mod: 'forschen', g: 'schwimmen', q: 'In welchem Wasser schwimmt ein frisches Ei?', o: ['In sehr salzigem Wasser', 'In Leitungswasser', 'In warmem Leitungswasser'], a: 0 },
+    { id: 'wefo7', mod: 'forschen', g: 'experiment', q: 'Womit beginnt ein Versuch?', o: ['Mit einer Frage', 'Mit dem Ergebnis', 'Mit der Beobachtung'], a: 0 },
+    { id: 'wefo8', mod: 'forschen', g: 'experiment', q: 'Was ist eine Vermutung?', o: ['Was du glaubst, bevor du es ausprobierst', 'Was du beim Versuch siehst', 'Was am Ende herauskommt'], a: 0 },
+    { id: 'wefo9', mod: 'forschen', g: 'experiment', q: '„Ich glaube, die Knetkugel geht unter.“ Welcher Schritt ist das?', o: ['Die Vermutung', 'Die Beobachtung', 'Das Ergebnis'], a: 0 },
+    { id: 'wefo10', mod: 'forschen', g: 'experiment', q: '„Die Kugel liegt auf dem Boden des Glases.“ Welcher Schritt ist das?', o: ['Die Beobachtung', 'Die Vermutung', 'Die Frage'], a: 0 },
+    { id: 'wefo11', mod: 'forschen', g: 'experiment', q: '„Ob Knete schwimmt, hängt von ihrer Form ab.“ Welcher Schritt ist das?', o: ['Das Ergebnis', 'Die Frage', 'Die Vermutung'], a: 0 },
+    { id: 'wefo12', mod: 'forschen', g: 'experiment', q: 'Wenn die Vermutung nicht stimmt, war der Versuch umsonst.', rf: true, a: false, why: 'Auch dann hast du etwas herausgefunden. Vermutungen dürfen falsch sein.' },
+    { id: 'wefo13', mod: 'forschen', g: 'experiment', q: 'Du willst wissen, ob Salz dem Ei beim Schwimmen hilft. Was gehört zu einem fairen Versuch?', o: ['Gleiches Ei, gleiches Glas, nur einmal mit und einmal ohne Salz', 'Ein großes Ei ins Salzwasser, ein kleines ins Leitungswasser', 'Ganz viele Sachen auf einmal ändern'], a: 0 },
+    { id: 'wefo14', mod: 'forschen', g: 'experiment', q: 'Warum macht man einen Versuch oft mehrmals?', o: ['Um sicher zu sein, dass das Ergebnis stimmt', 'Damit die Vermutung richtig wird', 'Weil man sonst nichts aufschreiben darf'], a: 0 },
+    { id: 'wefo15', mod: 'forschen', g: 'experiment', q: 'Bei der Beobachtung schreibst du auf, was wirklich passiert, auch wenn du etwas anderes vermutet hast.', rf: true, a: true },
   ]);
+  const STEPS = ['Frage', 'Vermutung', 'Versuch', 'Beobachtung', 'Ergebnis'].map((t) => ({ id: 'fs_' + t, text: t }));
+  const EXPERIMENTS = [
+    ['Schwimmt ein Ei auch in Salzwasser?', 'Ich glaube, das Ei geht unter.', 'Ich rühre viel Salz in ein Glas Wasser und lege das Ei hinein.', 'Das Ei steigt nach oben.', 'In sehr salzigem Wasser schwimmt ein Ei.'],
+    ['Kann Knete schwimmen?', 'Ich glaube, Knete geht immer unter.', 'Ich lege eine Knetkugel ins Wasser, danach ein Schiffchen aus derselben Knete.', 'Die Kugel sinkt, das Schiffchen schwimmt.', 'Ob Knete schwimmt, hängt von ihrer Form ab.'],
+    ['Wo trocknet ein nasses Tuch schneller?', 'Ich glaube, in der Sonne.', 'Ich hänge ein Tuch in die Sonne und ein gleiches in den Schatten.', 'Das Tuch in der Sonne ist zuerst trocken.', 'In der Wärme verdunstet Wasser schneller.'],
+  ].map((x, i) => x.map((text, j) => ({ id: `fx${i}_${j}`, text })));
   // Wettervorhersage-Karte: vier Tage, jedes Symbol höchstens einmal, alle Temperaturen verschieden (sonst wären Fragen mehrdeutig)
   const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
   const WX = {
@@ -4567,6 +4761,7 @@ const MS = (() => {
     kreislauf: { name: 'Wasserkreislauf', icon: '🔄', maxTier: 2, worldCap: [2], dmg: 14 },
     vorhersage: { name: 'Wettervorhersage', icon: '🌦️', maxTier: 1, worldCap: [1], dmg: 12 },
     regel: { name: 'Bauernregeln', icon: '📜', maxTier: 1, worldCap: [1], dmg: 10 },
+    forschen: { name: 'Forschen und Versuche', icon: '🔬', maxTier: 1, worldCap: [1], dmg: 14 },
   };
   const WE_TUT = {
     'zustand:1': { title: 'Fest, flüssig, gasförmig', steps: ['Wasser gibt es in drei Formen.', 'Fest: Eis, Schnee, Hagel. Flüssig: Wasser, Regen, Tau. Gasförmig: Wasserdampf.', 'Tippe auf die richtige Antwort.'] },
@@ -4574,6 +4769,8 @@ const MS = (() => {
     'kreislauf:1': { title: 'Wasserkreislauf', steps: ['Im Bild sind fünf Stellen nummeriert. Eine davon leuchtet gelb.', 'Folge dem Wasser: Es verdunstet, bildet Wolken, der Wind treibt sie weiter, es regnet, Flüsse bringen das Wasser zurück ins Meer.', 'Tippe auf den Satz, der zur Nummer passt.'] },
     'kreislauf:2': { title: 'Wasserkreislauf: Stelle finden', steps: ['Jetzt andersherum: Oben steht, was passiert.', 'Tippe im Bild auf die passende Stelle.', 'Beginne beim Meer und folge dem Wasser.'] },
     'vorhersage:1': { title: 'Wettervorhersage', steps: ['Die Karte zeigt vier Tage: oben der Tag, in der Mitte das Wetter, unten die Temperatur.', 'Sonne, Wolken, Regentropfen oder Schneeflocken zeigen das Wetter. −2 °C heißt: 2 Grad unter null.', 'Lies genau ab und tippe auf die Antwort.'] },
+    'forschen:1': { title: 'Forschen und Versuche', steps: ['So gehen Forscher vor: Frage, Vermutung, Versuch, Beobachtung, Ergebnis.', 'Ob etwas schwimmt, hängt vom Stoff ab, aber auch von der Form und davon, wie salzig das Wasser ist.', 'Beispiel: Eine Knetkugel sinkt. Als Schiffchen schwimmt dieselbe Knete.', 'Tippe auf die richtige Antwort.'] },
+    'forschord:1': { title: 'Versuch ordnen', steps: ['Die Schritte eines Versuchs sind durcheinander.', 'Erst die Frage, dann die Vermutung, dann der Versuch. Danach schreibst du auf, was du beobachtest, und am Ende das Ergebnis.', 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.'] },
     'regel:1': { title: 'Bauernregeln', steps: ['Bauernregeln sind alte Sprüche über das Wetter. Oft reimen sie sich.', 'Im Spruch fehlt ein Wort (___). Der Reim hilft dir.', 'Tippe auf das Wort, das passt.'] },
   };
   function weGen(cfg) {
@@ -4583,6 +4780,11 @@ const MS = (() => {
       if (mod === 'zustand' && Math.random() < 0.6) { const w = pick(WATER); return choice(mod, 'zustand', `${w.label}: Ist das fest, flüssig oder gasförmig?`, STATES[w.s], STATES.filter((_, i) => i !== w.s), 'wzst_' + w.id); }
       if (mod === 'begriff' && Math.random() < 0.4) { const x = pick(TERMS); return choice(mod, 'begriffe', `${x.ex} Wie heißt das?`, x.t, shuffle(TERMS.filter((y) => y !== x)).slice(0, 2).map((y) => y.t), 'wterm_' + x.t); }
       if (mod === 'vorhersage' && Math.random() < 0.7) return forecastTask(mod);
+      if (mod === 'forschen' && Math.random() < 0.35) {
+        const i = rnd(-1, EXPERIMENTS.length - 1);
+        return i < 0 ? orderTask(mod, 'forschord:1', 'experiment', 'So forschst du: Tippe die Schritte der Reihe nach an.', STEPS, 'wfs_', 5)
+          : orderTask(mod, 'forschord:1', 'experiment', 'Ein Versuch: Tippe die Sätze in der richtigen Reihenfolge an – Frage, Vermutung, Versuch, Beobachtung, Ergebnis.', EXPERIMENTS[i], `wfx${i}_`, 5);
+      }
       return null;
     };
   }
@@ -4603,6 +4805,9 @@ const MS = (() => {
     { label: 'Orange mit Schale', acc: 'eine Orange mit Schale', nom: 'Die Orange mit Schale', f: true, why: 'In der dicken Schale stecken viele Luftbläschen.' },
     { label: 'Geschälte Orange', acc: 'eine geschälte Orange', nom: 'Die geschälte Orange', f: false, why: 'Ohne die luftige Schale ist die Orange schwerer als gleich viel Wasser.' },
     { label: 'Frisches Ei', acc: 'ein frisches Ei', nom: 'Das frische Ei', f: false, why: 'Ein frisches Ei ist schwerer als gleich viel Wasser.' },
+    { label: 'Ei im Salzwasser', acc: 'ein frisches Ei', into: 'in sehr salziges Wasser', nom: 'Das frische Ei', f: true, why: 'Salzwasser ist schwerer als Leitungswasser. Darin schwimmt das Ei, das im Leitungswasser sinkt.' },
+    { label: 'Knetkugel', acc: 'eine Kugel aus Knete', nom: 'Die Knetkugel', f: false, why: 'Knete ist schwerer als gleich viel Wasser.' },
+    { label: 'Knetschiffchen', acc: 'ein Schiffchen aus Knete mit hohem Rand', nom: 'Das Knetschiffchen', f: true, why: 'Es ist innen hohl und voller Luft. Dieselbe Knete, die als Kugel sinkt, schwimmt als Schiffchen.' },
   ];
   function tankSVG(label, where) {
     const y = where === 'oben' ? 46 : where === 'unten' ? 112 : 2;
@@ -4620,7 +4825,7 @@ const MS = (() => {
     return { kind: 'urne', topic: 'zufall', q: 'Du ziehst mit geschlossenen Augen eine Kugel. Aus welchem Beutel bekommst du wahrscheinlicher eine rote?', opts: ['Beutel 1', 'Beutel 2', 'Beide gleich'], a, note, pic: urnSVG({ r: r1, n }, { r: r2, n }), r: [r1, r2], n };
   }
   function laborSet() {
-    const fl = shuffle(FLOAT).slice(0, 2).map((x) => ({ kind: 'float', topic: 'schwimmen', q: `Du legst ${x.acc} ins Wasser. Schwimmt es oder sinkt es?`, opts: ['Schwimmt', 'Sinkt'], a: x.f ? 0 : 1, note: `${x.nom} ${x.f ? 'schwimmt' : 'sinkt'}. ${x.why}`, pic: tankSVG(x.label, null), after: tankSVG(x.label, x.f ? 'oben' : 'unten') }));
+    const fl = shuffle(FLOAT).slice(0, 2).map((x) => ({ kind: 'float', topic: 'schwimmen', q: `Du legst ${x.acc} ${x.into || 'ins Wasser'}. Schwimmt es oder sinkt es?`, opts: ['Schwimmt', 'Sinkt'], a: x.f ? 0 : 1, note: `${x.nom} ${x.f ? 'schwimmt' : 'sinkt'}. ${x.why}`, pic: tankSVG(x.label, null), after: tankSVG(x.label, x.f ? 'oben' : 'unten') }));
     const st = shuffle(WATER).slice(0, 2).map((w) => ({ kind: 'state', topic: 'zustand', q: `${w.label}: fest, flüssig oder gasförmig?`, opts: STATES.slice(), a: w.s, note: w.note }));
     return shuffle(fl.concat(st, [urnExperiment()]));
   }
@@ -4628,7 +4833,7 @@ const MS = (() => {
   const WE = { modules: WE_MODULES, tut: WE_TUT, notes: WE_NOTES, pool: WE_POOL, worlds: 1, grade: 3, subject: 'Sachkunde', title: 'Die Wetterstation', icon: '🌦️', sub: 'Wasser, Wasserkreislauf, Wettervorhersage, Bauernregeln und das Forscherlabor', swap: { from: 'event', to: 'labor' },
     starters: [{ id: 'wetterwart', type: 'normal', shape: 'wetterwart', names: ['Der Wetterwart', 'Der Wetterwart', 'Der Wetterwart'], hp: 70, desc: 'Er liest jeden Morgen Thermometer, Regenmesser und Windfahne ab und schreibt alles auf.', perk: 'none',
       attacks: [{ name: 'Eiszapfen', mod: 'zustand' }, { name: 'Wasserkessel', mod: 'begriff' }, { name: 'Wolkenzug', mod: 'kreislauf' }, { name: 'Wetterhahn', mod: 'vorhersage' }] }],
-    extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender' },
+    extra: { zustand: 'Hagelschlag', begriff: 'Taupunkt', kreislauf: 'Meeresbrise', vorhersage: 'Barometer', regel: 'Bauernkalender', forschen: 'Messbecher' },
     enemies: { 1: {
       normal: [
         { name: 'Nieselregen', type: 'wasser', shape: 'nieselregen', hp: 24, atk: 3 },
@@ -4884,7 +5089,7 @@ const MS = (() => {
   KK.gen = kkGen(KK);
 
   K.MODES.kornkammer = KO; K.MODES.wetterstation = WE; K.MODES.kompass = KK;
-  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
+  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, STEPS, EXPERIMENTS, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
 })();
 
 </script>
@@ -14694,6 +14899,7 @@ const ELTERN = (() => {
       spiegel: 'Passen beide Hälften einer Figur beim Umklappen genau aufeinander?',
       bewegung: 'Ihr Kind erkennt, ob eine Figur verschoben, gedreht oder gespiegelt wurde.',
       vieleck: 'Quadrat, Rechteck, Parallelogramm und Dreiecke an Seiten und Winkeln erkennen.',
+      ansicht: 'Wie sieht ein Würfelgebäude von vorn, von oben oder von rechts aus? Ihr Kind wählt das passende Bild.',
     },
     jahrmarkt: {
       uhr: 'Die Zeigeruhr lesen, erst volle und halbe Stunden, später auf die Minute, dazu Zeitspannen.',
@@ -14722,10 +14928,13 @@ const ELTERN = (() => {
       stamm: 'Verwandte Wörter erkennen. Sie werden im Wortstamm gleich geschrieben: fahren, Fahrer.',
       trenn: 'Wörter am Zeilenende nach Silben trennen: Fens-ter.',
       komma: 'Komma bei Aufzählungen und vor „aber“ und „denn“ richtig setzen.',
+      grund: 'Unter welchem Wort steht es im Wörterbuch? er lief – laufen, die Bäume – der Baum.',
+      vokal: 'Merkwörter mit doppeltem Selbstlaut richtig schreiben: Boot, Meer, Haar.',
+      sachsen: 'Zum Schmunzeln: sächsische Mundartwörter wie Bemme oder Plinse auf Hochdeutsch.',
     },
     satzbaustelle: {
       wortart: 'Ihr Kind bestimmt, ob ein Wort Nomen, Verb, Adjektiv, Pronomen oder Artikel ist.',
-      zeit: 'Passiert es jetzt (Präsens) oder ist es schon vorbei (Präteritum)?',
+      zeit: 'Passiert es jetzt (Präsens) oder ist es schon vorbei (Präteritum)? Später helfen Zeitwörter wie gestern und jetzt.',
       steig: 'Adjektive steigern: klein, kleiner, am kleinsten. Dazu „als“ und „wie“.',
       satzglied: 'Im Satz finden: Wer tut etwas (Subjekt) und was tut er (Prädikat)?',
       umstell: 'Die Teile eines Satzes umstellen, sodass wieder ein richtiger Satz entsteht.',
@@ -14735,6 +14944,9 @@ const ELTERN = (() => {
       weglass: 'Welches Wort kann wegfallen, ohne dass der Satz falsch wird?',
       pronomen: 'Aus Einzahl wird Mehrzahl: ich lache – wir lachen.',
       redensart: 'Ihr Kind erklärt, was eine Redensart wie „Schwein haben“ wirklich meint.',
+      praedikat: 'Verben mit zwei Teilen im Satz finden: Lea räumt ihr Zimmer auf – aufräumen.',
+      anrede: 'Im Brief Erwachsene mit Sie und Ihnen anreden, Freunde und Familie mit du.',
+      begleiter: 'Artikelwörter wie mein, dieser, jeder und kein passend zum Nomen wählen: meine Tasche, mit meinem Ball.',
     },
     teestube: {
       en_de: 'Ein englisches Wort lesen und das deutsche Wort dazu finden.',
@@ -14772,6 +14984,7 @@ const ELTERN = (() => {
       kreislauf: 'Den Weg des Wassers im Bild erklären: Meer, Wolken, Regen, Fluss.',
       vorhersage: 'Eine Wetterkarte für vier Tage lesen: Wetter und Temperatur.',
       regel: 'Alte Wettersprüche der Bauern ergänzen. Der Reim hilft.',
+      forschen: 'Wie man einen Versuch plant: Frage, Vermutung, Versuch, Beobachtung, Ergebnis. Dazu Schwimmen und Sinken.',
     },
     kompass: {
       richtung: 'Norden, Osten, Süden und Westen kennen und wissen, wo die Sonne wann steht.',
@@ -17025,7 +17238,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '6a473d49b8ad';
+  const BUILD = '906749c00c86';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
