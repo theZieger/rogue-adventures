@@ -159,6 +159,21 @@ async function makeScreenshots(browser) {
   }
 }
 
+// Google Play listing: full-square icon (Play rounds the corners itself) and the 1024x500 feature graphic.
+async function makeStoreArt(browser) {
+  const dir = path.join(__dirname, '..', 'android', 'store');
+  fs.mkdirSync(dir, { recursive: true });
+  const page = await browser.newPage({ viewport: { width: 512, height: 512 }, deviceScaleFactor: 1 });
+  await page.setContent(`<html><body style="margin:0">${iconSVG(512, { radius: 0, scale: 0.8, stars: true })}</body></html>`);
+  await page.locator('svg').first().screenshot({ path: path.join(dir, 'icon-512.png') });
+  await page.setViewportSize({ width: 1024, height: 500 });
+  await page.setContent(splashHTML(1024, 500));
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: path.join(dir, 'feature-graphic.png') });
+  await page.close();
+  console.log('wrote android/store/icon-512.png, feature-graphic.png');
+}
+
 (async () => {
   const { chromium } = require('playwright');
   fs.mkdirSync(OUT, { recursive: true });
@@ -177,5 +192,6 @@ async function makeScreenshots(browser) {
   try { require('child_process').execFileSync('convert', [path.join(OUT, 'favicon-16.png'), path.join(OUT, 'favicon-32.png'), path.join(OUT, '..', 'favicon.ico')]); console.log('wrote favicon.ico'); } catch (e) { console.log('skipped favicon.ico (ImageMagick "convert" not found)'); }
   await makeSplash(browser);
   await makeScreenshots(browser);
+  await makeStoreArt(browser);
   await browser.close();
 })();

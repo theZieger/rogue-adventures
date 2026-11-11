@@ -6,6 +6,14 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-11
+
+### Neu
+- Neue Seite „Datenschutz“: Sie erklärt, dass nur Nachrichten aus „Idee senden“ das Gerät verlassen.
+
+### Verbessert
+- Bevor eine Nachricht verschickt wird, löst ein Erwachsener eine Rechenaufgabe.
+
 ## 2026-11-09
 
 ### Neu

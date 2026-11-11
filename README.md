@@ -35,7 +35,8 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: 5× auf den Titel tippen → Trefferquote pro Aufgabenart, Aufgabenarten an/aus, Töne, Reset.
 - Startseite: Klasse → Fach → Einheit. Neue Klassen/Fächer in `CURRICULUM` (`src/app.js`) eintragen.
-- „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
+- „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“. Davor steht eine Rechenaufgabe für Erwachsene (Google-Play-Regel für Kinder-Apps).
+- „Datenschutz“ (Titel und Elternbereich) öffnet `datenschutz.html`.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Weiterspielen geht es genau dort weiter.
 - Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften. Einzige Ausnahme: eine Nachricht, die man selbst mit „Idee senden“ abschickt.
@@ -52,6 +53,8 @@ art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo op
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
+src/datenschutz.html  Datenschutzerklärung (wird nach docs/ kopiert, auch die Play-Store-Adresse)
+android/           Google-Play-App (Trusted Web Activity): twa-manifest.json, Store-Grafiken, Anleitung in android/README.md
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
