@@ -1,0 +1,66 @@
+// Klasse 1 und 2: one hero and one set of opponents per subject, shared by all units of that subject in both grades
+// (fewer drawings; the owner's choice). A shared opponent counts once in the Monsterbuch. A unit gives the hero its own
+// four attacks: Object.assign({}, K12.SETS.<fach>.hero, { attacks }).
+// Hero ids and opponent names are stored in saves: never rename them once released.
+const K12 = (() => {
+  const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
+  const SETS = {
+    mathe: set(
+      { id: 'held-mathe12', type: 'normal', shape: 'kauffrau', names: ['Die Kauffrau', 'Die Kauffrau', 'Die Kauffrau'], hp: 65, perk: 'crit', desc: 'Sie führt den Kaufladen der Klasse: Sie zählt Münzen, wiegt Äpfel ab und rechnet Preise zusammen.' },
+      [
+        { name: 'Der Wackelturm', type: 'normal', shape: 'wackelturm', hp: 20, atk: 3 },
+        { name: 'Das Maßband', type: 'pflanze', shape: 'massband', hp: 22, atk: 3 },
+        { name: 'Der Schummelwürfel', type: 'feuer', shape: 'schummelwuerfel', hp: 22, atk: 3 },
+        { name: 'Der Kuckuck', type: 'wasser', shape: 'kuckuck', hp: 24, atk: 3 },
+      ],
+      { name: 'Die schiefe Waage', type: 'normal', shape: 'schiefewaage', hp: 36, atk: 4 },
+      { name: 'Der Kaugummiautomat', acc: 'den Kaugummiautomaten', type: 'feuer', shape: 'kaugummiautomat', hp: 55, atk: 5, boss: true },
+      ['Umkippen', 'Zurückschnellen', 'Sieben Augen', 'Kuckucksruf', 'Waagschale', 'Münzschlucker']),
+    deutsch: set(
+      { id: 'held-deutsch12', type: 'normal', shape: 'lesepatin', names: ['Die Lesepatin', 'Die Lesepatin', 'Die Lesepatin'], hp: 68, perk: 'heal', desc: 'Sie kommt jede Woche in die Klasse, liest mit den Kindern in der Fibel und hört zu, wie sie Wörter lautieren.' },
+      [
+        { name: 'Das Spiegel-S', type: 'wasser', shape: 'spiegels', hp: 20, atk: 3 },
+        { name: 'Die Bastelschere', type: 'normal', shape: 'bastelschere', hp: 22, atk: 3 },
+        { name: 'Die Buchstabensuppe', type: 'feuer', shape: 'buchstabensuppe', hp: 24, atk: 3 },
+        { name: 'Der Papierflieger', type: 'pflanze', shape: 'papierflieger', hp: 20, atk: 3 },
+      ],
+      { name: 'Der Wackelzahn', type: 'normal', shape: 'wackelzahn', hp: 36, atk: 4 },
+      { name: 'Die Bücherlawine', acc: 'die Bücherlawine', type: 'pflanze', shape: 'buecherlawine', hp: 55, atk: 5, boss: true },
+      ['Spiegelschrift', 'Falscher Schnitt', 'Suppenkelle', 'Bruchlandung', 'Lispeln', 'Bücherrutsch']),
+    sachkunde: set(
+      { id: 'held-sachkunde12', type: 'pflanze', shape: 'lotte', names: ['Lotte', 'Lotte', 'Lotte'], hp: 65, perk: 'heal', desc: 'Lotte gießt jeden Morgen die Sonnenblume, die sie im Frühling selbst gesät hat.' },
+      [
+        { name: 'Die Karies', type: 'normal', shape: 'karies', hp: 20, atk: 3 },
+        { name: 'Die Schlammpfütze', type: 'wasser', shape: 'schlammpfuetze', hp: 22, atk: 3 },
+        { name: 'Der Sonnenbrand', type: 'feuer', shape: 'sonnenbrand', hp: 22, atk: 3 },
+        { name: 'Die Klette', type: 'pflanze', shape: 'klette', hp: 24, atk: 3 },
+      ],
+      { name: 'Der Schnupfen', type: 'normal', shape: 'schnupfen', hp: 36, atk: 4 },
+      { name: 'Der Schneesturm', acc: 'den Schneesturm', type: 'wasser', shape: 'schneesturm', hp: 55, atk: 5, boss: true },
+      ['Zahnbelag', 'Spritzwasser', 'Mittagshitze', 'Widerhaken', 'Niesanfall', 'Eiswind']),
+    ethik: set(
+      { id: 'held-ethik12', type: 'feuer', shape: 'mats', names: ['Mats', 'Mats', 'Mats'], hp: 65, perk: 'crit', desc: 'Mats hat seine Laterne für den Martinsumzug aus Transparentpapier selbst gebastelt.' },
+      [
+        { name: 'Die zugeknallte Tür', type: 'normal', shape: 'knalltuer', hp: 20, atk: 3 },
+        { name: 'Die schlechte Laune', type: 'wasser', shape: 'schlechtelaune', hp: 22, atk: 3 },
+        { name: 'Der Wutanfall', type: 'feuer', shape: 'wutanfall', hp: 22, atk: 3 },
+        { name: 'Die Langeweile', type: 'pflanze', shape: 'langeweile', hp: 24, atk: 3 },
+      ],
+      { name: 'Das Heimweh', type: 'wasser', shape: 'heimweh', hp: 36, atk: 4 },
+      { name: 'Der große Streit', acc: 'den großen Streit', type: 'normal', shape: 'grosserstreit', hp: 55, atk: 5, boss: true },
+      ['Türschlag', 'Trübsal', 'Wutgeschrei', 'Dauergähnen', 'Abschiedsschmerz', 'Gezanke']),
+    musik: set(
+      { id: 'held-musik12', type: 'normal', shape: 'musiklehrerin', names: ['Die Musiklehrerin', 'Die Musiklehrerin', 'Die Musiklehrerin'], hp: 65, perk: 'crit', desc: 'Sie spielt zu jedem Lied Gitarre, und die Kinder klopfen mit Rassel, Triangel und Trommel den Takt.' },
+      [
+        { name: 'Die Knarrtür', type: 'pflanze', shape: 'knarrtuer', hp: 22, atk: 3 },
+        { name: 'Die gerissene Saite', type: 'normal', shape: 'gerissenesaite', hp: 20, atk: 3 },
+        { name: 'Der Laubbläser', type: 'feuer', shape: 'laubblaeser', hp: 24, atk: 3 },
+        { name: 'Der Wasserhahn', type: 'wasser', shape: 'wasserhahn', hp: 22, atk: 3 },
+      ],
+      { name: 'Die Pausenklingel', type: 'feuer', shape: 'pausenklingel', hp: 36, atk: 4 },
+      { name: 'Der Presslufthammer', acc: 'den Presslufthammer', type: 'normal', shape: 'presslufthammer', hp: 58, atk: 5, boss: true },
+      ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß']),
+  };
+  return { SETS };
+})();
+if (typeof module !== 'undefined') module.exports = K12;

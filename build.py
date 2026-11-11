@@ -10,8 +10,21 @@ def strip_exports(js, name):
     return js.replace(f"if (typeof module !== 'undefined') module.exports = {name};\n", "")
 css = (SRC / "style.css").read_text(encoding="utf-8")
 logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
+fair = strip_exports((SRC / "jahrmarkt.js").read_text(encoding="utf-8"), "MJ")
+woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
+english = strip_exports((SRC / "english.js").read_text(encoding="utf-8"), "ENG")
+texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
 know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
+sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
+sach2 = strip_exports((SRC / "sachkunde2.js").read_text(encoding="utf-8"), "MS2")
+sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3")
+ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
+musik = strip_exports((SRC / "musik.js").read_text(encoding="utf-8"), "MU")
+k12 = strip_exports((SRC / "klasse12.js").read_text(encoding="utf-8"), "K12") + "\n" + "\n".join((SRC / f"k12_{f}.js").read_text(encoding="utf-8") for f in ["mathe", "deutsch", "sachkunde", "ethik"])
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
+icons = strip_exports((SRC / "icons.js").read_text(encoding="utf-8"), "ICONS")
+eltern = strip_exports((SRC / "eltern.js").read_text(encoding="utf-8"), "ELTERN")
+qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR")
 # Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
 baked = {f.stem: f.read_text(encoding="utf-8").strip() for f in sorted((ROOT / "art" / "monsters" / "svg").glob("*.svg"))}
 assert baked, "art/monsters/svg/ is empty: run npm run svg"
@@ -63,8 +76,8 @@ html = f"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Lernquest – Mathe, Luther und Kartoffel</title>
-<meta name="description" content="Roguelike-Lernspiel für Grundschüler: Mathe, Luther und Kartoffel. Funktioniert offline.">
+<title>Lernquest – Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde</title>
+<meta name="description" content="Roguelike-Lernspiel für Grundschüler (Klasse 1 bis 3): Mathe, Deutsch, Englisch, Musik, Ethik und Sachkunde. Funktioniert offline.">
 <meta name="theme-color" content="#1C2541">
 <meta name="color-scheme" content="dark">
 <meta name="format-detection" content="telephone=no">
@@ -93,10 +106,41 @@ html = f"""<!DOCTYPE html>
 {logic}
 </script>
 <script>
+{fair}
+{woerter}
+{english}
+</script>
+<script>
+{texte}
+</script>
+<script>
 {know}
 </script>
 <script>
+{sach}
+</script>
+<script>
+{sach2}
+{sach3}
+{ethik}
+</script>
+<script>
+{musik}
+</script>
+<script>
+{k12}
+</script>
+<script>
 {mon}
+</script>
+<script>
+{icons}
+</script>
+<script>
+{eltern}
+</script>
+<script>
+{qr}
 </script>
 <script>
 const CHANGELOG = {changelog_js};

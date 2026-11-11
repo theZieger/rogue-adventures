@@ -16,6 +16,13 @@ const { optimize } = require('svgo');
 const MONART = require('../src/monsters.js');
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
+require('../src/sachkunde.js'); // registers the Sachkunde units in MK.MODES
+require('../src/sachkunde2.js');
+require('../src/sachkunde3.js');
+require('../src/ethik.js');
+require('../src/musik.js'); // registers Der Konzertsaal in MK.MODES
+const MJ = require('../src/jahrmarkt.js');
+const K12 = require('../src/klasse12.js'); // Klasse 1/2 heroes and opponents, shared by all units of a subject
 
 const ROOT = path.join(__dirname, '..');
 const ART = path.join(ROOT, 'art', 'monsters');
@@ -38,9 +45,11 @@ const configHash = sha(svgoVersion + JSON.stringify(SVGO_CONFIG('KEY')));
 // every variant the game can show
 function variants() {
   const T = MQ.TYPES, list = [];
-  const starters = [...MQ.STARTERS, ...Object.values(MK.MODES).flatMap((m) => m.starters)];
+  const modes = [{ starters: MQ.STARTERS, enemies: MQ.ENEMIES }, { starters: MQ.BAU.STARTERS, enemies: MQ.BAU.ENEMIES }, MJ.MODE, ...Object.values(MK.MODES),
+    ...Object.values(K12.SETS).map((k) => ({ starters: [k.hero], enemies: k.enemies }))];
+  const starters = modes.flatMap((m) => m.starters);
   for (const s of starters) for (let e = 0; e < 3; e++) list.push({ key: MONART.bakedKey(s.shape, e), args: [s.shape, T[s.type].color, e, '', {}] });
-  const enemies = [MQ.ENEMIES, ...Object.values(MK.MODES).map((m) => m.enemies)];
+  const enemies = modes.map((m) => m.enemies);
   for (const EN of enemies) for (const W of Object.values(EN)) for (const [e, opts] of [...W.normal.map((x) => [x, {}]), [W.elite, { elite: true }], [W.boss, { boss: true }]]) {
     const key = MONART.bakedKey(e.shape, 0, '', opts);
     list.push({ key, args: [e.shape, T[e.type].color, 0, '', opts] });

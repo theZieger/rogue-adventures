@@ -15,6 +15,7 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   at most about 3 points per group and 6 per day, each point one short sentence (roughly 15 words).
   Merge related changes into one point, mention only the most noticeable fixes and sum up the rest
   (e.g. „Viele kleine Text- und Anzeigefehler.“). Details belong in commit messages.
+  Exception: a big release (like v2) gets one richer entry on its release date that lists every new theme and feature.
 - The oldest entry (2026-11-07) is the go-live release note („Lernquest ist online!“). Leave it as it is;
   never add fixes or details to it.
 - Purely internal changes (tests, CI, refactoring) don't need an entry.
@@ -29,12 +30,16 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   variant to `art/monsters/raw/` and runs svgo only on changed ones (hashes in `art/monsters/manifest.json`) into
   `art/monsters/svg/`, which the game uses. Commit `art/` too. After changing the svgo settings run
   `node tools/svg_compare.js` (Playwright) to confirm the optimised SVGs look identical.
-- Before committing: `npm run build && npm test`. Don't run the slow `npm run playtest` locally – CI runs it on every
-  pull request and push to `main`; wait for the CI result instead.
+- Before committing, opening a pull request or merging: `npm run build && npm test && npm run playtest` (the playtest
+  takes about a minute; CI runs the same on every pull request and push to `main`).
 - **Any change a player can see needs before/after screenshots and the owner's approval before it is committed
   to `main`.** Take screenshots of every affected screen (phone size, 390×844 at 2×) before and after the change,
   publish them side by side as an artifact page, and wait for the go-ahead. Never push visual or copy changes
   to `main` unapproved; a branch is fine for work in progress.
+- New units: see README „Neue Einheit“. Never add a second list of units anywhere – everything reads `grade` and
+  `subject` from the unit itself.
+- Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.js` (key = the emoji) when shown.
+  A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.
 - Icons and iOS launch screens (`docs/icons/`, `docs/splash/`) come from `node tools/make_icons.js`
   (needs Playwright); only rerun it when the artwork changes.
 - GitHub Pages serves `docs/` from `main`: https://thezieger.github.io/rogue-adventures/
@@ -56,8 +61,16 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 
 - All player-facing text is German, child-friendly, with German typography („…“, –).
   Check new names and messages against `tools/unslop-text.md` (patterns to avoid).
-- No time pressure, no comma numbers in what children see (show whole numbers).
+- Lernquest is about learning, not gaming: player- and parent-facing copy talks about learning, practising and
+  getting going, not about playing. Say „loslegen“, „weitermachen“, „üben“, „Thema“ (one unit such as Zahlenquest),
+  „Abenteuer“ (one run), never „spielen“, „Spiel“ or „Spiele“ for what the child does in Lernquest
+  (e.g. „Jetzt loslegen“, not „Jetzt spielen“; „3 Themen“, not „3 Spiele“). „Spielstand“ stays as the usual word for
+  the save. Learning content about real-life play (Fußball spielen, Spielplatz) is fine.
+- No time pressure. Children see whole numbers; the only comma numbers are money and lengths, written as the
+  curriculum asks (1,50 €; 1,20 m).
 - No external requests at runtime (fonts are self-hosted in `docs/fonts/`), no tracking, everything stays on the device.
   Only exception: the feedback screen posts the message to the Google Form when the player taps „Absenden“.
 - The app is an installable PWA: assets the game needs offline must be listed in `CORE` in `src/sw.js`.
 - Learning content follows the class worksheets – check factual changes to `src/knowledge.js` carefully.
+- Never claim human expertise that didn't happen: content checks by AI agents are not „Lehrkräfte“, „Fachleute“ or
+  „geprüft von Experten“. Changelog, README, docs, parent texts and PR texts say what was done, not who supposedly did it.
