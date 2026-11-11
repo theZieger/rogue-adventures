@@ -648,27 +648,33 @@
   // short: for the QR code, without answer history and running adventures
   function saveData(short) {
     const m = JSON.parse(JSON.stringify(meta)); const runs = {};
-    // unpractised task types are left out too: loading fills them in again with empty stats
-    if (short) for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (st.t) st.hist = []; else delete g[k]; }
+    // unpractised task types are left out: loading fills them in again with empty stats
+    for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (!st.t) delete g[k]; else if (short) st.hist = []; }
     if (short) delete m.weekly; // only this week's progress, the QR has no room for it
     else for (const g of MODE_KEYS) { const r = load(KEY_RUN_FOR(g), null); if (r) runs[g] = r; }
     return { v: 1, at: new Date().toISOString(), meta: m, runs };
   }
+  // LQ0: JSON, for browsers without compression; LQ1: deflated JSON from older versions; LQ2: deflated SAVECODE.shrink(data).
+  // Codes stay out there for years, so every one of them must keep loading.
   async function packSave(data) {
-    const json = JSON.stringify(data);
-    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(json), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ1.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
-    return 'LQ0.' + b64(unescape(encodeURIComponent(json)));
+    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(JSON.stringify(SAVECODE.shrink(data))), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ2.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
+    return 'LQ0.' + b64(unescape(encodeURIComponent(JSON.stringify(data))));
   }
+  const unb64 = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+  // the same code for the QR code: „LQ2:“ and base 42, which the QR code packs tighter than base64
+  const qrCode = (code) => (code.startsWith('LQ2.') ? 'LQ2:' + SAVECODE.to42(Uint8Array.from(unb64(code.slice(4)), (c) => c.charCodeAt(0))) : code);
   // accepts the code or the whole link; rejects with a message for parents
   async function unpackSave(text) {
     const bad = new Error('Das ist kein vollständiger Lernquest-Code. Bitte den ganzen Code kopieren und einfügen.');
-    const m = /^LQ([01])\.([A-Za-z0-9_-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
-    if (!m) throw bad;
-    if (m[1] === '1' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
+    const m = /^LQ([012])([.:])([\w$*./:-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
+    if (!m || (m[2] === ':' && m[1] !== '2')) throw bad;
+    if (m[1] !== '0' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
     let d;
     try {
-      const bin = atob(m[2].replace(/-/g, '+').replace(/_/g, '/'));
-      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(Uint8Array.from(bin, (c) => c.charCodeAt(0)), new DecompressionStream('deflate-raw')).text());
+      const bin = m[2] === '.' ? unb64(m[3]) : '';
+      const bytes = m[2] === ':' ? SAVECODE.from42(m[3]) : Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(bytes, new DecompressionStream('deflate-raw')).text());
+      if (m[1] === '2') d = SAVECODE.grow(d);
     } catch (e) { throw bad; }
     if (!isObj(d) || d.v !== 1 || !isObj(d.meta)) throw bad;
     return { at: typeof d.at === 'string' ? d.at : '', meta: normMeta(d.meta), runs: isObj(d.runs) ? d.runs : {} };
@@ -1852,8 +1858,8 @@
     on('#pexport', async () => {
       meta.backupAt = new Date().toISOString(); saveAll(); if ($('#pwarn')) $('#pwarn').remove();
       const full = saveData(false); const code = await packSave(full); const link = (c) => SITE + '#lade=' + c;
-      let qr = QR.svg(link(code), 'QR-Code mit dem Spielstand'), short = false;
-      if (!qr) { qr = QR.svg(link(await packSave(saveData(true))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
+      let qr = QR.svg(link(qrCode(code)), 'QR-Code mit dem Spielstand'), short = false;
+      if (!qr) { qr = QR.svg(link(qrCode(await packSave(saveData(true)))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
       $('#pout').innerHTML = `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
         ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer, den ganzen Spielstand gibt es nur mit dem Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte den Code benutzen.')}`;
       $('#pcopy').onclick = () => copy(code, '#pcode', '#pcmsg');

@@ -1,4 +1,5 @@
-// QR code, byte mode, error correction level L only (enough for a link shown on a screen).
+// QR code, error correction level L only (enough for a link shown on a screen). Byte mode, and alphanumeric mode for
+// the tail of the text made of 0–9, A–Z and space $%*+-./: (the save code in a link): 5.5 bits a character instead of 8.
 const QR = (() => {
   // per version 1–40: error correction codewords per block, number of blocks (level L)
   const ECC = [0, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28, 30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30];
@@ -11,12 +12,17 @@ const QR = (() => {
   function rsDivisor(deg) { const r = Array(deg).fill(0); r[deg - 1] = 1; let root = 1; for (let i = 0; i < deg; i++) { for (let j = 0; j < deg; j++) { r[j] = gfMul(r[j], root); if (j + 1 < deg) r[j] ^= r[j + 1]; } root = gfMul(root, 2); } return r; }
   function rsRemainder(data, div) { const r = div.map(() => 0); for (const b of data) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => { r[i] ^= gfMul(c, f); }); } return r; }
 
-  function codewords(bytes) {
-    let v = 1; const fits = (v) => 4 + (v < 10 ? 8 : 16) + bytes.length * 8 <= dataCodewords(v) * 8;
+  const ALNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  function codewords(text) {
+    let cut = text.length; while (cut && ALNUM.includes(text[cut - 1])) cut--;
+    const bytes = Array.from(unescape(encodeURIComponent(text.slice(0, cut))), (c) => c.charCodeAt(0)); const tail = text.slice(cut);
+    const useBytes = bytes.length > 0 || !tail; const alnumCount = (v) => (v < 10 ? 9 : v < 27 ? 11 : 13);
+    let v = 1; const fits = (v) => (useBytes ? 4 + (v < 10 ? 8 : 16) + bytes.length * 8 : 0) + (tail ? 4 + alnumCount(v) + Math.floor(tail.length / 2) * 11 + tail.length % 2 * 6 : 0) <= dataCodewords(v) * 8;
     while (v <= 40 && !fits(v)) v++;
     if (v > 40) return null;
     const bits = []; const put = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
-    put(4, 4); put(bytes.length, v < 10 ? 8 : 16); bytes.forEach((b) => put(b, 8));
+    if (useBytes) { put(4, 4); put(bytes.length, v < 10 ? 8 : 16); bytes.forEach((b) => put(b, 8)); }
+    if (tail) { put(2, 4); put(tail.length, alnumCount(v)); for (let i = 0; i < tail.length; i += 2) { const a = ALNUM.indexOf(tail[i]); if (i + 1 < tail.length) put(a * 45 + ALNUM.indexOf(tail[i + 1]), 11); else put(a, 6); } }
     const cap = dataCodewords(v) * 8; put(0, Math.min(4, cap - bits.length)); put(0, (8 - bits.length % 8) % 8);
     for (let p = 0xEC; bits.length < cap; p ^= 0xEC ^ 0x11) put(p, 8);
     const data = []; for (let i = 0; i < bits.length; i += 8) data.push(parseInt(bits.slice(i, i + 8).join(''), 2));
@@ -39,7 +45,7 @@ const QR = (() => {
 
   // dark modules as rows of booleans, or null if the text is too long for a QR code
   function matrix(text) {
-    const cw = codewords(Array.from(unescape(encodeURIComponent(text)), (c) => c.charCodeAt(0)));
+    const cw = codewords(text);
     if (!cw) return null;
     const { v, out } = cw; const n = v * 4 + 17;
     const m = Array.from({ length: n }, () => Array(n).fill(false)); const fn = m.map((r) => r.map(() => false));
