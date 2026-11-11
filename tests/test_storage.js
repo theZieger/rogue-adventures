@@ -1209,7 +1209,9 @@ function topCases() {
   const r = p1.w.__mq.run; check(r.mode === 'musik' && r.hero.id === 'dirigentin', 'a Konzertsaal adventure starts with the Dirigentin');
   r.tiers.noten = 2; r.map[0][0].t = 'fight'; p1.w.__mq.screenMap(); p1.click('.node.open');
   const tut = () => { const ok = p1.$('.overlay #tutok'); if (ok) ok.click(); };
-  tut(); p1.click('.atk[data-i="0"]'); tut();
+  // the attack's first roll decides whether an easier task is mixed in (1 in 4); keep the tier this time
+  const real = p1.w.Math.random; let first = true; p1.w.Math.random = () => (first ? (first = false, 0.9) : real());
+  tut(); p1.click('.atk[data-i="0"]'); tut(); p1.w.Math.random = real;
   const task = p1.w.__task;
   check(p1.errors.length === 0 && task && task.kind === 'num' && !!p1.$('.mus') && !!p1.$('.inp'), 'Notenwerte on tier 2 asks for a number');
   const p2 = open(p1.dump()); p2.click('[data-cont="musik"]'); const ok2 = p2.$('.overlay #tutok'); if (ok2) ok2.click();
