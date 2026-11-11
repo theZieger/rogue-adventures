@@ -72,3 +72,5 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   Only exception: the feedback screen posts the message to the Google Form when the player taps „Absenden“.
 - The app is an installable PWA: assets the game needs offline must be listed in `CORE` in `src/sw.js`.
 - Learning content follows the class worksheets – check factual changes to `src/knowledge.js` carefully.
+- Never claim human expertise that didn't happen: content checks by AI agents are not „Lehrkräfte“, „Fachleute“ or
+  „geprüft von Experten“. Changelog, README, docs, parent texts and PR texts say what was done, not who supposedly did it.

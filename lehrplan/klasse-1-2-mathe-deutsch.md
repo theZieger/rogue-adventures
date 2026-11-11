@@ -2,6 +2,7 @@
 
 Stand der Recherche: 2026-11-10. Alle Inhalte unten stammen, wenn nicht anders markiert, wörtlich bzw. eng paraphrasiert aus den
 offiziellen PDFs der sächsischen Lehrplandatenbank (heruntergeladen und mit `pdftotext` gelesen).
+Zusammengestellt von einem KI-Agenten (Claude) aus den amtlichen PDFs; nicht von einer Lehrkraft geprüft.
 
 ## 0. Wichtig vorab: Es gibt eine neuere Fassung als 2019
 

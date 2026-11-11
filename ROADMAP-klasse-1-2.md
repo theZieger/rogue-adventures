@@ -64,8 +64,8 @@ schnell/langsam, Wiederholung und Gegensatz. Noten und Komponisten stehen in Kla
   Sachkunde S1–S5, Ethik E1–E2, Musik „Der Musikraum“), dazu je Fach ein gemeinsamer Held mit sechs Gegnern.
 - Getrennte Reiter für Klasse 1 und 2; die Einrichtung fragt nach der Klasse.
 - Vorlesen (Teil von T1): Knopf bei jeder Aufgabe, in Klasse 1 und 2 von selbst.
-- Ethik und Musik wurden fachlich geprüft und korrigiert (Weihnachten nach Lukas, Familienformen, Instrumente, Stimmen).
-- Offen aus Abschnitt 3: T6 (kürzere Abenteuer für Klasse 1/2) und alles, was die Lehrer-Prüfung ergibt.
+- Ethik und Musik wurden von einem KI-Agenten gegengelesen und korrigiert (Weihnachten nach Lukas, Familienformen, Instrumente, Stimmen). Eine Lehrkraft hat das nicht geprüft.
+- Offen aus Abschnitt 3: T6 (kürzere Abenteuer für Klasse 1/2) und alles, was die KI-Durchsicht der Inhalte je Klasse ergibt.
 
 ## 3. Was vor den Inhalten an der Technik fehlt
 
