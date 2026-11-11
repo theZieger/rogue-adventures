@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""src/* -> docs/index.html, docs/sw.js, docs/manifest.webmanifest"""
+"""src/* -> docs/index.html, docs/sw.js, docs/manifest.webmanifest, docs/datenschutz.html"""
 import hashlib
 import json
 import re
@@ -32,6 +32,7 @@ mon = "const MONBAKED = " + json.dumps(baked, ensure_ascii=False).replace("</", 
 app = (SRC / "app.js").read_text(encoding="utf-8")
 manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
 sw_src = (SRC / "sw.js").read_text(encoding="utf-8")
+privacy = (SRC / "datenschutz.html").read_text(encoding="utf-8")
 
 # -> [{"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["..."]}]}]
 GROUPS = ["Neu", "Verbessert", "Behoben"]
@@ -176,7 +177,7 @@ const CHANGELOG = {changelog_js};
 """
 # build id = hash of everything shipped; page and worker compare it to detect updates
 h = hashlib.sha256()
-for part in (html, manifest, sw_src):
+for part in (html, manifest, sw_src, privacy):
     h.update(part.encode("utf-8"))
 for f in sorted((ROOT / "docs").glob("icons/*")) + sorted((ROOT / "docs").glob("splash/*")) + sorted((ROOT / "docs").glob("fonts/*")) + sorted((ROOT / "docs").glob("sounds/*")) + [ROOT / "docs" / "favicon.ico"]:
     if f.is_file():
@@ -189,5 +190,6 @@ out.write_text(html, encoding="utf-8")
 print(f"built {out} ({len(html):,} bytes)")
 
 (out.parent / "manifest.webmanifest").write_text(manifest, encoding="utf-8")
+(out.parent / "datenschutz.html").write_text(privacy, encoding="utf-8")
 (out.parent / "sw.js").write_text(sw_src.replace("__VERSION__", build_id), encoding="utf-8")
 print(f"built {out.parent / 'sw.js'} (version {build_id})")

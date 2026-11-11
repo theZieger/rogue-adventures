@@ -1,0 +1,44 @@
+name: android-app
+# Builds the signed Google Play bundle (Trusted Web Activity around the GitHub Pages site). Run by hand from the Actions tab.
+# The app only shows the live site, so game updates need no new bundle – only changes in android/twa-manifest.json do.
+on:
+  workflow_dispatch:
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 17 }
+      - uses: actions/setup-node@v5
+        with: { node-version: 24 }
+      - name: Bubblewrap and Android SDK
+        run: |
+          npm install -g @bubblewrap/cli@1.27.0
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;36.1.0" "platforms;android-36" > /dev/null
+          # Bubblewrap only accepts an SDK folder that has bin/ (or tools/) directly inside
+          ln -sfn "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/bin"
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"$JAVA_HOME\",\"androidSdkPath\":\"$ANDROID_HOME\"}" > ~/.bubblewrap/config.json
+      - name: Build signed bundle
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64" || { echo "Secret ANDROID_KEYSTORE_BASE64 is missing – see android/README.md"; exit 1; }
+          mkdir build && cd build
+          # Play needs a higher versionCode for every upload: the run number always grows
+          jq --argjson code "$GITHUB_RUN_NUMBER" --arg name "$(date -u +%Y.%m.%d)" \
+            '.appVersionCode = $code | .appVersion = $name' ../android/twa-manifest.json > twa-manifest.json
+          echo "$KEYSTORE_BASE64" | base64 -d > upload.keystore
+          bubblewrap update --skipVersionUpgrade
+          bubblewrap build
+          keytool -list -v -keystore upload.keystore -storepass "$BUBBLEWRAP_KEYSTORE_PASSWORD" | grep SHA256: | sed 's/^/Upload key /' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lernquest-${{ github.run_number }}
+          path: |
+            build/app-release-bundle.aab
+            build/app-release-signed.apk

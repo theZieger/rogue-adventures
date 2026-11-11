@@ -1,11 +1,12 @@
-// 6a473d49b8ad = build hash (build.py), so every build refreshes the cache.
-const VERSION = '6a473d49b8ad';
+// 4d7b57d8f024 = build hash (build.py), so every build refreshes the cache.
+const VERSION = '4d7b57d8f024';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './datenschutz.html',
   './favicon.ico',
   './fonts/andika-400-latin.woff2',
   './fonts/andika-700-latin.woff2',
@@ -50,10 +51,10 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // game page: network first with timeout, cache fallback; other pages (e.g. fonts/OFL.txt) pass through
+  // game page: network first with timeout, cache fallback; other pages network first, cache if offline (datenschutz.html)
   const scope = new URL(self.registration.scope);
   const isGame = url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html';
-  if (req.mode === 'navigate' && !isGame) return;
+  if (req.mode === 'navigate' && !isGame) { e.respondWith(fetch(req).catch(() => caches.match(req).then((hit) => hit || Response.error()))); return; }
   if (req.mode === 'navigate') {
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);

@@ -79,10 +79,11 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
 - Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset).
 - Startseite: Klasse → Fach (Kachel) → Thema. Sie baut sich aus `grade` und `subject` der Einheiten selbst auf (siehe „Neue Einheit“).
-- „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
+- „Idee oder Fehler melden“ im Elternbereich schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“. Nur dort, weil die Nachricht das Gerät verlässt (Google-Play-Regel für Kinder-Apps).
+- „Datenschutz“ (Titel und Elternbereich → App) öffnet `datenschutz.html`.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Fortsetzen geht es genau dort weiter. Über den Elternbereich lässt sich alles als Spielstand-Code auf ein anderes Gerät mitnehmen.
-- Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften. Einzige Ausnahme: eine Nachricht, die man selbst mit „Idee senden“ abschickt.
+- Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften. Einzige Ausnahme: eine Nachricht, die man im Elternbereich selbst abschickt.
 - Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich.
 
 ## Projektstruktur
@@ -107,6 +108,8 @@ art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo op
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
+src/datenschutz.html  Datenschutzerklärung (wird nach docs/ kopiert, auch die Play-Store-Adresse)
+android/           Google-Play-App (Trusted Web Activity): twa-manifest.json, Store-Grafiken, Anleitung in android/README.md
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
@@ -153,7 +156,7 @@ Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI p
 
 ## Feedback
 
-„💡 Idee senden“ (Startseite und Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
+„Idee oder Fehler melden“ (nur im Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
 
 Ein anderes Formular verwenden: In `FEEDBACK` (`src/app.js`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
 
