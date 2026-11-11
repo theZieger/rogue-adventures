@@ -1,5 +1,6 @@
 // Klasse 1 und 2, Ethik (Lehrplan Sachsen 2019): „Ich und die anderen“ (Klasse 1, LB 1 und 2) und „Feste und die Welt“
-// (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen), nur Bilder, keine Töne.
+// (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen) und Klasse 1 „Die Klangkiste“
+// (LB 2 bis 4: Orff-Instrumente, Gegensätze, Stimmungen, Körperinstrumente, eigene Zeichen), nur Bilder, keine Töne.
 // Registers the units in MK.MODES with the shared hero and opponents of K12.SETS. Mode keys are save keys: never rename.
 const K12E = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
@@ -604,6 +605,185 @@ const K12E = (() => {
     ],
   });
 
-  return { FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits };
+
+  /* ======================= Klasse 1 Musik: Die Klangkiste ======================= */
+  const SKIN1 = '#FFD9A8', BEAR = '#A8683A', MOUSE = '#B8BFD0', HARE = '#D8C3A5', SKY = '#3A4A7A', LINE = '#2478D6';
+  const cloud = (fill) => sh('M24 60 Q8 60 9 47 Q10 35 23 35 Q25 19 42 19 Q53 8 67 18 Q84 15 87 33 Q97 40 92 52 Q89 60 78 60 Z', fill) + lit('M17 43 Q20 38 26 38 M44 25 Q52 18 60 22', 2.5);
+  const drop = (x, y) => sh(`M${x} ${y - 9} Q${x + 7} ${y + 1} ${x} ${y + 5} Q${x - 7} ${y + 1} ${x} ${y - 9} Z`, BLUE, 2);
+  // hand seen from the palm side, fingers up, wrist at 0 0
+  const hand = oval(-12.5, -15, 4.5, 10, SKIN1, 2.2, -30) + [[-8.6, 15], [-2.9, 18], [2.8, 17], [8.4, 13]].map(([x, h]) => rect(x - 2.8, -20 - h, 5.6, h + 6, SKIN1, 2.8, 2.2)).join('') + rect(-11.5, -24, 23, 24, SKIN1, 7, 2.2);
+  const at = (x, y, rot, s, inner) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})">${inner}</g>`;
+  const left = `<g transform="scale(-1 1)">${hand}</g>`;
+  // Gegensätze: two pictures per pair, the answer is always one of the two
+  const OPP = [
+    { id: 'gewitter', dim: 'laut', word: 'laut', tap: 'Was klingt laut?', why: 'Das klingt laut:', svg: cloud('#7A86A8') + sh('M54 50 L41 76 L51 76 L44 97 L67 66 L56 66 L63 50 Z', GOLD, 2.2) + ln('M22 68 L18 78 M28 82 L24 92 M80 68 L76 78 M86 82 L82 92', 3, LINE) },
+    { id: 'pst', dim: 'laut', word: 'leise', tap: 'Was klingt leise?', why: 'Das klingt leise:', svg: `<g transform="translate(5 0) scale(.9)">${HEAD(SKIN)}${DOTS}${ln('M30 44 Q37 41 44 44', 2.5)}${ln('M56 44 Q63 41 70 44', 2.5)}${oval(50, 74, 4.5, 3.5, '#B8323F', 1.8)}</g>`
+      + rect(46, 54, 8, 28, SKIN1, 4, 2.2) + oval(50, 88, 13, 9, SKIN1, 2.2) + ln('M40 84 Q44 88 41 93 M60 84 Q56 88 59 93', 1.5) },
+    { id: 'hase', dim: 'tempo', word: 'schnell', tap: 'Wer ist schnell?', why: 'Der Hase ist schnell:', svg: ln('M2 46 H18 M6 58 H20 M2 70 H16', 3, '#9AA3B8')
+      + oval(30, 74, 15, 5, HARE, 2.5, -18) + oval(64, 22, 5, 16, HARE, 2.5, -40) + oval(64, 22, 2, 10, '#FFB3C7', 0, -40) + oval(52, 60, 27, 16, HARE, 2.5, -8) + circ(25, 54, 7, WHITE)
+      + oval(78, 72, 12, 4.5, HARE, 2.5, 25) + oval(74, 20, 5, 16, HARE, 2.5, -20) + oval(74, 20, 2, 10, '#FFB3C7', 0, -20) + circ(78, 42, 13, HARE) + circ(83, 39, 2.6, INK, 0) + circ(91, 45, 2.2, '#FF8AA8', 1.2) + gloss(46, 52, 8, 4, -8) + ln('M86 50 l8 2 M86 48 l8 -2', 1) },
+    { id: 'schnecke', dim: 'tempo', word: 'langsam', tap: 'Wer ist langsam?', why: 'Die Schnecke ist langsam:', svg: ln('M4 84 H96', 2.5, '#9AA3B8')
+      + sh('M10 82 Q10 72 22 72 H74 Q76 58 84 56 Q92 56 92 66 V78 Q92 82 86 82 Z', '#C9E265') + ln('M82 58 L76 40 M88 58 L90 40', 2.5) + circ(76, 39, 3.5, INK, 0) + circ(90, 39, 3.5, INK, 0) + ln('M84 70 Q87 72 90 70', 1.8)
+      + circ(46, 50, 25, '#F2B05E', 3) + ln('M46 50 m0 -5 a5 5 0 1 1 -5 5 a10 10 0 1 1 10 10 a16 16 0 1 1 -16 -16', 2.5, '#B8862E') + gloss(36, 36, 5, 3, -30) },
+    { id: 'maus', dim: 'hoch', word: 'hoch', tap: 'Wer hat eine hohe Stimme?', why: 'Die Maus piepst hoch:', svg: ln('M24 80 Q6 78 8 64 Q10 54 18 56', 2.5, '#E58FA8')
+      + oval(46, 70, 24, 16, MOUSE) + oval(36, 86, 6, 3, '#FFB3C7', 1.8) + oval(56, 86, 6, 3, '#FFB3C7', 1.8) + circ(64, 44, 10, MOUSE) + circ(64, 44, 6, '#FFB3C7', 1.5)
+      + sh('M60 62 Q60 46 74 46 Q86 48 92 60 Q84 68 72 68 Q62 68 60 62 Z', MOUSE) + circ(76, 54, 2.5, INK, 0) + circ(92, 60, 2.5, '#FF8AA8', 1.5) + ln('M86 62 L98 58 M86 64 L98 66', 1) + gloss(40, 62, 8, 4, -10) },
+    { id: 'baer', dim: 'hoch', word: 'tief', tap: 'Wer hat eine tiefe Stimme?', why: 'Der Bär brummt tief:', svg: circ(24, 24, 11, BEAR) + circ(24, 24, 6, '#E8C094', 1.5) + circ(76, 24, 11, BEAR) + circ(76, 24, 6, '#E8C094', 1.5)
+      + circ(50, 56, 38, BEAR, 3) + oval(50, 72, 17, 13, '#E8C094') + oval(50, 64, 6.5, 4.5, INK, 0) + circ(36, 48, 4, INK, 0) + circ(64, 48, 4, INK, 0) + sh('M43 75 Q50 84 57 75 Z', '#B8323F', 2) + gloss(34, 32, 8, 4, -30) },
+  ];
+  const OPP_Q = { laut: 'Klingt das laut oder leise?', tempo: 'Ist dieses Tier schnell oder langsam?', hoch: 'Hat dieses Tier eine hohe oder tiefe Stimme?' };
+  // Musik und Gefühle: calm and sad, cheerful and wild never stand side by side, so exactly one picture fits
+  const MOODS = [
+    { id: 'sonne', music: 'fröhliche Musik', not: ['wind'], qs: ['Ein Lied klingt fröhlich und hell. Welches Bild passt?', 'Die Musik klingt lustig, alle lachen. Welches Bild passt?'],
+      svg: sh(Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6, p = (r, d) => `${(50 + r * Math.cos(a + d)).toFixed(1)} ${(50 + r * Math.sin(a + d)).toFixed(1)}`; return `M${p(30, -0.2)} L${p(47, 0)} L${p(30, 0.2)} Z`; }).join(' '), '#FFB347', 2)
+        + circ(50, 50, 30, GOLD, 3) + ln('M36 44 Q40 38 44 44', 2.5) + ln('M56 44 Q60 38 64 44', 2.5) + sh('M36 56 Q50 74 64 56 Z', '#B8323F') + '<circle cx="31" cy="56" r="4.5" fill="#FF8A8A" opacity=".5"/><circle cx="69" cy="56" r="4.5" fill="#FF8A8A" opacity=".5"/>' + gloss(38, 32, 6, 3.5, -30) },
+    { id: 'regen', music: 'traurige Musik', not: ['mond'], qs: ['Ein Lied klingt traurig und langsam. Welches Bild passt?', 'Die Musik klingt, als ob jemand weint. Welches Bild passt?'],
+      svg: cloud('#B7C3DD') + circ(41, 42, 3, INK, 0) + circ(61, 42, 3, INK, 0) + ln('M33 36 L44 32 M58 32 L69 36', 2.5) + ln('M42 54 Q51 47 60 54', 3) + drop(26, 74) + drop(50, 84) + drop(74, 74) },
+    { id: 'mond', music: 'ruhige Musik', not: ['regen'], qs: ['Ein Lied klingt ruhig und leise. Welches Bild passt?', 'Die Musik ist ein leises Schlaflied. Welches Bild passt?'],
+      svg: rect(3, 3, 94, 94, SKY, 14) + sh('M60 16 A34 34 0 1 0 60 84 A42 42 0 0 1 60 16 Z', GOLD) + ln('M31 46 Q35 50 39 46', 2.5) + ln('M33 62 Q37 65 41 61', 2.2) + sh(star(78, 26, 8, 3.4), GOLD, 1.5) + sh(star(84, 60, 5.5, 2.4), GOLD, 1.5) + sh(star(68, 84, 4.5, 2), GOLD, 1.2) + lit('M44 24 Q36 30 33 38', 2) },
+    { id: 'wind', music: 'wilde Musik', not: ['sonne'], qs: ['Die Musik klingt wild und laut. Welches Bild passt?', 'Die Musik braust und stürmt. Welches Bild passt?'],
+      svg: sh('M12 54 Q2 44 12 34 Q12 18 30 20 Q40 8 54 18 Q68 18 66 34 Q76 44 66 56 Q60 68 44 64 Q30 72 22 62 Q12 64 12 54 Z', '#C9D6EE') + ln('M24 34 L31 38 L24 42 M48 34 L41 38 L48 42', 2.5) + '<circle cx="24" cy="50" r="6" fill="#FF8A8A" opacity=".5"/><circle cx="50" cy="50" r="6" fill="#FF8A8A" opacity=".5"/>' + oval(62, 46, 5, 6, '#B8323F', 2.2)
+        + ln('M70 38 Q82 30 96 36 M72 47 Q84 47 98 43 M70 56 Q82 64 94 56', 3.5, LINE) + oval(86, 18, 6, 3.5, GREEN, 2, -30) + oval(84, 80, 6, 3.5, '#FF8A3D', 2, 30) + oval(94, 66, 5, 3, GREEN, 2, 50) + lit('M18 30 Q22 24 30 24', 2.5) },
+  ];
+  const moodFits = (a, b) => a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
+  const BODY = [
+    { id: 'klatschen', noun: 'Klatschen', svg: at(32, 92, 16, 1.55, hand) + at(68, 92, -16, 1.55, left) + ln('M50 14 V4 M38 18 L31 9 M62 18 L69 9', 3, '#FF8A3D') },
+    { id: 'stampfen', noun: 'Stampfen', svg: ln('M30 8 V24 M70 8 V24', 2.5, '#9AA3B8') + rect(38, -2, 24, 52, '#5B6CFF', 3) + lit('M43 4 V44', 2)
+      + sh('M34 48 H64 V56 Q82 56 86 66 Q88 74 80 74 H32 Q26 74 26 66 V54 Q26 48 34 48 Z', RED) + rect(24, 72, 64, 7, EBONY, 3, 2) + ln('M4 84 H96', 3)
+      + ln('M16 78 L6 70 M20 72 L16 62 M92 76 L98 68 M90 68 L92 60', 2.5, '#FF8A3D') },
+    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(36, 80, 30, 20, BLUE, 3) + lit('M41 84 V96', 2)
+      + tube('M60 52 L78 24', 9, SKIN1) + oval(68, 60, 7, 5, SKIN1, 2.2) + oval(68, 71, 7, 5, SKIN1, 2.2)
+      + tube('M42 66 Q26 58 28 40', 11, SKIN1) + tube('M52 56 Q52 28 32 36', 9, SKIN1) + rect(34, 48, 34, 36, SKIN1, 12, 2.2) + ln('M22 32 L13 26 M28 26 L24 15 M20 42 L9 43', 3, '#FF8A3D') },
+    { id: 'patschen', noun: 'Patschen', svg: rect(10, 6, 36, 100, '#5B6CFF', 16) + rect(54, 6, 36, 100, '#5B6CFF', 16) + lit('M16 20 V90 M60 20 V90', 2)
+      + at(28, 34, 180, 1.15, hand) + at(72, 34, 180, 1.15, left) + ln('M14 14 Q28 4 42 14 M58 14 Q72 4 86 14', 2.5, '#FF8A3D') },
+  ];
+  BODY.forEach((b) => { b.word = b.noun.toLowerCase(); });
+  // eigene Zeichen: long line = long tone, dots = short tones, big = loud, small = quiet; read from left to right
+  const dash = (x1, x2, w) => tube(`M${x1} 50 H${x2}`, w || 6, BLUE);
+  const SIGNS = [
+    { id: 'lang', dim: 'len', mean: 'ein langer Ton', tap: 'Welches Zeichen passt zu einem langen Ton?', why: 'Ein langer Strich ist ein langer Ton:', svg: dash(12, 88) },
+    { id: 'kurz', dim: 'len', mean: 'kurze Töne', tap: 'Welches Zeichen passt zu kurzen Tönen?', why: 'Punkte sind kurze Töne:', svg: [20, 40, 60, 80].map((x) => circ(x, 50, 6.5, BLUE)).join('') },
+    { id: 'laut', dim: 'vol', mean: 'laut', tap: 'Welches Zeichen passt zu einem lauten Ton?', why: 'Ein großes Zeichen ist laut:', svg: sh(star(50, 54, 44, 19), GOLD) + gloss(40, 40, 4, 7, 30) },
+    { id: 'leise', dim: 'vol', mean: 'leise', tap: 'Welches Zeichen passt zu einem leisen Ton?', why: 'Ein kleines Zeichen ist leise:', svg: sh(star(50, 54, 13, 5.6), GOLD, 2) },
+  ];
+  // lang-kurz-Muster: the three orders of the same signs, exactly one matches the words
+  const PATS = ['LKK', 'KLK', 'KKL', 'KLL', 'LKL', 'LLK'].map((id) => ({ id, svg: [...id].map((c, i) => { const x = 16 + i * 34; return c === 'L' ? dash(x - 8, x + 8, 7) : circ(x, 50, 7.5, BLUE); }).join('') }));
+  const patWords = (id) => [...id].map((c, i) => (c === 'L' ? (i ? 'lang' : 'Lang') : (i ? 'kurz' : 'Kurz'))).join(', ');
+  const ORFF = ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel'].map((id) => INSTR.find((i) => i.id === id));
+  const SPIEL1 = ORFF.concat(INSTR.filter((i) => i.id === 'gitarre'));
+  // a way of playing is only offered as wrong if it is neither the instrument's own nor also possible (notHow)
+  const wrongHow = (i, h) => h !== i.how && !(i.notHow || []).includes(h);
+  const NOTES4 = {
+    instrumente: { title: 'Instrumente aus der Klangkiste', lines: ['Die Triangel ist ein Dreieck aus Metall.', 'Die Handtrommel hat ein Fell.', 'Klanghölzer sind zwei runde Stäbe aus Holz.', 'In der Rassel sind kleine Körner.', 'Der Schellenkranz ist ein Ring mit kleinen Schellen.', 'Das Glockenspiel hat bunte Platten aus Metall.'] },
+    spielen: { title: 'So spielt man', lines: ['Schlagen: Handtrommel, Triangel, Klanghölzer und Glockenspiel.', 'Zum Schlagen nimmst du die Hand oder einen Schlägel.', 'Schütteln: Rassel und Schellenkranz.', 'Zupfen: Die Finger ziehen an den Saiten der Gitarre.'] },
+    gegensatz: { title: 'Laut und leise, schnell und langsam, hoch und tief', lines: ['Ein Gewitter ist laut. Flüstern ist leise.', 'Ein Hase rennt schnell. Eine Schnecke kriecht langsam.', 'Eine Maus piepst hoch. Ein Bär brummt tief.', 'Auch Musik kann laut oder leise, schnell oder langsam, hoch oder tief sein.'] },
+    gefuehle: { title: 'Gefühle in der Musik', lines: ['Musik kann fröhlich klingen, zum Beispiel ein Geburtstagslied.', 'Traurige Musik ist oft langsam.', 'Ein Schlaflied klingt ruhig und leise.', 'Wilde Musik ist laut und schnell. Dazu passt ein Sturm.', 'Jeder darf Musik anders fühlen.'] },
+    koerper: { title: 'Körperinstrumente', lines: ['Dein Körper ist auch ein Instrument.', 'Klatschen: Die Hände schlagen aneinander.', 'Stampfen: Die Füße treten fest auf den Boden.', 'Schnipsen: Der Mittelfinger rutscht am Daumen ab und knackt.', 'Patschen: Die Hände klopfen auf die Oberschenkel.'] },
+    zeichen: { title: 'Zeichen für Klänge', lines: ['Klänge kann man aufmalen.', 'Ein langer Strich ist ein langer Ton.', 'Punkte sind kurze Töne.', 'Ein großes Zeichen ist laut, ein kleines Zeichen leise.', 'Die Zeichen liest du von links nach rechts.'] },
+  };
+  const POOL4 = [
+    { id: 'k1mi1', mod: 'instr', g: 'instrumente', q: 'Welches Instrument ist ein Dreieck aus Metall?', o: ['Die Triangel', 'Die Rassel', 'Die Handtrommel'], a: 0 },
+    { id: 'k1mi2', mod: 'instr', g: 'instrumente', q: 'Welches Instrument hat ein Fell?', o: ['Die Handtrommel', 'Die Triangel', 'Die Klanghölzer'], a: 0 },
+    { id: 'k1mi3', mod: 'instr', g: 'instrumente', q: 'Welches Instrument hat bunte Platten aus Metall?', o: ['Das Glockenspiel', 'Die Rassel', 'Die Handtrommel'], a: 0 },
+    { id: 'k1mi4', mod: 'instr', g: 'instrumente', q: 'Was sind zwei runde Stäbe aus Holz?', o: ['Klanghölzer', 'Eine Triangel', 'Eine Rassel'], a: 0 },
+    { id: 'k1mi5', mod: 'instr', g: 'instrumente', q: 'Welches Instrument ist ein Ring mit kleinen Schellen?', o: ['Der Schellenkranz', 'Das Glockenspiel', 'Die Triangel'], a: 0 },
+    { id: 'k1ms1', mod: 'spielen', g: 'spielen', q: 'Was tust du mit der Rassel?', o: ['schütteln', 'zupfen'], a: 0 },
+    { id: 'k1ms2', mod: 'spielen', g: 'spielen', q: 'Was tust du mit den Saiten der Gitarre?', o: ['zupfen', 'schütteln'], a: 0 },
+    { id: 'k1ms3', mod: 'spielen', g: 'spielen', q: 'Womit schlägst du auf das Glockenspiel?', o: ['Mit einem Schlägel', 'Mit einer Feder'], a: 0 },
+    { id: 'k1ms4', mod: 'spielen', g: 'spielen', q: 'Wie bringst du Klanghölzer zum Klingen?', o: ['Ich schlage sie aneinander.', 'Ich zupfe sie.'], a: 0 },
+    { id: 'k1ms5', mod: 'spielen', g: 'spielen', q: 'Womit schlägst du auf die Handtrommel?', o: ['Mit der Hand', 'Mit dem Fuß'], a: 0 },
+    { id: 'k1mg1', mod: 'gegen', g: 'gegensatz', q: 'Dein kleiner Bruder schläft. Wie singst du?', o: ['leise', 'laut'], a: 0 },
+    { id: 'k1mg2', mod: 'gegen', g: 'gegensatz', q: 'Welche Musik passt zu einer Schnecke?', o: ['langsame Musik', 'schnelle Musik'], a: 0 },
+    { id: 'k1mg3', mod: 'gegen', g: 'gegensatz', q: 'Welche Musik passt zu einem rennenden Hasen?', o: ['schnelle Musik', 'langsame Musik'], a: 0 },
+    { id: 'k1mg4', mod: 'gegen', g: 'gegensatz', q: 'Ein Bär brummt. Klingt das hoch oder tief?', o: ['tief', 'hoch'], a: 0 },
+    { id: 'k1mg5', mod: 'gegen', g: 'gegensatz', q: 'Was ist das Gegenteil von laut?', o: ['leise', 'schnell'], a: 0 },
+    { id: 'k1mg6', mod: 'gegen', g: 'gegensatz', q: 'Was ist das Gegenteil von schnell?', o: ['langsam', 'tief'], a: 0 },
+    { id: 'k1mf1', mod: 'gefuehl', g: 'gefuehle', q: 'Welche Musik passt zu einem Geburtstag?', o: ['fröhliche Musik', 'traurige Musik'], a: 0 },
+    { id: 'k1mf2', mod: 'gefuehl', g: 'gefuehle', q: 'Welche Musik passt zum Einschlafen?', o: ['ruhige Musik', 'wilde Musik'], a: 0 },
+    { id: 'k1mf3', mod: 'gefuehl', g: 'gefuehle', q: 'Wie klingt ein Schlaflied?', o: ['ruhig und leise', 'wild und laut'], a: 0 },
+    { id: 'k1mf4', mod: 'gefuehl', g: 'gefuehle', q: 'Zu welcher Musik tanzt du wild herum?', o: ['Zu lauter, schneller Musik', 'Zu einem Schlaflied'], a: 0 },
+    { id: 'k1mf5', mod: 'gefuehl', g: 'gefuehle', q: 'Zwei Kinder hören dasselbe Lied. Fühlen beide immer gleich?', o: ['Nicht immer', 'Ja, immer'], a: 0 },
+    { id: 'k1mk1', mod: 'koerper', g: 'koerper', q: 'Womit klatschst du?', o: ['Mit den Händen', 'Mit den Füßen'], a: 0 },
+    { id: 'k1mk2', mod: 'koerper', g: 'koerper', q: 'Womit stampfst du?', o: ['Mit den Füßen', 'Mit den Händen'], a: 0 },
+    { id: 'k1mk3', mod: 'koerper', g: 'koerper', q: 'Womit schnipst du?', o: ['Mit den Fingern', 'Mit den Füßen'], a: 0 },
+    { id: 'k1mk4', mod: 'koerper', g: 'koerper', q: 'Du klopfst mit den Händen auf deine Beine. Wie heißt das?', o: ['patschen', 'stampfen', 'schnipsen'], a: 0 },
+    { id: 'k1mk5', mod: 'koerper', g: 'koerper', q: 'Welches Instrument hast du immer dabei?', o: ['Deinen Körper', 'Eine Trommel', 'Eine Triangel'], a: 0 },
+    { id: 'k1mk6', mod: 'koerper', g: 'koerper', q: 'Was klingt leiser: schnipsen oder stampfen?', o: ['schnipsen', 'stampfen'], a: 0 },
+    { id: 'k1mz1', mod: 'zeichen', g: 'zeichen', q: 'Was bedeutet ein langer Strich?', o: ['ein langer Ton', 'kurze Töne'], a: 0 },
+    { id: 'k1mz2', mod: 'zeichen', g: 'zeichen', q: 'Was bedeuten viele Punkte?', o: ['kurze Töne', 'ein langer Ton'], a: 0 },
+    { id: 'k1mz3', mod: 'zeichen', g: 'zeichen', q: 'Was bedeutet ein großes Zeichen?', o: ['laut', 'leise'], a: 0 },
+    { id: 'k1mz4', mod: 'zeichen', g: 'zeichen', q: 'Was bedeutet ein kleines Zeichen?', o: ['leise', 'laut'], a: 0 },
+    { id: 'k1mz5', mod: 'zeichen', g: 'zeichen', q: 'In welche Richtung liest du die Zeichen?', o: ['von links nach rechts', 'von rechts nach links'], a: 0 },
+  ];
+  function gen4(mod, tier, know, seq, opts) {
+    if (wantsPool(POOL4, mod, opts) || Math.random() < 0.25) return null;
+    const r = Math.random(); const opt = (x) => optPic(x.svg, 'Bild');
+    if (mod === 'instr') {
+      const i = pick(ORFF), others = some(ORFF.filter((x) => x !== i), 2);
+      if (r < 0.5) return choice('instr', 'instrumente', 'Wie heißt das Instrument?', i.name, others.map((x) => x.name), 'k1mb_' + i.id, { pic: pic(i.svg, 'Bild eines Instruments'), instr: i.id });
+      return choice('instr', 'instrumente', `Tippe auf ${i.acc}.`, opt(i), others.map(opt), 'k1mt_' + i.id, { svgOpts: true, why: `So sieht ${i.acc} aus:`, instrs: [i.id].concat(others.map((x) => x.id)) });
+    }
+    if (mod === 'spielen') {
+      if (r < 0.6) { const i = pick(SPIEL1); return choice('spielen', 'spielen', 'Wie spielt man dieses Instrument?', i.how, ['schlagen', 'schütteln', 'zupfen'].filter((h) => wrongHow(i, h)), 'k1ms_' + i.id, { pic: pic(i.svg, 'Bild eines Instruments'), instr: i.id }); }
+      const h = pick(['schütteln', 'zupfen']), i = pick(SPIEL1.filter((x) => x.how === h)), others = some(SPIEL1.filter((x) => wrongHow(x, h)), 2), verb = h === 'zupfen' ? 'zupft' : 'schüttelt';
+      return choice('spielen', 'spielen', `Welches Instrument ${verb} man?`, opt(i), others.map(opt), 'k1mst_' + i.id, { svgOpts: true, why: `Das ${verb} man:`, how: h, instrs: [i.id].concat(others.map((x) => x.id)) });
+    }
+    if (mod === 'gegen') {
+      const x = pick(OPP), y = OPP.find((o) => o.dim === x.dim && o !== x);
+      if (r < 0.5) return choice('gegen', 'gegensatz', x.tap, opt(x), [opt(y)], 'k1mgt_' + x.id, { svgOpts: true, why: x.why, opps: [x.id, y.id] });
+      return choice('gegen', 'gegensatz', OPP_Q[x.dim], x.word, [y.word], 'k1mgb_' + x.id, { pic: pic(x.svg, 'Bild'), opp: x.id });
+    }
+    if (mod === 'gefuehl') {
+      const m = pick(MOODS), others = MOODS.filter((o) => moodFits(m, o));
+      if (r < 0.6) { const k = pick([0, 1]); return choice('gefuehl', 'gefuehle', m.qs[k], opt(m), others.map(opt), `k1mf${k}_${m.id}`, { svgOpts: true, why: 'Dieses Bild passt:', moods: [m.id].concat(others.map((o) => o.id)) }); }
+      return choice('gefuehl', 'gefuehle', 'Welche Musik passt zu diesem Bild?', m.music, others.map((o) => o.music), 'k1mfb_' + m.id, { pic: pic(m.svg, 'Bild'), mood: m.id });
+    }
+    if (mod === 'koerper') {
+      const b = pick(BODY), others = some(BODY.filter((x) => x !== b), 2);
+      if (r < 0.5) return choice('koerper', 'koerper', 'Was macht das Kind?', b.word, others.map((x) => x.word), 'k1mkb_' + b.id, { pic: pic(b.svg, 'Bild'), body: b.id });
+      return choice('koerper', 'koerper', `Tippe auf das Bild zum ${b.noun}.`, opt(b), others.map(opt), 'k1mkt_' + b.id, { svgOpts: true, why: `So sieht ${b.noun} aus:`, bodies: [b.id].concat(others.map((x) => x.id)) });
+    }
+    if (mod === 'zeichen') {
+      const s = pick(SIGNS), y = SIGNS.find((o) => o.dim === s.dim && o !== s);
+      if (r < 0.35) return choice('zeichen', 'zeichen', s.tap, opt(s), [opt(y)], 'k1mzt_' + s.id, { svgOpts: true, why: s.why, signs: [s.id, y.id] });
+      if (r < 0.7) return choice('zeichen', 'zeichen', 'Was bedeutet dieses Zeichen?', s.mean, [y.mean], 'k1mzb_' + s.id, { pic: pic(s.svg, 'Zeichen'), sign: s.id });
+      const p = pick(PATS), same = PATS.filter((o) => o !== p && [...o.id].sort().join('') === [...p.id].sort().join(''));
+      return choice('zeichen', 'zeichen', `Welches Zeichen passt? ${patWords(p.id)}.`, opt(p), same.map(opt), 'k1mzp_' + p.id, { svgOpts: true, why: 'So passt es:', pats: [p.id].concat(same.map((o) => o.id)) });
+    }
+    return null;
+  }
+  K.MODES.musik1 = unit('musik', [{ name: 'Triangelschlag', mod: 'spielen' }, { name: 'Stampftanz', mod: 'koerper' }, { name: 'Wiegenlied', mod: 'gefuehl' }, { name: 'Kreidestrich', mod: 'zeichen' }], {
+    grade: 1, subject: 'Musik', title: 'Die Klangkiste', icon: '🥁', sub: 'Instrumente der Klasse, laut und leise, Gefühle in der Musik, klatschen und stampfen, Klänge aufmalen',
+    modules: {
+      instr: { name: 'Welches Instrument?', icon: '🔍', maxTier: 1, worldCap: [1], dmg: 12 },
+      spielen: { name: 'So spielt man', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 12 },
+      gegen: { name: 'Gegensätze', icon: '🔊', maxTier: 1, worldCap: [1], dmg: 10 },
+      gefuehl: { name: 'Musik und Gefühle', icon: '🙂', maxTier: 1, worldCap: [1], dmg: 12 },
+      koerper: { name: 'Körperinstrumente', icon: '👏', maxTier: 1, worldCap: [1], dmg: 10 },
+      zeichen: { name: 'Zeichen für Klänge', icon: '✏', maxTier: 1, worldCap: [1], dmg: 12 },
+    },
+    extra: { instr: 'Instrumentenregal', spielen: 'Schellenkranz', gegen: 'Donnergrollen', gefuehl: 'Schlaflied', koerper: 'Fingerschnipsen', zeichen: 'Klangbild' },
+    tut: {
+      'instr:1': { title: 'Welches Instrument?', steps: ['Schau dir das Bild genau an.', 'Ist es aus Holz oder aus Metall? Hat es ein Fell, Schellen oder bunte Platten?', 'Tippe auf den richtigen Namen oder das richtige Bild.'] },
+      'spielen:1': { title: 'So spielt man', steps: ['Überlege: Was tust du, damit das Instrument klingt?', 'Trommel, Triangel, Klanghölzer und Glockenspiel: schlagen.', 'Rassel und Schellenkranz: schütteln. Gitarre: zupfen.', 'Tippe auf die richtige Antwort.'] },
+      'gegen:1': { title: 'Gegensätze', steps: ['Hör dir die Frage an und schau dir die Bilder an.', 'Laut oder leise? Schnell oder langsam? Hoch oder tief?', 'Ein Gewitter ist laut. Ein Hase ist schnell. Eine Maus piepst hoch.', 'Tippe auf das passende Bild oder Wort.'] },
+      'gefuehl:1': { title: 'Musik und Gefühle', steps: ['Hör dir an, wie die Musik klingt.', 'Fröhlich: die lachende Sonne. Traurig: die weinende Wolke.', 'Ruhig: der schlafende Mond. Wild: der Sturm.', 'Tippe auf das Bild, das passt.'] },
+      'koerper:1': { title: 'Körperinstrumente', steps: ['Schau, was Hände, Finger und Füße tun.', 'Hände schlagen aneinander: klatschen. Füße treten fest auf: stampfen.', 'Finger knacken: schnipsen. Hände klopfen auf die Beine: patschen.', 'Mach es selbst einmal vor und tippe dann auf die Antwort.'] },
+      'zeichen:1': { title: 'Zeichen für Klänge', steps: ['Ein langer Strich ist ein langer Ton. Ein Punkt ist ein kurzer Ton.', 'Ein großes Zeichen ist laut, ein kleines leise.', 'Lies die Zeichen von links nach rechts.', 'Tippe auf das passende Zeichen oder Wort.'] },
+    },
+    notes: NOTES4, pool: POOL4, gen: gen4,
+    events: [
+      ask('Das Instrumentenregal', 'Im Musikraum steht ein Regal mit Trommeln, Rasseln und Triangeln. Die Musiklehrerin zeigt auf ein Instrument und schenkt dir einen Trank, wenn du es erkennst.', 'instr', undefined, { item: 'trank' }, { hp: -5 }),
+      ask('Die Turnhalle', 'In der Turnhalle klatscht und stampft die Klasse zu einem Lied. Der Sportlehrer stellt dir eine Frage und gibt dir einen Schild.', 'koerper', 'koerper', { item: 'schild' }, { hp: -5 }),
+      { title: 'Der Malkreis', text: 'Im Kunstraum malen Kinder Bilder zu einem Lied. Ein Mädchen fragt dich, welches Bild zur Musik passt.', opts: [{ label: 'Antworten', task: 'gefuehl', g: 'gefuehle', win: { xp: 20 }, lose: { xp: 5 } }, { label: 'Zuschauen (+5 LP)', effect: { hp: 5 } }] },
+      dilemma('Der schiefe Ton', 'Im Morgenkreis singt dein Freund Ben laut mit. Einige Töne klingen schief. Zwei Kinder lachen.', [
+        ['Ich singe mit Ben weiter.', 'Ihr singt das Lied zusammen zu Ende. Ben lächelt dich an.', 'Was ist beim Singen wichtiger: die Freude oder jeder Ton?'],
+        ['Ich sage Ben später, welcher Ton anders klang.', 'Ben hört genau hin und singt die Stelle noch einmal mit dir.', 'Wie sagt man so etwas, ohne dass es wehtut?'],
+        ['Ich lache mit den anderen.', 'Ben hört auf zu singen und schaut auf den Boden.', 'Wie fühlt sich Ben jetzt?']]),
+      rest('Die Sitzkissen', 'Im Musikraum liegen Sitzkissen im Kreis. Hier ruhst du dich aus.'),
+    ],
+  });
+
+  return { FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
 })();
 if (typeof module !== 'undefined') module.exports = K12E;

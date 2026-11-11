@@ -1,4 +1,4 @@
-// Klasse 1/2 ethik (and the Musik unit of Klasse 2): checks beyond the generic ones in test_knowledge.js and test_data.js
+// Klasse 1/2 ethik (and the Musik units of Klasse 1 and 2): checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
 const fail = (m) => fails.push(m);
 const MK = require('../src/knowledge.js');
@@ -6,7 +6,7 @@ const ICONS = require('../src/icons.js');
 require('./units.js');
 const E = require('../src/k12_ethik.js');
 
-const UNITS = { ichdu1: [1, 'Ethik'], feste2: [2, 'Ethik'], instrumente2: [2, 'Musik'] };
+const UNITS = { ichdu1: [1, 'Ethik'], feste2: [2, 'Ethik'], instrumente2: [2, 'Musik'], musik1: [1, 'Musik'] };
 const words = (s) => s.split(/\s+/).filter((w) => /[a-zäöüß0-9]/i.test(w)).length;
 const icon = (e) => ICONS[e.replace(/️/g, '')];
 let seq = 0;
@@ -36,7 +36,7 @@ for (const [m, [grade, subject]] of Object.entries(UNITS)) {
   }
   if (qids.size < 40) fail(`${m}: only ${qids.size} different questions`);
   for (const n of Object.keys(c.notes)) if (!perNote[n] || perNote[n].size < 3) fail(`${m}: note ${n} has fewer than 3 questions`);
-  for (const p of c.pool) if (!p.id.startsWith({ ichdu1: 'k1e', feste2: 'k2f', instrumente2: 'k2m' }[m])) fail(`${m}: question id ${p.id} without unit prefix`);
+  for (const p of c.pool) if (!p.id.startsWith({ ichdu1: 'k1e', feste2: 'k2f', instrumente2: 'k2m', musik1: 'k1m' }[m])) fail(`${m}: question id ${p.id} without unit prefix`);
 }
 
 // pictures: each drawing is unique, and a picture task has exactly one fitting answer
@@ -66,6 +66,40 @@ for (const t of samples.instrumente2) {
 if (E.INSTR.length < 10) fail('fewer than 10 instruments');
 for (const id of ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel']) if (!E.INSTR.some((i) => i.id === id)) fail('Orff instrument missing: ' + id);
 for (const i of E.INSTR) { if (!E.FAM[i.fam] || !E.HOWS.includes(i.how)) fail('instrument data: ' + i.id); if (Object.keys(E.FAM).filter((f) => f !== i.fam && !(i.notFam || []).includes(f)).length < 1) fail('no wrong family for ' + i.id); }
+
+// Klasse 1 Musik: unique drawings, every picture task has exactly one fitting answer
+{
+  const lists = { instr: E.ORFF, opp: E.OPP, mood: E.MOODS, body: E.BODY, sign: E.SIGNS, pat: E.PATS };
+  const pics = Object.values(lists).flat().map((x) => x.svg);
+  uniq('musik1 pictures', pics);
+  for (const a of pics) if (pics.some((b) => b !== a && b.includes(a))) fail('musik1: one drawing contains another');
+  const one = (list, svg) => { const h = byPic(list, svg); return h.length === 1 ? h[0] : null; };
+  // options: each shows exactly one drawing of the list, in the order of ids; the first id is the answer
+  const tap = (t, list, ids) => { const shown = t.options.map((o) => one(list, o)); if (shown.some((x) => !x) || new Set(shown).size !== shown.length || !ids.every((id) => shown.some((x) => x.id === id)) || one(list, t.answer).id !== ids[0]) { fail('musik1 picture options: ' + t.qid); return null; } return shown; };
+  for (const t of samples.musik1) {
+    if (t.instr) {
+      const i = one(E.SPIEL1, t.pic); if (!i || i.id !== t.instr) { fail('musik1 instrument picture: ' + t.qid); continue; }
+      if (t.answer !== (t.mod === 'instr' ? i.name : i.how)) fail('musik1 instrument answer: ' + t.qid);
+      if (t.mod === 'instr' && t.options.some((o) => !E.ORFF.some((x) => x.name === o))) fail('musik1 non-Orff option: ' + t.qid);
+      if (t.mod === 'spielen' && t.options.some((o) => o !== i.how && !E.wrongHow(i, o))) fail(`musik1 ${i.id}: option also right in ${t.qid}`);
+    }
+    if (t.instrs) { const shown = tap(t, E.SPIEL1, t.instrs); if (shown && t.mod === 'instr' && !t.q.includes(shown.find((x) => x.id === t.instrs[0]).acc)) fail('musik1 instrument tap: ' + t.qid);
+      if (shown && t.how && (shown[t.options.indexOf(t.answer)].how !== t.how || shown.some((x) => x.id !== t.instrs[0] && !E.wrongHow(x, t.how)))) fail('musik1 how tap: ' + t.qid); }
+    if (t.opp && (one(E.OPP, t.pic) || {}).word !== t.answer) fail('musik1 opposite picture: ' + t.qid);
+    if (t.opps) { const shown = tap(t, E.OPP, t.opps); if (shown && (shown[0].dim !== shown[1].dim || E.OPP.find((x) => x.id === t.opps[0]).tap !== t.q)) fail('musik1 opposite tap: ' + t.qid); }
+    if (t.mood) { const m = one(E.MOODS, t.pic); if (!m || m.music !== t.answer || t.options.some((o) => o !== m.music && !E.moodFits(m, E.MOODS.find((x) => x.music === o)))) fail('musik1 mood picture: ' + t.qid); }
+    if (t.moods) { const shown = tap(t, E.MOODS, t.moods); if (shown && (!shown[0].qs.concat(shown.slice(1).flatMap((x) => x.qs)).includes(t.q) || !E.MOODS.find((x) => x.id === t.moods[0]).qs.includes(t.q) || t.moods.slice(1).some((id) => !E.moodFits(E.MOODS.find((x) => x.id === t.moods[0]), E.MOODS.find((x) => x.id === id))))) fail('musik1 mood tap: ' + t.qid); }
+    if (t.body && (one(E.BODY, t.pic) || {}).word !== t.answer) fail('musik1 body picture: ' + t.qid);
+    if (t.bodies) { const shown = tap(t, E.BODY, t.bodies); if (shown && !t.q.includes(E.BODY.find((x) => x.id === t.bodies[0]).noun)) fail('musik1 body tap: ' + t.qid); }
+    if (t.sign && (one(E.SIGNS, t.pic) || {}).mean !== t.answer) fail('musik1 sign picture: ' + t.qid);
+    if (t.signs) tap(t, E.SIGNS, t.signs);
+    if (t.pats) { const shown = tap(t, E.PATS, t.pats); const want = t.q.split('? ')[1].toLowerCase().replace('.', '').split(', ').map((w) => (w === 'lang' ? 'L' : 'K')).join('');
+      if (shown && (t.pats[0] !== want || new Set(t.pats).size !== 3 || t.pats.some((id) => [...id].sort().join('') !== [...want].sort().join('')))) fail('musik1 pattern: ' + t.qid); }
+  }
+  const kinds = new Set(samples.musik1.map((t) => t.qid.replace(/_.*/, '')));
+  for (const k of ['k1mb', 'k1mt', 'k1ms', 'k1mst', 'k1mgt', 'k1mgb', 'k1mf0', 'k1mf1', 'k1mfb', 'k1mkb', 'k1mkt', 'k1mzt', 'k1mzb', 'k1mzp']) if (!kinds.has(k)) fail('musik1: picture task never generated: ' + k);
+  if (MK.MODES.musik1.events.filter((e) => e.dilemma).length !== 1) fail('musik1: needs exactly one dilemma card');
+}
 
 // order: festivals by date, every order list long enough and without repeats
 if (E.JAHR.some((x, i) => i && E.JAHR[i - 1].m >= x.m)) fail('JAHR is not in calendar order');

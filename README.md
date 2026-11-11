@@ -54,6 +54,7 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 | 1 | 🙂 Mein Körper | Körperteile (Bild zum Antippen, Zeichenschule), Hände waschen und Zähne putzen, gesund essen, Kleidung zum Wetter, Nein sagen, Erste Hilfe und Notruf 112 – Dilemma-Karten |
 | 1 | 📅 Durch das Jahr | Jahreszeiten, Monate, Wochentage, Tageslauf, Uhr (volle und halbe Stunde), Wetterzeichen, sicherer Schulweg |
 | 1 | 🙂 Ich und die anderen | Gefühle an Gesichtern, bitte und danke, Familien sind verschieden, Regeln, streiten und versöhnen – Dilemma-Karten |
+| 1 | 🥁 Die Klangkiste | Musik ohne Töne: Orff-Instrumente als Bild, wie man sie spielt, laut/leise, schnell/langsam, hoch/tief als Bildpaare, Gefühle in der Musik, Körperinstrumente, eigene Zeichen für Klänge |
 | 2 | 🔢 Zahlen bis 100 | Zehner und Einer, Hunderterfeld, Zahlenstrahl, gerade und ungerade, Zahlenfolgen, plus und minus bis 100, ergänzen, Rechendreiecke, Zauberquadrat |
 | 2 | ✖️ Malnehmen und Teilen | Reihen mit 2, 5 und 10, Nachbaraufgaben, Punktefelder, teilen als Umkehrung, Sachaufgaben |
 | 2 | 📏 Geld, Länge und Zeit | Euro und Cent (auch 1,50 €), mm, cm, dm, m, Uhr auf 5 Minuten, Kalender, Strichliste und Säulendiagramm, sicher/möglich/unmöglich |

@@ -629,12 +629,13 @@
         if (r < 0.5) { const vs = coins([100, 200, 500, 1000, 2000, 5000], rnd(2, 5), 10000); return g.num(mod, t, 'euro', [vs.reduce((a, b) => a + b, 0) / 100], { svg: moneySVG(vs), ask: 'Wie viel Geld ist das?', labels: ['€'] }); }
         const vs = coins([1, 2, 5, 10, 20, 50], rnd(2, 5), 99); return g.num(mod, t, 'cent', [vs.reduce((a, b) => a + b, 0)], { svg: moneySVG(vs), ask: 'Wie viel Geld ist das?', labels: ['ct'] });
       }
-      if (r < 0.25) { const ct = 100 + 5 * rnd(1, 19); return g.num(mod, t, 'komma', [ct], { text: `${komma(ct)} = ? ct`, long: true }); }
+      if (r < 0.25) { const ct = 100 + 5 * rnd(1, 19); return g.num(mod, t, 'komma', [Math.floor(ct / 100), ct % 100], { text: komma(ct), ask: 'Wie viel Euro und Cent sind das?', labels: ['€', 'ct'] }); }
       if (r < 0.45) { const c = 5 * rnd(1, 19), ct = 100 + c; return g.choice(mod, t, 'schreiben', `Wie schreibt man ${ct} ct mit Komma?`, komma(ct), mixups(c, '€'), { why: `${ct} ct = 1 € und ${c} ct = ${komma(ct)}` }); }
       if (r < 0.65) { const [from, coin, n] = pick([['1 €', '10-ct', 10], ['1 €', '20-ct', 5], ['1 €', '50-ct', 2], ['2 €', '1-€', 2], ['2 €', '50-ct', 4], ['5 €', '1-€', 5], ['10 €', '2-€', 5], ['10 €', '1-€', 10], ['1 €', '5-ct', 20]]); return g.num(mod, t, 'wechseln', [n], { story: `Du wechselst ${from.replace(' ', NB)} in ${coin}-Münzen. Wie viele Münzen bekommst du?`, change: [from, coin] }); }
       if (r < 0.85) { const pay = pick([10, 20, 50, 100]), p = rnd(Math.ceil(pay / 2), pay - 1); return g.num(mod, t, 'rueckgeld', [pay - p], { story: `${pick(['Ein Ball', 'Ein Buch', 'Ein Puzzle', 'Eine Mütze'])} kostet ${p}${NB}€. Du gibst ${pay}${NB}€. Wie viel bekommst du zurück?`, labels: ['€'] }); }
       const vs = coins([200, 100], rnd(1, 2), 200).concat(coins([50, 20, 10, 5, 2, 1], rnd(1, 3), 99)); const s = vs.reduce((a, b) => a + b, 0);
-      return g.num(mod, t, 'gemischt', [s], { svg: moneySVG(vs), ask: 'Wie viel Cent sind das?', labels: ['ct'], show: `${s} ct = ${komma(s)}` });
+      // two fields keep the numbers a child types within 100 (curriculum Kl. 2), though the amount is more
+      return g.num(mod, t, 'gemischt', [Math.floor(s / 100), s % 100], { svg: moneySVG(vs), ask: 'Wie viel Geld ist das?', labels: ['€', 'ct'], show: komma(s) });
     }
     if (mod === 'laenge') {
       const r = Math.random();

@@ -6,6 +6,14 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-11
+
+### Neu
+- Musik für Klasse 1: „Die Klangkiste“ mit Instrumenten der Klasse, laut und leise und Klängen zum Aufmalen.
+
+### Verbessert
+- In Klasse 2 tippst du Geldbeträge jetzt in zwei Felder: Euro und Cent getrennt.
+
 ## 2026-11-10
 
 ### Neu
