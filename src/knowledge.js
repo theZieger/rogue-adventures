@@ -1076,11 +1076,13 @@ const MK = (() => {
   // a sentence belongs to every topic whose words it uses (also with plural -s); without one it is „Allgemein“ and always on
   const EN_WORDS = Object.entries(EN_THEMES).flatMap(([t, list]) => list.map(([en]) => [t, new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(e?s)?\\b`, 'i')]));
   const enTopics = (...texts) => { const s = texts.join(' '); return [...new Set(EN_WORDS.filter(([, re]) => re.test(s)).map(([t]) => t))]; };
+  // english: the English words and sentences of a task, for the English read-aloud voice
   const T_POOL = [];
   // numbers have their own task, so the translation tasks leave them out
   Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([t, list]) => list.forEach(([en, de]) => {
-    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0 });
-    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o: [en].concat(others(list.map((x) => x[0]), en, 2)), a: 0 });
+    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [en] });
+    const o = [en].concat(others(list.map((x) => x[0]), en, 2));
+    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o, a: 0, english: o });
   }));
   const NUM = Object.fromEntries(E.zahlen.map(([en, , n]) => [n, en]));
   // 21 to 99 follow the English pattern: tens, hyphen, ones (forty-two)
@@ -1089,25 +1091,25 @@ const MK = (() => {
     let n;
     if (tier >= 2) n = Math.random() < 0.3 ? pick([30, 40, 50, 60, 70, 80, 90, 100]) : rnd(2, 9) * 10 + rnd(1, 9);
     else n = weightedPick(E.zahlen.filter((z) => z[2] <= 20).map((z) => ({ id: 'enz_' + z[2], n: z[2] })), know, seq).n;
-    return { kind: 'num', mod: 'zahl', tier, group: 'zahl:' + tier, note: 'zahlen', text: numWord(n), ask: 'Schreibe die Zahl mit Ziffern.', answers: [n], qid: 'enz_' + n };
+    return { kind: 'num', mod: 'zahl', tier, group: 'zahl:' + tier, note: 'zahlen', text: numWord(n), ask: 'Schreibe die Zahl mit Ziffern.', answers: [n], qid: 'enz_' + n, english: [numWord(n)] };
   }
   const swatch = (hex) => `<div class="figure"><svg viewBox="0 0 160 110" aria-label="Farbfleck"><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="${hex}" stroke="#FFF7E6" stroke-width="5" stroke-linejoin="round"/><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="none" stroke="#1C2541" stroke-width="2"/></svg></div>`;
   function farbeTask(know, seq) {
     const c = weightedPick(E.farben.map((f) => ({ id: 'enf_' + f[0], f })), know, seq).f;
-    return { kind: 'choice', mod: 'farbe', tier: 1, group: 'farbe:1', note: 'farben', q: 'Welche Farbe ist das? Tippe auf das englische Wort.', pic: swatch(c[2]), options: shuffle([c[0]].concat(others(E.farben.map((f) => f[0]), c[0], 2))), answer: c[0], why: `${c[0]} heißt ${c[1]}.`, qid: 'enf_' + c[0], cols: 1 };
+    return { kind: 'choice', mod: 'farbe', tier: 1, group: 'farbe:1', note: 'farben', q: 'Welche Farbe ist das? Tippe auf das englische Wort.', pic: swatch(c[2]), options: shuffle([c[0]].concat(others(E.farben.map((f) => f[0]), c[0], 2))), answer: c[0], english: E.farben.map((f) => f[0]), why: `${c[0]} heißt ${c[1]}.`, qid: 'enf_' + c[0], cols: 1 };
   }
   function oddTask(opts) {
     const pairs = (names) => names.flatMap((a) => (EN_THEMES[a].length >= 3 ? names.filter((b) => b !== a && !near(a, b)).map((b) => [a, b]) : []));
     const all = Object.keys(EN_THEMES); const on = pairs(all.filter((t) => !enOff(opts).includes(t))); const [a, b] = pick(on.length ? on : pairs(all));
     const three = shuffle(EN_THEMES[a]).slice(0, 3).map((x) => x[0]); const odd = pick(EN_THEMES[b])[0];
-    return { kind: 'choice', mod: 'odd', tier: 1, group: 'odd:1', note: 'odd', q: 'Welches Wort passt nicht zu den anderen?', options: shuffle(three.concat([odd])), answer: odd, why: `„${odd}“ gehört zum Thema ${b}, die anderen zum Thema ${a}.`, qid: 'eno_' + three.concat([odd]).sort().join('_'), cols: 2 };
+    return { kind: 'choice', mod: 'odd', tier: 1, group: 'odd:1', note: 'odd', q: 'Welches Wort passt nicht zu den anderen?', options: shuffle(three.concat([odd])), answer: odd, why: `„${odd}“ gehört zum Thema ${b}, die anderen zum Thema ${a}.`, qid: 'eno_' + three.concat([odd]).sort().join('_'), cols: 2, english: three.concat([odd]) };
   }
   function reiheTask(tier, opts) {
     let months = tier >= 2; const off = (m) => enOff(opts).includes(m ? 'Monate' : 'Wochentage');
     if (off(months) && !off(!months)) { months = !months; tier = months ? 2 : 1; }
     const list = months ? E.monate : E.tage;
     const idx = shuffle(list.map((_, i) => i)).slice(0, 4).sort((x, y) => x - y); const items = idx.map((i) => ({ id: (months ? 'm' : 'd') + i, text: list[i][0] }));
-    return { kind: 'order', mod: 'reihe', tier, group: 'reihe:' + tier, note: 'reihe', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''),
+    return { kind: 'order', mod: 'reihe', tier, group: 'reihe:' + tier, note: 'reihe', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''), english: list.map((x) => x[0]),
       q: months ? `Tippe die Monate der Reihe nach an. Das Jahr beginnt mit ${E.monate[0][0]}.` : `Tippe die Wochentage der Reihe nach an. Die Woche beginnt mit ${E.tage[0][0]}.` };
   }
   const groupsOf = (list, n) => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n).map((x) => `${x[0]} – ${x[1]}`).join(', '));
@@ -1159,13 +1161,13 @@ const MK = (() => {
   ];
 
   const D_POOL = [];
-  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', en: enTopics(s, r, f1, f2), q: s, o: [r, f1, f2], a: 0 }));
+  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', en: enTopics(s, r, f1, f2), q: s, o: [r, f1, f2], a: 0, english: [s, r, f1, f2] }));
   // wrong meanings come first from sentences that start like the right one (I have got …), so the words matter
   E.saetze.forEach(([en, de]) => {
     const first = en.split(' ')[0]; const like = shuffle(E.saetze.filter((x) => x[0] !== en && x[0].split(' ')[0] === first)); const rest = shuffle(E.saetze.filter((x) => x[0] !== en && !like.includes(x)));
-    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', en: enTopics(en), q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0 });
+    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', en: enTopics(en), q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0, english: [en] });
   });
-  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', en: enTopics(q, r, f1, f2), q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0 }));
+  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', en: enTopics(q, r, f1, f2), q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0, english: [q, r, f1, f2] }));
   const D_NOTES = {
     luecke: { title: 'Lückensätze', lines: ['Lies den ganzen Satz, bevor du wählst.', 'Vor a, e, i, o, u steht an statt a: an apple, an egg, aber a banana.', 'I am, you are, he is, she is: I am nine. My name is Tom.'] },
     saetze: { title: 'Sätze verstehen', lines: ['Englische Sätze übersetzt man nicht Wort für Wort.', 'I have got a dog. heißt: Ich habe einen Hund.', 'Let’s … heißt: Lasst uns … Let’s play a game. – Lasst uns ein Spiel spielen.'] },
@@ -1245,7 +1247,7 @@ const MK = (() => {
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
     // inline: the options are the parts of a sentence and keep their order
     const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, english: e.english, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 

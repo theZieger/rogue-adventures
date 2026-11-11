@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="7ef2f51e5ebd">
+<meta name="app-version" content="230d3656791b">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -499,9 +499,16 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .pvoice::before { content: ''; flex: none; width: 18px; height: 18px; border: 3px solid var(--ink); border-radius: 50%; background: #fff; }
 .pvoice[aria-pressed="true"] { font-weight: 700; }
 .pvoice[aria-pressed="true"]::before { background: var(--gold); box-shadow: inset 0 0 0 3px #fff; }
-.pseg { display: flex; gap: 6px; }
-.pseg button { flex: 1; min-width: 0; min-height: 44px; padding: 4px; border: 3px solid var(--ink); border-radius: 14px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
-.pseg button[aria-pressed="true"] { background: var(--gold); }
+.pset > label > b { display: block; font-size: 17px; }
+.prate { display: block; width: 100%; height: 44px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+.prange { display: flex; justify-content: space-between; font-size: 15px; color: var(--ink-soft); }
+.pguide { border-top: 2px solid var(--card2); padding-top: 4px; }
+.pguide summary { display: flex; align-items: center; min-height: 44px; font-size: 17px; font-weight: 700; cursor: pointer; }
+.pguide summary::before { content: '▸'; width: 1.2em; }
+.pguide[open] summary::before { content: '▾'; }
+.pguide summary::-webkit-details-marker { display: none; }
+.pguide ol { margin: 0 0 6px; padding-left: 1.4em; }
+.pguide li { margin: 4px 0; }
 .switch { flex: none; display: flex; align-items: center; width: 56px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; }
 .switch i { position: relative; width: 56px; height: 32px; border: 3px solid var(--ink); border-radius: 999px; background: #C9CEDD; }
 .switch i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--ink); }
@@ -4282,11 +4289,13 @@ const MK = (() => {
   // a sentence belongs to every topic whose words it uses (also with plural -s); without one it is „Allgemein“ and always on
   const EN_WORDS = Object.entries(EN_THEMES).flatMap(([t, list]) => list.map(([en]) => [t, new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(e?s)?\\b`, 'i')]));
   const enTopics = (...texts) => { const s = texts.join(' '); return [...new Set(EN_WORDS.filter(([, re]) => re.test(s)).map(([t]) => t))]; };
+  // english: the English words and sentences of a task, for the English read-aloud voice
   const T_POOL = [];
   // numbers have their own task, so the translation tasks leave them out
   Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([t, list]) => list.forEach(([en, de]) => {
-    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0 });
-    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o: [en].concat(others(list.map((x) => x[0]), en, 2)), a: 0 });
+    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [en] });
+    const o = [en].concat(others(list.map((x) => x[0]), en, 2));
+    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o, a: 0, english: o });
   }));
   const NUM = Object.fromEntries(E.zahlen.map(([en, , n]) => [n, en]));
   // 21 to 99 follow the English pattern: tens, hyphen, ones (forty-two)
@@ -4295,25 +4304,25 @@ const MK = (() => {
     let n;
     if (tier >= 2) n = Math.random() < 0.3 ? pick([30, 40, 50, 60, 70, 80, 90, 100]) : rnd(2, 9) * 10 + rnd(1, 9);
     else n = weightedPick(E.zahlen.filter((z) => z[2] <= 20).map((z) => ({ id: 'enz_' + z[2], n: z[2] })), know, seq).n;
-    return { kind: 'num', mod: 'zahl', tier, group: 'zahl:' + tier, note: 'zahlen', text: numWord(n), ask: 'Schreibe die Zahl mit Ziffern.', answers: [n], qid: 'enz_' + n };
+    return { kind: 'num', mod: 'zahl', tier, group: 'zahl:' + tier, note: 'zahlen', text: numWord(n), ask: 'Schreibe die Zahl mit Ziffern.', answers: [n], qid: 'enz_' + n, english: [numWord(n)] };
   }
   const swatch = (hex) => `<div class="figure"><svg viewBox="0 0 160 110" aria-label="Farbfleck"><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="${hex}" stroke="#FFF7E6" stroke-width="5" stroke-linejoin="round"/><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="none" stroke="#1C2541" stroke-width="2"/></svg></div>`;
   function farbeTask(know, seq) {
     const c = weightedPick(E.farben.map((f) => ({ id: 'enf_' + f[0], f })), know, seq).f;
-    return { kind: 'choice', mod: 'farbe', tier: 1, group: 'farbe:1', note: 'farben', q: 'Welche Farbe ist das? Tippe auf das englische Wort.', pic: swatch(c[2]), options: shuffle([c[0]].concat(others(E.farben.map((f) => f[0]), c[0], 2))), answer: c[0], why: `${c[0]} heißt ${c[1]}.`, qid: 'enf_' + c[0], cols: 1 };
+    return { kind: 'choice', mod: 'farbe', tier: 1, group: 'farbe:1', note: 'farben', q: 'Welche Farbe ist das? Tippe auf das englische Wort.', pic: swatch(c[2]), options: shuffle([c[0]].concat(others(E.farben.map((f) => f[0]), c[0], 2))), answer: c[0], english: E.farben.map((f) => f[0]), why: `${c[0]} heißt ${c[1]}.`, qid: 'enf_' + c[0], cols: 1 };
   }
   function oddTask(opts) {
     const pairs = (names) => names.flatMap((a) => (EN_THEMES[a].length >= 3 ? names.filter((b) => b !== a && !near(a, b)).map((b) => [a, b]) : []));
     const all = Object.keys(EN_THEMES); const on = pairs(all.filter((t) => !enOff(opts).includes(t))); const [a, b] = pick(on.length ? on : pairs(all));
     const three = shuffle(EN_THEMES[a]).slice(0, 3).map((x) => x[0]); const odd = pick(EN_THEMES[b])[0];
-    return { kind: 'choice', mod: 'odd', tier: 1, group: 'odd:1', note: 'odd', q: 'Welches Wort passt nicht zu den anderen?', options: shuffle(three.concat([odd])), answer: odd, why: `„${odd}“ gehört zum Thema ${b}, die anderen zum Thema ${a}.`, qid: 'eno_' + three.concat([odd]).sort().join('_'), cols: 2 };
+    return { kind: 'choice', mod: 'odd', tier: 1, group: 'odd:1', note: 'odd', q: 'Welches Wort passt nicht zu den anderen?', options: shuffle(three.concat([odd])), answer: odd, why: `„${odd}“ gehört zum Thema ${b}, die anderen zum Thema ${a}.`, qid: 'eno_' + three.concat([odd]).sort().join('_'), cols: 2, english: three.concat([odd]) };
   }
   function reiheTask(tier, opts) {
     let months = tier >= 2; const off = (m) => enOff(opts).includes(m ? 'Monate' : 'Wochentage');
     if (off(months) && !off(!months)) { months = !months; tier = months ? 2 : 1; }
     const list = months ? E.monate : E.tage;
     const idx = shuffle(list.map((_, i) => i)).slice(0, 4).sort((x, y) => x - y); const items = idx.map((i) => ({ id: (months ? 'm' : 'd') + i, text: list[i][0] }));
-    return { kind: 'order', mod: 'reihe', tier, group: 'reihe:' + tier, note: 'reihe', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''),
+    return { kind: 'order', mod: 'reihe', tier, group: 'reihe:' + tier, note: 'reihe', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''), english: list.map((x) => x[0]),
       q: months ? `Tippe die Monate der Reihe nach an. Das Jahr beginnt mit ${E.monate[0][0]}.` : `Tippe die Wochentage der Reihe nach an. Die Woche beginnt mit ${E.tage[0][0]}.` };
   }
   const groupsOf = (list, n) => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n).map((x) => `${x[0]} – ${x[1]}`).join(', '));
@@ -4365,13 +4374,13 @@ const MK = (() => {
   ];
 
   const D_POOL = [];
-  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', en: enTopics(s, r, f1, f2), q: s, o: [r, f1, f2], a: 0 }));
+  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', en: enTopics(s, r, f1, f2), q: s, o: [r, f1, f2], a: 0, english: [s, r, f1, f2] }));
   // wrong meanings come first from sentences that start like the right one (I have got …), so the words matter
   E.saetze.forEach(([en, de]) => {
     const first = en.split(' ')[0]; const like = shuffle(E.saetze.filter((x) => x[0] !== en && x[0].split(' ')[0] === first)); const rest = shuffle(E.saetze.filter((x) => x[0] !== en && !like.includes(x)));
-    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', en: enTopics(en), q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0 });
+    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', en: enTopics(en), q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0, english: [en] });
   });
-  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', en: enTopics(q, r, f1, f2), q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0 }));
+  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', en: enTopics(q, r, f1, f2), q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0, english: [q, r, f1, f2] }));
   const D_NOTES = {
     luecke: { title: 'Lückensätze', lines: ['Lies den ganzen Satz, bevor du wählst.', 'Vor a, e, i, o, u steht an statt a: an apple, an egg, aber a banana.', 'I am, you are, he is, she is: I am nine. My name is Tom.'] },
     saetze: { title: 'Sätze verstehen', lines: ['Englische Sätze übersetzt man nicht Wort für Wort.', 'I have got a dog. heißt: Ich habe einen Hund.', 'Let’s … heißt: Lasst uns … Let’s play a game. – Lasst uns ein Spiel spielen.'] },
@@ -4451,7 +4460,7 @@ const MK = (() => {
     if (mod === 'rf' || e.rf) return { kind: 'choice', mod, tier: 1, group: mod + ':1', note: e.g, q: e.q, options: ['Richtig', 'Falsch'], answer: e.a ? 'Richtig' : 'Falsch', why: e.why || '', qid: e.id, cols: 2 };
     // inline: the options are the parts of a sentence and keep their order
     const correct = e.o[e.a]; const options = e.inline ? e.o.slice() : shuffle(e.o.slice());
-    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, qid: e.id, cols: options.length === 2 ? 2 : 1 };
+    return { kind: 'choice', mod, tier: e.t || 1, group: mod + ':' + (e.t || 1), note: e.g, q: e.q, options, answer: correct, why: e.why || '', more: e.more, tip: e.tip, inline: e.inline, english: e.english, qid: e.id, cols: options.length === 2 ? 2 : 1 };
   }
   function record(know, qid, ok, seqNow) { const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 }); k.t++; if (ok) { k.c++; k.ws = 0; } else k.ws++; k.last = seqNow; }
 
@@ -8280,28 +8289,30 @@ const K12D = (() => {
   // Silben ordnen: words with three or four different syllables, in capitals so the first syllable is not given away
   const SILBEN_ORDER = SILBEN.filter(([, syl]) => { const s = syl.toUpperCase().split('-'); return s.length >= 3 && new Set(s).size === s.length; });
 
+  // the voice would say letter names („Es“), not sounds: say reads a question without its letter, quiet leaves out
+  // the options and the right answer after a mistake
   const L1_ITEMS = {
-    anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
+    anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { quiet: true, pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
     anlaut: PIC_IDS.map((id) => ({ id: 'l1ab_' + id, make: (qid) => { const wrong = []; for (const x of shuffle(PIC_IDS)) if (wrong.length < 2 && first(x) !== first(id) && !wrong.some((y) => first(y) === first(x))) wrong.push(x);
-      return choice('anlaut', 1, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
-    laute: VOW.map((v) => ({ id: 'l1sl_' + v, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, { why: 'Selbstlaute sind A, E, I, O, U.' }) }))
-      .concat(CONS.map((c) => ({ id: 'l1ml_' + c, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Mitlaut?', c, others(VOW, [], 2), qid, { why: `${c} ist ein Mitlaut. Selbstlaute sind A, E, I, O, U.` }) })))
-      .concat(Object.keys(UML).map((u) => ({ id: 'l1ul_' + u, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Umlaut?', u, [UML[u], pick(CONS)], qid, { why: 'Umlaute haben zwei Punkte: Ä, Ö, Ü.' }) })))
+      return choice('anlaut', 1, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, quiet: true, say: 'Welches Bild fängt mit diesem Buchstaben an?', why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
+    laute: VOW.map((v) => ({ id: 'l1sl_' + v, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, { quiet: true, why: 'Selbstlaute sind A, E, I, O, U.' }) }))
+      .concat(CONS.map((c) => ({ id: 'l1ml_' + c, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Mitlaut?', c, others(VOW, [], 2), qid, { quiet: true, why: `${c} ist ein Mitlaut. Selbstlaute sind A, E, I, O, U.` }) })))
+      .concat(Object.keys(UML).map((u) => ({ id: 'l1ul_' + u, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Umlaut?', u, [UML[u], pick(CONS)], qid, { quiet: true, why: 'Umlaute haben zwei Punkte: Ä, Ö, Ü.' }) })))
       .concat(VOW.concat(Object.keys(UML), others(CONS, [], 6)).map((x) => ({ id: 'l1la_' + x, make: (qid) => { const a = VOW.includes(x) ? 'Selbstlaut' : UML[x] ? 'Umlaut' : 'Mitlaut';
-        return choice('laute', 1, 'laute', `Was für ein Buchstabe ist das ${x}?`, a, ['Selbstlaut', 'Mitlaut', 'Umlaut'].filter((y) => y !== a), qid); } }))),
+        return choice('laute', 1, 'laute', `Was für ein Buchstabe ist das ${x}?`, a, ['Selbstlaut', 'Mitlaut', 'Umlaut'].filter((y) => y !== a), qid, { say: 'Was für ein Buchstabe ist das?' }); } }))),
     laute2: PIC_IDS.filter((id) => DIPH[id] || vowelGap(PICS[id].w) !== null).map((id) => ({ id: 'l1fv_' + id, make: (qid) => {
       const w = PICS[id].w; const d = DIPH[id]; const i = d ? w.indexOf(d) : vowelGap(w); const v = d || w[i];
       // the gapped word gets its own line (in the question it would wrap at the gap); „__“ is read as „Lücke“
       const pic = `<div class="expr">${w.slice(0, i)}<span style="display:inline-block;width:1.1em;border-bottom:4px solid var(--blue);color:transparent">__</span>${w.slice(i + v.length)}</div>${picOf(id)}`;
       const vs = d ? ['au', 'ei', 'eu'] : i === 0 ? VOW : VOW.map((x) => x.toLowerCase());
-      return choice('laute', 2, 'laute', d ? 'Welcher Zwielaut fehlt?' : 'Welcher Selbstlaut fehlt?', v, others(vs, [v], 2), qid, { pic, why: `Es heißt: ${w}.` });
+      return choice('laute', 2, 'laute', d ? 'Welcher Zwielaut fehlt?' : 'Welcher Selbstlaut fehlt?', v, others(vs, [v], 2), qid, { quiet: true, say: d ? 'Welcher Zwielaut fehlt?' : 'Welcher Selbstlaut fehlt?', pic, why: `Es heißt: ${w}.` });
     } })),
-    lautpos: LAUTPOS.map(([id, l, pos]) => ({ id: 'l1lp_' + id + l, make: (qid) => choice('lautpos', 1, 'lautpos', `Wo hörst du das ${l} in „${PICS[id].w}“?`, POS[pos], POS.filter((_, j) => j !== pos), qid, { pic: picOf(id) }) })),
+    lautpos: LAUTPOS.map(([id, l, pos]) => ({ id: 'l1lp_' + id + l, make: (qid) => choice('lautpos', 1, 'lautpos', `Wo hörst du das ${l} in „${PICS[id].w}“?`, POS[pos], POS.filter((_, j) => j !== pos), qid, { say: `Wo hörst du diesen Laut in „${PICS[id].w}“?`, pic: picOf(id) }) })),
     silben: SILBEN.map(([w, syl, id]) => ({ id: 'l1si_' + w, make: (qid) => { const n = syl.split('-').length; const a = SYL[n - 1];
       return choice('silben', 1, 'silben', `Wie viele Silben hat „${w}“?`, a, others(n === 4 ? SYL : SYL.slice(0, 3), [a], 2), qid, Object.assign({ why: `${syl}: ${a}.` }, id ? { pic: picOf(id) } : {})); } })),
-    alphabet2: ABC.slice(1, 24).map((x, i) => ({ id: 'l1na_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt nach ${x}?`, ABC[i + 2], [ABC[i], ABC[i + 3]], qid, { why: `${ABC[i]}, ${x}, ${ABC[i + 2]}` }) }))
-      .concat(ABC.slice(2, 25).map((x, i) => ({ id: 'l1vo_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt vor ${x}?`, ABC[i + 1], [ABC[i + 3], ABC[i]], qid, { why: `${ABC[i + 1]}, ${x}, ${ABC[i + 3]}` }) }))),
-    alphabet: ABC.slice(1, 22).map((x, j) => { const i = j + 1; return { id: 'l1fe_' + ABC[i + 2], make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe fehlt? ${ABC[i]}, ${ABC[i + 1]}, ___, ${ABC[i + 3]}`, ABC[i + 2], [ABC[i - 1], ABC[i + 4]], qid, { why: ABC.slice(i, i + 4).join(', ') }) }; }),
+    alphabet2: ABC.slice(1, 24).map((x, i) => ({ id: 'l1na_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt nach ${x}?`, ABC[i + 2], [ABC[i], ABC[i + 3]], qid, { quiet: true, say: 'Welcher Buchstabe kommt danach?', why: `${ABC[i]}, ${x}, ${ABC[i + 2]}` }) }))
+      .concat(ABC.slice(2, 25).map((x, i) => ({ id: 'l1vo_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt vor ${x}?`, ABC[i + 1], [ABC[i + 3], ABC[i]], qid, { quiet: true, say: 'Welcher Buchstabe kommt davor?', why: `${ABC[i + 1]}, ${x}, ${ABC[i + 3]}` }) }))),
+    alphabet: ABC.slice(1, 22).map((x, j) => { const i = j + 1; return { id: 'l1fe_' + ABC[i + 2], make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe fehlt? ${ABC[i]}, ${ABC[i + 1]}, ___, ${ABC[i + 3]}`, ABC[i + 2], [ABC[i - 1], ABC[i + 4]], qid, { quiet: true, say: 'Welcher Buchstabe fehlt in der Reihe?', why: ABC.slice(i, i + 4).join(', ') }) }; }),
     reim: REIME.flatMap((g, gi) => g.map((w) => ({ id: 'l1re_' + w, make: (qid) => {
       const wrong = shuffle(REIME.filter((x, j) => j !== gi && !alike(g, x))).slice(0, 2).map((x) => pick(x));
       return choice('reim', 1, 'reim', `Was reimt sich auf „${w}“?`, pick(g.filter((x) => x !== w)), wrong, qid);
@@ -8312,12 +8323,12 @@ const K12D = (() => {
     silben2: SILBEN_ORDER.map(([w, syl]) => ({ id: 'l1so_' + w, make: (qid) => {
       const items = syl.toUpperCase().split('-').map((text, i) => ({ id: 's' + i, text }));
       let display; do display = shuffle(items); while (display.every((x, i) => x === items[i]));
-      return { kind: 'order', mod: 'silben', tier: 2, group: 'silben:2', note: 'silben', q: 'Ordne die Silben zu einem Wort.', items, order: items.map((x) => x.id), display, qid };
+      return { kind: 'order', mod: 'silben', tier: 2, group: 'silben:2', note: 'silben', quiet: true, q: 'Ordne die Silben zu einem Wort.', items, order: items.map((x) => x.id), display, qid };
     } })),
     lesen: MIRROR.flatMap((x) => { const X = x.toUpperCase(), why = `${X} und ${x} gehören zusammen.`; return [
-      { id: 'l1bk_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?', X, others(MIRROR, [x], 2).map((y) => y.toUpperCase()), qid, { pic: look(x, 72), why }) },
-      { id: 'l1bg_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein großer Buchstabe. Welcher kleine gehört dazu?', x, others(MIRROR, [x], 2), qid, { pic: look(X, 72), why }) },
-      { id: 'l1bw_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Welches Wort fängt mit diesem Buchstaben an?', pick(MIRROR_WORDS[x]), others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])), qid, { pic: look(x, 72), why: `Das ist ein ${x}.` }) },
+      { id: 'l1bk_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?', X, others(MIRROR, [x], 2).map((y) => y.toUpperCase()), qid, { quiet: true, pic: look(x, 72), why }) },
+      { id: 'l1bg_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein großer Buchstabe. Welcher kleine gehört dazu?', x, others(MIRROR, [x], 2), qid, { quiet: true, pic: look(X, 72), why }) },
+      { id: 'l1bw_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Welches Wort fängt mit diesem Buchstaben an?', pick(MIRROR_WORDS[x]), others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])), qid, { quiet: true, pic: look(x, 72), why: `Das ist ein ${x}.` }) },
     ]; }),
     lesen2: PIC_IDS.map((id) => ({ id: 'l1lw_' + id, make: (qid) => choice('lesen', 2, 'lesen', 'Lies das Wort. Welches Bild passt?', svgOf(id), lookalikes(id).map(svgOf), qid, { svgOpts: true, cols: 1, pic: look(PICS[id].w, 42), why: `Da steht: ${PICS[id].w}.` }) })),
   };
@@ -8633,6 +8644,8 @@ const K12D = (() => {
       { title: 'Die Hofpause', text: 'Es klingelt zur Hofpause. Du setzt dich auf die Mauer und isst dein Pausenbrot.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] });
 
+  // the device voice says letter names („Es“), not sounds: tutorials are read without the steps that name a letter (issue #50)
+  LAUTE1.noLetters = true;
   K.MODES.laute1 = LAUTE1; K.MODES.schreiben2 = SCHREIBEN2; K.MODES.woerter2 = WOERTER2;
   return { PICS, LAUTPOS, SILBEN, SILBEN_ORDER, REIME, PIC_REIME, MIRROR, MIRROR_WORDS, BESONDERS, MERK, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
 })();
@@ -15952,8 +15965,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const RATES = { langsam: 0.75, normal: 0.9, schneller: 1.05 }; // read-aloud speeds parents can pick
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true, voiceName: '', speakRate: 0.9,
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true, voiceName: '', voiceEn: '', speakRate: 1,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {}, started: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -15980,7 +15992,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
-    if (!Object.values(RATES).includes(m.speakRate)) m.speakRate = 0.9;
+    if (!(m.speakRate >= 0.6 && m.speakRate <= 1.4)) m.speakRate = 1;
     m.started = Object.fromEntries(Object.entries(m.started).filter(([, n]) => Number.isInteger(n) && n > 0));
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
@@ -16229,8 +16241,9 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}${n.fig || ''}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
-    const steps = () => joined(t.title, ...t.steps);
-    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? n.lines : [])), steps);
+    const letter = /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/, say = (list) => (CFG().noLetters ? list.filter((x) => !letter.test(x)) : list);
+    const steps = () => joined(t.title, ...say(t.steps));
+    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? say(n.lines) : [])), steps);
     $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
   }
@@ -16283,7 +16296,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); const a = inps[active]; if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' }); }
     inps.forEach((el) => { el.onclick = () => { if (!locked) { active = +el.dataset.i; paint(); } }; });
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
-    readAloud(container, opts.bottom);
+    readAloud(container, opts.bottom, task);
     paint();
     bottom.onclick = (e) => {
       const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; press(b.dataset.k);
@@ -16334,25 +16347,55 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   // Only a voice that lives on the device: a network voice would send the task text away.
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
-  const voices = () => (TTS ? TTS.getVoices().filter((v) => v.localService && /^de/i.test(v.lang)) : []);
+  const local = (lang) => (TTS ? TTS.getVoices().filter((v) => v.localService && lang.test(v.lang)) : []);
+  const voices = () => local(/^de/i);
+  const enVoices = () => local(/^en/i);
   // a saved voice that is gone from the device quietly falls back to the first German one
   const chosenVoice = () => { const vs = voices(); return vs.find((v) => v.name === meta.voiceName) || vs[0] || null; };
+  const enVoice = () => { const vs = enVoices(); return vs.find((v) => v.name === meta.voiceEn) || vs.find((v) => /^en[-_]GB/i.test(v.lang)) || vs.find((v) => /^en[-_]US/i.test(v.lang)) || vs[0] || null; };
   const voice = () => (meta.speak ? chosenVoice() : null);
   const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
-  function speak(text, v = voice()) { if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = meta.speakRate; TTS.speak(u); }
+  // the task's English words and sentences (en) become pieces of their own: [text, true]; a gap is ___ in data, ____ on screen
+  const gap = (t) => t.replace(/_{2,}/g, '___');
+  function pieces(text, en) {
+    const list = [...new Set(en.map(gap))].sort((a, b) => b.length - a.length).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const all = list.length ? gap(text).split(new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u')) : [text];
+    return all.map((t, i) => [t, i % 2 === 1]).filter(([t]) => /[\p{L}\p{N}]/u.test(t));
+  }
+  // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
+  function speak(text, v = voice(), en = [], ve = enVoice()) {
+    if (!v) return; TTS.cancel();
+    for (const [t, isEn] of pieces(text, en)) {
+      const u = new SpeechSynthesisUtterance(isEn ? t.replace(/_{2,}/g, ' … ') : spoken(t));
+      u.voice = (isEn && ve) || v; u.lang = isEn ? (ve ? ve.lang : 'en-GB') : v.lang; u.rate = meta.speakRate; TTS.speak(u);
+    }
+  }
   // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
-  function speakBtn(anchor, where, text, first = text) {
+  function speakBtn(anchor, where, text, first = text, en = []) {
     if (!voice()) return;
-    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text()) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
-    if (first && CFG().grade < 3) speak(first());
+    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text(), voice(), en) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
+    if (first && CFG().grade < 3) speak(first(), voice(), en);
   }
   const joined = (...t) => t.filter(Boolean).join('. ').replace(/([.?!:…“])\. /g, '$1 ');
   const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html.replace(/<br>/g, '. '); d.querySelectorAll('svg').forEach((s) => s.remove()); return d.textContent; };
-  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : 'Daneben. ' + why));
+  let onScreen = {}; // the task on screen, for its feedback
+  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : onScreen.quiet ? 'Daneben' : 'Daneben. ' + why), undefined, onScreen.english || []);
   // how a fight ended: the headline and the line under it
   const sayCard = () => speakBtn($('.card'), 'afterbegin', () => joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)));
-  function readAloud(container, bottom) {
-    speakBtn($('.tut', container), 'beforebegin', () => joined(...[...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim())));
+  // setup help for the parents, only for their system; iPadOS reports itself as a Mac with touch
+  function voiceGuide(open) {
+    const ua = navigator.userAgent;
+    const [steps, hint] = /Android/.test(ua) ? [['Die Einstellungen öffnen, dann System → Sprachen und Eingabe → Sprachausgabe (oder „Text-in-Sprache“).', 'Als bevorzugtes Modul zum Beispiel „Sprachausgabe von Google“ wählen und als Sprache Deutsch.', 'Unter „Stimmdaten installieren“ Deutsch laden, für Englisch zusätzlich Englisch.', 'Die Lautstärke prüfen und Lernquest neu öffnen.'], 'Die Namen der Menüs unterscheiden sich je nach Hersteller.']
+      : /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? [['Die Einstellungen öffnen, dann Bedienungshilfen → Gesprochene Inhalte → Stimmen.', 'Deutsch antippen und eine Stimme laden. Für Englisch genauso unter Englisch.', 'Den Lautlos-Schalter ausschalten und die Lautstärke prüfen.', 'Lernquest neu öffnen.'], 'Je nach Version heißen die Menüs etwas anders.']
+        : [null, ''];
+    return `<details class="pguide"${open ? ' open' : ''}><summary>So klappt das Vorlesen</summary>${steps ? `<ol>${steps.map((x) => `<li>${x}</li>`).join('')}</ol>` : '<p>In den Systemeinstellungen unter Sprachausgabe eine deutsche Stimme hinzufügen, für Englisch auch eine englische.</p>'}${hint ? `<p class="pnote">${hint}</p>` : ''}</details>`;
+  }
+  // task.say: the question as spoken, without the letter it shows; task.quiet: its options are letters and stay unread
+  function readAloud(container, bottom, task) {
+    onScreen = task;
+    const asked = [...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword')].map((e) => e.textContent.trim());
+    const opts = CFG().speakOptions === false || task.quiet ? [] : [...(bottom || container).querySelectorAll('.opt, .oitem')].map((e) => e.textContent.trim());
+    speakBtn($('.tut', container), 'beforebegin', () => joined(...(task.say ? [task.say] : asked), ...opts), undefined, task.english || []);
   }
 
   /* ---------- Choice / order / parts tasks ---------- */
@@ -16404,7 +16447,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       paint();
     }
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
-    readAloud(container, opts.bottom);
+    readAloud(container, opts.bottom, task);
   }
 
   /* ---------- Potato plant drawing ---------- */
@@ -17752,10 +17795,15 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     const card = (h, body, cls) => `<div class="card pcard${cls ? ' ' + cls : ''}">${h ? `<h3>${h}</h3>` : ''}${body}</div>`;
     const note = (t) => `<p class="pnote">${t}</p>`;
     const msg = '<p class="tmsg" role="status"></p>';
-    const speakSettings = () => { const vs = voices(), cur = chosenVoice(); const tryBtn = (i) => `<button class="btn small secondary" data-try="${i}">Probe hören</button>`;
-      if (!vs.length) return note(TTS ? 'Auf diesem Gerät fehlt eine deutsche Stimme. Sie lässt sich in den Einstellungen des Geräts laden: Android meist unter System → Sprachen → Sprachausgabe, iPhone und iPad unter Bedienungshilfen → Gesprochene Inhalte → Stimmen.' : 'Dieser Browser kann nicht vorlesen.');
-      return (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${vs.map((v, i) => `<div class="pvrow"><button class="pvoice" aria-pressed="${v === cur}" data-voice="${i}">${esc(v.name)}</button>${tryBtn(i)}</div>`).join('')}</div>` : '')
-        + `<div class="pset"><b>Tempo</b><div class="pseg">${Object.entries(RATES).map(([t, r]) => `<button aria-pressed="${r === meta.speakRate}" data-rate="${t}">${t}</button>`).join('')}</div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>`; };
+    const speakSettings = () => { const vs = voices(), cur = chosenVoice(), es = enVoices(), ce = enVoice(); const tryBtn = (i, en = '') => `<button class="btn small secondary" data-try${en}="${i}">Probe hören</button>`;
+      if (!TTS) return note('Dieser Browser kann nicht vorlesen.');
+      if (!vs.length) return note('Auf diesem Gerät fehlt eine deutsche Stimme.') + voiceGuide(true);
+      const pick = (list, c, en) => list.map((v, i) => `<div class="pvrow"><button class="pvoice" aria-pressed="${v === c}" data-voice${en}="${i}">${esc(v.name)}</button>${tryBtn(i, en)}</div>`).join('');
+      return (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${pick(vs, cur, '')}</div>` : '')
+        + (es.length > 1 ? `<div class="pset"><b>Stimme für Englisch</b>${pick(es, ce, '-en')}</div>` : '')
+        + `<div class="pset"><label for="prate"><b>Tempo</b></label><input type="range" id="prate" class="prate" min="0.6" max="1.4" step="0.05" value="${meta.speakRate}"><div class="prange" aria-hidden="true"><span>langsam</span><span>schnell</span></div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>`
+        + (es.length ? '' : note('Für Englisch ist keine englische Stimme auf dem Gerät. Bis eine geladen ist, liest die deutsche Stimme die englischen Wörter. Wie das geht, steht unten.'))
+        + voiceGuide(false); };
     const sw = (on, attr, title, desc) => `<div class="prow"><div class="ptext"><b>${title}</b>${desc || ''}</div><button class="switch" role="switch" aria-checked="${!!on}" aria-label="${title.replace(/<[^>]+>/g, '')}" ${attr}><i></i></button></div>`;
     const stat = (n, v) => `<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
     const level = (c, t) => (c / t >= 0.8 ? '<span class="lvl good">sicher</span>' : c / t >= 0.5 ? '<span class="lvl mid">fast sicher</span>' : '<span class="lvl low">übt noch</span>');
@@ -17843,9 +17891,12 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     on('#pdel', () => confirmBox('PIN entfernen?', '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>', 'Ja, PIN entfernen', () => { meta.pin = ''; saveAll(); again(); }, true));
     on('#pspeak', () => { meta.speak = !meta.speak; saveAll(); again(); });
     const sample = (v) => speak('Hallo! So klingt diese Stimme.', v);
+    const sampleEn = 'Hello! This is how I sound.';
     on('[data-try]', (b) => sample(voices()[+b.dataset.try]));
     on('[data-voice]', (b) => { const v = voices()[+b.dataset.voice]; if (!v) return; meta.voiceName = v.name; saveAll(); again(); sample(v); });
-    on('[data-rate]', (b) => { meta.speakRate = RATES[b.dataset.rate]; saveAll(); again(); sample(chosenVoice()); });
+    on('[data-try-en]', (b) => { const v = enVoices()[+b.dataset.tryEn]; speak(sampleEn, voice(), [sampleEn], v); });
+    on('[data-voice-en]', (b) => { const v = enVoices()[+b.dataset.voiceEn]; if (!v) return; meta.voiceEn = v.name; saveAll(); again(); speak(sampleEn, voice(), [sampleEn], v); });
+    const rate = $('#prate'); if (rate) rate.onchange = () => { meta.speakRate = +rate.value; saveAll(); sample(chosenVoice()); };
     if (TTS) TTS.onvoiceschanged = () => { if ($('#pspeak')) again(); }; // some browsers deliver their voices late
     on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
@@ -17937,7 +17988,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '7ef2f51e5ebd';
+  const BUILD = '230d3656791b';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

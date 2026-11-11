@@ -443,9 +443,16 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .pvoice::before { content: ''; flex: none; width: 18px; height: 18px; border: 3px solid var(--ink); border-radius: 50%; background: #fff; }
 .pvoice[aria-pressed="true"] { font-weight: 700; }
 .pvoice[aria-pressed="true"]::before { background: var(--gold); box-shadow: inset 0 0 0 3px #fff; }
-.pseg { display: flex; gap: 6px; }
-.pseg button { flex: 1; min-width: 0; min-height: 44px; padding: 4px; border: 3px solid var(--ink); border-radius: 14px; background: #fff; color: var(--ink); font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
-.pseg button[aria-pressed="true"] { background: var(--gold); }
+.pset > label > b { display: block; font-size: 17px; }
+.prate { display: block; width: 100%; height: 44px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+.prange { display: flex; justify-content: space-between; font-size: 15px; color: var(--ink-soft); }
+.pguide { border-top: 2px solid var(--card2); padding-top: 4px; }
+.pguide summary { display: flex; align-items: center; min-height: 44px; font-size: 17px; font-weight: 700; cursor: pointer; }
+.pguide summary::before { content: '▸'; width: 1.2em; }
+.pguide[open] summary::before { content: '▾'; }
+.pguide summary::-webkit-details-marker { display: none; }
+.pguide ol { margin: 0 0 6px; padding-left: 1.4em; }
+.pguide li { margin: 4px 0; }
 .switch { flex: none; display: flex; align-items: center; width: 56px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; }
 .switch i { position: relative; width: 56px; height: 32px; border: 3px solid var(--ink); border-radius: 999px; background: #C9CEDD; }
 .switch i::after { content: ''; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 2px var(--ink); }
