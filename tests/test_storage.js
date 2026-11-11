@@ -113,7 +113,10 @@ function answer(p, right, atk) {
   if (p.$('#tutok')) p.click('#tutok');
   p.click(atk || '.atk[data-i="0"]');
   if (p.$('#tutok')) p.click('#tutok');
-  const ans = p.w.__task.answers.map((a) => (right ? a : a + 1));
+  const t = p.w.__task;
+  // weekly goals are drawn from all task types, so the goal type may be a choice task (e.g. Teilbarkeit)
+  if (t.kind === 'choice') { const i = t.options.findIndex((o) => (o === t.answer) === right); p.click(p.d.querySelectorAll('.opt')[i]); return; }
+  const ans = t.answers.map((a) => (right ? a : a + 1));
   const inps = [...p.d.querySelectorAll('.inp')];
   ans.forEach((a, i) => { inps[i].click(); for (const ch of String(a)) p.click(`.numpad [data-k="${ch}"]`); });
   p.click('.numpad [data-k="ok"]');
