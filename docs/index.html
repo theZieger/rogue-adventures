@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="2f18292e3a9a">
+<meta name="app-version" content="48bd49f0a32e">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -16005,7 +16005,40 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   /* ---------- Rendering primitives ---------- */
   let keyHandler = null; // physical keyboard while a number task is open
   // quiet: re-render without fade-in (battle turns)
-  function render(html, quiet) { keyHandler = null; if (window.speechSynthesis) speechSynthesis.cancel(); app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
+  function render(html, quiet) { keyHandler = null; backTo = null; if (window.speechSynthesis) speechSynthesis.cancel(); app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); syncHistory(); }
+
+  /* ---------- Back button ---------- */
+  // Android's back button and the browser's back gesture step back inside the app. History holds one entry per level
+  // (title 0, its screens 1, adventure and sub pages 2, an open dialog one more), so an adventure never floods it and
+  // in-screen updates add nothing. Back does what the screen's „Zurück“ does: a dialog closes, the map goes to the
+  // subject (the run stays saved), fights and tasks have no „Zurück“ and stay put, the title screen leaves the app.
+  // History is only a convenience: a reload starts on the title as before.
+  let depth = 0, backTo = null, maxD = 0, moving = 0; // moving: our own history.go is on its way
+  const level = () => depth + ($('.overlay') ? 1 : 0);
+  const atD = () => (history.state && Number.isInteger(history.state.lq) ? history.state.lq : 0);
+  function syncHistory() {
+    const d = atD(), want = level(); if (moving || want === d) return;
+    // walk over entries that are still there instead of pushing: Chrome skips entries on back that were pushed without a tap
+    const to = Math.min(want, Math.max(maxD, d));
+    try {
+      if (to !== d) { moving = setTimeout(() => { moving = 0; syncHistory(); }, 1000); history.go(to - d); }
+      else for (let i = d + 1; i <= want; i++) { history.pushState({ lq: i }, ''); maxD = i; }
+    } catch (e) { clearTimeout(moving); moving = 0; }
+  }
+  function goBack() {
+    const ov = $('.overlay');
+    if (ov) { const b = $('#no, #ino, #iok, #ok, #close, #tutok, #hnext', ov); return b ? b.click() : ov.remove(); }
+    if (backTo) return backTo();
+    const b = $('#pback') || $('#back'); if (b && !b.disabled) b.click();
+  }
+  try { history.replaceState({ lq: 0 }, ''); } catch (e) { /* no history */ }
+  window.addEventListener('popstate', () => {
+    if (moving) { clearTimeout(moving); moving = 0; return syncHistory(); }
+    const d = atD(); if (d >= level()) return syncHistory();
+    // a screen reached by going back takes the entry back landed on
+    const was = app.firstElementChild; goBack(); if (app.firstElementChild !== was) depth = Math.min(depth, d);
+    syncHistory();
+  });
 
   /* ---------- Sounds ---------- */
   // phones stay silent until a user gesture, so the first tap unlocks the context
@@ -16032,7 +16065,8 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   function modal(html) {
     const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
     const behind = [...app.children]; behind.forEach((el) => { el.inert = true; }); app.appendChild(ov);
-    const rm = ov.remove.bind(ov); ov.remove = () => { behind.forEach((el) => { el.inert = false; }); rm(); };
+    const rm = ov.remove.bind(ov); ov.remove = () => { behind.forEach((el) => { el.inert = false; }); rm(); syncHistory(); };
+    syncHistory();
     return ov;
   }
 
@@ -16264,6 +16298,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const evictable = () => { const ua = navigator.userAgent; return (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || (/Safari\//.test(ua) && !/Chrome|Chromium|Edg|Android|Firefox/.test(ua))) && !navigator.standalone && !!window.matchMedia && window.matchMedia('(display-mode: browser)').matches; };
   const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
   function screenTitle() {
+    depth = 0;
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
     render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
@@ -16293,6 +16328,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const subjectOf = (m) => visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
   const openGoals = (m) => weeklyGoals().filter((g) => g.m === m && !goalDone(g));
   function screenSubject(sub) {
+    depth = 1;
     render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${openGoals(m).map((g) => `<p class="goalbadge">⭐ Wochenziel: ${esc(goalText(g))}</p>`).join('')}<div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenSubject(sub); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
@@ -16304,6 +16340,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span>${weekly().done ? '' : '<span class="weekgo">Ziele ansehen und loslegen ›</span>'}</button>`;
   }
   function screenWeekly() {
+    depth = 1;
     const goals = weeklyGoals();
     render(`<div class="screen">${topbar('Wochenaufgabe')}<div class="scroll"><div class="stack">
       <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
@@ -16326,6 +16363,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   /* ---------- First start, PIN, parental gate ---------- */
   const setupDone = (how) => { meta.setup[how] = true; meta.setup.at = meta.setup.at || new Date().toISOString(); saveAll(); };
   function screenSetup() {
+    depth = 0;
     render(`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
@@ -16342,6 +16380,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   // one numpad screen for entering the PIN, choosing one and the parental gate
   function screenCode(o) {
     let val = ''; const len = o.len || 4;
+    if (!o.relock) depth++;
     render(`<div class="screen">${topbar(o.title)}<div class="scroll"><div class="card codecard"><p>${o.text}</p>${o.task ? `<div class="codetask">${o.task}</div>` : ''}<div class="codeval ${o.task ? 'plain' : ''}" id="cval" role="img"></div><p id="cmsg" class="cmsg" role="status">${esc(o.msg || '')}</p>${o.forgot ? '<button class="linkbtn" id="forgot">PIN vergessen?</button>' : ''}</div></div>
       <div class="bottom"><div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Bestätigen">✓</button><button class="cancel" id="back" style="grid-column:1/-1">Zurück</button></div></div></div>`);
     const paint = () => { const el = $('#cval'); el.innerHTML = o.task ? esc(val) : Array.from({ length: len }, (_, i) => `<i class="${i < val.length ? 'on' : ''}"></i>`).join(''); el.setAttribute('aria-label', o.task ? (val || 'leer') : `${val.length} von ${len} Ziffern`); };
@@ -16366,14 +16405,22 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       setTimeout(() => { if (!keys[0].isConnected) return; keys.forEach((b) => { b.disabled = false; }); $('#cmsg').textContent = ''; }, wait);
     }
   }
-  function askPin(then) {
+  // relock: the parents' area locked itself; a wrong PIN goes to the title screen
+  function askPin(then, relock) {
     if (!meta.pin) return then();
-    screenCode({ title: 'Elternbereich', text: 'Bitte die Eltern-PIN eingeben.', lock: true, back: screenTitle, forgot: () => screenGate(then), onCode: (v, fail) => {
+    screenCode({ title: 'Elternbereich', text: 'Bitte die Eltern-PIN eingeben.', lock: true, relock, back: screenTitle, forgot: () => screenGate(then), onCode: (v, fail) => {
       if (pinHash(v) === meta.pin) { pinFails = 0; return then(); }
-      if (++pinFails < 3) return fail('Falsche PIN.');
-      pinFails = 0; pinLockUntil = Date.now() + 30000; askPin(then);
+      const locked = ++pinFails >= 3; if (locked) { pinFails = 0; pinLockUntil = Date.now() + 30000; }
+      if (relock) return screenTitle();
+      if (locked) askPin(then); else fail('Falsche PIN.');
     } });
   }
+  // in the background the parents' area locks at once, so the app switcher doesn't show it either; the PIN leads back to the same place
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'hidden' || !meta.pin || !$('.ptabs')) return;
+    const y = $('.scroll').scrollTop, back = pAt.back;
+    askPin(() => { screenParent(null, back, true); $('.scroll').scrollTop = y; }, true);
+  });
   function setPin(done, back) {
     const first = (msg) => screenCode({ title: 'PIN festlegen', text: 'Vier Ziffern für den Elternbereich wählen.', msg, back, onCode: (a) => screenCode({ title: 'PIN festlegen', text: 'Zur Kontrolle dieselbe PIN noch einmal eingeben.', back: () => first(), onCode: (b) => {
       if (a !== b) return first('Die beiden Eingaben waren verschieden. Bitte neu wählen.');
@@ -16394,6 +16441,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const deDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d}. ${MONTHS[m - 1]} ${y}`; };
   const GROUP_ICON = { 'Neu': '✨', 'Verbessert': '🔧', 'Behoben': '🐞' };
   function screenNews() {
+    depth = 1;
     const unseen = meta.seenNews || '';
     render(`<div class="screen">${topbar('Was ist neu?')}<div class="scroll"><div class="stack">${NEWS.map((e) => `<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? ' <span class="newbadge">Neu!</span>' : ''}</h3>${e.groups.map((g) => `<h4>${GROUP_ICON[g.title] || '📌'} ${esc(g.title)}</h4><ul>${g.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>`).join('')}</div>`).join('') || '<p>Noch keine Einträge.</p>'}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     if (NEWS.length) { meta.seenNews = NEWS[0].date; saveAll(); }
@@ -16486,6 +16534,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 
   // goal: the weekly goal this adventure was started for; its task type is offered as an attack
   function screenStarter(goal) {
+    depth = 2;
     const vis = CFG().starters.filter((s) => heroShown(mode, s)); const S = vis.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
     let sel = S.length === 1 ? S[0].id : null;
     const want = goal && goal.kind === 'right' ? goal.mod : null;
@@ -16547,6 +16596,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 
   const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], taeusch: ['👁️', 'Sinnestäuschung'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'], arena: ['🌀', 'Kreisel-Arena'] };
   function screenMap() {
+    depth = 2;
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
     for (let f = run.floor - 1; f < run.map.length - 1; f++) live[f].forEach((i) => run.map[f][i].n.forEach((j) => live[f + 1].add(j)));
@@ -16566,6 +16616,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
     app.querySelectorAll('.node.open').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni].t; run.node = { type }; saveAll(); enterNode(type); }; });
     $('#home').onclick = screenTitle;
+    backTo = () => { const s = subjectOf(mode); if (s) screenSubject(s); else screenTitle(); };
     $('#bag').onclick = () => showBag(null);
     showWeeklyNews();
     const scroller = $('.scroll'); const cur = $('.node.open'); if (cur && scroller) scroller.scrollTop = Math.max(0, scroller.scrollTop + cur.getBoundingClientRect().top - scroller.getBoundingClientRect().top - scroller.clientHeight / 2);
@@ -16585,6 +16636,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 
   // resume exactly where it stopped, so closing the app never swaps a node or resets a fight
   function resumeRun() {
+    depth = 2;
     const n = run.node;
     if (!isObj(n)) return screenMap();
     if (n.done) return advance();
@@ -17130,12 +17182,14 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenDex() {
+    depth = 1;
     const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push({ ...EN[w].elite, elite: true }); all.push(EN[w].boss); } }
     for (let i = all.length - 1; i >= 0; i--) if (all.findIndex((e) => e.name === all[i].name) < i) all.splice(i, 1); // Klasse 1/2 units share their opponents
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss }) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
   }
   function screenStamps(jump) {
+    depth = 1;
     const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
     const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', geübt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
     const row = (r) => { const prev = r.icon ? `<div class="rwprev" aria-hidden="true">${r.icon}</div>` : r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
@@ -17200,6 +17254,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       <h3>Für deine Hütte</h3>${RECIPES.filter(isFurn).map(row).join('')}`;
   }
   function screenCraft(id) {
+    depth = 2;
     const r = RECIPES.find((x) => x.id === id); if (!r || !craftable(r)) return screenStamps(true);
     const a = rnd(2, 6), b = rnd(3, 9); const t = { kind: 'num', mod: 'mul', tier: 1, group: 'mul:1', story: r.q(a, b), answers: [a * b] };
     render(`<div class="screen">${topbar('Werkbank')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
@@ -17283,6 +17338,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       ${room === 1 && meta.owned['hut-dachfenster'] ? ROOF : ''}${gaps.map((id) => { const [x, y, w, h] = FURN[id].box; return `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="10" fill="#FFF7E6" fill-opacity=".55" stroke="#8A6A30" stroke-width="2.5" stroke-dasharray="7 6"/><text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" font-size="15" font-weight="700" fill="#6B4A22">${RECIPES.find((r) => r.id === id).place}</text>`; }).join('')}${here.map((id) => FURN[id].art(n)).join('')}</svg>`;
   }
   function screenHut() {
+    depth = 1;
     const two = meta.hut.rooms >= 2; const n = shelfNums(); const built = Object.keys(FURN).filter((id) => meta.owned[id]);
     const name = (id) => RECIPES.find((r) => r.id === id).name;
     render(`<div class="screen">${topbar('Meine Hütte')}<div class="scroll"><div class="stack">
@@ -17296,6 +17352,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     app.querySelectorAll('[data-move]').forEach((b) => { b.onclick = () => { const id = b.dataset.move; const h = meta.hut; h.items = h.items.includes(id) ? h.items.filter((x) => x !== id) : h.items.concat(id); saveAll(); screenHut(); }; });
   }
   function screenWardrobe(heroId) {
+    depth = 2;
     const heroes = MODE_KEYS.flatMap((m) => MODES[m].starters).filter((s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i);
     const hero = heroes.find((s) => s.id === heroId) || heroes.find((s) => s.id === meta.lastStarter[mode]) || heroes[0];
     const worn = wornBy(hero.id);
@@ -17321,6 +17378,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const partOf = (key) => { const [, slot, id] = key.split('-'); const p = TOP[slot] && TOP[slot].find((x) => x.id === id); return p ? Object.assign({ slot }, p) : null; };
   const TOP_ROWS = [['tip', 'Spitze', 'Wucht', 'So viel Schwung verliert der andere Kreisel bei jeder richtigen Antwort.'], ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`], ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.']];
   function screenTop() {
+    depth = 2;
     const s = CFG().starters.find((x) => x.id === meta.lastStarter[mode]) || CFG().starters[0]; const color = TYPES[s.type].color;
     const need = (p) => (p.chest ? `Liegt in einer Truhe in Welt ${p.chest}${p.chest > 2 ? ' von Zahlenquest' : ''}.` : 'Finde Erz im Bergwerk in Zahlenquest oder auf der Baustelle.');
     const tile = (slot, label, p) => { const on = meta.top[slot] === p.id, has = hasPart(slot, p.id);
@@ -17349,6 +17407,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const duelAttacks = (p) => { const on = enabledMods(p.mode); const a = duelSpec(p).attacks.filter((x) => on.includes(x.mod)); return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k })); };
   function screenDuel(players) {
     const i = players.length; const p = { name: '', mode: null, hero: null };
+    depth = i ? 2 : 1;
     const units = visSubjects().flatMap((s) => s.modes);
     const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s) && heroShown(p.mode, s)) : []);
     render(`<div class="screen">${topbar(`Duell · Kind ${i + 1} von 2`)}<div class="scroll"><div class="stack">
@@ -17461,6 +17520,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       <rect x="3" y="63" width="74" height="13" rx="3" fill="url(#pg-bd)" ${ln(2)}/><path d="M6 65.5h68" stroke="#E2B07A" stroke-width="1" stroke-linecap="round"/><path d="M10 70q18-2 32 0M46 73q12 1 24-1" stroke="#6E4526" stroke-width=".8" fill="none" opacity=".6"/><circle cx="7.5" cy="69.5" r="1" fill="#5E646E"/><circle cx="72.5" cy="69.5" r="1" fill="#5E646E"/></svg>`);
   }
   function screenGarden() {
+    depth = 1;
     const bed = (b, i) => {
       if (!bedOpen(i)) return `<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
       if (!b.crop) return `<div class="bed">${plantSVG(null, 0)}<div class="bedname">Beet ${i + 1}</div><div class="beddesc">Noch leer.</div><button class="btn small" data-plant="${i}">Pflanzen</button></div>`;
@@ -17513,7 +17573,9 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     back = typeof back === 'function' ? back : screenTitle;
     if (!quiet) pAt = { tab: 'overview', sub: {}, subj: -1, mode: '' };
     if (P_JUMPS[jump]) { pAt.tab = P_JUMPS[jump][0]; pAt.sub[pAt.tab] = P_JUMPS[jump][1]; }
+    pAt.back = back;
     const tab = pAt.tab; const subs = P_TABS[tab][2]; const sub = subs[pAt.sub[tab]] ? pAt.sub[tab] : Object.keys(subs)[0];
+    depth = sub === 'subjects' && curGrade().subjects[pAt.subj] ? 2 : 1;
     const redraw = (focus) => { screenParent(null, back, true); const el = focus && $(focus); if (el) el.focus({ preventScroll: true }); };
     const switches = () => [...app.querySelectorAll('[role=switch]')];
     const again = () => { const y = $('.scroll').scrollTop; const i = switches().indexOf(document.activeElement); redraw(); $('.scroll').scrollTop = y; if (i >= 0 && switches()[i]) switches()[i].focus({ preventScroll: true }); };
@@ -17651,6 +17713,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   // The only external request. If sending fails, the prefilled form opens in a new tab.
   const FEEDBACK = { form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw', entry: 'entry.1794178349' };
   function screenFeedback(back) {
+    depth++;
     back = typeof back === 'function' ? back : screenTitle;
     render(`<div class="screen">${topbar('Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
@@ -17690,7 +17753,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '2f18292e3a9a';
+  const BUILD = '48bd49f0a32e';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

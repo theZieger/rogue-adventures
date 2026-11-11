@@ -1396,7 +1396,64 @@ async function levelCases() {
   check(wrongHit(5, 0) === 1.5, 'fewer than 8 answers: no relief yet');
 }
 
-reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
+// Back button (Android, browser): steps back inside the app; the parents' area locks in the background
+async function backCases() {
+  // our own history steps settle first, as they do between real taps
+  const back = async (p) => { await sleep(100); const popped = new Promise((r) => p.w.addEventListener('popstate', r, { once: true })); p.w.history.back(); await popped; await sleep(30); };
+  const q = (p, s) => p.d.querySelector(s);
+  const pin = (p, s) => { for (const ch of s) p.click(`.numpad [data-k="${ch}"]`); };
+  {
+    const p = open(); p.click('#later'); p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+    check(!!q(p, '.node.open'), 'back test: on the map');
+    await back(p);
+    check(!!q(p, '[data-cont="math"]') && !!p.dump()[RUN], 'back on the map goes to the subject screen, the adventure stays saved');
+    await back(p);
+    check(!!q(p, '#parents') && !!p.dump()[RUN], 'back on the subject screen goes to the title');
+    check(p.errors.length === 0, 'no page errors while going back');
+  }
+  {
+    const p = startMathFight();
+    check(!!q(p, '.overlay #tutok'), 'back test: the first fight explains itself');
+    await back(p);
+    check(!q(p, '.overlay') && !!q(p, '.atk'), 'back closes the explanation and stays in the fight');
+    p.click('.atk[data-i="0"]'); if (q(p, '.overlay #tutok')) await back(p);
+    const task = p.w.__task; const run0 = p.dump()[RUN]; const ans0 = p.w.__mq.run.answered; const tries = () => Object.values(p.w.__mq.meta.stats.math).reduce((n, s) => n + s.t, 0);
+    check(!!task && !!q(p, '.numpad, .opt') && tries() === 0, 'back test: a task is open');
+    await back(p);
+    check(p.w.__task === task && !!q(p, '.numpad, .opt') && tries() === 0 && p.w.__mq.run.answered === ans0 && p.dump()[RUN] === run0, 'back during a task keeps the task, counts no answer and keeps the adventure');
+    if (task.kind === 'choice') p.click([...p.d.querySelectorAll('.opt')].find((b) => b.textContent === task.answer));
+    else { const inps = [...p.d.querySelectorAll('.inp')]; task.answers.forEach((a, i) => { inps[i].click(); pin(p, String(a)); }); p.click('.numpad [data-k="ok"]'); }
+    check(tries() === 1 && p.errors.length === 0, 'the task can be answered after pressing back');
+  }
+  const hide = (p, state) => { Object.defineProperty(p.d, 'visibilityState', { configurable: true, get: () => state }); p.d.dispatchEvent(new p.w.Event('visibilitychange')); };
+  {
+    const p = open(); p.click('#setpin'); pin(p, '1234'); pin(p, '1234');
+    p.click('#parents'); pin(p, '1234'); p.subj('Mathe', 'math');
+    check(!!q(p, '#pback') && !!q(p, '[data-pm="math"]'), 'parents\' area: a subject page is open');
+    hide(p, 'hidden');
+    check(!q(p, '.ptabs') && !!q(p, '.numpad') && !p.text().includes('Aufgabenarten'), 'in the background the parents\' area is hidden behind the PIN');
+    hide(p, 'visible');
+    check(!q(p, '.ptabs') && !!q(p, '.numpad'), 'coming back asks for the PIN first');
+    pin(p, '1234');
+    check(!!q(p, '#pback') && !!q(p, '[data-pm="math"][aria-selected="true"]'), 'the right PIN returns to the same subject page');
+    await back(p);
+    check(!!q(p, '.ptabs') && !q(p, '#pback') && !!q(p, '[data-pf]'), 'back on a subject page goes to the list of subjects');
+    hide(p, 'hidden'); hide(p, 'visible'); pin(p, '0000');
+    check(!!q(p, '#parents') && !q(p, '.ptabs'), 'a wrong PIN after the lock goes to the title');
+    p.click('#parents'); pin(p, '1234'); await back(p);
+    check(!!q(p, '#parents'), 'back leaves the parents\' area');
+    p.click('#parents');
+    check(!q(p, '.ptabs') && !!q(p, '.numpad'), 'entering the parents\' area again asks for the PIN');
+    check(p.errors.length === 0, 'no page errors in the parents\' area lock');
+  }
+  {
+    const p = open(); p.click('#later'); p.click('#parents'); p.go('settings', 'app');
+    hide(p, 'hidden'); hide(p, 'visible');
+    check(!!q(p, '.ptabs') && !!q(p, '#psound'), 'without a PIN the parents\' area stays open in the background');
+  }
+}
+
+reloadCases().then(backCases).then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
