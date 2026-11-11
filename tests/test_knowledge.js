@@ -24,7 +24,7 @@ for(const [mode,cfg] of Object.entries(K.MODES)){ for(const e of cfg.pool){ cons
   if(e.mod==='lt'||e.mod==='ltk'||e.mod==='regel'&&!e.rf&&e.o&&e.q.includes('___')){ if((e.q.match(/___/g)||[]).length!==1) fails.push(tag+' gap text needs exactly one ___'); }
 }}
 // order sources: distinct ids and texts
-for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,KJ_OSTERWEG:K.KJ_OSTERWEG,KJ_JAHR:K.KJ_JAHR,F_SCHLICHTEN:K.F_SCHLICHTEN,VERSOEHNEN:E.VERSOEHNEN,BESSER:E.BESSER,ARCHE:E.ARCHE,PAPIER:E.PAPIER,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS,BROT:S.BROT,GRAIN_PARTS:S.GRAIN_PARTS,HERBAR:S3.HERBAR,LAYERS:S3.LAYERS,FLORA:S3.FLORA,CYCLE_PARTS:S.CYCLE_PARTS,CEREALS:S.CEREALS,WATER:S.WATER.map(x=>({id:x.id,text:x.label})),FLOAT:S.FLOAT.map(x=>({id:x.acc,text:x.label}))})){
+for(const [name,arr] of Object.entries({L_EVENTS_ORDER:K.L_EVENTS_ORDER,KJ_GEBOTE:K.KJ_GEBOTE,KJ_STORY:K.KJ_STORY,KJ_OSTERWEG:K.KJ_OSTERWEG,KJ_JAHR:K.KJ_JAHR,F_SCHLICHTEN:K.F_SCHLICHTEN,VERSOEHNEN:E.VERSOEHNEN,BESSER:E.BESSER,ARCHE:E.ARCHE,PAPIER:E.PAPIER,GROW:K.GROW,STORY:K.STORY,PARTS:K.PARTS,BROT:S.BROT,GRAIN_PARTS:S.GRAIN_PARTS,HERBAR:S3.HERBAR,LAYERS:S3.LAYERS,FLORA:S3.FLORA,CYCLE_PARTS:S.CYCLE_PARTS,CEREALS:S.CEREALS,WATER:S.WATER.map(x=>({id:x.id,text:x.label})),FLOAT:S.FLOAT.map(x=>({id:x.acc+(x.into||''),text:x.label}))})){
   const ids=arr.map(x=>x.id), texts=arr.map(x=>x.text||x.name);
   if(new Set(ids).size!==ids.length) fails.push(name+' duplicate ids'); if(new Set(texts).size!==texts.length) fails.push(name+' duplicate texts'); }
 
@@ -84,6 +84,36 @@ for(let i=0;i<300;i++){ const q=K.generate('satzbaustelle','ersatz',2,{},i); con
   q.options.filter(o=>o!==q.answer).forEach(o=>de(W.ersatz.find(x=>x[0][0].toUpperCase()+x[0].slice(1)===o)[2]!==e[2],'ersatz tier 2: distractor with the same pronoun '+o));
   const g=K.generate('woerterwerkstatt','gross',2,{},i); de(g.q.includes(g.answer)&&g.group==='gross:2','gross tier 2: '+g.qid);
   const s=K.generate('woerterwerkstatt','stamm',1,{},i); de(s.group==='stamm:1'&&s.qid.startsWith('wf_'),'stamm tier 1 asks families '+s.qid); }
+// Grundform, doppelte Selbstlaute, sächsische Wörter, zweiteiliges Prädikat, Zeitwörter, Anrede, Artikelwörter
+de(W.grundform.length>=30,'at least 30 Grundform items'); pairs('grundform',W.grundform,4);
+W.grundform.forEach(([f,r,f1,f2])=>{ de(new Set([f,r,f1,f2]).size===4,'grundform not distinct: '+f); const n=f.startsWith('die ');
+  de(n?ARTS.includes(art(r))&&[f1,f2].every(x=>ARTS.includes(art(x))):/^[a-zäöüß]+en$/.test(r)&&!ARTS.includes(art(f)),'grundform: plural noun → noun with article, verb form → infinitive: '+f); });
+de(W.doppelvokal.length>=15,'at least 15 Doppelvokal words'); pairs('doppelvokal',W.doppelvokal,2);
+W.doppelvokal.forEach(([r,f])=>{ const m=r.match(/(aa|ee|oo)/i); de(m&&f===r.replace(m[1],m[1][0]),'doppelvokal wrong spelling drops one vowel: '+r); });
+de(W.saechsisch.length>=12,'at least 12 Saxon words'); pairs('saechsisch',W.saechsisch,5); W.saechsisch.forEach(x=>de(new Set(x.slice(1,4)).size===3&&!x.slice(1,4).includes(x[0]),'saechsisch: '+x[0]));
+de(W.trennbar.length>=20,'at least 20 trennbar sentences'); pairs('trennbar',W.trennbar,2);
+W.trennbar.forEach(([s,inf])=>{ const ws=s.replace(/[.!?]$/,'').split(' '); const b=ws.map((w,i)=>w.startsWith('[')?i:-1).filter(i=>i>=0); const part=(ws[ws.length-1]||'').replace(/[[\]]/g,''), verb=(ws[b[0]]||'').replace(/[[\]]/g,'');
+  de(b.length===2&&b[1]===ws.length-1&&b[1]-b[0]>=2&&/[.!?]$/.test(s),'trennbar needs [verb] … [part] at the end: '+s);
+  de(inf.startsWith(part)&&inf.length>part.length+2&&part+verb!==inf,'trennbar infinitive starts with the separated part: '+s); });
+de(W.zeitwoerter.length>=20,'at least 20 Zeitwort sentences'); pairs('zeitwoerter',W.zeitwoerter,3);
+W.zeitwoerter.forEach(([s,p,t])=>de(['Gestern','Damals','Früher','Vorhin','Jetzt','Morgen'].includes(s.split(' ')[0])&&s.split(' ')[1]==='___'&&p!==t,'zeitwoerter: time word, then ___: '+s));
+const formal=/^(Sie|Ihnen|Ihre?n?)$/; de(W.anrede.length>=12,'at least 12 Anrede sentences'); pairs('anrede',W.anrede,5);
+W.anrede.forEach(([to,s,r,f1,f2])=>{ de((s.match(/___/g)||[]).length===1&&new Set([r,f1,f2]).size===3,'anrede: '+s);
+  de(formal.test(r)===!/Freund|Oma|Opa/.test(to)&&(formal.test(r)?[f1,f2].some(x=>/^(du|dich|dir|dein)/.test(x)):[f1,f2].every(x=>!/^(du|dich|dir|dein)/.test(x))),'anrede: Sie for adults, du for friends and family: '+s); });
+de(W.begleiter.length>=12,'at least 12 Artikelwort sentences'); pairs('begleiter',W.begleiter,4); W.begleiter.forEach(([s,r,f1,f2])=>de((s.match(/___/g)||[]).length===1&&new Set([r,f1,f2]).size===3,'begleiter: '+s));
+for(let i=0;i<300;i++){ const z=K.generate('satzbaustelle','zeit',2,{},i); const e=W.zeitwoerter.find(x=>z.qid==='zw_'+x[0]||z.qid==='zx_'+x[0]); const past=['Gestern','Damals','Früher','Vorhin'].includes(e[0].split(' ')[0]);
+  de(z.group==='zeit:2'&&(z.qid.startsWith('zw_')?z.answer===(past?e[2]:e[1]):z.answer===e[0].split(' ')[0]&&z.options.every(o=>o===z.answer||['Gestern','Damals','Früher','Vorhin'].includes(o)!==past)),'zeitwort task '+z.qid);
+  const p=K.generate('satzbaustelle','praedikat',1,{},i); const t=W.trennbar.find(([x])=>p.qid.slice(3)===x.replace(/[[\]]/g,'')); const br=t[0].match(/\[([^\]]+)\]/g).map(x=>x.slice(1,-1));
+  de(p.answer===(p.qid.startsWith('tp_')?br[0]+' … '+br[1]:t[1])&&p.options.length===3,'praedikat task '+p.qid); }
+// Forschen: Schwimmen und Sinken stimmt mit dem Forscherlabor überein, Versuche in der Reihenfolge Frage → Ergebnis
+{ const fl=(l)=>S.FLOAT.find(x=>x.label===l); if(!fl('Knetkugel')||fl('Knetkugel').f||!fl('Knetschiffchen')||!fl('Knetschiffchen').f) fails.push('float: Knetkugel sinkt, Knetschiffchen schwimmt');
+  if(!fl('Frisches Ei')||fl('Frisches Ei').f||!fl('Ei im Salzwasser')||!fl('Ei im Salzwasser').f) fails.push('float: Ei sinkt in Leitungswasser, schwimmt in Salzwasser');
+  if(S.STEPS.map(x=>x.text).join()!=='Frage,Vermutung,Versuch,Beobachtung,Ergebnis') fails.push('experiment steps');
+  for(const x of S.EXPERIMENTS) if(x.length!==5||!/\?$/.test(x[0].text)||!/^Ich glaube/.test(x[1].text)) fails.push('experiment needs question, guess and three more steps '+x[0].text);
+  const we=K.MODES.wetterstation; if(we.pool.filter(e=>e.mod==='forschen').length<12) fails.push('forschen needs 12 questions');
+  let orders=0; for(let i=0;i<300;i++){ const q=K.generate('wetterstation','forschen',1,{},++seq); if(q.kind!=='order') continue; orders++;
+    const src=q.qid.startsWith('wfs_')?S.STEPS:S.EXPERIMENTS[+q.qid[3]]; if(q.items.length!==5||q.order.join()!==src.map(x=>x.id).join()) fails.push('experiment order '+q.qid); }
+  if(!orders) fails.push('forschen asks no order task'); }
 
 // every generated choice has exactly one correct option
 for(const [mode,cfg] of Object.entries(K.MODES)) for(const mod of Object.keys(cfg.modules)) for(let i=0;i<300;i++){ const q=K.generate(mode,mod,1,{},++seq);

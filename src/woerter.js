@@ -26,6 +26,11 @@
   grosssaetze  'Satz mit [Nomen]': das Nomen ist ein Gefühl, eine Farbe oder ein Verb oder Adjektiv als Nomen
                (die Freude, das Rot, das Lachen) und das einzige Wort im Satz, das man großschreiben muss –
                außer dem Satzanfang und Nomen, die schon groß dastehen
+  grundform    [Wortform, Grundform, falsch, falsch]: Verbform → Grundform (er lief → laufen) oder Nomen in der
+               Mehrzahl → Einzahl mit Artikel (die Bäume → der Baum); die falschen sind keine Grundform dieses Worts
+  doppelvokal  [richtig, falsch] – Merkwort mit aa, ee oder oo; falsch = mit nur einem Selbstlaut
+  saechsisch   [sächsisches Wort, Bedeutung, falsch, falsch, Erklärung]: nur Wörter, die in Sachsen wirklich so
+               gesagt werden
 
   SATZBAUSTELLE (Sprache untersuchen)
   nomen, verben, adjektive, pronomen   Wortarten; die Nomen werden auch für „Groß oder klein“ und „Artikel“ benutzt
@@ -45,6 +50,14 @@
                nur Verben, die ein Objekt brauchen (tragen, brauchen, besuchen, mögen …)
   personen     regelmäßige Verben für die Personalpronomen: du …st, er …t (Stamm endet nicht auf s, ß, z, t oder d)
   redensarten  [Redensart oder Sprichwort, Bedeutung, falsch, falsch, Herkunft oder '' wenn unbekannt]
+  trennbar     ['Satz mit [Verb] und [Verbteil] in Klammern.', Grundform]: das Prädikat hat zwei Teile (räumt … auf);
+               zwischen den Teilen steht mindestens ein Wort
+  zeitwoerter  ['Zeitwort ___ Rest.', Präsens, Präteritum]: der Satz beginnt mit Gestern, Damals, Früher oder Vorhin
+               (dann Präteritum) oder mit Jetzt oder Morgen (dann Präsens)
+  anrede       [Brief an …, Satz mit ___, richtig, falsch, falsch]: Sie, Ihnen, Ihr an Erwachsene, die man siezt;
+               du, dich, dir, dein an Kinder und die Familie. Die falschen Wörter passen nicht zur Person.
+  begleiter    [Satz mit ___, richtiges Artikelwort, falsch, falsch]: mein, dein, unser, dieser, jeder, kein;
+               die falschen Formen passen nicht zum Nomen
 */
 const MW = {
   doppel: [
@@ -192,6 +205,42 @@ const MW = {
     'Ich wünsche dir alles [Gute] zum Geburtstag.', 'Wir haben etwas [Schönes] erlebt.', 'Das [Singen] im Chor gefällt mir.',
     'Die [Ruhe] im Wald tut gut.', 'Vor [Müdigkeit] fallen mir die Augen zu.', 'Die [Kälte] kriecht in meine Finger.',
   ],
+  grundform: [
+    ['er lief', 'laufen', 'liefen', 'läufen'], ['sie ging', 'gehen', 'gingen', 'gangen'], ['er hat gesungen', 'singen', 'gesingen', 'sungen'],
+    ['er fährt', 'fahren', 'fähren', 'fährten'], ['sie las', 'lesen', 'lasen', 'lisen'], ['er schrieb', 'schreiben', 'schrieben', 'schriben'],
+    ['sie aß', 'essen', 'aßen', 'äßen'], ['er nimmt', 'nehmen', 'nimmen', 'nahmen'], ['du siehst', 'sehen', 'siehen', 'sahen'],
+    ['er trank', 'trinken', 'tranken', 'trankten'], ['sie half', 'helfen', 'halfen', 'hilfen'], ['er hat geschlafen', 'schlafen', 'geschlafen', 'schliefen'],
+    ['wir sind geschwommen', 'schwimmen', 'geschwommen', 'schwommen'], ['er gibt', 'geben', 'giben', 'gaben'], ['sie kam', 'kommen', 'kamen', 'kämen'],
+    ['er fand', 'finden', 'fanden', 'fänden'], ['sie saß', 'sitzen', 'saßen', 'säßen'], ['er flog', 'fliegen', 'flogen', 'flögen'],
+    ['du hast gerufen', 'rufen', 'gerufen', 'riefen'], ['sie wusste', 'wissen', 'wussten', 'wussen'], ['er trägt', 'tragen', 'trägen', 'trugen'],
+    ['er rannte', 'rennen', 'rannten', 'ranten'],
+    ['die Bäume', 'der Baum', 'der Bäum', 'der Baume'], ['die Mäuse', 'die Maus', 'die Mäus', 'die Mause'], ['die Häuser', 'das Haus', 'das Häus', 'das Hauser'],
+    ['die Bücher', 'das Buch', 'das Büch', 'das Bucher'], ['die Hände', 'die Hand', 'die Händ', 'die Hande'], ['die Äpfel', 'der Apfel', 'der Äpfel', 'der Apf'],
+    ['die Züge', 'der Zug', 'der Züg', 'der Zuge'], ['die Kälber', 'das Kalb', 'das Kälb', 'das Kalber'], ['die Gänse', 'die Gans', 'die Gäns', 'die Ganse'],
+    ['die Wälder', 'der Wald', 'der Wäld', 'der Walder'], ['die Füße', 'der Fuß', 'der Füß', 'der Fuße'], ['die Blätter', 'das Blatt', 'das Blätt', 'das Blatter'],
+  ],
+  doppelvokal: [
+    ['das Boot', 'das Bot'], ['das Meer', 'das Mer'], ['das Haar', 'das Har'], ['der See', 'der Se'], ['das Moos', 'das Mos'],
+    ['der Tee', 'der Te'], ['der Saal', 'der Sal'], ['das Paar', 'das Par'], ['der Zoo', 'der Zo'], ['das Beet', 'das Bet'],
+    ['der Klee', 'der Kle'], ['die Fee', 'die Fe'], ['der Schnee', 'der Schne'], ['leer', 'ler'], ['die Idee', 'die Ide'],
+    ['der Aal', 'der Al'], ['das Moor', 'das Mor'], ['die Beere', 'die Bere'], ['der Kaffee', 'der Kaffe'],
+  ],
+  saechsisch: [
+    ['die Bemme', 'die Scheibe Brot mit Belag', 'der Becher mit Kakao', 'die Mütze mit Bommel', 'Eine Bemme ist ein belegtes Brot, zum Beispiel ein Butterbrot.'],
+    ['die Fettbemme', 'das Brot mit Schmalz', 'der dicke Kater', 'die Butterdose', 'Eine Fettbemme ist eine Brotscheibe mit Schmalz darauf.'],
+    ['die Plinse', 'der Eierkuchen', 'die Pflaume', 'der Pinsel', 'Plinsen sind dünne Eierkuchen aus der Pfanne.'],
+    ['nu', 'ja', 'nein', 'nie', '„Nu“ sagt man in Sachsen für „ja“: „Kommst du mit?“ – „Nu!“'],
+    ['die Gusche', 'der Mund', 'die Gurke', 'die Dusche', 'Gusche ist ein derbes Wort für den Mund.'],
+    ['die Hitsche', 'die Fußbank', 'die Hitze', 'der Schlitten', 'Eine Hitsche ist eine niedrige Fußbank, auf die man sich auch setzen kann.'],
+    ['ditschen', 'eintauchen', 'niesen', 'flüstern', 'Wer den Keks in den Kakao tunkt, ditscht ihn.'],
+    ['der Nischel', 'der Kopf', 'die Nase', 'der Nagel', 'In Chemnitz nennen viele das große Kopf-Denkmal in der Innenstadt den Nischel.'],
+    ['der Blümchenkaffee', 'sehr dünner Kaffee', 'Kaffee mit Blüten darin', 'Tee aus Blumen', 'Der Kaffee ist so dünn, dass man das Blümchen am Boden der Tasse sieht.'],
+    ['die Plauze', 'der Bauch', 'die Pause', 'der Pullover', 'Wer viel gegessen hat, hat eine volle Plauze.'],
+    ['der Feez', 'der Spaß', 'die Fee', 'der Streit', '„Feez machen“ heißt Spaß und Unsinn machen.'],
+    ['das Gelumpe', 'altes Zeug, das keiner braucht', 'ein Schatz aus Gold und Silber', 'Gemüse aus dem Garten', 'Gelumpe ist alter Kram, der nur herumliegt.'],
+    ['mähren', 'trödeln', 'mähen', 'malen', '„Mähr nicht so rum!“ heißt: Trödel nicht so!'],
+    ['der Ranft', 'das Endstück vom Brot', 'der Ranzen für die Schule', 'die Ranke am Zaun', 'Der Ranft ist das Anfangs- oder Endstück vom Brot, der Kanten.'],
+  ],
 
   nomen: [
     'der Hund', 'die Katze', 'das Buch', 'der Bleistift', 'die Schule', 'der Baum', 'die Blume', 'das Fenster', 'der Tisch',
@@ -334,6 +383,51 @@ const MW = {
     ['Was du heute kannst besorgen, das verschiebe nicht auf morgen.', 'Erledige deine Aufgaben gleich und nicht erst später.', 'Kaufe heute immer doppelt ein.', 'Morgen ist alles besser.', ''],
     ['Stille Wasser sind tief.', 'Ruhige Menschen wissen und können oft mehr, als man denkt.', 'In stillen Seen kann man nicht baden.', 'Man soll nicht ins Wasser springen.', ''],
     ['Wer zuletzt lacht, lacht am besten.', 'Wer am Ende gewinnt, freut sich am meisten.', 'Man soll nicht über Witze lachen.', 'Wer langsam versteht, hat mehr Spaß.', ''],
+  ],
+  trennbar: [
+    ['Lea [räumt] ihr Zimmer [auf].', 'aufräumen'], ['Der Zug [kommt] pünktlich [an].', 'ankommen'], ['Tim [ruft] seine Oma [an].', 'anrufen'],
+    ['Mama [kauft] im Supermarkt [ein].', 'einkaufen'], ['Die Sonne [geht] am Abend [unter].', 'untergehen'], ['Mia [zieht] ihre Jacke [an].', 'anziehen'],
+    ['Der Bus [fährt] um acht Uhr [ab].', 'abfahren'], ['Ben [hebt] den Stift [auf].', 'aufheben'], ['Die Lehrerin [liest] eine Geschichte [vor].', 'vorlesen'],
+    ['Papa [macht] das Licht [aus].', 'ausmachen'], ['Lukas [steigt] in den Bus [ein].', 'einsteigen'], ['Paul [schreibt] das Gedicht [ab].', 'abschreiben'],
+    ['Ich [stehe] um sieben Uhr [auf].', 'aufstehen'], ['Emma [lädt] ihre Freunde zum Geburtstag [ein].', 'einladen'], ['Der Bäcker [macht] den Laden um sechs Uhr [auf].', 'aufmachen'],
+    ['Jonas [packt] seine Schultasche [ein].', 'einpacken'], ['Die Katze [schläft] auf dem Sofa [ein].', 'einschlafen'], ['Lena [malt] das Bild bunt [aus].', 'ausmalen'],
+    ['Opa [holt] uns vom Bahnhof [ab].', 'abholen'], ['Die Klasse [hört] der Lehrerin genau [zu].', 'zuhören'], ['Ich [schalte] den Fernseher [aus].', 'ausschalten'],
+    ['Die Klasse [fängt] mit dem Lesen [an].', 'anfangen'],
+  ],
+  zeitwoerter: [
+    ['Gestern ___ wir ins Schwimmbad.', 'gehen', 'gingen'], ['Jetzt ___ Mia ihre Hausaufgaben.', 'macht', 'machte'], ['Morgen ___ Opa zu Besuch.', 'kommt', 'kam'],
+    ['Damals ___ die Kinder auf Schiefertafeln.', 'schreiben', 'schrieben'], ['Früher ___ man die Wäsche mit der Hand.', 'wäscht', 'wusch'], ['Vorhin ___ das Telefon.', 'klingelt', 'klingelte'],
+    ['Gestern ___ es den ganzen Tag.', 'regnet', 'regnete'], ['Jetzt ___ der Bus um die Ecke.', 'biegt', 'bog'], ['Morgen ___ wir einen Ausflug.', 'machen', 'machten'],
+    ['Damals ___ Oma auf einem Bauernhof.', 'wohnt', 'wohnte'], ['Gestern ___ ich ein spannendes Buch.', 'lese', 'las'], ['Jetzt ___ die Sonne durch die Wolken.', 'scheint', 'schien'],
+    ['Früher ___ die Menschen bei Kerzenlicht.', 'lesen', 'lasen'], ['Morgen ___ Lena ihren Geburtstag.', 'feiert', 'feierte'], ['Vorhin ___ Ben einen Igel im Garten.', 'sieht', 'sah'],
+    ['Gestern ___ der Hund die ganze Nacht.', 'bellt', 'bellte'], ['Jetzt ___ wir ein Lied.', 'singen', 'sangen'], ['Damals ___ es noch keine Handys.', 'gibt', 'gab'],
+    ['Morgen ___ die Ferien.', 'beginnen', 'begannen'], ['Früher ___ die Bauern mit Pferden auf dem Feld.', 'arbeiten', 'arbeiteten'], ['Gestern ___ Paul sein Fahrrad.', 'putzt', 'putzte'],
+    ['Jetzt ___ die Katze in der Sonne.', 'liegt', 'lag'],
+  ],
+  anrede: [
+    ['Frau Weber, deine Lehrerin', 'Liebe Frau Weber, ich danke ___ für die schöne Klassenfahrt.', 'Ihnen', 'dir', 'ihnen'],
+    ['Herrn Lange, euren Nachbarn', 'Lieber Herr Lange, können ___ bitte meine Katze füttern?', 'Sie', 'du', 'sie'],
+    ['Herrn Lange, euren Nachbarn', 'Lieber Herr Lange, ich wünsche ___ gute Besserung.', 'Ihnen', 'dir', 'Sie'],
+    ['Frau Weber, deine Lehrerin', 'Liebe Frau Weber, haben ___ meinen Brief bekommen?', 'Sie', 'du', 'ihr'],
+    ['Frau Schmidt, die Schulleiterin', 'Sehr geehrte Frau Schmidt, ich möchte ___ zu unserem Schulfest einladen.', 'Sie', 'dich', 'Ihnen'],
+    ['Frau Schmidt, die Schulleiterin', 'Sehr geehrte Frau Schmidt, wie geht es ___?', 'Ihnen', 'dir', 'Sie'],
+    ['Herrn Lange, euren Nachbarn', 'Lieber Herr Lange, vielen Dank für ___ Hilfe.', 'Ihre', 'deine', 'ihre'],
+    ['den Bürgermeister', 'Sehr geehrter Herr Bürgermeister, ich habe eine Frage an ___.', 'Sie', 'dich', 'sie'],
+    ['Frau Weber, deine Lehrerin', 'Liebe Frau Weber, ___ Geschichte hat mir gut gefallen.', 'Ihre', 'deine', 'ihre'],
+    ['Max, deinen Freund', 'Lieber Max, ich vermisse ___ sehr.', 'dich', 'Sie', 'Ihnen'],
+    ['Ida, deine Freundin', 'Liebe Ida, kommst ___ am Samstag zu meinem Geburtstag?', 'du', 'Sie', 'ihr'],
+    ['Max, deinen Freund', 'Lieber Max, ich schicke ___ ein Foto von meinem Hund.', 'dir', 'Ihnen', 'Sie'],
+    ['Ida, deine Freundin', 'Liebe Ida, wie war ___ Urlaub?', 'dein', 'Ihr', 'Ihre'],
+    ['deine Oma', 'Liebe Oma, ich freue mich auf ___!', 'dich', 'Sie', 'Ihnen'],
+    ['deinen Opa', 'Lieber Opa, danke für ___ Brief!', 'deinen', 'Ihren', 'ihren'],
+    ['Lena, deine Freundin', 'Liebe Lena, hast ___ Lust, mit mir zu basteln?', 'du', 'Sie', 'ihr'],
+  ],
+  begleiter: [
+    ['___ Fahrrad ist rot.', 'Mein', 'Meine', 'Meinen'], ['Ist das ___ Mütze?', 'deine', 'dein', 'deinen'], ['___ Kind bekommt einen Apfel.', 'Jedes', 'Jeder', 'Jede'],
+    ['___ Hund gehört meiner Tante.', 'Dieser', 'Diese', 'Dieses'], ['Ich mag ___ Buch sehr.', 'dieses', 'dieser', 'diese'], ['___ Tasche ist schwer.', 'Meine', 'Mein', 'Meinen'],
+    ['Hast du ___ Turnbeutel dabei?', 'deinen', 'dein', 'deine'], ['___ Blume im Garten blüht.', 'Jede', 'Jeder', 'Jedes'], ['Wir besuchen ___ Oma.', 'unsere', 'unser', 'unseren'],
+    ['___ Lehrer ist nett.', 'Unser', 'Unsere', 'Unseren'], ['Ich habe ___ Hunger.', 'keinen', 'kein', 'keine'], ['In ___ Schachtel liegen Murmeln.', 'dieser', 'diese', 'dieses'],
+    ['Ich spiele mit ___ Ball.', 'meinem', 'meinen', 'meine'], ['___ Morgen trinke ich Milch.', 'Jeden', 'Jeder', 'Jedes'],
   ],
 };
 if (typeof module !== 'undefined') module.exports = MW;

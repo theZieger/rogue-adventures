@@ -818,6 +818,10 @@ const MK = (() => {
   W.grosssaetze.forEach((x) => { const word = x.match(/\[(.+?)\]/)[1]; const shown = x.replace(`[${word}]`, word.toLowerCase());
     const small = shown.split(' ').slice(1).map((w) => w.replace(/[.,!?]/g, '')).filter((w) => w && w !== word.toLowerCase() && w === w.toLowerCase());
     W_POOL.push({ id: 'gs_' + x, t: 2, mod: 'gross', g: 'gross', q: `Welches Wort schreibt man groß? „${shown}“`, o: [word.toLowerCase()].concat(shuffle(small).slice(0, 2)), a: 0, why: `„${word}“ ist hier ein Nomen. Nomen schreibt man groß.` }); });
+  W.grundform.forEach(([f, r, f1, f2]) => W_POOL.push({ id: 'gf_' + f, mod: 'grund', g: 'grund', q: `Unter welchem Wort findest du „${f}“ im Wörterbuch?`, o: [r, f1, f2], a: 0,
+    why: ARTS.includes(r.split(' ')[0]) ? `Nomen stehen in der Einzahl im Wörterbuch: ${r}.` : `Verben stehen in der Grundform im Wörterbuch: ${r}.` }));
+  W.doppelvokal.forEach(([r, f]) => W_POOL.push({ id: 'dv_' + r, mod: 'vokal', g: 'vokal', q: 'Welches Wort ist richtig geschrieben?', o: [r, f], a: 0, why: `Merkwort mit doppeltem Selbstlaut: ${r}.` }));
+  W.saechsisch.forEach(([w, m, f1, f2, more]) => W_POOL.push({ id: 'sx_' + w, mod: 'sachsen', g: 'sachsen', q: `Was heißt das sächsische Wort „${w}“?`, o: [m, f1, f2], a: 0, more }));
   // dictionary order only needs the first three letters; woerter.js keeps those free of umlauts
   const abcKey = (w) => w.slice(0, 3).toLowerCase();
   function abcTask() {
@@ -839,6 +843,9 @@ const MK = (() => {
     trenn: { title: 'Worttrennung', lines: ['Man trennt nach Sprechsilben: Gar-ten, Blu-me.', 'Von mehreren Mitlauten kommt nur der letzte in die neue Zeile: Kin-der, Kat-ze, Fens-ter.', 'ck, ch, sch und ph bleiben zusammen: Zu-cker, Ku-chen, Ta-sche.', 'Ein einzelner Buchstabe am Anfang oder Ende wird nicht abgetrennt: Ele-fant, nicht E-lefant.'] },
     komma: { title: 'Komma und Doppelpunkt', lines: ['Bei Aufzählungen steht zwischen den Teilen ein Komma: Äpfel, Birnen und Nüsse.', 'Vor „und“ und „oder“ in der Aufzählung steht kein Komma.', 'Vor „aber“ und „denn“ steht ein Komma: Ich bleibe zu Hause, denn ich bin krank.', 'Vor der wörtlichen Rede steht nach dem Begleitsatz ein Doppelpunkt: Tom ruft: „Der Bus kommt!“'] },
     rede: { title: 'Wörtliche Rede', lines: ['Was jemand sagt, steht in Anführungszeichen: „…“.', 'Der Begleitsatz sagt, wer spricht. Danach steht ein Doppelpunkt.', 'Das Satzzeichen der Rede steht vor dem schließenden Anführungszeichen: Mia sagt: „Ich komme mit.“'] },
+    grund: { title: 'Nachschlagen in der Grundform', lines: ['Im Wörterbuch stehen Verben in der Grundform: er lief → laufen, sie hat gesungen → singen.', 'Nomen stehen in der Einzahl: die Bäume → der Baum.', 'Frag dich: Wie heißt es bei „wir“ und jetzt? Wir laufen. Das ist die Grundform.'] },
+    vokal: { title: 'Doppelte Selbstlaute', lines: ['Manche Wörter schreibt man mit aa, ee oder oo: das Haar, der See, das Boot.', 'Man hört den Unterschied nicht. Diese Merkwörter musst du dir einprägen.', 'Aus aa wird nie ää: das Paar, das Pärchen; der Saal, die Säle.'] },
+    sachsen: { title: 'Sächsische Wörter', lines: ['In Sachsen sprechen viele Menschen Mundart. Manche Wörter gibt es fast nur hier.', 'Die Bemme ist ein belegtes Brot, die Plinse ein Eierkuchen, „nu“ heißt ja.', 'Mundart ist kein Fehler. In Aufsätzen und Diktaten schreibst du aber Hochdeutsch.'] },
   };
   const W_MODULES = {
     doppel: { name: 'Doppelt, ck, tz', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
@@ -851,6 +858,9 @@ const MK = (() => {
     stamm: { name: 'Wortfamilie', icon: '🌳', maxTier: 2, worldCap: [2], dmg: 12 },
     trenn: { name: 'Worttrennung', icon: '✂️', maxTier: 1, worldCap: [1], dmg: 12 },
     komma: { name: 'Komma und Doppelpunkt', icon: '🖋️', maxTier: 1, worldCap: [1], dmg: 14 },
+    grund: { name: 'Grundform nachschlagen', icon: '🔍', maxTier: 1, worldCap: [1], dmg: 12 },
+    vokal: { name: 'aa, ee, oo', icon: '🔤', maxTier: 1, worldCap: [1], dmg: 10 },
+    sachsen: { name: 'Sächsische Wörter', icon: '🗺️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
   const W_TUT = {
     'doppel:1': { title: 'Doppelt, ck, tz', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort langsam. Ist der Selbstlaut kurz, folgt ein doppelter Mitlaut, ck oder tz.', 'Beispiel: „die Sonne“ oder „die Sone“? Das o ist kurz, also: die Sonne.', 'Tippe auf das richtige Wort.'] },
@@ -865,12 +875,15 @@ const MK = (() => {
     'trenn:1': { title: 'Worttrennung', steps: ['Ein Wort passt nicht mehr in die Zeile. Wo setzt du den Trennstrich?', 'Sprich das Wort in Silben. ck, ch, sch und ph bleiben zusammen, st wird getrennt.', 'Beispiel: Zucker → Zu-cker. Fenster → Fens-ter.', 'Tippe auf das richtig getrennte Wort.'] },
     'komma:1': { title: 'Komma und Doppelpunkt', steps: ['Drei Sätze, nur einer hat die Satzzeichen an der richtigen Stelle.', 'Aufzählung: Komma zwischen den Teilen, vor „und“ keins. Vor „aber“ und „denn“ steht ein Komma.', 'Beispiel: Ich kaufe Äpfel, Birnen und Nüsse.', 'Tippe auf den richtigen Satz.'] },
     'rede:1': { title: 'Wörtliche Rede', steps: ['Jemand sagt etwas. Wo gehören die Anführungszeichen hin?', 'Nur das Gesagte steht in „…“. Davor steht der Begleitsatz mit Doppelpunkt.', 'Beispiel: Mia sagt: „Ich komme mit.“', 'Tippe auf den richtig geschriebenen Satz.'] },
+    'grund:1': { title: 'Grundform nachschlagen', steps: ['Im Wörterbuch steht nicht jede Form eines Worts. Du suchst die Grundform.', 'Verben: Setze „wir“ davor und sag es für jetzt. Nomen: Nimm die Einzahl.', 'Beispiel: „er lief“ → wir laufen → laufen. „die Bäume“ → der Baum.', 'Tippe auf das Wort, unter dem du nachschlägst.'] },
+    'vokal:1': { title: 'aa, ee, oo', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Manche Wörter schreibt man mit doppeltem Selbstlaut. Hören kann man das nicht, man muss es sich merken.', 'Beispiel: „das Boot“ oder „das Bot“? Merkwort: das Boot.', 'Tippe auf das richtig geschriebene Wort.'] },
+    'sachsen:1': { title: 'Sächsische Wörter', steps: ['In Sachsen gibt es Wörter, die man anderswo kaum kennt.', 'Welches hochdeutsche Wort meint dasselbe?', 'Beispiel: „Ich esse eine Bemme.“ Eine Bemme ist ein belegtes Brot.', 'Tippe auf die Bedeutung.'] },
   };
   const W_STARTERS = [
     { id: 'graphit', type: 'normal', shape: 'pencil', names: ['Graphit', 'Graphit', 'Graphit'], hp: 65, desc: 'Ein Bleistift mit frisch gespitzter Mine. Landet manchmal einen Volltreffer (doppelter Schaden).', perk: 'crit',
       attacks: [{ name: 'Doppelstrich', mod: 'doppel' }, { name: 'Silbenbogen', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Daumenregister', mod: 'abc' }] },
   ];
-  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen', stamm: 'Wurzelgriff', trenn: 'Trennstrich', komma: 'Beistrich' };
+  const W_EXTRA = { doppel: 'Doppelstrich', verl: 'Silbenbogen', dehn: 'Silbenklatschen', gross: 'Großbuchstabe', zus: 'Wortkleber', abc: 'Daumenregister', rede: 'Gänsefüßchen', stamm: 'Wurzelgriff', trenn: 'Trennstrich', komma: 'Beistrich', grund: 'Stichwortsuche', vokal: 'Bootssteg', sachsen: 'Fettbemme' };
   const W_ENEMIES = {
     1: {
       normal: [
@@ -951,9 +964,32 @@ const MK = (() => {
     [['wir', f.ich], ['ihr', f.du]].forEach(([k, r]) => S_POOL.push({ id: `pp_${v}_${k}`, mod: 'pronomen', g: 'pronomen', q: `Setze in die Einzahl: „${f[k]}“`, o: [r].concat([f.ich, f.du, f.er].filter((x) => x !== r)).slice(0, 3), a: 0 }));
   });
   W.redensarten.forEach(([r, m, f1, f2, h]) => S_POOL.push({ id: 'ra_' + r, mod: 'redensart', g: 'redensart', q: `Was bedeutet „${r}“?`, o: [m, f1, f2], a: 0, more: h }));
+  // 'Lea [räumt] ihr Zimmer [auf].' → words, the verb's index and the separated part's index
+  const TRENNBAR = W.trennbar.map(([s, inf]) => { const ws = s.replace(/[.!?]$/, '').split(' '); const v = ws.findIndex((w) => w.startsWith('[')); const p = ws.length - 1;
+    return { s: s.replace(/[[\]]/g, ''), ws: ws.map((w) => w.replace(/[[\]]/g, '')), v, p, inf }; });
+  TRENNBAR.forEach(({ s, ws, v, p, inf }) => {
+    const verb = ws[v], part = ws[p], mid = pick(ws.slice(v + 1, p)); const pair = `${verb} … ${part}`;
+    S_POOL.push({ id: 'tp_' + s, mod: 'praedikat', g: 'praedikat', q: `Welche Wörter bilden zusammen das Prädikat? „${s}“`, o: [pair].concat(shuffle([verb, `${verb} … ${mid}`, `${mid} … ${part}`]).slice(0, 2)), a: 0,
+      why: `„${verb}“ steht an zweiter Stelle, „${part}“ ganz am Ende. Zusammen bilden sie das Prädikat: ${inf}.` });
+    S_POOL.push({ id: 'ti_' + s, mod: 'praedikat', g: 'praedikat', q: `Wie heißt das Verb aus „${s}“ in der Grundform?`, o: [inf, inf.slice(part.length), part + verb], a: 0, why: `${pair} → ${inf}` });
+  });
+  // the time word at the start decides the tense; Jetzt and Morgen go with the Präsens
+  const PAST_WORDS = ['Gestern', 'Damals', 'Früher', 'Vorhin'], NOW_WORDS = ['Jetzt', 'Morgen'];
+  W.zeitwoerter.forEach(([s, p, t]) => {
+    const tw = s.split(' ')[0]; const past = PAST_WORDS.includes(tw); const r = past ? t : p;
+    S_POOL.push({ id: 'zw_' + s, t: 2, mod: 'zeit', g: 'zeit', q: `Welche Form passt? ${s}`, o: past ? [t, p] : [p, t], a: 0,
+      why: past ? `„${tw}“ zeigt: Es ist schon vorbei. Also Präteritum: ${t}.` : tw === 'Jetzt' ? `„Jetzt“ zeigt: Es passiert gerade. Also Präsens: ${p}.` : `„Morgen“ ist noch nicht passiert. Dafür nimmt man oft das Präsens: ${p}.` });
+    S_POOL.push({ id: 'zx_' + s, t: 2, mod: 'zeit', g: 'zeit', q: `Welches Zeitwort passt? ${s.replace(tw, '___').replace('___ ___', '___ ' + r)}`, o: [tw].concat(shuffle(past ? NOW_WORDS : PAST_WORDS).slice(0, 2)), a: 0 });
+  });
+  W.anrede.forEach(([to, s, r, f1, f2]) => S_POOL.push({ id: 'an_' + s, mod: 'anrede', g: 'anrede', q: `Brief an ${to}: ${s}`, o: [r, f1, f2], a: 0,
+    why: /^(Sie|Ihne|Ihr)/.test(r) ? 'Erwachsene, die du mit „Sie“ ansprichst, redest du auch im Brief mit Sie, Ihnen und Ihr an. Diese Wörter schreibt man groß.' : 'Freunde und die Familie sprichst du mit du, dich, dir und dein an.' }));
+  [['Wen sprichst du mit „Sie“ an?', 'den Schulleiter', 'deine Freundin', 'deinen Bruder'], ['Wen sprichst du mit „du“ an?', 'deine Oma', 'die Ärztin', 'den Busfahrer'],
+    ['Wie schreibt man „Sie“, wenn man jemanden höflich anredet?', 'Immer groß', 'Immer klein', 'Nur am Satzanfang groß'], ['Was schreibst du in einem Brief an deine Lehrerin?', 'Ich danke Ihnen.', 'Ich danke dir.', 'Ich danke ihnen.']]
+    .forEach(([q, r, f1, f2], i) => S_POOL.push({ id: 'ad_' + i, mod: 'anrede', g: 'anrede', q, o: [r, f1, f2], a: 0 }));
+  W.begleiter.forEach(([s, r, f1, f2]) => S_POOL.push({ id: 'bg_' + s, mod: 'begleiter', g: 'begleiter', q: `Welches Artikelwort passt? ${s}`, o: [r, f1, f2], a: 0, why: s.replace('___', r) }));
   const S_NOTES = {
     wortart: { title: 'Wortarten', lines: ['Nomen sind Namen für Menschen, Tiere und Dinge: der Hund, die Schule.', 'Verben sagen, was jemand tut: laufen, lesen.', 'Adjektive sagen, wie etwas ist: groß, bunt.', 'Pronomen stehen für ein Nomen: ich, du, er, sie, es, wir, ihr.', 'Artikel begleiten ein Nomen: der, die, das, ein, eine.'] },
-    zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.'] },
+    zeit: { title: 'Zeitformen', lines: ['Präsens (Gegenwart): Es passiert jetzt. Er läuft.', 'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.', 'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.', 'Zeitwörter helfen: gestern, damals, früher, vorhin → Präteritum. Jetzt → Präsens.', 'Was erst morgen passiert, sagt man oft im Präsens: Morgen kommt Opa.'] },
     steig: { title: 'Steigerung', lines: ['Grundstufe: groß. Mehrstufe: größer. Meiststufe: am größten.', 'Nach der Mehrstufe vergleicht man mit „als“: Der Turm ist höher als das Haus.', 'Mit „so“ und der Grundstufe vergleicht man mit „wie“: Lea ist so groß wie Ben.'] },
     satzglied: { title: 'Subjekt und Prädikat', lines: ['Das Prädikat ist das Verb im Satz. Es sagt, was jemand tut: Der Hund schläft.', 'Das Subjekt findest du mit der Frage „Wer oder was?“: Wer schläft? Der Hund.', 'Im Aussagesatz steht das Prädikat an zweiter Stelle.'] },
     umstell: { title: 'Umstellprobe', lines: ['Satzglieder sind Wörter, die beim Umstellen zusammenbleiben.', 'Der Hund | schläft | im Korb. Umgestellt: Im Korb | schläft | der Hund.', 'Das Prädikat bleibt an zweiter Stelle.'] },
@@ -962,11 +998,14 @@ const MK = (() => {
     ersatz: { title: 'Ersatzprobe', lines: ['Eine Nominalgruppe kann man durch ein Pronomen ersetzen: Der kleine Hund bellt. → Er bellt.', 'der → er, die → sie, das → es. Mehrere → sie.', 'Paul und ich → wir. Lena und du → ihr.'] },
     weglass: { title: 'Weglassprobe', lines: ['Manche Wörter kann man weglassen, und der Satz bleibt richtig: Lena trägt heute eine Mütze. → Lena trägt eine Mütze.', 'Oft sind das Adjektive (der kleine Hund) oder Angaben zu Ort und Zeit (im Garten, am Sonntag).', 'Subjekt und Prädikat kann man nie weglassen.'] },
     pronomen: { title: 'Personalpronomen', lines: ['Einzahl: ich, du, er, sie, es.', 'Mehrzahl: wir, ihr, sie.', 'Das Verb ändert sich mit: ich lache, wir lachen, du lachst, ihr lacht.'] },
+    praedikat: { title: 'Zweiteiliges Prädikat', lines: ['Manche Verben teilen sich im Satz: aufräumen → Lea räumt ihr Zimmer auf.', 'Der eine Teil steht an zweiter Stelle, der andere ganz am Ende. Zusammen sind sie das Prädikat.', 'Die Grundform setzt du wieder zusammen: räumt … auf → aufräumen.'] },
+    anrede: { title: 'Anrede im Brief', lines: ['Erwachsene, die du siezt, redest du mit Sie, Ihnen, Ihr an. Diese Wörter schreibt man immer groß.', 'Freunde und Familie redest du mit du, dich, dir, dein an.', 'Liebe Frau Weber, ich danke Ihnen. – Lieber Max, ich vermisse dich.'] },
+    begleiter: { title: 'Artikelwörter', lines: ['Artikelwörter begleiten ein Nomen, so wie der, die, das: mein Fahrrad, dieser Hund, jedes Kind, kein Hunger.', 'Sie passen sich dem Nomen an: mein Fahrrad, meine Tasche, mit meinem Ball.', 'Probe: Setze der, die oder das ein. Der Hund → dieser Hund, das Kind → jedes Kind.'] },
     redensart: { title: 'Redensarten und Sprichwörter', lines: ['Eine Redensart meint etwas anderes, als die Wörter sagen: „Schwein haben“ heißt Glück haben.', 'Ein Sprichwort ist ein ganzer Satz mit einem Rat: „Übung macht den Meister.“', 'Viele kommen aus alter Zeit. Woher, steht nach der Antwort.'] },
   };
   const S_MODULES = {
     wortart: { name: 'Wortarten', icon: '🏷️', maxTier: 1, worldCap: [1], dmg: 12 },
-    zeit: { name: 'Zeitformen', icon: '⏳', maxTier: 1, worldCap: [1], dmg: 12 },
+    zeit: { name: 'Zeitformen', icon: '⏳', maxTier: 2, worldCap: [2], dmg: 12 },
     steig: { name: 'Steigerung', icon: '📶', maxTier: 1, worldCap: [1], dmg: 12 },
     satzglied: { name: 'Subjekt und Prädikat', icon: '🎯', maxTier: 1, worldCap: [1], dmg: 14 },
     umstell: { name: 'Umstellprobe', icon: '🔀', maxTier: 1, worldCap: [1], dmg: 16 },
@@ -976,6 +1015,9 @@ const MK = (() => {
     weglass: { name: 'Weglassprobe', icon: '🧽', maxTier: 1, worldCap: [1], dmg: 14 },
     pronomen: { name: 'Personalpronomen', icon: '👥', maxTier: 1, worldCap: [1], dmg: 12 },
     redensart: { name: 'Redensarten', icon: '💭', maxTier: 1, worldCap: [1], dmg: 12 },
+    praedikat: { name: 'Zweiteiliges Prädikat', icon: '🧩', maxTier: 1, worldCap: [1], dmg: 14 },
+    anrede: { name: 'Anrede im Brief', icon: '💌', maxTier: 1, worldCap: [1], dmg: 12 },
+    begleiter: { name: 'Artikelwörter', icon: '📝', maxTier: 1, worldCap: [1], dmg: 12 },
   };
   const S_TUT = {
     'wortart:1': { title: 'Wortarten', steps: ['Zu welcher Wortart gehört das Wort?', 'Nomen: der Hund. Verb: laufen. Adjektiv: bunt. Pronomen: er. Artikel: der, ein.', 'Beispiel: „schnell“. Wie ist etwas? Schnell. Also ein Adjektiv.', 'Tippe auf die richtige Wortart.'] },
@@ -989,13 +1031,17 @@ const MK = (() => {
     'ersatz:2': { title: 'Ersatzprobe rückwärts', steps: ['Jetzt steht ein Pronomen im Satz. Für welche Nominalgruppe steht es?', 'Prüfe das Pronomen und das Verb: „Er bellt“ passt zu einem Wort mit „der“, „Sie spielen“ zu mehreren.', 'Beispiel: Er bellt laut. → Der kleine Hund bellt laut. „Die Kinder bellt laut“ passt nicht.', 'Tippe auf die passende Nominalgruppe.'] },
     'weglass:1': { title: 'Weglassprobe', steps: ['Ein Wort oder Satzglied kann weg, und der Satz bleibt richtig.', 'Lies den Satz ohne das Wort. Fehlt dann etwas Wichtiges?', 'Beispiel: Lena trägt heute eine Mütze. Ohne „heute“: Lena trägt eine Mütze. Ohne „eine Mütze“: Lena trägt heute. Das geht nicht.', 'Tippe auf das Wort oder Satzglied, das wegkann.'] },
     'pronomen:1': { title: 'Einzahl und Mehrzahl', steps: ['Aus einer Person werden mehrere oder aus mehreren eine.', 'ich → wir, du → ihr, er, sie, es → sie. Das Verb ändert sich mit.', 'Beispiel: Ich lache. → Wir lachen.', 'Tippe auf den richtigen Satz.'] },
+    'zeit:2': { title: 'Zeitwörter', steps: ['Zeitwörter verraten, wann etwas passiert.', 'Gestern, damals, früher, vorhin: Es ist vorbei, also Präteritum. Jetzt und morgen: Präsens.', 'Beispiel: Gestern ___ wir ins Schwimmbad. gehen oder gingen? Gestern ist vorbei, also: gingen.', 'Tippe auf das Wort, das passt.'] },
+    'praedikat:1': { title: 'Zweiteiliges Prädikat', steps: ['Manche Verben teilen sich im Satz in zwei Teile.', 'Ein Teil steht an zweiter Stelle, der andere ganz am Ende des Satzes.', 'Beispiel: Lea räumt ihr Zimmer auf. Das Prädikat ist „räumt … auf“, die Grundform „aufräumen“.', 'Tippe auf die richtige Antwort.'] },
+    'anrede:1': { title: 'Anrede im Brief', steps: ['Lies, an wen der Brief geht.', 'Erwachsene, die du siezt: Sie, Ihnen, Ihr – immer groß. Freunde und Familie: du, dich, dir, dein.', 'Beispiel: Liebe Frau Weber, ich danke ___. Richtig ist „Ihnen“.', 'Tippe auf das Wort, das passt.'] },
+    'begleiter:1': { title: 'Artikelwörter', steps: ['Artikelwörter wie mein, dein, unser, dieser, jeder und kein stehen vor einem Nomen.', 'Sie müssen zum Nomen passen. Probe: Welcher Artikel gehört zum Nomen?', 'Beispiel: das Fahrrad → mein Fahrrad. die Tasche → meine Tasche.', 'Tippe auf das Artikelwort, das passt.'] },
     'redensart:1': { title: 'Redensarten', steps: ['Redensarten meinen etwas anderes, als die Wörter sagen.', 'Überlege: Wann sagt man das? Was ist dann passiert?', 'Beispiel: „Schwein haben“ sagt man, wenn jemand Glück hatte. Ein Schwein ist gar nicht da.', 'Tippe auf die Bedeutung.'] },
   };
   const S_STARTERS = [
     { id: 'elle', type: 'wasser', shape: 'ruler', names: ['Elle', 'Elle', 'Elle'], hp: 80, desc: 'Ein Holzlineal, 30 Zentimeter lang. Hält viel aus.', perk: 'tank',
       attacks: [{ name: 'Farbmarker', mod: 'wortart' }, { name: 'Fragetest', mod: 'satzglied' }, { name: 'Umstellschub', mod: 'umstell' }, { name: 'Sortierkasten', mod: 'ober' }] },
   ];
-  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn', ersatz: 'Stellvertreter', weglass: 'Tafelschwamm', pronomen: 'Namensruf', redensart: 'Volksmund' };
+  const S_EXTRA = { wortart: 'Farbmarker', zeit: 'Kalenderblatt', steig: 'Siegertreppe', satzglied: 'Fragetest', umstell: 'Umstellschub', ober: 'Sortierkasten', teekessel: 'Doppelsinn', ersatz: 'Stellvertreter', weglass: 'Tafelschwamm', pronomen: 'Namensruf', redensart: 'Volksmund', praedikat: 'Satzklammer', anrede: 'Briefkopf', begleiter: 'Klebezettel' };
   const S_ENEMIES = {
     1: {
       normal: [
