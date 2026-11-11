@@ -2,6 +2,7 @@
 // Fables are retold in our own words after Aesop, poems are public domain (by = author), \n breaks a line.
 // Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
 // grade: 1 or 2 marks a short text with two questions for Klasse 1 (8–30 words) or 2 (20–60 words); without it, Klasse 3.
+// Klasse-1 texts mark Sprechsilben with · (Son·ne) for the two-colour syllable display; text itself stays plain.
 const TEXTE = [
   { id: 'rabe', kind: 'Fabel', title: 'Der Fuchs und der Rabe',
     text: 'Ein Rabe hatte ein Stück Käse gefunden. Er setzte sich damit auf einen hohen Ast, um es in Ruhe zu fressen. Da kam ein Fuchs vorbei. Er roch den Käse und wollte ihn haben. „Was für ein schöner Vogel du bist!“, rief der Fuchs nach oben. „Deine Federn glänzen so schwarz. Wenn deine Stimme genauso schön ist, bist du der König aller Vögel.“ Der Rabe freute sich über das Lob. Er öffnete den Schnabel, um laut zu krächzen. Da fiel der Käse hinunter. Der Fuchs schnappte ihn und lief davon. Wer jedem Lob glaubt, wird leicht hereingelegt.',
@@ -186,43 +187,43 @@ const TEXTE = [
       { q: 'Wann stellt man den Schwibbogen ins Fenster?', o: ['In der Adventszeit', 'Im Sommer', 'Zu Ostern'], a: 0 },
     ] },
   { id: 'k1ball', grade: 1, kind: 'Erzählung', title: 'Der rote Ball',
-    text: 'Tim hat einen roten Ball. Er wirft ihn hoch in die Luft. Der Ball fällt in den Teich. Papa holt ihn mit einem langen Ast heraus.',
+    text: 'Tim hat ei·nen ro·ten Ball. Er wirft ihn hoch in die Luft. Der Ball fällt in den Teich. Pa·pa holt ihn mit ei·nem lan·gen Ast he·raus.',
     qs: [
       { q: 'Welche Farbe hat der Ball?', o: ['Rot', 'Blau', 'Gelb'], a: 0 },
       { q: 'Wo landet der Ball?', o: ['Im Teich', 'Im Baum', 'Auf dem Dach'], a: 0 },
     ] },
   { id: 'k1igel', grade: 1, kind: 'Sachtext', title: 'Der Igel',
-    text: 'Der Igel hat viele Stacheln. Am Tag schläft er. In der Nacht sucht er Käfer und Würmer. Den Winter verschläft er.',
+    text: 'Der I·gel hat vie·le Sta·cheln. Am Tag schläft er. In der Nacht sucht er Kä·fer und Wür·mer. Den Win·ter ver·schläft er.',
     qs: [
       { q: 'Was hat der Igel auf dem Rücken?', o: ['Stacheln', 'Federn', 'Schuppen'], a: 0 },
       { q: 'Wann sucht der Igel Futter?', o: ['In der Nacht', 'Am Mittag', 'Am Morgen'], a: 0 },
     ] },
   { id: 'k1hund', grade: 1, kind: 'Witz', title: 'Der kluge Hund',
-    text: 'Max sagt: „Mein Hund kann rechnen.“ Mia fragt den Hund: „Was ist zwei und zwei?“ Der Hund bellt viermal. Mia staunt.',
+    text: 'Max sagt: „Mein Hund kann rech·nen.“ Mi·a fragt den Hund: „Was ist zwei und zwei?“ Der Hund bellt vier·mal. Mi·a staunt.',
     qs: [
       { q: 'Was kann der Hund von Max?', o: ['Rechnen', 'Singen', 'Lesen'], a: 0 },
       { q: 'Wie oft bellt der Hund?', o: ['Viermal', 'Zweimal', 'Einmal'], a: 0 },
     ] },
   { id: 'k1zaehne', grade: 1, kind: 'Anleitung', title: 'Zähne putzen',
-    text: 'Nimm deine Zahnbürste. Gib etwas Zahnpasta darauf. Putze erst die Kauflächen, dann außen und innen. Zum Schluss spuckst du den Schaum aus.',
+    text: 'Nimm dei·ne Zahn·bürs·te. Gib et·was Zahn·pas·ta da·rauf. Put·ze erst die Kau·flä·chen, dann au·ßen und in·nen. Zum Schluss spuckst du den Schaum aus.',
     qs: [
       { q: 'Was kommt auf die Zahnbürste?', o: ['Zahnpasta', 'Seife', 'Honig'], a: 0 },
       { q: 'Was machst du zum Schluss?', o: ['Den Schaum ausspucken', 'Die Zähne zählen', 'Ins Bett gehen'], a: 0 },
     ] },
   { id: 'k1schnee', grade: 1, kind: 'Erzählung', title: 'Der Schneemann',
-    text: 'Heute liegt Schnee. Lea und Ben bauen einen Schneemann. Er bekommt eine Möhre als Nase und einen alten Hut. Dann gehen die Kinder ins Haus.',
+    text: 'Heu·te liegt Schnee. Le·a und Ben bau·en ei·nen Schnee·mann. Er be·kommt ei·ne Möh·re als Na·se und ei·nen al·ten Hut. Dann ge·hen die Kin·der ins Haus.',
     qs: [
       { q: 'Was bauen Lea und Ben?', o: ['Einen Schneemann', 'Eine Sandburg', 'Ein Vogelhaus'], a: 0 },
       { q: 'Was ist die Nase?', o: ['Eine Möhre', 'Ein Stein', 'Ein Apfel'], a: 0 },
     ] },
   { id: 'k1biene', grade: 1, kind: 'Sachtext', title: 'Die Biene',
-    text: 'Die Biene fliegt von Blüte zu Blüte. Dort sammelt sie süßen Nektar. Im Bienenstock machen die Bienen daraus Honig.',
+    text: 'Die Bie·ne fliegt von Blü·te zu Blü·te. Dort sam·melt sie sü·ßen Nek·tar. Im Bie·nen·stock ma·chen die Bie·nen da·raus Ho·nig.',
     qs: [
       { q: 'Was sammelt die Biene?', o: ['Nektar', 'Sand', 'Blätter'], a: 0 },
       { q: 'Was machen die Bienen aus dem Nektar?', o: ['Honig', 'Milch', 'Saft'], a: 0 },
     ] },
   { id: 'k1spiess', grade: 1, kind: 'Rezept', title: 'Der Obstspieß',
-    text: 'Du brauchst eine Banane, Trauben und einen Spieß aus Holz. Mama oder Papa schneidet die Banane in Stücke. Dann steckst du Banane und Trauben auf den Spieß.',
+    text: 'Du brauchst ei·ne Ba·na·ne, Trau·ben und ei·nen Spieß aus Holz. Ma·ma o·der Pa·pa schnei·det die Ba·na·ne in Stü·cke. Dann steckst du Ba·na·ne und Trau·ben auf den Spieß.',
     qs: [
       { q: 'Was brauchst du außer dem Obst?', o: ['Einen Spieß aus Holz', 'Einen Löffel', 'Einen Topf'], a: 0 },
       { q: 'Wer schneidet die Banane?', o: ['Mama oder Papa', 'Du allein', 'Niemand'], a: 0 },
@@ -294,4 +295,5 @@ const TEXTE = [
       { q: 'Wie viele Verse hat eine Strophe?', o: ['6 Verse', '2 Verse', '12 Verse'], a: 0 },
     ] },
 ];
+TEXTE.forEach((t) => { if (t.text.includes('·')) { t.syl = t.text; t.text = t.text.replace(/·/g, ''); } });
 if (typeof module !== 'undefined') module.exports = TEXTE;

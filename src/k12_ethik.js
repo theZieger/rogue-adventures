@@ -686,9 +686,10 @@ const K12E = (() => {
     { id: 'stampfen', noun: 'Stampfen', svg: ln('M30 8 V24 M70 8 V24', 2.5, '#9AA3B8') + rect(38, -2, 24, 52, '#5B6CFF', 3) + lit('M43 4 V44', 2)
       + sh('M34 48 H64 V56 Q82 56 86 66 Q88 74 80 74 H32 Q26 74 26 66 V54 Q26 48 34 48 Z', RED) + rect(24, 72, 64, 7, EBONY, 3, 2) + ln('M4 84 H96', 3)
       + ln('M16 78 L6 70 M20 72 L16 62 M92 76 L98 68 M90 68 L92 60', 2.5, '#FF8A3D') },
-    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(36, 80, 30, 20, BLUE, 3) + lit('M41 84 V96', 2)
-      + tube('M60 52 L78 24', 9, SKIN1) + oval(68, 60, 7, 5, SKIN1, 2.2) + oval(68, 71, 7, 5, SKIN1, 2.2)
-      + tube('M42 66 Q26 58 28 40', 11, SKIN1) + tube('M52 56 Q52 28 32 36', 9, SKIN1) + rect(34, 48, 34, 36, SKIN1, 12, 2.2) + ln('M22 32 L13 26 M28 26 L24 15 M20 42 L9 43', 3, '#FF8A3D') },
+    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(46, 84, 30, 16, BLUE, 3) + lit('M51 88 V96', 2)
+      + tube('M66 52 Q58 26 40 18', 9, SKIN1) + rect(42, 48, 38, 38, SKIN1, 13, 2.2) + oval(78, 60, 7, 5.5, SKIN1, 2.2, -10) + oval(78, 72, 7, 5.5, SKIN1, 2.2, -10)
+      + tube('M50 76 Q34 70 30 50', 11, SKIN1) + tube('M58 56 Q46 40 33 43', 9, SKIN1)
+      + sh(star(15, 44, 9, 3.6), GOLD, 2) + ln('M18 28 L12 21 M16 60 L10 66 M28 26 L28 17', 3, '#FF8A3D') },
     { id: 'patschen', noun: 'Patschen', svg: rect(10, 6, 36, 100, '#5B6CFF', 16) + rect(54, 6, 36, 100, '#5B6CFF', 16) + lit('M16 20 V90 M60 20 V90', 2)
       + at(28, 34, 180, 1.15, hand) + at(72, 34, 180, 1.15, left) + ln('M14 14 Q28 4 42 14 M58 14 Q72 4 86 14', 2.5, '#FF8A3D') },
   ];
