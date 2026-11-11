@@ -6,7 +6,7 @@ const MK = require('../src/knowledge.js');
 const fail = (m) => { if (!fails.includes(m)) fails.push(m); };
 const UNITS = { zahlen20: 20, formen1: 20, zahlen100: 100, malteilen: 100, groessen2: 100 };
 // Kommaschreibweise and money in cent go past 100 (1,35 € = 135 ct)
-const OVER_100 = ['gr2_geld2_komma', 'gr2_geld2_gemischt', 'gr2_laenge2_komma', 'gr2_laenge2_zwei'];
+const OVER_100 = ['gr2_laenge2_komma', 'gr2_laenge2_zwei'];
 const tags = (html, cls) => [...html.matchAll(/<[a-z]+\b[^>]*>/g)].map((m) => m[0]).filter((t) => new RegExp(`class="${cls}"`).test(t))
   .map((t) => Object.fromEntries([...t.matchAll(/data-([a-z0-9-]+)="([^"]*)"/g)].map((a) => [a[1], a[2]])));
 const dv = (svg) => [...svg.matchAll(/data-v="([^"]*)"/g)].map((m) => m[1]);
@@ -58,7 +58,7 @@ function solve(q) {
     const rows = [...svg.matchAll(/<g class="tally" data-n="(\d+)"><text[^>]*>([^<]+)</g)].map((m) => ({ n: +m[1], label: m[2] }));
     const hit = rows.filter((r) => ask.includes(r.label === 'Fahrrad' || r.label === 'Bus' || r.label === 'Auto' ? 'dem ' + r.label : r.label)); return hit.length === 1 ? [hit[0].n] : null;
   }
-  if (svg.includes('class="money"')) { const ct = sum(tags(svg, 'money').map((x) => +x['ct'])); return q.labels[0] === '€' ? [ct / 100] : [ct]; }
+  if (svg.includes('class="money"')) { const ct = sum(tags(svg, 'money').map((x) => +x['ct'])); return q.labels.join() === '€,ct' ? [Math.floor(ct / 100), ct % 100] : q.labels[0] === '€' ? [ct / 100] : [ct]; }
   if (svg.includes('class="thing"')) { const r = tags(svg, 'thing')[0]; return [(r.x1 - r.x0) / r.px]; }
   if (svg.includes('class="arrow"')) { const at = +tags(svg, 'arrow')[0].at; const labels = nums(svg.replace(/<[^>]+>/g, ' ')); return labels[0] < at && at < labels[2] ? [at] : null; }
   if (svg.includes('data-day')) {
@@ -81,6 +81,7 @@ function solve(q) {
     if (q.op === ':') return n[0] % n[1] ? null : [n[0] / n[1]];
   }
   if (q.labels && q.labels[0] === 'Zehner') return [Math.floor(+q.text / 10), +q.text % 10];
+  if (q.labels && q.labels.join() === '€,ct' && q.text) { const m = plain(q.text).match(/^(\d+),(\d\d) €$/); return m ? [+m[1], +m[2]] : null; }
   if (ask === 'Verdopple die Zahl.') return [2 * +q.text];
   if (ask === 'Halbiere die Zahl.') return +q.text % 2 ? null : [+q.text / 2];
   const e = q.text && expr(q.text); return e === undefined ? undefined : [e];
