@@ -1071,11 +1071,16 @@ const MK = (() => {
   const EN_NEAR = ['Schule|In der Stadt', 'Hobbys|In der Stadt', 'Verkehrsmittel|In der Stadt', 'Essen und Trinken|Tiere'];
   const near = (a, b) => EN_NEAR.includes(a + '|' + b) || EN_NEAR.includes(b + '|' + a);
   const others = (list, x, n) => shuffle(list.filter((y) => y !== x)).slice(0, n);
+  // parents switch topics off (opts.enOff); a task type with nothing left keeps all topics
+  const enOff = (opts) => (opts && opts.enOff) || [];
+  // a sentence belongs to every topic whose words it uses (also with plural -s); without one it is „Allgemein“ and always on
+  const EN_WORDS = Object.entries(EN_THEMES).flatMap(([t, list]) => list.map(([en]) => [t, new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(e?s)?\\b`, 'i')]));
+  const enTopics = (...texts) => { const s = texts.join(' '); return [...new Set(EN_WORDS.filter(([, re]) => re.test(s)).map(([t]) => t))]; };
   const T_POOL = [];
   // numbers have their own task, so the translation tasks leave them out
-  Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([, list]) => list.forEach(([en, de]) => {
-    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0 });
-    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', q: `Wie heißt „${de}“ auf Englisch?`, o: [en].concat(others(list.map((x) => x[0]), en, 2)), a: 0 });
+  Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([t, list]) => list.forEach(([en, de]) => {
+    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0 });
+    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o: [en].concat(others(list.map((x) => x[0]), en, 2)), a: 0 });
   }));
   const NUM = Object.fromEntries(E.zahlen.map(([en, , n]) => [n, en]));
   // 21 to 99 follow the English pattern: tens, hyphen, ones (forty-two)
@@ -1091,13 +1096,16 @@ const MK = (() => {
     const c = weightedPick(E.farben.map((f) => ({ id: 'enf_' + f[0], f })), know, seq).f;
     return { kind: 'choice', mod: 'farbe', tier: 1, group: 'farbe:1', note: 'farben', q: 'Welche Farbe ist das? Tippe auf das englische Wort.', pic: swatch(c[2]), options: shuffle([c[0]].concat(others(E.farben.map((f) => f[0]), c[0], 2))), answer: c[0], why: `${c[0]} heißt ${c[1]}.`, qid: 'enf_' + c[0], cols: 1 };
   }
-  function oddTask() {
-    const names = Object.keys(EN_THEMES); const a = pick(names.filter((t) => EN_THEMES[t].length >= 3)); const b = pick(names.filter((t) => t !== a && !near(a, t)));
+  function oddTask(opts) {
+    const pairs = (names) => names.flatMap((a) => (EN_THEMES[a].length >= 3 ? names.filter((b) => b !== a && !near(a, b)).map((b) => [a, b]) : []));
+    const all = Object.keys(EN_THEMES); const on = pairs(all.filter((t) => !enOff(opts).includes(t))); const [a, b] = pick(on.length ? on : pairs(all));
     const three = shuffle(EN_THEMES[a]).slice(0, 3).map((x) => x[0]); const odd = pick(EN_THEMES[b])[0];
     return { kind: 'choice', mod: 'odd', tier: 1, group: 'odd:1', note: 'odd', q: 'Welches Wort passt nicht zu den anderen?', options: shuffle(three.concat([odd])), answer: odd, why: `„${odd}“ gehört zum Thema ${b}, die anderen zum Thema ${a}.`, qid: 'eno_' + three.concat([odd]).sort().join('_'), cols: 2 };
   }
-  function reiheTask(tier) {
-    const months = tier >= 2; const list = months ? E.monate : E.tage;
+  function reiheTask(tier, opts) {
+    let months = tier >= 2; const off = (m) => enOff(opts).includes(m ? 'Monate' : 'Wochentage');
+    if (off(months) && !off(!months)) { months = !months; tier = months ? 2 : 1; }
+    const list = months ? E.monate : E.tage;
     const idx = shuffle(list.map((_, i) => i)).slice(0, 4).sort((x, y) => x - y); const items = idx.map((i) => ({ id: (months ? 'm' : 'd') + i, text: list[i][0] }));
     return { kind: 'order', mod: 'reihe', tier, group: 'reihe:' + tier, note: 'reihe', items, order: items.map((x) => x.id), display: shuffle(items), qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''),
       q: months ? `Tippe die Monate der Reihe nach an. Das Jahr beginnt mit ${E.monate[0][0]}.` : `Tippe die Wochentage der Reihe nach an. Die Woche beginnt mit ${E.tage[0][0]}.` };
@@ -1151,13 +1159,13 @@ const MK = (() => {
   ];
 
   const D_POOL = [];
-  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', q: s, o: [r, f1, f2], a: 0 }));
+  E.luecken.forEach(([s, r, f1, f2]) => D_POOL.push({ id: 'enl_' + s, mod: 'luecke', g: 'luecke', en: enTopics(s, r, f1, f2), q: s, o: [r, f1, f2], a: 0 }));
   // wrong meanings come first from sentences that start like the right one (I have got …), so the words matter
   E.saetze.forEach(([en, de]) => {
     const first = en.split(' ')[0]; const like = shuffle(E.saetze.filter((x) => x[0] !== en && x[0].split(' ')[0] === first)); const rest = shuffle(E.saetze.filter((x) => x[0] !== en && !like.includes(x)));
-    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0 });
+    D_POOL.push({ id: 'enb_' + en, mod: 'bedeutung', g: 'saetze', en: enTopics(en), q: `Was bedeutet: „${en}“`, o: [de].concat(like.concat(rest).slice(0, 2).map((x) => x[1])), a: 0 });
   });
-  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0 }));
+  E.fragen.forEach(([q, r, f1, f2]) => D_POOL.push({ id: 'enq_' + q, mod: 'frage', g: 'fragen', en: enTopics(q, r, f1, f2), q: `Welche Antwort passt? „${q}“`, o: [r, f1, f2], a: 0 }));
   const D_NOTES = {
     luecke: { title: 'Lückensätze', lines: ['Lies den ganzen Satz, bevor du wählst.', 'Vor a, e, i, o, u steht an statt a: an apple, an egg, aber a banana.', 'I am, you are, he is, she is: I am nine. My name is Tom.'] },
     saetze: { title: 'Sätze verstehen', lines: ['Englische Sätze übersetzt man nicht Wort für Wort.', 'I have got a dog. heißt: Ich habe einen Hund.', 'Let’s … heißt: Lasst uns … Let’s play a game. – Lasst uns ein Spiel spielen.'] },
@@ -1225,6 +1233,7 @@ const MK = (() => {
     let cands = pool.filter((p) => p.mod === mod);
     const atTier = cands.filter((p) => (p.t || 1) === tier); if (atTier.length) cands = atTier; // t: 2 marks the harder questions of a module
     if (opts && opts.g) { const topic = cands.filter((p) => p.g === opts.g); if (topic.length) cands = topic; }
+    const onTopic = cands.filter((p) => !(p.en || []).some((t) => enOff(opts).includes(t))); if (onTopic.length) cands = onTopic;
     const e = weightedPick(cands, know, seqNow);
     if (mod === 'parts') {
       const part = PARTS.find((p) => p.id === e.part);
@@ -1281,10 +1290,10 @@ const MK = (() => {
       order: [{ items: F_SCHLICHTEN, note: 'streit', q: 'So löst ihr einen Streit: Tippe die Schritte in der richtigen Reihenfolge an.', qid: 'gfs_' }] },
     woerterwerkstatt: { modules: W_MODULES, starters: W_STARTERS, extra: W_EXTRA, enemies: W_ENEMIES, events: W_EVENTS, moves: W_MOVES, tut: W_TUT, notes: W_NOTES, pool: W_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Wörterwerkstatt', icon: '✏️', sub: 'Richtig schreiben: doppelte Mitlaute, Verlängern, Wortfamilie, Trennen, Komma, wörtliche Rede' },
     satzbaustelle: { modules: S_MODULES, starters: S_STARTERS, extra: S_EXTRA, enemies: S_ENEMIES, events: S_EVENTS, moves: S_MOVES, tut: S_TUT, notes: S_NOTES, pool: S_POOL, worlds: 1, grade: 3, subject: 'Deutsch', title: 'Die Satzbaustelle', icon: '🏗️', sub: 'Wortarten, Zeitformen, Satzglieder, Ersatz- und Weglassprobe, Redensarten' },
-    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Die Teestube', icon: '🫖', sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
-      gen: (mod, tier, know, seq) => (mod === 'zahl' ? zahlTask(tier, know, seq) : mod === 'farbe' ? farbeTask(know, seq) : mod === 'odd' ? oddTask() : null) },
-    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Der Doppeldecker', icon: '🚌', sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
-      gen: (mod, tier) => (mod === 'reihe' ? reiheTask(tier) : null) },
+    teestube: { modules: T_MODULES, starters: T_STARTERS, extra: T_EXTRA, enemies: T_ENEMIES, events: T_EVENTS, moves: T_MOVES, tut: T_TUT, notes: T_NOTES, pool: T_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Die Teestube', icon: '🫖', rank: 1, sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
+      gen: (mod, tier, know, seq, opts) => (mod === 'zahl' ? zahlTask(tier, know, seq) : mod === 'farbe' ? farbeTask(know, seq) : mod === 'odd' ? oddTask(opts) : null) },
+    doppeldecker: { modules: D_MODULES, starters: D_STARTERS, extra: D_EXTRA, enemies: D_ENEMIES, events: D_EVENTS, moves: D_MOVES, tut: D_TUT, notes: D_NOTES, pool: D_POOL, worlds: 1, grade: 3, subject: 'Englisch', title: 'Der Doppeldecker', icon: '🚌', rank: 2, sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
+      gen: (mod, tier, know, seq, opts) => (mod === 'reihe' ? reiheTask(tier, opts) : null) },
     kartoffel: { modules: K_MODULES, starters: K_STARTERS, extra: K_EXTRA, enemies: K_ENEMIES, events: K_EVENTS, moves: K_MOVES, tut: K_TUT, notes: K_NOTES, pool: K_POOL, worlds: 2, worldAttacks: K_WORLD_ATTACKS, grade: 3, subject: 'Sachkunde', title: 'Die Kartoffel-Werkstatt', icon: '🥔', sub: 'Pflanze, Herkunft, Ernte, Käfer, Wörter, Märchen', school: true },
   };
   return { MODES, PARTS, GROW, STORY, L_POOL, K_POOL, KJ_POOL, F_POOL, L_EVENTS_ORDER, KJ_GEBOTE, KJ_STORY, KJ_OSTERWEG, KJ_JAHR, F_SCHLICHTEN, W, SAETZE, E, EN_THEMES, numWord, CROPS, GARDEN_POOL, gardenQuestion, generate, record, shuffle, pick, rnd, weightedPick };

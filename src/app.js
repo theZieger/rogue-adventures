@@ -2,17 +2,17 @@
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
   // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES.
   const MODES = Object.assign({
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
-    jahrmarkt: MJ.MODE,
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 },
+    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 },
+    jahrmarkt: Object.assign({ rank: 2 }, MJ.MODE),
   }, MK.MODES);
   // the Monsterbuch and the hero lists keep this order; new units follow in the order they register
   const FIRST = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
   const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
-  // the title screen builds itself from grade and subject of the units
+  // the title screen builds itself from grade and subject of the units; `rank` orders the themes of a subject from easy to hard
   const SUBJECTS = { Mathe: '🔢', Deutsch: '📖', Ethik: '🕊️', Sachkunde: '🌱', Musik: '🎵', Englisch: '💬' };
   const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort((a, b) => a - b).map((grade) => ({ grade, label: 'Klasse ' + grade,
-    subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject) })).filter((x) => x.modes.length) }));
+    subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject).sort((a, b) => (MODES[a].rank || 0) - (MODES[b].rank || 0)) })).filter((x) => x.modes.length) }));
   let mode = 'math';
   const CFG = () => MODES[mode];
   const MODULES_OF = () => CFG().modules;
@@ -85,12 +85,18 @@
   (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
   meta = normMeta(meta);
   let run = null;
-  const curGrade = () => CURRICULUM.find((g) => g.grade === meta.grade) || CURRICULUM[0];
-  const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
+  // hidden in the parent area: 'grade:<n>' for a class, 'extra:<name>' for an extra (EXTRAS), 'en:<topic>' for an English topic
+  const grades = () => CURRICULUM.filter((g) => !meta.hidden.includes('grade:' + g.grade));
+  const curGrade = () => grades().find((g) => g.grade === meta.grade) || grades()[0] || CURRICULUM[0];
+  const gradeTabs = () => grades().length < 2 ? '' : `<div class="grades" role="group" aria-label="Klasse">${grades().map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
   // switched off in the parent area; at least two stay on per mode
   const offList = (m) => (isObj(meta.off) && Array.isArray(meta.off[m]) ? meta.off[m] : []);
   // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
   const shown = (m) => !meta.hidden.includes('mode:' + m);
+  const EXTRAS = { garten: ['Schulgarten', 'Beete bepflanzen und ernten.'], huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'], kreisel: ['Kreisel-Arena', 'Kreiselkämpfe auf der Karte und „Kreisel bauen“ im Stempelheft.'],
+    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
+  const extraOn = (k) => !meta.hidden.includes('extra:' + k);
+  const enOff = () => meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
   const heroShown = (m, s) => !meta.hidden.includes(`hero:${m}:${s.id}`);
   const visSubjects = () => curGrade().subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) })).filter((sub) => sub.modes.length);
   const fightMods = (m) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
@@ -98,7 +104,7 @@
   const inWorld = (m, k) => { const c = MODES[m].modules[k].worldCap; return c[Math.min(run && run.mode === m ? run.world : 1, c.length) - 1] > 0; };
   const enabledMods = (m) => { m = m || mode; const all = fightMods(m).filter((k) => inWorld(m, k)); const on = all.filter((k) => !offList(m).includes(k)); return on.length >= 2 ? on : all; };
   // coins and the market only exist in Zahlenquest, and only while parents leave „Geld“ on
-  const marketOn = () => mode === 'math' && !offList('math').includes('geld');
+  const marketOn = () => mode === 'math' && !offList('math').includes('geld') && extraOn('markt');
   const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
   // a saved run is only removed by endRun or a new run, never as a side effect of saving
   const saveAll = () => { save(KEY_META, meta); if (run && !run.over) save(KEY_RUN_FOR(run.mode), run); };
@@ -205,7 +211,7 @@
   const goalDone = (g) => (weekly().progress[g.i] || 0) >= g.n;
   let weeklyNews = false; // the card waits for the next calm screen (map or title)
   function weeklyStep(kind, mod) {
-    const w = weekly(); if (w.done) return; const goals = weeklyGoals();
+    const w = weekly(); if (w.done || !extraOn('wochenziele')) return; const goals = weeklyGoals();
     goals.forEach((g) => { if (g.m === mode && g.kind === kind && (kind !== 'right' || g.mod === mod)) w.progress[g.i] = Math.min(g.n, (w.progress[g.i] || 0) + 1); });
     if (goals.every(goalDone)) { w.done = true; meta.stampCard[w.week] = 2; giveStamps(10); meta.progressAt = new Date().toISOString(); weeklyNews = true; }
   }
@@ -225,7 +231,7 @@
       else if (mode === 'bau') { t = MQ.BAU.generate(mod, tier); sig = t.sig; }
       else if (CFG().numGen) { t = CFG().numGen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.text; }
       // generated units may give one qid to a whole kind of task, so the question and answer tell repeats apart
-      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run ? run.world : 1 }); sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|'); }
+      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run ? run.world : 1, enOff: enOff() }); sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|'); }
       if (!rec.includes(sig)) break;
     }
     rec.push(sig); if (rec.length > 8) rec.shift();
@@ -506,12 +512,11 @@
     render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
-        ${weeklyCard()}
-        ${gradeTabs()}${gardenCard()}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`; }).join('')}</div>
-        <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
-        <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
-        <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
-        <div class="row"><button class="btn ghost" id="feedback">Idee senden</button></div>
+        ${extraOn('wochenziele') ? weeklyCard() : ''}
+        ${gradeTabs()}${extraOn('garten') ? gardenCard() : ''}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`; }).join('')}</div>
+        ${[`<button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>`, '<button class="btn ghost" id="stamps">Stempelheft</button>', extraOn('huette') && '<button class="btn ghost" id="hut">Meine Hütte</button>',
+          extraOn('garten') && '<button class="btn ghost" id="garden">Schulgarten</button>', extraOn('duell') && '<button class="btn ghost" id="duel">Duell zu zweit</button>', `<button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button>`,
+          '<button class="btn ghost" id="feedback">Idee senden</button>'].filter(Boolean).map((b, i, all) => (i % 2 ? '' : `<div class="row">${b}${all[i + 1] || ''}</div>`)).join('')}
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
     $('#parents').onclick = () => askPin(screenParent);
@@ -520,18 +525,22 @@
     $('#dex').onclick = screenDex;
     $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
     $('#news').onclick = screenNews;
-    $('#duel').onclick = () => screenDuel([]);
-    $('#hut').onclick = screenHut; $('#garden').onclick = screenGarden; if ($('#harvest')) $('#harvest').onclick = screenGarden;
+    const bind = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+    bind('#duel', () => screenDuel([])); bind('#hut', screenHut); bind('#garden', screenGarden); bind('#harvest', screenGarden);
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
-    $('#weekly').onclick = screenWeekly;
+    bind('#weekly', screenWeekly);
     showWeeklyNews();
   }
   const subjectOf = (m) => visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
-  const openGoals = (m) => weeklyGoals().filter((g) => g.m === m && !goalDone(g));
+  const openGoals = (m) => (extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : []);
+  const practised = (m) => Object.values(meta.stats[m]).some((x) => x.t > 0);
+  // no locks: a ranked subject marks its easiest theme and points from a harder one to the easiest one not practised yet
   function screenSubject(sub) {
-    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${openGoals(m).map((g) => `<p class="goalbadge">⭐ Wochenziel: ${esc(goalText(g))}</p>`).join('')}<div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    const ranked = sub.modes.some((m) => MODES[m].rank);
+    const path = (m, i) => { const e = ranked && sub.modes.slice(0, i).find((x) => !practised(x)); return (ranked && !i ? '<span class="startbadge">Hier anfangen</span>' : '') + (e ? `<p class="pathhint">Leichter geht es mit „${esc(MODES[e].title)}“ los.</p>` : ''); };
+    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m, i) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(m).map((g) => `<p class="goalbadge">⭐ Wochenziel: ${esc(goalText(g))}</p>`).join('')}<div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenSubject(sub); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#back').onclick = screenTitle;
@@ -767,10 +776,10 @@
     if (marketOn()) { const fl = m.slice(2, -2).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
     // the week's boss takes the place of one fight on floor 5 or 6: once per adventure, until it is beaten this week
     const fights = m.slice(-4, -2).flat().filter((n) => n.t === 'fight');
-    if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
+    if (extraOn('wochenziele') && !run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
     if (readsIn(mode)) { const fights = m.slice(1, -2).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
     // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
-    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
+    const tf = extraOn('kreisel') && ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -1176,7 +1185,7 @@
     const elite = kind === 'elite'; const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
     if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null];
       // chests in world 2 and 3 hold the Flammenring and the Kugelspitze, once
-      const part = elite ? null : Object.keys(TOP).flatMap((s) => TOP[s].filter((p) => p.chest === run.world).map((p) => `top-${s}-${p.id}`)).find((k) => !meta.owned[k]);
+      const part = elite || !extraOn('kreisel') ? null : Object.keys(TOP).flatMap((s) => TOP[s].filter((p) => p.chest === run.world).map((p) => `top-${s}-${p.id}`)).find((k) => !meta.owned[k]);
       if (part) { meta.owned[part] = true; run.node.part = part; meta.progressAt = new Date().toISOString(); }
       saveAll(); }
     const found = run.node && typeof run.node.part === 'string' && partOf(run.node.part);
@@ -1364,7 +1373,7 @@
     meta.wins++; giveStamps(10); weeklyStep('win'); meta.progressAt = new Date().toISOString(); if (mode === 'kartoffel') meta.owned['beet-4'] = true;
     const roof = CFG().worlds >= 3 && !meta.owned['hut-dachfenster']; if (roof) meta.owned['hut-dachfenster'] = true; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
-    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}${roof ? '<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>' : ''}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}${roof && extraOn('huette') ? '<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>' : ''}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenDex() {
@@ -1383,15 +1392,15 @@
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du geübt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', { outfit: 'strohhut' })}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
-      <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
-      ${REWARDS.map(row).join('')}
-      ${benchHtml()}
+      ${extraOn('kreisel') ? `<div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>` : ''}
+      ${REWARDS.filter((r) => extraOn('huette') || !r.id.startsWith('hut-')).map(row).join('')}
+      ${extraOn('huette') ? benchHtml() : ''}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
     $('#kk').onclick = () => screenWardrobe();
-    $('#kb').onclick = () => screenTop();
+    if ($('#kb')) $('#kb').onclick = () => screenTop();
     app.querySelectorAll('[data-craft]').forEach((b) => { b.onclick = () => screenCraft(b.dataset.craft); });
-    if (jump && $('#werkbank').scrollIntoView) $('#werkbank').scrollIntoView();
+    if (jump && $('#werkbank') && $('#werkbank').scrollIntoView) $('#werkbank').scrollIntoView();
     app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
       const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel${r.stein ? ` und ${r.stein} Stein` : ''}. Danach hast du noch ${meta.stamps - r.price} Stempel.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
@@ -1527,10 +1536,10 @@
       ${two ? '<h3>Erstes Zimmer</h3>' : ''}${hutSVG(1)}${two ? `<h3>Zweites Zimmer</h3>${hutSVG(2)}` : ''}
       <div class="card">${built.length ? '' : '<p>Noch ist deine Hütte leer. Möbel baust du an der Werkbank im Stempelheft.</p>'}${meta.owned['hut-regal'] ? `<p>Im Regal: ${n.dex} im Monsterbuch, ${n.tops} Kreiselteile, ${n.notes} Notizkarten.</p>` : ''}
       ${built.length && built.length < 5 ? '<p class="pnote">Die gestrichelten Plätze warten noch auf Möbel von der Werkbank.</p>' : ''}${two ? '' : '<p class="pnote">Ein zweites Zimmer gibt es im Stempelheft für 30 Stempel und 12 Stein.</p>'}${meta.owned['hut-dachfenster'] ? '' : '<p class="pnote">Wer Zahlenquest durch alle drei Welten gewinnt, bekommt ein Dachfenster.</p>'}</div>
-      <div class="row"><button class="btn ghost" id="bench">Zur Werkbank</button><button class="btn ghost" id="garden">Schulgarten</button></div>
+      <div class="row"><button class="btn ghost" id="bench">Zur Werkbank</button>${extraOn('garten') ? '<button class="btn ghost" id="garden">Schulgarten</button>' : ''}</div>
       ${two && built.length ? `<div class="card"><h3>Umräumen</h3><div class="stack">${built.map((id) => `<button class="btn small secondary" data-move="${id}">${esc(name(id))} ins ${meta.hut.items.includes(id) ? 'erste' : 'zweite'} Zimmer</button>`).join('')}</div></div>` : ''}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
-    $('#back').onclick = screenTitle; $('#bench').onclick = () => screenStamps(true); $('#garden').onclick = screenGarden;
+    $('#back').onclick = screenTitle; $('#bench').onclick = () => screenStamps(true); if ($('#garden')) $('#garden').onclick = screenGarden;
     app.querySelectorAll('[data-move]').forEach((b) => { b.onclick = () => { const id = b.dataset.move; const h = meta.hut; h.items = h.items.includes(id) ? h.items.filter((x) => x !== id) : h.items.concat(id); saveAll(); screenHut(); }; });
   }
   function screenWardrobe(heroId) {
@@ -1653,7 +1662,7 @@
     const weak = rows.filter((r) => r.t >= 3).sort((a, b) => a.c / a.t - b.c / b.t)[0];
     const done = goals.filter(goalDone).length;
     const text = [`Lernquest, Woche ${wk}`, rows.length ? 'Geübt (richtig von gesamt): ' + rows.map((r) => `${r.label} ${r.c} von ${r.t}`).join(', ') : 'Diese Woche noch nichts geübt.',
-      weak ? `Schwächste Aufgabenart: ${weak.label} (${weak.c} von ${weak.t} richtig)` : '', `Wochenziele: ${done} von ${goals.length} erledigt`].filter(Boolean).join('\n');
+      weak ? `Schwächste Aufgabenart: ${weak.label} (${weak.c} von ${weak.t} richtig)` : '', extraOn('wochenziele') ? `Wochenziele: ${done} von ${goals.length} erledigt` : ''].filter(Boolean).join('\n');
     return { text, wk, rows, goals, done };
   }
   /* ---------- Schulgarten ---------- */
@@ -1738,7 +1747,7 @@
   const ICO = { chart: '<path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/>', book: '<path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h12M9 8h6"/>', sliders: '<path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="3"/><circle cx="8" cy="17" r="3"/>',
     next: '<path d="M9 5l7 7-7 7"/>', back: '<path d="M15 5l-7 7 7 7"/>', warn: '<path d="M12 3l10 18H2zM12 10v5M12 18v.5"/>' };
   const ico = (n) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`;
-  const P_TABS = { overview: ['Überblick', 'chart', { week: 'Diese Woche', all: 'Insgesamt' }], practice: ['Inhalte', 'book', { subjects: 'Fächer', how: 'So lernt Ihr Kind' }], settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', reset: 'Löschen' }] };
+  const P_TABS = { overview: ['Überblick', 'chart', { week: 'Diese Woche', all: 'Insgesamt' }], practice: ['Inhalte', 'book', { subjects: 'Fächer', how: 'So lernt Ihr Kind' }], settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', show: 'Anzeigen', reset: 'Löschen' }] };
   const P_JUMPS = { load: ['settings', 'save'], save: ['settings', 'save'], appsec: ['settings', 'app'] };
   let pAt;
   const tutOf = (m, k, tier) => { const c = MODES[m]; return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier]; };
@@ -1773,7 +1782,7 @@
         const weak = r.rows.filter((x) => x.t >= 3 && x.c / x.t < 0.8).sort((a, b) => a.c / a.t - b.c / b.t).slice(0, 3);
         return card(`Kalenderwoche ${r.wk}`, r.rows.length ? `<p class="plead">${sum('t')} Aufgaben gelöst, ${sum('c')} davon richtig.</p>${note('Gezählt wird seit Montag.')}` : note('Diese Woche wurde noch nichts geübt.'))
           + card('Braucht noch Übung', weak.length ? weak.map((x) => srow(x.icon, x.label, x.c, x.t)).join('') : note(r.rows.some((x) => x.t >= 3) ? 'Im Moment nichts. Alles, was diese Woche geübt wurde, klappt sicher.' : 'Noch zu wenig geübt für eine Auswertung.'))
-          + card('Wochenziele', `${note(`${r.done} von ${r.goals.length} erledigt. Für alle Wochenziele zusammen gibt es 10 Stempel.`)}${r.goals.map((g) => stat(esc(goalText(g)), `${Math.min(goalCount(g), g.n)} von ${g.n}`)).join('')}`)
+          + (extraOn('wochenziele') ? card('Wochenziele', `${note(`${r.done} von ${r.goals.length} erledigt. Für alle Wochenziele zusammen gibt es 10 Stempel.`)}${r.goals.map((g) => stat(esc(goalText(g)), `${Math.min(goalCount(g), g.n)} von ${g.n}`)).join('')}`) : '')
           + (r.rows.length ? card('Alles, was diese Woche geübt wurde', LEGEND + r.rows.map((x) => srow(x.icon, x.label, x.c, x.t)).join('')) : '')
           + card('Wochenbericht als Text', `${note('Zum Weitergeben, zum Beispiel an die Lehrerin oder den Lehrer. Es steht kein Name darin.')}<label for="wtext" class="sr-only">Wochenbericht</label><textarea id="wtext" class="codebox reporttext" rows="6" readonly>${esc(r.text)}</textarea><button class="btn small" id="wcopy">Text kopieren</button><p id="wmsg" role="status" class="pnote"></p>`);
       },
@@ -1789,16 +1798,17 @@
       subjects() {
         const S = curGrade().subjects;
         if (!S[pAt.subj]) return card('', `<p class="plead">Lernquest merkt, was Ihr Kind schon kann, und stellt passende Aufgaben: nicht zu leicht und nicht zu schwer.</p><button class="linkbtn" data-ps="how">So lernt Ihr Kind mit Lernquest</button>`)
-          + (CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : '')
+          + (grades().length > 1 ? card('Klasse', gradeTabs()) : '')
           + card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach. Dort sehen Sie, was jede Aufgabenart übt, und können Themen, Helden und Aufgabenarten ein- oder ausschalten.')}${S.map((s, i) => { const vis = s.modes.filter(shown).length;
             return `<button class="pnav" data-pf="${i}"><span class="ptext"><b>${s.icon} ${esc(s.subject)}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`; }).join('')}`);
         const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = ELTERN.PLAN[m];
         return `<button class="pback" id="pback">${ico('back')}Alle Fächer</button>`
           + (s.modes.length > 1 ? card(`${s.icon} ${esc(s.subject)}`, sw(s.modes.some(shown), `data-hidesub="${pAt.subj}"`, 'Fach anzeigen', '<span>Ausgeschaltet erscheint das ganze Fach nicht mehr auf der Startseite.</span>') + msg)
+            + (s.subject === 'Englisch' ? card('Themen aus dem Unterricht', `${note('Ausgeschaltete Themen kommen in beiden Englisch-Themen nicht mehr vor, auch nicht in Sätzen. Sätze ohne Themenwort bleiben immer an. Mindestens ein Thema bleibt an.')}${Object.keys(MK.EN_THEMES).map((t) => sw(!meta.hidden.includes('en:' + t), `data-hide="en:${esc(t)}"`, esc(t), `<span>${MK.EN_THEMES[t].slice(0, 4).map((x) => esc(x[0])).join(', ')} …</span>`)).join('')}${msg}`) : '')
             + `<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => `<button role="tab" data-pm="${x}" aria-selected="${x === m}" class="${shown(x) ? '' : 'off'}">${MODES[x].icon} ${esc(MODES[x].title)}</button>`).join('')}</div>` : '')
           + card(`${c.icon} ${esc(c.title)}`, `<p>${esc(c.sub)}</p>${plan ? `<p class="pplan"><b>Lehrplan Sachsen:</b> ${esc(plan)}</p>` : ''}${sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen', '<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>')}${msg}`)
           + (c.starters.length > 1 ? card('Helden', `${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, esc(x.names[0]), `<span>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</span>`)).join('')}${msg}`) : '')
-          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
+          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
       },
       how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
         + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Lernquest merkt sich die Stufe. Ein neues Abenteuer beginnt zum Aufwärmen eine Stufe tiefer.</p>')
@@ -1816,6 +1826,8 @@
         + card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>${msg}`)
         + card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)
         + `<p class="center muted">Lernquest, Version ${esc((document.querySelector('meta[name=app-version]') || {}).content || '?')}</p>`,
+      show: () => card('Klassen', `${note('Ausgeschaltete Klassen verschwinden von der Startseite. Mindestens eine bleibt an.')}${CURRICULUM.map((g) => sw(grades().includes(g), `data-hide="grade:${g.grade}"`, esc(g.label), `<span>${g.subjects.map((x) => esc(x.subject)).join(', ')}</span>`)).join('')}${msg}`)
+        + card('Extras', `${note('Ausgeschaltete Extras verschwinden von der Startseite und kommen in neuen Abenteuern nicht mehr vor. Was Ihr Kind dort schon gesammelt hat, bleibt gespeichert.')}${Object.entries(EXTRAS).map(([k, [t, d]]) => sw(extraOn(k), `data-hide="extra:${k}"`, esc(t), `<span>${esc(d)}</span>`)).join('')}`),
       reset: () => card('', `<p class="plead">Hier wird gelöscht. Vor jedem Löschen fragt Lernquest noch einmal nach.</p>${note('Tipp: Sichern Sie vorher den Spielstand unter „Spielstand“.')}`)
         + card('Statistik zurücksetzen', `${note('Löscht nur die Zahlen unter „Überblick“. Stempel, Monsterbuch und laufende Abenteuer bleiben.')}<button class="btn small secondary" id="rstats">Statistik zurücksetzen</button>`)
         + card('Alles löschen', `${note('Setzt Lernquest ganz auf Anfang: Abenteuer, Stempel, Monsterbuch, Statistik und Einstellungen.')}<button class="btn small danger" id="rall">Alles löschen</button>`),
@@ -1876,9 +1888,11 @@
     on('[data-hide]', (b) => {
       const key = b.dataset.hide; const hide = !meta.hidden.includes(key); const [kind, m, id] = key.split(':');
       if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
+      if (hide && kind === 'en' && Object.keys(MK.EN_THEMES).every((t) => t === m || enOff().includes(t))) return say(b, 'Mindestens ein Thema muss an bleiben.');
+      if (hide && kind === 'grade' && grades().length < 2) return say(b, 'Mindestens eine Klasse muss sichtbar bleiben.');
       // a hero that is a reward does not count: it may still be locked
       if (hide && kind === 'hero' && !REWARDS.some((r) => r.hero === id) && !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))) return say(b, 'Mindestens ein Held muss bleiben.');
-      setHidden([key], hide); saveAll(); again(); });
+      setHidden([key], hide); meta.grade = curGrade().grade; saveAll(); again(); });
     on('[data-hidesub]', (b) => {
       const keys = curGrade().subjects[+b.dataset.hidesub].modes.map((m) => 'mode:' + m); const hide = keys.some((k) => !meta.hidden.includes(k));
       if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
