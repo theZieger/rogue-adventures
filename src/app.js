@@ -270,6 +270,8 @@
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}${n.fig || ''}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
+    const steps = () => joined(t.title, ...t.steps);
+    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? n.lines : [])), steps);
     $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
   }
@@ -360,8 +362,8 @@
       if (opts.onResult) opts.onResult(ok); // game state changes now, so a reload can't undo the answer
       inps.forEach((el, i) => { el.classList.remove('active'); const f = fieldOk(values[i], i); if (f !== null) el.classList.add(f ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
-      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
-      else { SFX.wrong(); const corr = task.show || (task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', ')); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); sayResult(fb, true); }
+      else { SFX.wrong(); const corr = task.show || (task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', ')); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; sayResult(fb, false, 'Richtig wäre: ' + corr); }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -374,15 +376,21 @@
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
   const voice = () => (TTS && meta.speak ? TTS.getVoices().find((v) => v.localService && /^de/i.test(v.lang)) : null);
-  const spoken = (t) => t.replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ');
+  const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
   function speak(text) { const v = voice(); if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = 0.9; TTS.speak(u); }
-  // reads the task and its answers; units for Klasse 1 and 2 start reading on their own
-  function readAloud(container, bottom) {
+  // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
+  function speakBtn(anchor, where, text, first = text) {
     if (!voice()) return;
-    $('.tut', container).insertAdjacentHTML('beforebegin', '<button class="tut speak" type="button" aria-label="Vorlesen">🔊</button>');
-    const read = () => speak([...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim()).filter(Boolean).join('. '));
-    $('.speak', container).onclick = read;
-    if (CFG().grade < 3) read();
+    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text()) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
+    if (first && CFG().grade < 3) speak(first());
+  }
+  const joined = (...t) => t.filter(Boolean).join('. ').replace(/([.?!:…“])\. /g, '$1 ');
+  const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html.replace(/<br>/g, '. '); d.querySelectorAll('svg').forEach((s) => s.remove()); return d.textContent; };
+  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : 'Daneben. ' + why));
+  // how a fight ended: the headline and the line under it
+  const sayCard = () => speakBtn($('.card'), 'afterbegin', () => joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)));
+  function readAloud(container, bottom) {
+    speakBtn($('.tut', container), 'beforebegin', () => joined(...[...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim())));
   }
 
   /* ---------- Choice / order / parts tasks ---------- */
@@ -396,6 +404,7 @@
       if (opts.onResult) opts.onResult(ok);
       const more = task.more ? `<small>Herkunft: ${esc(task.more)}</small>` : ''; // where a saying comes from, after every answer
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔${more}</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small>${more}</div>`;
+      sayResult(fb, ok, plain(extraHtml));
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
@@ -863,6 +872,7 @@
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`, quiet);
     announce(b.log.replace(/<[^>]+>/g, ''));
+    const log = () => plain(b.log); speakBtn($('.log'), 'afterbegin', log, !quiet && log); // Klasse 1 and 2 hear only how a fight starts
     delete b.clash; delete b.boost; // the clash plays once, on this render
     if (b.phase === 'choose') renderAttackChoice(b);
   }
@@ -985,6 +995,7 @@
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${heroSVG(heroSpec(), run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(heroSpec(), run.hero.evo, 'after')}</div><p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
     render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    sayCard();
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
@@ -1085,6 +1096,7 @@
     const r = b.enemy.read; const beaten = b.enemy.hp <= 0; const xp = 6 * r.right; const msgs = gainXp(xp);
     nodeDone(); saveAll(); if (r.right) setTimeout(SFX.win, 150);
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? `<p>+${xp} XP</p>` : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    sayCard();
     $('#next').onclick = advance;
   }
 
@@ -1105,6 +1117,7 @@
       ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), onResult: (ok) => { won = ok; recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose); } }, () => showEffect(won ? 'Richtig gelöst' : 'Daneben')));
     };
     if (Number.isInteger(resumeOpt)) return runOpt(resumeOpt);
+    speakBtn($('.card'), 'afterbegin', () => joined(ev.title, ev.text, ev.dilemma && 'Was würdest du tun?', ...ev.opts.map((o) => o.label)));
     app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => runOpt(+btn.dataset.i); });
   }
   function applyEffect(eff) {
@@ -1121,6 +1134,7 @@
   function showEffect(title, opt) {
     const lines = (run.node && run.node.lines) || [];
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${opt && opt.then ? `<p>${esc(opt.then)}</p><p><b>Denk mal nach:</b> ${esc(opt.think)}</p>` : ''}${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    speakBtn($('.card'), 'afterbegin', () => joined(title, opt && opt.then, opt && opt.then && 'Denk mal nach: ' + opt.think, ...lines.map(plain)));
     $('#next').onclick = advance;
   }
 
@@ -1327,6 +1341,7 @@
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null; setTimeout(SFX.lose, 200);
     render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p>${stampLine(b.stamps)}<p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    sayCard();
     $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenVictory() {
