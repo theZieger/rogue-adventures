@@ -22,6 +22,10 @@
             auf keinen Fall in die Lücke passen
   saetze    [englischer Satz, deutsche Bedeutung] für „Was bedeutet das?“
   fragen    [Frage, passende Antwort, unpassende Antwort, unpassende Antwort]
+
+  Themen im Elternbereich: Ein Satz gehört zu jedem Thema, dessen Wörter in ihm oder seinen Antworten vorkommen
+  (auch in der Mehrzahl). Ist eines davon ausgeschaltet, kommt der Satz nicht dran. Sätze ohne Themenwort sind
+  „Allgemein“ und immer an.
 */
 const ENG = {
   woerter: {

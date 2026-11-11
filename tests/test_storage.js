@@ -1476,6 +1476,49 @@ async function backCases() {
   }
 }
 
+// 29. Start order, English topics, hidden classes and extras (all in meta.hidden: 'en:<topic>', 'grade:<n>', 'extra:<name>')
+{
+  const base = { setup: { done: false, skipped: true, at: 'x' } };
+  const subjCard = (p, name) => p.click([...p.d.querySelectorAll('[data-sub]')].find((b) => b.textContent.includes(name)));
+  const p0 = open({ [META]: JSON.stringify(base) }, { now: W49 });
+  check(same(p0.w.__mq.meta.hidden, []) && p0.d.querySelectorAll('[data-grade]').length === 3 && ['#hut', '#garden', '#duel', '#weekly'].every((s) => p0.d.querySelector(s)), 'old save: no new hidden entries, three class tabs and every extra on the title');
+  subjCard(p0, 'Englisch'); const cards = [...p0.d.querySelectorAll('.modecard')];
+  check(cards[0].textContent.includes('Die Teestube') && !!cards[0].querySelector('.startbadge') && !cards[1].querySelector('.startbadge'), 'the first English theme is the Teestube and has the start badge');
+  check(!!cards[1].querySelector('.pathhint') && cards[1].querySelector('.pathhint').textContent.includes('„Die Teestube“') && !!cards[1].querySelector('[data-new="doppeldecker"]'), 'the Doppeldecker points to the Teestube and stays clickable');
+  const p1 = open({ [META]: JSON.stringify(Object.assign({}, base, { stats: { teestube: { en_de: { c: 1, t: 1, hist: [1] } } } })) }); subjCard(p1, 'Englisch');
+  check(!p1.d.querySelector('.pathhint'), 'no hint once the Teestube was practised');
+  p1.click('#back'); subjCard(p1, 'Mathe');
+  check([...p1.d.querySelectorAll('.modecard h3')].map((h) => h.textContent).join('|') === 'Zahlenquest|Der Jahrmarkt|Die Baustelle', 'Mathe in Klasse 3: Zahlenquest, Jahrmarkt, Baustelle');
+  // English topics
+  p0.click('#back'); p0.click('#parents'); p0.subj('Englisch'); p0.click('[data-hide="en:Tiere"]');
+  const off = p0.w.__mq.meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3)); const MK = p0.w.eval('MK');
+  const animal = new RegExp('\\b(' + MK.EN_THEMES.Tiere.map((x) => x[0]).join('|') + ')s?\\b', 'i'); let seen = 0;
+  for (let i = 0; i < 50; i++) { const m = i % 2 ? 'teestube' : 'doppeldecker'; const mods = Object.keys(MK.MODES[m].modules); const q = MK.generate(m, mods[i % mods.length], 1, {}, i, { enOff: off });
+    if (animal.test(q.mod === 'en_de' || q.mod === 'bedeutung' ? q.q : q.mod === 'de_en' ? q.options.join(' ') : [q.q].concat(q.options || []).join(' '))) seen++; }
+  check(same(off, ['Tiere']) && seen === 0, 'Tiere switched off: no animal word in 50 English tasks');
+  const allOff = Object.keys(MK.EN_THEMES).filter((t) => t !== 'Farben').map((t) => 'en:' + t);
+  const p2 = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: allOff })) }); p2.click('#parents'); p2.subj('Englisch'); p2.click('[data-hide="en:Farben"]');
+  check(!p2.w.__mq.meta.hidden.includes('en:Farben') && p2.text().includes('Mindestens ein Thema muss an bleiben.'), 'the last English topic cannot be switched off');
+  p2.click('[data-hidesub]');
+  check(['teestube', 'doppeldecker'].every((m) => p2.w.__mq.meta.hidden.includes('mode:' + m)), 'the whole subject Englisch can be switched off');
+  // classes
+  p0.go('settings', 'show'); p0.click('[data-hide="grade:3"]');
+  check(p0.w.__mq.meta.hidden.includes('grade:3') && p0.w.__mq.meta.grade === 1, 'hiding the current class switches to the first visible one');
+  p0.click('[data-hide="grade:1"]'); p0.click('[data-hide="grade:2"]');
+  check(same(p0.w.__mq.meta.hidden.filter((x) => x.startsWith('grade:')), ['grade:3', 'grade:1']) && p0.w.__mq.meta.grade === 2 && p0.text().includes('Mindestens eine Klasse muss sichtbar bleiben.'), 'the last class cannot be hidden');
+  p0.click('[data-hide="grade:1"]'); p0.click('#back');
+  check(same([...p0.d.querySelectorAll('[data-grade]')].map((b) => b.dataset.grade), ['1', '2']), 'a hidden class leaves the class tabs');
+  // extras
+  const ex = ['garten', 'huette', 'kreisel', 'duell', 'wochenziele', 'markt'].map((k) => 'extra:' + k);
+  const p3 = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: ex })) }, { now: W49 });
+  check(['#hut', '#garden', '#duel', '#weekly'].every((s) => !p3.d.querySelector(s)) && !!p3.d.querySelector('#news') && !!p3.d.querySelector('#feedback'), 'hidden extras leave the title');
+  p3.click('#stamps');
+  check(!p3.d.querySelector('#kb') && !p3.d.querySelector('#werkbank') && !p3.text().includes('Zweites Zimmer'), 'Kreisel and Werkbank leave the Stempelheft');
+  p3.click('#back'); p3.click('[data-new="math"]'); p3.click('.choice'); p3.click('#go');
+  const types = p3.w.__mq.run.map.flat().map((n) => n.t);
+  check(!types.some((t) => ['arena', 'weekboss', 'markt'].includes(t)), 'a new map has no Kreisel-Arena, Wochenboss or Markt when they are hidden');
+}
+
 reloadCases().then(backCases).then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);

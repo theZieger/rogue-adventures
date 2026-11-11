@@ -521,6 +521,8 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .goal.done { opacity: .75; }
 .goalplay { margin-top: 12px; }
 .goalbadge { display: block; background: #FFF1C7; color: #6B4E00; border-radius: 14px; padding: 4px 10px; font-size: 15px; font-weight: 700; margin: 8px 0 0; }
+.startbadge { display: inline-block; background: #DDF4E2; color: #1E6B34; border-radius: 999px; padding: 2px 10px; font-size: 14px; font-weight: 700; margin: 8px 0 0; }
+.pathhint { font-size: 15px; color: var(--ink-soft); margin: 8px 0 0; }
 .weekgo { display: block; margin-top: 8px; font-size: 16px; font-weight: 700; color: var(--ink); text-align: right; }
 .atk .tag.goal { background: #FFF1C7; color: #6B4E00; }
 .goalrow { display: flex; align-items: center; gap: 12px; } .goalrow b { white-space: nowrap; margin-top: 8px; }

@@ -290,6 +290,16 @@ for(const c of Object.keys(K.CROPS)){ if(K.GARDEN_POOL.filter(e=>e.crop===c).len
       if(mod==='reihe'){ const list=(t===1?E.tage:E.monate).map(x=>x[0]); const txt=q.order.map(id=>q.items.find(x=>x.id===id).text);
         if(q.items.length!==4||txt.some((x,i)=>i&&list.indexOf(x)<list.indexOf(txt[i-1]))||txt.some(x=>!list.includes(x))) fail('order '+txt); }
       if(!cfg.tut[q.group]||!cfg.notes[q.note]) fail('tut/note '+q.group+' '+q.note); } } }
+// Englisch: a topic the parents switched off never shows up; with every topic off each task type falls back to all
+{ const names=Object.keys(K.EN_THEMES); const fail=(m)=>fails.push('englisch topics '+m);
+  const shown=(q)=>q.mod==='en_de'||q.mod==='bedeutung'?q.q:q.mod==='de_en'?q.options.join(' '):[q.q,q.text].concat(q.options||[],(q.items||[]).map(x=>x.text)).join(' ');
+  for(const t of names){ const re=new RegExp('\\b('+K.EN_THEMES[t].map(x=>x[0]).join('|')+')(e?s)?\\b','i');
+    // „swimming pool“ (In der Stadt) holds „swimming“ (Hobbys)
+    const multi=names.filter(x=>x!==t).flatMap(x=>K.EN_THEMES[x].map(w=>w[0])).filter(w=>w.includes(' ')); const shownOn=(q)=>multi.reduce((s,w)=>s.split(w).join(' '),shown(q));
+    for(const m of ['teestube','doppeldecker']) for(const mod of Object.keys(K.MODES[m].modules)){ if(mod==='zahl'&&t==='Zahlen'||mod==='farbe'&&t==='Farben') continue;
+      for(let i=0;i<50;i++){ const q=K.generate(m,mod,1+i%K.MODES[m].modules[mod].maxTier,{},++seq,{enOff:[t]}); if(re.test(shownOn(q))) { fail(t+' off, but '+m+'/'+mod+': '+shown(q)); break; } } } }
+  for(const m of ['teestube','doppeldecker']) for(const mod of Object.keys(K.MODES[m].modules)) if(!K.generate(m,mod,1,{},++seq,{enOff:names}).qid) fail('no task with every topic off: '+mod);
+  for(let i=0;i<30;i++){ const q=K.generate('doppeldecker','reihe',1,{},++seq,{enOff:['Wochentage']}); if(!K.E.monate.some(x=>x[0]===q.items[0].text)) fail('weekdays off: months instead'); } }
 // Musik: enough questions, every topic has a note, every picture task has exactly one fitting answer
 { const mu=K.MODES.musik; const f=(m)=>fails.push('musik: '+m);
   if(mu.pool.length<70) f('only '+mu.pool.length+' questions');
