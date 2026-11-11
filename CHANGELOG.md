@@ -8,6 +8,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ## 2026-11-11
 
+### Neu
+- Musik für Klasse 1: „Die Klangkiste“ mit Instrumenten der Klasse, laut und leise und Klängen zum Aufmalen.
+
 ### Verbessert
 - In Klasse 2 tippst du Geldbeträge jetzt in zwei Felder: Euro und Cent getrennt.
 
