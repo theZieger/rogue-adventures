@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="25601b0b0b10">
+<meta name="app-version" content="7ef2f51e5ebd">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -15703,7 +15703,8 @@ const ELTERN = (() => {
 
 </script>
 <script>
-// QR code, byte mode, error correction level L only (enough for a link shown on a screen).
+// QR code, error correction level L only (enough for a link shown on a screen). Byte mode, and alphanumeric mode for
+// the tail of the text made of 0–9, A–Z and space $%*+-./: (the save code in a link): 5.5 bits a character instead of 8.
 const QR = (() => {
   // per version 1–40: error correction codewords per block, number of blocks (level L)
   const ECC = [0, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28, 30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30];
@@ -15716,12 +15717,17 @@ const QR = (() => {
   function rsDivisor(deg) { const r = Array(deg).fill(0); r[deg - 1] = 1; let root = 1; for (let i = 0; i < deg; i++) { for (let j = 0; j < deg; j++) { r[j] = gfMul(r[j], root); if (j + 1 < deg) r[j] ^= r[j + 1]; } root = gfMul(root, 2); } return r; }
   function rsRemainder(data, div) { const r = div.map(() => 0); for (const b of data) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => { r[i] ^= gfMul(c, f); }); } return r; }
 
-  function codewords(bytes) {
-    let v = 1; const fits = (v) => 4 + (v < 10 ? 8 : 16) + bytes.length * 8 <= dataCodewords(v) * 8;
+  const ALNUM = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  function codewords(text) {
+    let cut = text.length; while (cut && ALNUM.includes(text[cut - 1])) cut--;
+    const bytes = Array.from(unescape(encodeURIComponent(text.slice(0, cut))), (c) => c.charCodeAt(0)); const tail = text.slice(cut);
+    const useBytes = bytes.length > 0 || !tail; const alnumCount = (v) => (v < 10 ? 9 : v < 27 ? 11 : 13);
+    let v = 1; const fits = (v) => (useBytes ? 4 + (v < 10 ? 8 : 16) + bytes.length * 8 : 0) + (tail ? 4 + alnumCount(v) + Math.floor(tail.length / 2) * 11 + tail.length % 2 * 6 : 0) <= dataCodewords(v) * 8;
     while (v <= 40 && !fits(v)) v++;
     if (v > 40) return null;
     const bits = []; const put = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
-    put(4, 4); put(bytes.length, v < 10 ? 8 : 16); bytes.forEach((b) => put(b, 8));
+    if (useBytes) { put(4, 4); put(bytes.length, v < 10 ? 8 : 16); bytes.forEach((b) => put(b, 8)); }
+    if (tail) { put(2, 4); put(tail.length, alnumCount(v)); for (let i = 0; i < tail.length; i += 2) { const a = ALNUM.indexOf(tail[i]); if (i + 1 < tail.length) put(a * 45 + ALNUM.indexOf(tail[i + 1]), 11); else put(a, 6); } }
     const cap = dataCodewords(v) * 8; put(0, Math.min(4, cap - bits.length)); put(0, (8 - bits.length % 8) % 8);
     for (let p = 0xEC; bits.length < cap; p ^= 0xEC ^ 0x11) put(p, 8);
     const data = []; for (let i = 0; i < bits.length; i += 8) data.push(parseInt(bits.slice(i, i + 8).join(''), 2));
@@ -15744,7 +15750,7 @@ const QR = (() => {
 
   // dark modules as rows of booleans, or null if the text is too long for a QR code
   function matrix(text) {
-    const cw = codewords(Array.from(unescape(encodeURIComponent(text)), (c) => c.charCodeAt(0)));
+    const cw = codewords(text);
     if (!cw) return null;
     const { v, out } = cw; const n = v * 4 + 17;
     const m = Array.from({ length: n }, () => Array(n).fill(false)); const fn = m.map((r) => r.map(() => false));
@@ -15785,6 +15791,112 @@ const QR = (() => {
     return `<svg class="qr" viewBox="0 0 ${n} ${n}" role="img" aria-label="${label}" shape-rendering="crispEdges"><rect width="${n}" height="${n}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
   }
   return { matrix, svg };
+})();
+
+// Save code LQ2: the save as JSON, made smaller before deflate. Known words become tokens („~“ and their place in WORDS in
+// base 36), an object whose values are objects with the same keys (know, stats, dex) becomes columns, and a column of whole
+// numbers is stored as differences. Everything comes back exactly; a string that starts with „~“ gets a second one.
+const SAVECODE = (() => {
+  // WORDS may only ever grow at the end and never change an entry: a word's place is its token in codes that already exist.
+  // Words contain no „:“ or „|“.
+  const WORDS = (
+    'runs|wins|dex|seenTut|stats|add|hist|sub|mul|riddle|seq|grid|div|rest|rund|dopp|sadd|ssub|smul|teilbar|mauer|bruch|vorrang|zahlwort|kopf|zmul|vergl|' +
+    'ueber|geld|netz|koerper|band|lage|umfang|flaeche|spiegel|bewegung|vieleck|ansicht|def|ord|parts|ground|grow|ltk|wissen|woerter|maerchen|doppel|verl|' +
+    'dehn|gross|zus|abc|rede|stamm|trenn|komma|grund|vokal|sachsen|wortart|zeit|steig|satzglied|umstell|ober|teekessel|ersatz|weglass|pronomen|redensart|' +
+    'praedikat|anrede|begleiter|arten|brot|nutzen|wert|zustand|begriff|kreislauf|vorhersage|regel|forschen|richtung|rose|plan|karte|uhr|laenge|masse|rad|' +
+    'los|tafel|sach|fahrplan|pflanze|stock|entw|herbar|schutz|sinne|geraet|alltag|kultur|medien|pruefen|hilfe|drogen|zeichen|vorfahrt|fehlt|weg|noten|takt|' +
+    'ton|instr|begriffe|komp|laender|welten|en_de|de_en|zahl|farbe|odd|luecke|bedeutung|reihe|frage|menge|zerlegen|vergleich|nachbar|rechnen|geschichte|' +
+    'strahl|formen|muster|bauen|stelle|zehner|gerade|folge|plus|minus|dreieck|bild|teilen|strategie|kalender|daten|zufall|kombi|linien|anlaut|laute|lautpos|' +
+    'silben|alphabet|reim|lesen|besonders|satzz|kleinw|mehrzahl|artikel|familie|feld|satzart|pflege|essen|kleidung|zeiten|tag|wetter|baum|frueh|keim|obst|' +
+    'garten|vogel|zug|heim|hof|klein|licht|himmel|luft|waerme|wasser|gefahr|gefuehl|hoeflich|fest|symbol|jahr|natur|wachsen|spielen|laut|hoch|stimme|form|' +
+    'gegen|know|knowSeq|evoUnlocked|bestWorld|seenNews|grade|off|lastStarter|sound|speak|setup|done|skipped|pin|storage|persisted|warnedAt|stamps|' +
+    'stampsTotal|stampCard|owned|worn|backupAt|progressAt|garden|beds|crop|plantedAt|materials|pantry|hut|rooms|items|top|tip|ring|disc|weekly|week|' +
+    'progress|beaten|tally|hidden|level|type|shape|world|mode|last|floor|map|hero|evo|maxHp|attacks|name|mod|coins|tiers|path|shield|node|enemy|fresh|atk|' +
+    'boss|elite|weekboss|weak|lastMod|reps|used|recent|hint|right|answered|solved|power|start|spin|max|wucht|panzer|math|bau|jahrmarkt|ethik|kirchenjahr|' +
+    'freunde|woerterwerkstatt|satzbaustelle|teestube|doppeldecker|kartoffel|kornkammer|wetterstation|kompass|verkehr|wiese|frueher|ichwelt|musik|zahlen20|' +
+    'formen1|zahlen100|malteilen|groessen2|formen2|laute1|schreiben2|woerter2|koerper1|jahr1|baeume2|tiere2|natur2|ichdu1|feste2|instrumente2|musik1|feuer|' +
+    'normal|trank|grosstrank|schild|beere|keks|lupe|engel|stern|fight|event|treasure|school|labor|taeusch|markt|bergwerk|arena|weizen|roggen|hafer|fuchs|' +
+    'kroete|baer|kauz|biber|holzpferd|schaustellerin|luther|kuesterin|hofbande|graphit|elle|teapot|bigred|knolli|muellerin|wetterwart|kartenzeichnerin|' +
+    'schulaerztin|verkehrspolizistin|imkerin|heimatforscherin|pfadfinderin|dirigentin|held-mathe12|held-deutsch12|held-sachkunde12|held-ethik12|' +
+    'held-musik12|Sumpfbrocken|sumpfbrocken|Regenwicht|regenwicht|Streichholzkopf|streichholzkopf|Krabbelstein|krabbelstein|Dornenigel|dornenigel|' +
+    'Moorschlund|moorschlund|Lavamolch|lavamolch|Nebelqualle|nebelqualle|Ranklerin|ranklerin|Nachtschwinge|nachtschwinge|Glaspanzer|glaspanzer|Ofenwurm|' +
+    'ofenwurm|Frostblitz|frostblitz|Dschungelbrüller|dschungelbrueller|Magmagolem|magmagolem|Schattenwolf|schattenwolf|Sturmreiter|sturmreiter|Rechenkönig|' +
+    'rechenkoenig|Mörtelbatzen|moertelbatzen|Schweißfunke|schweissfunke|Schotterhaufen|schotterhaufen|Pfützenmolch|pfuetzenmolch|Brennnesselwall|' +
+    'brennnesselwall|Mischtrommel|mischtrommel|Kabelnatter|kabelnatter|Staubfahne|staubfahne|Dachmarder|fox|Efeuranke|efeuranke|Rostkäfer|rostkaefer|' +
+    'Abrissbirne|abrissbirne|Die Jahrmarktwespe|jahrmarktwespe|Die Bratwurstglut|bratwurstglut|Der Pfützenspritzer|pfuetzenspritzer|Der Kürbiskopf|' +
+    'kuerbiskopf|Der Autoscooter|autoscooter|Der Ausrufer|ausrufer|Der Kirmesnebel|kirmesnebel|Die Funkenrakete|funkenrakete|Das Zerrbild|zerrbild|' +
+    'Die Zaunranke|zaunranke|Der Hau-den-Lukas|haudenlukas|Der Herr der Geisterbahn|herrdergeisterbahn|Der Zweifler|zweifler|Der Vergessliche|vergesslicher|' +
+    'Der Verwechsler|verwechsler|Der Schwindler|schwindler|Der strenge Richter|richter|Der Ablasshändler|ablasshaendler|Der Streithahn|Der Neidhammel|' +
+    'neidhammel|Der Novembernebel|novembernebel|Die Zugluft|zugluft|Der Kerzenlöscher|kerzenloescher|Die längste Nacht|laengstenacht|Der Spätfrost|' +
+    'spaetfrost|Die Naschkatze|Der Märzsturm|maerzsturm|Der Morgenmuffel|morgenmuffel|Die Mauer|Der alte Winter|bear|Der Zankapfel|zankapfel|Der Neidwurm|' +
+    'neidwurm|Die Flunkerei|flunkerei|Der Großtuer|toad|Das Gerücht|geruecht|Der Keil|keil|Der Buchstabendreher|buchstabendreher|Das Eselsohr|eselsohr|' +
+    'Der Stummel|stummel|Die Kritzelei|kritzelei|Der Radierer|radierer|Der Fehlerteufel|fehlerteufel|Der Satzverdreher|satzverdreher|Der Wortsalat|' +
+    'wortsalat|Das Knickheft|knickheft|Der Punktdieb|punktdieb|Der Spitzer|spitzer|Der Rotstift|rotstift|Die Möwe|moewe|Der Teefleck|teefleck|' +
+    'Der Umklappschirm|umklappschirm|Die Bulldogge|bulldogge|Der Pfeifkessel|pfeifkessel|Der Wappenlöwe|wappenloewe|Die Taube|taube|Die Telefonzelle|' +
+    'telefonzelle|Die Ampel|ampel|Die Hecke|hecke|Die Zugbrücke|zugbruecke|Der Uhrturm|uhrturm|Blattlaus|blattlaus|Drahtwurm|drahtwurm|Wühlmaus|wuehlmaus|' +
+    'Fäulewolke|faeulewolke|Käferlarve|kaeferlarve|Kartoffelkäfer|kartoffelkaefer|Blattfresser|blattfresser|Hagelwolke|hagelwolke|Ackerteufel|ackerteufel|' +
+    'Eierhaufen|eierhaufen|Riesenlarve|riesenlarve|Käferkönigin|kaeferkoenigin|Kornkäfer|kornkaefer|Feldmaus|Mehlmotte|mehlmotte|Getreiderost|getreiderost|' +
+    'Mutterkorn|mutterkorn|Der Kornwolf|Nieselregen|nieselregen|Glatteis|glatteis|Die Sturmböe|sturmboee|Hitzeflimmern|hitzeflimmern|Die Gewitterzelle|' +
+    'gewitterzelle|Das Unwetter|unwetter|Die Nebelbank|nebelbank|Das Dornengestrüpp|dornengestruepp|Der Morast|morast|Die Elster|elster|Der Kartendieb|' +
+    'kartendieb|Der Magnetberg|magnetberg|Der Lärm|laerm|Das Blendlicht|blendlicht|Die Brennnessel|Der Schimmel|Die Qualmwolke|qualmwolke|Der Gruppendruck|' +
+    'gruppendruck|Der dichte Nebel|Das Glatteis|Das Schlagloch|schlagloch|Die Dämmerung|daemmerung|Der tote Winkel|totwinkel|Der Raser|raser|' +
+    'Der Trampelpfad|trampelpfad|Die Trockenheit|trockenheit|Die Plastiktüte|plastiktuete|Das Spritzmittel|spritzmittel|Die Mähmaschine|maehmaschine|' +
+    'Die Straßenwalze|strassenwalze|Das Spinnennetz|spinnennetz|Der Schimmelfleck|schimmelfleck|Der Stromausfall|stromausfall|Das Vorurteil|vorurteil|' +
+    'Die Falschmeldung|falschmeldung|Das große Vergessen|vergessen|Das Lampenfieber|lampenfieber|Der Trotzkopf|trotzkopf|Die Ausrede|ausrede|' +
+    'Das Schubladendenken|schubladendenken|Die Schadenfreude|schadenfreude|Die große Angst|grosseangst|Der Müllberg|muellberg|Die Dürre|duerre|' +
+    'Das Hochwasser|hochwasser|Der Stromfresser|stromfresser|Der Orkan|orkan|Der Kohlequalm|kohlequalm|Der Misston|misston|Der Holzwurm|holzwurm|' +
+    'Die Quietschgeige|quietschgeige|Der Hustenreiz|hustenreiz|Die Donnerpauke|donnerpauke|Der Krachmacher|krachmacher|Der Wackelturm|wackelturm|' +
+    'Das Maßband|massband|Der Schummelwürfel|schummelwuerfel|Der Kuckuck|kuckuck|Die schiefe Waage|schiefewaage|Der Kaugummiautomat|kaugummiautomat|' +
+    'Das Spiegel-S|spiegels|Die Bastelschere|bastelschere|Die Buchstabensuppe|buchstabensuppe|Der Papierflieger|papierflieger|Der Wackelzahn|wackelzahn|' +
+    'Die Bücherlawine|buecherlawine|Die Karies|karies|Die Schlammpfütze|schlammpfuetze|Der Sonnenbrand|sonnenbrand|Die Klette|klette|Der Schnupfen|' +
+    'schnupfen|Der Schneesturm|schneesturm|Die zugeknallte Tür|knalltuer|Die schlechte Laune|schlechtelaune|Der Wutanfall|wutanfall|Die Langeweile|' +
+    'langeweile|Das Heimweh|heimweh|Der große Streit|grosserstreit|Die Knarrtür|knarrtuer|Die gerissene Saite|gerissenesaite|Der Laubbläser|laubblaeser|' +
+    'Der Wasserhahn|wasserhahn|Die Pausenklingel|pausenklingel|Der Presslufthammer|presslufthammer'  ).split('|');
+  const NUM = new Map(WORDS.map((w, i) => [w, i]));
+  const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  const word = (s) => (NUM.has(s) ? '~' + NUM.get(s).toString(36) : s[0] === '~' ? '~' + s : s);
+  const unword = (s) => { if (s[0] !== '~') return s; if (s[1] === '~') return s.slice(1); const w = WORDS[parseInt(s.slice(1), 36)]; if (w === undefined) throw new Error('unknown word ' + s); return w; };
+  // the parts of 'math:seq' (weekly tally) and 'math:seq:1' (tutorials) one by one
+  const str = (s) => s.split(':').map(word).join(':');
+  const unstr = (s) => s.split(':').map(unword).join(':');
+  const sameKeys = (rows) => { const ks = Object.keys(rows[0]); return ks.length && rows.every((r) => isObj(r) && Object.keys(r).length === ks.length && Object.keys(r).every((k, i) => k === ks[i])) && ks; };
+  // whole numbers as base-36 differences in one string: know.last counts up, so its steps are small
+  const column = (col) => { const d = col.map((x, i) => x - (i ? col[i - 1] : 0)); return col.every(Number.isSafeInteger) && d.every(Number.isSafeInteger) ? d.map((x) => x.toString(36)).join(',') : col.map(shrink); };
+  const uncolumn = (c) => { if (typeof c !== 'string') return c.map(grow); const n = c.split(',').map((x) => parseInt(x, 36)); for (let i = 1; i < n.length; i++) n[i] += n[i - 1]; return n; };
+  function shrink(v) {
+    if (typeof v === 'string') return str(v);
+    if (Array.isArray(v)) return v.map(shrink);
+    if (!isObj(v)) return v;
+    const ids = Object.keys(v), rows = Object.values(v); const cols = rows.length > 1 && isObj(rows[0]) && sameKeys(rows);
+    return cols ? ['~', cols.map(str), ids.map(str), ...cols.map((c) => column(rows.map((r) => r[c])))] : Object.fromEntries(ids.map((k) => [str(k), shrink(v[k])]));
+  }
+  function grow(v) {
+    if (typeof v === 'string') return unstr(v);
+    if (isObj(v)) return Object.fromEntries(Object.entries(v).map(([k, x]) => [unstr(k), grow(x)]));
+    if (!Array.isArray(v)) return v;
+    if (v[0] !== '~') return v.map(grow);
+    const cols = v[1].map(unstr), data = v.slice(3).map(uncolumn);
+    return Object.fromEntries(v[2].map((id, i) => [unstr(id), Object.fromEntries(cols.map((c, j) => [c, data[j][i]]))]));
+  }
+  // A QR code stores 0–9, A–Z and a few signs in 5.5 bits instead of 8. Two bytes become three of these characters
+  // (42³ > 65535, like base45 in RFC 9285, but without space, „%“ and „+“, which links do not keep as they are).
+  const B42 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*-./:';
+  function to42(bytes) {
+    let s = '';
+    for (let i = 0; i < bytes.length; i += 2) { const two = i + 1 < bytes.length; let n = two ? bytes[i] * 256 + bytes[i + 1] : bytes[i]; for (let k = two ? 3 : 2; k--; n = Math.floor(n / 42)) s += B42[n % 42]; }
+    return s;
+  }
+  function from42(s) {
+    const out = []; if (s.length % 3 === 1) throw new Error('base42 length');
+    for (let i = 0; i < s.length; i += 3) {
+      const c = s.slice(i, i + 3); let n = 0;
+      for (let j = c.length; j--;) { const d = B42.indexOf(c[j]); if (d < 0) throw new Error('base42 character'); n = n * 42 + d; }
+      if (n > (c.length === 3 ? 65535 : 255)) throw new Error('base42 value');
+      if (c.length === 3) out.push(n >> 8, n & 255); else out.push(n);
+    }
+    return Uint8Array.from(out);
+  }
+  return { shrink, grow, to42, from42 };
 })();
 
 </script>
@@ -16505,27 +16617,33 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   // short: for the QR code, without answer history and running adventures
   function saveData(short) {
     const m = JSON.parse(JSON.stringify(meta)); const runs = {};
-    // unpractised task types are left out too: loading fills them in again with empty stats
-    if (short) for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (st.t) st.hist = []; else delete g[k]; }
+    // unpractised task types are left out: loading fills them in again with empty stats
+    for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (!st.t) delete g[k]; else if (short) st.hist = []; }
     if (short) delete m.weekly; // only this week's progress, the QR has no room for it
     else for (const g of MODE_KEYS) { const r = load(KEY_RUN_FOR(g), null); if (r) runs[g] = r; }
     return { v: 1, at: new Date().toISOString(), meta: m, runs };
   }
+  // LQ0: JSON, for browsers without compression; LQ1: deflated JSON from older versions; LQ2: deflated SAVECODE.shrink(data).
+  // Codes stay out there for years, so every one of them must keep loading.
   async function packSave(data) {
-    const json = JSON.stringify(data);
-    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(json), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ1.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
-    return 'LQ0.' + b64(unescape(encodeURIComponent(json)));
+    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(JSON.stringify(SAVECODE.shrink(data))), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ2.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
+    return 'LQ0.' + b64(unescape(encodeURIComponent(JSON.stringify(data))));
   }
+  const unb64 = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+  // the same code for the QR code: „LQ2:“ and base 42, which the QR code packs tighter than base64
+  const qrCode = (code) => (code.startsWith('LQ2.') ? 'LQ2:' + SAVECODE.to42(Uint8Array.from(unb64(code.slice(4)), (c) => c.charCodeAt(0))) : code);
   // accepts the code or the whole link; rejects with a message for parents
   async function unpackSave(text) {
     const bad = new Error('Das ist kein vollständiger Lernquest-Code. Bitte den ganzen Code kopieren und einfügen.');
-    const m = /^LQ([01])\.([A-Za-z0-9_-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
-    if (!m) throw bad;
-    if (m[1] === '1' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
+    const m = /^LQ([012])([.:])([\w$*./:-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
+    if (!m || (m[2] === ':' && m[1] !== '2')) throw bad;
+    if (m[1] !== '0' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
     let d;
     try {
-      const bin = atob(m[2].replace(/-/g, '+').replace(/_/g, '/'));
-      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(Uint8Array.from(bin, (c) => c.charCodeAt(0)), new DecompressionStream('deflate-raw')).text());
+      const bin = m[2] === '.' ? unb64(m[3]) : '';
+      const bytes = m[2] === ':' ? SAVECODE.from42(m[3]) : Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(bytes, new DecompressionStream('deflate-raw')).text());
+      if (m[1] === '2') d = SAVECODE.grow(d);
     } catch (e) { throw bad; }
     if (!isObj(d) || d.v !== 1 || !isObj(d.meta)) throw bad;
     return { at: typeof d.at === 'string' ? d.at : '', meta: normMeta(d.meta), runs: isObj(d.runs) ? d.runs : {} };
@@ -17740,8 +17858,8 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     on('#pexport', async () => {
       meta.backupAt = new Date().toISOString(); saveAll(); if ($('#pwarn')) $('#pwarn').remove();
       const full = saveData(false); const code = await packSave(full); const link = (c) => SITE + '#lade=' + c;
-      let qr = QR.svg(link(code), 'QR-Code mit dem Spielstand'), short = false;
-      if (!qr) { qr = QR.svg(link(await packSave(saveData(true))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
+      let qr = QR.svg(link(qrCode(code)), 'QR-Code mit dem Spielstand'), short = false;
+      if (!qr) { qr = QR.svg(link(qrCode(await packSave(saveData(true)))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
       $('#pout').innerHTML = `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
         ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer, den ganzen Spielstand gibt es nur mit dem Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte den Code benutzen.')}`;
       $('#pcopy').onclick = () => copy(code, '#pcode', '#pcmsg');
@@ -17819,7 +17937,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '25601b0b0b10';
+  const BUILD = '7ef2f51e5ebd';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

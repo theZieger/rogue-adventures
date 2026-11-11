@@ -4,6 +4,9 @@
 const { JSDOM, VirtualConsole } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
+const QR = require('../src/qr.js');
+const SAVECODE = require('../src/savecode.js');
 const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8');
 
 let fails = 0;
@@ -303,6 +306,57 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
 // 12. Save code: export, import (replace/merge), broken codes, link import, backup reminder
 const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
 const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await sleep(10); return fn(); };
+// the code as versions before LQ2 made it, and the QR form of an LQ2 code
+const lq1 = (data) => 'LQ1.' + zlib.deflateRawSync(JSON.stringify(data)).toString('base64url');
+const lq2qr = (code) => 'LQ2:' + SAVECODE.to42(Buffer.from(code.slice(4), 'base64url'));
+// a save after many adventures in every unit: all task types practised, nKnow answered questions, Monsterbuch, tutorials, weekly tally
+function busyMeta(p, nKnow) {
+  const m = JSON.parse(JSON.stringify(p.w.__mq.meta)); const MQ = p.w.eval('MQ'), MK = p.w.eval('MK');
+  let seed = 1; const r = (k) => (seed = seed * 16807 % 2147483647) % k;
+  for (const [g, s] of Object.entries(m.stats)) for (const [k, st] of Object.entries(s)) {
+    st.t = 5 + r(60); st.c = st.t - r(5); st.hist = Array.from({ length: r(41) }, () => +(r(5) > 0));
+    m.seenTut[`${g}:${k}:1`] = true; m.weekly.tally[`${g}:${k}`] = { c: r(9), t: 9 }; (m.level[g] = m.level[g] || {})[k] = 1 + r(4);
+  }
+  const ids = Object.values(MK.MODES).flatMap((c) => c.pool || []).map((q) => q.id);
+  for (let i = 0; i < nKnow; i++) { const t = 1 + r(6); m.know[ids[i] || 'gk_das Wort ' + i] = { c: r(t + 1), t, ws: r(3), last: i * 3 + r(3) }; }
+  m.knowSeq = nKnow * 3 + 3;
+  const mons = []; const walk = (v) => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') { if (v.name && v.shape) mons.push(v); Object.values(v).forEach(walk); } };
+  walk([MQ.ENEMIES, MQ.BAU.ENEMIES, Object.values(MK.MODES).map((c) => c.enemies)]);
+  for (const e of mons.slice(0, nKnow / 5)) m.dex[e.name] = { type: e.type, shape: e.shape, world: 1 + r(2), mode: 'math' };
+  Object.assign(m, { runs: 60, wins: 40, stamps: 456, stampsTotal: 600, owned: { 'top-disc-eisen': true, 'hut-dachfenster': true }, materials: { holz: 10, erz: 9 } });
+  return m;
+}
+// reads text and modes back from a QR matrix, versions 1–5 only (one block, at most one alignment pattern)
+function qrRead(m) {
+  const n = m.length, v = (n - 17) / 4, AL = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  const fb = [0, 1, 2, 3, 4, 5].map((i) => m[i][8]).concat([m[7][8], m[8][8], m[8][7]], [9, 10, 11, 12, 13, 14].map((i) => m[8][14 - i]));
+  const f = fb.reduce((a, b, i) => a | (+b << i), 0) ^ 0x5412; const mask = (f >> 10) & 7;
+  const flip = [(x, y) => (x + y) % 2, (x, y) => y % 2, (x, y) => x % 3, (x, y) => (x + y) % 3, (x, y) => (Math.floor(y / 2) + Math.floor(x / 3)) % 2,
+    (x, y) => (x * y) % 2 + (x * y) % 3, (x, y) => ((x * y) % 2 + (x * y) % 3) % 2, (x, y) => ((x + y) % 2 + (x * y) % 3) % 2][mask];
+  const fn = (x, y) => (x < 9 && y < 9) || (x >= n - 8 && y < 9) || (x < 9 && y >= n - 8) || x === 6 || y === 6 || (v > 1 && Math.abs(x - (n - 7)) <= 2 && Math.abs(y - (n - 7)) <= 2);
+  const bits = [];
+  for (let right = n - 1; right >= 1; right -= 2) { if (right === 6) right = 5; for (let k = 0; k < n; k++) for (let j = 0; j < 2; j++) { const x = right - j, y = ((right + 1) & 2) === 0 ? n - 1 - k : k; if (!fn(x, y)) bits.push(+m[y][x] ^ +(flip(x, y) === 0)); } }
+  let i = 0; const take = (k) => { let x = 0; while (k--) x = x * 2 + bits[i++]; return x; };
+  let text = ''; const modes = [];
+  for (let mode = take(4); mode; mode = take(4)) {
+    modes.push(mode);
+    if (mode === 4) { const len = take(8); text += decodeURIComponent(escape(String.fromCharCode(...Array.from({ length: len }, () => take(8))))); }
+    else if (mode === 2) { let len = take(9); for (; len >= 2; len -= 2) { const x = take(11); text += AL[Math.floor(x / 45)] + AL[x % 45]; } if (len) text += AL[take(6)]; }
+    else return null;
+  }
+  return { text, modes, level: f >> 13, v };
+}
+function qrCases() {
+  for (const [t, modes] of [['HELLO WORLD', [2]], ['hallo, Grüße', [4]], ['https://x.de/#lade=LQ2:AB$*-./:9', [4, 2]], ['a:', [4, 2]], ['LQ2:XYZ', [2]]]) {
+    const r = qrRead(QR.matrix(t));
+    check(r && r.text === t && r.level === 1 && r.modes.join() === modes.join(), `QR code reads back ${JSON.stringify(t)} (version ${r && r.v}, modes ${r && r.modes})`);
+  }
+  // published capacities for level L: version 1 holds 25 alphanumeric characters or 17 bytes, version 40 4296 or 2953
+  const ver = (t) => { const m = QR.matrix(t); return m && (m.length - 17) / 4; };
+  check(ver('A'.repeat(25)) === 1 && ver('A'.repeat(26)) === 2 && ver('a'.repeat(17)) === 1 && ver('a'.repeat(18)) === 2, 'QR version 1 holds 25 alphanumeric characters or 17 bytes');
+  check(ver('A'.repeat(4296)) === 40 && ver('A'.repeat(4297)) === null && ver('a'.repeat(2953)) === 40 && ver('a'.repeat(2954)) === null, 'QR version 40 holds 4296 alphanumeric characters or 2953 bytes');
+  for (let n = 0; n < 200; n += 7) { const b = Uint8Array.from({ length: n }, (_, i) => (i * 97 + n) & 255); check(Buffer.from(SAVECODE.from42(SAVECODE.to42(b))).equals(Buffer.from(b)), 'base 42 round trip, ' + n + ' bytes'); }
+}
 async function exportCode(p) {
   p.click('#parents'); p.go('settings', 'save'); p.click('#pexport');
   await until(() => p.$('#pcode'));
@@ -350,16 +404,47 @@ async function saveCodeCases() {
     check(bad.$('#pimsg').textContent.includes('Code') && same(bad.dump(), saved), 'broken code is rejected with a message: ' + JSON.stringify(c.slice(0, 20)));
   }
 
-  // compressed codes (LQ1.) where the browser can compress
+  // compressed codes (LQ2.) where the browser can compress
   const z = open(saved, { zip: true });
-  const zcode = await z.w.__mq.packSave({ v: 1, at: '2026-11-09T08:00:00.000Z', meta: JSON.parse(saved[META]), runs: { math: JSON.parse(saved[RUN]) } });
-  check(zcode.startsWith('LQ1.') && zcode.length < code.length, 'with compression the code starts with LQ1. and is shorter (' + zcode.length + ' vs ' + code.length + ')');
+  const zdata = { v: 1, at: '2026-11-09T08:00:00.000Z', meta: JSON.parse(saved[META]), runs: { math: JSON.parse(saved[RUN]) } };
+  const zcode = await z.w.__mq.packSave(zdata);
+  check(zcode.startsWith('LQ2.') && zcode.length < lq1(zdata).length * 0.8, 'with compression the code starts with LQ2. and is clearly shorter than LQ1. (' + zcode.length + ' vs ' + lq1(zdata).length + ', LQ0. ' + code.length + ')');
   const back = await z.w.__mq.unpackSave(zcode);
-  check(same(back.meta, JSON.parse(saved[META])) && same(back.runs.math, JSON.parse(saved[RUN])), 'LQ1. code reads back to the same save');
+  check(same(back.meta, JSON.parse(saved[META])) && same(back.runs.math, JSON.parse(saved[RUN])), 'LQ2. code reads back to the same save');
+  const oldBack = await z.w.__mq.unpackSave(lq1(zdata));
+  check(same(oldBack.meta, JSON.parse(saved[META])) && same(oldBack.runs.math, JSON.parse(saved[RUN])) && oldBack.at === zdata.at, 'an LQ1. code from older versions still loads');
+  const qrBack = await z.w.__mq.unpackSave('https://example.com/#lade=' + lq2qr(zcode));
+  check(same(qrBack, back), 'the QR form of the code (LQ2: in base 42) reads back to the same save');
   const old = open(saved); old.click('#parents'); old.go('settings', 'save');
-  old.$('#pcodein').value = zcode; old.click('#pmerge');
-  await until(() => old.$('#pimsg').textContent);
-  check(old.$('#pimsg').textContent.includes('Browser'), 'a browser without decompression explains why it cannot read LQ1.');
+  for (const c of [lq1(zdata), zcode]) {
+    old.$('#pcodein').value = c; old.$('#pimsg').textContent = ''; old.click('#pmerge');
+    await until(() => old.$('#pimsg').textContent);
+    check(old.$('#pimsg').textContent.includes('Browser'), 'a browser without decompression explains why it cannot read ' + c.slice(0, 4));
+  }
+  { // export with compression: the whole save fits into the QR code, in a smaller code than the old one would need
+    z.click('#parents'); z.go('settings', 'save'); z.click('#pexport'); await until(() => z.$('#pcode'));
+    const svg = z.$('#pout svg.qr'); const size = (n) => (n - 8 - 17) / 4;
+    const old1 = QR.matrix('https://thezieger.github.io/rogue-adventures/#lade=' + lq1(Object.assign({}, zdata, { meta: z.w.__mq.meta }))); const oldV = old1 ? (old1.length - 17) / 4 : 41;
+    const v = size(+svg.getAttribute('viewBox').split(' ')[2]);
+    check(svg.getAttribute('aria-label') === 'QR-Code mit dem Spielstand' && z.$('#pcode').value.startsWith('LQ2.') && v < oldV, 'the export QR code holds the whole save (version ' + v + ', with LQ1. ' + oldV + ')');
+  }
+  { // a fresh save and saves after many adventures: everything comes back, and the code is much shorter than LQ1.
+    const fresh = JSON.parse(JSON.stringify(open().w.__mq.meta));
+    for (const [name, nKnow] of [['fresh', 0], ['busy', 400], ['heavy', 1500]]) {
+      const data = { v: 1, at: '2026-11-09T08:00:00.000Z', meta: nKnow ? busyMeta(z, nKnow) : fresh, runs: nKnow ? { math: JSON.parse(saved[RUN]), bau: JSON.parse(saved[RUN]) } : {} };
+      const c = await z.w.__mq.packSave(data); const b = await z.w.__mq.unpackSave(c);
+      check(same(b.meta, data.meta) && same(b.runs, data.runs), name + ' save: LQ2. reads back to the same save');
+      check(c.length < lq1(data).length * 0.75, name + ' save: LQ2. is clearly shorter than LQ1. (' + c.length + ' vs ' + lq1(data).length + ')');
+    }
+  }
+  { // fields that later versions add (or that this one does not know) survive, and so do strings that look like tokens
+    const data = JSON.parse(JSON.stringify(zdata));
+    Object.assign(data.runs.math, { future: { a: [1, '~', '~~x', '~1', 'math:~:seq'], b: { c: { d: 2 }, e: { d: -3.5 } } } });
+    data.meta.know = { 'neu_~frage': { c: 1, t: 2, ws: 0, last: 9, neu: 'x' }, 'gk_der Hund': { c: 1, t: 1, ws: 0, last: 10, neu: 'y' } };
+    data.meta.stats.math.add.extra = [true, null, 1e300];
+    const b = await z.w.__mq.unpackSave(await z.w.__mq.packSave(data));
+    check(same(b.runs, data.runs) && same(b.meta.know, data.meta.know) && same(b.meta.stats.math.add, data.meta.stats.math.add), 'unknown fields and token-like strings come back unchanged');
+  }
 
   // link import on a fresh device: dialog, hash removed, merge takes the adventure
   const link = open(null, { url: 'https://example.com/#lade=' + code });
@@ -1563,7 +1648,7 @@ async function backCases() {
   check(!types.some((t) => ['arena', 'weekboss', 'markt'].includes(t)), 'a new map has no Kreisel-Arena, Wochenboss or Markt when they are hidden');
 }
 
-reloadCases().then(backCases).then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
+reloadCases().then(backCases).then(readCases).then(qrCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
