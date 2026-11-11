@@ -10,7 +10,7 @@ installed PWA. A game update is just a push to `main`. A new bundle is only need
 | File | Purpose |
 |---|---|
 | `twa-manifest.json` | App config. Package `io.github.thezieger.lernquest` – **can never change after the first upload**. |
-| `store/icon-512.png`, `store/feature-graphic.png` | Store listing art, from `node tools/make_icons.js` |
+| `store/icon-512.png`, `store/feature-graphic.png` | Store listing art, from `node tools/make_icons.js store` |
 | `../docs/screenshots/narrow-*.png` | Phone screenshots for the listing (1080×1920) |
 | `../docs/datenschutz.html` | Privacy policy: https://thezieger.github.io/rogue-adventures/datenschutz.html |
 | `../.github/workflows/android.yml` | Builds the signed `.aab` (Actions tab → „android-app“ → „Run workflow“) |

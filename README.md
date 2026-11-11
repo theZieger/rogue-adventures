@@ -110,12 +110,11 @@ src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetz
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 src/datenschutz.html  Datenschutzerklärung (wird nach docs/ kopiert, auch die Play-Store-Adresse)
 android/           Google-Play-App (Trusted Web Activity): twa-manifest.json, Store-Grafiken, Anleitung in android/README.md
-ios/               App für iPhone und iPad (Capacitor, bringt docs/ mit): Xcode-Projekt, Store-Bilder, Anleitung in ios/README.md
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
 tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
-tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
+tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/*, die Installations-Screenshots docs/screenshots/* und die Google-Play-Bilder android/store/* (nur diese: `node tools/make_icons.js store`; braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
 docs/index.html    gebaute Spieldatei → GitHub Pages

@@ -5,5 +5,3 @@ node_modules/
 !docs/splash/*.png
 !docs/screenshots/*.png
 !android/store/*.png
-!ios/store/**/*.png
-!ios/xcode/App/App/Assets.xcassets/**/*.png
