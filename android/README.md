@@ -51,12 +51,12 @@ installed PWA. A game update is just a push to `main`. A new bundle is only need
   no gambling, no user-to-user communication, no sharing of location or personal data, no purchases.
   The feedback form is one-way to the developer.
 - Data safety:
-  - Data collected: **yes** – „App activity → Other user-generated content“ (the „Idee senden“ text and the game
-    version). Purpose: „App functionality“ / developer communication. Optional (user decides), not shared with
+  - Data collected: **yes** – „App activity → Other user-generated content“ (the feedback text from the parents' area and the
+    game version). Purpose: „App functionality“ / developer communication. Optional (user decides), not shared with
     third parties for their own use (Google Forms is a service provider).
   - Data encrypted in transit: yes (HTTPS). Deletion: users can ask via the address in the privacy policy.
   - Saves stay on the device only and are not „collected“ in Play's sense.
-- Feedback sits behind a parental gate (a two-digit multiplication) because the message leaves the device.
+- Feedback is only offered in the parents' area (five taps on the title) because the message leaves the device.
 - Government app / news / health / financial features: no.
 
 **Store listing (de-DE)**

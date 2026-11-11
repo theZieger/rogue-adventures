@@ -290,7 +290,7 @@
       <div class="stack" style="margin-top:16px">
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
-        <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
+        <button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button>
         <a class="textlink" href="datenschutz.html">Datenschutz</a>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
@@ -298,7 +298,6 @@
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
     $('#news').onclick = screenNews;
-    $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
   }
@@ -665,12 +664,9 @@
   /* ---------- Feedback ---------- */
   // The only external request. If sending fails, the prefilled form opens in a new tab.
   const FEEDBACK = { form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw', entry: 'entry.1794178349' };
-  // Parental gate (Google Play Families policy): the message leaves the device, so an adult confirms first.
-  // Two-digit times two-digit is beyond 3rd-grade maths; once solved it holds until the app is closed.
-  let gateOk = false;
+  // Only reachable from the parents' area (Google Play Families policy: the message leaves the device).
   function screenFeedback(back) {
     back = typeof back === 'function' ? back : screenTitle;
-    if (!gateOk) return screenGate(back);
     render(`<div class="screen">${topbar('Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
       <label for="fbtext" class="sr-only">Deine Nachricht</label><textarea id="fbtext" rows="6" maxlength="2000" placeholder="Zum Beispiel: Ich wünsche mir Aufgaben zum Einmaleins mit 7 …"></textarea>
@@ -697,17 +693,6 @@
         $('#fbmsg').innerHTML = `Das hat nicht geklappt – bist du mit dem Internet verbunden? Dein Text bleibt hier stehen. <a href="${esc(formLink())}" target="_blank" rel="noopener">Oder im Formular senden ↗</a>`;
       }
     };
-  }
-
-  function screenGate(back) {
-    const a = 12 + Math.floor(Math.random() * 8), b = 13 + Math.floor(Math.random() * 7);
-    render(`<div class="screen">${topbar('Für Erwachsene')}<div class="scroll"><div class="card"><p style="margin-top:0">Deine Nachricht wird über das Internet verschickt. Bitte frag dafür einen Erwachsenen.</p>
-      <label for="gatein" id="gateq"><b>Wie viel ist ${a} × ${b}?</b></label><input id="gatein" class="gatein" inputmode="numeric" pattern="[0-9]*" autocomplete="off"><p id="gatemsg" role="status" aria-live="polite" class="fbmsg"></p></div></div>
-      <div class="bottom"><div class="stack"><button class="btn" id="gatego">Weiter</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
-    $('#back').onclick = () => back();
-    const check = () => { if (+$('#gatein').value.trim() === a * b) { gateOk = true; screenFeedback(back); } else { $('#gatein').value = ''; $('#gatemsg').textContent = 'Das stimmt leider nicht.'; } };
-    $('#gatego').onclick = check;
-    $('#gatein').onkeydown = (e) => { if (e.key === 'Enter') check(); };
   }
 
   screenTitle();

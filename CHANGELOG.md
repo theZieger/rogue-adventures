@@ -9,10 +9,10 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-11
 
 ### Neu
-- Neue Seite „Datenschutz“: Sie erklärt, dass nur Nachrichten aus „Idee senden“ das Gerät verlassen.
+- Neue Seite „Datenschutz“: Sie erklärt, dass nur Nachrichten an uns das Gerät verlassen.
 
 ### Verbessert
-- Bevor eine Nachricht verschickt wird, löst ein Erwachsener eine Rechenaufgabe.
+- Ideen und Fehler meldet man jetzt im Elternbereich statt auf dem Titelbildschirm.
 
 ## 2026-11-09
 

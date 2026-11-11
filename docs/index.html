@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="ab0e5d89b841">
+<meta name="app-version" content="171f8530eec3">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -389,11 +389,10 @@ p { margin: 8px 0; }
 .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
 .toggle { border: 3px solid var(--ink-soft); background: #fff; color: var(--ink-soft); border-radius: 14px; padding: 6px 12px; min-height: 44px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
 .toggle.on { border-color: var(--green); background: #E6F9EA; color: #1E6B32; }
-.gatein { display: block; width: 100%; margin-top: 8px; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 24px; color: var(--ink); background: #fff; }
 .textlink { align-self: center; color: var(--paper-ink); opacity: .8; font-size: 16px; padding: 6px 12px; }
 a.btn { text-decoration: none; }
 textarea#fbtext { width: 100%; margin-top: 10px; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 18px; color: var(--ink); background: #fff; resize: vertical; }
-textarea#fbtext:focus, .gatein:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
+textarea#fbtext:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
 
 /* ---------- Look ---------- */
 body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,255,.14), transparent 65%), radial-gradient(700px 480px at 110% 110%, rgba(255,201,60,.07), transparent 60%); background-attachment: fixed; }
@@ -1955,7 +1954,7 @@ const MONART = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Neue Seite „Datenschutz“: Sie erklärt, dass nur Nachrichten aus „Idee senden“ das Gerät verlassen."]}, {"title": "Verbessert", "items": ["Bevor eine Nachricht verschickt wird, löst ein Erwachsener eine Rechenaufgabe."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Neue Seite „Datenschutz“: Sie erklärt, dass nur Nachrichten an uns das Gerät verlassen."]}, {"title": "Verbessert", "items": ["Ideen und Fehler meldet man jetzt im Elternbereich statt auf dem Titelbildschirm."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -2250,7 +2249,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
       <div class="stack" style="margin-top:16px">
         ${gradeTabs()}${(curGrade().subjects).map((sub) => sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="eyebrow">${esc(sub.subject)}</div><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div><div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')).join('')}
         <button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>
-        <div class="row"><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button><button class="btn ghost" id="feedback">Idee senden</button></div>
+        <button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button>
         <a class="textlink" href="datenschutz.html">Datenschutz</a>
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; screenParent(); } };
@@ -2258,7 +2257,6 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#dex').onclick = screenDex;
     $('#news').onclick = screenNews;
-    $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
   }
@@ -2625,12 +2623,9 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   /* ---------- Feedback ---------- */
   // The only external request. If sending fails, the prefilled form opens in a new tab.
   const FEEDBACK = { form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw', entry: 'entry.1794178349' };
-  // Parental gate (Google Play Families policy): the message leaves the device, so an adult confirms first.
-  // Two-digit times two-digit is beyond 3rd-grade maths; once solved it holds until the app is closed.
-  let gateOk = false;
+  // Only reachable from the parents' area (Google Play Families policy: the message leaves the device).
   function screenFeedback(back) {
     back = typeof back === 'function' ? back : screenTitle;
-    if (!gateOk) return screenGate(back);
     render(`<div class="screen">${topbar('Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>
       <label for="fbtext" class="sr-only">Deine Nachricht</label><textarea id="fbtext" rows="6" maxlength="2000" placeholder="Zum Beispiel: Ich wünsche mir Aufgaben zum Einmaleins mit 7 …"></textarea>
@@ -2659,17 +2654,6 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     };
   }
 
-  function screenGate(back) {
-    const a = 12 + Math.floor(Math.random() * 8), b = 13 + Math.floor(Math.random() * 7);
-    render(`<div class="screen">${topbar('Für Erwachsene')}<div class="scroll"><div class="card"><p style="margin-top:0">Deine Nachricht wird über das Internet verschickt. Bitte frag dafür einen Erwachsenen.</p>
-      <label for="gatein" id="gateq"><b>Wie viel ist ${a} × ${b}?</b></label><input id="gatein" class="gatein" inputmode="numeric" pattern="[0-9]*" autocomplete="off"><p id="gatemsg" role="status" aria-live="polite" class="fbmsg"></p></div></div>
-      <div class="bottom"><div class="stack"><button class="btn" id="gatego">Weiter</button><button class="btn ghost" id="back">Zurück</button></div></div></div>`);
-    $('#back').onclick = () => back();
-    const check = () => { if (+$('#gatein').value.trim() === a * b) { gateOk = true; screenFeedback(back); } else { $('#gatein').value = ''; $('#gatemsg').textContent = 'Das stimmt leider nicht.'; } };
-    $('#gatego').onclick = check;
-    $('#gatein').onkeydown = (e) => { if (e.key === 'Enter') check(); };
-  }
-
   screenTitle();
   window.__mq = { get run() { return run; }, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle };
 })();
@@ -2678,7 +2662,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'ab0e5d89b841';
+  const BUILD = '171f8530eec3';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
