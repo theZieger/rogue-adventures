@@ -9,6 +9,7 @@ const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8')
 let fails = 0;
 const check = (cond, msg) => { if (!cond) { fails++; console.log('FAIL', msg); } else console.log('ok  ', msg); };
 
+// opts.voice: one speech voice or a list (w.said collects what was read, w.utter is the last utterance);
 // opts.url: page address (e.g. with #lade=); opts.zip: give the page the compression streams jsdom lacks; opts.now: the page's clock
 // Every page is a full copy of the app with its own timers, so an open page is never freed. A case works with at most a
 // few pages at once: keep the last LIVE pages and close older ones (their storage stays readable through dump()), which
@@ -25,7 +26,7 @@ function open(storage, opts) {
     beforeParse(w) {
       for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message));
       if (opts.zip) Object.assign(w, { CompressionStream, DecompressionStream, Response, TextEncoder });
-      if (opts.voice) { w.said = []; w.speechSynthesis = { getVoices: () => [opts.voice], cancel() {}, speak(u) { w.said.push(u.text); } }; w.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } }; }
+      if (opts.voice) { w.said = []; w.speechSynthesis = { getVoices: () => [].concat(opts.voice), cancel() {}, speak(u) { w.said.push(u.text); w.utter = u; } }; w.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } }; }
       if (opts.now) { const D = w.Date, now = Date.parse(opts.now); w.Date = class extends D { constructor(...a) { super(...(a.length ? a : [now])); } static now() { return now; } }; }
     },
   });
@@ -1276,10 +1277,10 @@ function topCases() {
 // Vorlesen: an old save gets the switch turned on; the button only appears with a German voice on the device
 {
   const toTask = (p) => { p.click('[data-new="math"]'); p.click('.choice[data-id]'); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')][0]); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); p.click('.atk'); const ok2 = p.$('.overlay #tutok'); if (ok2) ok2.click(); };
-  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.speak; old.setup = { done: true, skipped: true, at: '' };
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.speak; delete old.voiceName; delete old.speakRate; old.setup = { done: true, skipped: true, at: '' };
   const store = { [META]: JSON.stringify(old) };
   const p = open(store, { voice: { localService: true, lang: 'de-DE' } }); toTask(p);
-  check(p.w.__mq.meta.speak === true && !!p.d.querySelector('.task .speak'), 'old save: reading aloud is on and the task has its button');
+  check(p.w.__mq.meta.speak === true && p.w.__mq.meta.voiceName === '' && p.w.__mq.meta.speakRate === 0.9 && !!p.d.querySelector('.task .speak'), 'old save: reading aloud is on with the automatic voice and the task has its button');
   p.d.querySelector('.task .speak').click();
   check(p.w.said.length === 1 && p.w.said[0].length > 0 && !/[−·]|= ?\?/.test(p.w.said[0]) && p.errors.length === 0, 'the button reads the task, signs spoken as words');
   const net = open(store, { voice: { localService: false, lang: 'de-DE' } }); toTask(net);
@@ -1288,6 +1289,28 @@ function topCases() {
   check(!off.d.querySelector('.task .speak') && !!off.d.querySelector('.task .tut'), 'switched off by parents: no button');
   const none = open(store); toTask(none);
   check(!none.d.querySelector('.task .speak') && none.errors.length === 0, 'a device without speech shows no button');
+}
+// Vorlesen: parents pick one of the device's German voices and the speed; network voices never appear
+{
+  const A = { name: 'Anna', localService: true, lang: 'de-DE' }, B = { name: 'Google Deutsch', localService: true, lang: 'de-DE' }, N = { name: 'Netzstimme', localService: false, lang: 'de-DE' };
+  const V = { voice: [N, A, B] };
+  const toCard = (p) => { for (let i = 0; i < 5; i++) p.click('#logo'); p.go('settings', 'app'); };
+  const toTask = (p) => { p.click('[data-new="math"]'); p.click('.choice[data-id]'); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')][0]); for (const s of ['.atk', null]) { const ok = p.d.querySelector('.overlay #tutok'); if (ok) ok.click(); if (s) p.click(s); } p.d.querySelector('.task .speak').click(); };
+  const p = open({ [META]: JSON.stringify(SKIPPED) }, V); toCard(p);
+  const names = [...p.d.querySelectorAll('[data-voice]')].map((b) => b.textContent);
+  check(names.join('|') === 'Anna|Google Deutsch' && p.$('[data-voice="0"]').getAttribute('aria-pressed') === 'true', 'the card lists both German voices on the device, the first one chosen, the network voice not');
+  p.click('[data-try="1"]');
+  check(p.w.utter.voice === B && p.w.said.pop() === 'Hallo! So klingt diese Stimme.', '„Probe hören“ speaks a sample with that voice');
+  p.click('[data-voice="1"]'); p.click('[data-rate="schneller"]');
+  check(p.w.__mq.meta.voiceName === 'Google Deutsch' && p.w.__mq.meta.speakRate === 1.05 && p.$('[data-voice="1"]').getAttribute('aria-pressed') === 'true' && p.errors.length === 0, 'the chosen voice and speed are kept');
+  const q = open(p.dump(), V); toTask(q);
+  check(q.w.utter.voice === B && q.w.utter.rate === 1.05 && q.errors.length === 0, 'a task is read with the chosen voice and speed after reopening');
+  const gone = open({ [META]: JSON.stringify(Object.assign({}, SKIPPED, { voiceName: 'Weg', speakRate: 2 })) }, { voice: [N, A] }); toTask(gone);
+  check(gone.w.utter.voice === A && gone.w.utter.rate === 0.9 && gone.errors.length === 0, 'a voice that is gone from the device falls back quietly, an unknown speed to normal');
+  const one = open({ [META]: JSON.stringify(SKIPPED) }, { voice: [N, A] }); toCard(one);
+  check(!one.$('[data-voice]') && !!one.$('[data-rate]') && !one.text().includes('Netzstimme'), 'with one German voice only the speed is offered');
+  const none = open({ [META]: JSON.stringify(SKIPPED) }, { voice: [N] }); toCard(none);
+  check(none.text().includes('fehlt eine deutsche Stimme') && !none.$('[data-rate]'), 'without a German voice on the device the card says how to add one');
 }
 // Vorlesen in Klasse 1: tutorials, feedback, events and how a fight starts are read out; the Lesestube text is not
 {
