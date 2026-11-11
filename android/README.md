@@ -80,7 +80,7 @@ installed PWA. A game update is just a push to `main`. A new bundle is only need
   • Englisch ab Klasse 3 – Wörter, Zahlen, Farben und kurze Sätze
 
   Die Aufgaben passen sich an: Was sicher sitzt, wird schwerer, bei Fehlern geht es eine Stufe zurück. Jede
-  Aufgabenart wird beim ersten Mal erklärt. In Klasse 1 und 2 liest das Spiel die Aufgaben vor.
+  Aufgabenart wird beim ersten Mal erklärt. In Klasse 1 und 2 liest Lernquest die Aufgaben vor.
 
   Neben den Abenteuern gibt es ein Stempelheft, ein Monsterbuch, eine eigene Hütte, einen Schulgarten und ein Duell
   für zwei Kinder an einem Gerät.

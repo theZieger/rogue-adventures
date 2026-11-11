@@ -90,8 +90,7 @@ const IPADS = [ // iPads ignore the portrait lock, so they get landscape too
 const FONT_B64 = fs.readFileSync(path.join(__dirname, '..', 'docs', 'fonts', 'patrickhand-latin.woff2')).toString('base64');
 const SPLASH_BG = '#1C2541'; // = --bg, so the launch flows straight into the game
 
-function splashHTML(w, h) {
-  const m = Math.min(w, h);
+function splashHTML(w, h, m = Math.min(w, h)) {
   const foxW = m * 0.42, k = foxW / 120;
   const font = m * 0.13;
   return `<html><head><style>@font-face{font-family:'Patrick Hand';font-weight:400;src:url(data:font/woff2;base64,${FONT_B64}) format('woff2')}</style></head>
@@ -127,18 +126,16 @@ async function makeSplash(browser) {
 }
 
 // Screenshots for the install dialog (manifest "screenshots"): played from the built game, so run `npm run build` first.
-async function makeScreenshots(browser) {
-  const dir = path.join(__dirname, '..', 'docs', 'screenshots');
+async function makeScreenshots(browser, dir = path.join(__dirname, '..', 'docs', 'screenshots'), shots = [
+  // form factor, CSS viewport, pixel ratio (=> 1080x1920 / 1920x1080 pixels)
+  ['narrow', 360, 640, 3],
+  ['wide', 1280, 720, 1.5],
+]) {
   fs.mkdirSync(dir, { recursive: true });
   const game = 'file://' + path.join(__dirname, '..', 'docs', 'index.html');
-  const shots = [
-    // form factor, CSS viewport, pixel ratio (=> 1080x1920 / 1920x1080 pixels)
-    ['narrow', 360, 640, 3],
-    ['wide', 1280, 720, 1.5],
-  ];
   for (const [form, w, h, dpr] of shots) {
     const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: dpr });
-    await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('mathquest_meta_v2', JSON.stringify({ seenNews: '9999-12-31', sound: false, seenTut: { 'battle:intro': true } })); } } catch (e) { } });
+    await ctx.addInitScript(() => { try { if (!sessionStorage.getItem('seeded')) { sessionStorage.setItem('seeded', '1'); localStorage.setItem('mathquest_meta_v2', JSON.stringify({ seenNews: '9999-12-31', sound: false, setup: { done: true }, seenTut: { 'battle:intro': true } })); } } catch (e) { } });
     const p = await ctx.newPage();
     await p.goto(game); await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(dir, `${form}-1-start.png`) });
@@ -155,29 +152,39 @@ async function makeScreenshots(browser) {
     await p.waitForTimeout(400);
     await p.screenshot({ path: path.join(dir, `${form}-4-aufgabe.png`) });
     await ctx.close();
-    console.log('wrote screenshots/' + form + '-*.png');
+    console.log('wrote ' + path.relative(path.join(__dirname, '..'), dir) + '/' + form + '-*.png');
   }
 }
 
-// Google Play listing: full-square icon (Play rounds the corners itself) and the 1024x500 feature graphic.
+// Store art: Play icon + 1024x500 feature graphic; iOS app icon (1024, opaque – the stores round the corners
+// themselves), iOS launch image and App Store screenshots (iPhone 6.9" and iPad 13", the sizes Apple requires).
 async function makeStoreArt(browser) {
-  const dir = path.join(__dirname, '..', 'android', 'store');
-  fs.mkdirSync(dir, { recursive: true });
-  const page = await browser.newPage({ viewport: { width: 512, height: 512 }, deviceScaleFactor: 1 });
-  await page.setContent(`<html><body style="margin:0">${iconSVG(512, { radius: 0, scale: 0.8, stars: true })}</body></html>`);
-  await page.locator('svg').first().screenshot({ path: path.join(dir, 'icon-512.png') });
+  const root = path.join(__dirname, '..');
+  const play = path.join(root, 'android', 'store');
+  const xc = path.join(root, 'ios', 'xcode', 'App', 'App', 'Assets.xcassets');
+  fs.mkdirSync(play, { recursive: true });
+  const page = await browser.newPage({ viewport: { width: 1024, height: 1024 }, deviceScaleFactor: 1 });
+  const shoot = async (html, file) => { await page.setContent(html); await page.evaluate(() => document.fonts.ready); await page.screenshot({ path: file }); };
+  for (const [size, file] of [[512, path.join(play, 'icon-512.png')], [1024, path.join(xc, 'AppIcon.appiconset', 'AppIcon-512@2x.png')]]) {
+    await page.setViewportSize({ width: size, height: size });
+    await shoot(`<html><body style="margin:0">${iconSVG(size, { radius: 0, scale: 0.8, stars: true })}</body></html>`, file);
+  }
   await page.setViewportSize({ width: 1024, height: 500 });
-  await page.setContent(splashHTML(1024, 500));
-  await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: path.join(dir, 'feature-graphic.png') });
+  await shoot(splashHTML(1024, 500), path.join(play, 'feature-graphic.png'));
+  // one square image for every device; iOS crops it to the screen, so the artwork stays small in the middle
+  await page.setViewportSize({ width: 2732, height: 2732 });
+  await shoot(splashHTML(2732, 2732, 1100), path.join(xc, 'Splash.imageset', 'splash-2732x2732.png'));
+  for (const n of ['-1', '-2']) fs.copyFileSync(path.join(xc, 'Splash.imageset', 'splash-2732x2732.png'), path.join(xc, 'Splash.imageset', `splash-2732x2732${n}.png`));
   await page.close();
-  console.log('wrote android/store/icon-512.png, feature-graphic.png');
+  console.log('wrote android/store/*.png and the iOS app icon and launch image');
+  await makeScreenshots(browser, path.join(root, 'ios', 'store', 'screenshots'), [['iphone', 440, 956, 3], ['ipad', 1032, 1376, 2]]);
 }
 
 (async () => {
   const { chromium } = require('playwright');
   fs.mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch();
+  if (process.argv[2] === 'store') { await makeStoreArt(browser); return browser.close(); }
   const page = await browser.newPage({ deviceScaleFactor: 1 });
   for (const [name, size, opts] of ICONS) {
     await page.setViewportSize({ width: size, height: size });

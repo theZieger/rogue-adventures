@@ -110,6 +110,7 @@ src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetz
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 src/datenschutz.html  Datenschutzerklärung (wird nach docs/ kopiert, auch die Play-Store-Adresse)
 android/           Google-Play-App (Trusted Web Activity): twa-manifest.json, Store-Grafiken, Anleitung in android/README.md
+ios/               App für iPhone und iPad (Capacitor, bringt docs/ mit): Xcode-Projekt, Store-Bilder, Anleitung in ios/README.md
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
 build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)

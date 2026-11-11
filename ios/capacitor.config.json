@@ -1,0 +1,11 @@
+{
+  "appId": "io.github.thezieger.lernquest",
+  "appName": "Lernquest",
+  "webDir": "../docs",
+  "backgroundColor": "#1C2541",
+  "ios": {
+    "path": "xcode",
+    "contentInset": "never",
+    "scrollEnabled": false
+  }
+}
