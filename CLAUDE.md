@@ -15,6 +15,7 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   at most about 3 points per group and 6 per day, each point one short sentence (roughly 15 words).
   Merge related changes into one point, mention only the most noticeable fixes and sum up the rest
   (e.g. „Viele kleine Text- und Anzeigefehler.“). Details belong in commit messages.
+  Exception: a big release (like v2) gets one richer entry on its release date that lists every new theme and feature.
 - The oldest entry (2026-11-07) is the go-live release note („Lernquest ist online!“). Leave it as it is;
   never add fixes or details to it.
 - Purely internal changes (tests, CI, refactoring) don't need an entry.

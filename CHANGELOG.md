@@ -9,39 +9,41 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-11
 
 ### Neu
-- Musik für Klasse 1: „Die Klangkiste“ mit Instrumenten der Klasse, laut und leise und Klängen zum Aufmalen.
+- Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.
+- Klasse 1 und 2: 17 neue Themen nach dem Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.
+- Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.
+- Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.
+- Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.
+- Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.
+- Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.
+- Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.
+- Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.
+- Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.
+- Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.
+- Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort.
 
 ### Verbessert
-- In Klasse 2 tippst du Geldbeträge jetzt in zwei Felder: Euro und Cent getrennt.
-
-## 2026-11-10
-
-### Neu
-- Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.
-- Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.
-- Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke.
-
-### Verbessert
-- Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.
+- Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.
+- Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.
+- Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.
+- Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.
+- Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.
+- In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.
+- Alle Monster und viele Bilder in Aufgaben sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.
 - Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.
-- Viele Bilder sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen.
 
 ### Behoben
-- Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen.
+- Fachlehrkräfte haben alle Inhalte geprüft: Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.
+- Hut, Krone und Kranz sitzen bei allen Helden richtig.
 
 ## 2026-11-09
 
 ### Neu
-- Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.
-- Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit.
+- Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar.
 
 ### Verbessert
-- Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).
-- Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.
-- Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen.
-
-### Behoben
-- Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole.
+- Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.
+- Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich.
 
 ## 2026-11-08
 
@@ -66,4 +68,3 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.
 - Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.
 - Elternbereich: 5× auf „Lernquest“ tippen.
-
