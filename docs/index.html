@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="2f18292e3a9a">
+<meta name="app-version" content="bafd4c82e0d7">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -615,6 +615,9 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .colcalc .inp.carry { width: 32px; height: 32px; font-size: 18px; border-width: 3px; border-radius: 8px; justify-self: center; }
 /* Lesestube and Duell */
 .readcard p { font-size: 20px; line-height: 1.5; white-space: pre-line; }
+.readcard p.syl { font-size: 22px; line-height: 1.6; }
+.readcard .sy0 { color: #1B57C8; }
+.readcard .sy1 { color: #C8102E; }
 .readcard p.by { font-size: 16px; color: var(--ink-soft); margin-top: 8px; }
 .nameinput { width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 20px; color: var(--ink); background: #fff; }
 .nameinput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
@@ -2887,6 +2890,7 @@ const ENG = {
 // Fables are retold in our own words after Aesop, poems are public domain (by = author), \n breaks a line.
 // Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
 // grade: 1 or 2 marks a short text with two questions for Klasse 1 (8–30 words) or 2 (20–60 words); without it, Klasse 3.
+// Klasse-1 texts mark Sprechsilben with · (Son·ne) for the two-colour syllable display; text itself stays plain.
 const TEXTE = [
   { id: 'rabe', kind: 'Fabel', title: 'Der Fuchs und der Rabe',
     text: 'Ein Rabe hatte ein Stück Käse gefunden. Er setzte sich damit auf einen hohen Ast, um es in Ruhe zu fressen. Da kam ein Fuchs vorbei. Er roch den Käse und wollte ihn haben. „Was für ein schöner Vogel du bist!“, rief der Fuchs nach oben. „Deine Federn glänzen so schwarz. Wenn deine Stimme genauso schön ist, bist du der König aller Vögel.“ Der Rabe freute sich über das Lob. Er öffnete den Schnabel, um laut zu krächzen. Da fiel der Käse hinunter. Der Fuchs schnappte ihn und lief davon. Wer jedem Lob glaubt, wird leicht hereingelegt.',
@@ -3071,43 +3075,43 @@ const TEXTE = [
       { q: 'Wann stellt man den Schwibbogen ins Fenster?', o: ['In der Adventszeit', 'Im Sommer', 'Zu Ostern'], a: 0 },
     ] },
   { id: 'k1ball', grade: 1, kind: 'Erzählung', title: 'Der rote Ball',
-    text: 'Tim hat einen roten Ball. Er wirft ihn hoch in die Luft. Der Ball fällt in den Teich. Papa holt ihn mit einem langen Ast heraus.',
+    text: 'Tim hat ei·nen ro·ten Ball. Er wirft ihn hoch in die Luft. Der Ball fällt in den Teich. Pa·pa holt ihn mit ei·nem lan·gen Ast he·raus.',
     qs: [
       { q: 'Welche Farbe hat der Ball?', o: ['Rot', 'Blau', 'Gelb'], a: 0 },
       { q: 'Wo landet der Ball?', o: ['Im Teich', 'Im Baum', 'Auf dem Dach'], a: 0 },
     ] },
   { id: 'k1igel', grade: 1, kind: 'Sachtext', title: 'Der Igel',
-    text: 'Der Igel hat viele Stacheln. Am Tag schläft er. In der Nacht sucht er Käfer und Würmer. Den Winter verschläft er.',
+    text: 'Der I·gel hat vie·le Sta·cheln. Am Tag schläft er. In der Nacht sucht er Kä·fer und Wür·mer. Den Win·ter ver·schläft er.',
     qs: [
       { q: 'Was hat der Igel auf dem Rücken?', o: ['Stacheln', 'Federn', 'Schuppen'], a: 0 },
       { q: 'Wann sucht der Igel Futter?', o: ['In der Nacht', 'Am Mittag', 'Am Morgen'], a: 0 },
     ] },
   { id: 'k1hund', grade: 1, kind: 'Witz', title: 'Der kluge Hund',
-    text: 'Max sagt: „Mein Hund kann rechnen.“ Mia fragt den Hund: „Was ist zwei und zwei?“ Der Hund bellt viermal. Mia staunt.',
+    text: 'Max sagt: „Mein Hund kann rech·nen.“ Mi·a fragt den Hund: „Was ist zwei und zwei?“ Der Hund bellt vier·mal. Mi·a staunt.',
     qs: [
       { q: 'Was kann der Hund von Max?', o: ['Rechnen', 'Singen', 'Lesen'], a: 0 },
       { q: 'Wie oft bellt der Hund?', o: ['Viermal', 'Zweimal', 'Einmal'], a: 0 },
     ] },
   { id: 'k1zaehne', grade: 1, kind: 'Anleitung', title: 'Zähne putzen',
-    text: 'Nimm deine Zahnbürste. Gib etwas Zahnpasta darauf. Putze erst die Kauflächen, dann außen und innen. Zum Schluss spuckst du den Schaum aus.',
+    text: 'Nimm dei·ne Zahn·bürs·te. Gib et·was Zahn·pas·ta da·rauf. Put·ze erst die Kau·flä·chen, dann au·ßen und in·nen. Zum Schluss spuckst du den Schaum aus.',
     qs: [
       { q: 'Was kommt auf die Zahnbürste?', o: ['Zahnpasta', 'Seife', 'Honig'], a: 0 },
       { q: 'Was machst du zum Schluss?', o: ['Den Schaum ausspucken', 'Die Zähne zählen', 'Ins Bett gehen'], a: 0 },
     ] },
   { id: 'k1schnee', grade: 1, kind: 'Erzählung', title: 'Der Schneemann',
-    text: 'Heute liegt Schnee. Lea und Ben bauen einen Schneemann. Er bekommt eine Möhre als Nase und einen alten Hut. Dann gehen die Kinder ins Haus.',
+    text: 'Heu·te liegt Schnee. Le·a und Ben bau·en ei·nen Schnee·mann. Er be·kommt ei·ne Möh·re als Na·se und ei·nen al·ten Hut. Dann ge·hen die Kin·der ins Haus.',
     qs: [
       { q: 'Was bauen Lea und Ben?', o: ['Einen Schneemann', 'Eine Sandburg', 'Ein Vogelhaus'], a: 0 },
       { q: 'Was ist die Nase?', o: ['Eine Möhre', 'Ein Stein', 'Ein Apfel'], a: 0 },
     ] },
   { id: 'k1biene', grade: 1, kind: 'Sachtext', title: 'Die Biene',
-    text: 'Die Biene fliegt von Blüte zu Blüte. Dort sammelt sie süßen Nektar. Im Bienenstock machen die Bienen daraus Honig.',
+    text: 'Die Bie·ne fliegt von Blü·te zu Blü·te. Dort sam·melt sie sü·ßen Nek·tar. Im Bie·nen·stock ma·chen die Bie·nen da·raus Ho·nig.',
     qs: [
       { q: 'Was sammelt die Biene?', o: ['Nektar', 'Sand', 'Blätter'], a: 0 },
       { q: 'Was machen die Bienen aus dem Nektar?', o: ['Honig', 'Milch', 'Saft'], a: 0 },
     ] },
   { id: 'k1spiess', grade: 1, kind: 'Rezept', title: 'Der Obstspieß',
-    text: 'Du brauchst eine Banane, Trauben und einen Spieß aus Holz. Mama oder Papa schneidet die Banane in Stücke. Dann steckst du Banane und Trauben auf den Spieß.',
+    text: 'Du brauchst ei·ne Ba·na·ne, Trau·ben und ei·nen Spieß aus Holz. Ma·ma o·der Pa·pa schnei·det die Ba·na·ne in Stü·cke. Dann steckst du Ba·na·ne und Trau·ben auf den Spieß.',
     qs: [
       { q: 'Was brauchst du außer dem Obst?', o: ['Einen Spieß aus Holz', 'Einen Löffel', 'Einen Topf'], a: 0 },
       { q: 'Wer schneidet die Banane?', o: ['Mama oder Papa', 'Du allein', 'Niemand'], a: 0 },
@@ -3179,6 +3183,7 @@ const TEXTE = [
       { q: 'Wie viele Verse hat eine Strophe?', o: ['6 Verse', '2 Verse', '12 Verse'], a: 0 },
     ] },
 ];
+TEXTE.forEach((t) => { if (t.text.includes('·')) { t.syl = t.text; t.text = t.text.replace(/·/g, ''); } });
 
 </script>
 <script>
@@ -10606,9 +10611,10 @@ const K12E = (() => {
     { id: 'stampfen', noun: 'Stampfen', svg: ln('M30 8 V24 M70 8 V24', 2.5, '#9AA3B8') + rect(38, -2, 24, 52, '#5B6CFF', 3) + lit('M43 4 V44', 2)
       + sh('M34 48 H64 V56 Q82 56 86 66 Q88 74 80 74 H32 Q26 74 26 66 V54 Q26 48 34 48 Z', RED) + rect(24, 72, 64, 7, EBONY, 3, 2) + ln('M4 84 H96', 3)
       + ln('M16 78 L6 70 M20 72 L16 62 M92 76 L98 68 M90 68 L92 60', 2.5, '#FF8A3D') },
-    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(36, 80, 30, 20, BLUE, 3) + lit('M41 84 V96', 2)
-      + tube('M60 52 L78 24', 9, SKIN1) + oval(68, 60, 7, 5, SKIN1, 2.2) + oval(68, 71, 7, 5, SKIN1, 2.2)
-      + tube('M42 66 Q26 58 28 40', 11, SKIN1) + tube('M52 56 Q52 28 32 36', 9, SKIN1) + rect(34, 48, 34, 36, SKIN1, 12, 2.2) + ln('M22 32 L13 26 M28 26 L24 15 M20 42 L9 43', 3, '#FF8A3D') },
+    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(46, 84, 30, 16, BLUE, 3) + lit('M51 88 V96', 2)
+      + tube('M66 52 Q58 26 40 18', 9, SKIN1) + rect(42, 48, 38, 38, SKIN1, 13, 2.2) + oval(78, 60, 7, 5.5, SKIN1, 2.2, -10) + oval(78, 72, 7, 5.5, SKIN1, 2.2, -10)
+      + tube('M50 76 Q34 70 30 50', 11, SKIN1) + tube('M58 56 Q46 40 33 43', 9, SKIN1)
+      + sh(star(15, 44, 9, 3.6), GOLD, 2) + ln('M18 28 L12 21 M16 60 L10 66 M28 26 L28 17', 3, '#FF8A3D') },
     { id: 'patschen', noun: 'Patschen', svg: rect(10, 6, 36, 100, '#5B6CFF', 16) + rect(54, 6, 36, 100, '#5B6CFF', 16) + lit('M16 20 V90 M60 20 V90', 2)
       + at(28, 34, 180, 1.15, hand) + at(72, 34, 180, 1.15, left) + ln('M14 14 Q28 4 42 14 M58 14 Q72 4 86 14', 2.5, '#FF8A3D') },
   ];
@@ -15810,7 +15816,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
-    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {} });
+    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {}, started: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
   const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
@@ -15835,6 +15841,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
+    m.started = Object.fromEntries(Object.entries(m.started).filter(([, n]) => Number.isInteger(n) && n > 0));
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
@@ -16444,6 +16451,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     for (const g of MODE_KEYS) for (const [k, st] of Object.entries(m.stats[g])) { st.c += inc.stats[g][k].c; st.t += inc.stats[g][k].t; }
     for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
+    for (const [g, n] of Object.entries(inc.started)) m.started[g] = Math.max(m.started[g] || 0, n);
     for (const [k, v] of Object.entries(inc.materials)) m.materials[k] = Math.max(m.materials[k] || 0, v);
     for (const [g, L] of Object.entries(inc.level)) { const d = m.level[g] = Object.assign({}, m.level[g]); for (const [k, t] of Object.entries(L)) d[k] = Math.max(d[k] || 0, t); }
     m.garden.beds.forEach((b, i) => { if (!b.crop) m.garden.beds[i] = inc.garden.beds[i]; });
@@ -16489,12 +16497,14 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     const vis = CFG().starters.filter((s) => heroShown(mode, s)); const S = vis.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
     let sel = S.length === 1 ? S[0].id : null;
     const want = goal && goal.kind === 'right' ? goal.mod : null;
+    // Klasse 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
+    const kit = (s) => { if (CFG().grade !== 1) return s.attacks; const a = s.attacks.slice(), i = a.findIndex((x) => x.mod === want); if (i > 0) a.unshift(a.splice(i, 1)[0]); return a.slice(0, 2 + (meta.started[mode] || 0)); };
     // recommend the monster whose attacks were practised least (and not the one played last time); for a goal one that has its task type
     const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0) - (want && s.attacks.some((a) => a.mod === want) ? 1e9 : 0);
     const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
     // offer to swap the most practised attack for the goal's task type or one that was hardly practised yet
     let swap = null, swapOn = true;
-    const swapFor = (s) => { if (!s) return null; const have = s.attacks.map((a) => a.mod); const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
+    const swapFor = (s) => { if (!s) return null; const have = kit(s).map((a) => a.mod); const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
       if (want) return have.includes(want) || !most ? null : { from: most, to: want, goal: true };
       const cand = enabledMods().filter((k) => !have.includes(k)).sort((a, b) => practice(a) - practice(b))[0];
       return cand && most && practice(most) >= practice(cand) + 3 ? { from: most, to: cand } : null; };
@@ -16503,7 +16513,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
       if (swap) $('#swap').onclick = () => { swapOn = !swapOn; paintSwap(); }; };
     render(`<div class="screen">${topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
       ${goal ? `<p class="center goalbadge">⭐ Wochenziel: ${esc(goalText(goal))}</p>` : ''}
-      ${S.map((s) => `<button class="choice ${S.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? `<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${S.map((s) => `<button class="choice ${S.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? `<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
       ${vis.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
       <div id="swapbox"></div>
       ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
@@ -16511,12 +16521,12 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: kit(s).map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
       run.map = makeMapFor(1);
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
-      meta.pantry = []; meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
+      meta.pantry = []; meta.lastStarter[mode] = sel; meta.started[mode] = (meta.started[mode] || 0) + 1; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
   // shorter adventures for the younger grades; enemies stay as strong (see startBattle)
   const FLOORS_BY_GRADE = { 1: 6, 2: 7, 3: 8 };
@@ -16531,8 +16541,8 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
     const fights = m.slice(-4, -2).flat().filter((n) => n.t === 'fight');
     if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
     if (readsIn(mode)) { const fights = m.slice(1, -2).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
-    // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
-    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
+    // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite); never in Klasse 1
+    const tf = CFG().grade !== 1 && ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -16835,7 +16845,9 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
   const READ_MOD = { icon: '📖', name: 'Lesestube' };
   const READ_TUT = { title: 'Lesestube', steps: ['Lies den Text in Ruhe. Vor jeder Frage kannst du ihn noch einmal ansehen.', 'Jede richtige Antwort trifft den Zeilenspringer. Nach einer falschen Antwort schlägt er zurück.', 'Nach den Fragen ist die Lesestunde vorbei.'] };
   const readText = () => TEXTE[run.node.text];
-  const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p>${esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
+  // Silbenmethode: syllables alternate two colours, each word starts with the first
+  const sylHtml = (s) => s.split(/([A-Za-zÄÖÜäöüß·]+)/).map((w, i) => (i % 2 ? w.split('·').map((x, k) => `<span class="sy${k % 2}">${x}</span>`).join('') : esc(w))).join('');
+  const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p${t.syl ? ' class="syl"' : ''}>${t.syl ? sylHtml(t.syl) : esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
   function screenRead() {
     if (!Number.isInteger(run.node.text) || !TEXTE[run.node.text]) { run.node.text = pick(textsFor(mode)); saveAll(); }
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll">${readCard(readText())}</div><div class="bottom"><button class="btn" id="next">Zu den Fragen</button></div></div>`);
@@ -17690,7 +17702,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '2f18292e3a9a';
+  const BUILD = 'bafd4c82e0d7';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

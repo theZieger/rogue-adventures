@@ -100,6 +100,17 @@ TEXTE.forEach((t) => {
   });
 });
 TEXTE.map((t) => t.id).filter((x, i, a) => a.indexOf(x) !== i).forEach((x) => fail('Lesestube: duplicate id ' + x));
+// Klasse 1 shows Sprechsilben: every word with more than one vowel sound is split, one vowel sound per syllable
+const VOWEL = /ei|ai|au|eu|äu|ie|aa|ee|oo|[aeiouäöüy]/gi;
+TEXTE.forEach((t) => {
+  if (!!t.syl !== (t.grade === 1)) fail(`Lesestube ${t.id}: only and all grade-1 texts mark syllables`);
+  if (!t.syl) return;
+  if (t.syl.replace(/·/g, '') !== t.text || /·/.test(t.text)) fail(`Lesestube ${t.id}: text differs from syllable text`);
+  for (const w of t.syl.match(/[A-Za-zÄÖÜäöüß·]+/g)) {
+    const parts = w.split('·'), n = (w.match(VOWEL) || []).length;
+    if (parts.length !== n || parts.some((p) => (p.match(VOWEL) || []).length !== 1)) fail(`Lesestube ${t.id}: syllables of „${w}“`);
+  }
+});
 
 // the monster book and saved runs identify enemies by name, heroes by id
 // a name or id may appear in several units only for the same opponent or hero (Klasse 1/2 share one set per subject;

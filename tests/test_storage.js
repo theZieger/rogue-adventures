@@ -1352,6 +1352,50 @@ function topCases() {
   check(p2.w.__mq.meta.wins === wins + 1 && !p2.dump().mathquest_run_zahlen20 && p2.errors.length === 0, 'after its boss the old 8-floor adventure is won');
 }
 
+// Klasse 1 starts with fewer attacks (2, then 3, then 4 per theme) and never has a Kreisel-Arena
+{
+  const old = open({ [META]: JSON.stringify(Object.assign({ runs: 3 }, SKIPPED)) });
+  check(same(old.w.__mq.meta.started, {}) && old.errors.length === 0, 'an old save without started adventures loads with none');
+  const odd = open({ [META]: JSON.stringify(Object.assign({ started: { zahlen20: 'x', laute1: -1, musik1: 1.5, math: 2 } }, SKIPPED)) });
+  check(same(odd.w.__mq.meta.started, { math: 2 }), 'broken started counts are dropped');
+  let p = open({ [META]: JSON.stringify(Object.assign({ grade: 1 }, SKIPPED)) });
+  const s = p.w.eval('MK.MODES.zahlen20.starters[0]'); const M = p.w.eval('MK.MODES.zahlen20.modules');
+  const counts = [], arenas = [];
+  for (let i = 0; i < 5; i++) {
+    if (i) p = open(p.dump());
+    p.click('[data-new="zahlen20"]'); const y = p.$('.overlay #yes'); if (y) y.click();
+    if (i === 0) check(p.$('.choice[data-id] .desc').textContent.includes(`Attacken: ${M[s.attacks[0].mod].name}, ${M[s.attacks[1].mod].name}`) && !p.$('.choice[data-id] .desc').textContent.includes(M[s.attacks[2].mod].name), 'the hero choice lists only the attacks the child gets');
+    p.click('#go'); counts.push(p.w.__mq.run.hero.attacks.length); arenas.push(p.w.__mq.run.map.flat().some((n) => n.t === 'arena'));
+    if (i === 0) {
+      const d = p.dump(); const fight = [...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf');
+      p.click(fight); const ok = p.$('.overlay #tutok'); if (ok) ok.click();
+      check(p.d.querySelectorAll('.atk').length === 2 && p.errors.length === 0, 'the first Klasse-1 fight shows 2 attack buttons');
+      const re = open(d); re.click('[data-cont="zahlen20"]');
+      check(re.w.__mq.run.hero.attacks.length === 2 && re.w.__mq.meta.started.zahlen20 === 1, 'a saved Klasse-1 adventure keeps its attacks');
+    }
+  }
+  check(same(counts, [2, 3, 4, 4, 4]) && same(p.w.__mq.meta.started, { zahlen20: 5 }), 'Klasse 1: 2 attacks in the first adventure, 3 in the second, then 4: ' + counts);
+  check(!arenas.some(Boolean), 'new Klasse-1 maps have no Kreisel-Arena');
+  const mk = (started) => Object.assign(JSON.parse(JSON.stringify(p.w.__mq.meta)), { started });
+  check(same(p.w.__mq.mergeMeta(mk({ zahlen20: 1, laute1: 3 }), mk({ zahlen20: 2 })).started, { zahlen20: 2, laute1: 3 }), 'merge: the higher started count per theme wins');
+  const laute = open({ [META]: JSON.stringify(Object.assign({ grade: 1, started: { zahlen20: 4 } }, SKIPPED)) }); laute.click('[data-new="laute1"]'); laute.click('#go');
+  check(laute.w.__mq.run.hero.attacks.length === 2, 'started adventures count per theme');
+  const big = open({ [META]: JSON.stringify(SKIPPED) }); big.click('[data-new="math"]'); big.click('.choice'); big.click('#go');
+  check(big.w.__mq.run.hero.attacks.length === 4 && big.w.__mq.run.map.flat().some((n) => n.t === 'arena'), 'a first Klasse-3 adventure has all 4 attacks and a Kreisel-Arena');
+  // a Klasse-1 weekly goal: its attack is among the first two
+  let g, q;
+  for (let w = 0; w < 8 && !g; w++) {
+    q = open({ [META]: JSON.stringify(Object.assign({ grade: 1 }, SKIPPED)) }, { now: new Date(Date.parse(W49) + w * 7 * 864e5).toISOString() });
+    g = q.w.__mq.weeklyGoals().find((x) => x.kind === 'right' && q.w.__mq.subjectOf(x.m) && q.w.eval(`MK.MODES.${x.m} && MK.MODES.${x.m}.grade`) === 1);
+  }
+  if (!g) check(false, 'found a week with a Klasse-1 right-answers goal');
+  else {
+    q.click('#weekly'); q.click(`[data-goal="${g.i}"]`); const c = q.$('.choice[data-id]'); if (c) c.click(); q.click('#go');
+    const a = q.w.__mq.run.hero.attacks;
+    check(q.w.__mq.run.mode === g.m && a.length === 2 && a.some((x) => x.mod === g.mod) && q.errors.length === 0, `a first Klasse-1 adventure for a weekly goal has the goal's attack (${g.m}: ${g.mod})`);
+  }
+}
+
 // Remembered level per task type: warm-up start, faster steps, save code and merge; a weaker counter-hit when it is hard going
 async function levelCases() {
   const old = open({ [META]: JSON.stringify(Object.assign({ runs: 2, stats: { math: { add: { c: 3, t: 4, hist: [1] } } } }, SKIPPED)) });

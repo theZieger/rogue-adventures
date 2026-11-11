@@ -67,10 +67,10 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 | 2 | 🕯️ Feste und die Welt | Geburtstag, Erntedank, St. Martin, Advent, Nikolaus, Weihnachten nach Lukas, Ostern; Staunen über die Natur, werden und wachsen – Dilemma-Karten |
 | 2 | 🥁 Der Musikraum | Welches Instrument ist das (als Bild)? Instrumentenfamilien, wie man es spielt, laut und leise, hoch und tief, Stimmen |
 
-- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff.
-- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
+- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
+- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
 - Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
-- Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
+- Kein Zeitdruck. Alle vier Attacken sind von Anfang an da – nur in Klasse 1 beginnt das erste Abenteuer eines Themas mit zwei, das zweite mit drei Attacken; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
 - Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
 - Werkbank (im Stempelheft): Holz (Ereignis „Der Holzplatz“ in Zahlenquest, Siege in der Kartoffel-Werkstatt), Stein und Erz (Bergwerk) und Ernte (Schulgarten) werden nach einer Einmaleins-Sachaufgabe zu Trank, Großem Trank, Schild oder Chilischote (Vorrat, höchstens drei, kommt ins nächste Abenteuer) oder zu Möbeln.
