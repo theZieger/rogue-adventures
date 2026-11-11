@@ -120,28 +120,30 @@ const K12D = (() => {
   // Silben ordnen: words with three or four different syllables, in capitals so the first syllable is not given away
   const SILBEN_ORDER = SILBEN.filter(([, syl]) => { const s = syl.toUpperCase().split('-'); return s.length >= 3 && new Set(s).size === s.length; });
 
+  // the voice would say letter names („Es“), not sounds: say reads a question without its letter, quiet leaves out
+  // the options and the right answer after a mistake
   const L1_ITEMS = {
-    anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
+    anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { quiet: true, pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
     anlaut: PIC_IDS.map((id) => ({ id: 'l1ab_' + id, make: (qid) => { const wrong = []; for (const x of shuffle(PIC_IDS)) if (wrong.length < 2 && first(x) !== first(id) && !wrong.some((y) => first(y) === first(x))) wrong.push(x);
-      return choice('anlaut', 1, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
-    laute: VOW.map((v) => ({ id: 'l1sl_' + v, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, { why: 'Selbstlaute sind A, E, I, O, U.' }) }))
-      .concat(CONS.map((c) => ({ id: 'l1ml_' + c, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Mitlaut?', c, others(VOW, [], 2), qid, { why: `${c} ist ein Mitlaut. Selbstlaute sind A, E, I, O, U.` }) })))
-      .concat(Object.keys(UML).map((u) => ({ id: 'l1ul_' + u, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Umlaut?', u, [UML[u], pick(CONS)], qid, { why: 'Umlaute haben zwei Punkte: Ä, Ö, Ü.' }) })))
+      return choice('anlaut', 1, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, quiet: true, say: 'Welches Bild fängt mit diesem Buchstaben an?', why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
+    laute: VOW.map((v) => ({ id: 'l1sl_' + v, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, { quiet: true, why: 'Selbstlaute sind A, E, I, O, U.' }) }))
+      .concat(CONS.map((c) => ({ id: 'l1ml_' + c, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Mitlaut?', c, others(VOW, [], 2), qid, { quiet: true, why: `${c} ist ein Mitlaut. Selbstlaute sind A, E, I, O, U.` }) })))
+      .concat(Object.keys(UML).map((u) => ({ id: 'l1ul_' + u, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Umlaut?', u, [UML[u], pick(CONS)], qid, { quiet: true, why: 'Umlaute haben zwei Punkte: Ä, Ö, Ü.' }) })))
       .concat(VOW.concat(Object.keys(UML), others(CONS, [], 6)).map((x) => ({ id: 'l1la_' + x, make: (qid) => { const a = VOW.includes(x) ? 'Selbstlaut' : UML[x] ? 'Umlaut' : 'Mitlaut';
-        return choice('laute', 1, 'laute', `Was für ein Buchstabe ist das ${x}?`, a, ['Selbstlaut', 'Mitlaut', 'Umlaut'].filter((y) => y !== a), qid); } }))),
+        return choice('laute', 1, 'laute', `Was für ein Buchstabe ist das ${x}?`, a, ['Selbstlaut', 'Mitlaut', 'Umlaut'].filter((y) => y !== a), qid, { say: 'Was für ein Buchstabe ist das?' }); } }))),
     laute2: PIC_IDS.filter((id) => DIPH[id] || vowelGap(PICS[id].w) !== null).map((id) => ({ id: 'l1fv_' + id, make: (qid) => {
       const w = PICS[id].w; const d = DIPH[id]; const i = d ? w.indexOf(d) : vowelGap(w); const v = d || w[i];
       // the gapped word gets its own line (in the question it would wrap at the gap); „__“ is read as „Lücke“
       const pic = `<div class="expr">${w.slice(0, i)}<span style="display:inline-block;width:1.1em;border-bottom:4px solid var(--blue);color:transparent">__</span>${w.slice(i + v.length)}</div>${picOf(id)}`;
       const vs = d ? ['au', 'ei', 'eu'] : i === 0 ? VOW : VOW.map((x) => x.toLowerCase());
-      return choice('laute', 2, 'laute', d ? 'Welcher Zwielaut fehlt?' : 'Welcher Selbstlaut fehlt?', v, others(vs, [v], 2), qid, { pic, why: `Es heißt: ${w}.` });
+      return choice('laute', 2, 'laute', d ? 'Welcher Zwielaut fehlt?' : 'Welcher Selbstlaut fehlt?', v, others(vs, [v], 2), qid, { quiet: true, say: d ? 'Welcher Zwielaut fehlt?' : 'Welcher Selbstlaut fehlt?', pic, why: `Es heißt: ${w}.` });
     } })),
-    lautpos: LAUTPOS.map(([id, l, pos]) => ({ id: 'l1lp_' + id + l, make: (qid) => choice('lautpos', 1, 'lautpos', `Wo hörst du das ${l} in „${PICS[id].w}“?`, POS[pos], POS.filter((_, j) => j !== pos), qid, { pic: picOf(id) }) })),
+    lautpos: LAUTPOS.map(([id, l, pos]) => ({ id: 'l1lp_' + id + l, make: (qid) => choice('lautpos', 1, 'lautpos', `Wo hörst du das ${l} in „${PICS[id].w}“?`, POS[pos], POS.filter((_, j) => j !== pos), qid, { say: `Wo hörst du diesen Laut in „${PICS[id].w}“?`, pic: picOf(id) }) })),
     silben: SILBEN.map(([w, syl, id]) => ({ id: 'l1si_' + w, make: (qid) => { const n = syl.split('-').length; const a = SYL[n - 1];
       return choice('silben', 1, 'silben', `Wie viele Silben hat „${w}“?`, a, others(n === 4 ? SYL : SYL.slice(0, 3), [a], 2), qid, Object.assign({ why: `${syl}: ${a}.` }, id ? { pic: picOf(id) } : {})); } })),
-    alphabet2: ABC.slice(1, 24).map((x, i) => ({ id: 'l1na_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt nach ${x}?`, ABC[i + 2], [ABC[i], ABC[i + 3]], qid, { why: `${ABC[i]}, ${x}, ${ABC[i + 2]}` }) }))
-      .concat(ABC.slice(2, 25).map((x, i) => ({ id: 'l1vo_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt vor ${x}?`, ABC[i + 1], [ABC[i + 3], ABC[i]], qid, { why: `${ABC[i + 1]}, ${x}, ${ABC[i + 3]}` }) }))),
-    alphabet: ABC.slice(1, 22).map((x, j) => { const i = j + 1; return { id: 'l1fe_' + ABC[i + 2], make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe fehlt? ${ABC[i]}, ${ABC[i + 1]}, ___, ${ABC[i + 3]}`, ABC[i + 2], [ABC[i - 1], ABC[i + 4]], qid, { why: ABC.slice(i, i + 4).join(', ') }) }; }),
+    alphabet2: ABC.slice(1, 24).map((x, i) => ({ id: 'l1na_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt nach ${x}?`, ABC[i + 2], [ABC[i], ABC[i + 3]], qid, { quiet: true, say: 'Welcher Buchstabe kommt danach?', why: `${ABC[i]}, ${x}, ${ABC[i + 2]}` }) }))
+      .concat(ABC.slice(2, 25).map((x, i) => ({ id: 'l1vo_' + x, make: (qid) => choice('alphabet', 2, 'alphabet', `Welcher Buchstabe kommt vor ${x}?`, ABC[i + 1], [ABC[i + 3], ABC[i]], qid, { quiet: true, say: 'Welcher Buchstabe kommt davor?', why: `${ABC[i + 1]}, ${x}, ${ABC[i + 3]}` }) }))),
+    alphabet: ABC.slice(1, 22).map((x, j) => { const i = j + 1; return { id: 'l1fe_' + ABC[i + 2], make: (qid) => choice('alphabet', 1, 'alphabet', `Welcher Buchstabe fehlt? ${ABC[i]}, ${ABC[i + 1]}, ___, ${ABC[i + 3]}`, ABC[i + 2], [ABC[i - 1], ABC[i + 4]], qid, { quiet: true, say: 'Welcher Buchstabe fehlt in der Reihe?', why: ABC.slice(i, i + 4).join(', ') }) }; }),
     reim: REIME.flatMap((g, gi) => g.map((w) => ({ id: 'l1re_' + w, make: (qid) => {
       const wrong = shuffle(REIME.filter((x, j) => j !== gi && !alike(g, x))).slice(0, 2).map((x) => pick(x));
       return choice('reim', 1, 'reim', `Was reimt sich auf „${w}“?`, pick(g.filter((x) => x !== w)), wrong, qid);
@@ -152,12 +154,12 @@ const K12D = (() => {
     silben2: SILBEN_ORDER.map(([w, syl]) => ({ id: 'l1so_' + w, make: (qid) => {
       const items = syl.toUpperCase().split('-').map((text, i) => ({ id: 's' + i, text }));
       let display; do display = shuffle(items); while (display.every((x, i) => x === items[i]));
-      return { kind: 'order', mod: 'silben', tier: 2, group: 'silben:2', note: 'silben', q: 'Ordne die Silben zu einem Wort.', items, order: items.map((x) => x.id), display, qid };
+      return { kind: 'order', mod: 'silben', tier: 2, group: 'silben:2', note: 'silben', quiet: true, q: 'Ordne die Silben zu einem Wort.', items, order: items.map((x) => x.id), display, qid };
     } })),
     lesen: MIRROR.flatMap((x) => { const X = x.toUpperCase(), why = `${X} und ${x} gehören zusammen.`; return [
-      { id: 'l1bk_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?', X, others(MIRROR, [x], 2).map((y) => y.toUpperCase()), qid, { pic: look(x, 72), why }) },
-      { id: 'l1bg_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein großer Buchstabe. Welcher kleine gehört dazu?', x, others(MIRROR, [x], 2), qid, { pic: look(X, 72), why }) },
-      { id: 'l1bw_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Welches Wort fängt mit diesem Buchstaben an?', pick(MIRROR_WORDS[x]), others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])), qid, { pic: look(x, 72), why: `Das ist ein ${x}.` }) },
+      { id: 'l1bk_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?', X, others(MIRROR, [x], 2).map((y) => y.toUpperCase()), qid, { quiet: true, pic: look(x, 72), why }) },
+      { id: 'l1bg_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein großer Buchstabe. Welcher kleine gehört dazu?', x, others(MIRROR, [x], 2), qid, { quiet: true, pic: look(X, 72), why }) },
+      { id: 'l1bw_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Welches Wort fängt mit diesem Buchstaben an?', pick(MIRROR_WORDS[x]), others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])), qid, { quiet: true, pic: look(x, 72), why: `Das ist ein ${x}.` }) },
     ]; }),
     lesen2: PIC_IDS.map((id) => ({ id: 'l1lw_' + id, make: (qid) => choice('lesen', 2, 'lesen', 'Lies das Wort. Welches Bild passt?', svgOf(id), lookalikes(id).map(svgOf), qid, { svgOpts: true, cols: 1, pic: look(PICS[id].w, 42), why: `Da steht: ${PICS[id].w}.` }) })),
   };

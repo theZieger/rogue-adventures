@@ -12,13 +12,15 @@ const plain = (s) => s.replace(/<[^>]+>/g, ' ');
 const norm = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
 // Klasse 3/4 in the Rechtschreibrahmen: ck, tz; Komma and wörtliche Rede are not asked either
 const K3 = /ck|tz/i;
-// what the read-aloud voice reads in a task: the selector is taken from readAloud in app.js, so both stay in step
+// what the read-aloud voice reads in a task: the selector is taken from readAloud in app.js, so both stay in step;
+// task.say replaces the question, task.quiet leaves out the options
 const SPOKEN = require('fs').readFileSync(require('path').join(__dirname, '../src/app.js'), 'utf8').match(/function readAloud[\s\S]*?querySelectorAll\('([^']+)'\)/)[1];
 const dom = new JSDOM('').window.document;
 const spoken = (cfg, q) => {
   const box = dom.createElement('div');
   box.innerHTML = `<div class="question">${q.q}</div>${q.pic || ''}${(q.options || []).map((o) => `<button class="opt">${o}</button>`).join('')}`;
-  return [...box.querySelectorAll(SPOKEN + (cfg.speakOptions === false ? '' : ', .opt'))].map((e) => e.textContent.trim()).filter(Boolean).join(' ');
+  const text = (sel) => [...box.querySelectorAll(sel)].map((e) => e.textContent.trim());
+  return [...(q.say ? [q.say] : text(SPOKEN)), ...(cfg.speakOptions === false || q.quiet ? [] : text('.opt'))].filter(Boolean).join(' ');
 };
 
 for (const [m, grade] of Object.entries(UNITS)) {
@@ -45,6 +47,8 @@ for (const [m, grade] of Object.entries(UNITS)) {
     } else f(q.kind === 'order' && q.items.length === (q.group === 'silben:2' ? q.items.length : 4) && q.items.length >= 3, tag + ': unknown task kind or wrong length ' + q.kind);
     if (q.group === 'silben:2') { const w = D.SILBEN_ORDER.find(([x]) => q.qid === 'l1so_' + x);
       f(w && q.order.map((id) => q.items.find((x) => x.id === id).text).join('') === w[0].toUpperCase() && q.display.some((x, j) => x.id !== q.order[j]), tag + ': syllable order'); }
+    // the voice says letter names („Es“), not sounds, so Klasse 1 never hears a single letter
+    if (m === 'laute1') f(!/(^|[^\p{L}])\p{L}(?!\p{L})/u.test(spoken(cfg, q)), tag + ': a single letter is read aloud: ' + spoken(cfg, q));
     // Lesen: the shown letter or word is never read aloud – only the question is
     if (q.mod === 'lesen') {
       f(!spoken(cfg, { q: '', pic: q.pic }), tag + ': the shown letter or word is read aloud');

@@ -46,8 +46,7 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const RATES = { langsam: 0.75, normal: 0.9, schneller: 1.05 }; // read-aloud speeds parents can pick
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true, voiceName: '', speakRate: 0.9,
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true, voiceName: '', voiceEn: '', speakRate: 1,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -74,7 +73,7 @@
     m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
-    if (!Object.values(RATES).includes(m.speakRate)) m.speakRate = 0.9;
+    if (!(m.speakRate >= 0.6 && m.speakRate <= 1.4)) m.speakRate = 1;
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
@@ -376,7 +375,7 @@
     function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); const a = inps[active]; if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' }); }
     inps.forEach((el) => { el.onclick = () => { if (!locked) { active = +el.dataset.i; paint(); } }; });
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
-    readAloud(container, opts.bottom);
+    readAloud(container, opts.bottom, task);
     paint();
     bottom.onclick = (e) => {
       const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; press(b.dataset.k);
@@ -427,25 +426,55 @@
   // Only a voice that lives on the device: a network voice would send the task text away.
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
-  const voices = () => (TTS ? TTS.getVoices().filter((v) => v.localService && /^de/i.test(v.lang)) : []);
+  const local = (lang) => (TTS ? TTS.getVoices().filter((v) => v.localService && lang.test(v.lang)) : []);
+  const voices = () => local(/^de/i);
+  const enVoices = () => local(/^en/i);
   // a saved voice that is gone from the device quietly falls back to the first German one
   const chosenVoice = () => { const vs = voices(); return vs.find((v) => v.name === meta.voiceName) || vs[0] || null; };
+  const enVoice = () => { const vs = enVoices(); return vs.find((v) => v.name === meta.voiceEn) || vs.find((v) => /^en[-_]GB/i.test(v.lang)) || vs.find((v) => /^en[-_]US/i.test(v.lang)) || vs[0] || null; };
   const voice = () => (meta.speak ? chosenVoice() : null);
   const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
-  function speak(text, v = voice()) { if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = meta.speakRate; TTS.speak(u); }
+  // the task's English words and sentences (en) become pieces of their own: [text, true]; a gap is ___ in data, ____ on screen
+  const gap = (t) => t.replace(/_{2,}/g, '___');
+  function pieces(text, en) {
+    const list = [...new Set(en.map(gap))].sort((a, b) => b.length - a.length).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const all = list.length ? gap(text).split(new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u')) : [text];
+    return all.map((t, i) => [t, i % 2 === 1]).filter(([t]) => /[\p{L}\p{N}]/u.test(t));
+  }
+  // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
+  function speak(text, v = voice(), en = [], ve = enVoice()) {
+    if (!v) return; TTS.cancel();
+    for (const [t, isEn] of pieces(text, en)) {
+      const u = new SpeechSynthesisUtterance(isEn ? t.replace(/_{2,}/g, ' … ') : spoken(t));
+      u.voice = (isEn && ve) || v; u.lang = isEn ? (ve ? ve.lang : 'en-GB') : v.lang; u.rate = meta.speakRate; TTS.speak(u);
+    }
+  }
   // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
-  function speakBtn(anchor, where, text, first = text) {
+  function speakBtn(anchor, where, text, first = text, en = []) {
     if (!voice()) return;
-    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text()) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
-    if (first && CFG().grade < 3) speak(first());
+    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text(), voice(), en) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
+    if (first && CFG().grade < 3) speak(first(), voice(), en);
   }
   const joined = (...t) => t.filter(Boolean).join('. ').replace(/([.?!:…“])\. /g, '$1 ');
   const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html.replace(/<br>/g, '. '); d.querySelectorAll('svg').forEach((s) => s.remove()); return d.textContent; };
-  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : 'Daneben. ' + why));
+  let onScreen = {}; // the task on screen, for its feedback
+  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : onScreen.quiet ? 'Daneben' : 'Daneben. ' + why), undefined, onScreen.english || []);
   // how a fight ended: the headline and the line under it
   const sayCard = () => speakBtn($('.card'), 'afterbegin', () => joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)));
-  function readAloud(container, bottom) {
-    speakBtn($('.tut', container), 'beforebegin', () => joined(...[...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim())));
+  // setup help for the parents, only for their system; iPadOS reports itself as a Mac with touch
+  function voiceGuide(open) {
+    const ua = navigator.userAgent;
+    const [steps, hint] = /Android/.test(ua) ? [['Die Einstellungen öffnen, dann System → Sprachen und Eingabe → Sprachausgabe (oder „Text-in-Sprache“).', 'Als bevorzugtes Modul zum Beispiel „Sprachausgabe von Google“ wählen und als Sprache Deutsch.', 'Unter „Stimmdaten installieren“ Deutsch laden, für Englisch zusätzlich Englisch.', 'Die Lautstärke prüfen und Lernquest neu öffnen.'], 'Die Namen der Menüs unterscheiden sich je nach Hersteller.']
+      : /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? [['Die Einstellungen öffnen, dann Bedienungshilfen → Gesprochene Inhalte → Stimmen.', 'Deutsch antippen und eine Stimme laden. Für Englisch genauso unter Englisch.', 'Den Lautlos-Schalter ausschalten und die Lautstärke prüfen.', 'Lernquest neu öffnen.'], 'Je nach Version heißen die Menüs etwas anders.']
+        : [null, ''];
+    return `<details class="pguide"${open ? ' open' : ''}><summary>So klappt das Vorlesen</summary>${steps ? `<ol>${steps.map((x) => `<li>${x}</li>`).join('')}</ol>` : '<p>In den Systemeinstellungen unter Sprachausgabe eine deutsche Stimme hinzufügen, für Englisch auch eine englische.</p>'}${hint ? `<p class="pnote">${hint}</p>` : ''}</details>`;
+  }
+  // task.say: the question as spoken, without the letter it shows; task.quiet: its options are letters and stay unread
+  function readAloud(container, bottom, task) {
+    onScreen = task;
+    const asked = [...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword')].map((e) => e.textContent.trim());
+    const opts = CFG().speakOptions === false || task.quiet ? [] : [...(bottom || container).querySelectorAll('.opt, .oitem')].map((e) => e.textContent.trim());
+    speakBtn($('.tut', container), 'beforebegin', () => joined(...(task.say ? [task.say] : asked), ...opts), undefined, task.english || []);
   }
 
   /* ---------- Choice / order / parts tasks ---------- */
@@ -497,7 +526,7 @@
       paint();
     }
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
-    readAloud(container, opts.bottom);
+    readAloud(container, opts.bottom, task);
   }
 
   /* ---------- Potato plant drawing ---------- */
@@ -1834,10 +1863,15 @@
     const card = (h, body, cls) => `<div class="card pcard${cls ? ' ' + cls : ''}">${h ? `<h3>${h}</h3>` : ''}${body}</div>`;
     const note = (t) => `<p class="pnote">${t}</p>`;
     const msg = '<p class="tmsg" role="status"></p>';
-    const speakSettings = () => { const vs = voices(), cur = chosenVoice(); const tryBtn = (i) => `<button class="btn small secondary" data-try="${i}">Probe hören</button>`;
-      if (!vs.length) return note(TTS ? 'Auf diesem Gerät fehlt eine deutsche Stimme. Sie lässt sich in den Einstellungen des Geräts laden: Android meist unter System → Sprachen → Sprachausgabe, iPhone und iPad unter Bedienungshilfen → Gesprochene Inhalte → Stimmen.' : 'Dieser Browser kann nicht vorlesen.');
-      return (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${vs.map((v, i) => `<div class="pvrow"><button class="pvoice" aria-pressed="${v === cur}" data-voice="${i}">${esc(v.name)}</button>${tryBtn(i)}</div>`).join('')}</div>` : '')
-        + `<div class="pset"><b>Tempo</b><div class="pseg">${Object.entries(RATES).map(([t, r]) => `<button aria-pressed="${r === meta.speakRate}" data-rate="${t}">${t}</button>`).join('')}</div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>`; };
+    const speakSettings = () => { const vs = voices(), cur = chosenVoice(), es = enVoices(), ce = enVoice(); const tryBtn = (i, en = '') => `<button class="btn small secondary" data-try${en}="${i}">Probe hören</button>`;
+      if (!TTS) return note('Dieser Browser kann nicht vorlesen.');
+      if (!vs.length) return note('Auf diesem Gerät fehlt eine deutsche Stimme.') + voiceGuide(true);
+      const pick = (list, c, en) => list.map((v, i) => `<div class="pvrow"><button class="pvoice" aria-pressed="${v === c}" data-voice${en}="${i}">${esc(v.name)}</button>${tryBtn(i, en)}</div>`).join('');
+      return (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${pick(vs, cur, '')}</div>` : '')
+        + (es.length > 1 ? `<div class="pset"><b>Stimme für Englisch</b>${pick(es, ce, '-en')}</div>` : '')
+        + `<div class="pset"><label for="prate"><b>Tempo</b></label><input type="range" id="prate" class="prate" min="0.6" max="1.4" step="0.05" value="${meta.speakRate}"><div class="prange" aria-hidden="true"><span>langsam</span><span>schnell</span></div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>`
+        + (es.length ? '' : note('Für Englisch ist keine englische Stimme auf dem Gerät. Bis eine geladen ist, liest die deutsche Stimme die englischen Wörter. Wie das geht, steht unten.'))
+        + voiceGuide(false); };
     const sw = (on, attr, title, desc) => `<div class="prow"><div class="ptext"><b>${title}</b>${desc || ''}</div><button class="switch" role="switch" aria-checked="${!!on}" aria-label="${title.replace(/<[^>]+>/g, '')}" ${attr}><i></i></button></div>`;
     const stat = (n, v) => `<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
     const level = (c, t) => (c / t >= 0.8 ? '<span class="lvl good">sicher</span>' : c / t >= 0.5 ? '<span class="lvl mid">fast sicher</span>' : '<span class="lvl low">übt noch</span>');
@@ -1925,9 +1959,12 @@
     on('#pdel', () => confirmBox('PIN entfernen?', '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>', 'Ja, PIN entfernen', () => { meta.pin = ''; saveAll(); again(); }, true));
     on('#pspeak', () => { meta.speak = !meta.speak; saveAll(); again(); });
     const sample = (v) => speak('Hallo! So klingt diese Stimme.', v);
+    const sampleEn = 'Hello! This is how I sound.';
     on('[data-try]', (b) => sample(voices()[+b.dataset.try]));
     on('[data-voice]', (b) => { const v = voices()[+b.dataset.voice]; if (!v) return; meta.voiceName = v.name; saveAll(); again(); sample(v); });
-    on('[data-rate]', (b) => { meta.speakRate = RATES[b.dataset.rate]; saveAll(); again(); sample(chosenVoice()); });
+    on('[data-try-en]', (b) => { const v = enVoices()[+b.dataset.tryEn]; speak(sampleEn, voice(), [sampleEn], v); });
+    on('[data-voice-en]', (b) => { const v = enVoices()[+b.dataset.voiceEn]; if (!v) return; meta.voiceEn = v.name; saveAll(); again(); speak(sampleEn, voice(), [sampleEn], v); });
+    const rate = $('#prate'); if (rate) rate.onchange = () => { meta.speakRate = +rate.value; saveAll(); sample(chosenVoice()); };
     if (TTS) TTS.onvoiceschanged = () => { if ($('#pspeak')) again(); }; // some browsers deliver their voices late
     on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
