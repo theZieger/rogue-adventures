@@ -1275,6 +1275,46 @@ function topCases() {
   const none = open(store); toTask(none);
   check(!none.d.querySelector('.task .speak') && none.errors.length === 0, 'a device without speech shows no button');
 }
+// Vorlesen in Klasse 1: tutorials, feedback, events and how a fight starts are read out; the Lesestube text is not
+{
+  const V = { voice: { localService: true, lang: 'de-DE' } };
+  const meta1 = (more) => ({ [META]: JSON.stringify(Object.assign({ grade: 1, seenTut: { 'battle:intro2': true } }, SKIPPED, more)) });
+  const toNode = (unit, type, label, store) => {
+    const p = open(store || meta1(), V); p.click(`[data-new="${unit}"]`); p.click('.choice'); p.click('#go');
+    const r = p.w.__mq.run; let f = r.map.findIndex((fl) => fl.some((n) => n.t === type));
+    if (f < 0) { f = 0; r.map[0][0].t = type; }
+    r.floor = f + 1; r.path = r.map.slice(0, f).map(() => 0); if (f > 0) r.map[f - 1][0].n = [r.map[f].findIndex((n) => n.t === type)];
+    p.w.__mq.screenMap(); p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === label));
+    return p;
+  };
+  const last = (p) => p.w.said[p.w.said.length - 1] || '';
+  const p = toNode('ichdu1', 'fight', 'Kampf');
+  check(/taucht auf/.test(last(p)) && !!p.$('.log .speak'), 'a fight in Klasse 1 starts by reading who appears');
+  p.click('.atk');
+  const step = p.$('.overlay ol li').textContent;
+  check(!!p.$('.overlay h2 .speak') && last(p).includes(step) && !last(p).includes('Aus deinen Notizen'), 'the tutorial is read, the notes only on request');
+  if (p.$('.overlay .ex')) { p.click('.overlay .speak'); check(last(p).includes('Aus deinen Notizen'), 'the button also reads the notes'); }
+  p.click('.overlay #tutok');
+  const t = p.w.__task; const i = t.options.indexOf(t.answer);
+  check(last(p).includes(t.q.replace(/_{2,}/g, '').trim().slice(0, 10)), 'then the task is read');
+  p.click(p.d.querySelectorAll('.opt')[(i + 1) % t.options.length]);
+  check(/^Daneben\. /.test(last(p)) && last(p).includes(t.svgOpts ? t.why : 'Richtig wäre: ' + t.answer) && !!p.$('#fb .speak') && p.errors.length === 0, 'after a wrong answer the right one is read');
+  const z = toNode('zahlen20', 'fight', 'Kampf'); z.click('.atk'); if (z.$('.overlay #tutok')) z.click('.overlay #tutok');
+  const zt = z.w.__task;
+  if (zt.kind === 'num' && !zt.col) { zt.answers.forEach((a) => { String(a + 1).split('').forEach((k) => z.click(`[data-k="${k}"]`)); z.click('[data-k="ok"]'); }); check(/^Daneben\. Richtig wäre: /.test(last(z)) && z.errors.length === 0, 'and after a wrong number'); }
+  const e = toNode('ichdu1', 'event', 'Ereignis');
+  check(last(e).includes(e.$('.card h2').textContent) && last(e).includes(e.$('.bottom .btn').textContent.trim().replace(/\bLP\b/, 'Lebenspunkte')) && !/\bLP\b/.test(last(e)), 'an event is read with its choices, „LP“ as „Lebenspunkte“');
+  e.click([...e.d.querySelectorAll('.bottom .btn')].pop()); // the last choice never starts a task
+  check(last(e).includes(e.$('.card h2').textContent) && e.errors.length === 0, 'and so is what happened');
+  const r = toNode('laute1', 'lesen', 'Lesestube');
+  const text = r.w.eval('TEXTE')[r.w.__mq.run.node.text];
+  check(!r.w.said.some((s) => s.includes(text.title) || s.includes(text.text.slice(0, 15))) && !r.$('.speak'), 'the Lesestube text is left for the child to read');
+  r.click('#next'); r.click('#rq'); if (r.$('#tutok')) r.click('#tutok');
+  check(last(r).includes(r.w.__task.q) && !r.w.said.some((s) => s.includes(text.text.slice(0, 15))), 'its questions are read like other tasks');
+  const off = toNode('ichdu1', 'fight', 'Kampf', meta1({ speak: false })); off.click('.atk'); off.click('.overlay #tutok'); off.click('.opt');
+  const offE = toNode('ichdu1', 'event', 'Ereignis', meta1({ speak: false }));
+  check(off.w.said.length === 0 && offE.w.said.length === 0 && !off.$('.speak') && !offE.$('.speak'), 'switched off by parents: nothing is read');
+}
 
 // Shorter adventures for Klasse 1 and 2: 6 and 7 floors; an old 8-floor run keeps going to its own end
 {
