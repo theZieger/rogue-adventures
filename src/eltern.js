@@ -196,6 +196,14 @@ const ELTERN = (() => {
       hoch: 'Hohe und tiefe Töne: Große Instrumente klingen tiefer als kleine, auch im Bildvergleich.',
       stimme: 'Männer-, Frauen- und Kinderstimmen, Solo und Chor, Haltung und Atmung beim Singen.',
     },
+    musik1: {
+      instr: 'Ihr Kind erkennt die Orff-Instrumente aus dem Musikunterricht am Bild: Triangel, Klanghölzer, Rassel, Handtrommel, Schellenkranz und Glockenspiel.',
+      spielen: 'Wie bringt man ein Instrument zum Klingen? Schlagen, schütteln oder zupfen, am Bild und in kurzen Fragen.',
+      gegen: 'Gegensätze an Bildern aus dem Alltag: Gewitter und Flüstern (laut, leise), Hase und Schnecke (schnell, langsam), Maus und Bär (hoch, tief).',
+      gefuehl: 'Ein Lied wird mit Worten beschrieben, zum Beispiel fröhlich oder ruhig. Ihr Kind wählt das passende Bild.',
+      koerper: 'Körperinstrumente: klatschen, stampfen, schnipsen und patschen am Bild erkennen.',
+      zeichen: 'Klänge aufmalen: Ein langer Strich ist ein langer Ton, Punkte sind kurze Töne, ein großes Zeichen ist laut. Dazu kurze Muster wie „lang, kurz, kurz“.',
+    },
     laute1: {
       anlaut: 'Ihr Kind hört den ersten Laut eines Wortes zum Bild und findet den Buchstaben dazu.',
       laute: 'Selbstlaute, Umlaute und Mitlaute unterscheiden und einen fehlenden Selbstlaut im Wort ergänzen.',
@@ -328,6 +336,7 @@ const ELTERN = (() => {
     ichdu1: 'Ethik, Klasse 1/2, Lernbereich 1 „Ich im Wir“ und Lernbereich 2 „Miteinander“.',
     feste2: 'Ethik, Klasse 1/2, Lernbereich 3 „Voneinander“ und Lernbereich 4 „Wir in der Welt“. Religiöse Feste werden beschreibend erklärt.',
     instrumente2: 'Musik, Klasse 1/2, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Instrumente und Gesangsstimmen, Lautstärke und Tempo) und Lernbereich 2 (Tonhöhe). Welche Instrumente vorkommen, legt der Lehrplan nicht fest; hier sind es die Orff-Instrumente der Schule und einige bekannte Instrumente.',
+    musik1: 'Musik, Klasse 1/2, Lernbereich 2 „Musik erfinden, wiedergeben und gestalten mit Instrumenten“ (Klangeigenschaften, Körper- und Rhythmusinstrumente, Notation mit selbst erdachten grafischen Zeichen), Lernbereich 3 „Musik umsetzen, verbinden und in Beziehung bringen“ (Stimmungen) und Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Lautstärke, Tempo, Instrumente). Die Aufgaben kommen ohne Töne aus. Singen, klatschen und klopfen Sie mit: ein Lied einmal laut und einmal leise, schnell und langsam, oder einen Rhythmus mit Strichen und Punkten aufmalen und zusammen klatschen.',
     laute1: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Lernbereich 3 „Lesen“: Laute, Buchstaben, Silben und Alphabet.',
     schreiben2: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Sächsischer Rechtschreibrahmen.',
     woerter2: 'Deutsch, Klasse 1/2, Lernbereich 5 „Sprache und Sprachgebrauch untersuchen“.',
