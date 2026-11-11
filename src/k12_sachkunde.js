@@ -1116,6 +1116,7 @@ const MSK12 = (() => {
     thermo: { title: 'Das Thermometer', lines: ['Das Thermometer zeigt die Temperatur in Grad Celsius (°C).', 'Die Linie mit den Zahlen heißt Skala.', 'Wird es wärmer, steigt die rote Flüssigkeit.', 'Bei 0 °C gefriert Wasser zu Eis. Das ist der Gefrierpunkt.', 'Bei 0 °C schmilzt Eis auch wieder zu Wasser. Das ist der Schmelzpunkt.', 'Minus 5 Grad heißt: 5 Grad unter null.'] },
     loesen: { title: 'Wasser löst', lines: ['Zucker und Salz lösen sich in Wasser auf. Sand, Kieselsteine und Mehl nicht.', 'In warmem Wasser und beim Umrühren geht es schneller.', 'Sand trennst du mit einem Filter vom Wasser.', 'Verdunstet Salzwasser, bleiben Salzkristalle übrig.', 'Öl und Wasser mischen sich nicht.'] },
     sparen: { title: 'Wasser sparen', lines: ['Wasser brauchen wir zum Trinken, Kochen und Waschen.', 'Beim Zähneputzen drehst du den Hahn zu.', 'Duschen braucht weniger Wasser als ein volles Bad.', 'Blumen gießt du mit Regenwasser.', 'In manchen Ländern ist sauberes Wasser knapp.'] },
+    plan: { title: 'Plan lesen', lines: ['Ein Plan zeigt einen Ort von oben, viel kleiner als in Wirklichkeit.', 'Die Zeichen auf dem Plan erklärt die Legende.', 'Such das Zeichen in der Legende. Daneben steht, was es bedeutet.', 'Links und rechts auf dem Plan sind wie links und rechts auf deinem Blatt.'] },
     gefahr: { title: 'Gefährliche Flüssigkeiten', lines: ['Warnzeichen haben einen roten Rand in Form einer Raute.', Object.values(GHS).map((g) => g.mean).join(', ') + '.', 'Putzmittel stehen hoch und verschlossen in ihrer eigenen Flasche.', 'Unbekannte Flaschen fasst du nicht an. Hol einen Erwachsenen.', 'Spritzt etwas ins Auge: mit viel Wasser ausspülen und Hilfe holen.'] },
   };
   const NA_POOL = [].concat(
@@ -1218,6 +1219,14 @@ const MSK12 = (() => {
       ['Warum haben Putzmittel oft einen Kinderschutz-Deckel?', ['Kinder öffnen ihn schwer', 'Er sieht schön aus', 'Er hält warm']],
       ['Putzmittel spritzt dir ins Auge. Was tust du?', ['Mit Wasser ausspülen', 'Fest reiben', 'Nichts tun']],
       ['Was bedeutet „ätzend“?', ['Es verletzt die Haut', 'Es schmeckt süß', 'Es riecht gut']],
+    ]),
+    P('sk2n_pl', 'plan', 'plan', [
+      ['Wie zeigt ein Plan einen Ort?', ['Von oben', 'Von der Seite', 'Von unten']],
+      ['Was erklärt die Legende?', ['Die Zeichen im Plan', 'Die Uhrzeit', 'Das Wetter']],
+      ['Ein Plan ist kleiner als der Ort in Wirklichkeit.', true],
+      ['Wo findest du, was ein Zeichen bedeutet?', ['In der Legende', 'Auf dem Dach', 'Im Kalender']],
+      ['Auf einem Ortsplan ist jedes Haus genau so groß wie in echt.', false, 'Der Plan zeigt alles viel kleiner.'],
+      ['Womit findest du im Ort einen Weg?', ['Mit einem Ortsplan', 'Mit einem Thermometer', 'Mit einer Lupe']],
     ]));
   const NA_TUT = {
     'licht:1': { title: 'Licht und Schatten', steps: ['Ein Schatten entsteht, wo etwas das Licht verdeckt.', 'Beispiel: Steht die Sonne links, fällt der Schatten nach rechts.', 'Tippe auf die richtige Antwort.'] },
@@ -1225,12 +1234,36 @@ const MSK12 = (() => {
     'luft:1': { title: 'Luft und Schall', steps: ['Fragen zu Luft, Wind und Tönen.', 'Beispiel: Wind ist bewegte Luft.', 'Tippe auf die richtige Antwort.'] },
     'waerme:1': { title: 'Das Thermometer', steps: ['Lies ab, wie hoch die rote Säule steigt.', 'Zwischen zwei Zahlen liegen 10 Grad. Jeder kleine Strich sind 2 Grad.', 'Beispiel: Zwei kleine Striche über der 10 sind 14 °C.'] },
     'wasser:1': { title: 'Wasser', steps: ['Fragen dazu, was sich in Wasser löst und wie du Wasser sparst.', 'Beispiel: Zucker löst sich auf, Sand nicht.', 'Tippe auf die richtige Antwort.'] },
+    'plan:1': { title: 'Plan lesen', steps: ['Der Plan zeigt Orte von oben. Rechts daneben steht die Legende.', 'In der Legende steht neben jedem Zeichen, was es bedeutet.', 'Beispiel: Die Schaukel ist das Zeichen für den Spielplatz.', 'Tippe auf die richtige Antwort.'] },
     'gefahr:1': { title: 'Warnzeichen', steps: ['Gefährliche Flüssigkeiten tragen ein Warnzeichen mit rotem Rand.', 'Beispiel: Der Totenkopf heißt giftig.', 'Tippe auf die richtige Antwort.'] },
   };
+  // Plan lesen: the plan and legend of Kompass und Karte (Klasse 3) without the compass; four places on the 3 × 3 blocks
+  const dat = (p) => p.vom.replace(/^vom /, 'dem ').replace(/^von /, '');
+  const akk = (p) => p.name.replace(/^der /, 'den ');
+  const big = (p) => p.name[0].toUpperCase() + p.name.slice(1);
+  function planTask() {
+    for (;;) {
+      const spots = shuffle(Array.from({ length: 9 }, (_, i) => [Math.floor(i / 3), i % 3])).slice(0, 4);
+      const places = shuffle(S.PLACES).slice(0, 4).map((p, i) => ({ p, rc: spots[i] }));
+      const svg = `<svg ${NS} class="pic" viewBox="0 0 300 210" aria-label="Plan mit Legende">${S.PLAN_DEFS}${S.PLAN_BG}${places.map(({ p, rc }) => p.icon(38 + rc[1] * 66, 42 + rc[0] * 66)).join('')}`
+        + `<rect x="213" y="40" width="87" height="125" rx="7" fill="${OUT}" opacity=".12"/><rect x="211" y="38" width="86" height="124" rx="7" fill="url(#kp-paper)" stroke="${OUT}" stroke-width="2"/>${S.txt(254, 55, 'Legende', { size: 12 })}<path d="M222 61 L286 61" stroke="#C9AE76" stroke-width="1.2"/>`
+        + `${places.map(({ p }, i) => `<g transform="translate(225 ${82 + i * 23}) scale(.47)">${p.icon(0, 0)}</g>${S.txt(238, 86 + i * 23, big(p).split(' ')[1], { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
+      if (Math.random() < 0.5) {
+        const [{ p }, ...rest] = places; const opt = (x) => `<svg ${NS} viewBox="-26 -36 52 56" role="img" aria-label="Zeichen">${S.PLAN_DEFS}${x.icon(0, 0)}</svg>`;
+        return choice('plan', 'plan', `Welches Zeichen steht für ${akk(p)}?`, opt(p), rest.slice(0, 2).map((x) => opt(x.p)), 'sk2n_pz_' + p.id, { pic: svg, svgOpts: true, why: `So sieht das Zeichen für ${akk(p)} aus:` });
+      }
+      const side = pick([[1, 'rechts'], [-1, 'links']]);
+      const pairs = places.flatMap((a) => places.filter((b) => b.rc[0] === a.rc[0] && b.rc[1] === a.rc[1] + side[0]).map((b) => [a, b]));
+      if (!pairs.length) continue;
+      const [a, b] = pick(pairs);
+      return choice('plan', 'plan', `Was liegt auf dem Plan ${side[1]} neben ${dat(a.p)}?`, big(b.p), places.filter((x) => x !== a && x !== b).map((x) => big(x.p)), 'sk2n_pn_' + a.p.id + side[1], { pic: svg, spots: places.map(({ p, rc }) => [p.id, ...rc]), ask: [a.p.id, side[0]], why: `${big(b.p)} liegt ${side[1]} neben ${dat(a.p)}.` });
+    }
+  }
   function naGen(cfg) {
     return (m, tier, know, seq, opts) => {
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
+      if (m === 'plan' && r < 0.75) return planTask();
       if (m === 'licht' && r < 0.45) {
         const obj = pick(Object.keys(OBJ)), side = pick(['l', 'r']);
         if (Math.random() < 0.5) return choice(m, 'schatten', 'Wohin fällt der Schatten?', side === 'l' ? 'Nach rechts' : 'Nach links', [side === 'l' ? 'Nach links' : 'Nach rechts'], 'sk2n_sw_' + obj + side, { pic: shadowSVG(obj, side, true), cols: 2 });
@@ -1246,9 +1279,10 @@ const MSK12 = (() => {
       return null;
     };
   }
-  const NA = unit({ grade: 2, title: 'Licht, Luft und Wasser', icon: '💡', sub: 'Licht und Schatten, Sonne und Mond, Luft und Schall, Thermometer, Wasser und Warnzeichen', swap: { from: 'event', to: 'labor' }, labor: laborSet,
+  const NA = unit({ grade: 2, title: 'Licht, Luft und Wasser', icon: '💡', sub: 'Licht und Schatten, Sonne und Mond, Luft und Schall, Thermometer, Wasser, Warnzeichen und Plan lesen', swap: { from: 'event', to: 'labor' }, labor: laborSet,
     modules: { licht: mod('Licht und Schatten', '💡', 'Taschenlampe', 12), himmel: mod('Sonne, Mond und Sterne', '☀', 'Mondsichel', 12), luft: mod('Luft und Schall', '👂', 'Luftballon', 12),
-      waerme: mod('Das Thermometer', '🧊', 'Frostnacht', 14), wasser: mod('Wasser', '💧', 'Zuckerwürfel', 12), gefahr: mod('Warnzeichen', '🧪', 'Warnschild', 12) },
+      waerme: mod('Das Thermometer', '🧊', 'Frostnacht', 14), wasser: mod('Wasser', '💧', 'Zuckerwürfel', 12), gefahr: mod('Warnzeichen', '🧪', 'Warnschild', 12),
+      plan: mod('Plan lesen', '🗺', 'Ortsplan', 12) },
     attacks: [{ name: 'Taschenlampe', mod: 'licht' }, { name: 'Luftballon', mod: 'luft' }, { name: 'Frostnacht', mod: 'waerme' }, { name: 'Zuckerwürfel', mod: 'wasser' }],
     tut: NA_TUT, notes: NA_NOTES, pool: NA_POOL,
     events: [

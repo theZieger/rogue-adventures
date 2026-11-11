@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="07fde974c603">
+<meta name="app-version" content="2f18292e3a9a">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -3166,6 +3166,18 @@ const TEXTE = [
       { q: 'Was passiert mit den Blättern?', o: ['Sie werden bunt und fallen herunter.', 'Sie werden blau.', 'Sie wachsen schneller.'], a: 0 },
       { q: 'Was sammelt das Eichhörnchen?', o: ['Nüsse', 'Steine', 'Blätter'], a: 0 },
     ] },
+  { id: 'k2voegel', grade: 2, kind: 'Gedicht', title: 'Alle Vögel sind schon da', by: 'August Heinrich Hoffmann von Fallersleben, erste Strophe',
+    text: 'Alle Vögel sind schon da,\nalle Vögel, alle!\nWelch ein Singen, Musiziern,\nPfeifen, Zwitschern, Tireliern!\nFrühling will nun einmarschiern,\nkommt mit Sang und Schalle.',
+    qs: [
+      { q: 'Wer hat das Gedicht geschrieben?', o: ['Hoffmann von Fallersleben', 'Alle Vögel sind schon da', 'Der Frühling'], a: 0 },
+      { q: 'Welches Wort reimt sich auf „alle“?', o: ['Schalle', 'Vögel', 'Frühling'], a: 0 },
+    ] },
+  { id: 'k2winter', grade: 2, kind: 'Gedicht', title: 'Winter ade', by: 'August Heinrich Hoffmann von Fallersleben, erste und zweite Strophe',
+    text: 'Winter ade!\nScheiden tut weh.\nAber dein Scheiden macht,\ndass mir das Herze lacht.\nWinter ade!\nScheiden tut weh.\n\nWinter ade!\nScheiden tut weh.\nGerne vergess’ ich dein,\nkannst immer ferne sein.\nWinter ade!\nScheiden tut weh.',
+    qs: [
+      { q: 'Wie viele Strophen stehen hier?', o: ['2 Strophen', '1 Strophe', '6 Strophen'], a: 0 },
+      { q: 'Wie viele Verse hat eine Strophe?', o: ['6 Verse', '2 Verse', '12 Verse'], a: 0 },
+    ] },
 ];
 
 </script>
@@ -5162,7 +5174,7 @@ const MS = (() => {
   KK.gen = kkGen(KK);
 
   K.MODES.kornkammer = KO; K.MODES.wetterstation = WE; K.MODES.kompass = KK;
-  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, STEPS, EXPERIMENTS, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
+  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, STEPS, EXPERIMENTS, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, PLACES, PLAN_DEFS, PLAN_BG, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
 })();
 
 </script>
@@ -8211,7 +8223,8 @@ const K12D = (() => {
   const POS = ['am Anfang', 'in der Mitte', 'am Ende'];
   const SILBEN = PIC_IDS.map((id) => [PICS[id].w, PICS[id].syl, id]).concat([['Schule', 'Schu-le'], ['Tafel', 'Ta-fel'], ['Fenster', 'Fens-ter'], ['Hund', 'Hund'], ['Kinder', 'Kin-der'],
     ['Lineal', 'Li-ne-al'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
-    ['Sofa', 'So-fa'], ['Hose', 'Ho-se'], ['Schaf', 'Schaf'], ['Melone', 'Me-lo-ne'], ['Garten', 'Gar-ten'], ['Brot', 'Brot'], ['Schokolade', 'Scho-ko-la-de']]);
+    ['Sofa', 'So-fa'], ['Hose', 'Ho-se'], ['Schaf', 'Schaf'], ['Melone', 'Me-lo-ne'], ['Garten', 'Gar-ten'], ['Brot', 'Brot'], ['Schokolade', 'Scho-ko-la-de'],
+    ['Krokodil', 'Kro-ko-dil'], ['Kartoffel', 'Kar-tof-fel'], ['Regenbogen', 'Re-gen-bo-gen'], ['Sonnenblume', 'Son-nen-blu-me'], ['Schmetterling', 'Schmet-ter-ling']]);
   const SYL = ['1 Silbe', '2 Silben', '3 Silben', '4 Silben'];
   // rhyme groups: words of one group rhyme, words of different groups don't
   const REIME = [['Haus', 'Maus', 'Laus'], ['Hand', 'Sand', 'Wand'], ['Topf', 'Kopf', 'Knopf'], ['Ball', 'Stall', 'Knall'], ['Fisch', 'Tisch'], ['Hose', 'Rose', 'Dose'],
@@ -8224,6 +8237,17 @@ const K12D = (() => {
   // first vowel of a picture word, if it is a single vowel (not au, ei, ie, not an umlaut)
   const vowelGap = (w) => { const i = w.search(/[aeiouäöü]/i); return /^(au|ei|eu|ie|[äöü])/i.test(w.slice(i, i + 2)) ? null : i; };
   const DIPH = { haus: 'au', maus: 'au', baum: 'au', leiter: 'ei' };
+  // Lesen: the shown letter or word sits in a plain div, which the read-aloud voice skips (it reads .question, .prompt,
+  // .expr …), and the picture options carry no names – so the child reads it alone
+  const look = (text, size) => `<div style="font-size:${size}px;font-weight:700;text-align:center;line-height:1.2;margin:4px 0">${text}</div>`;
+  // b, d, p, q and g look alike
+  const MIRROR = ['b', 'd', 'p', 'q', 'g'];
+  const MIRROR_WORDS = { b: ['bunt', 'baden', 'bauen'], d: ['drei', 'dunkel', 'danke'], p: ['pusten', 'prima', 'paddeln'], q: ['quaken', 'quer', 'quieken'], g: ['gut', 'gelb', 'gehen'] };
+  // wrong pictures for a word: preferably the same first letter or a similar length, so the whole word must be read
+  const lookalikes = (id) => PIC_IDS.filter((x) => x !== id).map((x) => [x, (first(x) === first(id) ? 2 : 0) + (Math.abs(PICS[x].w.length - PICS[id].w.length) <= 1 ? 1 : 0) + Math.random()])
+    .sort((a, b) => b[1] - a[1]).slice(0, 2).map((x) => x[0]);
+  // Silben ordnen: words with three or four different syllables, in capitals so the first syllable is not given away
+  const SILBEN_ORDER = SILBEN.filter(([, syl]) => { const s = syl.toUpperCase().split('-'); return s.length >= 3 && new Set(s).size === s.length; });
 
   const L1_ITEMS = {
     anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
@@ -8254,6 +8278,17 @@ const K12D = (() => {
       .concat(PIC_REIME.flatMap((pair) => pair.map((id) => ({ id: 'l1rb_' + id, make: (qid) => { const partner = pair.find((x) => x !== id);
         const wrong = others(PIC_IDS, PIC_REIME.find((x) => x.includes(id)), 2);
         return choice('reim', 1, 'reim', `Was reimt sich auf „${PICS[id].w}“?`, optPic(partner), wrong.map(optPic), qid, { svgOpts: true, cols: 1, pic: picOf(id), why: `${PICS[id].w} – ${PICS[partner].w}` }); } })))),
+    silben2: SILBEN_ORDER.map(([w, syl]) => ({ id: 'l1so_' + w, make: (qid) => {
+      const items = syl.toUpperCase().split('-').map((text, i) => ({ id: 's' + i, text }));
+      let display; do display = shuffle(items); while (display.every((x, i) => x === items[i]));
+      return { kind: 'order', mod: 'silben', tier: 2, group: 'silben:2', note: 'silben', q: 'Ordne die Silben zu einem Wort.', items, order: items.map((x) => x.id), display, qid };
+    } })),
+    lesen: MIRROR.flatMap((x) => { const X = x.toUpperCase(), why = `${X} und ${x} gehören zusammen.`; return [
+      { id: 'l1bk_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?', X, others(MIRROR, [x], 2).map((y) => y.toUpperCase()), qid, { pic: look(x, 72), why }) },
+      { id: 'l1bg_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein großer Buchstabe. Welcher kleine gehört dazu?', x, others(MIRROR, [x], 2), qid, { pic: look(X, 72), why }) },
+      { id: 'l1bw_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Welches Wort fängt mit diesem Buchstaben an?', pick(MIRROR_WORDS[x]), others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])), qid, { pic: look(x, 72), why: `Das ist ein ${x}.` }) },
+    ]; }),
+    lesen2: PIC_IDS.map((id) => ({ id: 'l1lw_' + id, make: (qid) => choice('lesen', 2, 'lesen', 'Lies das Wort. Welches Bild passt?', svgOf(id), lookalikes(id).map(svgOf), qid, { svgOpts: true, cols: 1, pic: look(PICS[id].w, 42), why: `Da steht: ${PICS[id].w}.` }) })),
   };
   const L1_NOTES = {
     anlaut: { title: 'Der Anlaut', lines: ['Der Anlaut ist der erste Laut in einem Wort.', 'Sprich das Wort langsam und deutlich: Mmmond. Du hörst zuerst ein M.', 'In der Anlauttabelle findest du zu jedem Buchstaben ein Bild.'] },
@@ -8262,6 +8297,7 @@ const K12D = (() => {
     silben: { title: 'Silben', lines: ['Sprich das Wort und klatsche bei jeder Silbe: Ba-na-ne.', 'Jedes Klatschen ist eine Silbe. Banane hat 3 Silben.', 'In jeder Silbe steckt ein Selbstlaut, ein Umlaut oder ein Zwielaut.'] },
     alphabet: { title: 'Das Abc', lines: ['Das Abc hat 26 Buchstaben, von A bis Z.', 'A, B, C, D, E, F, G, H, I, J, K, L, M,', 'N, O, P, Q, R, S, T, U, V, W, X, Y, Z.', 'Sing das Abc-Lied, dann findest du den Nachbarn.'] },
     reim: { title: 'Reimwörter', lines: ['Reimwörter klingen am Ende gleich: Haus – Maus.', 'Nur der Anfang ist anders: H-aus, M-aus.', 'Sprich beide Wörter laut. Klingt das Ende gleich?'] },
+    lesen: { title: 'Lesen', lines: ['b, d, p und q sehen fast gleich aus. Schau genau, wo der Bauch und wo der Strich ist.', 'b: Der Strich geht nach oben, der Bauch ist rechts. d: Der Bauch ist links.', 'p: Der Strich geht nach unten, der Bauch ist rechts. q: Der Bauch ist links.', 'Zu jedem kleinen Buchstaben gehört ein großer: b – B, d – D, g – G.', 'Lies ein Wort Laut für Laut und zieh die Laute zusammen: M-au-s, Maus.'] },
   };
   const L1_TUT = {
     'anlaut:2': { title: 'Der erste Buchstabe', steps: ['Schau dir das Bild an. Wie heißt das Ding?', 'Sprich das Wort langsam. Welchen Laut hörst du zuerst?', 'Beispiel: Sonne. Sssonne. Zuerst hörst du ein S.', 'Tippe auf den Buchstaben.'] },
@@ -8272,20 +8308,24 @@ const K12D = (() => {
     'silben:1': { title: 'Silben klatschen', steps: ['Sprich das Wort und klatsche dazu.', 'Jedes Klatschen ist eine Silbe.', 'Beispiel: To-ma-te. Dreimal klatschen, also 3 Silben.', 'Tippe auf die richtige Zahl.'] },
     'alphabet:2': { title: 'Das Abc', steps: ['Sag das Abc auf, bis du zum Buchstaben kommst.', 'Welcher Buchstabe kommt direkt davor, welcher direkt danach?', 'Beispiel: nach D kommt E. Vor D kommt C.', 'Tippe auf den Buchstaben.'] },
     'alphabet:1': { title: 'Lücke im Abc', steps: ['In der Reihe fehlt ein Buchstabe.', 'Sag die Reihe auf und hör auf die Lücke.', 'Beispiel: D, E, __, G. Es fehlt das F.', 'Tippe auf den fehlenden Buchstaben.'] },
+    'silben:2': { title: 'Silben ordnen', steps: ['Die Silben eines Wortes sind durcheinander.', 'Lies jede Silbe. Welches Wort kannst du daraus bauen?', 'Beispiel: NA, BA, NE wird zu BA-NA-NE, Banane.', 'Tippe die Silben der Reihe nach an.'] },
+    'lesen:1': { title: 'Buchstaben unterscheiden', steps: ['Schau dir den Buchstaben oben genau an.', 'Wo ist der Bauch, wo ist der Strich? b und d, p und q sehen fast gleich aus.', 'Beispiel: Zum kleinen d gehört das große D.', 'Tippe auf die richtige Antwort.'] },
+    'lesen:2': { title: 'Wort lesen', steps: ['Oben steht ein Wort. Lies es leise für dich.', 'Lies Laut für Laut und zieh die Laute zusammen.', 'Beispiel: M-o-n-d. Mond. Tippe auf das Bild vom Mond.', 'Das Wort wird nicht vorgelesen. Du schaffst das allein.'] },
     'reim:1': { title: 'Reimwörter', steps: ['Reimwörter klingen am Ende gleich.', 'Sprich das Wort und jede Antwort laut.', 'Beispiel: Haus reimt sich auf Maus, nicht auf Hund.', 'Tippe auf das Reimwort.'] },
   };
   const L1_MODULES = {
     anlaut: { name: 'Erster Buchstabe', icon: '🔤', maxTier: 2, worldCap: [2], dmg: 12 },
     laute: { name: 'Selbstlaut und Mitlaut', icon: '🔡', maxTier: 2, worldCap: [2], dmg: 12 },
     lautpos: { name: 'Wo hörst du den Laut?', icon: '👂', maxTier: 1, worldCap: [1], dmg: 14 },
-    silben: { name: 'Silben klatschen', icon: '🥁', maxTier: 1, worldCap: [1], dmg: 12 },
+    silben: { name: 'Silben', icon: '🥁', maxTier: 2, worldCap: [2], dmg: 12 },
     alphabet: { name: 'Das Abc', icon: '🔠', maxTier: 2, worldCap: [2], dmg: 12 },
     reim: { name: 'Reimwörter', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 14 },
+    lesen: { name: 'Lesen', icon: '📗', maxTier: 2, worldCap: [2], dmg: 14 },
   };
-  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Erster Buchstabe, Selbstlaute, Silben, das Abc und Reimwörter',
+  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Erster Buchstabe, Selbstlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
     modules: L1_MODULES, tut: L1_TUT, notes: L1_NOTES, pool: [],
     starters: hero([{ name: 'Anlauttabelle', mod: 'anlaut' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }]),
-    extra: { anlaut: 'Anlauttabelle', laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim' },
+    extra: { anlaut: 'Anlauttabelle', laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim', lesen: 'Fibel' },
     events: [
       { title: 'Die Buchstabenkiste', text: 'Frau Klein hat eine Kiste mit Buchstaben aus Holz. Sie hält ein Bild hoch und fragt nach dem ersten Buchstaben. Wer ihn findet, bekommt einen Trank.', opts: [{ label: 'Antworten', task: 'anlaut', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Der Morgenkreis', text: 'Im Morgenkreis klatscht die Klasse Silben. Jetzt bist du dran. Klappt es, bekommst du einen Schild.', opts: [{ label: 'Klatschen', task: 'silben', win: { item: 'schild' }, lose: { hp: -4 } }, { label: 'Zuschauen', effect: {} }] },
@@ -8310,6 +8350,17 @@ const K12D = (() => {
     ['Kiste', 'Kieste', 'i'], ['Tinte', 'Tiente', 'i'], ['Pinsel', 'Piensel', 'i'], ['Kinder', 'Kiender', 'i'], ['Winter', 'Wienter', 'i'], ['finden', 'fienden', 'i']];
   const WHY_B = { st: 'Am Anfang hörst du scht, du schreibst st.', sp: 'Am Anfang hörst du schp, du schreibst sp.', nk: 'Du hörst ngk, du schreibst nk.', qu: 'Du hörst kw, du schreibst qu.',
     x: 'Hier schreibt man für ks ein x. Das Wort merkst du dir.', ie: 'Das i klingt lang. Dann schreibst du meist ie.', i: 'Das i klingt kurz. Dann schreibst du nur i.' };
+  // Merkwörter aus dem Rechtschreibrahmen Kl. 1/2: [richtig, falsch, Merkmal]; no silbentrennendes h (Kuh, Schuh: Kl. 3/4),
+  // no wrong form that is a real word (Bot, fiel, Ur)
+  const MERK = [['Vogel', 'Fogel', 'v'], ['Vater', 'Fater', 'v'], ['vier', 'fier', 'v'], ['voll', 'foll', 'v'], ['vorne', 'forne', 'v'],
+    ['Fuß', 'Fus', 'ß'], ['groß', 'gros', 'ß'], ['heiß', 'heis', 'ß'], ['süß', 'süs', 'ß'], ['Spaß', 'Spas', 'ß'], ['Soße', 'Sose', 'ß'],
+    ['fahren', 'faren', 'h'], ['Zahn', 'Zan', 'h'], ['Huhn', 'Hun', 'h'], ['wohnen', 'wonen', 'h'], ['Jahr', 'Jar', 'h'], ['Bohne', 'Bone', 'h'], ['Ohr', 'Or', 'h'], ['Zahl', 'Zal', 'h'],
+    ['Meer', 'Mer', 'vv'], ['Haar', 'Har', 'vv'], ['Tee', 'Te', 'vv'], ['Zoo', 'Zo', 'vv'], ['Schnee', 'Schne', 'vv'], ['See', 'Se', 'vv'], ['Moos', 'Mos', 'vv'],
+    ['Mai', 'Mei', 'ai'], ['Kaiser', 'Keiser', 'ai'], ['Mais', 'Meis', 'ai'],
+    ['Fuchs', 'Fuks', 'chs'], ['sechs', 'seks', 'chs'], ['Dachs', 'Daks', 'chs'], ['wachsen', 'waksen', 'chs'], ['Lachs', 'Laks', 'chs']];
+  const WHY_M = { v: 'Du hörst f, aber du schreibst v. Das Wort merkst du dir.', ß: 'Nach dem langen Selbstlaut steht hier ß. Das Wort merkst du dir.',
+    h: 'Hier steht ein h, das du nicht hörst. Das Wort merkst du dir.', vv: 'Hier steht der lange Selbstlaut doppelt. Das Wort merkst du dir.',
+    ai: 'Du hörst ei, aber du schreibst ai. Das Wort merkst du dir.', chs: 'Du hörst ks, aber du schreibst chs. Das Wort merkst du dir.' };
   // [richtig, falsch, Erklärung]
   const DOPPEL = [['Affe', 'Afe', 'Af-fe'], ['Tasse', 'Tase', 'Tas-se'], ['Himmel', 'Himel', 'Him-mel'], ['kommen', 'komen', 'kom-men'], ['Sonne', 'Sone', 'Son-ne'], ['Wasser', 'Waser', 'Was-ser'],
     ['Teller', 'Teler', 'Tel-ler'], ['Mutter', 'Muter', 'Mut-ter'], ['Suppe', 'Supe', 'Sup-pe'], ['Puppe', 'Pupe', 'Pup-pe'], ['Brille', 'Brile', 'Bril-le'], ['Butter', 'Buter', 'But-ter'],
@@ -8375,6 +8426,7 @@ const K12D = (() => {
   KLEIN.forEach(([s, r, f]) => S2_POOL.push({ id: 's2kw_' + r, mod: 'kleinw', g: 'kleinw', q: `Welches Wort ist richtig? ${s}`, o: [r, f], a: 0 }));
   const S2_NOTES = {
     besonders: { title: 'st, sp, nk, qu, x', lines: ['Am Wortanfang hörst du scht und schp, du schreibst st und sp: Stuhl, Spinne.', 'Du hörst ngk, du schreibst nk: Bank, trinken.', 'Du hörst kw, du schreibst qu: Quelle.', 'Für ks steht in manchen Wörtern ein x: Hexe, Taxi.'] },
+    merk: { title: 'Merkwörter', lines: ['Manche Wörter schreibt man anders, als man sie hört. Diese Wörter merkst du dir.', 'v statt f: Vogel, Vater, vier. ß: Fuß, groß, heiß.', 'Ein h, das man nicht hört: fahren, Zahn, Ohr. Doppelter Selbstlaut: Meer, Haar, Zoo.', 'ai statt ei: Mai, Kaiser. chs statt ks: Fuchs, sechs.'] },
     ie: { title: 'i oder ie', lines: ['Sprich das Wort in Silben: Wie-se, Kis-te.', 'Klingt das i lang, schreibst du meist ie: Wiese, Liebe.', 'Klingt das i kurz, schreibst du nur i: Kiste, Pinsel.'] },
     doppel: { title: 'Doppelte Mitlaute', lines: ['Sprich das Wort in Silben: Son-ne.', 'Ist der Selbstlaut kurz, hörst du den Mitlaut in beiden Silben. Du schreibst ihn doppelt: Sonne.', 'Ist der Selbstlaut lang, schreibst du ihn nur einmal: Ho-se.', 'Bei kurzen Wörtern hilft Verlängern: Ball, die Bäl-le.'] },
     verl: { title: 'Verlängern und ableiten', lines: ['Am Wortende klingen d und t, g und k, b und p gleich.', 'Verlängere das Wort, dann hörst du den Unterschied: der Hund, die Hun-de. Bei gelb hilft: der gel-be Ball.', 'Hörst du e oder eu, kann es auch ä oder äu sein. Such ein verwandtes Wort mit a oder au.', 'Baum, also Bäume. Apfel, also Äpfel. Gibt es keins, schreibst du e oder eu.'] },
@@ -8385,6 +8437,7 @@ const K12D = (() => {
   };
   const S2_TUT = {
     'besonders:1': { title: 'st, sp, nk, qu, x, ie', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Am Anfang hörst du scht, du schreibst st. Für kw schreibst du qu. Klingt das i lang, schreibst du meist ie.', 'Beispiel: „Stuhl“ oder „Schtuhl“? Richtig ist Stuhl.', 'Tippe auf das richtige Wort.'] },
+    'besonders:2': { title: 'Merkwörter', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Diese Wörter schreibt man anders, als man sie hört: v, ß, h, aa, ee, oo, ai, chs.', 'Beispiel: „Vogel“ oder „Fogel“? Richtig ist Vogel, mit v.', 'Tippe auf das richtige Wort.'] },
     'doppel:1': { title: 'Doppelte Mitlaute', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort in Silben. Ist der Selbstlaut kurz, steht der Mitlaut doppelt.', 'Beispiel: Son-ne. Das o ist kurz, also: Sonne. Ho-se: Das o ist lang, also nur ein s.', 'Tippe auf das richtige Wort.'] },
     'verl:1': { title: 'Verlängern', steps: ['Am Ende fehlt ein Buchstabe: d oder t, g oder k, b oder p.', 'Verlängere das Wort, dann hörst du ihn.', 'Beispiel: der Hun_ wird zu die Hun-de. Du hörst ein d, also: Hund.', 'Tippe auf den fehlenden Buchstaben.'] },
     'verl:2': { title: 'Ableiten', steps: ['Zwei Schreibweisen: mit ä oder e, mit äu oder eu.', 'Such ein verwandtes Wort mit a oder au.', 'Beispiel: Bäume oder Beume? Es kommt von Baum, also: Bäume.', 'Tippe auf das richtige Wort.'] },
@@ -8395,7 +8448,7 @@ const K12D = (() => {
     'kleinw:1': { title: 'Kleine Wörter', steps: ['Im Satz fehlt ein kleines Wort.', 'Zwei Schreibweisen, nur eine ist richtig. Diese Wörter merkst du dir.', 'Beispiel: Tim und Lea malen. Richtig ist „und“, nicht „unt“.', 'Tippe auf das richtige Wort.'] },
   };
   const S2_MODULES = {
-    besonders: { name: 'st, sp, qu, ie', icon: '📝', maxTier: 1, worldCap: [1], dmg: 12 },
+    besonders: { name: 'st, sp, ie und Merkwörter', icon: '📝', maxTier: 2, worldCap: [2], dmg: 12 },
     doppel: { name: 'Doppelte Mitlaute', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
     verl: { name: 'Verlängern und ableiten', icon: '↔️', maxTier: 2, worldCap: [2], dmg: 12 },
     gross: { name: 'Groß oder klein', icon: '🔠', maxTier: 1, worldCap: [1], dmg: 14 },
@@ -8404,7 +8457,7 @@ const K12D = (() => {
     kleinw: { name: 'Kleine Wörter', icon: '🗒️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
   // the options sound alike or give the answer away when read aloud
-  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
+  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, Merkwörter, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
     modules: S2_MODULES, tut: S2_TUT, notes: S2_NOTES, pool: S2_POOL,
     starters: hero([{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }]),
     extra: { besonders: 'Wörterkartei', doppel: 'Silbengelenk', verl: 'Verlängerung', gross: 'Großbuchstabe', satzz: 'Schlusspunkt', alphabet: 'Daumenregister', kleinw: 'Blitzlesekarte' },
@@ -8416,7 +8469,9 @@ const K12D = (() => {
       { title: 'Die Wortkartei', text: 'In der Wortkartei stehen knifflige Wörter: Hund oder Hunt? Findest du die richtige Schreibweise, klebt dir Herr Lange ein Fleißbienchen ins Heft.', opts: [{ label: 'Nachsehen', task: 'verl', win: { item: 'stern' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Der Schulgarten', text: 'Im Schulgarten steht eine Bank unter dem Apfelbaum. Du setzt dich und ruhst dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] });
-  SCHREIBEN2.gen = (mod, tier) => (mod !== 'alphabet' ? null : tier === 1 && Math.random() < 0.4 ? abcFirst() : abcOrder(tier));
+  // Merkwörter are generated, not pooled: they have their own note, and pool topics must be reachable at tier 1
+  const MERK_ITEMS = MERK.map(([r, f, k]) => ({ id: 's2mw_' + r, make: (qid) => choice('besonders', 2, 'merk', 'Welches Wort ist richtig geschrieben?', r, [f], qid, { why: WHY_M[k] }) }));
+  SCHREIBEN2.gen = (mod, tier, know, seq) => (mod === 'besonders' && tier === 2 ? ask(MERK_ITEMS, know, seq) : mod !== 'alphabet' ? null : tier === 1 && Math.random() < 0.4 ? abcFirst() : abcOrder(tier));
 
   /* ================= KLASSE 2: Wörter und Sätze ================= */
   const NOMEN = ['der Ball', 'der Hund', 'der Baum', 'der Tisch', 'der Mond', 'der Apfel', 'der Stuhl', 'der Bus', 'der Vogel', 'der Schuh', 'der Fisch', 'der Teller',
@@ -8548,7 +8603,7 @@ const K12D = (() => {
     ] });
 
   K.MODES.laute1 = LAUTE1; K.MODES.schreiben2 = SCHREIBEN2; K.MODES.woerter2 = WOERTER2;
-  return { PICS, LAUTPOS, SILBEN, REIME, PIC_REIME, BESONDERS, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
+  return { PICS, LAUTPOS, SILBEN, SILBEN_ORDER, REIME, PIC_REIME, MIRROR, MIRROR_WORDS, BESONDERS, MERK, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
 })();
 if (typeof module !== 'undefined') module.exports = K12D;
 
@@ -9670,6 +9725,7 @@ const MSK12 = (() => {
     thermo: { title: 'Das Thermometer', lines: ['Das Thermometer zeigt die Temperatur in Grad Celsius (°C).', 'Die Linie mit den Zahlen heißt Skala.', 'Wird es wärmer, steigt die rote Flüssigkeit.', 'Bei 0 °C gefriert Wasser zu Eis. Das ist der Gefrierpunkt.', 'Bei 0 °C schmilzt Eis auch wieder zu Wasser. Das ist der Schmelzpunkt.', 'Minus 5 Grad heißt: 5 Grad unter null.'] },
     loesen: { title: 'Wasser löst', lines: ['Zucker und Salz lösen sich in Wasser auf. Sand, Kieselsteine und Mehl nicht.', 'In warmem Wasser und beim Umrühren geht es schneller.', 'Sand trennst du mit einem Filter vom Wasser.', 'Verdunstet Salzwasser, bleiben Salzkristalle übrig.', 'Öl und Wasser mischen sich nicht.'] },
     sparen: { title: 'Wasser sparen', lines: ['Wasser brauchen wir zum Trinken, Kochen und Waschen.', 'Beim Zähneputzen drehst du den Hahn zu.', 'Duschen braucht weniger Wasser als ein volles Bad.', 'Blumen gießt du mit Regenwasser.', 'In manchen Ländern ist sauberes Wasser knapp.'] },
+    plan: { title: 'Plan lesen', lines: ['Ein Plan zeigt einen Ort von oben, viel kleiner als in Wirklichkeit.', 'Die Zeichen auf dem Plan erklärt die Legende.', 'Such das Zeichen in der Legende. Daneben steht, was es bedeutet.', 'Links und rechts auf dem Plan sind wie links und rechts auf deinem Blatt.'] },
     gefahr: { title: 'Gefährliche Flüssigkeiten', lines: ['Warnzeichen haben einen roten Rand in Form einer Raute.', Object.values(GHS).map((g) => g.mean).join(', ') + '.', 'Putzmittel stehen hoch und verschlossen in ihrer eigenen Flasche.', 'Unbekannte Flaschen fasst du nicht an. Hol einen Erwachsenen.', 'Spritzt etwas ins Auge: mit viel Wasser ausspülen und Hilfe holen.'] },
   };
   const NA_POOL = [].concat(
@@ -9772,6 +9828,14 @@ const MSK12 = (() => {
       ['Warum haben Putzmittel oft einen Kinderschutz-Deckel?', ['Kinder öffnen ihn schwer', 'Er sieht schön aus', 'Er hält warm']],
       ['Putzmittel spritzt dir ins Auge. Was tust du?', ['Mit Wasser ausspülen', 'Fest reiben', 'Nichts tun']],
       ['Was bedeutet „ätzend“?', ['Es verletzt die Haut', 'Es schmeckt süß', 'Es riecht gut']],
+    ]),
+    P('sk2n_pl', 'plan', 'plan', [
+      ['Wie zeigt ein Plan einen Ort?', ['Von oben', 'Von der Seite', 'Von unten']],
+      ['Was erklärt die Legende?', ['Die Zeichen im Plan', 'Die Uhrzeit', 'Das Wetter']],
+      ['Ein Plan ist kleiner als der Ort in Wirklichkeit.', true],
+      ['Wo findest du, was ein Zeichen bedeutet?', ['In der Legende', 'Auf dem Dach', 'Im Kalender']],
+      ['Auf einem Ortsplan ist jedes Haus genau so groß wie in echt.', false, 'Der Plan zeigt alles viel kleiner.'],
+      ['Womit findest du im Ort einen Weg?', ['Mit einem Ortsplan', 'Mit einem Thermometer', 'Mit einer Lupe']],
     ]));
   const NA_TUT = {
     'licht:1': { title: 'Licht und Schatten', steps: ['Ein Schatten entsteht, wo etwas das Licht verdeckt.', 'Beispiel: Steht die Sonne links, fällt der Schatten nach rechts.', 'Tippe auf die richtige Antwort.'] },
@@ -9779,12 +9843,36 @@ const MSK12 = (() => {
     'luft:1': { title: 'Luft und Schall', steps: ['Fragen zu Luft, Wind und Tönen.', 'Beispiel: Wind ist bewegte Luft.', 'Tippe auf die richtige Antwort.'] },
     'waerme:1': { title: 'Das Thermometer', steps: ['Lies ab, wie hoch die rote Säule steigt.', 'Zwischen zwei Zahlen liegen 10 Grad. Jeder kleine Strich sind 2 Grad.', 'Beispiel: Zwei kleine Striche über der 10 sind 14 °C.'] },
     'wasser:1': { title: 'Wasser', steps: ['Fragen dazu, was sich in Wasser löst und wie du Wasser sparst.', 'Beispiel: Zucker löst sich auf, Sand nicht.', 'Tippe auf die richtige Antwort.'] },
+    'plan:1': { title: 'Plan lesen', steps: ['Der Plan zeigt Orte von oben. Rechts daneben steht die Legende.', 'In der Legende steht neben jedem Zeichen, was es bedeutet.', 'Beispiel: Die Schaukel ist das Zeichen für den Spielplatz.', 'Tippe auf die richtige Antwort.'] },
     'gefahr:1': { title: 'Warnzeichen', steps: ['Gefährliche Flüssigkeiten tragen ein Warnzeichen mit rotem Rand.', 'Beispiel: Der Totenkopf heißt giftig.', 'Tippe auf die richtige Antwort.'] },
   };
+  // Plan lesen: the plan and legend of Kompass und Karte (Klasse 3) without the compass; four places on the 3 × 3 blocks
+  const dat = (p) => p.vom.replace(/^vom /, 'dem ').replace(/^von /, '');
+  const akk = (p) => p.name.replace(/^der /, 'den ');
+  const big = (p) => p.name[0].toUpperCase() + p.name.slice(1);
+  function planTask() {
+    for (;;) {
+      const spots = shuffle(Array.from({ length: 9 }, (_, i) => [Math.floor(i / 3), i % 3])).slice(0, 4);
+      const places = shuffle(S.PLACES).slice(0, 4).map((p, i) => ({ p, rc: spots[i] }));
+      const svg = `<svg ${NS} class="pic" viewBox="0 0 300 210" aria-label="Plan mit Legende">${S.PLAN_DEFS}${S.PLAN_BG}${places.map(({ p, rc }) => p.icon(38 + rc[1] * 66, 42 + rc[0] * 66)).join('')}`
+        + `<rect x="213" y="40" width="87" height="125" rx="7" fill="${OUT}" opacity=".12"/><rect x="211" y="38" width="86" height="124" rx="7" fill="url(#kp-paper)" stroke="${OUT}" stroke-width="2"/>${S.txt(254, 55, 'Legende', { size: 12 })}<path d="M222 61 L286 61" stroke="#C9AE76" stroke-width="1.2"/>`
+        + `${places.map(({ p }, i) => `<g transform="translate(225 ${82 + i * 23}) scale(.47)">${p.icon(0, 0)}</g>${S.txt(238, 86 + i * 23, big(p).split(' ')[1], { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
+      if (Math.random() < 0.5) {
+        const [{ p }, ...rest] = places; const opt = (x) => `<svg ${NS} viewBox="-26 -36 52 56" role="img" aria-label="Zeichen">${S.PLAN_DEFS}${x.icon(0, 0)}</svg>`;
+        return choice('plan', 'plan', `Welches Zeichen steht für ${akk(p)}?`, opt(p), rest.slice(0, 2).map((x) => opt(x.p)), 'sk2n_pz_' + p.id, { pic: svg, svgOpts: true, why: `So sieht das Zeichen für ${akk(p)} aus:` });
+      }
+      const side = pick([[1, 'rechts'], [-1, 'links']]);
+      const pairs = places.flatMap((a) => places.filter((b) => b.rc[0] === a.rc[0] && b.rc[1] === a.rc[1] + side[0]).map((b) => [a, b]));
+      if (!pairs.length) continue;
+      const [a, b] = pick(pairs);
+      return choice('plan', 'plan', `Was liegt auf dem Plan ${side[1]} neben ${dat(a.p)}?`, big(b.p), places.filter((x) => x !== a && x !== b).map((x) => big(x.p)), 'sk2n_pn_' + a.p.id + side[1], { pic: svg, spots: places.map(({ p, rc }) => [p.id, ...rc]), ask: [a.p.id, side[0]], why: `${big(b.p)} liegt ${side[1]} neben ${dat(a.p)}.` });
+    }
+  }
   function naGen(cfg) {
     return (m, tier, know, seq, opts) => {
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
+      if (m === 'plan' && r < 0.75) return planTask();
       if (m === 'licht' && r < 0.45) {
         const obj = pick(Object.keys(OBJ)), side = pick(['l', 'r']);
         if (Math.random() < 0.5) return choice(m, 'schatten', 'Wohin fällt der Schatten?', side === 'l' ? 'Nach rechts' : 'Nach links', [side === 'l' ? 'Nach links' : 'Nach rechts'], 'sk2n_sw_' + obj + side, { pic: shadowSVG(obj, side, true), cols: 2 });
@@ -9800,9 +9888,10 @@ const MSK12 = (() => {
       return null;
     };
   }
-  const NA = unit({ grade: 2, title: 'Licht, Luft und Wasser', icon: '💡', sub: 'Licht und Schatten, Sonne und Mond, Luft und Schall, Thermometer, Wasser und Warnzeichen', swap: { from: 'event', to: 'labor' }, labor: laborSet,
+  const NA = unit({ grade: 2, title: 'Licht, Luft und Wasser', icon: '💡', sub: 'Licht und Schatten, Sonne und Mond, Luft und Schall, Thermometer, Wasser, Warnzeichen und Plan lesen', swap: { from: 'event', to: 'labor' }, labor: laborSet,
     modules: { licht: mod('Licht und Schatten', '💡', 'Taschenlampe', 12), himmel: mod('Sonne, Mond und Sterne', '☀', 'Mondsichel', 12), luft: mod('Luft und Schall', '👂', 'Luftballon', 12),
-      waerme: mod('Das Thermometer', '🧊', 'Frostnacht', 14), wasser: mod('Wasser', '💧', 'Zuckerwürfel', 12), gefahr: mod('Warnzeichen', '🧪', 'Warnschild', 12) },
+      waerme: mod('Das Thermometer', '🧊', 'Frostnacht', 14), wasser: mod('Wasser', '💧', 'Zuckerwürfel', 12), gefahr: mod('Warnzeichen', '🧪', 'Warnschild', 12),
+      plan: mod('Plan lesen', '🗺', 'Ortsplan', 12) },
     attacks: [{ name: 'Taschenlampe', mod: 'licht' }, { name: 'Luftballon', mod: 'luft' }, { name: 'Frostnacht', mod: 'waerme' }, { name: 'Zuckerwürfel', mod: 'wasser' }],
     tut: NA_TUT, notes: NA_NOTES, pool: NA_POOL,
     events: [
@@ -10332,6 +10421,18 @@ const K12E = (() => {
       ask('Die Sternwarte', 'In der Sternwarte zeigt dir eine Forscherin den Mond durch ein Fernrohr. Sie stellt dir eine Frage und schenkt dir einen Schutzengel.', 'natur', 'staunen', { item: 'engel' }, { xp: 5 }),
       ask('Der Schulgarten', 'Im Schulgarten keimen die Bohnen. Der Hausmeister fragt dich, wie Pflanzen wachsen, und leiht dir seine Lupe.', 'wachsen', 'wachsen', { item: 'lupe' }, { xp: 5 }),
       rest('Die Bank am Teich', 'Am Teich steht eine Bank in der Sonne. Hier ruhst du dich aus.'),
+      dilemma('Die Mannschaftswahl', 'Im Sport werden Mannschaften gewählt. Jonas bleibt immer bis zum Schluss übrig. Heute darfst du wählen.', [
+        ['Ich wähle Jonas zuerst.', 'Jonas strahlt. Er gibt sich beim Spiel besonders viel Mühe.', 'Wie fühlt man sich, wenn man immer übrig bleibt?'],
+        ['Ich wähle die Schnellsten.', 'Deine Mannschaft gewinnt. Jonas steht wieder am Rand.', 'Ist Gewinnen das Wichtigste?'],
+        ['Ich schlage vor, die Mannschaften auszulosen.', 'Das Los mischt alle durch. Niemand bleibt übrig.', 'Wie kann eine Wahl für alle gerecht sein?']]),
+      dilemma('Das fremde Pausenbrot', 'Aylin hat ein Essen dabei, das die anderen nicht kennen. Ein Kind ruft: „Iiih, das riecht komisch!“', [
+        ['Ich frage Aylin, was das ist.', 'Aylin erzählt, dass ihre Oma es kocht. Du darfst probieren.', 'Warum wirkt Neues manchmal fremd?'],
+        ['Ich lache mit.', 'Aylin packt ihr Essen weg und isst nichts mehr.', 'Wie fühlt sich Aylin jetzt?'],
+        ['Ich sage: „Jeder isst, was ihm schmeckt.“', 'Das Kind wird still. Aylin isst weiter.', 'Muss allen dasselbe schmecken?']]),
+      dilemma('Der Geheimclub', 'Deine Freundinnen gründen in der Pause einen Club. Sie sagen: „Lena darf nicht mitmachen. Die ist anders.“', [
+        ['Ich sage: „Dann mache ich auch nicht mit.“', 'Die anderen überlegen. Am nächsten Tag darf Lena dabei sein.', 'Was braucht man, um Nein zu sagen?'],
+        ['Ich mache trotzdem mit.', 'Der Club trifft sich hinter der Turnhalle. Lena sitzt allein auf der Bank.', 'Wie fühlt sich Lena, wenn alle weggehen?'],
+        ['Ich frage, was an Lena anders sein soll.', 'Keiner weiß eine richtige Antwort. Die Kinder werden still.', 'Ist jeder Mensch irgendwie anders?']]),
     ],
   });
 
@@ -10341,6 +10442,7 @@ const K12E = (() => {
     familien: { title: 'Instrumentenfamilien', lines: ['Saiteninstrumente haben Saiten: Gitarre, Geige und Kontrabass.', 'Blasinstrumente: Man bläst hinein, zum Beispiel in Blockflöte und Trompete.', 'Schlaginstrumente schlägt oder schüttelt man: Trommel, Triangel, Klanghölzer, Glockenspiel, Rassel und Schellenkranz.', 'Tasteninstrumente haben Tasten: Klavier und Orgel.', 'Im Klavier sind auch Saiten. Weil man es mit Tasten spielt, zählt es zu den Tasteninstrumenten.'] },
     spielen: { title: 'So spielt man', lines: ['Zupfen: Die Finger ziehen an der Saite und lassen sie los. So spielt man Gitarre.', 'Streichen: Ein Bogen streicht über die Saiten. So spielt man Geige.', 'Blasen: Man bläst Luft hinein. So spielt man Blockflöte und Trompete.', 'Schlagen: mit der Hand oder einem Schlägel. So spielt man Trommel, Triangel und Glockenspiel.', 'Schütteln: So spielt man Rassel und Schellenkranz.', 'Tasten drücken: So spielt man Klavier.'] },
     laut: { title: 'Laut und leise, schnell und langsam', lines: ['Musik kann laut, mittellaut oder leise sein.', 'Ein Schlaflied singt man leise und langsam.', 'Ein Marsch oder ein Gewitter in der Musik klingt laut.', 'Musik kann schnell, mäßig oder langsam sein.', 'Zu einer flinken Maus passt schnelle Musik, zu einer Schnecke langsame.'] },
+    form: { title: 'Wiederholung und Gegensatz', lines: ['Ein Musikstück hat Teile. Manche Teile kommen wieder.', 'Kommt ein Teil noch einmal, ist das eine Wiederholung. Er bekommt denselben Buchstaben: A und A.', 'Ein ganz anderer Teil ist ein Gegensatz. Er bekommt einen neuen Buchstaben: B.', 'A – B – A heißt: Anfang, Gegensatz, dann der Anfang noch einmal.'] },
     hoch: { title: 'Hohe und tiefe Töne', lines: ['Große Instrumente klingen meist tief, kleine Instrumente hoch.', 'Der Kontrabass klingt tief, die Geige hoch.', 'Eine große Trommel brummt tief, eine kleine klingt höher.', 'Beim Glockenspiel klingen lange Platten tief und kurze Platten hoch.', 'Ein Bär brummt tief, eine Maus piepst hoch.'] },
     stimmen: { title: 'Stimmen', lines: ['Die Stimme ist auch ein Instrument. Jeder hat sie immer dabei.', 'Männer haben meist die tiefsten Stimmen. Frauen- und Kinderstimmen klingen höher.', 'Singt einer allein, heißt das Solo. Singen viele zusammen, ist das ein Chor.', 'Singt die ganze Klasse zusammen, singt sie wie ein Chor.', 'Vor dem Singen: aufrecht stehen oder sitzen und ruhig atmen.'] },
   };
@@ -10387,6 +10489,7 @@ const K12E = (() => {
   ];
   function gen3(mod, tier, know, seq, opts) {
     if (wantsPool(POOL3, mod, opts)) return null;
+    if (mod === 'form') return formTask();
     const r = Math.random(); const i = pick(INSTR);
     const look = { pic: pic(i.svg, 'Bild eines Instruments'), instr: i.id };
     if (mod === 'bild') {
@@ -10403,8 +10506,27 @@ const K12E = (() => {
     }
     return null;
   }
+  // Wiederholung und Gegensatz: each part of a piece is a pattern of three shapes; A comes back, B is the contrast
+  const SHAPES = { k: (x) => circ(x, 50, 11, BLUE, 2), q: (x) => rect(x - 10, 40, 20, 20, RED, 3, 2), d: (x) => sh(`M${x} 37 L${x + 13} 61 L${x - 13} 61 Z`, GOLD, 2) };
+  const part = (code, ox) => rect(ox + 4, 22, 92, 56, PAPER, 10, 2) + [...code].map((c, i) => SHAPES[c](ox + 22 + i * 28)).join('');
+  const gap = (ox) => `<rect x="${ox + 4}" y="22" width="92" height="56" rx="10" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="6 5"/><text x="${ox + 50}" y="61" font-size="30" font-weight="700" text-anchor="middle" fill="${INK}">?</text>`;
+  const strip = (codes) => { const inner = codes.map((c, i) => (c ? part(c, i * 100) : gap(i * 100))).join('');
+    return `<svg ${NS} class="pic" viewBox="0 0 300 100" style="max-width:300px" role="img" aria-label="Musikstück aus Mustern">${defs()}${inner}</svg>`; };
+  const mix = (letters) => { for (;;) { const c = Array.from({ length: 3 }, () => pick(letters)).join(''); if (new Set(c).size > 1) return c; } };
+  const FORMS = ['ABA', 'AAB', 'ABB'];
+  const formName = (f) => [...f].join(' – ');
+  function formTask() {
+    const [x, y, z] = shuffle(Object.keys(SHAPES));
+    const a = mix([x, y]), b = pick([z + z + z, mix([z, x]), mix([z, y])]);
+    if (Math.random() < 0.4) { const f = pick(FORMS);
+      return choice('form', 'form', 'Welche Form hat das Musikstück?', formName(f), FORMS.filter((g) => g !== f).map(formName), 'k2mfo_' + f + a + b, { pic: strip([...f].map((c) => (c === 'A' ? a : b))), form: f, parts: [a, b] }); }
+    // the changed copy of A: one shape swapped, so it only looks like the beginning
+    const i = Math.floor(Math.random() * 3), v = a.slice(0, i) + (a[i] === x ? y : x) + a.slice(i + 1);
+    const opt = (c) => optPic(part(c, 0), 'Muster');
+    return choice('form', 'form', 'Welches Muster wiederholt den Anfang?', opt(a), [opt(b), opt(v)], 'k2mfa_' + a + b, { pic: strip([a, b, null]), svgOpts: true, why: 'Am Ende kommt der Anfang wieder:', parts: [a, b, v] });
+  }
   K.MODES.instrumente2 = unit('musik', [{ name: 'Instrumentenschrank', mod: 'bild' }, { name: 'Trommelwirbel', mod: 'spielen' }, { name: 'Glockenspiel', mod: 'hoch' }, { name: 'Paukenschlag', mod: 'laut' }], {
-    grade: 2, subject: 'Musik', title: 'Der Musikraum', icon: '🥁', sub: 'Welches Instrument ist das? Wie spielt man es? Laut und leise, hoch und tief, Stimmen',
+    grade: 2, subject: 'Musik', title: 'Der Musikraum', icon: '🥁', sub: 'Welches Instrument ist das? Wie spielt man es? Laut und leise, hoch und tief, Stimmen, Wiederholung und Gegensatz',
     modules: {
       bild: { name: 'Welches Instrument?', icon: '🎻', maxTier: 1, worldCap: [1], dmg: 12 },
       familie: { name: 'Instrumentenfamilien', icon: '🎹', maxTier: 1, worldCap: [1], dmg: 12 },
@@ -10412,14 +10534,16 @@ const K12E = (() => {
       laut: { name: 'Laut und leise', icon: '🔊', maxTier: 1, worldCap: [1], dmg: 10 },
       hoch: { name: 'Hoch und tief', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 12 },
       stimme: { name: 'Stimmen', icon: '👥', maxTier: 1, worldCap: [1], dmg: 10 },
+      form: { name: 'Wiederholung und Gegensatz', icon: '🔁', maxTier: 1, worldCap: [1], dmg: 12 },
     },
-    extra: { bild: 'Musikkoffer', familie: 'Stimmgabel', spielen: 'Klanghölzer', laut: 'Becken', hoch: 'Kontrabass', stimme: 'Kanon' },
+    extra: { bild: 'Musikkoffer', familie: 'Stimmgabel', spielen: 'Klanghölzer', laut: 'Becken', hoch: 'Kontrabass', stimme: 'Kanon', form: 'Liedform' },
     tut: {
       'bild:1': { title: 'Welches Instrument?', steps: ['Schau dir das Bild genau an.', 'Hat es Saiten, Tasten, ein Fell oder Löcher für die Finger? Ist es aus Holz oder aus Metall?', 'Tippe auf den richtigen Namen oder das richtige Bild.'] },
       'familie:1': { title: 'Instrumentenfamilien', steps: ['Saiteninstrumente haben Saiten. In Blasinstrumente bläst man hinein.', 'Schlaginstrumente schlägt oder schüttelt man. Tasteninstrumente haben Tasten.', 'Tippe auf die richtige Antwort.'] },
       'spielen:1': { title: 'So spielt man', steps: ['Überlege: Was muss man tun, damit das Instrument klingt?', 'Gitarre: zupfen. Geige: streichen. Flöte und Trompete: blasen.', 'Trommel und Triangel: schlagen. Rassel: schütteln. Klavier: Tasten drücken.', 'Tippe auf die richtige Antwort.'] },
       'laut:1': { title: 'Laut und leise', steps: ['Stell dir die Musik vor: Wer oder was kommt darin vor?', 'Ein schlafendes Baby braucht leise Musik, ein Gewitter klingt laut.', 'Eine Maus huscht schnell, eine Schnecke kriecht langsam.', 'Tippe auf die passende Antwort.'] },
       'hoch:1': { title: 'Hoch und tief', steps: ['Große Instrumente klingen tief, kleine Instrumente hoch.', 'Bei zwei Bildern vergleichst du die Größe: Das größere klingt tiefer.', 'Beim Glockenspiel klingt die lange Platte tief, die kurze hoch.', 'Tippe auf die richtige Antwort.'] },
+      'form:1': { title: 'Wiederholung und Gegensatz', steps: ['Jedes Kästchen ist ein Teil eines Musikstücks.', 'Gleiche Teile bekommen denselben Buchstaben, ein ganz anderer Teil einen neuen.', 'Beispiel: Kreise, Dreiecke, Kreise ist A – B – A. Am Ende kommt der Anfang wieder.', 'Tippe auf die richtige Antwort.'] },
       'stimme:1': { title: 'Stimmen', steps: ['Männerstimmen sind meist tief, Frauen- und Kinderstimmen höher.', 'Einer singt allein: Solo. Viele singen zusammen: Chor.', 'Tippe auf die richtige Antwort.'] },
     },
     notes: NOTES3, pool: POOL3, gen: gen3,
@@ -10615,7 +10739,7 @@ const K12E = (() => {
     ],
   });
 
-  return { FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
+  return { SHAPES, FORMS, FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
 })();
 if (typeof module !== 'undefined') module.exports = K12E;
 
@@ -15367,6 +15491,7 @@ const ELTERN = (() => {
       laut: 'Welche Musik passt wozu? Laut und leise, schnell und langsam, ohne Töne an Beispielen erklärt.',
       hoch: 'Hohe und tiefe Töne: Große Instrumente klingen tiefer als kleine, auch im Bildvergleich.',
       stimme: 'Männer-, Frauen- und Kinderstimmen, Solo und Chor, Haltung und Atmung beim Singen.',
+      form: 'Wiederholung und Gegensatz: Muster aus Kreisen, Quadraten und Dreiecken stehen für Teile eines Musikstücks, Ihr Kind erkennt die Form A – B – A.',
     },
     musik1: {
       instr: 'Ihr Kind erkennt die Orff-Instrumente aus dem Musikunterricht am Bild: Triangel, Klanghölzer, Rassel, Handtrommel, Schellenkranz und Glockenspiel.',
@@ -15380,12 +15505,13 @@ const ELTERN = (() => {
       anlaut: 'Ihr Kind hört den ersten Laut eines Wortes zum Bild und findet den Buchstaben dazu.',
       laute: 'Selbstlaute, Umlaute und Mitlaute unterscheiden und einen fehlenden Selbstlaut im Wort ergänzen.',
       lautpos: 'Hört Ihr Kind den Laut am Anfang, in der Mitte oder am Ende des Wortes?',
-      silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben.',
+      silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben. Später ordnet Ihr Kind Silben zu einem Wort.',
       alphabet: 'Das Abc sicher können: welcher Buchstabe davor, danach oder in der Lücke steht.',
       reim: 'Wörter finden, die sich reimen: Haus – Maus.',
+      lesen: 'b, d, p, q und g unterscheiden und erste Wörter lesen: Das Wort zum Bild wird bewusst nicht vorgelesen.',
     },
     schreiben2: {
-      besonders: 'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie.',
+      besonders: 'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie. Danach Merkwörter mit v, ß, Dehnungs-h, aa, ee, oo, ai und chs.',
       doppel: 'Nach kurzem Selbstlaut steht ein doppelter Mitlaut: Sonne, nicht Sone.',
       verl: 'd oder t am Ende? Verlängern hilft: Hund – Hunde. Ä und äu leitet Ihr Kind von a und au ab: Baum – Bäume.',
       gross: 'Satzanfang, Nomen und Namen groß schreiben: Ihr Kind wählt den richtig geschriebenen Satz.',
@@ -15495,6 +15621,7 @@ const ELTERN = (() => {
       waerme: 'Das Thermometer im Bild auf ganze Grad ablesen, gefrieren und schmelzen bei 0 °C.',
       wasser: 'Was sich in Wasser löst und was nicht, Wasser sparen.',
       gefahr: 'Warnzeichen auf Putzmitteln erkennen und sicher mit gefährlichen Flüssigkeiten umgehen.',
+      plan: 'Einen Ortsplan mit Legende lesen: Welches Zeichen steht wofür, was liegt links oder rechts daneben?',
     },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
@@ -15630,7 +15757,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": ["Klasse 2: neues Thema „Formen und Flächen“ mit Symmetrie, rechten Winkeln, Würfelgebäuden und Ecken, Kanten und Flächen.", "Klasse 1: selbst ein Wort lesen und das Bild finden, Silben ordnen, Rechengeschichten, Zahlwörter und Geld bis 20 €.", "Klasse 3: Kopfrechnen bis 1000, Malnehmen mit großen Zahlen, Zahlen vergleichen, Überschlagen und Ansichten von Würfelgebäuden.", "Deutsch Klasse 3: Grundform fürs Wörterbuch, zweiteilige Prädikate, Anrede im Brief, Wörter mit aa, ee, oo und sächsische Wörter."]}, {"title": "Verbessert", "items": ["In Zahlenquest werden Minus und Teilen von Stufe zu Stufe schwerer; oben warten Aufgaben wie 740 − 280 und 96 : 3.", "Mehr zum Üben in Klasse 2: Gedichte in der Lesestube, Merkwörter, Plan lesen, Tausch- und Umkehraufgaben, Kombinationen und Musik in A–B–A-Form."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -17563,7 +17690,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '07fde974c603';
+  const BUILD = '2f18292e3a9a';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

@@ -6,6 +6,18 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-12
+
+### Neu
+- Klasse 2: neues Thema „Formen und Flächen“ mit Symmetrie, rechten Winkeln, Würfelgebäuden und Ecken, Kanten und Flächen.
+- Klasse 1: selbst ein Wort lesen und das Bild finden, Silben ordnen, Rechengeschichten, Zahlwörter und Geld bis 20 €.
+- Klasse 3: Kopfrechnen bis 1000, Malnehmen mit großen Zahlen, Zahlen vergleichen, Überschlagen und Ansichten von Würfelgebäuden.
+- Deutsch Klasse 3: Grundform fürs Wörterbuch, zweiteilige Prädikate, Anrede im Brief, Wörter mit aa, ee, oo und sächsische Wörter.
+
+### Verbessert
+- In Zahlenquest werden Minus und Teilen von Stufe zu Stufe schwerer; oben warten Aufgaben wie 740 − 280 und 96 : 3.
+- Mehr zum Üben in Klasse 2: Gedichte in der Lesestube, Merkwörter, Plan lesen, Tausch- und Umkehraufgaben, Kombinationen und Musik in A–B–A-Form.
+
 ## 2026-11-11
 
 ### Neu

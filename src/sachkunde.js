@@ -696,6 +696,6 @@ const MS = (() => {
   KK.gen = kkGen(KK);
 
   K.MODES.kornkammer = KO; K.MODES.wetterstation = WE; K.MODES.kompass = KK;
-  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, STEPS, EXPERIMENTS, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
+  return { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, STEPS, EXPERIMENTS, PLANTS, GRAIN_PARTS, CYCLE_PARTS, BROT, CEREALS, WATER, TERMS, FLOAT, DIRS, LANDKREIS, PLACES, PLAN_DEFS, PLAN_BG, karteTarget, karteText, makeKarte, mapSVG, laborSet, urnExperiment, landkreisPool, inGrid };
 })();
 if (typeof module !== 'undefined') module.exports = MS;

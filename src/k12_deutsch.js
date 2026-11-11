@@ -94,7 +94,8 @@ const K12D = (() => {
   const POS = ['am Anfang', 'in der Mitte', 'am Ende'];
   const SILBEN = PIC_IDS.map((id) => [PICS[id].w, PICS[id].syl, id]).concat([['Schule', 'Schu-le'], ['Tafel', 'Ta-fel'], ['Fenster', 'Fens-ter'], ['Hund', 'Hund'], ['Kinder', 'Kin-der'],
     ['Lineal', 'Li-ne-al'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
-    ['Sofa', 'So-fa'], ['Hose', 'Ho-se'], ['Schaf', 'Schaf'], ['Melone', 'Me-lo-ne'], ['Garten', 'Gar-ten'], ['Brot', 'Brot'], ['Schokolade', 'Scho-ko-la-de']]);
+    ['Sofa', 'So-fa'], ['Hose', 'Ho-se'], ['Schaf', 'Schaf'], ['Melone', 'Me-lo-ne'], ['Garten', 'Gar-ten'], ['Brot', 'Brot'], ['Schokolade', 'Scho-ko-la-de'],
+    ['Krokodil', 'Kro-ko-dil'], ['Kartoffel', 'Kar-tof-fel'], ['Regenbogen', 'Re-gen-bo-gen'], ['Sonnenblume', 'Son-nen-blu-me'], ['Schmetterling', 'Schmet-ter-ling']]);
   const SYL = ['1 Silbe', '2 Silben', '3 Silben', '4 Silben'];
   // rhyme groups: words of one group rhyme, words of different groups don't
   const REIME = [['Haus', 'Maus', 'Laus'], ['Hand', 'Sand', 'Wand'], ['Topf', 'Kopf', 'Knopf'], ['Ball', 'Stall', 'Knall'], ['Fisch', 'Tisch'], ['Hose', 'Rose', 'Dose'],
@@ -107,6 +108,17 @@ const K12D = (() => {
   // first vowel of a picture word, if it is a single vowel (not au, ei, ie, not an umlaut)
   const vowelGap = (w) => { const i = w.search(/[aeiouäöü]/i); return /^(au|ei|eu|ie|[äöü])/i.test(w.slice(i, i + 2)) ? null : i; };
   const DIPH = { haus: 'au', maus: 'au', baum: 'au', leiter: 'ei' };
+  // Lesen: the shown letter or word sits in a plain div, which the read-aloud voice skips (it reads .question, .prompt,
+  // .expr …), and the picture options carry no names – so the child reads it alone
+  const look = (text, size) => `<div style="font-size:${size}px;font-weight:700;text-align:center;line-height:1.2;margin:4px 0">${text}</div>`;
+  // b, d, p, q and g look alike
+  const MIRROR = ['b', 'd', 'p', 'q', 'g'];
+  const MIRROR_WORDS = { b: ['bunt', 'baden', 'bauen'], d: ['drei', 'dunkel', 'danke'], p: ['pusten', 'prima', 'paddeln'], q: ['quaken', 'quer', 'quieken'], g: ['gut', 'gelb', 'gehen'] };
+  // wrong pictures for a word: preferably the same first letter or a similar length, so the whole word must be read
+  const lookalikes = (id) => PIC_IDS.filter((x) => x !== id).map((x) => [x, (first(x) === first(id) ? 2 : 0) + (Math.abs(PICS[x].w.length - PICS[id].w.length) <= 1 ? 1 : 0) + Math.random()])
+    .sort((a, b) => b[1] - a[1]).slice(0, 2).map((x) => x[0]);
+  // Silben ordnen: words with three or four different syllables, in capitals so the first syllable is not given away
+  const SILBEN_ORDER = SILBEN.filter(([, syl]) => { const s = syl.toUpperCase().split('-'); return s.length >= 3 && new Set(s).size === s.length; });
 
   const L1_ITEMS = {
     anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
@@ -137,6 +149,17 @@ const K12D = (() => {
       .concat(PIC_REIME.flatMap((pair) => pair.map((id) => ({ id: 'l1rb_' + id, make: (qid) => { const partner = pair.find((x) => x !== id);
         const wrong = others(PIC_IDS, PIC_REIME.find((x) => x.includes(id)), 2);
         return choice('reim', 1, 'reim', `Was reimt sich auf „${PICS[id].w}“?`, optPic(partner), wrong.map(optPic), qid, { svgOpts: true, cols: 1, pic: picOf(id), why: `${PICS[id].w} – ${PICS[partner].w}` }); } })))),
+    silben2: SILBEN_ORDER.map(([w, syl]) => ({ id: 'l1so_' + w, make: (qid) => {
+      const items = syl.toUpperCase().split('-').map((text, i) => ({ id: 's' + i, text }));
+      let display; do display = shuffle(items); while (display.every((x, i) => x === items[i]));
+      return { kind: 'order', mod: 'silben', tier: 2, group: 'silben:2', note: 'silben', q: 'Ordne die Silben zu einem Wort.', items, order: items.map((x) => x.id), display, qid };
+    } })),
+    lesen: MIRROR.flatMap((x) => { const X = x.toUpperCase(), why = `${X} und ${x} gehören zusammen.`; return [
+      { id: 'l1bk_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?', X, others(MIRROR, [x], 2).map((y) => y.toUpperCase()), qid, { pic: look(x, 72), why }) },
+      { id: 'l1bg_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Das ist ein großer Buchstabe. Welcher kleine gehört dazu?', x, others(MIRROR, [x], 2), qid, { pic: look(X, 72), why }) },
+      { id: 'l1bw_' + x, make: (qid) => choice('lesen', 1, 'lesen', 'Welches Wort fängt mit diesem Buchstaben an?', pick(MIRROR_WORDS[x]), others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])), qid, { pic: look(x, 72), why: `Das ist ein ${x}.` }) },
+    ]; }),
+    lesen2: PIC_IDS.map((id) => ({ id: 'l1lw_' + id, make: (qid) => choice('lesen', 2, 'lesen', 'Lies das Wort. Welches Bild passt?', svgOf(id), lookalikes(id).map(svgOf), qid, { svgOpts: true, cols: 1, pic: look(PICS[id].w, 42), why: `Da steht: ${PICS[id].w}.` }) })),
   };
   const L1_NOTES = {
     anlaut: { title: 'Der Anlaut', lines: ['Der Anlaut ist der erste Laut in einem Wort.', 'Sprich das Wort langsam und deutlich: Mmmond. Du hörst zuerst ein M.', 'In der Anlauttabelle findest du zu jedem Buchstaben ein Bild.'] },
@@ -145,6 +168,7 @@ const K12D = (() => {
     silben: { title: 'Silben', lines: ['Sprich das Wort und klatsche bei jeder Silbe: Ba-na-ne.', 'Jedes Klatschen ist eine Silbe. Banane hat 3 Silben.', 'In jeder Silbe steckt ein Selbstlaut, ein Umlaut oder ein Zwielaut.'] },
     alphabet: { title: 'Das Abc', lines: ['Das Abc hat 26 Buchstaben, von A bis Z.', 'A, B, C, D, E, F, G, H, I, J, K, L, M,', 'N, O, P, Q, R, S, T, U, V, W, X, Y, Z.', 'Sing das Abc-Lied, dann findest du den Nachbarn.'] },
     reim: { title: 'Reimwörter', lines: ['Reimwörter klingen am Ende gleich: Haus – Maus.', 'Nur der Anfang ist anders: H-aus, M-aus.', 'Sprich beide Wörter laut. Klingt das Ende gleich?'] },
+    lesen: { title: 'Lesen', lines: ['b, d, p und q sehen fast gleich aus. Schau genau, wo der Bauch und wo der Strich ist.', 'b: Der Strich geht nach oben, der Bauch ist rechts. d: Der Bauch ist links.', 'p: Der Strich geht nach unten, der Bauch ist rechts. q: Der Bauch ist links.', 'Zu jedem kleinen Buchstaben gehört ein großer: b – B, d – D, g – G.', 'Lies ein Wort Laut für Laut und zieh die Laute zusammen: M-au-s, Maus.'] },
   };
   const L1_TUT = {
     'anlaut:2': { title: 'Der erste Buchstabe', steps: ['Schau dir das Bild an. Wie heißt das Ding?', 'Sprich das Wort langsam. Welchen Laut hörst du zuerst?', 'Beispiel: Sonne. Sssonne. Zuerst hörst du ein S.', 'Tippe auf den Buchstaben.'] },
@@ -155,20 +179,24 @@ const K12D = (() => {
     'silben:1': { title: 'Silben klatschen', steps: ['Sprich das Wort und klatsche dazu.', 'Jedes Klatschen ist eine Silbe.', 'Beispiel: To-ma-te. Dreimal klatschen, also 3 Silben.', 'Tippe auf die richtige Zahl.'] },
     'alphabet:2': { title: 'Das Abc', steps: ['Sag das Abc auf, bis du zum Buchstaben kommst.', 'Welcher Buchstabe kommt direkt davor, welcher direkt danach?', 'Beispiel: nach D kommt E. Vor D kommt C.', 'Tippe auf den Buchstaben.'] },
     'alphabet:1': { title: 'Lücke im Abc', steps: ['In der Reihe fehlt ein Buchstabe.', 'Sag die Reihe auf und hör auf die Lücke.', 'Beispiel: D, E, __, G. Es fehlt das F.', 'Tippe auf den fehlenden Buchstaben.'] },
+    'silben:2': { title: 'Silben ordnen', steps: ['Die Silben eines Wortes sind durcheinander.', 'Lies jede Silbe. Welches Wort kannst du daraus bauen?', 'Beispiel: NA, BA, NE wird zu BA-NA-NE, Banane.', 'Tippe die Silben der Reihe nach an.'] },
+    'lesen:1': { title: 'Buchstaben unterscheiden', steps: ['Schau dir den Buchstaben oben genau an.', 'Wo ist der Bauch, wo ist der Strich? b und d, p und q sehen fast gleich aus.', 'Beispiel: Zum kleinen d gehört das große D.', 'Tippe auf die richtige Antwort.'] },
+    'lesen:2': { title: 'Wort lesen', steps: ['Oben steht ein Wort. Lies es leise für dich.', 'Lies Laut für Laut und zieh die Laute zusammen.', 'Beispiel: M-o-n-d. Mond. Tippe auf das Bild vom Mond.', 'Das Wort wird nicht vorgelesen. Du schaffst das allein.'] },
     'reim:1': { title: 'Reimwörter', steps: ['Reimwörter klingen am Ende gleich.', 'Sprich das Wort und jede Antwort laut.', 'Beispiel: Haus reimt sich auf Maus, nicht auf Hund.', 'Tippe auf das Reimwort.'] },
   };
   const L1_MODULES = {
     anlaut: { name: 'Erster Buchstabe', icon: '🔤', maxTier: 2, worldCap: [2], dmg: 12 },
     laute: { name: 'Selbstlaut und Mitlaut', icon: '🔡', maxTier: 2, worldCap: [2], dmg: 12 },
     lautpos: { name: 'Wo hörst du den Laut?', icon: '👂', maxTier: 1, worldCap: [1], dmg: 14 },
-    silben: { name: 'Silben klatschen', icon: '🥁', maxTier: 1, worldCap: [1], dmg: 12 },
+    silben: { name: 'Silben', icon: '🥁', maxTier: 2, worldCap: [2], dmg: 12 },
     alphabet: { name: 'Das Abc', icon: '🔠', maxTier: 2, worldCap: [2], dmg: 12 },
     reim: { name: 'Reimwörter', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 14 },
+    lesen: { name: 'Lesen', icon: '📗', maxTier: 2, worldCap: [2], dmg: 14 },
   };
-  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Erster Buchstabe, Selbstlaute, Silben, das Abc und Reimwörter',
+  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Erster Buchstabe, Selbstlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
     modules: L1_MODULES, tut: L1_TUT, notes: L1_NOTES, pool: [],
     starters: hero([{ name: 'Anlauttabelle', mod: 'anlaut' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }]),
-    extra: { anlaut: 'Anlauttabelle', laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim' },
+    extra: { anlaut: 'Anlauttabelle', laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim', lesen: 'Fibel' },
     events: [
       { title: 'Die Buchstabenkiste', text: 'Frau Klein hat eine Kiste mit Buchstaben aus Holz. Sie hält ein Bild hoch und fragt nach dem ersten Buchstaben. Wer ihn findet, bekommt einen Trank.', opts: [{ label: 'Antworten', task: 'anlaut', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Der Morgenkreis', text: 'Im Morgenkreis klatscht die Klasse Silben. Jetzt bist du dran. Klappt es, bekommst du einen Schild.', opts: [{ label: 'Klatschen', task: 'silben', win: { item: 'schild' }, lose: { hp: -4 } }, { label: 'Zuschauen', effect: {} }] },
@@ -193,6 +221,17 @@ const K12D = (() => {
     ['Kiste', 'Kieste', 'i'], ['Tinte', 'Tiente', 'i'], ['Pinsel', 'Piensel', 'i'], ['Kinder', 'Kiender', 'i'], ['Winter', 'Wienter', 'i'], ['finden', 'fienden', 'i']];
   const WHY_B = { st: 'Am Anfang hörst du scht, du schreibst st.', sp: 'Am Anfang hörst du schp, du schreibst sp.', nk: 'Du hörst ngk, du schreibst nk.', qu: 'Du hörst kw, du schreibst qu.',
     x: 'Hier schreibt man für ks ein x. Das Wort merkst du dir.', ie: 'Das i klingt lang. Dann schreibst du meist ie.', i: 'Das i klingt kurz. Dann schreibst du nur i.' };
+  // Merkwörter aus dem Rechtschreibrahmen Kl. 1/2: [richtig, falsch, Merkmal]; no silbentrennendes h (Kuh, Schuh: Kl. 3/4),
+  // no wrong form that is a real word (Bot, fiel, Ur)
+  const MERK = [['Vogel', 'Fogel', 'v'], ['Vater', 'Fater', 'v'], ['vier', 'fier', 'v'], ['voll', 'foll', 'v'], ['vorne', 'forne', 'v'],
+    ['Fuß', 'Fus', 'ß'], ['groß', 'gros', 'ß'], ['heiß', 'heis', 'ß'], ['süß', 'süs', 'ß'], ['Spaß', 'Spas', 'ß'], ['Soße', 'Sose', 'ß'],
+    ['fahren', 'faren', 'h'], ['Zahn', 'Zan', 'h'], ['Huhn', 'Hun', 'h'], ['wohnen', 'wonen', 'h'], ['Jahr', 'Jar', 'h'], ['Bohne', 'Bone', 'h'], ['Ohr', 'Or', 'h'], ['Zahl', 'Zal', 'h'],
+    ['Meer', 'Mer', 'vv'], ['Haar', 'Har', 'vv'], ['Tee', 'Te', 'vv'], ['Zoo', 'Zo', 'vv'], ['Schnee', 'Schne', 'vv'], ['See', 'Se', 'vv'], ['Moos', 'Mos', 'vv'],
+    ['Mai', 'Mei', 'ai'], ['Kaiser', 'Keiser', 'ai'], ['Mais', 'Meis', 'ai'],
+    ['Fuchs', 'Fuks', 'chs'], ['sechs', 'seks', 'chs'], ['Dachs', 'Daks', 'chs'], ['wachsen', 'waksen', 'chs'], ['Lachs', 'Laks', 'chs']];
+  const WHY_M = { v: 'Du hörst f, aber du schreibst v. Das Wort merkst du dir.', ß: 'Nach dem langen Selbstlaut steht hier ß. Das Wort merkst du dir.',
+    h: 'Hier steht ein h, das du nicht hörst. Das Wort merkst du dir.', vv: 'Hier steht der lange Selbstlaut doppelt. Das Wort merkst du dir.',
+    ai: 'Du hörst ei, aber du schreibst ai. Das Wort merkst du dir.', chs: 'Du hörst ks, aber du schreibst chs. Das Wort merkst du dir.' };
   // [richtig, falsch, Erklärung]
   const DOPPEL = [['Affe', 'Afe', 'Af-fe'], ['Tasse', 'Tase', 'Tas-se'], ['Himmel', 'Himel', 'Him-mel'], ['kommen', 'komen', 'kom-men'], ['Sonne', 'Sone', 'Son-ne'], ['Wasser', 'Waser', 'Was-ser'],
     ['Teller', 'Teler', 'Tel-ler'], ['Mutter', 'Muter', 'Mut-ter'], ['Suppe', 'Supe', 'Sup-pe'], ['Puppe', 'Pupe', 'Pup-pe'], ['Brille', 'Brile', 'Bril-le'], ['Butter', 'Buter', 'But-ter'],
@@ -258,6 +297,7 @@ const K12D = (() => {
   KLEIN.forEach(([s, r, f]) => S2_POOL.push({ id: 's2kw_' + r, mod: 'kleinw', g: 'kleinw', q: `Welches Wort ist richtig? ${s}`, o: [r, f], a: 0 }));
   const S2_NOTES = {
     besonders: { title: 'st, sp, nk, qu, x', lines: ['Am Wortanfang hörst du scht und schp, du schreibst st und sp: Stuhl, Spinne.', 'Du hörst ngk, du schreibst nk: Bank, trinken.', 'Du hörst kw, du schreibst qu: Quelle.', 'Für ks steht in manchen Wörtern ein x: Hexe, Taxi.'] },
+    merk: { title: 'Merkwörter', lines: ['Manche Wörter schreibt man anders, als man sie hört. Diese Wörter merkst du dir.', 'v statt f: Vogel, Vater, vier. ß: Fuß, groß, heiß.', 'Ein h, das man nicht hört: fahren, Zahn, Ohr. Doppelter Selbstlaut: Meer, Haar, Zoo.', 'ai statt ei: Mai, Kaiser. chs statt ks: Fuchs, sechs.'] },
     ie: { title: 'i oder ie', lines: ['Sprich das Wort in Silben: Wie-se, Kis-te.', 'Klingt das i lang, schreibst du meist ie: Wiese, Liebe.', 'Klingt das i kurz, schreibst du nur i: Kiste, Pinsel.'] },
     doppel: { title: 'Doppelte Mitlaute', lines: ['Sprich das Wort in Silben: Son-ne.', 'Ist der Selbstlaut kurz, hörst du den Mitlaut in beiden Silben. Du schreibst ihn doppelt: Sonne.', 'Ist der Selbstlaut lang, schreibst du ihn nur einmal: Ho-se.', 'Bei kurzen Wörtern hilft Verlängern: Ball, die Bäl-le.'] },
     verl: { title: 'Verlängern und ableiten', lines: ['Am Wortende klingen d und t, g und k, b und p gleich.', 'Verlängere das Wort, dann hörst du den Unterschied: der Hund, die Hun-de. Bei gelb hilft: der gel-be Ball.', 'Hörst du e oder eu, kann es auch ä oder äu sein. Such ein verwandtes Wort mit a oder au.', 'Baum, also Bäume. Apfel, also Äpfel. Gibt es keins, schreibst du e oder eu.'] },
@@ -268,6 +308,7 @@ const K12D = (() => {
   };
   const S2_TUT = {
     'besonders:1': { title: 'st, sp, nk, qu, x, ie', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Am Anfang hörst du scht, du schreibst st. Für kw schreibst du qu. Klingt das i lang, schreibst du meist ie.', 'Beispiel: „Stuhl“ oder „Schtuhl“? Richtig ist Stuhl.', 'Tippe auf das richtige Wort.'] },
+    'besonders:2': { title: 'Merkwörter', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Diese Wörter schreibt man anders, als man sie hört: v, ß, h, aa, ee, oo, ai, chs.', 'Beispiel: „Vogel“ oder „Fogel“? Richtig ist Vogel, mit v.', 'Tippe auf das richtige Wort.'] },
     'doppel:1': { title: 'Doppelte Mitlaute', steps: ['Zwei Schreibweisen, nur eine ist richtig.', 'Sprich das Wort in Silben. Ist der Selbstlaut kurz, steht der Mitlaut doppelt.', 'Beispiel: Son-ne. Das o ist kurz, also: Sonne. Ho-se: Das o ist lang, also nur ein s.', 'Tippe auf das richtige Wort.'] },
     'verl:1': { title: 'Verlängern', steps: ['Am Ende fehlt ein Buchstabe: d oder t, g oder k, b oder p.', 'Verlängere das Wort, dann hörst du ihn.', 'Beispiel: der Hun_ wird zu die Hun-de. Du hörst ein d, also: Hund.', 'Tippe auf den fehlenden Buchstaben.'] },
     'verl:2': { title: 'Ableiten', steps: ['Zwei Schreibweisen: mit ä oder e, mit äu oder eu.', 'Such ein verwandtes Wort mit a oder au.', 'Beispiel: Bäume oder Beume? Es kommt von Baum, also: Bäume.', 'Tippe auf das richtige Wort.'] },
@@ -278,7 +319,7 @@ const K12D = (() => {
     'kleinw:1': { title: 'Kleine Wörter', steps: ['Im Satz fehlt ein kleines Wort.', 'Zwei Schreibweisen, nur eine ist richtig. Diese Wörter merkst du dir.', 'Beispiel: Tim und Lea malen. Richtig ist „und“, nicht „unt“.', 'Tippe auf das richtige Wort.'] },
   };
   const S2_MODULES = {
-    besonders: { name: 'st, sp, qu, ie', icon: '📝', maxTier: 1, worldCap: [1], dmg: 12 },
+    besonders: { name: 'st, sp, ie und Merkwörter', icon: '📝', maxTier: 2, worldCap: [2], dmg: 12 },
     doppel: { name: 'Doppelte Mitlaute', icon: '✌️', maxTier: 1, worldCap: [1], dmg: 12 },
     verl: { name: 'Verlängern und ableiten', icon: '↔️', maxTier: 2, worldCap: [2], dmg: 12 },
     gross: { name: 'Groß oder klein', icon: '🔠', maxTier: 1, worldCap: [1], dmg: 14 },
@@ -287,7 +328,7 @@ const K12D = (() => {
     kleinw: { name: 'Kleine Wörter', icon: '🗒️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
   // the options sound alike or give the answer away when read aloud
-  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
+  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, Merkwörter, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
     modules: S2_MODULES, tut: S2_TUT, notes: S2_NOTES, pool: S2_POOL,
     starters: hero([{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }]),
     extra: { besonders: 'Wörterkartei', doppel: 'Silbengelenk', verl: 'Verlängerung', gross: 'Großbuchstabe', satzz: 'Schlusspunkt', alphabet: 'Daumenregister', kleinw: 'Blitzlesekarte' },
@@ -299,7 +340,9 @@ const K12D = (() => {
       { title: 'Die Wortkartei', text: 'In der Wortkartei stehen knifflige Wörter: Hund oder Hunt? Findest du die richtige Schreibweise, klebt dir Herr Lange ein Fleißbienchen ins Heft.', opts: [{ label: 'Nachsehen', task: 'verl', win: { item: 'stern' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Der Schulgarten', text: 'Im Schulgarten steht eine Bank unter dem Apfelbaum. Du setzt dich und ruhst dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] });
-  SCHREIBEN2.gen = (mod, tier) => (mod !== 'alphabet' ? null : tier === 1 && Math.random() < 0.4 ? abcFirst() : abcOrder(tier));
+  // Merkwörter are generated, not pooled: they have their own note, and pool topics must be reachable at tier 1
+  const MERK_ITEMS = MERK.map(([r, f, k]) => ({ id: 's2mw_' + r, make: (qid) => choice('besonders', 2, 'merk', 'Welches Wort ist richtig geschrieben?', r, [f], qid, { why: WHY_M[k] }) }));
+  SCHREIBEN2.gen = (mod, tier, know, seq) => (mod === 'besonders' && tier === 2 ? ask(MERK_ITEMS, know, seq) : mod !== 'alphabet' ? null : tier === 1 && Math.random() < 0.4 ? abcFirst() : abcOrder(tier));
 
   /* ================= KLASSE 2: Wörter und Sätze ================= */
   const NOMEN = ['der Ball', 'der Hund', 'der Baum', 'der Tisch', 'der Mond', 'der Apfel', 'der Stuhl', 'der Bus', 'der Vogel', 'der Schuh', 'der Fisch', 'der Teller',
@@ -431,6 +474,6 @@ const K12D = (() => {
     ] });
 
   K.MODES.laute1 = LAUTE1; K.MODES.schreiben2 = SCHREIBEN2; K.MODES.woerter2 = WOERTER2;
-  return { PICS, LAUTPOS, SILBEN, REIME, PIC_REIME, BESONDERS, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
+  return { PICS, LAUTPOS, SILBEN, SILBEN_ORDER, REIME, PIC_REIME, MIRROR, MIRROR_WORDS, BESONDERS, MERK, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
 })();
 if (typeof module !== 'undefined') module.exports = K12D;

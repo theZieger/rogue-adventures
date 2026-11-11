@@ -281,5 +281,17 @@ const TEXTE = [
       { q: 'Was passiert mit den Blättern?', o: ['Sie werden bunt und fallen herunter.', 'Sie werden blau.', 'Sie wachsen schneller.'], a: 0 },
       { q: 'Was sammelt das Eichhörnchen?', o: ['Nüsse', 'Steine', 'Blätter'], a: 0 },
     ] },
+  { id: 'k2voegel', grade: 2, kind: 'Gedicht', title: 'Alle Vögel sind schon da', by: 'August Heinrich Hoffmann von Fallersleben, erste Strophe',
+    text: 'Alle Vögel sind schon da,\nalle Vögel, alle!\nWelch ein Singen, Musiziern,\nPfeifen, Zwitschern, Tireliern!\nFrühling will nun einmarschiern,\nkommt mit Sang und Schalle.',
+    qs: [
+      { q: 'Wer hat das Gedicht geschrieben?', o: ['Hoffmann von Fallersleben', 'Alle Vögel sind schon da', 'Der Frühling'], a: 0 },
+      { q: 'Welches Wort reimt sich auf „alle“?', o: ['Schalle', 'Vögel', 'Frühling'], a: 0 },
+    ] },
+  { id: 'k2winter', grade: 2, kind: 'Gedicht', title: 'Winter ade', by: 'August Heinrich Hoffmann von Fallersleben, erste und zweite Strophe',
+    text: 'Winter ade!\nScheiden tut weh.\nAber dein Scheiden macht,\ndass mir das Herze lacht.\nWinter ade!\nScheiden tut weh.\n\nWinter ade!\nScheiden tut weh.\nGerne vergess’ ich dein,\nkannst immer ferne sein.\nWinter ade!\nScheiden tut weh.',
+    qs: [
+      { q: 'Wie viele Strophen stehen hier?', o: ['2 Strophen', '1 Strophe', '6 Strophen'], a: 0 },
+      { q: 'Wie viele Verse hat eine Strophe?', o: ['6 Verse', '2 Verse', '12 Verse'], a: 0 },
+    ] },
 ];
 if (typeof module !== 'undefined') module.exports = TEXTE;

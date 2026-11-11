@@ -207,6 +207,7 @@ const ELTERN = (() => {
       laut: 'Welche Musik passt wozu? Laut und leise, schnell und langsam, ohne Töne an Beispielen erklärt.',
       hoch: 'Hohe und tiefe Töne: Große Instrumente klingen tiefer als kleine, auch im Bildvergleich.',
       stimme: 'Männer-, Frauen- und Kinderstimmen, Solo und Chor, Haltung und Atmung beim Singen.',
+      form: 'Wiederholung und Gegensatz: Muster aus Kreisen, Quadraten und Dreiecken stehen für Teile eines Musikstücks, Ihr Kind erkennt die Form A – B – A.',
     },
     musik1: {
       instr: 'Ihr Kind erkennt die Orff-Instrumente aus dem Musikunterricht am Bild: Triangel, Klanghölzer, Rassel, Handtrommel, Schellenkranz und Glockenspiel.',
@@ -220,12 +221,13 @@ const ELTERN = (() => {
       anlaut: 'Ihr Kind hört den ersten Laut eines Wortes zum Bild und findet den Buchstaben dazu.',
       laute: 'Selbstlaute, Umlaute und Mitlaute unterscheiden und einen fehlenden Selbstlaut im Wort ergänzen.',
       lautpos: 'Hört Ihr Kind den Laut am Anfang, in der Mitte oder am Ende des Wortes?',
-      silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben.',
+      silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben. Später ordnet Ihr Kind Silben zu einem Wort.',
       alphabet: 'Das Abc sicher können: welcher Buchstabe davor, danach oder in der Lücke steht.',
       reim: 'Wörter finden, die sich reimen: Haus – Maus.',
+      lesen: 'b, d, p, q und g unterscheiden und erste Wörter lesen: Das Wort zum Bild wird bewusst nicht vorgelesen.',
     },
     schreiben2: {
-      besonders: 'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie.',
+      besonders: 'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie. Danach Merkwörter mit v, ß, Dehnungs-h, aa, ee, oo, ai und chs.',
       doppel: 'Nach kurzem Selbstlaut steht ein doppelter Mitlaut: Sonne, nicht Sone.',
       verl: 'd oder t am Ende? Verlängern hilft: Hund – Hunde. Ä und äu leitet Ihr Kind von a und au ab: Baum – Bäume.',
       gross: 'Satzanfang, Nomen und Namen groß schreiben: Ihr Kind wählt den richtig geschriebenen Satz.',
@@ -335,6 +337,7 @@ const ELTERN = (() => {
       waerme: 'Das Thermometer im Bild auf ganze Grad ablesen, gefrieren und schmelzen bei 0 °C.',
       wasser: 'Was sich in Wasser löst und was nicht, Wasser sparen.',
       gefahr: 'Warnzeichen auf Putzmitteln erkennen und sicher mit gefährlichen Flüssigkeiten umgehen.',
+      plan: 'Einen Ortsplan mit Legende lesen: Welches Zeichen steht wofür, was liegt links oder rechts daneben?',
     },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
