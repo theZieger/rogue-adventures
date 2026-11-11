@@ -46,7 +46,8 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true,
+  const RATES = { langsam: 0.75, normal: 0.9, schneller: 1.05 }; // read-aloud speeds parents can pick
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true, voiceName: '', speakRate: 0.9,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -73,6 +74,7 @@
     m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
+    if (!Object.values(RATES).includes(m.speakRate)) m.speakRate = 0.9;
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
@@ -385,9 +387,12 @@
   // Only a voice that lives on the device: a network voice would send the task text away.
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
-  const voice = () => (TTS && meta.speak ? TTS.getVoices().find((v) => v.localService && /^de/i.test(v.lang)) : null);
+  const voices = () => (TTS ? TTS.getVoices().filter((v) => v.localService && /^de/i.test(v.lang)) : []);
+  // a saved voice that is gone from the device quietly falls back to the first German one
+  const chosenVoice = () => { const vs = voices(); return vs.find((v) => v.name === meta.voiceName) || vs[0] || null; };
+  const voice = () => (meta.speak ? chosenVoice() : null);
   const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
-  function speak(text) { const v = voice(); if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = 0.9; TTS.speak(u); }
+  function speak(text, v = voice()) { if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = meta.speakRate; TTS.speak(u); }
   // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
   function speakBtn(anchor, where, text, first = text) {
     if (!voice()) return;
@@ -1758,6 +1763,10 @@
     const card = (h, body, cls) => `<div class="card pcard${cls ? ' ' + cls : ''}">${h ? `<h3>${h}</h3>` : ''}${body}</div>`;
     const note = (t) => `<p class="pnote">${t}</p>`;
     const msg = '<p class="tmsg" role="status"></p>';
+    const speakSettings = () => { const vs = voices(), cur = chosenVoice(); const tryBtn = (i) => `<button class="btn small secondary" data-try="${i}">Probe hören</button>`;
+      if (!vs.length) return note(TTS ? 'Auf diesem Gerät fehlt eine deutsche Stimme. Sie lässt sich in den Einstellungen des Geräts laden: Android meist unter System → Sprachen → Sprachausgabe, iPhone und iPad unter Bedienungshilfen → Gesprochene Inhalte → Stimmen.' : 'Dieser Browser kann nicht vorlesen.');
+      return (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${vs.map((v, i) => `<div class="pvrow"><button class="pvoice" aria-pressed="${v === cur}" data-voice="${i}">${esc(v.name)}</button>${tryBtn(i)}</div>`).join('')}</div>` : '')
+        + `<div class="pset"><b>Tempo</b><div class="pseg">${Object.entries(RATES).map(([t, r]) => `<button aria-pressed="${r === meta.speakRate}" data-rate="${t}">${t}</button>`).join('')}</div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>`; };
     const sw = (on, attr, title, desc) => `<div class="prow"><div class="ptext"><b>${title}</b>${desc || ''}</div><button class="switch" role="switch" aria-checked="${!!on}" aria-label="${title.replace(/<[^>]+>/g, '')}" ${attr}><i></i></button></div>`;
     const stat = (n, v) => `<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
     const level = (c, t) => (c / t >= 0.8 ? '<span class="lvl good">sicher</span>' : c / t >= 0.5 ? '<span class="lvl mid">fast sicher</span>' : '<span class="lvl low">übt noch</span>');
@@ -1811,7 +1820,7 @@
         + `<div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('<b>Zusammenlegen</b> behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. <b>Ersetzen</b> überschreibt alles auf diesem Gerät. Vor beidem fragt Lernquest noch einmal nach.')}`)}</div>`
         + card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.')),
       app: () => card('Töne', sw(meta.sound, 'id="psound"', 'Töne an', '<span>Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</span>'))
-          + card('Vorlesen', sw(meta.speak, 'id="pspeak"', 'Aufgaben vorlesen', '<span>Ein Knopf bei jeder Aufgabe liest Frage und Antworten vor, in Klasse 1 und 2 von selbst. Es spricht die Stimme Ihres Geräts, ohne Internet.</span>'))
+          + card('Vorlesen', sw(meta.speak, 'id="pspeak"', 'Aufgaben vorlesen', '<span>Ein Knopf bei jeder Aufgabe liest Frage und Antworten vor, in Klasse 1 und 2 von selbst. Es spricht nur eine Stimme, die auf Ihrem Gerät gespeichert ist, ohne Internet.</span>') + (meta.speak ? speakSettings() : ''))
         + card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt. Ohne PIN kann jeder hier alles ändern.')}<button class="btn small" id="pset">PIN festlegen</button>`)
         + card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>${msg}`)
         + card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)
@@ -1841,6 +1850,11 @@
     on('#pnew, #pset, #pchange', newPin);
     on('#pdel', () => confirmBox('PIN entfernen?', '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>', 'Ja, PIN entfernen', () => { meta.pin = ''; saveAll(); again(); }, true));
     on('#pspeak', () => { meta.speak = !meta.speak; saveAll(); again(); });
+    const sample = (v) => speak('Hallo! So klingt diese Stimme.', v);
+    on('[data-try]', (b) => sample(voices()[+b.dataset.try]));
+    on('[data-voice]', (b) => { const v = voices()[+b.dataset.voice]; if (!v) return; meta.voiceName = v.name; saveAll(); again(); sample(v); });
+    on('[data-rate]', (b) => { meta.speakRate = RATES[b.dataset.rate]; saveAll(); again(); sample(chosenVoice()); });
+    if (TTS) TTS.onvoiceschanged = () => { if ($('#pspeak')) again(); }; // some browsers deliver their voices late
     on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
     on('#pfeedback', () => screenFeedback(() => screenParent('appsec', back)));
