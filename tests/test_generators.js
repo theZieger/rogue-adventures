@@ -163,21 +163,23 @@ for(const [c,t] of [[350,'3 € 50 ct'],[205,'2 € 05 ct'],[300,'3 €'],[60,'6
 check(Object.keys(M.PRICES).every(k=>M.ITEMS[k]&&Number.isInteger(M.PRICES[k])),'market prices are whole cents of real items',M.PRICES);
 // path map rules (see makeMap in src/logic.js)
 const quiet = ['rest', 'treasure', 'elite', 'event'];
+if (M.FLOORS !== 8 || M.makeMap().length !== 8) fails.push('map: 8 floors by default');
 for (let i = 0; i < 3000; i++) {
-  const m = M.makeMap(1); const bad = (msg) => fails.push('map: ' + msg + ' ' + JSON.stringify(m));
-  if (m.length !== M.FLOORS) { bad('floors'); continue; }
+  const F = [6, 7, M.FLOORS][i % 3]; // Klasse 1, 2 and 3
+  const m = M.makeMap(F); const bad = (msg) => fails.push('map: ' + msg + ' ' + JSON.stringify(m));
+  if (m.length !== F) { bad('floors'); continue; }
   if (m[0].some((n) => n.t !== 'fight')) bad('floor 1 must be fights');
-  if (m[6].some((n) => n.t !== 'rest')) bad('floor 7 must be the camp');
-  if (m[7].length !== 1 || m[7][0].t !== 'boss') bad('floor 8 boss');
+  if (m[F - 2].some((n) => n.t !== 'rest')) bad('the floor before the boss must be the camp');
+  if (m[F - 1].length !== 1 || m[F - 1][0].t !== 'boss') bad('boss on the last floor');
   if (m[0].length < 2) bad('at least two starts');
   if (m.slice(0, 2).some((fl) => fl.some((n) => n.t === 'elite'))) bad('elite before floor 3');
-  if (m.slice(1, 3).concat(m.slice(5, 6)).some((fl) => fl.some((n) => n.t === 'rest'))) bad('rest outside floors 4, 5, 7');
+  if (m.slice(1, 3).concat(m.slice(F - 3, F - 2)).some((fl) => fl.some((n) => n.t === 'rest'))) bad('rest on floors 2, 3 or right before the camp');
   if (m.flat().filter((n) => n.t === 'treasure').length > 2) bad('more than 2 treasures');
   const reached = m.map(() => new Set()); m[0].forEach((_, i) => reached[0].add(i));
   m.forEach((fl, f) => fl.forEach((n, i) => {
-    if (f < 7 && !n.n.length) bad('dead end');
+    if (f < F - 1 && !n.n.length) bad('dead end');
     n.n.forEach((j) => { const nx = m[f + 1] && m[f + 1][j]; if (!nx) { bad('edge to nowhere'); return; } reached[f + 1].add(j);
-      if (n.t === nx.t && quiet.includes(n.t) && f + 1 < 6) bad(n.t + ' twice in a row'); });
+      if (n.t === nx.t && quiet.includes(n.t) && f + 1 < F - 2) bad(n.t + ' twice in a row'); });
     fl.forEach((o, k) => { if (k <= i) return; n.n.forEach((a) => o.n.forEach((b) => { if (fl[k].c > n.c && m[f + 1][b].c < m[f + 1][a].c) bad('crossing'); })); });
   }));
   m.forEach((fl, f) => { if (reached[f].size !== fl.length) bad('unreachable node'); });
@@ -269,5 +271,5 @@ for (const mod of ['sadd', 'ssub']) {
     else check(pv(tk.text) === tk.answers[0], 'stellenwert', tk);
   }
 }
-console.log(M.makeMap(1).map((r) => r.map((n) => n.t).join('/')).join(' | '));
+console.log(M.makeMap().map((r) => r.map((n) => n.t).join('/')).join(' | '));
 console.log('fails',fails.length); if(fails.length){ console.log(fails.slice(0,10).join('\n')); process.exit(1); }

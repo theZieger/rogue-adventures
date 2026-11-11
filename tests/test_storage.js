@@ -623,7 +623,7 @@ const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
   const st = p.w.__mq.meta.stats.math;
   check(st.add.c === 3 && st.sadd && st.sadd.t === 0 && st.ssub && st.ssub.t === 0, 'old save gets empty statistics for the written methods');
   // a run saved before the Lesestube existed (map without it) still loads
-  const old = { mode: 'satzbaustelle', world: 1, floor: 2, map: p.w.eval('MQ.makeMap(1)'), hero: { id: p.w.eval('MK.MODES.satzbaustelle.starters[0].id'), evo: 0, level: 1, xp: 0, hp: 50, maxHp: 65, attacks: p.w.eval('MK.MODES.satzbaustelle.starters[0].attacks') }, items: [], tiers: {}, path: [0], shield: false };
+  const old = { mode: 'satzbaustelle', world: 1, floor: 2, map: p.w.eval('MQ.makeMap()'), hero: { id: p.w.eval('MK.MODES.satzbaustelle.starters[0].id'), evo: 0, level: 1, xp: 0, hp: 50, maxHp: 65, attacks: p.w.eval('MK.MODES.satzbaustelle.starters[0].attacks') }, items: [], tiers: {}, path: [0], shield: false };
   const p2 = open({ [META]: JSON.stringify(SKIPPED), mathquest_run_satzbaustelle: JSON.stringify(old) });
   p2.click('[data-cont="satzbaustelle"]');
   check(!!p2.$('.wmap') && p2.errors.length === 0, 'an adventure saved before the Lesestube existed continues');
@@ -945,7 +945,7 @@ async function weeklyCases() {
 // 23b. Saves from before step 22: Baustelle and Jahrmarkt stats without the new task types, a running adventure with old tiers
 {
   const oldBau = { wz: { c: 5, t: 6, hist: [] }, netz: { c: 2, t: 3, hist: [] }, umfang: { c: 1, t: 1, hist: [] } }, oldJm = { uhr: { c: 4, t: 4, hist: [] }, tafel: { c: 1, t: 2, hist: [] } };
-  const run = { mode: 'bau', world: 2, floor: 2, map: JSON.parse(open().w.eval('JSON.stringify(MQ.makeMap(2))')), hero: { id: 'biber', evo: 1, level: 4, xp: 0, hp: 60, maxHp: 90, attacks: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] }, items: [], tiers: { netz: 1, umfang: 2 }, path: [0], shield: false };
+  const run = { mode: 'bau', world: 2, floor: 2, map: JSON.parse(open().w.eval('JSON.stringify(MQ.makeMap())')), hero: { id: 'biber', evo: 1, level: 4, xp: 0, hp: 60, maxHp: 90, attacks: [{ name: 'Mauerlücke', mod: 'fq' }, { name: 'Faltkarton', mod: 'netz' }, { name: 'Fliesenband', mod: 'band' }, { name: 'Zollstock', mod: 'umfang' }] }, items: [], tiers: { netz: 1, umfang: 2 }, path: [0], shield: false };
   const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { bau: oldBau, jahrmarkt: oldJm } }), mathquest_run_bau: JSON.stringify(run) });
   const m = p.w.__mq.meta;
   check(m.stats.bau.wz.c === 5 && m.stats.bau.netz.t === 3 && ['flaeche', 'spiegel', 'bewegung', 'vieleck'].every((k) => m.stats.bau[k].t === 0) && m.stats.jahrmarkt.uhr.c === 4 && m.stats.jahrmarkt.fahrplan.t === 0, 'old stats are kept and the new task types start empty');
@@ -1276,7 +1276,73 @@ function topCases() {
   check(!none.d.querySelector('.task .speak') && none.errors.length === 0, 'a device without speech shows no button');
 }
 
-reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(() => {
+// Shorter adventures for Klasse 1 and 2: 6 and 7 floors; an old 8-floor run keeps going to its own end
+{
+  const fresh = (m, grade) => { const p = open({ [META]: JSON.stringify(Object.assign({ grade }, SKIPPED)) }); p.click(`[data-new="${m}"]`); const c = p.d.querySelector('.choice[data-id]'); if (c) c.click(); p.click('#go'); return p; };
+  for (const [m, grade, n] of [['zahlen20', 1, 6], ['groessen2', 2, 7], ['math', 3, 8]]) {
+    const p = fresh(m, grade); const map = p.w.__mq.run.map;
+    check(map.length === n && map[n - 1][0].t === 'boss' && map[n - 2].every((x) => x.t === 'rest') && p.$('.wmap').style.height === n * 86 + 'px' && p.errors.length === 0, `a new ${m} adventure (Klasse ${grade}) has ${n} floors`);
+  }
+  const k = fresh('koerper1', 1).w.__mq.run.map;
+  check(k[1].every((x) => x.t === 'school') && k.slice(2).flat().some((x) => x.t === 'school'), 'a 6-floor Klasse-1 map still has both Zeichenschulen');
+  check(fresh('laute1', 1).w.__mq.run.map.flat().filter((x) => x.t === 'lesen').length === 1, 'a 6-floor Klasse-1 Deutsch map has one Lesestube');
+  const p0 = open();
+  const s = p0.w.eval('MK.MODES.zahlen20.starters[0]');
+  const old = { mode: 'zahlen20', world: 1, floor: 7, map: p0.w.eval('MQ.makeMap()'), hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: [], tiers: {}, path: [0, 0, 0, 0, 0, 0, 0], shield: false, node: { type: 'rest', done: true } };
+  const p1 = open({ [META]: JSON.stringify(Object.assign({ grade: 1 }, SKIPPED)), mathquest_run_zahlen20: JSON.stringify(old) });
+  p1.click('[data-cont="zahlen20"]');
+  const r = p1.w.__mq.run;
+  check(r && r.map.length === 8 && r.floor === 8 && p1.d.querySelector('.node.open').getAttribute('aria-label') === 'Boss' && p1.errors.length === 0, 'an old 8-floor Klasse-1 adventure loads and goes on to its boss on floor 8');
+  const wins = p1.w.__mq.meta.wins; const after = p1.dump(); const r2 = JSON.parse(after.mathquest_run_zahlen20); r2.node = { type: 'boss', done: true }; after.mathquest_run_zahlen20 = JSON.stringify(r2);
+  const p2 = open(after); p2.click('[data-cont="zahlen20"]');
+  check(p2.w.__mq.meta.wins === wins + 1 && !p2.dump().mathquest_run_zahlen20 && p2.errors.length === 0, 'after its boss the old 8-floor adventure is won');
+}
+
+// Remembered level per task type: warm-up start, faster steps, save code and merge; a weaker counter-hit when it is hard going
+async function levelCases() {
+  const old = open({ [META]: JSON.stringify(Object.assign({ runs: 2, stats: { math: { add: { c: 3, t: 4, hist: [1] } } } }, SKIPPED)) });
+  check(same(old.w.__mq.meta.level, {}) && old.errors.length === 0, 'an old save without levels loads with none');
+  const odd = open({ [META]: JSON.stringify(Object.assign({ level: { math: { add: 3, sub: 0, mul: 'x', seq: 1.5, div: 2 }, ethik: 4, bau: { wz: 2 } } }, SKIPPED)) });
+  check(same(odd.w.__mq.meta.level, { math: { add: 3, div: 2 }, bau: { wz: 2 } }), 'broken level entries are dropped');
+  const p = open({ [META]: JSON.stringify(Object.assign({ level: { math: { add: 3, mul: 1, div: 2 } } }, SKIPPED)) });
+  p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+  const t = p.w.__mq.run.tiers;
+  check(t.add === 2 && t.mul === 1 && t.div === 1 && t.sub === 1, 'a new adventure starts each task type one tier below its saved level');
+  const q = p.w.__mq; q.meta.stats.math.sub.hist = []; q.meta.level.math = {}; q.run.tiers.sub = 1;
+  [1, 1, 0, 1, 1].forEach((ok) => q.recordAnswer('sub', !!ok));
+  check(q.run.tiers.sub === 1, '4 of 5 right: the tier stays');
+  q.recordAnswer('sub', true);
+  check(q.run.tiers.sub === 2 && q.meta.level.math.sub === 2 && q.meta.stats.math.sub.hist.length === 0, '5 of the last 6 right: one tier up, saved as the level, window cleared');
+  [1, 0].forEach((ok) => q.recordAnswer('sub', !!ok));
+  check(q.run.tiers.sub === 2, '1 of 2 wrong: the tier stays');
+  q.recordAnswer('sub', false);
+  check(q.run.tiers.sub === 1 && q.meta.level.math.sub === 1, '2 of the last 3 wrong: one tier down, saved as the level');
+  for (let i = 0; i < 12; i++) q.recordAnswer('sub', true);
+  check(q.run.tiers.sub === 2 && q.meta.level.math.sub === 2, 'never above the world\'s cap (Subtraktion: tier 2 in world 1)');
+  p.w.localStorage.setItem(META, JSON.stringify(q.meta)); // as the callers of recordAnswer save
+  const re = open(p.dump());
+  check(re.w.__mq.meta.level.math.sub === 2, 'the level is kept after reopening');
+  const back = await re.w.__mq.unpackSave(await re.w.__mq.packSave({ v: 1, at: '', meta: JSON.parse(JSON.stringify(re.w.__mq.meta)), runs: {} }));
+  check(back.meta.level.math.sub === 2, 'the save code carries the level');
+  const base = open().w.__mq.meta; const mk = (level) => Object.assign(JSON.parse(JSON.stringify(base)), { level });
+  const mm = open().w.__mq.mergeMeta(mk({ math: { add: 2, sub: 3 } }), mk({ math: { add: 4, sub: 1 }, zahlen20: { plus: 2 } }));
+  check(same(mm.level, { math: { add: 4, sub: 3 }, zahlen20: { plus: 2 } }), 'merge: the higher level per task type wins');
+  // the enemy's hit after a wrong answer: 1.5× normally, 1× under 65 % right in this adventure (from 8 answers on)
+  const wrongHit = (answered, solved) => {
+    const f = startMathFight(); const tut = () => { const b = f.d.querySelector('.overlay #tutok'); if (b) b.click(); };
+    tut(); Object.assign(f.w.__mq.run, { answered, solved }); f.click('.atk[data-i="0"]'); tut();
+    const tk = f.w.__task;
+    if (tk.kind === 'choice') [...f.d.querySelectorAll('.opt')].find((b) => b.textContent !== tk.answer).click();
+    else { const inps = [...f.d.querySelectorAll('.inp')]; tk.answers.forEach((a, i) => { inps[i].click(); for (const ch of String(a + 1)) f.click(`.numpad [data-k="${ch}"]`); }); f.click('.numpad [data-k="ok"]'); }
+    check(f.errors.length === 0 && f.w.__mq.run.answered === answered + 1 && f.w.__mq.run.solved === solved, 'a wrong answer in a fight is counted for the adventure');
+    return f.w.__mq.run.node.enemy.pending;
+  };
+  check(wrongHit(0, 0) === 1.5 && wrongHit(10, 9) === 1.5, 'a wrong answer gives the enemy a 1.5× hit when it goes well');
+  check(wrongHit(10, 5) === 1, 'under 65 % right after 8 answers the hit after a wrong answer is weaker');
+  check(wrongHit(5, 0) === 1.5, 'fewer than 8 answers: no relief yet');
+}
+
+reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
