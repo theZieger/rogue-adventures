@@ -25,6 +25,10 @@ const MQ = (() => {
     bruch: { name: 'Bruchteile', icon: '🥧', maxTier: 3, worldCap: [1, 2, 3], dmg: 14 },
     vorrang: { name: 'Punkt vor Strich', icon: '🚦', maxTier: 2, worldCap: [1, 2, 2], dmg: 14 },
     zahlwort: { name: 'Zahlwörter und Stellenwerte', icon: '🔤', maxTier: 3, worldCap: [1, 2, 3], dmg: 10 },
+    kopf: { name: 'Kopfrechnen bis 1000', icon: '💡', maxTier: 3, worldCap: [0, 2, 3], dmg: 12 },
+    zmul: { name: 'Malnehmen mit großen Zahlen', icon: '✳️', maxTier: 2, worldCap: [0, 1, 2], dmg: 14 },
+    vergl: { name: 'Zahlen vergleichen und ordnen', icon: '⚖️', maxTier: 2, worldCap: [0, 1, 2], dmg: 10 },
+    ueber: { name: 'Überschlagen', icon: '💭', maxTier: 1, worldCap: [0, 0, 1], dmg: 14 },
     // practised at the market, never an attack
     geld: { name: 'Geld', icon: '🪙', maxTier: 2, worldCap: [1, 2, 2], dmg: 0, shop: true },
   };
@@ -41,12 +45,14 @@ const MQ = (() => {
   }
   function genSub(t) {
     let a, b;
-    // tier 1: no ten-crossing (Einer reichen), b ≥ 2, result ≥ 2
-    if (t === 1) { do { a = rnd(5, 19); b = rnd(2, 9); } while (a % 10 < b || a - b < 2); return task(`${a} − ${b} = ?`, [a - b]); }
+    // tier 1: two-digit minus two-digit without crossing the ten
+    if (t === 1) { do { a = rnd(30, 99); b = rnd(11, a - 2); } while (a % 10 < b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
     if (t === 2) { do { a = rnd(21, 99); b = rnd(2, 9); } while (a % 10 >= b || a % 10 === 0); return task(`${a} − ${b} = ?`, [a - b]); }
     if (t === 3) { do { a = rnd(30, 99); b = rnd(11, a - 1); } while (a % 10 >= b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
     if (t === 4) { do { a = rnd(110, 999); b = rnd(5, 99); } while (a % 100 >= b % 100 && a % 10 >= b % 10); return task(`${a} − ${b} = ?`, [a - b]); }
-    do { a = rnd(20, 99); b = rnd(2, 19); } while (a % 10 >= b % 10); return task(`${a} − ? = ${a - b}`, [b], { reverse: true });
+    // tier 5: tens across the hundred (740 − 280), as a plain task or with the gap in the middle
+    do { a = rnd(20, 99) * 10; b = rnd(11, 89) * 10; } while (a % 100 >= b % 100 || a - b < 20);
+    return Math.random() < 0.5 ? task(`${a} − ${b} = ?`, [a - b]) : task(`${a} − ? = ${a - b}`, [b], { reverse: true });
   }
   function genMul(t) {
     if (t === 1) { const a = rnd(2, 5), b = rnd(2, 10); return task(`${a} · ${b} = ?`, [a * b]); }
@@ -146,8 +152,9 @@ const MQ = (() => {
     // tier 1 is world 1: dividends stay under 100
     if (t === 1) { do { a = rnd(2, 10); b = rnd(2, 10); } while (a * b >= 100); return task(`${a * b} : ${a} = ?`, [b]); }
     if (t === 2) { a = rnd(2, 9); b = rnd(2, 9) * 10; return task(`${a * b} : ${a} = ?`, [b]); }
-    a = rnd(2, 10); b = rnd(2, 10);
-    return pick([() => task(`? · ${a} = ${a * b}`, [b], { reverse: true }), () => task(`${a} · ? = ${a * b}`, [b], { reverse: true }), () => task(`${a * b} : ${a} = ?`, [b])])();
+    // tier 3: halbschriftlich, 96 : 3 = 90 : 3 + 6 : 3
+    do { a = rnd(2, 9); b = rnd(11, 99); } while (b % 10 === 0 || a * b > 200 || a * b <= 50);
+    return task(`${a * b} : ${a} = ?`, [b]);
   }
   // zero: the division goes up (remainder 0) – the Bergwerk needs those for ore
   function genRest(t, zero) {
@@ -262,15 +269,63 @@ const MQ = (() => {
     const e = n % 10; return (e ? (e === 1 ? 'ein' : ONES[e]) + 'und' : '') + TENS[Math.floor(n / 10)];
   }
   const PV = [['H', 100], ['Z', 10], ['E', 1]];
+  const digits3 = (n) => [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
   const pvText = (d, order) => order.map((i) => `${d[i]} ${PV[i][0]}`).join(' ');
   function genZahlwort(t) {
     if (t < 3) { const n = t === 1 ? rnd(13, 99) : rnd(101, 999); return task(numWord(n), [n], { word: true }); }
     let n; do n = rnd(102, 999); while (new Set(String(n)).size < 3);
-    const d = [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
+    const d = digits3(n);
     if (Math.random() < 0.5) return task(`${pvText(d, Math.random() < 0.5 ? [0, 1, 2] : shuffle([0, 1, 2]))} = ?`, [n], { ask: 'Welche Zahl ist das? H = Hunderter, Z = Zehner, E = Einer.' });
     // wrong options swap two digits, so every place value has to be read
     const opts = [d, [d[1], d[0], d[2]], [d[0], d[2], d[1]], [d[2], d[1], d[0]]].map((x) => pvText(x, [0, 1, 2]));
     return choice(`${n} = ? H ? Z ? E`, shuffle([opts[0]].concat(shuffle(opts.slice(1)).slice(0, 2))), opts[0], { why: `${n} hat ${d[0]} Hunderter, ${d[1]} Zehner und ${d[2]} Einer.`, cols: 1 });
+  }
+  // tens and hundreds in the head; tier 3 fills up to 1000
+  function genKopf(t) {
+    let a, b;
+    if (t === 3) { do a = Math.random() < 0.6 ? rnd(11, 99) * 10 : rnd(101, 999); while (a % 100 === 0); return task(`${a} + ? = 1000`, [1000 - a], { reverse: true }); }
+    // tier 1 stays inside the hundred, tier 2 crosses it
+    const cross = (x, y, plus) => (plus ? x % 100 + y % 100 >= 100 : x % 100 < y % 100);
+    const plus = Math.random() < 0.5;
+    do { a = rnd(11, 99) * 10; b = rnd(11, 89) * 10; } while ((plus ? a + b > 990 : a - b < 20) || cross(a, b, plus) !== (t === 2) || (t === 1 && (a % 100 === 0 || b % 100 === 0)));
+    return task(`${a} ${plus ? '+' : '−'} ${b} = ?`, [plus ? a + b : a - b]);
+  }
+  function genZmul(t) {
+    let a, b;
+    if (t === 1) { a = rnd(2, 9); b = rnd(2, 9) * 10; }
+    else do { a = rnd(2, 9); b = rnd(12, 99); } while (b % 10 < 2 || a * b > 999 || a * b < 60);
+    return Math.random() < 0.5 ? task(`${a} · ${b} = ?`, [a * b]) : task(`${b} · ${a} = ?`, [a * b]);
+  }
+  // Überschlag: wrong options keep the Zehner and Einer, so only rounding to hundreds tells them apart.
+  // Numbers whose rest is 40–60 are left out: rounding them is a close call.
+  function genUeber() {
+    const ok = (n) => n % 100 < 40 || n % 100 > 60; const r100 = (n) => Math.round(n / 100) * 100;
+    let a, b, plus, res;
+    do { plus = Math.random() < 0.5; a = rnd(101, 899); b = rnd(101, 899); res = plus ? a + b : a - b; } while (!ok(a) || !ok(b) || res < 100 || res > 999);
+    const est = plus ? r100(a) + r100(b) : r100(a) - r100(b); const op = plus ? '+' : '−';
+    const wrong = shuffle([-400, -300, -200, 200, 300, 400].map((d) => res + d).filter((n) => n >= 10 && n <= 999)).slice(0, 2);
+    return choice(`Welches Ergebnis kann stimmen? ${a} ${op} ${b} = ___`, shuffle([res].concat(wrong)).map(String), String(res),
+      { why: `Überschlag: ${r100(a)} ${op} ${r100(b)} = ${est}. Nah dran ist nur ${res}.` });
+  }
+  function genVergl(t) {
+    const n = rnd(100, 999);
+    if (t === 1) {
+      // a close second number: one digit changed or two digits swapped; sometimes as H Z E (then also equal)
+      const d = String(n).split('').map(Number); const i = rnd(0, 2);
+      let m; do { const e = d.slice(); if (Math.random() < 0.5) { const j = (i + 1) % 3; [e[i], e[j]] = [e[j], e[i]]; } else e[i] = rnd(i ? 0 : 1, 9); m = +e.join(''); } while (m === n || m < 100);
+      const pv = Math.random() < 0.3; if (pv && Math.random() < 0.4) m = n;
+      const left = pv ? pvText(digits3(m), [0, 1, 2]) : String(m);
+      const ans = m < n ? '<' : m > n ? '>' : '=';
+      return choice(`Setze ein: <, > oder =. ${left} ___ ${n}`, ['<', '>', '='], ans, { why: `${m} ${ans} ${n}. Vergleiche zuerst die Hunderter, dann die Zehner, dann die Einer.` });
+    }
+    // four numbers with the same digits or the same hundreds, so every place has to be compared
+    const nums = new Set(); const h = Math.floor(n / 100);
+    while (nums.size < 4) nums.add(Math.random() < 0.5 ? +shuffle(String(n).split('')).join('') : h * 100 + rnd(0, 99));
+    const list = [...nums].filter((x) => x >= 100); if (list.length < 4) return genVergl(2);
+    const up = Math.random() < 0.5; const sorted = list.slice().sort((x, y) => (up ? x - y : y - x));
+    const items = sorted.map((x) => ({ id: 'n' + x, text: String(x) }));
+    const q = `Ordne die Zahlen. Tippe zuerst die ${up ? 'kleinste' : 'größte'} an.`;
+    return { kind: 'order', text: q + ' ' + list.join(' '), q, items, order: items.map((x) => x.id), display: shuffle(items) };
   }
   // money is always shown as „3 € 50 ct“, never with a comma
   function euro(c) { const e = Math.floor(c / 100), ct = c % 100; return e ? `${e} €${ct ? ` ${String(ct).padStart(2, '0')} ct` : ''}` : `${ct} ct`; }
@@ -285,7 +340,7 @@ const MQ = (() => {
 
   function generate(mod, tier, opts) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, smul: genSmul, teilbar: genTeilbar, mauer: genMauer, bruch: genBruch, vorrang: genVorrang, zahlwort: genZahlwort, geld: genGeld }[mod];
+    const g = { add: genAdd, sub: genSub, mul: genMul, riddle: genRiddle, seq: genSeq, nb: genNb, grid: (t) => genGrid(t, opts && opts.elite), div: genDiv, rest: (t) => genRest(t, opts && opts.zero), rund: genRund, dopp: genDopp, sadd: genSadd, ssub: genSsub, smul: genSmul, teilbar: genTeilbar, mauer: genMauer, bruch: genBruch, vorrang: genVorrang, zahlwort: genZahlwort, kopf: genKopf, zmul: genZmul, vergl: genVergl, ueber: genUeber, geld: genGeld }[mod];
     const tk = g(tier); tk.mod = mod; tk.tier = tier; return tk;
   }
 
@@ -299,11 +354,11 @@ const MQ = (() => {
       5: { title: 'Drei Zahlen addieren', steps: ['Rechne erst zwei Zahlen zusammen, dann die dritte dazu.', '120 + 45 + 30: 120 + 45 = 165, dann 165 + 30 = 195.', 'Tipp: Fang mit den Zahlen an, die leicht zusammenpassen.'] },
     },
     sub: {
-      1: { title: 'Minus rechnen', steps: ['Zähle rückwärts oder denke: Was fehlt bis zur großen Zahl?', '9 − 4: Von 4 bis 9 sind es 5.', 'Also 9 − 4 = 5.'] },
+      1: { title: 'Minus mit Zehnern und Einern', steps: ['Ziehe erst die Zehner ab, dann die Einer.', '58 − 23: 58 − 20 = 38.', 'Dann 38 − 3 = 35. Also 58 − 23 = 35.'] },
       2: { title: 'Minus über den Zehner', steps: ['Gehe erst bis zum vollen Zehner, dann den Rest.', '22 − 7: Erst 22 − 2 = 20. Es bleiben noch 5.', '20 − 5 = 15.'] },
       3: { title: 'Zweistellig minus zweistellig', steps: ['Ziehe erst die Zehner ab, dann die Einer.', '63 − 28: 63 − 20 = 43, dann 43 − 8.', '43 − 3 = 40, 40 − 5 = 35. Also 35.'] },
       4: { title: 'Minus mit Hundertern', steps: ['Ziehe Schritt für Schritt ab: erst Zehner, dann Einer.', '304 − 9: 304 − 4 = 300, dann 300 − 5 = 295.', '512 − 67: 512 − 60 = 452, dann 452 − 7 = 445.'] },
-      5: { title: 'Die fehlende Zahl', steps: ['Hier fehlt die Zahl in der Mitte.', '22 − ? = 15: Wie weit ist es von 15 bis 22?', 'Von 15 bis 22 sind es 7. Also ? = 7.'] },
+      5: { title: 'Minus mit Zehnerzahlen', steps: ['Ziehe erst die Hunderter ab, dann die Zehner.', '740 − 280: 740 − 200 = 540. Dann 540 − 40 = 500 und 500 − 40 = 460.', 'Fehlt die Zahl in der Mitte, rechne von unten nach oben: 620 − ? = 350. Von 350 bis 400 sind es 50, von 400 bis 620 sind es 220.', '50 + 220 = 270. Also ? = 270.'] },
     },
     mul: {
       1: { title: 'Das Einmaleins', steps: ['4 · 3 heißt: 4 + 4 + 4.', 'Das sind 12.', 'Tipp: Die 5er-Reihe endet immer auf 5 oder 0.'] },
@@ -335,7 +390,7 @@ const MQ = (() => {
     div: {
       1: { title: 'Teilen', steps: ['Teilen ist die Umkehraufgabe vom Malnehmen.', '42 : 6 = ?: Wie oft passt die 6 in 42?', 'Du weißt 7 · 6 = 42. Also 42 : 6 = 7.'] },
       2: { title: 'Teilen mit Zehnerzahlen', steps: ['Lass die Null erst weg und rechne mit dem Einmaleins.', '240 : 6: Rechne 24 : 6 = 4.', '24 Zehner : 6 = 4 Zehner. Also 240 : 6 = 40.'] },
-      3: { title: 'Aufgabenfamilien', steps: ['Mal- und Geteiltaufgaben gehören zusammen: 7 · 8 = 56, 8 · 7 = 56, 56 : 7 = 8, 56 : 8 = 7.', '? · 7 = 56: Die fehlende Zahl findest du mit der Umkehraufgabe 56 : 7.', '56 : 7 = 8. Also ? = 8.'] },
+      3: { title: 'Halbschriftlich teilen', steps: ['Zerlege die große Zahl in zwei Zahlen, die du leicht teilen kannst.', '96 : 3: 96 = 90 + 6. 90 : 3 = 30 und 6 : 3 = 2.', '30 + 2 = 32. Also 96 : 3 = 32.', '135 : 5: 135 = 100 + 35. 100 : 5 = 20 und 35 : 5 = 7. Zusammen 27.'] },
     },
     rest: {
       1: { title: 'Teilen mit Rest', steps: ['Manchmal geht das Teilen nicht auf. Was übrig bleibt, ist der Rest.', '23 : 4: Die 4 passt 5-mal in 23, denn 5 · 4 = 20.', 'Von 20 bis 23 sind es 3. Also 23 : 4 = 5 Rest 3.'] },
@@ -395,6 +450,24 @@ const MQ = (() => {
       3: { title: 'Die Stellenwerttafel', steps: ['H heißt Hunderter, Z Zehner, E Einer. Die Reihenfolge in der Aufgabe kann wechseln, lies die Buchstaben genau.', '3 H 4 Z 8 E: 300 + 40 + 8 = 348.', '5 H 0 E 6 Z: 5 Hunderter, 6 Zehner, 0 Einer. Die Zahl ist 560.', 'Umgekehrt: 348 hat 3 H, 4 Z und 8 E.'] },
     },
   });
+  Object.assign(TUT, {
+    kopf: {
+      1: { title: 'Mit Zehnerzahlen rechnen', steps: ['Rechne erst die Hunderter, dann die Zehner.', '340 + 250: 300 + 200 = 500, 40 + 50 = 90. Zusammen 590.', '580 − 230: 580 − 200 = 380, dann 380 − 30 = 350.'] },
+      2: { title: 'Über den Hunderter', steps: ['Gehe erst bis zum vollen Hunderter, dann den Rest.', '370 + 450: 370 + 400 = 770. Dann 770 + 30 = 800 und 800 + 20 = 820.', '700 − 260: 700 − 200 = 500. Dann 500 − 60 = 440.'] },
+      3: { title: 'Ergänzen bis 1000', steps: ['Wie viel fehlt bis 1000? Gehe erst bis zum nächsten Hunderter.', '650 + ? = 1000: Von 650 bis 700 sind es 50. Von 700 bis 1000 sind es 300.', '50 + 300 = 350. Also ? = 350.', 'Mit Einern: 365 + ? = 1000. Bis 370 fehlen 5, bis 400 noch 30, bis 1000 noch 600. Zusammen 635.'] },
+    },
+    zmul: {
+      1: { title: 'Malnehmen mit Zehnerzahlen', steps: ['Lass die Null erst weg und rechne mit dem Einmaleins.', '4 · 70: Rechne 4 · 7 = 28.', '4 · 7 Zehner sind 28 Zehner. Also 4 · 70 = 280.'] },
+      2: { title: 'Halbschriftlich malnehmen', steps: ['Zerlege die große Zahl in Zehner und Einer.', '6 · 23 = 6 · 20 + 6 · 3.', '6 · 20 = 120 und 6 · 3 = 18.', '120 + 18 = 138. Also 6 · 23 = 138.'] },
+    },
+    vergl: {
+      1: { title: 'Zahlen vergleichen', steps: ['< heißt „ist kleiner als“, > heißt „ist größer als“, = heißt „ist gleich“. Die Spitze zeigt immer zur kleineren Zahl.', 'Vergleiche zuerst die Hunderter. Sind sie gleich, die Zehner. Sind auch die gleich, die Einer.', '347 und 374: Hunderter gleich, Zehner 4 und 7. Also 347 < 374.', '3 H 5 Z 4 E ist die Zahl 354.'] },
+      2: { title: 'Zahlen ordnen', steps: ['Suche zuerst die kleinste Zahl (oder die größte, wenn danach gefragt ist).', 'Schau auf die Hunderter, dann auf die Zehner, dann auf die Einer.', '528, 285, 582, 258: Am kleinsten ist 258, dann 285, dann 528, am größten 582.'] },
+    },
+    ueber: {
+      1: { title: 'Überschlagen', steps: ['Beim Überschlag rundest du jede Zahl auf Hunderter und rechnest mit den runden Zahlen.', '387 + 412: 400 + 400 = 800. Das Ergebnis liegt nah bei 800.', 'Von 799, 599 und 999 liegt nur 799 nah bei 800. Also kann nur 799 stimmen.'] },
+    },
+  });
   TUT.riddle[2] = { title: 'Zahlenrätsel mit Hundertern', steps: ['Jetzt gibt es auch einen Hunderter. Bei 258: Hunderter 2, Zehner 5, Einer 8.', '„Mein Einer ist 2-mal so groß wie mein Zehner. Mein Hunderter ist um 3 kleiner als mein Zehner. Mein Zehner ist 4.“', 'Zehner 4 → Einer 8 (2 · 4). Hunderter 4 − 3 = 1. Die Zahl ist 148.'] };
 
   /* ---------- Monsters ---------- */
@@ -412,7 +485,7 @@ const MQ = (() => {
     { id: 'kauz', type: 'normal', shape: 'owl', names: ['Steinkauz', 'Waldkauz', 'Uhu'], hp: 70, desc: 'Jagt nachts und sieht im Dunkeln. Kein Typ ist stark gegen ihn, er ist aber auch gegen keinen stark.',
       attacks: [{ name: 'Federfächer', mod: 'mul' }, { name: 'Astsprung', mod: 'nb' }, { name: 'Nachtblick', mod: 'riddle' }, { name: 'Nachtruf', mod: 'zahlwort' }] },
   ];
-  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller', smul: 'Lawine', teilbar: 'Kornsieb', mauer: 'Steinwall', bruch: 'Halbmond', vorrang: 'Vortritt', zahlwort: 'Ausrufer' };
+  const EXTRA_ATTACKS = { add: 'Blitzsumme', sub: 'Rückwärtsgang', mul: 'Malmühle', riddle: 'Zifferncode', seq: 'Treppenlauf', nb: 'Nachbarschlag', grid: 'Gitterblitz', div: 'Tortenschnitt', rest: 'Restkorb', rund: 'Meilenstein', dopp: 'Spiegelschlag', sadd: 'Turmbau', ssub: 'Auffüller', smul: 'Lawine', teilbar: 'Kornsieb', mauer: 'Steinwall', bruch: 'Halbmond', vorrang: 'Vortritt', zahlwort: 'Ausrufer', kopf: 'Perlenkette', zmul: 'Holzstoß', vergl: 'Waagschale', ueber: 'Fernrohr' };
 
   const ENEMIES = {
     1: {

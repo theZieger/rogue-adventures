@@ -5,25 +5,47 @@ const evalExpr=(txt,ans)=>{
   const m=txt.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/); if(m){ return (+m[1])+(+m[2])+(m[3]?+m[3]:0)===ans[0]; }
   const s=txt.match(/^(\d+) − (\d+) = \?$/); if(s){ return (+s[1])-(+s[2])===ans[0]; }
   const sr=txt.match(/^(\d+) − \? = (\d+)$/); if(sr){ return (+sr[1])-ans[0]===+sr[2]; }
+  const ar=txt.match(/^(\d+) \+ \? = (\d+)$/); if(ar){ return (+ar[1])+ans[0]===+ar[2]; }
   const mu=txt.match(/^(\d+) · (\d+) = \?$/); if(mu){ return (+mu[1])*(+mu[2])===ans[0]; }
   const mr=txt.match(/^\? · (\d+) = (\d+)$/); if(mr){ return ans[0]*(+mr[1])===+mr[2]; }
   return null;
 };
 for(const mod of M.MODULE_KEYS){ for(let t=1;t<=M.MODULES[mod].maxTier;t++){ const tiers={};
   for(let i=0;i<2000;i++){ const tk=M.generate(mod,t,{elite:i%2===0});
-    if(tk.kind==='choice') check(tk.options.filter(o=>o===tk.answer).length===1&&new Set(tk.options).size===tk.options.length&&tk.q===tk.text,'choice: exactly one right option',tk);
+    if(tk.kind==='order') check(tk.items.length===4&&tk.order.map(id=>tk.items.find(x=>x.id===id).text).join()===tk.items.map(x=>x.text).join(),'order: items in answer order',tk);
+    else if(tk.kind==='choice') check(tk.options.filter(o=>o===tk.answer).length===1&&new Set(tk.options).size===tk.options.length&&tk.q===tk.text,'choice: exactly one right option',tk);
     else check(tk.answers.every(a=>Number.isInteger(a)&&a>=0&&a<=999),'range',tk);
-    if(['add','sub','mul'].includes(mod)){ check(evalExpr(tk.text,tk.answers)===true,'arith',tk);
+    check(((tk.text||'').match(/\d+/g)||[]).every(v=>+v<=1000),'numbers up to 1000',tk);
+    if(['add','sub','mul','kopf','zmul'].includes(mod)){ check(evalExpr(tk.text,tk.answers)===true,'arith',tk);
       if(mod==='add'&&t<=2) check(tk.answers[0]<100,'w1add',tk);
       if(mod==='sub'&&t===2){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a%10<b,'crossing',tk);}
-      if(mod==='sub'&&t===1){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a%10>=b,'sub1 no ten-crossing',tk); check(b>=2&&a-b>=2,'sub1 not trivial',tk); }
+      if(mod==='sub'&&t===1){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a%10>=b%10,'sub1 no ten-crossing',tk); check(b>=11&&a<100&&a-b>=2,'sub1 two-digit minus two-digit',tk); }
+      // tier 5 is harder than tier 4 (three-digit minus two-digit): three-digit tens across the hundred, plain or with a gap
+      if(mod==='sub'&&t===5){ const [a,x]=tk.text.match(/\d+/g).map(Number); const b=tk.reverse?tk.answers[0]:x;
+        check(a%10===0&&b%10===0&&a>=200&&b>=110&&b<1000&&a%100<b%100&&a-b>0,'sub5 three-digit tens across the hundred',tk); }
       if(mod==='mul'&&t===1){ const [a,b]=tk.text.match(/\d+/g).map(Number); check(a>=2&&b>=2,'mul1 no factor 1',tk); } }
     // world 1 promise (README: "Welt 1 unter 100"): every number shown or asked stays under 100
     if(t<=M.MODULES[mod].worldCap[0]){ const nums=(tk.text.match(/\d+/g)||[]).map(Number).concat(tk.answers||[], tk.seq||[], tk.n!=null?[tk.n]:[]);
       if(tk.grid){ const g=tk.grid; for(let r=0;r<3;r++)for(let c=0;c<3;c++) nums.push(g.base+(r-g.sr)*g.stepD+(c-g.sc)*g.stepR); }
       check(nums.every(v=>v<100),'world1 <100',tk); }
     if(mod==='div'){ let m; const ok=(m=tk.text.match(/^(\d+) : (\d+) = \?$/))?(+m[2])*tk.answers[0]===+m[1]:(m=tk.text.match(/^\? · (\d+) = (\d+)$/)||tk.text.match(/^(\d+) · \? = (\d+)$/))?(+m[1])*tk.answers[0]===+m[2]:false;
-      check(ok,'div',tk); check(tk.answers[0]>=2,'div quotient ≥ 2',tk); if(t===2) check(tk.answers[0]%10===0&&/:/.test(tk.text),'div tens',tk); }
+      check(ok,'div',tk); check(tk.answers[0]>=2,'div quotient ≥ 2',tk); if(t===2) check(tk.answers[0]%10===0&&/:/.test(tk.text),'div tens',tk);
+      if(t===3){ const [n,d]=tk.text.match(/\d+/g).map(Number); check(/:/.test(tk.text)&&n>50&&n<=200&&d>=2&&d<=9&&tk.answers[0]>=11&&tk.answers[0]<=99&&tk.answers[0]%10!==0,'div3 halbschriftlich',tk); } }
+    if(mod==='kopf'){ const nums=tk.text.match(/\d+/g).map(Number);
+      if(t<3){ const [a,b]=nums; const plus=tk.text.includes('+'); check(a%10===0&&b%10===0&&a>=100&&b>=100&&tk.answers[0]>=10,'kopf tens and hundreds',tk);
+        check((plus?a%100+b%100>=100:a%100<b%100)===(t===2),'kopf: tier 2 crosses the hundred, tier 1 not',tk); }
+      else check(tk.reverse&&nums[1]===1000&&tk.answers[0]>0,'kopf3 ergänzen bis 1000',tk); }
+    if(mod==='zmul'){ const [a,b]=tk.text.match(/\d+/g).map(Number); const big=Math.max(a,b), small=Math.min(a,b);
+      check(small>=2&&small<=9&&big>=10&&big<=99&&(t===1?big%10===0:big%10>=2),'zmul factors',tk); }
+    if(mod==='ueber'){ const m=tk.q.match(/^Welches Ergebnis kann stimmen\? (\d+) ([+−]) (\d+) = ___$/); const r=(n)=>Math.round(n/100)*100;
+      const est=m&&(m[2]==='+'?r(+m[1])+r(+m[3]):r(+m[1])-r(+m[3])); const exact=m&&(m[2]==='+'?+m[1]+ +m[3]:+m[1]-m[3]);
+      check(m&&+tk.answer===exact&&tk.options.length===3,'ueber answer',tk);
+      check(tk.options.filter(o=>Math.abs(+o-est)<100).length===1&&tk.options.every(o=>o===tk.answer||Math.abs(+o-est)>=120),'ueber: exactly one plausible option',tk);
+      check(tk.options.every(o=>+o>=0&&+o<=999),'ueber range',tk); }
+    if(mod==='vergl'){ if(t===1){ const m=tk.q.match(/^Setze ein: <, > oder =\. (.+) ___ (\d+)$/); const pv=(s)=>/H/.test(s)?100*+s.match(/(\d) H/)[1]+10*+s.match(/(\d) Z/)[1]+ +s.match(/(\d) E/)[1]:+s;
+        const a=m&&pv(m[1]), b=m&&+m[2]; check(m&&a>=100&&a<=999&&b>=100&&b<=999&&tk.answer===(a<b?'<':a>b?'>':'='),'vergl compare',tk); }
+      else { const v=tk.order.map(id=>+tk.items.find(x=>x.id===id).text); const up=tk.q.includes('kleinste');
+        check(new Set(v).size===4&&v.every(x=>x>=100&&x<=999)&&v.every((x,i)=>!i||(up?x>v[i-1]:x<v[i-1])),'vergl order',tk); } }
     if(mod==='rest'){ const m=tk.text.match(/^(\d+) : (\d+) = \?$/); const [q,r]=tk.answers;
       check(m&&q*(+m[2])+r===+m[1],'rest',tk); check(m&&r>0&&r<+m[2],'0 < Rest < Divisor',tk); check(q>=2&&q<=10,'rest quotient',tk); check(m&&+m[1]<=(t===1?50:99),'rest range',tk); }
     if(mod==='rund'){ const n=+tk.text, to=tk.ask.includes('Hunderter')?100:10; const a=tk.answers[0];
@@ -40,6 +62,11 @@ for(const mod of M.MODULE_KEYS){ for(let t=1;t<=M.MODULES[mod].maxTier;t++){ con
     if(mod==='grid'){ const g=tk.grid; const v=g.base+(g.tr-g.sr)*g.stepD+(g.tc-g.sc)*g.stepR; check(v===tk.answers[0],'grid',tk); // all tiles in range
       for(let r=0;r<3;r++)for(let c=0;c<3;c++){const x=g.base+(r-g.sr)*g.stepD+(c-g.sc)*g.stepR; check(x>0&&x<1000,'gridrange',tk);} }
   }}}
+// new Klasse-3 task types never reach world 1 (numbers there stay under 100); Überschlag only in world 3
+for(const k of ['kopf','zmul','vergl']) check(M.MODULES[k].worldCap[0]===0,k+' not in world 1',M.MODULES[k].worldCap);
+check(M.MODULES.ueber.worldCap.join()==='0,0,1','ueber only in world 3',M.MODULES.ueber.worldCap);
+for(const mod of M.MODULE_KEYS) for(let t=1;t<=M.MODULES[mod].maxTier;t++) check(M.TUT[mod]&&M.TUT[mod][t],'tutorial per tier '+mod+':'+t);
+{ const seen={}; for(let i=0;i<3000;i++){ const tk=M.generate('vergl',1); seen[tk.answer]=(seen[tk.answer]||0)+1; } check(seen['<']>500&&seen['>']>500&&seen['=']>100,'vergl uses <, > and =',seen); }
 // riddle brute force: exactly one solution, no redundant clue, tier 1 not just "Zehner ist X. Einer ist Y."
 const digits=M.digits;
 const cluePred=(c)=>{ let m;

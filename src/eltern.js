@@ -12,13 +12,13 @@ const ELTERN = (() => {
   const INFO = {
     math: {
       add: 'Plusaufgaben im Kopf, erst bis 100, später bis 1000.',
-      sub: 'Minusaufgaben im Kopf, erst bis 100, später bis 1000.',
+      sub: 'Minusaufgaben im Kopf, erst bis 100 (58 − 23, 63 − 28), später bis 1000, zum Beispiel 740 − 280 oder 620 − ? = 350.',
       mul: 'Malaufgaben aus dem kleinen Einmaleins, zum Beispiel 7 · 8.',
       riddle: 'Ihr Kind findet eine Zahl aus Hinweisen zu Einern, Zehnern und Hundertern.',
       seq: 'Eine Zahlenreihe folgt einer Regel. Ihr Kind findet die nächste Zahl.',
       nb: 'Zwischen welchen Zehnern oder Hundertern liegt eine Zahl? Bei 437 sind das 430 und 440.',
       grid: 'Ihr Kind findet sich in einer Zahlentafel zurecht: nach rechts plus 1, nach unten plus 10.',
-      div: 'Geteiltaufgaben als Umkehrung des Einmaleins, zum Beispiel 42 : 6.',
+      div: 'Geteiltaufgaben als Umkehrung des Einmaleins (42 : 6), mit Zehnerzahlen (240 : 6) und halbschriftlich: 96 : 3 = 90 : 3 + 6 : 3.',
       rest: 'Teilen, das nicht aufgeht: 17 : 5 = 3 Rest 2.',
       rund: 'Zahlen auf volle Zehner oder Hunderter runden.',
       dopp: 'Das Doppelte und die Hälfte einer Zahl im Kopf ausrechnen.',
@@ -30,6 +30,10 @@ const ELTERN = (() => {
       bruch: 'Die Hälfte, ein Drittel oder ein Viertel von einer Menge oder Größe bestimmen.',
       vorrang: 'Aufgaben wie 3 + 4 · 2: erst mal und geteilt, dann plus und minus.',
       zahlwort: 'Zahlen als Wort lesen und in Hunderter, Zehner und Einer zerlegen.',
+      kopf: 'Mit Zehner- und Hunderterzahlen im Kopf rechnen (340 + 250, 700 − 260) und bis 1000 ergänzen (650 + ? = 1000).',
+      zmul: 'Malnehmen mit Zehnerzahlen (4 · 70) und halbschriftlich: 6 · 23 = 6 · 20 + 6 · 3.',
+      vergl: 'Dreistellige Zahlen mit <, > und = vergleichen, auch in Hunderter, Zehner und Einer, und vier Zahlen der Größe nach ordnen.',
+      ueber: 'Ihr Kind rundet auf Hunderter und erkennt so, welches Ergebnis stimmen kann (nur in Welt 3).',
       geld: 'Mit Euro und Cent passend bezahlen und Rückgeld ausrechnen. Ohne „Geld“ gibt es keinen Markt und keine Münzen.',
     },
     bau: {
