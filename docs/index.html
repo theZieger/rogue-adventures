@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="2f18292e3a9a">
+<meta name="app-version" content="a1e71b5801fc">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -2496,18 +2496,19 @@ const MW = {
   saechsisch: [
     ['die Bemme', 'die Scheibe Brot mit Belag', 'der Becher mit Kakao', 'die Mütze mit Bommel', 'Eine Bemme ist ein belegtes Brot, zum Beispiel ein Butterbrot.'],
     ['die Fettbemme', 'das Brot mit Schmalz', 'der dicke Kater', 'die Butterdose', 'Eine Fettbemme ist eine Brotscheibe mit Schmalz darauf.'],
-    ['die Plinse', 'der Eierkuchen', 'die Pflaume', 'der Pinsel', 'Plinsen sind dünne Eierkuchen aus der Pfanne.'],
+    ['die Plinse', 'der Eierkuchen', 'die Pflaume', 'der Pinsel', 'Plinsen sind dünne Eierkuchen aus der Pfanne – so sagt man besonders in Ostsachsen und in der Lausitz.'],
     ['nu', 'ja', 'nein', 'nie', '„Nu“ sagt man in Sachsen für „ja“: „Kommst du mit?“ – „Nu!“'],
-    ['die Gusche', 'der Mund', 'die Gurke', 'die Dusche', 'Gusche ist ein derbes Wort für den Mund.'],
     ['die Hitsche', 'die Fußbank', 'die Hitze', 'der Schlitten', 'Eine Hitsche ist eine niedrige Fußbank, auf die man sich auch setzen kann.'],
     ['ditschen', 'eintauchen', 'niesen', 'flüstern', 'Wer den Keks in den Kakao tunkt, ditscht ihn.'],
-    ['der Nischel', 'der Kopf', 'die Nase', 'der Nagel', 'In Chemnitz nennen viele das große Kopf-Denkmal in der Innenstadt den Nischel.'],
-    ['der Blümchenkaffee', 'sehr dünner Kaffee', 'Kaffee mit Blüten darin', 'Tee aus Blumen', 'Der Kaffee ist so dünn, dass man das Blümchen am Boden der Tasse sieht.'],
-    ['die Plauze', 'der Bauch', 'die Pause', 'der Pullover', 'Wer viel gegessen hat, hat eine volle Plauze.'],
-    ['der Feez', 'der Spaß', 'die Fee', 'der Streit', '„Feez machen“ heißt Spaß und Unsinn machen.'],
-    ['das Gelumpe', 'altes Zeug, das keiner braucht', 'ein Schatz aus Gold und Silber', 'Gemüse aus dem Garten', 'Gelumpe ist alter Kram, der nur herumliegt.'],
-    ['mähren', 'trödeln', 'mähen', 'malen', '„Mähr nicht so rum!“ heißt: Trödel nicht so!'],
+    ['der Nischel', 'der Kopf', 'die Nase', 'der Nagel', 'In Chemnitz nennen viele das große Karl-Marx-Kopf-Denkmal in der Innenstadt den Nischel.'],
+    ['der Blümchenkaffee', 'sehr dünner Kaffee', 'Kaffee mit Blüten darin', 'Tee aus Blumen', 'Man sagt: Der Kaffee ist so dünn, dass man das Blümchen am Boden der Tasse sieht.'],
+    ['die Plauze', 'die Lunge', 'die Pause', 'der Pullover', 'Wer stark hustet, „hat es auf der Plauze“. Manche sagen Plauze auch zu einem dicken Bauch.'],
+    ['mären', 'trödeln', 'mähen', 'malen', '„Mär nicht so rum!“ heißt: Trödel nicht so!'],
     ['der Ranft', 'das Endstück vom Brot', 'der Ranzen für die Schule', 'die Ranke am Zaun', 'Der Ranft ist das Anfangs- oder Endstück vom Brot, der Kanten.'],
+    ['die Dämse', 'stickige, warme Luft', 'eine kleine Dame', 'ein dichter Nebel', 'Im Sommer ist im Zimmer eine Dämse – Fenster auf!'],
+    ['das Quarkkäulchen', 'ein gebratener Kuchen aus Kartoffeln und Quark', 'ein Käse mit Löchern', 'eine kleine Keule zum Turnen', 'Quarkkäulchen brät man in der Pfanne. Sie gehören zur sächsischen Küche.'],
+    ['die Eierschecke', 'ein Kuchen mit dicker gelber Eierschicht', 'ein Eierbecher', 'ein Huhn mit Flecken', 'Die Eierschecke ist ein Kuchen aus Sachsen. Oben drauf liegt eine dicke Schicht aus Eiercreme.'],
+    ['der Pfannkuchen', 'ein Krapfen mit Marmelade', 'ein dünner Eierkuchen', 'eine Pfanne aus Kuchen', 'In Sachsen ist ein Pfannkuchen ein Krapfen mit Marmelade. Woanders heißt er Berliner.'],
   ],
 
   nomen: [
@@ -17690,7 +17691,7 @@ const CHANGELOG = [{"date": "2026-11-12", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '2f18292e3a9a';
+  const BUILD = 'a1e71b5801fc';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
