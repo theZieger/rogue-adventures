@@ -9,14 +9,17 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-12
 
 ### Neu
-- Klasse 2: neues Thema „Formen und Flächen“ mit Symmetrie, rechten Winkeln, Würfelgebäuden und Ecken, Kanten und Flächen.
-- Klasse 1: selbst ein Wort lesen und das Bild finden, Silben ordnen, Rechengeschichten, Zahlwörter und Geld bis 20 €.
-- Klasse 3: Kopfrechnen bis 1000, Malnehmen mit großen Zahlen, Zahlen vergleichen, Überschlagen und Ansichten von Würfelgebäuden.
-- Deutsch Klasse 3: Grundform fürs Wörterbuch, zweiteilige Prädikate, Anrede im Brief, Wörter mit aa, ee, oo und sächsische Wörter.
+- Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).
+- Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.
+- Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy.
 
 ### Verbessert
-- In Zahlenquest werden Minus und Teilen von Stufe zu Stufe schwerer; oben warten Aufgaben wie 740 − 280 und 96 : 3.
-- Mehr zum Üben in Klasse 2: Gedichte in der Lesestube, Merkwörter, Plan lesen, Tausch- und Umkehraufgaben, Kombinationen und Musik in A–B–A-Form.
+- Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.
+- Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena und keine vorgelesenen Buchstaben.
+- Der Spielstand-Code ist kürzer, der QR-Code dadurch kleiner.
+
+### Behoben
+- Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler.
 
 ## 2026-11-11
 
