@@ -8,7 +8,7 @@ const SEED=+(process.env.SEED||20261108);
 const W3=process.env.W3==='1';
 // OFF=a,b: these task types are switched off in the parent area, so the hero fights with the others
 const OFF=process.env.OFF||'';
-const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(3), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Lawine',mod:'smul'},{name:'Halbmond',mod:'bruch'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
+const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Lawine',mod:'smul'},{name:'Halbmond',mod:'bruch'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run

@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="252f3af09ba4">
+<meta name="app-version" content="0e9a5373f973">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -194,8 +194,9 @@ p { margin: 8px 0; }
 .taskwrap:empty { display: none; }
 .task { background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 22px 22px; background-position: 11px 11px; color: var(--ink); border-radius: 22px; padding: 14px 16px; box-shadow: var(--shadow); position: relative; }
 .task .head { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--ink-soft); font-weight: 700; }
-.task .head .tut { margin-left: auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; font-size: 16px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.task .head .tut, .task .head .speak { margin: 0 0 0 auto; min-height: 40px; min-width: 40px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-weight: 700; font-size: 16px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .task .head .speak + .tut { margin-left: 0; }
+.speak { float: right; margin: 0 0 6px 10px; min-height: 44px; min-width: 44px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-size: 18px; cursor: pointer; }
 @media (max-width: 480px) { .task .head .tut .lbl { display: none; } }
 .task .expr { font-size: 42px; font-weight: 700; text-align: center; margin: 10px 0 4px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 .task .clues { font-size: 21px; font-weight: 700; margin: 10px 0; line-height: 1.4; }
@@ -1284,17 +1285,18 @@ const MQ = (() => {
 
   /* ---------- Map ----------
      Node: { t: type, c: lane 0–3, n: [indexes on the next floor] }.
-     Rules: floor 1 fights, no elite before floor 3, rest only on floors 4–5 and as the camp before the boss (floor 7),
-     rest/elite/event/treasure never twice in a row on a path, two treasures per map – preferably right behind an elite. */
+     Rules (for the usual 8 floors): floor 1 fights, no elite before floor 3, rest only on floors 4–5 and as the camp
+     before the boss (floor 7), rest/elite/event/treasure never twice in a row on a path, two treasures per map –
+     preferably right behind an elite. Shorter maps lose floors in the middle. */
   const LANES = 4, FLOORS = 8;
-  function makeMap() {
-    const used = Array.from({ length: FLOORS - 1 }, () => new Set());
-    const edges = Array.from({ length: FLOORS - 1 }, () => Array.from({ length: LANES }, () => new Set()));
+  function makeMap(F = FLOORS) {
+    const used = Array.from({ length: F - 1 }, () => new Set());
+    const edges = Array.from({ length: F - 1 }, () => Array.from({ length: LANES }, () => new Set()));
     const crosses = (f, c, n) => { for (let c2 = 0; c2 < LANES; c2++) { if (c2 === c) continue; for (const n2 of edges[f][c2]) if ((c2 < c && n2 > n) || (c2 > c && n2 < n)) return true; } return false; };
     for (let p = 0; p < 4; p++) {
       let c = p === 0 ? rnd(0, 1) : p === 1 ? rnd(2, 3) : rnd(0, LANES - 1);
       used[0].add(c);
-      for (let f = 0; f < FLOORS - 2; f++) {
+      for (let f = 0; f < F - 2; f++) {
         let n = c, tries = 0;
         do { n = Math.max(0, Math.min(LANES - 1, c + rnd(-1, 1))); tries++; } while (crosses(f, c, n) && tries < 20);
         if (crosses(f, c, n)) n = c;
@@ -1304,25 +1306,25 @@ const MQ = (() => {
     const lanes = used.map((s) => [...s].sort((a, b) => a - b));
     const type = lanes.map(() => ({}));
     const parents = (f, c) => (f === 0 ? [] : lanes[f - 1].filter((p) => edges[f - 1][p].has(c)));
-    const children = (f, c) => (f >= FLOORS - 2 ? [] : [...edges[f][c]]);
+    const children = (f, c) => (f >= F - 2 ? [] : [...edges[f][c]]);
     for (const c of lanes[0]) type[0][c] = 'fight';
-    for (const c of lanes[FLOORS - 2]) type[FLOORS - 2][c] = 'rest';
+    for (const c of lanes[F - 2]) type[F - 2][c] = 'rest';
     const WEIGHT = { fight: 46, event: 16, elite: 16, rest: 8 };
-    for (let f = 1; f < FLOORS - 2; f++) for (const c of lanes[f]) {
+    for (let f = 1; f < F - 2; f++) for (const c of lanes[f]) {
       const ps = parents(f, c).map((p) => type[f - 1][p]);
       const sib = new Set(); for (const p of parents(f, c)) for (const s of edges[f - 1][p]) if (s !== c && type[f][s]) sib.add(type[f][s]);
       const bag = [];
       for (const [k, w] of Object.entries(WEIGHT)) {
         if (k === 'elite' && f < 2) continue;
-        if (k === 'rest' && (f < 3 || f > 4)) continue;
+        if (k === 'rest' && (f < 3 || f > F - 4)) continue;
         if (k !== 'fight' && ps.includes(k)) continue;
         const n = Math.round(w * (sib.has(k) && k !== 'fight' ? 0.3 : 1)); for (let i = 0; i < n; i++) bag.push(k);
       }
       type[f][c] = pick(bag);
     }
-    // two treasures on floors 4–6, behind an elite where possible
+    // two treasures on floors 4–6 (of 8), behind an elite where possible
     const cand = [];
-    for (let f = 3; f <= 5; f++) for (const c of lanes[f]) if (type[f][c] === 'fight' || type[f][c] === 'event') cand.push({ f, c, lure: parents(f, c).some((p) => type[f - 1][p] === 'elite') ? 1 : 0, r: Math.random() });
+    for (let f = Math.max(2, F - 5); f <= F - 3; f++) for (const c of lanes[f]) if (type[f][c] === 'fight' || type[f][c] === 'event') cand.push({ f, c, lure: parents(f, c).some((p) => type[f - 1][p] === 'elite') ? 1 : 0, r: Math.random() });
     cand.sort((a, b) => b.lure - a.lure || a.r - b.r);
     let placed = 0;
     for (const x of cand) {
@@ -1330,7 +1332,7 @@ const MQ = (() => {
       if (parents(x.f, x.c).some((p) => type[x.f - 1][p] === 'treasure') || children(x.f, x.c).some((n) => type[x.f + 1][n] === 'treasure')) continue;
       type[x.f][x.c] = 'treasure'; placed++;
     }
-    const map = lanes.map((cs, f) => cs.map((c) => ({ t: type[f][c], c, n: f < FLOORS - 2 ? [...edges[f][c]].sort((a, b) => a - b).map((n) => lanes[f + 1].indexOf(n)) : [0] })));
+    const map = lanes.map((cs, f) => cs.map((c) => ({ t: type[f][c], c, n: f < F - 2 ? [...edges[f][c]].sort((a, b) => a - b).map((n) => lanes[f + 1].indexOf(n)) : [0] })));
     map.push([{ t: 'boss', c: 1.5, n: [] }]);
     return map;
   }
@@ -7641,15 +7643,16 @@ const K12D = (() => {
     haus: { w: 'Haus', syl: 'Haus', svg: rect(14, 30, 36, 26, '#F4E3C3') + p('M8 32 L32 10 L56 32 Z', RED) + rect(28, 40, 9, 16, BRN) + rect(17, 36, 8, 8, BLU) + rect(41, 36, 7, 7, BLU) },
     maus: { w: 'Maus', syl: 'Maus', svg: line('M52 46 Q62 42 58 32', O, 2) + el(36, 44, 18, 11, GRY) + ci(19, 38, 10, GRY) + ci(21, 27, 7, '#D3D7E2') + `<circle cx="21" cy="27" r="3.5" fill="#F7A8B8"/>` + `<circle cx="15" cy="36" r="1.8" fill="${O}"/>` + ci(9.5, 41, 2.2, '#F7A8B8') + line('M10 44 L2 47 M10 42 L1 42', O, 1) + shine(30, 38, 5, 3) },
     ball: { w: 'Ball', syl: 'Ball', svg: ci(32, 32, 22, RED) + p('M11 27 Q32 40 53 27 L54 35 Q32 48 10 35 Z', '#fff') + shine(24, 18, 5, 3) },
-    fisch: { w: 'Fisch', syl: 'Fisch', svg: p('M42 32 L58 20 L58 44 Z', '#FF9F43') + p('M24 23 Q30 14 38 23 Z', '#FF9F43') + el(28, 32, 19, 12, '#FF9F43') + ci(17, 29, 3, '#fff') + `<circle cx="16.5" cy="29" r="1.4" fill="${O}"/>` + line('M28 24 Q32 32 28 40', O, 1.5) + shine(24, 26, 4, 2) },
+    // not orange: that would be a Goldfisch
+    fisch: { w: 'Fisch', syl: 'Fisch', svg: p('M42 32 L58 20 L58 44 Z', '#3DBFA8') + p('M24 23 Q30 14 38 23 Z', '#3DBFA8') + el(28, 32, 19, 12, '#3DBFA8') + ci(17, 29, 3, '#fff') + `<circle cx="16.5" cy="29" r="1.4" fill="${O}"/>` + line('M28 24 Q32 32 28 40', O, 1.5) + shine(24, 26, 4, 2) },
     tisch: { w: 'Tisch', syl: 'Tisch', svg: rect(18, 22, 4, 26, '#9A5E2E', 1) + rect(50, 22, 4, 26, '#9A5E2E', 1) + rect(8, 30, 5, 26, '#B8763E', 1) + rect(42, 30, 5, 26, '#B8763E', 1) + p('M48 26 L58 16 V20 L48 30 Z', '#B8763E') + rect(4, 26, 44, 4, '#C98A4E') + p('M4 26 L14 16 H58 L48 26 Z', '#E5B47A') },
     apfel: { w: 'Apfel', syl: 'Ap-fel', svg: line('M32 20 Q32 12 36 7', O, 3) + p('M32 20 C20 12 8 20 10 34 C12 48 22 56 32 52 C42 56 52 48 54 34 C56 20 44 12 32 20 Z', RED) + p('M35 13 Q43 5 49 11 Q43 17 35 13 Z', GRN) + shine(20, 28, 4, 6) },
     igel: { w: 'Igel', syl: 'I-gel', svg: line('M24 50 L23 56 M46 50 L47 56', O, 3) + p(spikes, '#5A3E22', 1.5) + el(36, 40, 21, 13, '#8A5530') + p('M20 48 Q10 48 3 43 Q8 35 20 33 Z', '#E9C9A0') + ci(4, 43, 2, O) + `<circle cx="12" cy="40" r="1.6" fill="${O}"/>` },
-    uhr: { w: 'Uhr', syl: 'Uhr', svg: `<circle cx="32" cy="32" r="25" fill="${BLU}" stroke="${O}" stroke-width="2"/>` + ci(32, 32, 20, '#fff') + around(12, 32, 32, (x, y, a) => line(`M${r1(x + Math.cos(a) * 16)} ${r1(y + Math.sin(a) * 16)} L${r1(x + Math.cos(a) * 18.5)} ${r1(y + Math.sin(a) * 18.5)}`, O, 1.5)) + line('M32 32 L32 17 M32 32 L23 37', O, 3) + ci(32, 32, 2, O) },
-    // a mallard on the water: a yellow duck would be a Quietscheente or a Küken
-    ente: { w: 'Ente', syl: 'En-te', svg: p('M2 52 Q8 48 14 52 T26 52 T38 52 T50 52 T62 52 V60 H2 Z', BLU, 1.5) + p('M14 36 Q12 52 30 53 H46 Q56 51 61 34 Q55 38 49 36 Q40 30 26 33 Z', '#B8BECC') + p('M14 36 Q13 46 22 50 Q26 40 24 33 Z', '#8A5530')
-      + p('M30 38 Q42 32 52 38 Q44 47 32 44 Z', '#8E96B5') + p('M47 38 L54 41 L49 43 Z', '#3F6FD9', 1.2) + p('M58 30 Q62 31 61 34 Q58 34 57 32 Z', O, 1) + p('M13 35 Q11 26 12 22 L22 22 Q22 30 24 33 Z', '#2E8B57')
-      + line('M12.5 31 Q18 34 23.5 31', '#fff', 2.2) + ci(17, 18, 8, '#2E8B57') + p('M10 17 Q2 17 1 21 Q4 23 11 21 Z', YEL, 1.6) + `<circle cx="15" cy="16" r="1.6" fill="${O}"/><circle cx="15.5" cy="15.5" r=".5" fill="#fff"/>` + shine(19, 13, 3, 1.6) + shine(34, 36, 6, 1.6) },
+    // a flying saucer with dome and lights: a spaceship with fins would be a Rakete
+    ufo: { w: 'Ufo', syl: 'U-fo', svg: line('M18 40 L12 52 M46 40 L52 52', O, 2.5) + line('M32 15 L32 7', O, 2) + ci(32, 6, 2.6, RED) + p('M18 32 Q18 15 32 15 Q46 15 46 32 Z', '#BFE3FF') + el(32, 35, 29, 9, GRY) + p('M5 34 Q32 42 59 34 Q58 40 32 44 Q6 40 5 34 Z', '#8E96B5', 1.5)
+      + [[11, 38], [21.5, 40.5], [32, 41.5], [42.5, 40.5], [53, 38]].map(([x, y]) => ci(x, y, 2.3, YEL)).join('') + shine(26, 22, 3, 4.5) + shine(20, 32, 6, 1.4) },
+    elefant: { w: 'Elefant', syl: 'E-le-fant', svg: line('M58 32 Q63 38 60 44', O, 2) + rect(40, 42, 8, 16, '#9AA1B3', 3) + rect(50, 40, 7, 16, '#9AA1B3', 3) + el(40, 34, 20, 15, GRY) + rect(26, 42, 8, 16, GRY, 3) + ci(20, 27, 13, GRY)
+      + p('M10 30 Q4 42 6 54 Q8 58 12 56 Q11 46 17 36 Z', GRY) + p('M13 39 Q14 45 20 45 Q17 42 17 38 Z', '#fff', 1.2) + p('M24 14 Q38 12 39 28 Q38 42 26 40 Q21 28 24 14 Z', '#9AA1B3') + `<circle cx="15" cy="25" r="1.7" fill="${O}"/>` + shine(44, 26, 7, 2.5) + shine(16, 19, 3, 1.6) },
     rakete: { w: 'Rakete', syl: 'Ra-ke-te', svg: p('M26 48 Q32 63 38 48 Z', '#FFB347') + p('M21 36 L11 52 L21 48 Z', RED) + p('M43 36 L53 52 L43 48 Z', RED) + p('M32 4 Q44 16 44 36 L44 48 L20 48 L20 36 Q20 16 32 4 Z', '#E9EEF6') + p('M32 4 Q39 10 42 19 L22 19 Q25 10 32 4 Z', RED) + ci(32, 30, 5, BLU) },
     banane: { w: 'Banane', syl: 'Ba-na-ne', svg: p('M10 14 Q12 44 38 50 Q52 52 58 44 Q50 46 40 42 Q22 34 17 13 Z', YEL) + p('M10 14 L11 8 L17 13 Z', '#8A5530') + line('M20 22 Q26 38 42 44', '#E0A800', 1.5) },
     tomate: { w: 'Tomate', syl: 'To-ma-te', svg: el(32, 37, 23, 19, RED) + p('M32 14 L36 20 L45 18 L38 24 L32 22 L26 24 L19 18 L28 20 Z', GRN) + line('M32 14 L32 8', O, 3) + shine(22, 30, 5, 3) },
@@ -7658,19 +7661,24 @@ const K12D = (() => {
     wolke: { w: 'Wolke', syl: 'Wol-ke', svg: p('M14 46 Q3 46 5 35 Q7 26 18 28 Q20 15 33 18 Q43 11 49 24 Q61 24 59 37 Q58 46 48 46 Z', '#E9EEF6') + shine(26, 26, 5, 3) },
     hut: { w: 'Hut', syl: 'Hut', svg: p('M18 40 Q16 24 22 15 Q32 11 42 15 Q48 24 46 40 Z', '#9A6A3E') + line('M24 16 Q32 22 40 16', '#5A3E22', 1.6) + p('M17.5 33 H46.5 L47 40 H17 Z', '#3E2A1C') + p('M3 42 Q6 35 17 38 H47 Q58 35 61 42 Q58 50 32 50 Q6 50 3 42 Z', '#9A6A3E') + line('M8 43 Q32 47 56 43', '#5A3E22', 1.2) + shine(23, 26, 2, 7) },
     gabel: { w: 'Gabel', syl: 'Ga-bel', svg: rect(29, 32, 6, 28, GRY, 3) + [19, 26.5, 34, 41].map((x) => rect(x, 4, 4, 20, GRY, 2)).join('') + p('M18 22 Q18 35 32 35 Q46 35 46 22 Z', GRY) },
-    pilz: { w: 'Pilz', syl: 'Pilz', svg: p('M24 36 L22 58 L42 58 L40 36 Z', '#FFF3D6') + p('M6 38 Q8 10 32 10 Q56 10 58 38 Z', RED) + `<g fill="#fff">${[[20, 24, 4], [36, 18, 3.5], [46, 30, 3], [30, 30, 3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>` },
+    pinsel: { w: 'Pinsel', syl: 'Pin-sel', svg: `<g transform="rotate(40 32 32)">${rect(28, -2, 8, 34, BLU, 4) + rect(27, 31, 10, 10, GRY, 1) + line('M27.5 35 H36.5', '#8E96B5', 1.2) + p('M27 41 Q25 52 32 62 Q39 52 37 41 Z', '#8A5530') + p('M28.3 51 Q32 54 35.7 51 Q35 57 32 62 Q29 57 28.3 51 Z', RED, 1.2) + shine(30.5, 12, 1.2, 8)}</g>` },
     zitrone: { w: 'Zitrone', syl: 'Zi-tro-ne', svg: p('M3 34 Q6 30 9 28 Q16 16 32 16 Q48 16 55 28 Q58 30 61 34 Q58 38 55 40 Q48 52 32 52 Q16 52 9 40 Q6 38 3 34 Z', YEL) + p('M32 16 Q35 5 46 6 Q43 15 32 16 Z', GRN) + shine(22, 26, 6, 3) },
-    krone: { w: 'Krone', syl: 'Kro-ne', svg: p('M8 50 L8 18 L20 32 L32 10 L44 32 L56 18 L56 50 Z', YEL) + rect(8, 42, 48, 9, '#F0A500') + ci(32, 46.5, 2.6, RED) + ci(19, 46.5, 2.2, BLU) + ci(45, 46.5, 2.2, BLU) + ci(8, 16, 2.5, YEL) + ci(32, 8, 2.5, YEL) + ci(56, 16, 2.5, YEL) },
+    // a cheese wedge with holes: a round wheel could be a Torte
+    kaese: { w: 'Käse', syl: 'Kä-se', svg: p('M4 38 L44 18 L60 30 Z', '#FFE27A') + p('M4 38 L60 30 V50 L4 47 Z', YEL) + `<g fill="#E0A800">${[[18, 42, 3.4, 2.4], [36, 39, 4.5, 3.2], [51, 43, 3, 2.2], [27, 45.5, 2, 1.4], [44, 26, 3.6, 1.6], [32, 31, 2.6, 1.2]].map(([x, y, rx, ry]) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`).join('')}</g>` + shine(40, 22, 4, 1.2) },
     baum: { w: 'Baum', syl: 'Baum', svg: rect(27, 36, 10, 24, BRN, 2) + p('M14 40 Q4 36 8 26 Q6 14 18 12 Q24 2 36 6 Q48 4 52 16 Q62 22 56 32 Q58 42 46 42 Q32 46 14 40 Z', GRN) + shine(22, 20, 6, 3) },
-    nest: { w: 'Nest', syl: 'Nest', svg: el(32, 31, 27, 10, '#8A5530') + el(32, 31, 20, 6.5, '#5A3E22') + el(24, 30, 5, 6.5, '#BFE3FF') + el(40, 30, 5, 6.5, '#BFE3FF') + el(32, 28, 5, 6.5, '#BFE3FF') + shine(30, 25, 1.5, 2.4) + shine(22, 27, 1.5, 2.4) + shine(38, 27, 1.5, 2.4)
-      + p('M5 32 Q6 57 32 58 Q58 57 59 32 Q50 41 32 41 Q14 41 5 32 Z', '#B8763E')
-      + line('M3 34 Q20 46 46 40 M14 42 Q34 52 60 36 M7 44 Q24 54 48 50 M18 54 Q40 52 56 44 M10 38 Q30 36 52 46 M2 30 L9 36 M62 30 L55 37 M8 25 L15 31 M56 25 L50 30', '#6E4320', 1.4) },
+    nashorn: { w: 'Nashorn', syl: 'Nas-horn', svg: line('M58 34 Q63 38 61 44', O, 2) + rect(44, 42, 8, 14, '#8E96B5', 3) + el(39, 36, 21, 14, '#A3A9B8') + rect(30, 42, 8, 14, '#A3A9B8', 3) + rect(52, 42, 7, 13, '#8E96B5', 3)
+      + p('M27 25 Q14 25 6 37 Q3 46 12 47 L28 46 Q33 36 27 25 Z', '#A3A9B8') + p('M7 37 Q3 26 9 15 Q12 27 15 35 Z', '#F4E3C3') + p('M16 30 Q16 24 20 21 Q21 27 21 30 Z', '#F4E3C3', 1.5) + p('M25 26 Q24 17 29 16 Q31 22 29 28 Z', '#A3A9B8')
+      + `<circle cx="19" cy="35" r="1.6" fill="${O}"/>` + line('M8 43 Q11 45 14 44', O, 1.5) + line('M43 27 Q44 36 42 46', '#8E96B5', 1.4) + shine(46, 28, 6, 2.2) },
     herz: { w: 'Herz', syl: 'Herz', svg: p('M32 55C14 42 5 32 5 22a13 13 0 0 1 27-4 13 13 0 0 1 27 4c0 10-9 20-27 33Z', RED) + shine(17, 18, 5, 3) },
     blume: { w: 'Blume', syl: 'Blu-me', svg: line('M32 34 L32 60', O, 5) + line('M32 34 L32 60', GRN, 2.5) + p('M32 50 Q42 40 50 46 Q42 54 32 50 Z', GRN) + around(6, 32, 22, (x, y, a) => ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7')) + ci(32, 22, 6.5, YEL) },
-    tasse: { w: 'Tasse', syl: 'Tas-se', svg: el(30, 54, 27, 6, '#E9EEF6') + line('M46 32 Q58 30 56 40 Q53 47 42 45', O, 7) + line('M46 32 Q58 30 56 40 Q53 47 42 45', '#fff', 3) + p('M8 26 H52 Q52 50 30 52 Q8 50 8 26 Z', '#fff') + p('M9 32 H51 Q50 38 49 40 H11 Q10 38 9 32 Z', BLU, 1.5) + el(30, 26, 22, 3.5, '#C9A27A') + line('M22 19 Q18 14 22 9 M34 19 Q30 14 34 9', '#8E96B5', 2) },
+    tiger: { w: 'Tiger', syl: 'Ti-ger', svg: ci(15, 16, 7, '#FF9F43') + ci(49, 16, 7, '#FF9F43') + `<circle cx="15" cy="16" r="3.3" fill="#F4E3C3"/><circle cx="49" cy="16" r="3.3" fill="#F4E3C3"/>` + el(32, 35, 25, 22, '#FF9F43')
+      + line('M32 14 L32 22 M24 15 L26 22 M40 15 L38 22 M8 30 L16 33 M8 39 L15 39 M56 30 L48 33 M56 39 L49 39 M11 47 L17 45 M53 47 L47 45', O, 2.8) + el(26, 46, 8, 7, '#fff') + el(38, 46, 8, 7, '#fff')
+      + `<circle cx="23" cy="31" r="2.6" fill="${O}"/><circle cx="41" cy="31" r="2.6" fill="${O}"/><circle cx="24" cy="30" r=".8" fill="#fff"/><circle cx="42" cy="30" r=".8" fill="#fff"/>` + p('M28 39 H36 L32 44 Z', '#F7A8B8', 1.5) + line('M32 44 V48', O, 1.5) + shine(22, 21, 4, 2) },
     ananas: { w: 'Ananas', syl: 'A-na-nas', svg: p('M32 26 L16 8 L27 15 L25 1 L32 12 L39 1 L37 15 L48 8 Z', GRN) + el(32, 42, 16, 20, '#FFC94D') + `<g stroke="#B8763E" stroke-width="1.5">${[[26, 32], [38, 32], [32, 40], [22, 44], [42, 44], [26, 50], [38, 50], [32, 56], [32, 26]].map(([x, y]) => `<path d="M${x - 2.5} ${y - 2.5} L${x + 2.5} ${y + 2.5} M${x + 2.5} ${y - 2.5} L${x - 2.5} ${y + 2.5}"/>`).join('')}</g>` },
-    wal: { w: 'Wal', syl: 'Wal', svg: line('M20 20 Q18 12 12 9 M20 20 Q22 12 28 9 M20 20 V8', '#2478D6', 2.5) + p('M42 42 Q54 36 53 22 Q46 22 41 15 Q50 14 55 18 Q58 13 63 11 Q61 20 57 24 Q59 38 47 47 Z', '#3F7FC7') + p('M3 40 Q3 23 24 22 Q42 22 50 37 Q46 51 28 52 Q5 53 3 40 Z', '#4A90D9') + p('M7 45 Q24 50 45 44 Q38 51 27 51 Q12 51 7 45 Z', '#BFE3FF', 1.5) + line('M4 41 Q11 43 17 41', O, 1.5) + p('M24 46 Q30 54 36 50 Q32 46 24 46 Z', '#3F7FC7', 1.5) + `<circle cx="13" cy="35" r="2" fill="${O}"/>` + shine(24, 28, 7, 2.5) },
-    topf: { w: 'Topf', syl: 'Topf', svg: rect(4, 29, 9, 5, '#8E96B5', 2) + rect(51, 29, 9, 5, '#8E96B5', 2) + rect(11, 25, 42, 30, GRY, 4) + p('M9 26 Q32 12 55 26 Z', '#C9CEDD') + ci(32, 16, 3, '#8E96B5') + shine(20, 34, 2, 6) },
+    wuerfel: { w: 'Würfel', syl: 'Wür-fel', svg: p('M10 24 L22 12 H54 L42 24 Z', '#F4F6FA') + p('M42 24 L54 12 V44 L42 56 Z', '#C9CEDD') + rect(10, 24, 32, 32, '#fff', 2)
+      + `<g fill="${O}">${[[17, 31], [35, 31], [26, 40], [17, 49], [35, 49]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3"/>`).join('')}<ellipse cx="32" cy="18" rx="3.4" ry="1.8"/><ellipse cx="46" cy="27" rx="1.6" ry="2.8"/><ellipse cx="50" cy="40" rx="1.6" ry="2.8"/></g>` },
+    trommel: { w: 'Trommel', syl: 'Trom-mel', svg: p('M10 26 V48 Q32 60 54 48 V26 Z', RED) + p('M10 46 Q32 56 54 46 V50 Q32 61 10 50 Z', YEL) + line('M12 32 L19 50 L26 34 L32 53 L38 34 L45 50 L52 32', '#fff', 1.8)
+      + el(32, 26, 22, 7, YEL) + el(32, 26, 19, 5, '#F4E3C3') + line('M6 4 L28 23 M58 4 L36 23', O, 5) + line('M6 4 L28 23 M58 4 L36 23', '#E5B47A', 3) + ci(6, 4, 2.8, '#E5B47A') + ci(58, 4, 2.8, '#E5B47A') + shine(16, 36, 1.6, 6) },
   };
   const DEFS = `<defs>${[...USED].map((c) => `<linearGradient id="kd${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
   const svgOf = (id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${DEFS}${PICS[id].svg}</svg>`;
@@ -7687,12 +7695,12 @@ const K12D = (() => {
   const CONS = 'BDFGHKLMNPRSTWZ'.split('');
   // Lautposition: the letter is heard exactly once in the word
   const LAUTPOS = [['mond', 'M', 0], ['baum', 'M', 2], ['tomate', 'M', 1], ['maus', 'S', 2], ['haus', 'H', 0], ['haus', 'S', 2], ['ball', 'B', 0], ['ball', 'L', 2],
-    ['fisch', 'F', 0], ['tisch', 'T', 0], ['igel', 'G', 1], ['igel', 'L', 2], ['ente', 'N', 1], ['rakete', 'R', 0], ['rakete', 'K', 1], ['leiter', 'L', 0], ['kerze', 'Z', 1],
-    ['kerze', 'K', 0], ['wolke', 'L', 1], ['wolke', 'W', 0], ['hut', 'T', 2], ['hut', 'H', 0], ['gabel', 'B', 1], ['gabel', 'L', 2], ['pilz', 'L', 1], ['pilz', 'P', 0], ['zitrone', 'Z', 0],
-    ['krone', 'N', 1], ['nest', 'N', 0], ['nest', 'T', 2], ['blume', 'M', 1], ['sonne', 'S', 0], ['wal', 'W', 0], ['wal', 'L', 2], ['apfel', 'A', 0], ['apfel', 'L', 2], ['tasse', 'T', 0], ['herz', 'H', 0], ['herz', 'Z', 2]];
+    ['fisch', 'F', 0], ['tisch', 'T', 0], ['igel', 'G', 1], ['igel', 'L', 2], ['elefant', 'F', 1], ['rakete', 'R', 0], ['rakete', 'K', 1], ['leiter', 'L', 0], ['kerze', 'Z', 1],
+    ['kerze', 'K', 0], ['wolke', 'L', 1], ['wolke', 'W', 0], ['hut', 'T', 2], ['hut', 'H', 0], ['gabel', 'B', 1], ['gabel', 'L', 2], ['pinsel', 'L', 2], ['pinsel', 'P', 0], ['zitrone', 'Z', 0],
+    ['kaese', 'S', 1], ['nashorn', 'S', 1], ['ufo', 'F', 1], ['blume', 'M', 1], ['sonne', 'S', 0], ['wuerfel', 'W', 0], ['wuerfel', 'L', 2], ['apfel', 'A', 0], ['apfel', 'L', 2], ['tiger', 'T', 0], ['trommel', 'R', 1], ['herz', 'H', 0], ['herz', 'Z', 2]];
   const POS = ['am Anfang', 'in der Mitte', 'am Ende'];
   const SILBEN = PIC_IDS.map((id) => [PICS[id].w, PICS[id].syl, id]).concat([['Schule', 'Schu-le'], ['Tafel', 'Ta-fel'], ['Fenster', 'Fens-ter'], ['Hund', 'Hund'], ['Kinder', 'Kin-der'],
-    ['Lineal', 'Li-ne-al'], ['Elefant', 'E-le-fant'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
+    ['Lineal', 'Li-ne-al'], ['Papagei', 'Pa-pa-gei'], ['Bus', 'Bus'], ['Stift', 'Stift'], ['Mama', 'Ma-ma'], ['Kakao', 'Ka-ka-o'], ['Giraffe', 'Gi-raf-fe'],
     ['Sofa', 'So-fa'], ['Hose', 'Ho-se'], ['Schaf', 'Schaf'], ['Melone', 'Me-lo-ne'], ['Garten', 'Gar-ten'], ['Brot', 'Brot'], ['Schokolade', 'Scho-ko-la-de']]);
   const SYL = ['1 Silbe', '2 Silben', '3 Silben', '4 Silben'];
   // rhyme groups: words of one group rhyme, words of different groups don't
@@ -7702,9 +7710,9 @@ const K12D = (() => {
   // Ei and Bein sound too alike to be wrong answers for each other
   const ALIKE = ['Ei', 'Bein'];
   const alike = (g, h) => ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
-  const PIC_REIME = [['haus', 'maus'], ['fisch', 'tisch'], ['krone', 'zitrone']];
-  // first vowel of a picture word, if it is a single vowel (not au, ei, ie)
-  const vowelGap = (w) => { const i = w.search(/[aeiou]/i); return /^(au|ei|eu|ie)/i.test(w.slice(i, i + 2)) ? null : i; };
+  const PIC_REIME = [['haus', 'maus'], ['fisch', 'tisch']];
+  // first vowel of a picture word, if it is a single vowel (not au, ei, ie, not an umlaut)
+  const vowelGap = (w) => { const i = w.search(/[aeiouäöü]/i); return /^(au|ei|eu|ie|[äöü])/i.test(w.slice(i, i + 2)) ? null : i; };
   const DIPH = { haus: 'au', maus: 'au', baum: 'au', leiter: 'ei' };
 
   const L1_ITEMS = {
@@ -15084,7 +15092,7 @@ const QR = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Musik für Klasse 1: „Die Klangkiste“ mit Instrumenten der Klasse, laut und leise und Klängen zum Aufmalen."]}, {"title": "Verbessert", "items": ["In Klasse 2 tippst du Geldbeträge jetzt in zwei Felder: Euro und Cent getrennt."]}]}, {"date": "2026-11-10", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt auch für Klasse 1 und 2: 16 neue Themen in Mathe, Deutsch, Sachkunde, Ethik und Musik.", "Der Knopf mit dem Lautsprecher liest Aufgaben vor, in Klasse 1 und 2 von selbst.", "Jedes Wochenziel hat einen Knopf „Jetzt loslegen“, und im Kampf zeigt „⭐ Wochenziel“ die passende Attacke."]}, {"title": "Verbessert", "items": ["Der Elternbereich ist neu geordnet, und Eltern können Fächer, Themen und Helden ausblenden.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen.", "Viele Bilder sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen."]}, {"title": "Behoben", "items": ["Einige Aufgaben waren unklar, zu früh zu schwer oder hatten zwei richtige Antworten, etwa an der Waage, an der Uhr und bei Satzzeichen."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Neue Fächer Deutsch, Englisch und Musik und zwölf neue Abenteuer in Mathe, Ethik und Sachkunde. Die Startseite ordnet alles nach Fächern.", "Stempelheft mit Belohnungen (Kleidung, Kreisel, Hütte, Schulgarten, Werkbank) und neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Wochenboss, Kreisel-Arena und das Duell zu zweit."]}, {"title": "Verbessert", "items": ["Mehr Aufgabenarten in Mathe (Bruchteile, Zahlenmauern, schriftliches Rechnen, Flächen) und Deutsch (Wortfamilien, Kommas, Satzproben, Redensarten).", "Elternbereich mit PIN, Wochenbericht und Spielstand-Code zum Mitnehmen auf ein anderes Gerät.", "Alle Monster neu gezeichnet, neues App-Symbol, und die Kreisel krachen in der Arena richtig zusammen."]}, {"title": "Behoben", "items": ["Hut, Krone und Kranz sitzen jetzt richtig, auch bei Biber, Wetterwart, Schaustellerin, Ida und Ole."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen nach dem Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Alle Monster und viele Bilder in Aufgaben sind neu und genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Fachlehrkräfte haben alle Inhalte geprüft: Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -15137,7 +15145,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
-    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [] });
+    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
   const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
@@ -15159,6 +15167,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
+    m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
@@ -15218,13 +15227,22 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   const xpNeeded = (lvl) => 20 + lvl * 15;
   const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(run.world, M.worldCap.length) - 1]); };
   function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), run.tiers[mod] || 1)); }
+  // about every fourth task comes from the tier below, so the child keeps some easy wins
+  const taskTier = (mod) => { const t = tierFor(mod); return t >= 2 && Math.random() < 0.25 ? t - 1 : t; };
+  // the tier reached per unit and task type; a new adventure starts one tier below it
+  const levelOf = (m) => (meta.level[m] = isObj(meta.level[m]) ? meta.level[m] : {});
+  // under 65 % right in this adventure (from 8 answers on), a wrong answer costs less
+  const struggling = () => run.answered >= 8 && run.solved / run.answered < 0.65;
   function recordAnswer(mod, ok, task) {
     const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; if (ok && run) run.right = (run.right || 0) + 1; markWeek(); s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
+    if (run) { run.answered = (run.answered || 0) + 1; run.solved = (run.solved || 0) + (ok ? 1 : 0); }
     const wt = weekly().tally; const ws = wt[mode + ':' + mod] = wt[mode + ':' + mod] || { c: 0, t: 0 }; ws.t++; if (ok) { ws.c++; weeklyStep('right', mod); }
     if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
-    const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
-    // capped at the current world, otherwise the next world would start at its hardest tier
-    if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
+    const right = (n) => s.hist.slice(-n).reduce((a, b) => a + b, 0);
+    if (!run) return;
+    // up at 5 of the last 6 right, down at 2 of the last 3 wrong; capped at the current world, otherwise the next world would start at its hardest tier
+    const cur = tierFor(mod); const next = s.hist.length >= 6 && right(6) >= 5 ? Math.min(worldCapFor(mod), cur + 1) : s.hist.length >= 3 && right(3) <= 1 ? Math.max(1, cur - 1) : cur;
+    if (next !== cur) { run.tiers[mod] = next; levelOf(mode)[mod] = next; s.hist = []; }
   }
   /* ---------- Stamps ---------- */
   const giveStamps = (n) => { meta.stamps += n; meta.stampsTotal += n; return n; };
@@ -15359,6 +15377,8 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}${n.fig || ''}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
+    const steps = () => joined(t.title, ...t.steps);
+    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? n.lines : [])), steps);
     $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
   }
@@ -15449,8 +15469,8 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
       if (opts.onResult) opts.onResult(ok); // game state changes now, so a reload can't undo the answer
       inps.forEach((el, i) => { el.classList.remove('active'); const f = fieldOk(values[i], i); if (f !== null) el.classList.add(f ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
-      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
-      else { SFX.wrong(); const corr = task.show || (task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', ')); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); sayResult(fb, true); }
+      else { SFX.wrong(); const corr = task.show || (task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', ')); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; sayResult(fb, false, 'Richtig wäre: ' + corr); }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -15463,15 +15483,21 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
   const voice = () => (TTS && meta.speak ? TTS.getVoices().find((v) => v.localService && /^de/i.test(v.lang)) : null);
-  const spoken = (t) => t.replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ');
+  const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
   function speak(text) { const v = voice(); if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = 0.9; TTS.speak(u); }
-  // reads the task and its answers; units for Klasse 1 and 2 start reading on their own
-  function readAloud(container, bottom) {
+  // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
+  function speakBtn(anchor, where, text, first = text) {
     if (!voice()) return;
-    $('.tut', container).insertAdjacentHTML('beforebegin', '<button class="tut speak" type="button" aria-label="Vorlesen">🔊</button>');
-    const read = () => speak([...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim()).filter(Boolean).join('. '));
-    $('.speak', container).onclick = read;
-    if (CFG().grade < 3) read();
+    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text()) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
+    if (first && CFG().grade < 3) speak(first());
+  }
+  const joined = (...t) => t.filter(Boolean).join('. ').replace(/([.?!:…“])\. /g, '$1 ');
+  const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html.replace(/<br>/g, '. '); d.querySelectorAll('svg').forEach((s) => s.remove()); return d.textContent; };
+  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : 'Daneben. ' + why));
+  // how a fight ended: the headline and the line under it
+  const sayCard = () => speakBtn($('.card'), 'afterbegin', () => joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)));
+  function readAloud(container, bottom) {
+    speakBtn($('.tut', container), 'beforebegin', () => joined(...[...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim())));
   }
 
   /* ---------- Choice / order / parts tasks ---------- */
@@ -15485,6 +15511,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
       if (opts.onResult) opts.onResult(ok);
       const more = task.more ? `<small>Herkunft: ${esc(task.more)}</small>` : ''; // where a saying comes from, after every answer
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔${more}</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small>${more}</div>`;
+      sayResult(fb, ok, plain(extraHtml));
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
@@ -15753,6 +15780,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
     for (const [k, v] of Object.entries(inc.materials)) m.materials[k] = Math.max(m.materials[k] || 0, v);
+    for (const [g, L] of Object.entries(inc.level)) { const d = m.level[g] = Object.assign({}, m.level[g]); for (const [k, t] of Object.entries(L)) d[k] = Math.max(d[k] || 0, t); }
     m.garden.beds.forEach((b, i) => { if (!b.crop) m.garden.beds[i] = inc.garden.beds[i]; });
     // the fuller pantry, not both: a code exported from this device would otherwise double what is in it
     if (inc.pantry.length > m.pantry.length) m.pantry = inc.pantry.slice();
@@ -15818,25 +15846,28 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
       run.map = makeMapFor(1);
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
       meta.pantry = []; meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
-  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
+  // shorter adventures for the younger grades; enemies stay as strong (see startBattle)
+  const FLOORS_BY_GRADE = { 1: 6, 2: 7, 3: 8 };
+  // floors are counted on an 8-floor map; m.slice(a, -2) ends before the camp and the boss
+  function makeMapFor(world) { const m = makeMap(FLOORS_BY_GRADE[CFG().grade] || 8); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[m.length - 4].some((n) => n.t === 'school')) m[m.length - 4][0].t = 'school'; }
     // one special node per world on floors 3–6 instead of an event or treasure (a fight if the map has none)
-    const sw = CFG().swap; if (sw) { const on = (t) => m.slice(2, 6).flat().filter((n) => n.t === t); const c = on(sw.from).length ? on(sw.from) : on('fight'); if (c.length) pick(c).t = sw.to; }
+    const sw = CFG().swap; if (sw) { const on = (t) => m.slice(2, -2).flat().filter((n) => n.t === t); const c = on(sw.from).length ? on(sw.from) : on('fight'); if (c.length) pick(c).t = sw.to; }
     const chests = m.flat().filter((n) => n.t === 'treasure'); if (CFG().mine && chests.length && !offList('math').includes('rest')) pick(chests).t = 'bergwerk';
     // one market per world on floors 3–6, in place of an event (a fight if there is none)
-    if (marketOn()) { const fl = m.slice(2, 6).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
+    if (marketOn()) { const fl = m.slice(2, -2).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
     // the week's boss takes the place of one fight on floor 5 or 6: once per adventure, until it is beaten this week
-    const fights = m[4].concat(m[5]).filter((n) => n.t === 'fight');
+    const fights = m.slice(-4, -2).flat().filter((n) => n.t === 'fight');
     if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
-    if (readsIn(mode)) { const fights = m.slice(1, 6).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
+    if (readsIn(mode)) { const fights = m.slice(1, -2).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
     // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
-    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(3, 6).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
+    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -15921,16 +15952,18 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     else if (type === 'lesen') screenRead();
     else if (type === 'markt') { if (marketOn()) screenMarket(); else screenEvent(); }
   }
-  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
+  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > run.map.length) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
   /* ---------- Battle ---------- */
   // arena: a spinning-top duel against the owner of the other top, which isn't a Monsterbuch entry
   function startBattle(spec, hard, arena) {
     // extra HP offsets weak-spot damage, so fights stay about as long
-    const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
+    // enemies grow along the way as on an 8-floor map, so a shorter map's boss is just as strong
+    const step = (run.floor - 1) * 7 / Math.max(1, run.map.length - 1);
+    const scale = ENEMY_HP * (1 + step * 0.03); const elite = hard && !spec.boss;
     const dexName = spec.base || spec.name; const fresh = !arena && !meta.dex[dexName]; if (fresh) giveStamps(2);
     const mods = heroAttacks().map((a) => a.mod); const weak = spec.weakOrder ? spec.weakOrder.find((k) => mods.includes(k)) : pickWeak();
-    const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weekboss: !!spec.weekboss, weak };
+    const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + step * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weekboss: !!spec.weekboss, weak };
     if (arena) Object.assign(enemy, { hp: TOP_FOE(), maxHp: TOP_FOE(), top: topStart(enemy) }); else meta.dex[dexName] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
     const b = { enemy, log: arena ? `${esc(enemy.name)} tritt mit einem Kreisel an. Hol zuerst Schwung: Jede richtige Aufgabe gibt +4.` : `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
@@ -15952,6 +15985,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`, quiet);
     announce(b.log.replace(/<[^>]+>/g, ''));
+    const log = () => plain(b.log); speakBtn($('.log'), 'afterbegin', log, !quiet && log); // Klasse 1 and 2 hear only how a fight starts
     delete b.clash; delete b.boost; // the clash plays once, on this render
     if (b.phase === 'choose') renderAttackChoice(b);
   }
@@ -16006,7 +16040,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     b.log = `${it.icon} ${it.name} benutzt!`; enemyTurn(b, 1);
   }
   function chooseAttack(b, atk) {
-    const tier = tierFor(atk.mod);
+    const tier = taskTier(atk.mod);
     let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
     b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; // no second attack while the task opens
     const hint = !!run.hint; run.hint = false;
@@ -16029,7 +16063,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
         if (b.enemy.hp > 0) b.enemy.pending = 1;
       } else {
         b.log = `${atk.name} geht daneben. ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
-        b.enemy.pending = 1.5;
+        b.enemy.pending = struggling() ? 1 : 1.5;
       }
       saveAll();
     };
@@ -16074,6 +16108,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${heroSVG(heroSpec(), run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(heroSpec(), run.hero.evo, 'after')}</div><p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
     render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    sayCard();
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
@@ -16100,7 +16135,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     }
   }
   function topAttack(b, atk) {
-    const e = b.enemy, T = e.top; const t = makeTask(atk.mod, tierFor(atk.mod)); const wind = T.start < TOP_START;
+    const e = b.enemy, T = e.top; const t = makeTask(atk.mod, taskTier(atk.mod)); const wind = T.start < TOP_START;
     b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; $('#dish').classList.remove('clash');
     let fxOn = null;
     const onResult = (ok) => {
@@ -16174,6 +16209,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     const r = b.enemy.read; const beaten = b.enemy.hp <= 0; const xp = 6 * r.right; const msgs = gainXp(xp);
     nodeDone(); saveAll(); if (r.right) setTimeout(SFX.win, 150);
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? `<p>+${xp} XP</p>` : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    sayCard();
     $('#next').onclick = advance;
   }
 
@@ -16188,12 +16224,13 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     const runOpt = (i) => { const o = ev.opts[i]; if (!o) return screenEvent();
       if (!o.task) { applyEffect(ev.dilemma ? ev.reward : o.effect); showEffect(ev.title, o); return; }
       if (run.node) { run.node.opt = i; saveAll(); }
-      const mod = o.task === 'geld' ? 'geld' : o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, tierFor(mod), { g: o.g });
+      const mod = o.task === 'geld' ? 'geld' : o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, taskTier(mod), { g: o.g });
       render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
       let won = false;
       ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), onResult: (ok) => { won = ok; recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose); } }, () => showEffect(won ? 'Richtig gelöst' : 'Daneben')));
     };
     if (Number.isInteger(resumeOpt)) return runOpt(resumeOpt);
+    speakBtn($('.card'), 'afterbegin', () => joined(ev.title, ev.text, ev.dilemma && 'Was würdest du tun?', ...ev.opts.map((o) => o.label)));
     app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => runOpt(+btn.dataset.i); });
   }
   function applyEffect(eff) {
@@ -16210,6 +16247,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   function showEffect(title, opt) {
     const lines = (run.node && run.node.lines) || [];
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${opt && opt.then ? `<p>${esc(opt.then)}</p><p><b>Denk mal nach:</b> ${esc(opt.think)}</p>` : ''}${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    speakBtn($('.card'), 'afterbegin', () => joined(title, opt && opt.then, opt && opt.then && 'Denk mal nach: ' + opt.think, ...lines.map(plain)));
     $('#next').onclick = advance;
   }
 
@@ -16223,7 +16261,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   }
   function training(mod, total, done) {
     if (done >= total) { const m = gainXp(15); nodeDone(); saveAll(); render(`<div class="screen">${topbar('🔥 Training')}<div class="scroll"><div class="card center"><h2>Training beendet</h2><p>⭐ +15 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
-    const tier = tierFor(mod); const t = makeTask(mod, tier);
+    const t = makeTask(mod, taskTier(mod));
     render(`<div class="screen">${topbar(`🔥 Training ${done + 1} / ${total}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     const s = STATS()[mod]; const low = s.t >= 3 && s.c / s.t < 0.6;
     const go = () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Übung', onResult: (ok) => { recordAnswer(mod, ok, t); saveAll(); } }, () => training(mod, total, done + 1));
@@ -16359,8 +16397,8 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   }
 
   /* ---------- Zeichenschule ---------- */
-  // a unit can draw two pictures: the first on floor 2, the second on floor 5
-  const schoolKey = () => { const s = CFG().school; return Array.isArray(s) ? s[run && run.floor > 3 ? 1 : 0] : s; };
+  // a unit can draw two pictures: the first on floor 2, the second later (see makeMapFor)
+  const schoolKey = () => { const s = CFG().school; return Array.isArray(s) ? s[run && run.floor > 2 ? 1 : 0] : s; };
   function screenSchool(step) {
     const P = plantOf(schoolKey()); const n = P.steps.length;
     if (step > n) { render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${P.svg({})}</div></div><div class="bottom"><button class="btn" id="go">Los!</button></div></div>`); $('#go').onclick = () => schoolCheck(MK.shuffle(P.parts.map((p) => p.id)), 0); return; }
@@ -16397,7 +16435,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   function screenKarte() {
     const n = run.node; if (!enabledMods().includes('karte') || n.found) return screenTreasure();
     if (!isObj(n.hunt)) n.hunt = { tries: 0, task: null };
-    if (!isObj(n.hunt.task)) { n.hunt.task = makeTask('karte', tierFor('karte')); saveAll(); }
+    if (!isObj(n.hunt.task)) { n.hunt.task = makeTask('karte', taskTier('karte')); saveAll(); }
     const t = n.hunt.task;
     render(`<div class="screen">${topbar('🗺️ Schatzkarte')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: `Versuch ${n.hunt.tries + 1} von 2`, onResult: (ok) => {
@@ -16416,6 +16454,7 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null; setTimeout(SFX.lose, 200);
     render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p>${stampLine(b.stamps)}<p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    sayCard();
     $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenVictory() {
@@ -16859,8 +16898,8 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
           + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
       },
       how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
-        + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Jedes Abenteuer beginnt auf Stufe 1.</p>')
-        + card('Wann wird es schwerer?', '<p>Lernquest schaut bei jeder Aufgabenart auf die letzten 6 Aufgaben.</p><ul class="plist"><li><b>Alle 6 richtig:</b> eine Stufe höher.</li><li><b>Weniger als 3 richtig:</b> eine Stufe zurück.</li><li><b>Dazwischen:</b> Die Stufe bleibt.</li></ul><p>Danach zählt Lernquest von vorn.</p>')
+        + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Lernquest merkt sich die Stufe. Ein neues Abenteuer beginnt zum Aufwärmen eine Stufe tiefer.</p>')
+        + card('Wann wird es schwerer?', '<p>Lernquest schaut bei jeder Aufgabenart auf die letzten Aufgaben.</p><ul class="plist"><li><b>5 von 6 richtig:</b> eine Stufe höher.</li><li><b>2 von 3 falsch:</b> eine Stufe zurück.</li></ul><p>Danach zählt Lernquest von vorn. Etwa jede vierte Aufgabe kommt von der Stufe darunter. Löst Ihr Kind in einem Abenteuer weniger als zwei Drittel richtig, trifft der Gegner nach einem Fehler nicht so hart.</p>')
         + card('Was ist eine Welt?', '<p>Ein Abenteuer führt durch eine bis drei Welten. In jeder neuen Welt kommen höhere Stufen und neue Aufgabenarten dazu.</p><p>Beispiel Zahlenquest: In Welt 1 bleiben alle Zahlen unter 100. Das schriftliche Rechnen beginnt erst in Welt 3.</p>')
         + card('Was passiert bei einem Fehler?', '<p>Ihr Kind sieht sofort die richtige Lösung. Niemand schimpft, es geht einfach weiter.</p><p>Wissensfragen, die falsch waren, kommen bald wieder, bis sie sitzen.</p>')
         + card('Wie lernt mein Kind eine neue Aufgabenart?', '<p>Beim ersten Mal erklärt Lernquest die Aufgabenart in drei bis vier kurzen Schritten mit einem Beispiel.</p><p>Dieselben Erklärungen finden Sie unter „Fächer“ bei jeder Aufgabenart: „Beispiel ansehen“.</p>'),
@@ -16979,14 +17018,14 @@ const CHANGELOG = [{"date": "2026-11-11", "groups": [{"title": "Neu", "items": [
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, subjectOf, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();
 
 </script>
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '252f3af09ba4';
+  const BUILD = '0e9a5373f973';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

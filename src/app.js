@@ -48,7 +48,7 @@
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
   const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
-    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [] });
+    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
   const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
@@ -70,6 +70,7 @@
     for (const [o, n] of Object.entries(RENAMES)) if (m.dex[o]) { if (!m.dex[n]) m.dex[n] = m.dex[o]; delete m.dex[o]; }
     for (const g of MODE_KEYS) { if (!isObj(m.stats[g])) m.stats[g] = emptyStats(g); for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] }; }
     if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
+    m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
@@ -129,13 +130,22 @@
   const xpNeeded = (lvl) => 20 + lvl * 15;
   const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(run.world, M.worldCap.length) - 1]); };
   function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), run.tiers[mod] || 1)); }
+  // about every fourth task comes from the tier below, so the child keeps some easy wins
+  const taskTier = (mod) => { const t = tierFor(mod); return t >= 2 && Math.random() < 0.25 ? t - 1 : t; };
+  // the tier reached per unit and task type; a new adventure starts one tier below it
+  const levelOf = (m) => (meta.level[m] = isObj(meta.level[m]) ? meta.level[m] : {});
+  // under 65 % right in this adventure (from 8 answers on), a wrong answer costs less
+  const struggling = () => run.answered >= 8 && run.solved / run.answered < 0.65;
   function recordAnswer(mod, ok, task) {
     const M = MODULES_OF()[mod]; const s = STATS()[mod]; s.t++; if (ok) s.c++; if (ok && run) run.right = (run.right || 0) + 1; markWeek(); s.hist.push(ok ? 1 : 0); if (s.hist.length > 40) s.hist.shift();
+    if (run) { run.answered = (run.answered || 0) + 1; run.solved = (run.solved || 0) + (ok ? 1 : 0); }
     const wt = weekly().tally; const ws = wt[mode + ':' + mod] = wt[mode + ':' + mod] || { c: 0, t: 0 }; ws.t++; if (ok) { ws.c++; weeklyStep('right', mod); }
     if (task && task.qid) { meta.knowSeq++; MK.record(meta.know, task.qid, ok, meta.knowSeq); }
-    const recent = s.hist.slice(-6); const acc = recent.reduce((a, b) => a + b, 0) / recent.length;
-    // capped at the current world, otherwise the next world would start at its hardest tier
-    if (run && recent.length >= 6) { const cur = tierFor(mod); if (acc >= 0.85) { run.tiers[mod] = Math.min(worldCapFor(mod), cur + 1); s.hist = []; } else if (acc < 0.5) { run.tiers[mod] = Math.max(1, cur - 1); s.hist = []; } }
+    const right = (n) => s.hist.slice(-n).reduce((a, b) => a + b, 0);
+    if (!run) return;
+    // up at 5 of the last 6 right, down at 2 of the last 3 wrong; capped at the current world, otherwise the next world would start at its hardest tier
+    const cur = tierFor(mod); const next = s.hist.length >= 6 && right(6) >= 5 ? Math.min(worldCapFor(mod), cur + 1) : s.hist.length >= 3 && right(3) <= 1 ? Math.max(1, cur - 1) : cur;
+    if (next !== cur) { run.tiers[mod] = next; levelOf(mode)[mod] = next; s.hist = []; }
   }
   /* ---------- Stamps ---------- */
   const giveStamps = (n) => { meta.stamps += n; meta.stampsTotal += n; return n; };
@@ -270,6 +280,8 @@
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}${n.fig || ''}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
+    const steps = () => joined(t.title, ...t.steps);
+    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? n.lines : [])), steps);
     $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
   }
@@ -360,8 +372,8 @@
       if (opts.onResult) opts.onResult(ok); // game state changes now, so a reload can't undo the answer
       inps.forEach((el, i) => { el.classList.remove('active'); const f = fieldOk(values[i], i); if (f !== null) el.classList.add(f ? 'ok' : 'bad'); });
       const fb = $('#fb', container);
-      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); }
-      else { SFX.wrong(); const corr = task.show || (task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', ')); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; }
+      if (ok) { fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`; SFX.right(); sayResult(fb, true); }
+      else { SFX.wrong(); const corr = task.show || (task.money ? euro(task.answers[0] * 100 + task.answers[1]) : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', ')); fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`; sayResult(fb, false, 'Richtig wäre: ' + corr); }
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
       $('#next').focus();
@@ -374,15 +386,21 @@
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
   const voice = () => (TTS && meta.speak ? TTS.getVoices().find((v) => v.localService && /^de/i.test(v.lang)) : null);
-  const spoken = (t) => t.replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ');
+  const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
   function speak(text) { const v = voice(); if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = 0.9; TTS.speak(u); }
-  // reads the task and its answers; units for Klasse 1 and 2 start reading on their own
-  function readAloud(container, bottom) {
+  // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
+  function speakBtn(anchor, where, text, first = text) {
     if (!voice()) return;
-    $('.tut', container).insertAdjacentHTML('beforebegin', '<button class="tut speak" type="button" aria-label="Vorlesen">🔊</button>');
-    const read = () => speak([...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim()).filter(Boolean).join('. '));
-    $('.speak', container).onclick = read;
-    if (CFG().grade < 3) read();
+    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text()) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
+    if (first && CFG().grade < 3) speak(first());
+  }
+  const joined = (...t) => t.filter(Boolean).join('. ').replace(/([.?!:…“])\. /g, '$1 ');
+  const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html.replace(/<br>/g, '. '); d.querySelectorAll('svg').forEach((s) => s.remove()); return d.textContent; };
+  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : 'Daneben. ' + why));
+  // how a fight ended: the headline and the line under it
+  const sayCard = () => speakBtn($('.card'), 'afterbegin', () => joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)));
+  function readAloud(container, bottom) {
+    speakBtn($('.tut', container), 'beforebegin', () => joined(...[...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim())));
   }
 
   /* ---------- Choice / order / parts tasks ---------- */
@@ -396,6 +414,7 @@
       if (opts.onResult) opts.onResult(ok);
       const more = task.more ? `<small>Herkunft: ${esc(task.more)}</small>` : ''; // where a saying comes from, after every answer
       fb.innerHTML = ok ? `<div class="feedback good pop">Richtig! ✔${more}</div>` : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small>${more}</div>`;
+      sayResult(fb, ok, plain(extraHtml));
       if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
       bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`; $('#next').focus(); $('#next').onclick = () => done(ok);
     };
@@ -664,6 +683,7 @@
     for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
     for (const [k, v] of Object.entries(inc.materials)) m.materials[k] = Math.max(m.materials[k] || 0, v);
+    for (const [g, L] of Object.entries(inc.level)) { const d = m.level[g] = Object.assign({}, m.level[g]); for (const [k, t] of Object.entries(L)) d[k] = Math.max(d[k] || 0, t); }
     m.garden.beds.forEach((b, i) => { if (!b.crop) m.garden.beds[i] = inc.garden.beds[i]; });
     // the fuller pantry, not both: a code exported from this device would otherwise double what is in it
     if (inc.pantry.length > m.pantry.length) m.pantry = inc.pantry.slice();
@@ -729,25 +749,28 @@
     $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, 1])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
       run.map = makeMapFor(1);
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
       meta.pantry = []; meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
-  function makeMapFor(world) { const m = makeMap(world); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[4].some((n) => n.t === 'school')) m[4][0].t = 'school'; }
+  // shorter adventures for the younger grades; enemies stay as strong (see startBattle)
+  const FLOORS_BY_GRADE = { 1: 6, 2: 7, 3: 8 };
+  // floors are counted on an 8-floor map; m.slice(a, -2) ends before the camp and the boss
+  function makeMapFor(world) { const m = makeMap(FLOORS_BY_GRADE[CFG().grade] || 8); if (CFG().school && world === 1) { m[1].forEach((n) => { n.t = 'school'; }); if (!m[m.length - 4].some((n) => n.t === 'school')) m[m.length - 4][0].t = 'school'; }
     // one special node per world on floors 3–6 instead of an event or treasure (a fight if the map has none)
-    const sw = CFG().swap; if (sw) { const on = (t) => m.slice(2, 6).flat().filter((n) => n.t === t); const c = on(sw.from).length ? on(sw.from) : on('fight'); if (c.length) pick(c).t = sw.to; }
+    const sw = CFG().swap; if (sw) { const on = (t) => m.slice(2, -2).flat().filter((n) => n.t === t); const c = on(sw.from).length ? on(sw.from) : on('fight'); if (c.length) pick(c).t = sw.to; }
     const chests = m.flat().filter((n) => n.t === 'treasure'); if (CFG().mine && chests.length && !offList('math').includes('rest')) pick(chests).t = 'bergwerk';
     // one market per world on floors 3–6, in place of an event (a fight if there is none)
-    if (marketOn()) { const fl = m.slice(2, 6).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
+    if (marketOn()) { const fl = m.slice(2, -2).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
     // the week's boss takes the place of one fight on floor 5 or 6: once per adventure, until it is beaten this week
-    const fights = m[4].concat(m[5]).filter((n) => n.t === 'fight');
+    const fights = m.slice(-4, -2).flat().filter((n) => n.t === 'fight');
     if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
-    if (readsIn(mode)) { const fights = m.slice(1, 6).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
+    if (readsIn(mode)) { const fights = m.slice(1, -2).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
     // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
-    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(3, 6).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
+    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -832,16 +855,18 @@
     else if (type === 'lesen') screenRead();
     else if (type === 'markt') { if (marketOn()) screenMarket(); else screenEvent(); }
   }
-  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > 8) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
+  function advance() { run.floor++; run.shield = false; run.node = null; if (run.floor > run.map.length) { if (run.world >= CFG().worlds) { screenVictory(); return; } run.world++; run.floor = 1; run.map = makeMapFor(run.world); run.path = []; meta.bestWorld = Math.max(meta.bestWorld, run.world); if (CFG().worldAttacks && CFG().worldAttacks[run.world]) { run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod })); } } saveAll(); screenMap(); }
 
   /* ---------- Battle ---------- */
   // arena: a spinning-top duel against the owner of the other top, which isn't a Monsterbuch entry
   function startBattle(spec, hard, arena) {
     // extra HP offsets weak-spot damage, so fights stay about as long
-    const scale = ENEMY_HP * (1 + (run.floor - 1) * 0.03); const elite = hard && !spec.boss;
+    // enemies grow along the way as on an 8-floor map, so a shorter map's boss is just as strong
+    const step = (run.floor - 1) * 7 / Math.max(1, run.map.length - 1);
+    const scale = ENEMY_HP * (1 + step * 0.03); const elite = hard && !spec.boss;
     const dexName = spec.base || spec.name; const fresh = !arena && !meta.dex[dexName]; if (fresh) giveStamps(2);
     const mods = heroAttacks().map((a) => a.mod); const weak = spec.weakOrder ? spec.weakOrder.find((k) => mods.includes(k)) : pickWeak();
-    const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + (run.floor - 1) * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weekboss: !!spec.weekboss, weak };
+    const enemy = { fresh, name: spec.name, type: spec.type, shape: spec.shape, maxHp: Math.round(spec.hp * scale), hp: Math.round(spec.hp * scale), atk: Math.round(spec.atk * (1 + step * 0.02)) + (elite ? 1 : 0), boss: !!spec.boss, elite, weekboss: !!spec.weekboss, weak };
     if (arena) Object.assign(enemy, { hp: TOP_FOE(), maxHp: TOP_FOE(), top: topStart(enemy) }); else meta.dex[dexName] = { type: spec.type, shape: spec.shape, world: run.world, mode };
     if (run.node) { run.node.enemy = enemy; saveAll(); }
     const b = { enemy, log: arena ? `${esc(enemy.name)} tritt mit einem Kreisel an. Hol zuerst Schwung: Jede richtige Aufgabe gibt +4.` : `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`, logCls: '', phase: 'choose' };
@@ -863,6 +888,7 @@
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`, quiet);
     announce(b.log.replace(/<[^>]+>/g, ''));
+    const log = () => plain(b.log); speakBtn($('.log'), 'afterbegin', log, !quiet && log); // Klasse 1 and 2 hear only how a fight starts
     delete b.clash; delete b.boost; // the clash plays once, on this render
     if (b.phase === 'choose') renderAttackChoice(b);
   }
@@ -917,7 +943,7 @@
     b.log = `${it.icon} ${it.name} benutzt!`; enemyTurn(b, 1);
   }
   function chooseAttack(b, atk) {
-    const tier = tierFor(atk.mod);
+    const tier = taskTier(atk.mod);
     let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
     b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; // no second attack while the task opens
     const hint = !!run.hint; run.hint = false;
@@ -940,7 +966,7 @@
         if (b.enemy.hp > 0) b.enemy.pending = 1;
       } else {
         b.log = `${atk.name} geht daneben. ${b.enemy.name} hat einen freien Schlag!`; b.logCls = 'miss';
-        b.enemy.pending = 1.5;
+        b.enemy.pending = struggling() ? 1 : 1.5;
       }
       saveAll();
     };
@@ -985,6 +1011,7 @@
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${heroSVG(heroSpec(), run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(heroSpec(), run.hero.evo, 'after')}</div><p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
     render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    sayCard();
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
 
@@ -1011,7 +1038,7 @@
     }
   }
   function topAttack(b, atk) {
-    const e = b.enemy, T = e.top; const t = makeTask(atk.mod, tierFor(atk.mod)); const wind = T.start < TOP_START;
+    const e = b.enemy, T = e.top; const t = makeTask(atk.mod, taskTier(atk.mod)); const wind = T.start < TOP_START;
     b.phase = 'task'; $('.screen').classList.add('tasking'); $('#bottom').innerHTML = ''; $('#dish').classList.remove('clash');
     let fxOn = null;
     const onResult = (ok) => {
@@ -1085,6 +1112,7 @@
     const r = b.enemy.read; const beaten = b.enemy.hp <= 0; const xp = 6 * r.right; const msgs = gainXp(xp);
     nodeDone(); saveAll(); if (r.right) setTimeout(SFX.win, 150);
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? `<p>+${xp} XP</p>` : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    sayCard();
     $('#next').onclick = advance;
   }
 
@@ -1099,12 +1127,13 @@
     const runOpt = (i) => { const o = ev.opts[i]; if (!o) return screenEvent();
       if (!o.task) { applyEffect(ev.dilemma ? ev.reward : o.effect); showEffect(ev.title, o); return; }
       if (run.node) { run.node.opt = i; saveAll(); }
-      const mod = o.task === 'geld' ? 'geld' : o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, tierFor(mod), { g: o.g });
+      const mod = o.task === 'geld' ? 'geld' : o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task; const t = makeTask(mod, taskTier(mod), { g: o.g });
       render(`<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
       let won = false;
       ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), onResult: (ok) => { won = ok; recordAnswer(mod, ok, t); applyEffect(ok ? o.win : o.lose); } }, () => showEffect(won ? 'Richtig gelöst' : 'Daneben')));
     };
     if (Number.isInteger(resumeOpt)) return runOpt(resumeOpt);
+    speakBtn($('.card'), 'afterbegin', () => joined(ev.title, ev.text, ev.dilemma && 'Was würdest du tun?', ...ev.opts.map((o) => o.label)));
     app.querySelectorAll('.bottom .btn').forEach((btn) => { btn.onclick = () => runOpt(+btn.dataset.i); });
   }
   function applyEffect(eff) {
@@ -1121,6 +1150,7 @@
   function showEffect(title, opt) {
     const lines = (run.node && run.node.lines) || [];
     render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${opt && opt.then ? `<p>${esc(opt.then)}</p><p><b>Denk mal nach:</b> ${esc(opt.think)}</p>` : ''}${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
+    speakBtn($('.card'), 'afterbegin', () => joined(title, opt && opt.then, opt && opt.then && 'Denk mal nach: ' + opt.think, ...lines.map(plain)));
     $('#next').onclick = advance;
   }
 
@@ -1134,7 +1164,7 @@
   }
   function training(mod, total, done) {
     if (done >= total) { const m = gainXp(15); nodeDone(); saveAll(); render(`<div class="screen">${topbar('🔥 Training')}<div class="scroll"><div class="card center"><h2>Training beendet</h2><p>⭐ +15 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`); $('#next').onclick = advance; return; }
-    const tier = tierFor(mod); const t = makeTask(mod, tier);
+    const t = makeTask(mod, taskTier(mod));
     render(`<div class="screen">${topbar(`🔥 Training ${done + 1} / ${total}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     const s = STATS()[mod]; const low = s.t >= 3 && s.c / s.t < 0.6;
     const go = () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Übung', onResult: (ok) => { recordAnswer(mod, ok, t); saveAll(); } }, () => training(mod, total, done + 1));
@@ -1270,8 +1300,8 @@
   }
 
   /* ---------- Zeichenschule ---------- */
-  // a unit can draw two pictures: the first on floor 2, the second on floor 5
-  const schoolKey = () => { const s = CFG().school; return Array.isArray(s) ? s[run && run.floor > 3 ? 1 : 0] : s; };
+  // a unit can draw two pictures: the first on floor 2, the second later (see makeMapFor)
+  const schoolKey = () => { const s = CFG().school; return Array.isArray(s) ? s[run && run.floor > 2 ? 1 : 0] : s; };
   function screenSchool(step) {
     const P = plantOf(schoolKey()); const n = P.steps.length;
     if (step > n) { render(`<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${P.svg({})}</div></div><div class="bottom"><button class="btn" id="go">Los!</button></div></div>`); $('#go').onclick = () => schoolCheck(MK.shuffle(P.parts.map((p) => p.id)), 0); return; }
@@ -1308,7 +1338,7 @@
   function screenKarte() {
     const n = run.node; if (!enabledMods().includes('karte') || n.found) return screenTreasure();
     if (!isObj(n.hunt)) n.hunt = { tries: 0, task: null };
-    if (!isObj(n.hunt.task)) { n.hunt.task = makeTask('karte', tierFor('karte')); saveAll(); }
+    if (!isObj(n.hunt.task)) { n.hunt.task = makeTask('karte', taskTier('karte')); saveAll(); }
     const t = n.hunt.task;
     render(`<div class="screen">${topbar('🗺️ Schatzkarte')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
     ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: `Versuch ${n.hunt.tries + 1} von 2`, onResult: (ok) => {
@@ -1327,6 +1357,7 @@
     const world = run.world; const name = heroName(); const multi = CFG().worlds > 1;
     endRun(); run = null; setTimeout(SFX.lose, 200);
     render(`<div class="screen">${topbar('Besiegt')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} war diesmal stärker.</h2><p>${esc(name)} muss sich ausruhen.${multi ? ` Du bist bis Welt ${world} gekommen.` : ''}</p>${stampLine(b.stamps)}<p>Alles, was du geübt hast, bleibt gespeichert. Das nächste Abenteuer beginnt bei Welt 1 mit einem ausgeruhten Monster.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Neues Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    sayCard();
     $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenVictory() {
@@ -1770,8 +1801,8 @@
           + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
       },
       how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
-        + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Jedes Abenteuer beginnt auf Stufe 1.</p>')
-        + card('Wann wird es schwerer?', '<p>Lernquest schaut bei jeder Aufgabenart auf die letzten 6 Aufgaben.</p><ul class="plist"><li><b>Alle 6 richtig:</b> eine Stufe höher.</li><li><b>Weniger als 3 richtig:</b> eine Stufe zurück.</li><li><b>Dazwischen:</b> Die Stufe bleibt.</li></ul><p>Danach zählt Lernquest von vorn.</p>')
+        + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Lernquest merkt sich die Stufe. Ein neues Abenteuer beginnt zum Aufwärmen eine Stufe tiefer.</p>')
+        + card('Wann wird es schwerer?', '<p>Lernquest schaut bei jeder Aufgabenart auf die letzten Aufgaben.</p><ul class="plist"><li><b>5 von 6 richtig:</b> eine Stufe höher.</li><li><b>2 von 3 falsch:</b> eine Stufe zurück.</li></ul><p>Danach zählt Lernquest von vorn. Etwa jede vierte Aufgabe kommt von der Stufe darunter. Löst Ihr Kind in einem Abenteuer weniger als zwei Drittel richtig, trifft der Gegner nach einem Fehler nicht so hart.</p>')
         + card('Was ist eine Welt?', '<p>Ein Abenteuer führt durch eine bis drei Welten. In jeder neuen Welt kommen höhere Stufen und neue Aufgabenarten dazu.</p><p>Beispiel Zahlenquest: In Welt 1 bleiben alle Zahlen unter 100. Das schriftliche Rechnen beginnt erst in Welt 3.</p>')
         + card('Was passiert bei einem Fehler?', '<p>Ihr Kind sieht sofort die richtige Lösung. Niemand schimpft, es geht einfach weiter.</p><p>Wissensfragen, die falsch waren, kommen bald wieder, bis sie sitzen.</p>')
         + card('Wie lernt mein Kind eine neue Aufgabenart?', '<p>Beim ersten Mal erklärt Lernquest die Aufgabenart in drei bis vier kurzen Schritten mit einem Beispiel.</p><p>Dieselben Erklärungen finden Sie unter „Fächer“ bei jeder Aufgabenart: „Beispiel ansehen“.</p>'),
@@ -1890,5 +1921,5 @@
   if (navigator.storage && navigator.storage.persist && !meta.storage.persisted) navigator.storage.persist().then((ok) => { if (ok) { meta.storage.persisted = true; saveAll(); } }).catch(() => { });
   screenTitle();
   importFromLink();
-  window.__mq = { get run() { return run; }, subjectOf, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();
