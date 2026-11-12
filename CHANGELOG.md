@@ -16,7 +16,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Verbessert
 - Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.
 - Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.
-- Der Spielstand-Code ist kürzer, der QR-Code dadurch kleiner.
+- Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer.
 
 ### Behoben
 - Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler.

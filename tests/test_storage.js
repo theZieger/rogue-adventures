@@ -430,6 +430,27 @@ async function saveCodeCases() {
     const v = size(+svg.getAttribute('viewBox').split(' ')[2]);
     check(svg.getAttribute('aria-label') === 'QR-Code mit dem Spielstand' && z.$('#pcode').value.startsWith('LQ2.') && v < oldV, 'the export QR code holds the whole save (version ' + v + ', with LQ1. ' + oldV + ')');
   }
+  { // „Als Datei sichern“: a .txt file with the link; shared when the device can share files, otherwise downloaded; „Datei auswählen“ reads it back
+    const w = z.w; const read = (f) => new Promise((res) => { const r = new w.FileReader(); r.onload = () => res(r.result); r.readAsText(f); });
+    let shared = null; w.navigator.canShare = (d) => d.files[0].type === 'text/plain'; w.navigator.share = (d) => { shared = d; return Promise.resolve(); };
+    z.click('#pfile');
+    const f = shared && shared.files[0]; const text = f ? await read(f) : '';
+    check(f && /^Lernquest-Spielstand-\d{4}-\d\d-\d\d\.txt$/.test(f.name) && text.includes('#lade=' + z.$('#pcode').value) && text.startsWith('Lernquest-Spielstand vom '), 'the save file is a .txt with the date in its name and the whole code: ' + (f && f.name));
+    let clicked = null; w.navigator.canShare = () => false; w.URL.createObjectURL = (b) => { clicked = b; return 'blob:x'; }; w.URL.revokeObjectURL = () => {};
+    const orig = w.HTMLAnchorElement.prototype.click; w.HTMLAnchorElement.prototype.click = function () { clicked = clicked && this.download; };
+    z.click('#pfile'); w.HTMLAnchorElement.prototype.click = orig;
+    check(clicked === f.name && z.$('#pcmsg').textContent.includes('Download-Ordner'), 'without file sharing the file is downloaded');
+    const pick = async (file) => { const inp = z.$('#pfilein'); Object.defineProperty(inp, 'files', { value: [file], configurable: true }); inp.dispatchEvent(new w.Event('change')); await until(() => z.$('#pimsg').textContent); };
+    z.go('settings', 'save'); z.$('#pimsg').textContent = '';
+    // a messenger may rename the file and wrap its lines
+    await pick({ name: 'Lernquest-Spielstand (1).txt', size: text.length, text: async () => text.replace(/(.{76})/g, '$1\r\n') });
+    check(z.$('#pimsg').textContent.startsWith('Datei gelesen') && (await z.w.__mq.unpackSave(z.$('#pcodein').value)).meta.wins === z.w.__mq.meta.wins, 'a chosen save file is read, even renamed and with wrapped lines');
+    z.click('#pmerge'); await until(() => z.$('.overlay'));
+    check(!!z.$('.overlay') && z.$('.overlay').textContent.includes('zusammenlegen'), 'after reading the file the usual question comes');
+    z.$('.overlay').remove(); z.$('#pimsg').textContent = '';
+    await pick({ name: 'Einkauf.txt', size: 5, text: async () => 'Milch' });
+    check(z.$('#pimsg').textContent.startsWith('Das ist keine Lernquest-Datei'), 'another file gets a clear message');
+  }
   { // a fresh save and saves after many adventures: everything comes back, and the code is much shorter than LQ1.
     const fresh = JSON.parse(JSON.stringify(open().w.__mq.meta));
     for (const [name, nKnow] of [['fresh', 0], ['busy', 400], ['heavy', 1500]]) {
