@@ -80,7 +80,6 @@ const K12D = (() => {
   const optPic = (id) => `${svgOf(id)}<span class="sr-only">${PICS[id].w}</span>`;
   const PIC_IDS = Object.keys(PICS);
   const first = (id) => PICS[id].w[0];
-  const LETTERS = [...new Set(PIC_IDS.map(first))];
 
   /* ================= KLASSE 1: Laute und Buchstaben ================= */
   const ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -123,9 +122,6 @@ const K12D = (() => {
   // the voice would say letter names („Es“), not sounds: say reads a question without its letter, quiet leaves out
   // the options and the right answer after a mistake
   const L1_ITEMS = {
-    anlaut2: PIC_IDS.map((id) => ({ id: 'l1an_' + id, make: (qid) => choice('anlaut', 2, 'anlaut', 'Mit welchem Buchstaben fängt das Wort an?', first(id), others(LETTERS, [first(id)], 2), qid, { quiet: true, pic: picOf(id), why: `${PICS[id].w} fängt mit ${first(id)} an.` }) })),
-    anlaut: PIC_IDS.map((id) => ({ id: 'l1ab_' + id, make: (qid) => { const wrong = []; for (const x of shuffle(PIC_IDS)) if (wrong.length < 2 && first(x) !== first(id) && !wrong.some((y) => first(y) === first(x))) wrong.push(x);
-      return choice('anlaut', 1, 'anlaut', `Welches Bild fängt mit ${first(id)} an?`, optPic(id), wrong.map(optPic), qid, { svgOpts: true, cols: 1, quiet: true, say: 'Welches Bild fängt mit diesem Buchstaben an?', why: `${PICS[id].w} fängt mit ${first(id)} an.` }); } })),
     laute: VOW.map((v) => ({ id: 'l1sl_' + v, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, { quiet: true, why: 'Selbstlaute sind A, E, I, O, U.' }) }))
       .concat(CONS.map((c) => ({ id: 'l1ml_' + c, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Mitlaut?', c, others(VOW, [], 2), qid, { quiet: true, why: `${c} ist ein Mitlaut. Selbstlaute sind A, E, I, O, U.` }) })))
       .concat(Object.keys(UML).map((u) => ({ id: 'l1ul_' + u, make: (qid) => choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Umlaut?', u, [UML[u], pick(CONS)], qid, { quiet: true, why: 'Umlaute haben zwei Punkte: Ä, Ö, Ü.' }) })))
@@ -164,7 +160,6 @@ const K12D = (() => {
     lesen2: PIC_IDS.map((id) => ({ id: 'l1lw_' + id, make: (qid) => choice('lesen', 2, 'lesen', 'Lies das Wort. Welches Bild passt?', svgOf(id), lookalikes(id).map(svgOf), qid, { svgOpts: true, cols: 1, pic: look(PICS[id].w, 42), why: `Da steht: ${PICS[id].w}.` }) })),
   };
   const L1_NOTES = {
-    anlaut: { title: 'Der Anlaut', lines: ['Der Anlaut ist der erste Laut in einem Wort.', 'Sprich das Wort langsam und deutlich: Mmmond. Du hörst zuerst ein M.', 'In der Anlauttabelle findest du zu jedem Buchstaben ein Bild.'] },
     laute: { title: 'Selbstlaute, Umlaute, Mitlaute', lines: ['Selbstlaute: A, E, I, O, U. Man kann sie lange singen: Aaaa.', 'Umlaute haben zwei Punkte: Ä, Ö, Ü.', 'Zwielaute sind zwei Selbstlaute, die zusammen klingen: au, ei, eu.', 'Alle anderen Buchstaben sind Mitlaute: B, M, S, T …'] },
     lautpos: { title: 'Wo hörst du den Laut?', lines: ['Sprich das Wort langsam, Laut für Laut: M-o-n-d.', 'Hörst du den Laut zuerst? Dann ist er am Anfang.', 'Hörst du ihn zuletzt? Dann ist er am Ende. Sonst ist er in der Mitte.'] },
     silben: { title: 'Silben', lines: ['Sprich das Wort und klatsche bei jeder Silbe: Ba-na-ne.', 'Jedes Klatschen ist eine Silbe. Banane hat 3 Silben.', 'In jeder Silbe steckt ein Selbstlaut, ein Umlaut oder ein Zwielaut.'] },
@@ -173,8 +168,6 @@ const K12D = (() => {
     lesen: { title: 'Lesen', lines: ['b, d, p und q sehen fast gleich aus. Schau genau, wo der Bauch und wo der Strich ist.', 'b: Der Strich geht nach oben, der Bauch ist rechts. d: Der Bauch ist links.', 'p: Der Strich geht nach unten, der Bauch ist rechts. q: Der Bauch ist links.', 'Zu jedem kleinen Buchstaben gehört ein großer: b – B, d – D, g – G.', 'Lies ein Wort Laut für Laut und zieh die Laute zusammen: M-au-s, Maus.'] },
   };
   const L1_TUT = {
-    'anlaut:2': { title: 'Der erste Buchstabe', steps: ['Schau dir das Bild an. Wie heißt das Ding?', 'Sprich das Wort langsam. Welchen Laut hörst du zuerst?', 'Beispiel: Sonne. Sssonne. Zuerst hörst du ein S.', 'Tippe auf den Buchstaben.'] },
-    'anlaut:1': { title: 'Das passende Bild', steps: ['Ein Buchstabe ist vorgegeben.', 'Sprich zu jedem Bild das Wort. Welches fängt mit dem Buchstaben an?', 'Beispiel: M. Mond fängt mit M an, Ball und Sonne nicht.', 'Tippe auf das Bild.'] },
     'laute:1': { title: 'Selbstlaut oder Mitlaut', steps: ['Selbstlaute sind A, E, I, O, U.', 'Umlaute haben zwei Punkte: Ä, Ö, Ü. Alle anderen sind Mitlaute.', 'Beispiel: M ist ein Mitlaut, O ist ein Selbstlaut.', 'Tippe auf die richtige Antwort.'] },
     'laute:2': { title: 'Der fehlende Laut', steps: ['Im Wort fehlt ein Selbstlaut oder ein Zwielaut.', 'Sprich das Wort zum Bild langsam. Was hörst du an der Lücke?', 'Beispiel: M__nd. Mooond. Es fehlt ein o.', 'Tippe auf den fehlenden Laut.'] },
     'lautpos:1': { title: 'Wo hörst du den Laut?', steps: ['Sprich das Wort langsam, Laut für Laut.', 'Ist der Laut ganz vorn, ganz hinten oder in der Mitte?', 'Beispiel: M in Baum. B-au-m. Das M hörst du am Ende.', 'Tippe auf die richtige Stelle.'] },
@@ -187,7 +180,6 @@ const K12D = (() => {
     'reim:1': { title: 'Reimwörter', steps: ['Reimwörter klingen am Ende gleich.', 'Sprich das Wort und jede Antwort laut.', 'Beispiel: Haus reimt sich auf Maus, nicht auf Hund.', 'Tippe auf das Reimwort.'] },
   };
   const L1_MODULES = {
-    anlaut: { name: 'Erster Buchstabe', icon: '🔤', maxTier: 2, worldCap: [2], dmg: 12 },
     laute: { name: 'Selbstlaut und Mitlaut', icon: '🔡', maxTier: 2, worldCap: [2], dmg: 12 },
     lautpos: { name: 'Wo hörst du den Laut?', icon: '👂', maxTier: 1, worldCap: [1], dmg: 14 },
     silben: { name: 'Silben', icon: '🥁', maxTier: 2, worldCap: [2], dmg: 12 },
@@ -195,12 +187,12 @@ const K12D = (() => {
     reim: { name: 'Reimwörter', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 14 },
     lesen: { name: 'Lesen', icon: '📗', maxTier: 2, worldCap: [2], dmg: 14 },
   };
-  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Erster Buchstabe, Selbstlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
+  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Selbstlaute und Mitlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
     modules: L1_MODULES, tut: L1_TUT, notes: L1_NOTES, pool: [],
-    starters: hero([{ name: 'Anlauttabelle', mod: 'anlaut' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }]),
-    extra: { anlaut: 'Anlauttabelle', laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim', lesen: 'Fibel' },
+    starters: hero([{ name: 'Buchstabenhaus', mod: 'laute' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }]),
+    extra: { laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim', lesen: 'Fibel' },
     events: [
-      { title: 'Die Buchstabenkiste', text: 'Frau Klein hat eine Kiste mit Buchstaben aus Holz. Sie hält ein Bild hoch und fragt nach dem ersten Buchstaben. Wer ihn findet, bekommt einen Trank.', opts: [{ label: 'Antworten', task: 'anlaut', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
+      { title: 'Die Buchstabenkiste', text: 'Frau Klein hat eine Kiste mit Buchstaben aus Holz. Sie hält einen hoch und fragt, ob er ein Selbstlaut oder ein Mitlaut ist. Wer es weiß, bekommt einen Trank.', opts: [{ label: 'Antworten', task: 'laute', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Der Morgenkreis', text: 'Im Morgenkreis klatscht die Klasse Silben. Jetzt bist du dran. Klappt es, bekommst du einen Schild.', opts: [{ label: 'Klatschen', task: 'silben', win: { item: 'schild' }, lose: { hp: -4 } }, { label: 'Zuschauen', effect: {} }] },
       { title: 'Das Gedicht an der Tafel', text: 'An der Tafel steht ein Gedicht. Am Ende einer Zeile fehlt das Reimwort. Findest du es, klebt Frau Klein dir ein Fleißbienchen ins Heft.', opts: [{ label: 'Reimwort suchen', task: 'reim', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
       { title: 'Die Buchstabenreihe', text: 'Über der Tafel hängen die Buchstaben von A bis Z. Einer ist heruntergefallen. Hängst du ihn an die richtige Stelle, bekommst du eine Lupe.', opts: [{ label: 'Aufhängen', task: 'alphabet', win: { item: 'lupe' }, lose: { xp: 5 } }, { label: 'Liegen lassen', effect: {} }] },

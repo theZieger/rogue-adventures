@@ -218,7 +218,6 @@ const ELTERN = (() => {
       zeichen: 'Klänge aufmalen: Ein langer Strich ist ein langer Ton, Punkte sind kurze Töne, ein großes Zeichen ist laut. Dazu kurze Muster wie „lang, kurz, kurz“.',
     },
     laute1: {
-      anlaut: 'Ihr Kind hört den ersten Laut eines Wortes zum Bild und findet den Buchstaben dazu.',
       laute: 'Selbstlaute, Umlaute und Mitlaute unterscheiden und einen fehlenden Selbstlaut im Wort ergänzen.',
       lautpos: 'Hört Ihr Kind den Laut am Anfang, in der Mitte oder am Ende des Wortes?',
       silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben. Später ordnet Ihr Kind Silben zu einem Wort.',

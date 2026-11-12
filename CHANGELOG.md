@@ -15,7 +15,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Verbessert
 - Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.
-- Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena und keine vorgelesenen Buchstaben.
+- Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.
 - Der Spielstand-Code ist kürzer, der QR-Code dadurch kleiner.
 
 ### Behoben

@@ -1507,6 +1507,17 @@ function topCases() {
   check(p2.w.__mq.meta.wins === wins + 1 && !p2.dump().mathquest_run_zahlen20 && p2.errors.length === 0, 'after its boss the old 8-floor adventure is won');
 }
 
+// „Erster Buchstabe“ was removed from Laute und Buchstaben: an adventure saved with its attack goes on with another task type
+{
+  const p0 = open({ [META]: JSON.stringify(Object.assign({ grade: 1, started: { laute1: 5 }, seenTut: { 'battle:intro2': true } }, SKIPPED)) });
+  p0.click('[data-new="laute1"]'); p0.click('.choice'); p0.click('#go');
+  const st = p0.dump(); const r = JSON.parse(st.mathquest_run_laute1); r.hero.attacks[0] = { name: 'Anlauttabelle', mod: 'anlaut' }; r.tiers.anlaut = 2; st.mathquest_run_laute1 = JSON.stringify(r);
+  const p = open(st); p.click('[data-cont="laute1"]'); p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf'));
+  const names = [...p.d.querySelectorAll('.atk')].map((b) => b.textContent);
+  p.click('.atk[data-i="0"]'); if (p.$('.overlay #tutok')) p.click('.overlay #tutok');
+  check(names.length === 4 && !names.some((x) => x.includes('Anlauttabelle')) && p.w.__task && p.w.__task.mod !== 'anlaut' && p.errors.length === 0, 'an adventure saved with the removed Anlaut attack goes on with another task type: ' + names.join(' | '));
+}
+
 // Klasse 1 starts with fewer attacks (2, then 3, then 4 per theme) and never has a Kreisel-Arena
 {
   const old = open({ [META]: JSON.stringify(Object.assign({ runs: 3 }, SKIPPED)) });

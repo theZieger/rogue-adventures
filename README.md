@@ -50,7 +50,7 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 |---|---|---|
 | 1 | 🧮 Zahlen bis 20 | Punkte zählen (Zehnerfeld, Würfel), zerlegen, vergleichen, Nachbarzahlen, verdoppeln und halbieren, plus und minus bis 20 mit Zehnerübergang, Zahlenmauern |
 | 1 | 🔷 Formen und Lage | Links, rechts, oben, unten, zwischen; Dreieck, Viereck, Rechteck, Quadrat, Kreis; Würfel, Quader, Kugel; Muster fortsetzen; Würfeltürme |
-| 1 | 🔤 Laute und Buchstaben | Anlaut zum Bild, Selbstlaute und Mitlaute, wo hörst du den Laut, Silben zählen, Abc, Reimwörter; kurze Lesestube-Texte |
+| 1 | 🔤 Laute und Buchstaben | Selbstlaute und Mitlaute, wo hörst du den Laut, Silben zählen, Abc, Reimwörter; kurze Lesestube-Texte |
 | 1 | 🙂 Mein Körper | Körperteile (Bild zum Antippen, Zeichenschule), Hände waschen und Zähne putzen, gesund essen, Kleidung zum Wetter, Nein sagen, Erste Hilfe und Notruf 112 – Dilemma-Karten |
 | 1 | 📅 Durch das Jahr | Jahreszeiten, Monate, Wochentage, Tageslauf, Uhr (volle und halbe Stunde), Wetterzeichen, sicherer Schulweg |
 | 1 | 🙂 Ich und die anderen | Gefühle an Gesichtern, bitte und danke, Familien sind verschieden, Regeln, streiten und versöhnen – Dilemma-Karten |
