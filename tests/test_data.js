@@ -138,6 +138,30 @@ for (const cfg of Object.values(modes)) {
   if (MONART.monsterSVG(enemy, '#4FC96A', 0, '', { outfit: 'krone' }).replace(/mg\d+/g, '') !== MONART.monsterSVG(enemy, '#4FC96A', 0).replace(/mg\d+/g, '')) fail('enemies must not wear clothes');
 }
 
+// Turmwacht is an extra with its own run key, not a unit (MODE_KEYS is built from the units)
+if (modes.turm) fail('turm must not be a unit');
+
+// Turmwacht asks any unit's fight task in any of its worlds: every one must generate at tier 1
+{
+  const random = Math.random; let seed = 7;
+  Math.random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  let seq = 0;
+  for (const [mode, cfg] of Object.entries(modes)) for (const [k, mod] of Object.entries(cfg.modules)) {
+    if (mod.shop) continue;
+    for (let w = 1; w <= (cfg.worlds || 1); w++) {
+      if (!(mod.worldCap[Math.min(w, mod.worldCap.length) - 1] > 0)) continue;
+      for (let i = 0; i < 5; i++) {
+        let t;
+        try { t = mode === 'math' ? MQ.generate(k, 1) : mode === 'bau' ? MQ.BAU.generate(k, 1) : cfg.numGen ? cfg.numGen(k, 1) : MK.generate(mode, k, 1, {}, ++seq, { world: w }); } catch (e) { fail(`${mode}/${k} world ${w}: ${e.message}`); break; }
+        if (!t || typeof t !== 'object') { fail(`${mode}/${k} world ${w}: no task`); break; }
+        const e = cfg.byWorld && cfg.pool.find((x) => x.id === t.qid);
+        if (e && (e.w || 1) !== w) { fail(`${mode}/${k} world ${w}: question ${t.qid} is from world ${e.w || 1}`); break; }
+      }
+    }
+  }
+  Math.random = random;
+}
+
 // parent area: every task type has its one-sentence explanation, every topic its place in the curriculum
 {
   const ELTERN = require('../src/eltern.js');

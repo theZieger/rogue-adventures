@@ -41,6 +41,7 @@
   /* ---------- Storage ---------- */
   const KEY_META = 'mathquest_meta_v2';
   const KEY_RUN_FOR = (m) => (m === 'math' ? 'mathquest_run_v1' : 'mathquest_run_' + m);
+  const KEY_TURM = KEY_RUN_FOR('turm');
   function load(key, fallback) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
   function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* storage unavailable */ } }
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
@@ -103,7 +104,7 @@
   const visSubjects = () => curGrade().subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) })).filter((sub) => sub.modes.length);
   const fightMods = (m) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
   // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
-  const inWorld = (m, k) => { const c = MODES[m].modules[k].worldCap; return c[Math.min(run && run.mode === m ? run.world : 1, c.length) - 1] > 0; };
+  const inWorld = (m, k) => { const c = MODES[m].modules[k].worldCap; const b = run && (run.mode === m ? run : run.mode === 'turm' && run.turm.at[m]); return c[Math.min(b ? b.world : 1, c.length) - 1] > 0; };
   const enabledMods = (m) => { m = m || mode; const all = fightMods(m).filter((k) => inWorld(m, k)); const on = all.filter((k) => !offList(m).includes(k)); return on.length >= 2 ? on : all; };
   // coins and the market only exist in Zahlenquest, and only while parents leave „Geld“ on
   const marketOn = () => mode === 'math' && !offList('math').includes('geld') && extraOn('markt');
@@ -136,8 +137,10 @@
   const tutKey = (k) => mode + ':' + k;
   const typeChip = (t) => `<span class="chip" style="background:${TYPES[t].color};color:#1C2541">${TYPES[t].icon} ${TYPES[t].name}</span>`;
   const xpNeeded = (lvl) => 20 + lvl * 15;
-  const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(run.world, M.worldCap.length) - 1]); };
-  function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), run.tiers[mod] || 1)); }
+  // a Turm run keeps world, tiers and the repeat guard per unit: task-type keys repeat across units
+  const taskBox = () => (run && run.mode === 'turm' ? run.turm.at[mode] : run);
+  const worldCapFor = (mod) => { const M = MODULES_OF()[mod]; return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(taskBox().world, M.worldCap.length) - 1]); };
+  function tierFor(mod) { return Math.max(1, Math.min(worldCapFor(mod), taskBox().tiers[mod] || 1)); }
   // about every fourth task comes from the tier below, so the child keeps some easy wins
   const taskTier = (mod) => { const t = tierFor(mod); return t >= 2 && Math.random() < 0.25 ? t - 1 : t; };
   // the tier reached per unit and task type; a new adventure starts one tier below it
@@ -153,7 +156,7 @@
     if (!run) return;
     // up at 5 of the last 6 right, down at 2 of the last 3 wrong; capped at the current world, otherwise the next world would start at its hardest tier
     const cur = tierFor(mod); const next = s.hist.length >= 6 && right(6) >= 5 ? Math.min(worldCapFor(mod), cur + 1) : s.hist.length >= 3 && right(3) <= 1 ? Math.max(1, cur - 1) : cur;
-    if (next !== cur) { run.tiers[mod] = next; levelOf(mode)[mod] = next; s.hist = []; }
+    if (next !== cur) { taskBox().tiers[mod] = next; levelOf(mode)[mod] = next; s.hist = []; }
   }
   /* ---------- Stamps ---------- */
   const giveStamps = (n) => { meta.stamps += n; meta.stampsTotal += n; return n; };
@@ -226,14 +229,14 @@
   function weakestModule() { let best = null, bestAcc = 2; for (const k of enabledMods()) { const s = STATS()[k]; const acc = s.t === 0 ? 0.6 : s.c / s.t; if (acc < bestAcc) { bestAcc = acc; best = k; } } return best; }
   let duel = null; // a running duel lives only in memory
   function makeTask(mod, tier, opts) {
-    const box = run || duel; box.recent = box.recent || {}; const rec = box.recent[mod] = box.recent[mod] || [];
+    const box = taskBox() || duel; box.recent = box.recent || {}; const rec = box.recent[mod] = box.recent[mod] || [];
     let t, sig;
     for (let i = 0; i < 12; i++) {
       if (mode === 'math') { t = MQ.generate(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.grid ? JSON.stringify(t.grid) : t.text; }
       else if (mode === 'bau') { t = MQ.BAU.generate(mod, tier); sig = t.sig; }
       else if (CFG().numGen) { t = CFG().numGen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.text; }
       // generated units may give one qid to a whole kind of task, so the question and answer tell repeats apart
-      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run ? run.world : 1, enOff: enOff() }); sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|'); }
+      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: taskBox() ? taskBox().world : 1, enOff: enOff() }); sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|'); }
       if (!rec.includes(sig)) break;
     }
     rec.push(sig); if (rec.length > 8) rec.shift();
@@ -307,7 +310,7 @@
   // one persistent live region: screen readers miss re-created ones
   const live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.setAttribute('role', 'status'); document.body.appendChild(live);
   function announce(text) { live.textContent = ''; setTimeout(() => { live.textContent = text; }, 50); }
-  function topbar(title, extra) { return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`; }
+  function topbar(title, extra) { return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run && run.floor ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`; }
   function modal(html) {
     const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
     const behind = [...app.children]; behind.forEach((el) => { el.inert = true; }); app.appendChild(ov);
@@ -919,11 +922,13 @@
     const prev = run.map[run.floor - 2][run.path[run.floor - 2]]; const n = prev ? prev.n.filter((i) => fl[i]) : [];
     return n.length ? n : all;
   }
-  function showBag(inBattle) {
+  // ctx (Turmwacht) may override the texts: { full, later, desc: { [item id]: text } }
+  function showBag(inBattle, ctx) {
+    const T = ctx || {}; const desc = (id) => (T.desc && T.desc[id]) || ITEMS[id].desc;
     const stacks = []; run.items.forEach((it, i) => { const st = stacks.find((x) => x.id === it); if (st) st.n++; else stacks.push({ id: it, i, n: 1 }); });
-    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${stacks.map((st) => `<button class="item" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${esc(ITEMS[st.id].desc)}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? ` <b class="count">×${st.n}</b>` : ''}</span><small>${esc(ITEMS[st.id].desc)}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
+    const ov = modal(`<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${stacks.map((st) => `<button class="item" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${esc(desc(st.id))}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? ` <b class="count">×${st.n}</b>` : ''}</span><small>${esc(desc(st.id))}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`);
     $('#close', ov).onclick = () => ov.remove();
-    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const it = ITEMS[run.items[+b.dataset.i]]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: Das kannst du nur im Kampf benutzen.`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${it.desc}`; return; } if ((it.shield && run.shield) || (it.power && run.power) || (it.hint && run.hint)) { $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; const lv = it.xp ? gainXp(it.xp) : []; saveAll(); ov.remove(); if (inBattle) inBattle(it, lv); else { screenMap(); if (it.xp) { const m = modal(`<h2>${it.icon} +${it.xp} XP</h2>${lv.map((x) => `<p style="font-weight:800;color:var(--orange)">${esc(x)}</p>`).join('') || '<p>Dein Monster lernt dazu.</p>'}<button class="btn" id="tutok">Weiter</button>`); $('#tutok', m).focus({ preventScroll: true }); $('#tutok', m).onclick = () => m.remove(); } } }; });
+    ov.querySelectorAll('.item').forEach((b) => { b.onclick = () => { const id = run.items[+b.dataset.i]; const it = ITEMS[id]; if (it.heal && run.hero.hp >= run.hero.maxHp) { $('#bagdesc', ov).textContent = T.full || 'Du hast schon volle Lebenspunkte.'; return; } if ((it.shield || it.power || it.hint) && !inBattle) { $('#bagdesc', ov).textContent = `${it.name}: ${T.later || 'Das kannst du nur im Kampf benutzen.'}`; return; } if (it.revive) { $('#bagdesc', ov).textContent = `${it.name}: ${desc(id)}`; return; } if ((it.shield && run.shield) || (it.power && run.power) || (it.hint && run.hint)) { $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`; return; } run.items.splice(+b.dataset.i, 1); if (it.heal) heal(it.heal); if (it.shield) run.shield = true; if (it.power) run.power = true; if (it.hint) run.hint = true; const lv = it.xp ? gainXp(it.xp) : []; saveAll(); ov.remove(); if (inBattle) inBattle(it, lv); else { screenMap(); if (it.xp) { const m = modal(`<h2>${it.icon} +${it.xp} XP</h2>${lv.map((x) => `<p style="font-weight:800;color:var(--orange)">${esc(x)}</p>`).join('') || '<p>Dein Monster lernt dazu.</p>'}<button class="btn" id="tutok">Weiter</button>`); $('#tutok', m).focus({ preventScroll: true }); $('#tutok', m).onclick = () => m.remove(); } } }; });
   }
 
   // resume exactly where it stopped, so closing the app never swaps a node or resets a fight
