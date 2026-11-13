@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="43c433b9f45d">
+<meta name="app-version" content="2a4b194db178">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -4295,7 +4295,8 @@ const MK = (() => {
   const T_POOL = [];
   // numbers have their own task, so the translation tasks leave them out
   Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([t, list]) => list.forEach(([en, de]) => {
-    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [en] });
+    // the quoted word only: „September“ is also German, and the answer „der September“ is read by the German voice
+    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [`„${en}“`] });
     const o = [en].concat(others(list.map((x) => x[0]), en, 2));
     T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o, a: 0, english: o });
   }));
@@ -17992,7 +17993,7 @@ const CHANGELOG = [{"date": "2026-11-13", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '43c433b9f45d';
+  const BUILD = '2a4b194db178';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

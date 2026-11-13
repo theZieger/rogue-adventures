@@ -1080,7 +1080,8 @@ const MK = (() => {
   const T_POOL = [];
   // numbers have their own task, so the translation tasks leave them out
   Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([t, list]) => list.forEach(([en, de]) => {
-    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [en] });
+    // the quoted word only: „September“ is also German, and the answer „der September“ is read by the German voice
+    T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [`„${en}“`] });
     const o = [en].concat(others(list.map((x) => x[0]), en, 2));
     T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o, a: 0, english: o });
   }));

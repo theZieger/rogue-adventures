@@ -284,6 +284,7 @@ for(const c of Object.keys(K.CROPS)){ if(K.GARDEN_POOL.filter(e=>e.crop===c).len
       if(q.mod!==mod) fail(m+' wrong mod '+q.mod);
       if(q.kind==='choice'){ if(q.options.filter(o=>o===q.answer).length!==1) fail('not exactly one correct '+q.qid); if(new Set(q.options).size!==q.options.length) fail('duplicate option '+q.qid); }
       if(mod==='zahl'){ const n=q.answers[0]; if(q.kind!=='num'||q.text!==K.numWord(n)||(t===1?n<1||n>20:n<21||n>100)) fail('zahl tier '+t+' '+q.text+' '+n); }
+      if(mod==='en_de'&&(q.english.length!==1||!q.q.includes(q.english[0])||q.options.some(o=>o.includes(q.english[0])))) fail('en_de: the English voice would read a German option '+q.qid);
       if(mod==='farbe'&&(!q.pic||!q.pic.includes(E.farben.find(f=>f[0]===q.answer)[2]))) fail('colour swatch '+q.qid);
       if(mod==='odd'){ const th=(w)=>Object.keys(K.EN_THEMES).filter(k=>K.EN_THEMES[k].some(x=>x[0]===w)); const others=q.options.filter(o=>o!==q.answer);
         if(q.options.length!==4||new Set(others.map(o=>th(o)[0])).size!==1||th(q.answer)[0]===th(others[0])[0]) fail('odd one out '+q.options); }
