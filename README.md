@@ -23,7 +23,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 
 | Modus | Inhalt |
 |---|---|
-| 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, Teilbarkeit und Quersumme, Zahlenmauern und Rechendreiecke, Bruchteile (auch von Größen), Punkt vor Strich, Zahlwörter und Stellenwerttafel, schriftliches Addieren, Subtrahieren (Ergänzungsverfahren) und Multiplizieren (Welt 3) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
+| 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, Teilbarkeit und Quersumme, Zahlenmauern und Rechendreiecke, Bruchteile (auch von Größen), Punkt vor Strich, Zahlwörter und Stellenwerttafel, Kopfrechnen bis 1000, Malnehmen mit großen Zahlen, Zahlen vergleichen und ordnen, Überschlagen (Welt 3), schriftliches Addieren, Subtrahieren (Ergänzungsverfahren) und Multiplizieren (Welt 3) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
 | 🎪 Der Jahrmarkt | Mathe, Größen und Daten: Uhrzeit auf die Minute und Zeitspannen (Uhr als Bild), m/cm/km, g/kg mit Waage und Stützpunkten, Sekunden, Fahrplan lesen, Glücksrad (sicher, möglich, unmöglich, wahrscheinlicher), Kombinationen zählen, Säulen- und Balkendiagramm, Sachaufgaben mit „3 € 50 ct“ – 2 Welten |
 | 🏗️ Die Baustelle | Raum und Form: Würfel zählen nach Bauplan, Quader ergänzen, Würfel- und Quadernetze, Körper erkennen, Bandornamente, parallel oder senkrecht, Umfang und Flächeninhalt, Achsensymmetrie, gespiegelt/gedreht/verschoben, Drei- und Vierecke – 2 Welten. Dazu in Zahlenquest und Baustelle je Welt ein ⛏️ Bergwerk: Teilen mit Rest, ohne Rest gibt es Erz, sonst Stein |
 | ⛪ Luthers Weg | Ethik: Martin Luther und die Reformation – Richtig/Falsch, Wähle aus, Lückentext, Begriffe, Reihenfolge |
@@ -50,11 +50,12 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 |---|---|---|
 | 1 | 🧮 Zahlen bis 20 | Punkte zählen (Zehnerfeld, Würfel), zerlegen, vergleichen, Nachbarzahlen, verdoppeln und halbieren, plus und minus bis 20 mit Zehnerübergang, Zahlenmauern |
 | 1 | 🔷 Formen und Lage | Links, rechts, oben, unten, zwischen; Dreieck, Viereck, Rechteck, Quadrat, Kreis; Würfel, Quader, Kugel; Muster fortsetzen; Würfeltürme |
-| 1 | 🔤 Laute und Buchstaben | Anlaut zum Bild, Selbstlaute und Mitlaute, wo hörst du den Laut, Silben zählen, Abc, Reimwörter; kurze Lesestube-Texte |
+| 1 | 🔤 Laute und Buchstaben | Selbstlaute und Mitlaute, wo hörst du den Laut, Silben zählen, Abc, Reimwörter; kurze Lesestube-Texte |
 | 1 | 🙂 Mein Körper | Körperteile (Bild zum Antippen, Zeichenschule), Hände waschen und Zähne putzen, gesund essen, Kleidung zum Wetter, Nein sagen, Erste Hilfe und Notruf 112 – Dilemma-Karten |
 | 1 | 📅 Durch das Jahr | Jahreszeiten, Monate, Wochentage, Tageslauf, Uhr (volle und halbe Stunde), Wetterzeichen, sicherer Schulweg |
 | 1 | 🙂 Ich und die anderen | Gefühle an Gesichtern, bitte und danke, Familien sind verschieden, Regeln, streiten und versöhnen – Dilemma-Karten |
 | 1 | 🥁 Die Klangkiste | Musik ohne Töne: Orff-Instrumente als Bild, wie man sie spielt, laut/leise, schnell/langsam, hoch/tief als Bildpaare, Gefühle in der Musik, Körperinstrumente, eigene Zeichen für Klänge |
+| 2 | 🦋 Formen und Flächen | Achsensymmetrie und Spiegelachse, rechter Winkel, parallel und senkrecht, Gerade/Strecke/Strahl, Würfelgebäude mit Bauplan, Ecken, Kanten und Flächen von Würfel und Quader |
 | 2 | 🔢 Zahlen bis 100 | Zehner und Einer, Hunderterfeld, Zahlenstrahl, gerade und ungerade, Zahlenfolgen, plus und minus bis 100, ergänzen, Rechendreiecke, Zauberquadrat |
 | 2 | ✖️ Malnehmen und Teilen | Reihen mit 2, 5 und 10, Nachbaraufgaben, Punktefelder, teilen als Umkehrung, Sachaufgaben |
 | 2 | 📏 Geld, Länge und Zeit | Euro und Cent (auch 1,50 €), mm, cm, dm, m, Uhr auf 5 Minuten, Kalender, Strichliste und Säulendiagramm, sicher/möglich/unmöglich |
@@ -66,10 +67,10 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 | 2 | 🕯️ Feste und die Welt | Geburtstag, Erntedank, St. Martin, Advent, Nikolaus, Weihnachten nach Lukas, Ostern; Staunen über die Natur, werden und wachsen – Dilemma-Karten |
 | 2 | 🥁 Der Musikraum | Welches Instrument ist das (als Bild)? Instrumentenfamilien, wie man es spielt, laut und leise, hoch und tief, Stimmen |
 
-- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff.
-- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
+- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
+- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
 - Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
-- Kein Zeitdruck. Alle vier Attacken sind von Anfang an da; der Schaden steht als ganze Zahl auf dem Knopf.
+- Kein Zeitdruck. Alle vier Attacken sind von Anfang an da – nur in Klasse 1 beginnt das erste Abenteuer eines Themas mit zwei, das zweite mit drei Attacken; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
 - Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
 - Werkbank (im Stempelheft): Holz (Ereignis „Der Holzplatz“ in Zahlenquest, Siege in der Kartoffel-Werkstatt), Stein und Erz (Bergwerk) und Ernte (Schulgarten) werden nach einer Einmaleins-Sachaufgabe zu Trank, Großem Trank, Schild oder Chilischote (Vorrat, höchstens drei, kommt ins nächste Abenteuer) oder zu Möbeln.
@@ -77,8 +78,8 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 - „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
-- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset).
-- Startseite: Klasse → Fach (Kachel) → Thema. Sie baut sich aus `grade` und `subject` der Einheiten selbst auf (siehe „Neue Einheit“).
+- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset). Unter „Anzeigen“ lassen sich ganze Klassen und Extras (Schulgarten, Hütte, Kreisel-Arena, Duell, Wochenziele, Markt) ausblenden, bei Englisch die Wortthemen aus dem Unterricht wählen; alles steht als `grade:<n>`, `extra:<name>` und `en:<Thema>` in `meta.hidden`.
+- Startseite: Klasse → Fach (Kachel) → Thema. Sie baut sich aus `grade` und `subject` der Einheiten selbst auf (siehe „Neue Einheit“). Haben die Themen eines Fachs ein `rank` (Mathe und Englisch in Klasse 3), stehen sie von leicht nach schwer: Das erste trägt „Hier anfangen“, ein schwereres verweist auf das leichteste noch nicht geübte. Gesperrt ist nichts.
 - „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
 - Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Fortsetzen geht es genau dort weiter. Über den Elternbereich lässt sich alles als Spielstand-Code auf ein anderes Gerät mitnehmen.

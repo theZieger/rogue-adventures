@@ -2,17 +2,17 @@
   const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
   // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES.
   const MODES = Object.assign({
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true },
-    jahrmarkt: MJ.MODE,
+    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 },
+    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 },
+    jahrmarkt: Object.assign({ rank: 2 }, MJ.MODE),
   }, MK.MODES);
   // the Monsterbuch and the hero lists keep this order; new units follow in the order they register
   const FIRST = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
   const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
-  // the title screen builds itself from grade and subject of the units
+  // the title screen builds itself from grade and subject of the units; `rank` orders the themes of a subject from easy to hard
   const SUBJECTS = { Mathe: '🔢', Deutsch: '📖', Ethik: '🕊️', Sachkunde: '🌱', Musik: '🎵', Englisch: '💬' };
   const CURRICULUM = [...new Set(MODE_KEYS.map((m) => MODES[m].grade))].sort((a, b) => a - b).map((grade) => ({ grade, label: 'Klasse ' + grade,
-    subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject) })).filter((x) => x.modes.length) }));
+    subjects: Object.keys(SUBJECTS).map((subject) => ({ subject, icon: SUBJECTS[subject], modes: MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject).sort((a, b) => (MODES[a].rank || 0) - (MODES[b].rank || 0)) })).filter((x) => x.modes.length) }));
   let mode = 'math';
   const CFG = () => MODES[mode];
   const MODULES_OF = () => CFG().modules;
@@ -46,9 +46,9 @@
   function clear(key) { try { localStorage.removeItem(key); } catch (e) { } }
 
   const emptyStats = (m) => Object.fromEntries(Object.keys(MODES[m].modules).map((k) => [k, { c: 0, t: 0, hist: [] }]));
-  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true,
+  const defaultMeta = () => ({ runs: 0, wins: 0, dex: {}, seenTut: {}, stats: Object.fromEntries(MODE_KEYS.map((m) => [m, emptyStats(m)])), know: {}, knowSeq: 0, evoUnlocked: {}, bestWorld: 0, seenNews: '', grade: 3, off: {}, lastStarter: {}, sound: true, speak: true, voiceName: '', voiceEn: '', speakRate: 1,
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
-    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {} });
+    weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {}, started: {} });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
   const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
@@ -73,6 +73,8 @@
     m.level = Object.fromEntries(Object.entries(m.level).filter(([, L]) => isObj(L)).map(([g, L]) => [g, Object.fromEntries(Object.entries(L).filter(([, t]) => Number.isInteger(t) && t >= 1))]));
     m.pantry = m.pantry.filter((it) => ITEMS[it]).slice(0, PANTRY_MAX);
     m.hidden = m.hidden.filter((x) => typeof x === 'string');
+    if (!(m.speakRate >= 0.6 && m.speakRate <= 1.4)) m.speakRate = 1;
+    m.started = Object.fromEntries(Object.entries(m.started).filter(([, n]) => Number.isInteger(n) && n > 0));
     m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1; m.hut.items = m.hut.items.filter((id) => typeof id === 'string');
     const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
@@ -85,12 +87,18 @@
   (function migrate() { const old = load('mathquest_meta_v1', null); if (old && !load(KEY_META, null)) { meta.runs = old.runs || 0; meta.wins = old.wins || 0; meta.dex = old.dex || {}; meta.bestWorld = old.bestWorld || 0; for (const k in (old.stats || {})) if (meta.stats.math[k]) meta.stats.math[k] = old.stats[k]; for (const k in (old.seenTut || {})) meta.seenTut['math:' + k] = true; save(KEY_META, meta); } })();
   meta = normMeta(meta);
   let run = null;
-  const curGrade = () => CURRICULUM.find((g) => g.grade === meta.grade) || CURRICULUM[0];
-  const gradeTabs = () => `<div class="grades" role="group" aria-label="Klasse">${CURRICULUM.map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
+  // hidden in the parent area: 'grade:<n>' for a class, 'extra:<name>' for an extra (EXTRAS), 'en:<topic>' for an English topic
+  const grades = () => CURRICULUM.filter((g) => !meta.hidden.includes('grade:' + g.grade));
+  const curGrade = () => grades().find((g) => g.grade === meta.grade) || grades()[0] || CURRICULUM[0];
+  const gradeTabs = () => grades().length < 2 ? '' : `<div class="grades" role="group" aria-label="Klasse">${grades().map((g) => `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`).join('')}</div>`;
   // switched off in the parent area; at least two stay on per mode
   const offList = (m) => (isObj(meta.off) && Array.isArray(meta.off[m]) ? meta.off[m] : []);
   // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
   const shown = (m) => !meta.hidden.includes('mode:' + m);
+  const EXTRAS = { garten: ['Schulgarten', 'Beete bepflanzen und ernten.'], huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'], kreisel: ['Kreisel-Arena', 'Kreiselkämpfe auf der Karte und „Kreisel bauen“ im Stempelheft.'],
+    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
+  const extraOn = (k) => !meta.hidden.includes('extra:' + k);
+  const enOff = () => meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
   const heroShown = (m, s) => !meta.hidden.includes(`hero:${m}:${s.id}`);
   const visSubjects = () => curGrade().subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) })).filter((sub) => sub.modes.length);
   const fightMods = (m) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
@@ -98,7 +106,7 @@
   const inWorld = (m, k) => { const c = MODES[m].modules[k].worldCap; return c[Math.min(run && run.mode === m ? run.world : 1, c.length) - 1] > 0; };
   const enabledMods = (m) => { m = m || mode; const all = fightMods(m).filter((k) => inWorld(m, k)); const on = all.filter((k) => !offList(m).includes(k)); return on.length >= 2 ? on : all; };
   // coins and the market only exist in Zahlenquest, and only while parents leave „Geld“ on
-  const marketOn = () => mode === 'math' && !offList('math').includes('geld');
+  const marketOn = () => mode === 'math' && !offList('math').includes('geld') && extraOn('markt');
   const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
   // a saved run is only removed by endRun or a new run, never as a side effect of saving
   const saveAll = () => { save(KEY_META, meta); if (run && !run.over) save(KEY_RUN_FOR(run.mode), run); };
@@ -205,7 +213,7 @@
   const goalDone = (g) => (weekly().progress[g.i] || 0) >= g.n;
   let weeklyNews = false; // the card waits for the next calm screen (map or title)
   function weeklyStep(kind, mod) {
-    const w = weekly(); if (w.done) return; const goals = weeklyGoals();
+    const w = weekly(); if (w.done || !extraOn('wochenziele')) return; const goals = weeklyGoals();
     goals.forEach((g) => { if (g.m === mode && g.kind === kind && (kind !== 'right' || g.mod === mod)) w.progress[g.i] = Math.min(g.n, (w.progress[g.i] || 0) + 1); });
     if (goals.every(goalDone)) { w.done = true; meta.stampCard[w.week] = 2; giveStamps(10); meta.progressAt = new Date().toISOString(); weeklyNews = true; }
   }
@@ -225,7 +233,7 @@
       else if (mode === 'bau') { t = MQ.BAU.generate(mod, tier); sig = t.sig; }
       else if (CFG().numGen) { t = CFG().numGen(mod, tier, opts); t.kind = t.kind || 'num'; t.group = mod + ':' + t.tier; sig = t.text; }
       // generated units may give one qid to a whole kind of task, so the question and answer tell repeats apart
-      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run ? run.world : 1 }); sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|'); }
+      else { t = MK.generate(mode, mod, tier, meta.know, meta.knowSeq, { g: opts && opts.g, world: run ? run.world : 1, enOff: enOff() }); sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|'); }
       if (!rec.includes(sig)) break;
     }
     rec.push(sig); if (rec.length > 8) rec.shift();
@@ -243,7 +251,40 @@
   /* ---------- Rendering primitives ---------- */
   let keyHandler = null; // physical keyboard while a number task is open
   // quiet: re-render without fade-in (battle turns)
-  function render(html, quiet) { keyHandler = null; if (window.speechSynthesis) speechSynthesis.cancel(); app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); }
+  function render(html, quiet) { keyHandler = null; backTo = null; if (window.speechSynthesis) speechSynthesis.cancel(); app.innerHTML = html; if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter'); syncHistory(); }
+
+  /* ---------- Back button ---------- */
+  // Android's back button and the browser's back gesture step back inside the app. History holds one entry per level
+  // (title 0, its screens 1, adventure and sub pages 2, an open dialog one more), so an adventure never floods it and
+  // in-screen updates add nothing. Back does what the screen's „Zurück“ does: a dialog closes, the map goes to the
+  // subject (the run stays saved), fights and tasks have no „Zurück“ and stay put, the title screen leaves the app.
+  // History is only a convenience: a reload starts on the title as before.
+  let depth = 0, backTo = null, maxD = 0, moving = 0; // moving: our own history.go is on its way
+  const level = () => depth + ($('.overlay') ? 1 : 0);
+  const atD = () => (history.state && Number.isInteger(history.state.lq) ? history.state.lq : 0);
+  function syncHistory() {
+    const d = atD(), want = level(); if (moving || want === d) return;
+    // walk over entries that are still there instead of pushing: Chrome skips entries on back that were pushed without a tap
+    const to = Math.min(want, Math.max(maxD, d));
+    try {
+      if (to !== d) { moving = setTimeout(() => { moving = 0; syncHistory(); }, 1000); history.go(to - d); }
+      else for (let i = d + 1; i <= want; i++) { history.pushState({ lq: i }, ''); maxD = i; }
+    } catch (e) { clearTimeout(moving); moving = 0; }
+  }
+  function goBack() {
+    const ov = $('.overlay');
+    if (ov) { const b = $('#no, #ino, #iok, #ok, #close, #tutok, #hnext', ov); return b ? b.click() : ov.remove(); }
+    if (backTo) return backTo();
+    const b = $('#pback') || $('#back'); if (b && !b.disabled) b.click();
+  }
+  try { history.replaceState({ lq: 0 }, ''); } catch (e) { /* no history */ }
+  window.addEventListener('popstate', () => {
+    if (moving) { clearTimeout(moving); moving = 0; return syncHistory(); }
+    const d = atD(); if (d >= level()) return syncHistory();
+    // a screen reached by going back takes the entry back landed on
+    const was = app.firstElementChild; goBack(); if (app.firstElementChild !== was) depth = Math.min(depth, d);
+    syncHistory();
+  });
 
   /* ---------- Sounds ---------- */
   // phones stay silent until a user gesture, so the first tap unlocks the context
@@ -270,7 +311,8 @@
   function modal(html) {
     const ov = document.createElement('div'); ov.className = 'overlay'; ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
     const behind = [...app.children]; behind.forEach((el) => { el.inert = true; }); app.appendChild(ov);
-    const rm = ov.remove.bind(ov); ov.remove = () => { behind.forEach((el) => { el.inert = false; }); rm(); };
+    const rm = ov.remove.bind(ov); ov.remove = () => { behind.forEach((el) => { el.inert = false; }); rm(); syncHistory(); };
+    syncHistory();
     return ov;
   }
 
@@ -280,8 +322,9 @@
   function showTutorial(group, note, onClose, auto) {
     const t = tutFor(group); const n = note && CFG().notes ? CFG().notes[note] : null;
     const ov = modal(`<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}${n.fig || ''}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
-    const steps = () => joined(t.title, ...t.steps);
-    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? n.lines : [])), steps);
+    const letter = /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/, say = (list) => (CFG().noLetters ? list.filter((x) => !letter.test(x)) : list);
+    const steps = () => joined(t.title, ...say(t.steps));
+    speakBtn($('h2', ov), 'afterbegin', () => joined(steps(), n && 'Aus deinen Notizen: ' + n.title, ...(n ? say(n.lines) : [])), steps);
     $('#tutok', ov).focus({ preventScroll: true });
     $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut[tutKey(group)] = true; if (note) meta.seenTut[tutKey('note:' + note)] = true; saveAll(); if (onClose) onClose(); };
   }
@@ -334,7 +377,7 @@
     function paint() { inps.forEach((el, i) => { el.textContent = values[i]; el.classList.toggle('active', i === active && !locked); }); const a = inps[active]; if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' }); }
     inps.forEach((el) => { el.onclick = () => { if (!locked) { active = +el.dataset.i; paint(); } }; });
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
-    readAloud(container, opts.bottom);
+    readAloud(container, opts.bottom, task);
     paint();
     bottom.onclick = (e) => {
       const b = e.target.closest('button'); if (!b || locked || !bottom.contains(b) || !b.dataset.k) return; press(b.dataset.k);
@@ -385,22 +428,55 @@
   // Only a voice that lives on the device: a network voice would send the task text away.
   const TTS = window.speechSynthesis;
   if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
-  const voice = () => (TTS && meta.speak ? TTS.getVoices().find((v) => v.localService && /^de/i.test(v.lang)) : null);
+  const local = (lang) => (TTS ? TTS.getVoices().filter((v) => v.localService && lang.test(v.lang)) : []);
+  const voices = () => local(/^de/i);
+  const enVoices = () => local(/^en/i);
+  // a saved voice that is gone from the device quietly falls back to the first German one
+  const chosenVoice = () => { const vs = voices(); return vs.find((v) => v.name === meta.voiceName) || vs[0] || null; };
+  const enVoice = () => { const vs = enVoices(); return vs.find((v) => v.name === meta.voiceEn) || vs.find((v) => /^en[-_]GB/i.test(v.lang)) || vs.find((v) => /^en[-_]US/i.test(v.lang)) || vs[0] || null; };
+  const voice = () => (meta.speak ? chosenVoice() : null);
   const spoken = (t) => t.replace(/\bLP\b/g, 'Lebenspunkte').replace(/_{2,}/g, ' Lücke ').replace(/−/g, ' minus ').replace(/·/g, ' mal ').replace(/=\s*\?/g, ' gleich wie viel').replace(/\?(?=\s*[=+−·:])/g, ' wie viel ').replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
-  function speak(text) { const v = voice(); if (!v) return; TTS.cancel(); const u = new SpeechSynthesisUtterance(spoken(text)); u.voice = v; u.lang = v.lang; u.rate = 0.9; TTS.speak(u); }
+  // the task's English words and sentences (en) become pieces of their own: [text, true]; a gap is ___ in data, ____ on screen
+  const gap = (t) => t.replace(/_{2,}/g, '___');
+  function pieces(text, en) {
+    const list = [...new Set(en.map(gap))].sort((a, b) => b.length - a.length).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const all = list.length ? gap(text).split(new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u')) : [text];
+    return all.map((t, i) => [t, i % 2 === 1]).filter(([t]) => /[\p{L}\p{N}]/u.test(t));
+  }
+  // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
+  function speak(text, v = voice(), en = [], ve = enVoice()) {
+    if (!v) return; TTS.cancel();
+    for (const [t, isEn] of pieces(text, en)) {
+      const u = new SpeechSynthesisUtterance(isEn ? t.replace(/_{2,}/g, ' … ') : spoken(t));
+      u.voice = (isEn && ve) || v; u.lang = isEn ? (ve ? ve.lang : 'en-GB') : v.lang; u.rate = meta.speakRate; TTS.speak(u);
+    }
+  }
   // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button)
-  function speakBtn(anchor, where, text, first = text) {
+  function speakBtn(anchor, where, text, first = text, en = []) {
     if (!voice()) return;
-    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text()) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
-    if (first && CFG().grade < 3) speak(first());
+    if (anchor) { const b = document.createElement('button'); Object.assign(b, { type: 'button', className: 'speak', textContent: '🔊', onclick: () => speak(text(), voice(), en) }); b.setAttribute('aria-label', 'Vorlesen'); anchor.insertAdjacentElement(where, b); }
+    if (first && CFG().grade < 3) speak(first(), voice(), en);
   }
   const joined = (...t) => t.filter(Boolean).join('. ').replace(/([.?!:…“])\. /g, '$1 ');
   const plain = (html) => { const d = document.createElement('div'); d.innerHTML = html.replace(/<br>/g, '. '); d.querySelectorAll('svg').forEach((s) => s.remove()); return d.textContent; };
-  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : 'Daneben. ' + why));
+  let onScreen = {}; // the task on screen, for its feedback
+  const sayResult = (fb, ok, why) => speakBtn(!ok && $('.feedback', fb), 'afterbegin', () => (ok ? 'Richtig' : onScreen.quiet ? 'Daneben' : 'Daneben. ' + why), undefined, onScreen.english || []);
   // how a fight ended: the headline and the line under it
   const sayCard = () => speakBtn($('.card'), 'afterbegin', () => joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)));
-  function readAloud(container, bottom) {
-    speakBtn($('.tut', container), 'beforebegin', () => joined(...[...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword'), ...(CFG().speakOptions === false ? [] : (bottom || container).querySelectorAll('.opt, .oitem'))].map((e) => e.textContent.trim())));
+  // setup help for the parents, only for their system; iPadOS reports itself as a Mac with touch
+  function voiceGuide(open) {
+    const ua = navigator.userAgent;
+    const [steps, hint] = /Android/.test(ua) ? [['Die Einstellungen öffnen, dann System → Sprachen und Eingabe → Sprachausgabe (oder „Text-in-Sprache“).', 'Als bevorzugtes Modul zum Beispiel „Sprachausgabe von Google“ wählen und als Sprache Deutsch.', 'Unter „Stimmdaten installieren“ Deutsch laden, für Englisch zusätzlich Englisch.', 'Die Lautstärke prüfen und Lernquest neu öffnen.'], 'Die Namen der Menüs unterscheiden sich je nach Hersteller.']
+      : /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? [['Die Einstellungen öffnen, dann Bedienungshilfen → Gesprochene Inhalte → Stimmen.', 'Deutsch antippen und eine Stimme laden. Für Englisch genauso unter Englisch.', 'Den Lautlos-Schalter ausschalten und die Lautstärke prüfen.', 'Lernquest neu öffnen.'], 'Je nach Version heißen die Menüs etwas anders.']
+        : [null, ''];
+    return `<details class="pguide"${open ? ' open' : ''}><summary>So klappt das Vorlesen</summary>${steps ? `<ol>${steps.map((x) => `<li>${x}</li>`).join('')}</ol>` : '<p>In den Systemeinstellungen unter Sprachausgabe eine deutsche Stimme hinzufügen, für Englisch auch eine englische.</p>'}${hint ? `<p class="pnote">${hint}</p>` : ''}</details>`;
+  }
+  // task.say: the question as spoken, without the letter it shows; task.quiet: its options are letters and stay unread
+  function readAloud(container, bottom, task) {
+    onScreen = task;
+    const asked = [...container.querySelectorAll('.question, .prompt, .expr, .story, .clues, .numword')].map((e) => e.textContent.trim());
+    const opts = CFG().speakOptions === false || task.quiet ? [] : [...(bottom || container).querySelectorAll('.opt, .oitem')].map((e) => e.textContent.trim());
+    speakBtn($('.tut', container), 'beforebegin', () => joined(...(task.say ? [task.say] : asked), ...opts), undefined, task.english || []);
   }
 
   /* ---------- Choice / order / parts tasks ---------- */
@@ -452,7 +528,7 @@
       paint();
     }
     $('.tut', container).onclick = () => showTutorial(task.group, task.note);
-    readAloud(container, opts.bottom);
+    readAloud(container, opts.bottom, task);
   }
 
   /* ---------- Potato plant drawing ---------- */
@@ -502,16 +578,16 @@
   const evictable = () => { const ua = navigator.userAgent; return (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) || (/Safari\//.test(ua) && !/Chrome|Chromium|Edg|Android|Firefox/.test(ua))) && !navigator.standalone && !!window.matchMedia && window.matchMedia('(display-mode: browser)').matches; };
   const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
   function screenTitle() {
+    depth = 0;
     if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
     render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
-        ${weeklyCard()}
-        ${gradeTabs()}${gardenCard()}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`; }).join('')}</div>
-        <div class="row"><button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button><button class="btn ghost" id="stamps">Stempelheft</button></div>
-        <div class="row"><button class="btn ghost" id="hut">Meine Hütte</button><button class="btn ghost" id="garden">Schulgarten</button></div>
-        <div class="row"><button class="btn ghost" id="duel">Duell zu zweit</button><button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button></div>
-        <div class="row"><button class="btn ghost" id="feedback">Idee senden</button></div>
+        ${extraOn('wochenziele') ? weeklyCard() : ''}
+        ${gradeTabs()}${extraOn('garten') ? gardenCard() : ''}<div class="subjects">${visSubjects().map((sub, i) => { const live = sub.modes.some((m) => loadRun(m)); return `<button class="card subjtile" data-sub="${i}"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${esc(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`; }).join('')}</div>
+        ${[`<button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>`, '<button class="btn ghost" id="stamps">Stempelheft</button>', extraOn('huette') && '<button class="btn ghost" id="hut">Meine Hütte</button>',
+          extraOn('garten') && '<button class="btn ghost" id="garden">Schulgarten</button>', extraOn('duell') && '<button class="btn ghost" id="duel">Duell zu zweit</button>', `<button class="btn ghost" id="news">Was ist neu?${hasNews() ? ' <span class="newbadge">Neu!</span>' : ''}</button>`,
+          '<button class="btn ghost" id="feedback">Idee senden</button>'].filter(Boolean).map((b, i, all) => (i % 2 ? '' : `<div class="row">${b}${all[i + 1] || ''}</div>`)).join('')}
       </div></div></div>`);
     let taps = 0; $('#logo').onclick = () => { taps++; if (taps >= 5) { taps = 0; askPin(screenParent); } };
     $('#parents').onclick = () => askPin(screenParent);
@@ -520,18 +596,23 @@
     $('#dex').onclick = screenDex;
     $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
     $('#news').onclick = screenNews;
-    $('#duel').onclick = () => screenDuel([]);
-    $('#hut').onclick = screenHut; $('#garden').onclick = screenGarden; if ($('#harvest')) $('#harvest').onclick = screenGarden;
+    const bind = (sel, fn) => { const el = $(sel); if (el) el.onclick = fn; };
+    bind('#duel', () => screenDuel([])); bind('#hut', screenHut); bind('#garden', screenGarden); bind('#harvest', screenGarden);
     $('#feedback').onclick = () => screenFeedback(screenTitle);
     $('#snd').onclick = () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } screenTitle(); };
     app.querySelectorAll('[data-grade]').forEach((b) => { b.onclick = () => { meta.grade = +b.dataset.grade; saveAll(); screenTitle(); }; });
-    $('#weekly').onclick = screenWeekly;
+    bind('#weekly', screenWeekly);
     showWeeklyNews();
   }
   const subjectOf = (m) => visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
-  const openGoals = (m) => weeklyGoals().filter((g) => g.m === m && !goalDone(g));
+  const openGoals = (m) => (extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : []);
+  const practised = (m) => Object.values(meta.stats[m]).some((x) => x.t > 0);
+  // no locks: a ranked subject marks its easiest theme and points from a harder one to the easiest one not practised yet
   function screenSubject(sub) {
-    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${openGoals(m).map((g) => `<p class="goalbadge">⭐ Wochenziel: ${esc(goalText(g))}</p>`).join('')}<div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
+    depth = 1;
+    const ranked = sub.modes.some((m) => MODES[m].rank);
+    const path = (m, i) => { const e = ranked && sub.modes.slice(0, i).find((x) => !practised(x)); return (ranked && !i ? '<span class="startbadge">Hier anfangen</span>' : '') + (e ? `<p class="pathhint">Leichter geht es mit „${esc(MODES[e].title)}“ los.</p>` : ''); };
+    render(`<div class="screen">${topbar(esc(sub.subject))}<div class="scroll"><div class="stack">${sub.modes.map((m, i) => { const r = loadRun(m); const c = MODES[m]; return `<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(m).map((g) => `<p class="goalbadge">⭐ Wochenziel: ${esc(goalText(g))}</p>`).join('')}<div class="row" style="margin-top:10px">${r ? `<button class="btn small" data-cont="${m}">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}">${r ? 'Neu' : 'Starten'}</button></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     app.querySelectorAll('[data-cont]').forEach((b) => { b.onclick = () => { mode = b.dataset.cont; run = loadRun(mode); if (run) resumeRun(); else screenSubject(sub); }; });
     app.querySelectorAll('[data-new]').forEach((b) => { b.onclick = () => { mode = b.dataset.new; const r = loadRun(mode); if (r) { const ov = modal(`<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`); $('#yes', ov).onclick = () => { run = null; screenStarter(); /* old save is replaced only when the new adventure starts */ }; $('#no', ov).onclick = () => ov.remove(); } else screenStarter(); }; });
     $('#back').onclick = screenTitle;
@@ -542,6 +623,7 @@
     return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span>${weekly().done ? '' : '<span class="weekgo">Ziele ansehen und loslegen ›</span>'}</button>`;
   }
   function screenWeekly() {
+    depth = 1;
     const goals = weeklyGoals();
     render(`<div class="screen">${topbar('Wochenaufgabe')}<div class="scroll"><div class="stack">
       <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
@@ -564,6 +646,7 @@
   /* ---------- First start, PIN, parental gate ---------- */
   const setupDone = (how) => { meta.setup[how] = true; meta.setup.at = meta.setup.at || new Date().toISOString(); saveAll(); };
   function screenSetup() {
+    depth = 0;
     render(`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
@@ -580,6 +663,7 @@
   // one numpad screen for entering the PIN, choosing one and the parental gate
   function screenCode(o) {
     let val = ''; const len = o.len || 4;
+    if (!o.relock) depth++;
     render(`<div class="screen">${topbar(o.title)}<div class="scroll"><div class="card codecard"><p>${o.text}</p>${o.task ? `<div class="codetask">${o.task}</div>` : ''}<div class="codeval ${o.task ? 'plain' : ''}" id="cval" role="img"></div><p id="cmsg" class="cmsg" role="status">${esc(o.msg || '')}</p>${o.forgot ? '<button class="linkbtn" id="forgot">PIN vergessen?</button>' : ''}</div></div>
       <div class="bottom"><div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Bestätigen">✓</button><button class="cancel" id="back" style="grid-column:1/-1">Zurück</button></div></div></div>`);
     const paint = () => { const el = $('#cval'); el.innerHTML = o.task ? esc(val) : Array.from({ length: len }, (_, i) => `<i class="${i < val.length ? 'on' : ''}"></i>`).join(''); el.setAttribute('aria-label', o.task ? (val || 'leer') : `${val.length} von ${len} Ziffern`); };
@@ -604,14 +688,22 @@
       setTimeout(() => { if (!keys[0].isConnected) return; keys.forEach((b) => { b.disabled = false; }); $('#cmsg').textContent = ''; }, wait);
     }
   }
-  function askPin(then) {
+  // relock: the parents' area locked itself; a wrong PIN goes to the title screen
+  function askPin(then, relock) {
     if (!meta.pin) return then();
-    screenCode({ title: 'Elternbereich', text: 'Bitte die Eltern-PIN eingeben.', lock: true, back: screenTitle, forgot: () => screenGate(then), onCode: (v, fail) => {
+    screenCode({ title: 'Elternbereich', text: 'Bitte die Eltern-PIN eingeben.', lock: true, relock, back: screenTitle, forgot: () => screenGate(then), onCode: (v, fail) => {
       if (pinHash(v) === meta.pin) { pinFails = 0; return then(); }
-      if (++pinFails < 3) return fail('Falsche PIN.');
-      pinFails = 0; pinLockUntil = Date.now() + 30000; askPin(then);
+      const locked = ++pinFails >= 3; if (locked) { pinFails = 0; pinLockUntil = Date.now() + 30000; }
+      if (relock) return screenTitle();
+      if (locked) askPin(then); else fail('Falsche PIN.');
     } });
   }
+  // in the background the parents' area locks at once, so the app switcher doesn't show it either; the PIN leads back to the same place
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'hidden' || !meta.pin || !$('.ptabs')) return;
+    const y = $('.scroll').scrollTop, back = pAt.back;
+    askPin(() => { screenParent(null, back, true); $('.scroll').scrollTop = y; }, true);
+  });
   function setPin(done, back) {
     const first = (msg) => screenCode({ title: 'PIN festlegen', text: 'Vier Ziffern für den Elternbereich wählen.', msg, back, onCode: (a) => screenCode({ title: 'PIN festlegen', text: 'Zur Kontrolle dieselbe PIN noch einmal eingeben.', back: () => first(), onCode: (b) => {
       if (a !== b) return first('Die beiden Eingaben waren verschieden. Bitte neu wählen.');
@@ -632,6 +724,7 @@
   const deDate = (iso) => { const [y, m, d] = iso.split('-').map(Number); return `${d}. ${MONTHS[m - 1]} ${y}`; };
   const GROUP_ICON = { 'Neu': '✨', 'Verbessert': '🔧', 'Behoben': '🐞' };
   function screenNews() {
+    depth = 1;
     const unseen = meta.seenNews || '';
     render(`<div class="screen">${topbar('Was ist neu?')}<div class="scroll"><div class="stack">${NEWS.map((e) => `<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? ' <span class="newbadge">Neu!</span>' : ''}</h3>${e.groups.map((g) => `<h4>${GROUP_ICON[g.title] || '📌'} ${esc(g.title)}</h4><ul>${g.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>`).join('')}</div>`).join('') || '<p>Noch keine Einträge.</p>'}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     if (NEWS.length) { meta.seenNews = NEWS[0].date; saveAll(); }
@@ -648,27 +741,33 @@
   // short: for the QR code, without answer history and running adventures
   function saveData(short) {
     const m = JSON.parse(JSON.stringify(meta)); const runs = {};
-    // unpractised task types are left out too: loading fills them in again with empty stats
-    if (short) for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (st.t) st.hist = []; else delete g[k]; }
+    // unpractised task types are left out: loading fills them in again with empty stats
+    for (const g of Object.values(m.stats)) for (const [k, st] of Object.entries(g)) { if (!st.t) delete g[k]; else if (short) st.hist = []; }
     if (short) delete m.weekly; // only this week's progress, the QR has no room for it
     else for (const g of MODE_KEYS) { const r = load(KEY_RUN_FOR(g), null); if (r) runs[g] = r; }
     return { v: 1, at: new Date().toISOString(), meta: m, runs };
   }
+  // LQ0: JSON, for browsers without compression; LQ1: deflated JSON from older versions; LQ2: deflated SAVECODE.shrink(data).
+  // Codes stay out there for years, so every one of them must keep loading.
   async function packSave(data) {
-    const json = JSON.stringify(data);
-    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(json), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ1.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
-    return 'LQ0.' + b64(unescape(encodeURIComponent(json)));
+    if (canZip(window.CompressionStream)) try { const buf = new Uint8Array(await viaStream(new TextEncoder().encode(JSON.stringify(SAVECODE.shrink(data))), new CompressionStream('deflate-raw')).arrayBuffer()); let bin = ''; for (const b of buf) bin += String.fromCharCode(b); return 'LQ2.' + b64(bin); } catch (e) { /* browsers before 2023 know only gzip and deflate */ }
+    return 'LQ0.' + b64(unescape(encodeURIComponent(JSON.stringify(data))));
   }
+  const unb64 = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+  // the same code for the QR code: „LQ2:“ and base 42, which the QR code packs tighter than base64
+  const qrCode = (code) => (code.startsWith('LQ2.') ? 'LQ2:' + SAVECODE.to42(Uint8Array.from(unb64(code.slice(4)), (c) => c.charCodeAt(0))) : code);
   // accepts the code or the whole link; rejects with a message for parents
   async function unpackSave(text) {
     const bad = new Error('Das ist kein vollständiger Lernquest-Code. Bitte den ganzen Code kopieren und einfügen.');
-    const m = /^LQ([01])\.([A-Za-z0-9_-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
-    if (!m) throw bad;
-    if (m[1] === '1' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
+    const m = /^LQ([012])([.:])([\w$*./:-]+)$/.exec(String(text).replace(/\s+/g, '').replace(/^.*[#&]lade=/, ''));
+    if (!m || (m[2] === ':' && m[1] !== '2')) throw bad;
+    if (m[1] !== '0' && !canZip(window.DecompressionStream)) throw new Error('Dieser Browser kann den Code nicht lesen. Bitte den Browser aktualisieren oder den Code auf einem anderen Gerät einfügen.');
     let d;
     try {
-      const bin = atob(m[2].replace(/-/g, '+').replace(/_/g, '/'));
-      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(Uint8Array.from(bin, (c) => c.charCodeAt(0)), new DecompressionStream('deflate-raw')).text());
+      const bin = m[2] === '.' ? unb64(m[3]) : '';
+      const bytes = m[2] === ':' ? SAVECODE.from42(m[3]) : Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      d = JSON.parse(m[1] === '0' ? decodeURIComponent(escape(bin)) : await viaStream(bytes, new DecompressionStream('deflate-raw')).text());
+      if (m[1] === '2') d = SAVECODE.grow(d);
     } catch (e) { throw bad; }
     if (!isObj(d) || d.v !== 1 || !isObj(d.meta)) throw bad;
     return { at: typeof d.at === 'string' ? d.at : '', meta: normMeta(d.meta), runs: isObj(d.runs) ? d.runs : {} };
@@ -682,6 +781,7 @@
     for (const g of MODE_KEYS) for (const [k, st] of Object.entries(m.stats[g])) { st.c += inc.stats[g][k].c; st.t += inc.stats[g][k].t; }
     for (const [id, q] of Object.entries(inc.know)) { if (!okKnow(q)) continue; const d = m.know[id]; m.know[id] = okKnow(d) ? Object.assign({}, (q.last || 0) > (d.last || 0) ? q : d, { c: d.c + q.c, t: d.t + q.t }) : q; }
     if (inc.progressAt > m.progressAt) m.progressAt = inc.progressAt;
+    for (const [g, n] of Object.entries(inc.started)) m.started[g] = Math.max(m.started[g] || 0, n);
     for (const [k, v] of Object.entries(inc.materials)) m.materials[k] = Math.max(m.materials[k] || 0, v);
     for (const [g, L] of Object.entries(inc.level)) { const d = m.level[g] = Object.assign({}, m.level[g]); for (const [k, t] of Object.entries(L)) d[k] = Math.max(d[k] || 0, t); }
     m.garden.beds.forEach((b, i) => { if (!b.crop) m.garden.beds[i] = inc.garden.beds[i]; });
@@ -724,15 +824,18 @@
 
   // goal: the weekly goal this adventure was started for; its task type is offered as an attack
   function screenStarter(goal) {
+    depth = 2;
     const vis = CFG().starters.filter((s) => heroShown(mode, s)); const S = vis.filter((s) => !heroLocked(s)); const last = meta.lastStarter[mode];
     let sel = S.length === 1 ? S[0].id : null;
     const want = goal && goal.kind === 'right' ? goal.mod : null;
+    // Klasse 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
+    const kit = (s) => { if (CFG().grade !== 1) return s.attacks; const a = s.attacks.slice(), i = a.findIndex((x) => x.mod === want); if (i > 0) a.unshift(a.splice(i, 1)[0]); return a.slice(0, 2 + (meta.started[mode] || 0)); };
     // recommend the monster whose attacks were practised least (and not the one played last time); for a goal one that has its task type
     const score = (s) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0) - (want && s.attacks.some((a) => a.mod === want) ? 1e9 : 0);
     const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
     // offer to swap the most practised attack for the goal's task type or one that was hardly practised yet
     let swap = null, swapOn = true;
-    const swapFor = (s) => { if (!s) return null; const have = s.attacks.map((a) => a.mod); const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
+    const swapFor = (s) => { if (!s) return null; const have = kit(s).map((a) => a.mod); const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
       if (want) return have.includes(want) || !most ? null : { from: most, to: want, goal: true };
       const cand = enabledMods().filter((k) => !have.includes(k)).sort((a, b) => practice(a) - practice(b))[0];
       return cand && most && practice(most) >= practice(cand) + 3 ? { from: most, to: cand } : null; };
@@ -741,7 +844,7 @@
       if (swap) $('#swap').onclick = () => { swapOn = !swapOn; paintSwap(); }; };
     render(`<div class="screen">${topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
       ${goal ? `<p class="center goalbadge">⭐ Wochenziel: ${esc(goalText(goal))}</p>` : ''}
-      ${S.map((s) => `<button class="choice ${S.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? `<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(s.attacks.map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
+      ${S.map((s) => `<button class="choice ${S.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? `<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
       ${vis.filter(heroLocked).map((s) => `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`).join('')}
       <div id="swapbox"></div>
       ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
@@ -749,12 +852,12 @@
     $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: s.attacks.map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: kit(s).map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
       run.map = makeMapFor(1);
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
       if (swap && swapOn) run.items.push('stern');
-      meta.pantry = []; meta.lastStarter[mode] = sel; meta.runs++; markWeek(); saveAll(); screenMap(); };
+      meta.pantry = []; meta.lastStarter[mode] = sel; meta.started[mode] = (meta.started[mode] || 0) + 1; meta.runs++; markWeek(); saveAll(); screenMap(); };
   }
   // shorter adventures for the younger grades; enemies stay as strong (see startBattle)
   const FLOORS_BY_GRADE = { 1: 6, 2: 7, 3: 8 };
@@ -767,10 +870,10 @@
     if (marketOn()) { const fl = m.slice(2, -2).flat(); const ev = fl.filter((n) => n.t === 'event'); const n = pick(ev.length ? ev : fl.filter((x) => x.t === 'fight')); if (n) n.t = 'markt'; }
     // the week's boss takes the place of one fight on floor 5 or 6: once per adventure, until it is beaten this week
     const fights = m.slice(-4, -2).flat().filter((n) => n.t === 'fight');
-    if (!run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
+    if (extraOn('wochenziele') && !run.wb && fights.length && !weekly().beaten.includes(mode)) { pick(fights).t = 'weekboss'; run.wb = true; }
     if (readsIn(mode)) { const fights = m.slice(1, -2).flat().filter((n) => n.t === 'fight'); pick(fights.length ? fights : m[0]).t = 'lesen'; }
-    // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite)
-    const tf = ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
+    // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite); never in Klasse 1
+    const tf = extraOn('kreisel') && CFG().grade !== 1 && ['fight', 'event', 'elite'].map((t) => m.slice(-5, -2).flat().filter((n) => n.t === t)).find((c) => c.length); if (tf) pick(tf).t = 'arena';
     return m;
   }
   // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
@@ -785,6 +888,7 @@
 
   const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], taeusch: ['👁️', 'Sinnestäuschung'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'], arena: ['🌀', 'Kreisel-Arena'] };
   function screenMap() {
+    depth = 2;
     const h = run.hero;
     const open = openNodes(); const live = run.map.map(() => new Set()); open.forEach((i) => live[run.floor - 1].add(i));
     for (let f = run.floor - 1; f < run.map.length - 1; f++) live[f].forEach((i) => run.map[f][i].n.forEach((j) => live[f + 1].add(j)));
@@ -804,6 +908,7 @@
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
     app.querySelectorAll('.node.open').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni].t; run.node = { type }; saveAll(); enterNode(type); }; });
     $('#home').onclick = screenTitle;
+    backTo = () => { const s = subjectOf(mode); if (s) screenSubject(s); else screenTitle(); };
     $('#bag').onclick = () => showBag(null);
     showWeeklyNews();
     const scroller = $('.scroll'); const cur = $('.node.open'); if (cur && scroller) scroller.scrollTop = Math.max(0, scroller.scrollTop + cur.getBoundingClientRect().top - scroller.getBoundingClientRect().top - scroller.clientHeight / 2);
@@ -823,6 +928,7 @@
 
   // resume exactly where it stopped, so closing the app never swaps a node or resets a fight
   function resumeRun() {
+    depth = 2;
     const n = run.node;
     if (!isObj(n)) return screenMap();
     if (n.done) return advance();
@@ -1073,7 +1179,9 @@
   const READ_MOD = { icon: '📖', name: 'Lesestube' };
   const READ_TUT = { title: 'Lesestube', steps: ['Lies den Text in Ruhe. Vor jeder Frage kannst du ihn noch einmal ansehen.', 'Jede richtige Antwort trifft den Zeilenspringer. Nach einer falschen Antwort schlägt er zurück.', 'Nach den Fragen ist die Lesestunde vorbei.'] };
   const readText = () => TEXTE[run.node.text];
-  const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p>${esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
+  // Silbenmethode: syllables alternate two colours, each word starts with the first
+  const sylHtml = (s) => s.split(/([A-Za-zÄÖÜäöüß·]+)/).map((w, i) => (i % 2 ? w.split('·').map((x, k) => `<span class="sy${k % 2}">${x}</span>`).join('') : esc(w))).join('');
+  const readCard = (t) => `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p${t.syl ? ' class="syl"' : ''}>${t.syl ? sylHtml(t.syl) : esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
   function screenRead() {
     if (!Number.isInteger(run.node.text) || !TEXTE[run.node.text]) { run.node.text = pick(textsFor(mode)); saveAll(); }
     render(`<div class="screen">${topbar('📖 Lesestube')}<div class="scroll">${readCard(readText())}</div><div class="bottom"><button class="btn" id="next">Zu den Fragen</button></div></div>`);
@@ -1176,7 +1284,7 @@
     const elite = kind === 'elite'; const owned = heroAttacks().map((a) => a.mod); const free = enabledMods().filter((k) => !owned.includes(k)); const MODULES = MODULES_OF(); const EXTRA_ATTACKS = CFG().extra;
     if (run.node && !Array.isArray(run.node.chest)) { const [r1, r2] = shuffle(LOOT.rare); run.node.chest = [r1, elite ? r2 : pick(LOOT.chest.filter((x) => x !== r1)), free.length ? pick(free) : null];
       // chests in world 2 and 3 hold the Flammenring and the Kugelspitze, once
-      const part = elite ? null : Object.keys(TOP).flatMap((s) => TOP[s].filter((p) => p.chest === run.world).map((p) => `top-${s}-${p.id}`)).find((k) => !meta.owned[k]);
+      const part = elite || !extraOn('kreisel') ? null : Object.keys(TOP).flatMap((s) => TOP[s].filter((p) => p.chest === run.world).map((p) => `top-${s}-${p.id}`)).find((k) => !meta.owned[k]);
       if (part) { meta.owned[part] = true; run.node.part = part; meta.progressAt = new Date().toISOString(); }
       saveAll(); }
     const found = run.node && typeof run.node.part === 'string' && partOf(run.node.part);
@@ -1364,16 +1472,18 @@
     meta.wins++; giveStamps(10); weeklyStep('win'); meta.progressAt = new Date().toISOString(); if (mode === 'kartoffel') meta.owned['beet-4'] = true;
     const roof = CFG().worlds >= 3 && !meta.owned['hut-dachfenster']; if (roof) meta.owned['hut-dachfenster'] = true; const name = heroName(); const spec = heroSpec(); const evo = run.hero.evo; const bs = CFG().enemies[CFG().worlds].boss; const bossName = bs.acc || bs.name;
     endRun(); run = null; setTimeout(SFX.finale, 300);
-    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}${roof ? '<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>' : ''}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
+    render(`<div class="screen">${topbar('Sieg!')}<div class="confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i % 6) * 0.35}s;--c:${['#FFC93C', '#4FC96A', '#3FA0FF', '#FF6A3D', '#FF6E8E'][i % 5]}"></i>`).join('')}</div><div class="scroll"><div class="card center"><h1 style="font-size:36px">${esc(bs.name)} ist besiegt!</h1>${heroSVG(spec, evo)}<p><b>${esc(name)}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${stampLine(10)}${roof && extraOn('huette') ? '<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>' : ''}<p>Gewonnene Abenteuer: ${meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Abenteuer</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`);
     $('#again').onclick = () => screenStarter(); $('#home').onclick = screenTitle;
   }
   function screenDex() {
+    depth = 1;
     const all = []; for (const m of MODE_KEYS) { const EN = MODES[m].enemies; for (const w of Object.keys(EN)) { for (const e of EN[w].normal) all.push(e); all.push({ ...EN[w].elite, elite: true }); all.push(EN[w].boss); } }
     for (let i = all.length - 1; i >= 0; i--) if (all.findIndex((e) => e.name === all[i].name) < i) all.splice(i, 1); // Klasse 1/2 units share their opponents
     render(`<div class="screen">${topbar('Monsterbuch')}<div class="scroll"><div class="stack">${all.map((e) => { const seen = meta.dex[e.name]; return `<div class="choice" style="cursor:default">${seen ? monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss }) : `<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? esc(e.name) : '???'}</div>${seen ? typeChip(e.type) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`; }).join('')}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
   }
   function screenStamps(jump) {
+    depth = 1;
     const now = MQ.isoWeek(new Date()); const weeks = MQ.schoolWeeks(new Date()); const y = +weeks[0].slice(0, 4);
     const cells = weeks.map((k) => { const v = meta.stampCard[k]; return `<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', geübt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`; }).join('');
     const row = (r) => { const prev = r.icon ? `<div class="rwprev" aria-hidden="true">${r.icon}</div>` : r.bg ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>` : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
@@ -1383,15 +1493,15 @@
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du geübt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${monsterSVG('fox', TYPES.feuer.color, 0, '', { outfit: 'strohhut' })}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk">Öffnen</button></div></div>
-      <div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>
-      ${REWARDS.map(row).join('')}
-      ${benchHtml()}
+      ${extraOn('kreisel') ? `<div class="choice reward">${MONART.topSVG(TYPES.wasser.color, meta.top)}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb">Öffnen</button></div></div>` : ''}
+      ${REWARDS.filter((r) => extraOn('huette') || !r.id.startsWith('hut-')).map(row).join('')}
+      ${extraOn('huette') ? benchHtml() : ''}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
     $('#back').onclick = screenTitle;
     $('#kk').onclick = () => screenWardrobe();
-    $('#kb').onclick = () => screenTop();
+    if ($('#kb')) $('#kb').onclick = () => screenTop();
     app.querySelectorAll('[data-craft]').forEach((b) => { b.onclick = () => screenCraft(b.dataset.craft); });
-    if (jump && $('#werkbank').scrollIntoView) $('#werkbank').scrollIntoView();
+    if (jump && $('#werkbank') && $('#werkbank').scrollIntoView) $('#werkbank').scrollIntoView();
     app.querySelectorAll('[data-buy]').forEach((b) => { b.onclick = () => { const r = REWARDS.find((x) => x.id === b.dataset.buy);
       const ov = modal(`<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel${r.stein ? ` und ${r.stein} Stein` : ''}. Danach hast du noch ${meta.stamps - r.price} Stempel.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`);
       $('#no', ov).onclick = () => ov.remove();
@@ -1438,6 +1548,7 @@
       <h3>Für deine Hütte</h3>${RECIPES.filter(isFurn).map(row).join('')}`;
   }
   function screenCraft(id) {
+    depth = 2;
     const r = RECIPES.find((x) => x.id === id); if (!r || !craftable(r)) return screenStamps(true);
     const a = rnd(2, 6), b = rnd(3, 9); const t = { kind: 'num', mod: 'mul', tier: 1, group: 'mul:1', story: r.q(a, b), answers: [a * b] };
     render(`<div class="screen">${topbar('Werkbank')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
@@ -1521,19 +1632,21 @@
       ${room === 1 && meta.owned['hut-dachfenster'] ? ROOF : ''}${gaps.map((id) => { const [x, y, w, h] = FURN[id].box; return `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="10" fill="#FFF7E6" fill-opacity=".55" stroke="#8A6A30" stroke-width="2.5" stroke-dasharray="7 6"/><text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" font-size="15" font-weight="700" fill="#6B4A22">${RECIPES.find((r) => r.id === id).place}</text>`; }).join('')}${here.map((id) => FURN[id].art(n)).join('')}</svg>`;
   }
   function screenHut() {
+    depth = 1;
     const two = meta.hut.rooms >= 2; const n = shelfNums(); const built = Object.keys(FURN).filter((id) => meta.owned[id]);
     const name = (id) => RECIPES.find((r) => r.id === id).name;
     render(`<div class="screen">${topbar('Meine Hütte')}<div class="scroll"><div class="stack">
       ${two ? '<h3>Erstes Zimmer</h3>' : ''}${hutSVG(1)}${two ? `<h3>Zweites Zimmer</h3>${hutSVG(2)}` : ''}
       <div class="card">${built.length ? '' : '<p>Noch ist deine Hütte leer. Möbel baust du an der Werkbank im Stempelheft.</p>'}${meta.owned['hut-regal'] ? `<p>Im Regal: ${n.dex} im Monsterbuch, ${n.tops} Kreiselteile, ${n.notes} Notizkarten.</p>` : ''}
       ${built.length && built.length < 5 ? '<p class="pnote">Die gestrichelten Plätze warten noch auf Möbel von der Werkbank.</p>' : ''}${two ? '' : '<p class="pnote">Ein zweites Zimmer gibt es im Stempelheft für 30 Stempel und 12 Stein.</p>'}${meta.owned['hut-dachfenster'] ? '' : '<p class="pnote">Wer Zahlenquest durch alle drei Welten gewinnt, bekommt ein Dachfenster.</p>'}</div>
-      <div class="row"><button class="btn ghost" id="bench">Zur Werkbank</button><button class="btn ghost" id="garden">Schulgarten</button></div>
+      <div class="row"><button class="btn ghost" id="bench">Zur Werkbank</button>${extraOn('garten') ? '<button class="btn ghost" id="garden">Schulgarten</button>' : ''}</div>
       ${two && built.length ? `<div class="card"><h3>Umräumen</h3><div class="stack">${built.map((id) => `<button class="btn small secondary" data-move="${id}">${esc(name(id))} ins ${meta.hut.items.includes(id) ? 'erste' : 'zweite'} Zimmer</button>`).join('')}</div></div>` : ''}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
-    $('#back').onclick = screenTitle; $('#bench').onclick = () => screenStamps(true); $('#garden').onclick = screenGarden;
+    $('#back').onclick = screenTitle; $('#bench').onclick = () => screenStamps(true); if ($('#garden')) $('#garden').onclick = screenGarden;
     app.querySelectorAll('[data-move]').forEach((b) => { b.onclick = () => { const id = b.dataset.move; const h = meta.hut; h.items = h.items.includes(id) ? h.items.filter((x) => x !== id) : h.items.concat(id); saveAll(); screenHut(); }; });
   }
   function screenWardrobe(heroId) {
+    depth = 2;
     const heroes = MODE_KEYS.flatMap((m) => MODES[m].starters).filter((s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i);
     const hero = heroes.find((s) => s.id === heroId) || heroes.find((s) => s.id === meta.lastStarter[mode]) || heroes[0];
     const worn = wornBy(hero.id);
@@ -1559,6 +1672,7 @@
   const partOf = (key) => { const [, slot, id] = key.split('-'); const p = TOP[slot] && TOP[slot].find((x) => x.id === id); return p ? Object.assign({ slot }, p) : null; };
   const TOP_ROWS = [['tip', 'Spitze', 'Wucht', 'So viel Schwung verliert der andere Kreisel bei jeder richtigen Antwort.'], ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`], ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.']];
   function screenTop() {
+    depth = 2;
     const s = CFG().starters.find((x) => x.id === meta.lastStarter[mode]) || CFG().starters[0]; const color = TYPES[s.type].color;
     const need = (p) => (p.chest ? `Liegt in einer Truhe in Welt ${p.chest}${p.chest > 2 ? ' von Zahlenquest' : ''}.` : 'Finde Erz im Bergwerk in Zahlenquest oder auf der Baustelle.');
     const tile = (slot, label, p) => { const on = meta.top[slot] === p.id, has = hasPart(slot, p.id);
@@ -1587,6 +1701,7 @@
   const duelAttacks = (p) => { const on = enabledMods(p.mode); const a = duelSpec(p).attacks.filter((x) => on.includes(x.mod)); return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k })); };
   function screenDuel(players) {
     const i = players.length; const p = { name: '', mode: null, hero: null };
+    depth = i ? 2 : 1;
     const units = visSubjects().flatMap((s) => s.modes);
     const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s) && heroShown(p.mode, s)) : []);
     render(`<div class="screen">${topbar(`Duell · Kind ${i + 1} von 2`)}<div class="scroll"><div class="stack">
@@ -1653,7 +1768,7 @@
     const weak = rows.filter((r) => r.t >= 3).sort((a, b) => a.c / a.t - b.c / b.t)[0];
     const done = goals.filter(goalDone).length;
     const text = [`Lernquest, Woche ${wk}`, rows.length ? 'Geübt (richtig von gesamt): ' + rows.map((r) => `${r.label} ${r.c} von ${r.t}`).join(', ') : 'Diese Woche noch nichts geübt.',
-      weak ? `Schwächste Aufgabenart: ${weak.label} (${weak.c} von ${weak.t} richtig)` : '', `Wochenziele: ${done} von ${goals.length} erledigt`].filter(Boolean).join('\n');
+      weak ? `Schwächste Aufgabenart: ${weak.label} (${weak.c} von ${weak.t} richtig)` : '', extraOn('wochenziele') ? `Wochenziele: ${done} von ${goals.length} erledigt` : ''].filter(Boolean).join('\n');
     return { text, wk, rows, goals, done };
   }
   /* ---------- Schulgarten ---------- */
@@ -1699,6 +1814,7 @@
       <rect x="3" y="63" width="74" height="13" rx="3" fill="url(#pg-bd)" ${ln(2)}/><path d="M6 65.5h68" stroke="#E2B07A" stroke-width="1" stroke-linecap="round"/><path d="M10 70q18-2 32 0M46 73q12 1 24-1" stroke="#6E4526" stroke-width=".8" fill="none" opacity=".6"/><circle cx="7.5" cy="69.5" r="1" fill="#5E646E"/><circle cx="72.5" cy="69.5" r="1" fill="#5E646E"/></svg>`);
   }
   function screenGarden() {
+    depth = 1;
     const bed = (b, i) => {
       if (!bedOpen(i)) return `<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
       if (!b.crop) return `<div class="bed">${plantSVG(null, 0)}<div class="bedname">Beet ${i + 1}</div><div class="beddesc">Noch leer.</div><button class="btn small" data-plant="${i}">Pflanzen</button></div>`;
@@ -1738,7 +1854,7 @@
   const ICO = { chart: '<path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/>', book: '<path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h12M9 8h6"/>', sliders: '<path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="3"/><circle cx="8" cy="17" r="3"/>',
     next: '<path d="M9 5l7 7-7 7"/>', back: '<path d="M15 5l-7 7 7 7"/>', warn: '<path d="M12 3l10 18H2zM12 10v5M12 18v.5"/>' };
   const ico = (n) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`;
-  const P_TABS = { overview: ['Überblick', 'chart', { week: 'Diese Woche', all: 'Insgesamt' }], practice: ['Inhalte', 'book', { subjects: 'Fächer', how: 'So lernt Ihr Kind' }], settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', reset: 'Löschen' }] };
+  const P_TABS = { overview: ['Überblick', 'chart', { week: 'Diese Woche', all: 'Insgesamt' }], practice: ['Inhalte', 'book', { subjects: 'Fächer', how: 'So lernt Ihr Kind' }], settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', show: 'Anzeigen', reset: 'Löschen' }] };
   const P_JUMPS = { load: ['settings', 'save'], save: ['settings', 'save'], appsec: ['settings', 'app'] };
   let pAt;
   const tutOf = (m, k, tier) => { const c = MODES[m]; return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier]; };
@@ -1751,13 +1867,24 @@
     back = typeof back === 'function' ? back : screenTitle;
     if (!quiet) pAt = { tab: 'overview', sub: {}, subj: -1, mode: '' };
     if (P_JUMPS[jump]) { pAt.tab = P_JUMPS[jump][0]; pAt.sub[pAt.tab] = P_JUMPS[jump][1]; }
+    pAt.back = back;
     const tab = pAt.tab; const subs = P_TABS[tab][2]; const sub = subs[pAt.sub[tab]] ? pAt.sub[tab] : Object.keys(subs)[0];
+    depth = sub === 'subjects' && curGrade().subjects[pAt.subj] ? 2 : 1;
     const redraw = (focus) => { screenParent(null, back, true); const el = focus && $(focus); if (el) el.focus({ preventScroll: true }); };
     const switches = () => [...app.querySelectorAll('[role=switch]')];
     const again = () => { const y = $('.scroll').scrollTop; const i = switches().indexOf(document.activeElement); redraw(); $('.scroll').scrollTop = y; if (i >= 0 && switches()[i]) switches()[i].focus({ preventScroll: true }); };
     const card = (h, body, cls) => `<div class="card pcard${cls ? ' ' + cls : ''}">${h ? `<h3>${h}</h3>` : ''}${body}</div>`;
     const note = (t) => `<p class="pnote">${t}</p>`;
     const msg = '<p class="tmsg" role="status"></p>';
+    const speakSettings = () => { const vs = voices(), cur = chosenVoice(), es = enVoices(), ce = enVoice(); const tryBtn = (i, en = '') => `<button class="btn small secondary" data-try${en}="${i}">Probe hören</button>`;
+      if (!TTS) return note('Dieser Browser kann nicht vorlesen.');
+      if (!vs.length) return note('Auf diesem Gerät fehlt eine deutsche Stimme.') + voiceGuide(true);
+      const pick = (list, c, en) => list.map((v, i) => `<div class="pvrow"><button class="pvoice" aria-pressed="${v === c}" data-voice${en}="${i}">${esc(v.name)}</button>${tryBtn(i, en)}</div>`).join('');
+      return (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${pick(vs, cur, '')}</div>` : '')
+        + (es.length > 1 ? `<div class="pset"><b>Stimme für Englisch</b>${pick(es, ce, '-en')}</div>` : '')
+        + `<div class="pset"><label for="prate"><b>Tempo</b></label><input type="range" id="prate" class="prate" min="0.6" max="1.4" step="0.05" value="${meta.speakRate}"><div class="prange" aria-hidden="true"><span>langsam</span><span>schnell</span></div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>`
+        + (es.length ? '' : note('Für Englisch ist keine englische Stimme auf dem Gerät. Bis eine geladen ist, liest die deutsche Stimme die englischen Wörter. Wie das geht, steht unten.'))
+        + voiceGuide(false); };
     const sw = (on, attr, title, desc) => `<div class="prow"><div class="ptext"><b>${title}</b>${desc || ''}</div><button class="switch" role="switch" aria-checked="${!!on}" aria-label="${title.replace(/<[^>]+>/g, '')}" ${attr}><i></i></button></div>`;
     const stat = (n, v) => `<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
     const level = (c, t) => (c / t >= 0.8 ? '<span class="lvl good">sicher</span>' : c / t >= 0.5 ? '<span class="lvl mid">fast sicher</span>' : '<span class="lvl low">übt noch</span>');
@@ -1773,7 +1900,7 @@
         const weak = r.rows.filter((x) => x.t >= 3 && x.c / x.t < 0.8).sort((a, b) => a.c / a.t - b.c / b.t).slice(0, 3);
         return card(`Kalenderwoche ${r.wk}`, r.rows.length ? `<p class="plead">${sum('t')} Aufgaben gelöst, ${sum('c')} davon richtig.</p>${note('Gezählt wird seit Montag.')}` : note('Diese Woche wurde noch nichts geübt.'))
           + card('Braucht noch Übung', weak.length ? weak.map((x) => srow(x.icon, x.label, x.c, x.t)).join('') : note(r.rows.some((x) => x.t >= 3) ? 'Im Moment nichts. Alles, was diese Woche geübt wurde, klappt sicher.' : 'Noch zu wenig geübt für eine Auswertung.'))
-          + card('Wochenziele', `${note(`${r.done} von ${r.goals.length} erledigt. Für alle Wochenziele zusammen gibt es 10 Stempel.`)}${r.goals.map((g) => stat(esc(goalText(g)), `${Math.min(goalCount(g), g.n)} von ${g.n}`)).join('')}`)
+          + (extraOn('wochenziele') ? card('Wochenziele', `${note(`${r.done} von ${r.goals.length} erledigt. Für alle Wochenziele zusammen gibt es 10 Stempel.`)}${r.goals.map((g) => stat(esc(goalText(g)), `${Math.min(goalCount(g), g.n)} von ${g.n}`)).join('')}`) : '')
           + (r.rows.length ? card('Alles, was diese Woche geübt wurde', LEGEND + r.rows.map((x) => srow(x.icon, x.label, x.c, x.t)).join('')) : '')
           + card('Wochenbericht als Text', `${note('Zum Weitergeben, zum Beispiel an die Lehrerin oder den Lehrer. Es steht kein Name darin.')}<label for="wtext" class="sr-only">Wochenbericht</label><textarea id="wtext" class="codebox reporttext" rows="6" readonly>${esc(r.text)}</textarea><button class="btn small" id="wcopy">Text kopieren</button><p id="wmsg" role="status" class="pnote"></p>`);
       },
@@ -1789,16 +1916,17 @@
       subjects() {
         const S = curGrade().subjects;
         if (!S[pAt.subj]) return card('', `<p class="plead">Lernquest merkt, was Ihr Kind schon kann, und stellt passende Aufgaben: nicht zu leicht und nicht zu schwer.</p><button class="linkbtn" data-ps="how">So lernt Ihr Kind mit Lernquest</button>`)
-          + (CURRICULUM.length > 1 ? card('Klasse', gradeTabs()) : '')
+          + (grades().length > 1 ? card('Klasse', gradeTabs()) : '')
           + card('Was soll geübt werden?', `${note('Tippen Sie auf ein Fach. Dort sehen Sie, was jede Aufgabenart übt, und können Themen, Helden und Aufgabenarten ein- oder ausschalten.')}${S.map((s, i) => { const vis = s.modes.filter(shown).length;
             return `<button class="pnav" data-pf="${i}"><span class="ptext"><b>${s.icon} ${esc(s.subject)}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`; }).join('')}`);
         const s = S[pAt.subj]; const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0]; const c = MODES[m]; const keys = Object.keys(c.modules); const plan = ELTERN.PLAN[m];
         return `<button class="pback" id="pback">${ico('back')}Alle Fächer</button>`
           + (s.modes.length > 1 ? card(`${s.icon} ${esc(s.subject)}`, sw(s.modes.some(shown), `data-hidesub="${pAt.subj}"`, 'Fach anzeigen', '<span>Ausgeschaltet erscheint das ganze Fach nicht mehr auf der Startseite.</span>') + msg)
+            + (s.subject === 'Englisch' ? card('Themen aus dem Unterricht', `${note('Ausgeschaltete Themen kommen in beiden Englisch-Themen nicht mehr vor, auch nicht in Sätzen. Sätze ohne Themenwort bleiben immer an. Mindestens ein Thema bleibt an.')}${Object.keys(MK.EN_THEMES).map((t) => sw(!meta.hidden.includes('en:' + t), `data-hide="en:${esc(t)}"`, esc(t), `<span>${MK.EN_THEMES[t].slice(0, 4).map((x) => esc(x[0])).join(', ')} …</span>`)).join('')}${msg}`) : '')
             + `<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => `<button role="tab" data-pm="${x}" aria-selected="${x === m}" class="${shown(x) ? '' : 'off'}">${MODES[x].icon} ${esc(MODES[x].title)}</button>`).join('')}</div>` : '')
           + card(`${c.icon} ${esc(c.title)}`, `<p>${esc(c.sub)}</p>${plan ? `<p class="pplan"><b>Lehrplan Sachsen:</b> ${esc(plan)}</p>` : ''}${sw(shown(m), `data-hide="mode:${m}"`, 'Thema anzeigen', '<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>')}${msg}`)
           + (c.starters.length > 1 ? card('Helden', `${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), `data-hide="hero:${m}:${x.id}"`, esc(x.names[0]), `<span>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].map(esc).join(', ')}</span>`)).join('')}${msg}`) : '')
-          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
+          + card('Aufgabenarten', `${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), `data-m="${m}" data-k="${k}"`, `${c.modules[k].icon} ${esc(c.modules[k].name)}`, `<span>${esc(ELTERN.INFO[m][k])}</span><button class="linkbtn" data-info="${k}">Beispiel ansehen</button>`)).join('')}${msg}`);
       },
       how: () => card('Lernquest passt sich an', '<p>Lernquest merkt, was Ihr Kind schon kann. Läuft es gut, werden die Aufgaben schwerer. Hakt es, werden sie leichter. So bleibt das Üben weder langweilig noch zu schwer.</p><p>Es gibt keine Uhr und keinen Zeitdruck.</p>')
         + card('Was ist eine Stufe?', '<p>Jede Aufgabenart hat Stufen, von leicht nach schwer.</p><p>Beispiel Addition: Auf Stufe 1 steht 23 + 45, auf Stufe 3 steht 234 + 152.</p><p>Lernquest merkt sich die Stufe. Ein neues Abenteuer beginnt zum Aufwärmen eine Stufe tiefer.</p>')
@@ -1807,15 +1935,17 @@
         + card('Was passiert bei einem Fehler?', '<p>Ihr Kind sieht sofort die richtige Lösung. Niemand schimpft, es geht einfach weiter.</p><p>Wissensfragen, die falsch waren, kommen bald wieder, bis sie sitzen.</p>')
         + card('Wie lernt mein Kind eine neue Aufgabenart?', '<p>Beim ersten Mal erklärt Lernquest die Aufgabenart in drei bis vier kurzen Schritten mit einem Beispiel.</p><p>Dieselben Erklärungen finden Sie unter „Fächer“ bei jeder Aufgabenart: „Beispiel ansehen“.</p>'),
       save: () => (backupDue() ? `<div class="card warncard pwarn" id="pwarn">${ico('warn')}<p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>` : '')
-        + card('Spielstand sichern', `${note('Der Code enthält den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)
-        + `<div id="p-load">${card('Spielstand laden', `<label for="pcodein" class="pnote">Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('<b>Zusammenlegen</b> behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. <b>Ersetzen</b> überschreibt alles auf diesem Gerät. Vor beidem fragt Lernquest noch einmal nach.')}`)}</div>`
+        + card('Spielstand sichern', `${note('Die Datei und der Code enthalten den ganzen Spielstand. Damit lässt er sich auf einem anderen Gerät laden oder später zurückholen.')}<button class="btn small" id="pexport">Spielstand sichern</button><div id="pout"></div>`)
+        + `<div id="p-load">${card('Spielstand laden', `<input type="file" id="pfilein" class="sr-only" accept="text/plain,.txt"><label for="pfilein" class="btn small">Datei auswählen</label>${note('Die Datei „Lernquest-Spielstand-….txt“ aus „Dateien“, „Downloads“ oder einer Nachricht wählen.')}<label for="pcodein" class="pnote">Oder Code einfügen</label><textarea id="pcodein" class="codebox" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><p id="pimsg" role="status" class="cmsg"></p><div class="row"><button class="btn small" id="pmerge">Zusammenlegen</button><button class="btn small secondary" id="preplace">Ersetzen</button></div>${note('<b>Zusammenlegen</b> behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. <b>Ersetzen</b> überschreibt alles auf diesem Gerät. Vor beidem fragt Lernquest noch einmal nach.')}`)}</div>`
         + card('Speicher', note(meta.storage.persisted ? 'Dieser Browser hebt den Spielstand dauerhaft auf.' : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.')),
       app: () => card('Töne', sw(meta.sound, 'id="psound"', 'Töne an', '<span>Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</span>'))
-          + card('Vorlesen', sw(meta.speak, 'id="pspeak"', 'Aufgaben vorlesen', '<span>Ein Knopf bei jeder Aufgabe liest Frage und Antworten vor, in Klasse 1 und 2 von selbst. Es spricht die Stimme Ihres Geräts, ohne Internet.</span>'))
+          + card('Vorlesen', sw(meta.speak, 'id="pspeak"', 'Aufgaben vorlesen', '<span>Ein Knopf bei jeder Aufgabe liest Frage und Antworten vor, in Klasse 1 und 2 von selbst. Es spricht nur eine Stimme, die auf Ihrem Gerät gespeichert ist, ohne Internet.</span>') + (meta.speak ? speakSettings() : ''))
         + card('Eltern-PIN', meta.pin ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>` : `${note('Noch keine PIN festgelegt. Ohne PIN kann jeder hier alles ändern.')}<button class="btn small" id="pset">PIN festlegen</button>`)
         + card('Erklärungen', `${note('Jede Aufgabenart erklärt sich beim ersten Mal selbst. Hier können Sie alle Erklärungen noch einmal zeigen lassen.')}<button class="btn small secondary" id="rtut">Erklärungen wieder zeigen</button>${msg}`)
         + card('Idee oder Fehler', `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`)
         + `<p class="center muted">Lernquest, Version ${esc((document.querySelector('meta[name=app-version]') || {}).content || '?')}</p>`,
+      show: () => card('Klassen', `${note('Ausgeschaltete Klassen verschwinden von der Startseite. Mindestens eine bleibt an.')}${CURRICULUM.map((g) => sw(grades().includes(g), `data-hide="grade:${g.grade}"`, esc(g.label), `<span>${g.subjects.map((x) => esc(x.subject)).join(', ')}</span>`)).join('')}${msg}`)
+        + card('Extras', `${note('Ausgeschaltete Extras verschwinden von der Startseite und kommen in neuen Abenteuern nicht mehr vor. Was Ihr Kind dort schon gesammelt hat, bleibt gespeichert.')}${Object.entries(EXTRAS).map(([k, [t, d]]) => sw(extraOn(k), `data-hide="extra:${k}"`, esc(t), `<span>${esc(d)}</span>`)).join('')}`),
       reset: () => card('', `<p class="plead">Hier wird gelöscht. Vor jedem Löschen fragt Lernquest noch einmal nach.</p>${note('Tipp: Sichern Sie vorher den Spielstand unter „Spielstand“.')}`)
         + card('Statistik zurücksetzen', `${note('Löscht nur die Zahlen unter „Überblick“. Stempel, Monsterbuch und laufende Abenteuer bleiben.')}<button class="btn small secondary" id="rstats">Statistik zurücksetzen</button>`)
         + card('Alles löschen', `${note('Setzt Lernquest ganz auf Anfang: Abenteuer, Stempel, Monsterbuch, Statistik und Einstellungen.')}<button class="btn small danger" id="rall">Alles löschen</button>`),
@@ -1841,6 +1971,14 @@
     on('#pnew, #pset, #pchange', newPin);
     on('#pdel', () => confirmBox('PIN entfernen?', '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>', 'Ja, PIN entfernen', () => { meta.pin = ''; saveAll(); again(); }, true));
     on('#pspeak', () => { meta.speak = !meta.speak; saveAll(); again(); });
+    const sample = (v) => speak('Hallo! So klingt diese Stimme.', v);
+    const sampleEn = 'Hello! This is how I sound.';
+    on('[data-try]', (b) => sample(voices()[+b.dataset.try]));
+    on('[data-voice]', (b) => { const v = voices()[+b.dataset.voice]; if (!v) return; meta.voiceName = v.name; saveAll(); again(); sample(v); });
+    on('[data-try-en]', (b) => { const v = enVoices()[+b.dataset.tryEn]; speak(sampleEn, voice(), [sampleEn], v); });
+    on('[data-voice-en]', (b) => { const v = enVoices()[+b.dataset.voiceEn]; if (!v) return; meta.voiceEn = v.name; saveAll(); again(); speak(sampleEn, voice(), [sampleEn], v); });
+    const rate = $('#prate'); if (rate) rate.onchange = () => { meta.speakRate = +rate.value; saveAll(); sample(chosenVoice()); };
+    if (TTS) TTS.onvoiceschanged = () => { if ($('#pspeak')) again(); }; // some browsers deliver their voices late
     on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
     on('#pfeedback', () => screenFeedback(() => screenParent('appsec', back)));
@@ -1852,17 +1990,28 @@
     on('#pexport', async () => {
       meta.backupAt = new Date().toISOString(); saveAll(); if ($('#pwarn')) $('#pwarn').remove();
       const full = saveData(false); const code = await packSave(full); const link = (c) => SITE + '#lade=' + c;
-      let qr = QR.svg(link(code), 'QR-Code mit dem Spielstand'), short = false;
-      if (!qr) { qr = QR.svg(link(await packSave(saveData(true))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
-      $('#pout').innerHTML = `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
-        ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer, den ganzen Spielstand gibt es nur mit dem Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte den Code benutzen.')}`;
+      let qr = QR.svg(link(qrCode(code)), 'QR-Code mit dem Spielstand'), short = false;
+      if (!qr) { qr = QR.svg(link(qrCode(await packSave(saveData(true)))), 'QR-Code mit einer Kurzfassung des Spielstands'); short = !!qr; }
+      $('#pout').innerHTML = `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pfile">Als Datei sichern</button><button class="btn small secondary" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
+        ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer. Den ganzen Spielstand gibt es als Datei oder Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte die Datei oder den Code benutzen.')}`;
       $('#pcopy').onclick = () => copy(code, '#pcode', '#pcmsg');
+      // .txt: Android shares only known file types, the iPhone file picker greys out unknown ones; the link line is what unpackSave reads
+      const d = new Date(full.at), day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const file = new File([`Lernquest-Spielstand vom ${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}\nIn Lernquest unter Eltern › Einstellungen › Spielstand „Datei auswählen“ tippen und diese Datei wählen.\n${link(code)}\n`], `Lernquest-Spielstand-${day}.txt`, { type: 'text/plain' });
+      const download = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1e4); $('#pcmsg').textContent = 'Die Datei liegt im Download-Ordner.'; };
+      // share inside the tap itself: iOS refuses it after an await; the iPhone app has no downloads, so sharing comes first
+      $('#pfile').onclick = () => (navigator.canShare && navigator.canShare({ files: [file] }) ? navigator.share({ files: [file], title: 'Lernquest-Spielstand' }).catch((e) => { if (e.name !== 'AbortError') download(); }) : download());
       if ($('#pshare')) $('#pshare').onclick = () => navigator.share({ title: 'Lernquest-Spielstand', text: link(code) }).catch(() => { });
     });
     const readCode = async (how) => {
-      let s; try { s = await unpackSave($('#pcodein').value); } catch (e) { $('#pimsg').textContent = e.message; return; }
+      let s; try { s = await unpackSave($('#pcodein').value); } catch (e) { $('#pimsg').classList.remove('ok'); $('#pimsg').textContent = e.message; return; }
       if (how === 'merge') confirmBox('Spielstände zusammenlegen?', `${summaryHtml(s)}<p>Alles auf diesem Gerät bleibt. Dazu kommt, was in diesem Spielstand mehr ist.</p>`, 'Ja, zusammenlegen', () => applySave(s, how));
       else confirmBox('Alles ersetzen?', `${summaryHtml(s)}<p>Alles auf diesem Gerät wird durch diesen Spielstand ersetzt. Das kann man nicht rückgängig machen.</p>`, 'Ja, ersetzen', () => applySave(s, how), true);
+    };
+    if ($('#pfilein')) $('#pfilein').onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return; const msg = $('#pimsg'); msg.classList.remove('ok');
+      try { if (f.size > 5e6) throw 0; const text = await f.text(); await unpackSave(text); $('#pcodein').value = text; msg.textContent = 'Datei gelesen. Jetzt „Zusammenlegen“ oder „Ersetzen“ wählen.'; msg.classList.add('ok'); } catch (err) { msg.textContent = 'Das ist keine Lernquest-Datei. Bitte die Datei „Lernquest-Spielstand-….txt“ wählen.'; }
+      e.target.value = '';
     };
     on('#pmerge', () => readCode('merge')); on('#preplace', () => readCode('replace'));
     if (jump === 'load') { const el = $('#p-load'); const sc = $('.scroll'); sc.scrollTop = el.offsetTop - sc.offsetTop - 8; $('#pcodein').focus({ preventScroll: true }); }
@@ -1876,9 +2025,11 @@
     on('[data-hide]', (b) => {
       const key = b.dataset.hide; const hide = !meta.hidden.includes(key); const [kind, m, id] = key.split(':');
       if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
+      if (hide && kind === 'en' && Object.keys(MK.EN_THEMES).every((t) => t === m || enOff().includes(t))) return say(b, 'Mindestens ein Thema muss an bleiben.');
+      if (hide && kind === 'grade' && grades().length < 2) return say(b, 'Mindestens eine Klasse muss sichtbar bleiben.');
       // a hero that is a reward does not count: it may still be locked
       if (hide && kind === 'hero' && !REWARDS.some((r) => r.hero === id) && !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))) return say(b, 'Mindestens ein Held muss bleiben.');
-      setHidden([key], hide); saveAll(); again(); });
+      setHidden([key], hide); meta.grade = curGrade().grade; saveAll(); again(); });
     on('[data-hidesub]', (b) => {
       const keys = curGrade().subjects[+b.dataset.hidesub].modes.map((m) => 'mode:' + m); const hide = keys.some((k) => !meta.hidden.includes(k));
       if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
@@ -1889,6 +2040,7 @@
   // The only external request. If sending fails, the prefilled form opens in a new tab.
   const FEEDBACK = { form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw', entry: 'entry.1794178349' };
   function screenFeedback(back) {
+    depth++;
     back = typeof back === 'function' ? back : screenTitle;
     render(`<div class="screen">${topbar('Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>

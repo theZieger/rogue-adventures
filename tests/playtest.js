@@ -4,11 +4,11 @@ const fs = require('fs');
 const html = fs.readFileSync(require('path').join(__dirname,'../docs/index.html'),'utf8');
 // Seeded randomness (game and bot), so a failing run can be reproduced: SEED=123 node tests/playtest.js
 const SEED=+(process.env.SEED||20261108);
-// W3=1: continue a Zahlenquest adventure in world 3 whose hero has the written methods as attacks
+// W3=1: continue a Zahlenquest adventure in world 3 whose hero has the written methods as attacks (W3ATK=kopf,ueber,… picks others)
 const W3=process.env.W3==='1';
 // OFF=a,b: these task types are switched off in the parent area, so the hero fights with the others
 const OFF=process.env.OFF||'';
-const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:[{name:'Turmbau',mod:'sadd'},{name:'Auffüller',mod:'ssub'},{name:'Lawine',mod:'smul'},{name:'Halbmond',mod:'bruch'}] }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
+const w3run=()=>{ const MQ=require('../src/logic.js'); return JSON.stringify({ mode:'math', world:3, floor:1, map:MQ.makeMap(), hero:{ id:'fuchs', evo:2, level:9, xp:0, hp:150, maxHp:150, attacks:(process.env.W3ATK||'sadd,ssub,smul,bruch').split(',').map(mod=>({name:MQ.EXTRA_ATTACKS[mod],mod})) }, items:['trank'], tiers:Object.fromEntries(MQ.MODULE_KEYS.map(k=>[k,1])), path:[], shield:false }); };
 function prng(seed){ let a=seed|0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
 Math.random=prng(SEED+1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
@@ -78,6 +78,7 @@ async function solveTask(forceWrong){
     else if(m=s.match(/^(\d+) \+ (\d+)(?: \+ (\d+))? = \?$/)) answers=[+m[1]+ +m[2]+(m[3]?+m[3]:0)];
     else if(m=s.match(/^(\d+) − (\d+) = \?$/)) answers=[+m[1]-m[2]];
     else if(m=s.match(/^(\d+) − \? = (\d+)$/)) answers=[+m[1]-m[2]];
+    else if(m=s.match(/^(\d+) \+ \? = (\d+)$/)) answers=[+m[2]-m[1]];
     else if(m=s.match(/^(\d+) · (\d+) = \?$/)) answers=[+m[1]*m[2]];
     else if(m=s.match(/^\? · (\d+) = (\d+)$/)||s.match(/^(\d+) · \? = (\d+)$/)) answers=[+m[2]/m[1]];
     else if(m=s.match(/^(\d+) : (\d+) = \?$/)) answers=inps.length===2?[Math.floor(m[1]/m[2]),m[1]%m[2]]:[+m[1]/m[2]];
@@ -116,6 +117,8 @@ async function solveTask(forceWrong){
 function mathChoice(t){ const q=$('.question').textContent, opts=$$('.opt').map(b=>b.textContent); let m, a=null;
   if(m=q.match(/^Ist (\d+) durch (\d+) teilbar\?$/)) a=+m[1]%+m[2]===0?'ja':'nein';
   else if(m=q.match(/^Welche Zahl ist durch (\d+) teilbar\?$/)) a=opts.find(o=>+o%+m[1]===0);
+  else if(m=q.match(/^Setze ein: <, > oder =\. (.+) _+ (\d+)$/)){ const d=m[1].match(/\d+/g).map(Number); const x=d.length===3?100*d[0]+10*d[1]+d[2]:d[0]; a=x<+m[2]?'<':x>+m[2]?'>':'='; }
+  else if(m=q.match(/^Welches Ergebnis kann stimmen\? (\d+) ([+−]) (\d+) = _+$/)){ const r=(n)=>Math.round(n/100)*100; const est=m[2]==='+'?r(+m[1])+r(+m[3]):r(+m[1])-r(+m[3]); a=opts.slice().sort((x,y)=>Math.abs(x-est)-Math.abs(y-est))[0]; }
   else if(m=q.match(/^(\d+) = \? H \? Z \? E$/)) a=opts.find(o=>{ const d=o.match(/\d+/g).map(Number); return 100*d[0]+10*d[1]+d[2]===+m[1]; });
   else return null;
   if(a!==t.answer) throw new Error('bot and game disagree on '+q); return a; }
@@ -127,6 +130,7 @@ async function solveKnow(forceWrong){
   else if(t.kind==='order'){ let order=t.order.slice();
     // Deutsch: work the order out from what is on screen, not from the task object
     const shown=$$('.oitem').map(b=>({id:b.dataset.id,text:b.textContent.trim()}));
+    if(t.mod==='vergl'){ const up=t.q.includes('kleinste'); order=shown.slice().sort((a,b)=>up?a.text-b.text:b.text-a.text).map(x=>x.id); }
     if(t.mod==='abc') order=shown.slice().sort((a,b)=>a.text.slice(0,3).toLowerCase()<b.text.slice(0,3).toLowerCase()?-1:1).map(x=>x.id);
     if(t.mod==='umstell'){ const sentence=$('.question').textContent.match(/„(.+)\.“/)[1].toLowerCase(); const parts=shown.slice().sort((a,b)=>sentence.indexOf(a.text.toLowerCase())-sentence.indexOf(b.text.toLowerCase())); order=[parts[2],parts[1],parts[0]].map(x=>x.id); }
     if(t.mod==='reihe'){ const cal=EN_DAYS.concat(EN_MONTHS); order=shown.slice().sort((a,b)=>cal.indexOf(a.text)-cal.indexOf(b.text)).map(x=>x.id); }
@@ -216,7 +220,7 @@ async function step(){
   if(mode==='math'&&RUNS>1&&(!weekbossFights||!m.weekly.beaten.includes('math')||!done)){ console.error('PLAYTEST FAIL: the bot did not beat the weekly boss and finish a weekly goal'); process.exit(1); }
   if(dilemmas!==consequences){ console.error('PLAYTEST FAIL: a dilemma choice showed no consequence'); process.exit(1); }
   if(!crafted){ console.error('PLAYTEST FAIL: never used the Werkbank'); process.exit(1); }
-  if(W3&&colTasks<4){ console.error('PLAYTEST FAIL: only '+colTasks+' written tasks in world 3'); process.exit(1); }
+  if(W3&&!process.env.W3ATK&&colTasks<4){ console.error('PLAYTEST FAIL: only '+colTasks+' written tasks in world 3'); process.exit(1); }
   if(['woerterwerkstatt','satzbaustelle','ethik','kirchenjahr','ichwelt'].includes(mode)&&readNodes<RUNS){ console.error('PLAYTEST FAIL: Lesestube not played'); process.exit(1); }
   if(mode==='ichwelt'&&!m.stats.ichwelt.welten.t){ console.error('PLAYTEST FAIL: never sorted into the three worlds'); process.exit(1); }
   if(mode==='math'&&!W3&&!arenas){ console.error('PLAYTEST FAIL: never played the Kreisel-Arena'); process.exit(1); }

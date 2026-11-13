@@ -61,8 +61,18 @@ for (const t of samples.instrumente2) {
     if (also.length) fail(`instrument ${i.id}: option ${also} is also right`);
   }
   if (t.instrs) { if (t.options.some((o) => byPic(E.INSTR, o).length !== 1) || byPic(E.INSTR, t.answer)[0].acc !== t.q.slice(10, -1)) fail('instrument tap: ' + t.qid); }
+  // Wiederholung und Gegensatz: the beginning comes back exactly once among the options, the form fits the parts
+  if (t.mod === 'form') {
+    const [a, b, v] = t.parts; const kinds = (c) => [...c].every((x) => E.SHAPES[x]) && c.length === 3;
+    if (!kinds(a) || !kinds(b) || a === b || new Set(a).size < 2) fail('form parts: ' + t.qid);
+    if (t.form) { if (!E.FORMS.includes(t.form) || t.answer !== [...t.form].join(' – ') || t.options.length !== 3) fail('form name: ' + t.qid); }
+    else if (!kinds(v) || new Set([a, b, v]).size !== 3 || [...a].filter((x, j) => x !== v[j]).length !== 1 || t.options.indexOf(t.answer) < 0 || !t.pic.includes('stroke-dasharray')) fail('form repeat: ' + t.qid);
+  }
   if (t.sizes) { const k = t.options.indexOf(t.answer); const want = t.q.includes('tiefer') ? 2 : 1; if (t.sizes[k] !== want) fail('hoch/tief: wrong size picked in ' + t.qid); }
 }
+if (!samples.instrumente2.some((t) => t.form) || !samples.instrumente2.some((t) => t.mod === 'form' && !t.form)) fail('form: both task kinds');
+// Miteinander in Klasse 2: Ausgrenzung and anders sein
+if (!['Die Mannschaftswahl', 'Das fremde Pausenbrot', 'Der Geheimclub'].every((n) => MK.MODES.feste2.events.some((e) => e.dilemma && e.title === n))) fail('feste2: Miteinander dilemma cards missing');
 if (E.INSTR.length < 10) fail('fewer than 10 instruments');
 for (const id of ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel']) if (!E.INSTR.some((i) => i.id === id)) fail('Orff instrument missing: ' + id);
 for (const i of E.INSTR) { if (!E.FAM[i.fam] || !E.HOWS.includes(i.how)) fail('instrument data: ' + i.id); if (Object.keys(E.FAM).filter((f) => f !== i.fam && !(i.notFam || []).includes(f)).length < 1) fail('no wrong family for ' + i.id); }

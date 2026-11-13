@@ -501,6 +501,18 @@ const K12E = (() => {
       ask('Die Sternwarte', 'In der Sternwarte zeigt dir eine Forscherin den Mond durch ein Fernrohr. Sie stellt dir eine Frage und schenkt dir einen Schutzengel.', 'natur', 'staunen', { item: 'engel' }, { xp: 5 }),
       ask('Der Schulgarten', 'Im Schulgarten keimen die Bohnen. Der Hausmeister fragt dich, wie Pflanzen wachsen, und leiht dir seine Lupe.', 'wachsen', 'wachsen', { item: 'lupe' }, { xp: 5 }),
       rest('Die Bank am Teich', 'Am Teich steht eine Bank in der Sonne. Hier ruhst du dich aus.'),
+      dilemma('Die Mannschaftswahl', 'Im Sport werden Mannschaften gewählt. Jonas bleibt immer bis zum Schluss übrig. Heute darfst du wählen.', [
+        ['Ich wähle Jonas zuerst.', 'Jonas strahlt. Er gibt sich beim Spiel besonders viel Mühe.', 'Wie fühlt man sich, wenn man immer übrig bleibt?'],
+        ['Ich wähle die Schnellsten.', 'Deine Mannschaft gewinnt. Jonas steht wieder am Rand.', 'Ist Gewinnen das Wichtigste?'],
+        ['Ich schlage vor, die Mannschaften auszulosen.', 'Das Los mischt alle durch. Niemand bleibt übrig.', 'Wie kann eine Wahl für alle gerecht sein?']]),
+      dilemma('Das fremde Pausenbrot', 'Aylin hat ein Essen dabei, das die anderen nicht kennen. Ein Kind ruft: „Iiih, das riecht komisch!“', [
+        ['Ich frage Aylin, was das ist.', 'Aylin erzählt, dass ihre Oma es kocht. Du darfst probieren.', 'Warum wirkt Neues manchmal fremd?'],
+        ['Ich lache mit.', 'Aylin packt ihr Essen weg und isst nichts mehr.', 'Wie fühlt sich Aylin jetzt?'],
+        ['Ich sage: „Jeder isst, was ihm schmeckt.“', 'Das Kind wird still. Aylin isst weiter.', 'Muss allen dasselbe schmecken?']]),
+      dilemma('Der Geheimclub', 'Deine Freundinnen gründen in der Pause einen Club. Sie sagen: „Lena darf nicht mitmachen. Die ist anders.“', [
+        ['Ich sage: „Dann mache ich auch nicht mit.“', 'Die anderen überlegen. Am nächsten Tag darf Lena dabei sein.', 'Was braucht man, um Nein zu sagen?'],
+        ['Ich mache trotzdem mit.', 'Der Club trifft sich hinter der Turnhalle. Lena sitzt allein auf der Bank.', 'Wie fühlt sich Lena, wenn alle weggehen?'],
+        ['Ich frage, was an Lena anders sein soll.', 'Keiner weiß eine richtige Antwort. Die Kinder werden still.', 'Ist jeder Mensch irgendwie anders?']]),
     ],
   });
 
@@ -510,6 +522,7 @@ const K12E = (() => {
     familien: { title: 'Instrumentenfamilien', lines: ['Saiteninstrumente haben Saiten: Gitarre, Geige und Kontrabass.', 'Blasinstrumente: Man bläst hinein, zum Beispiel in Blockflöte und Trompete.', 'Schlaginstrumente schlägt oder schüttelt man: Trommel, Triangel, Klanghölzer, Glockenspiel, Rassel und Schellenkranz.', 'Tasteninstrumente haben Tasten: Klavier und Orgel.', 'Im Klavier sind auch Saiten. Weil man es mit Tasten spielt, zählt es zu den Tasteninstrumenten.'] },
     spielen: { title: 'So spielt man', lines: ['Zupfen: Die Finger ziehen an der Saite und lassen sie los. So spielt man Gitarre.', 'Streichen: Ein Bogen streicht über die Saiten. So spielt man Geige.', 'Blasen: Man bläst Luft hinein. So spielt man Blockflöte und Trompete.', 'Schlagen: mit der Hand oder einem Schlägel. So spielt man Trommel, Triangel und Glockenspiel.', 'Schütteln: So spielt man Rassel und Schellenkranz.', 'Tasten drücken: So spielt man Klavier.'] },
     laut: { title: 'Laut und leise, schnell und langsam', lines: ['Musik kann laut, mittellaut oder leise sein.', 'Ein Schlaflied singt man leise und langsam.', 'Ein Marsch oder ein Gewitter in der Musik klingt laut.', 'Musik kann schnell, mäßig oder langsam sein.', 'Zu einer flinken Maus passt schnelle Musik, zu einer Schnecke langsame.'] },
+    form: { title: 'Wiederholung und Gegensatz', lines: ['Ein Musikstück hat Teile. Manche Teile kommen wieder.', 'Kommt ein Teil noch einmal, ist das eine Wiederholung. Er bekommt denselben Buchstaben: A und A.', 'Ein ganz anderer Teil ist ein Gegensatz. Er bekommt einen neuen Buchstaben: B.', 'A – B – A heißt: Anfang, Gegensatz, dann der Anfang noch einmal.'] },
     hoch: { title: 'Hohe und tiefe Töne', lines: ['Große Instrumente klingen meist tief, kleine Instrumente hoch.', 'Der Kontrabass klingt tief, die Geige hoch.', 'Eine große Trommel brummt tief, eine kleine klingt höher.', 'Beim Glockenspiel klingen lange Platten tief und kurze Platten hoch.', 'Ein Bär brummt tief, eine Maus piepst hoch.'] },
     stimmen: { title: 'Stimmen', lines: ['Die Stimme ist auch ein Instrument. Jeder hat sie immer dabei.', 'Männer haben meist die tiefsten Stimmen. Frauen- und Kinderstimmen klingen höher.', 'Singt einer allein, heißt das Solo. Singen viele zusammen, ist das ein Chor.', 'Singt die ganze Klasse zusammen, singt sie wie ein Chor.', 'Vor dem Singen: aufrecht stehen oder sitzen und ruhig atmen.'] },
   };
@@ -556,6 +569,7 @@ const K12E = (() => {
   ];
   function gen3(mod, tier, know, seq, opts) {
     if (wantsPool(POOL3, mod, opts)) return null;
+    if (mod === 'form') return formTask();
     const r = Math.random(); const i = pick(INSTR);
     const look = { pic: pic(i.svg, 'Bild eines Instruments'), instr: i.id };
     if (mod === 'bild') {
@@ -572,8 +586,27 @@ const K12E = (() => {
     }
     return null;
   }
+  // Wiederholung und Gegensatz: each part of a piece is a pattern of three shapes; A comes back, B is the contrast
+  const SHAPES = { k: (x) => circ(x, 50, 11, BLUE, 2), q: (x) => rect(x - 10, 40, 20, 20, RED, 3, 2), d: (x) => sh(`M${x} 37 L${x + 13} 61 L${x - 13} 61 Z`, GOLD, 2) };
+  const part = (code, ox) => rect(ox + 4, 22, 92, 56, PAPER, 10, 2) + [...code].map((c, i) => SHAPES[c](ox + 22 + i * 28)).join('');
+  const gap = (ox) => `<rect x="${ox + 4}" y="22" width="92" height="56" rx="10" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="6 5"/><text x="${ox + 50}" y="61" font-size="30" font-weight="700" text-anchor="middle" fill="${INK}">?</text>`;
+  const strip = (codes) => { const inner = codes.map((c, i) => (c ? part(c, i * 100) : gap(i * 100))).join('');
+    return `<svg ${NS} class="pic" viewBox="0 0 300 100" style="max-width:300px" role="img" aria-label="Musikstück aus Mustern">${defs()}${inner}</svg>`; };
+  const mix = (letters) => { for (;;) { const c = Array.from({ length: 3 }, () => pick(letters)).join(''); if (new Set(c).size > 1) return c; } };
+  const FORMS = ['ABA', 'AAB', 'ABB'];
+  const formName = (f) => [...f].join(' – ');
+  function formTask() {
+    const [x, y, z] = shuffle(Object.keys(SHAPES));
+    const a = mix([x, y]), b = pick([z + z + z, mix([z, x]), mix([z, y])]);
+    if (Math.random() < 0.4) { const f = pick(FORMS);
+      return choice('form', 'form', 'Welche Form hat das Musikstück?', formName(f), FORMS.filter((g) => g !== f).map(formName), 'k2mfo_' + f + a + b, { pic: strip([...f].map((c) => (c === 'A' ? a : b))), form: f, parts: [a, b] }); }
+    // the changed copy of A: one shape swapped, so it only looks like the beginning
+    const i = Math.floor(Math.random() * 3), v = a.slice(0, i) + (a[i] === x ? y : x) + a.slice(i + 1);
+    const opt = (c) => optPic(part(c, 0), 'Muster');
+    return choice('form', 'form', 'Welches Muster wiederholt den Anfang?', opt(a), [opt(b), opt(v)], 'k2mfa_' + a + b, { pic: strip([a, b, null]), svgOpts: true, why: 'Am Ende kommt der Anfang wieder:', parts: [a, b, v] });
+  }
   K.MODES.instrumente2 = unit('musik', [{ name: 'Instrumentenschrank', mod: 'bild' }, { name: 'Trommelwirbel', mod: 'spielen' }, { name: 'Glockenspiel', mod: 'hoch' }, { name: 'Paukenschlag', mod: 'laut' }], {
-    grade: 2, subject: 'Musik', title: 'Der Musikraum', icon: '🥁', sub: 'Welches Instrument ist das? Wie spielt man es? Laut und leise, hoch und tief, Stimmen',
+    grade: 2, subject: 'Musik', title: 'Der Musikraum', icon: '🥁', sub: 'Welches Instrument ist das? Wie spielt man es? Laut und leise, hoch und tief, Stimmen, Wiederholung und Gegensatz',
     modules: {
       bild: { name: 'Welches Instrument?', icon: '🎻', maxTier: 1, worldCap: [1], dmg: 12 },
       familie: { name: 'Instrumentenfamilien', icon: '🎹', maxTier: 1, worldCap: [1], dmg: 12 },
@@ -581,14 +614,16 @@ const K12E = (() => {
       laut: { name: 'Laut und leise', icon: '🔊', maxTier: 1, worldCap: [1], dmg: 10 },
       hoch: { name: 'Hoch und tief', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 12 },
       stimme: { name: 'Stimmen', icon: '👥', maxTier: 1, worldCap: [1], dmg: 10 },
+      form: { name: 'Wiederholung und Gegensatz', icon: '🔁', maxTier: 1, worldCap: [1], dmg: 12 },
     },
-    extra: { bild: 'Musikkoffer', familie: 'Stimmgabel', spielen: 'Klanghölzer', laut: 'Becken', hoch: 'Kontrabass', stimme: 'Kanon' },
+    extra: { bild: 'Musikkoffer', familie: 'Stimmgabel', spielen: 'Klanghölzer', laut: 'Becken', hoch: 'Kontrabass', stimme: 'Kanon', form: 'Liedform' },
     tut: {
       'bild:1': { title: 'Welches Instrument?', steps: ['Schau dir das Bild genau an.', 'Hat es Saiten, Tasten, ein Fell oder Löcher für die Finger? Ist es aus Holz oder aus Metall?', 'Tippe auf den richtigen Namen oder das richtige Bild.'] },
       'familie:1': { title: 'Instrumentenfamilien', steps: ['Saiteninstrumente haben Saiten. In Blasinstrumente bläst man hinein.', 'Schlaginstrumente schlägt oder schüttelt man. Tasteninstrumente haben Tasten.', 'Tippe auf die richtige Antwort.'] },
       'spielen:1': { title: 'So spielt man', steps: ['Überlege: Was muss man tun, damit das Instrument klingt?', 'Gitarre: zupfen. Geige: streichen. Flöte und Trompete: blasen.', 'Trommel und Triangel: schlagen. Rassel: schütteln. Klavier: Tasten drücken.', 'Tippe auf die richtige Antwort.'] },
       'laut:1': { title: 'Laut und leise', steps: ['Stell dir die Musik vor: Wer oder was kommt darin vor?', 'Ein schlafendes Baby braucht leise Musik, ein Gewitter klingt laut.', 'Eine Maus huscht schnell, eine Schnecke kriecht langsam.', 'Tippe auf die passende Antwort.'] },
       'hoch:1': { title: 'Hoch und tief', steps: ['Große Instrumente klingen tief, kleine Instrumente hoch.', 'Bei zwei Bildern vergleichst du die Größe: Das größere klingt tiefer.', 'Beim Glockenspiel klingt die lange Platte tief, die kurze hoch.', 'Tippe auf die richtige Antwort.'] },
+      'form:1': { title: 'Wiederholung und Gegensatz', steps: ['Jedes Kästchen ist ein Teil eines Musikstücks.', 'Gleiche Teile bekommen denselben Buchstaben, ein ganz anderer Teil einen neuen.', 'Beispiel: Kreise, Dreiecke, Kreise ist A – B – A. Am Ende kommt der Anfang wieder.', 'Tippe auf die richtige Antwort.'] },
       'stimme:1': { title: 'Stimmen', steps: ['Männerstimmen sind meist tief, Frauen- und Kinderstimmen höher.', 'Einer singt allein: Solo. Viele singen zusammen: Chor.', 'Tippe auf die richtige Antwort.'] },
     },
     notes: NOTES3, pool: POOL3, gen: gen3,
@@ -651,9 +686,10 @@ const K12E = (() => {
     { id: 'stampfen', noun: 'Stampfen', svg: ln('M30 8 V24 M70 8 V24', 2.5, '#9AA3B8') + rect(38, -2, 24, 52, '#5B6CFF', 3) + lit('M43 4 V44', 2)
       + sh('M34 48 H64 V56 Q82 56 86 66 Q88 74 80 74 H32 Q26 74 26 66 V54 Q26 48 34 48 Z', RED) + rect(24, 72, 64, 7, EBONY, 3, 2) + ln('M4 84 H96', 3)
       + ln('M16 78 L6 70 M20 72 L16 62 M92 76 L98 68 M90 68 L92 60', 2.5, '#FF8A3D') },
-    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(36, 80, 30, 20, BLUE, 3) + lit('M41 84 V96', 2)
-      + tube('M60 52 L78 24', 9, SKIN1) + oval(68, 60, 7, 5, SKIN1, 2.2) + oval(68, 71, 7, 5, SKIN1, 2.2)
-      + tube('M42 66 Q26 58 28 40', 11, SKIN1) + tube('M52 56 Q52 28 32 36', 9, SKIN1) + rect(34, 48, 34, 36, SKIN1, 12, 2.2) + ln('M22 32 L13 26 M28 26 L24 15 M20 42 L9 43', 3, '#FF8A3D') },
+    { id: 'schnipsen', noun: 'Schnipsen', svg: rect(46, 84, 30, 16, BLUE, 3) + lit('M51 88 V96', 2)
+      + tube('M66 52 Q58 26 40 18', 9, SKIN1) + rect(42, 48, 38, 38, SKIN1, 13, 2.2) + oval(78, 60, 7, 5.5, SKIN1, 2.2, -10) + oval(78, 72, 7, 5.5, SKIN1, 2.2, -10)
+      + tube('M50 76 Q34 70 30 50', 11, SKIN1) + tube('M58 56 Q46 40 33 43', 9, SKIN1)
+      + sh(star(15, 44, 9, 3.6), GOLD, 2) + ln('M18 28 L12 21 M16 60 L10 66 M28 26 L28 17', 3, '#FF8A3D') },
     { id: 'patschen', noun: 'Patschen', svg: rect(10, 6, 36, 100, '#5B6CFF', 16) + rect(54, 6, 36, 100, '#5B6CFF', 16) + lit('M16 20 V90 M60 20 V90', 2)
       + at(28, 34, 180, 1.15, hand) + at(72, 34, 180, 1.15, left) + ln('M14 14 Q28 4 42 14 M58 14 Q72 4 86 14', 2.5, '#FF8A3D') },
   ];
@@ -784,6 +820,6 @@ const K12E = (() => {
     ],
   });
 
-  return { FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
+  return { SHAPES, FORMS, FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
 })();
 if (typeof module !== 'undefined') module.exports = K12E;

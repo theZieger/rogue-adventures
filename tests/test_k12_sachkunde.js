@@ -74,6 +74,19 @@ for (let i = 0; i < 200; i++) {
   const set = U.laborSet(); if (set.length !== 5) fail('labor set size ' + set.length);
   for (const x of set) if (!Number.isInteger(x.a) || x.a < 0 || x.a >= x.opts.length || !x.note || !K.MODES.natur2.notes[x.topic]) fail('labor experiment ' + x.q);
 }
+// Plan lesen: the asked place is in the legend, its neighbour is the only place on that side, every symbol is a different place
+for (let i = 0; i < 300; i++) {
+  const q = K.generate('natur2', 'plan', 1, {}, ++seq); if (!q.pic || !q.qid.startsWith('sk2n_p')) continue;
+  const shown = S.PLACES.filter((p) => q.pic.includes(p.icon(0, 0)));
+  if (shown.length !== 4 || !q.pic.includes('Legende')) fail('plan: legend ' + q.qid);
+  if (q.svgOpts) { const hits = q.options.map((o) => S.PLACES.filter((p) => o.includes(p.icon(0, 0)))); if (hits.some((h) => h.length !== 1) || q.answer !== q.options[q.options.findIndex((o) => o.includes(S.PLACES.find((p) => p.id === q.qid.slice(8)).icon(0, 0)))]) fail('plan symbol ' + q.qid); }
+  else {
+    const spot = (id) => q.spots.find((x) => x[0] === id); const [from, dc] = q.ask; const [, r, c] = spot(from);
+    const there = q.spots.filter(([, rr, cc]) => rr === r && cc === c + dc);
+    if (there.length !== 1 || q.answer.toLowerCase() !== S.PLACES.find((p) => p.id === there[0][0]).name.toLowerCase() || q.options.some((o) => !shown.some((p) => p.name.toLowerCase() === o.toLowerCase()))) fail('plan neighbour ' + q.qid);
+    if (q.spots.some(([id, rr, cc]) => !q.pic.includes(S.PLACES.find((p) => p.id === id).icon(38 + cc * 66, 42 + rr * 66)))) fail('plan places ' + q.qid);
+  }
+}
 if (!/<svg[^>]*>.+<\/svg>$/.test(U.thermoSVG(-4)) || !U.thermoSVG(-4).includes('−10')) fail('thermometer drawing');
 
 console.log('k12 sachkunde fails', fails.length, fails.slice(0, 20));

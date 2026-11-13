@@ -12,6 +12,16 @@ const plain = (s) => s.replace(/<[^>]+>/g, ' ');
 const norm = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
 // Klasse 3/4 in the Rechtschreibrahmen: ck, tz; Komma and wörtliche Rede are not asked either
 const K3 = /ck|tz/i;
+// what the read-aloud voice reads in a task: the selector is taken from readAloud in app.js, so both stay in step;
+// task.say replaces the question, task.quiet leaves out the options
+const SPOKEN = require('fs').readFileSync(require('path').join(__dirname, '../src/app.js'), 'utf8').match(/function readAloud[\s\S]*?querySelectorAll\('([^']+)'\)/)[1];
+const dom = new JSDOM('').window.document;
+const spoken = (cfg, q) => {
+  const box = dom.createElement('div');
+  box.innerHTML = `<div class="question">${q.q}</div>${q.pic || ''}${(q.options || []).map((o) => `<button class="opt">${o}</button>`).join('')}`;
+  const text = (sel) => [...box.querySelectorAll(sel)].map((e) => e.textContent.trim());
+  return [...(q.say ? [q.say] : text(SPOKEN)), ...(cfg.speakOptions === false || q.quiet ? [] : text('.opt'))].filter(Boolean).join(' ');
+};
 
 for (const [m, grade] of Object.entries(UNITS)) {
   const cfg = K.MODES[m];
@@ -30,11 +40,20 @@ for (const [m, grade] of Object.entries(UNITS)) {
     if (q.kind === 'choice') {
       f(q.options.length >= 2 && q.options.length <= 4, tag + ': 2 to 4 options');
       f(q.options.filter((o) => o === q.answer).length === 1 && new Set(q.options).size === q.options.length, tag + ': not exactly one right option');
-      if (q.svgOpts || q.pic) for (const svg of (q.svgOpts ? q.options : []).concat(q.pic ? [q.pic] : []).map((x) => x.match(/<svg[\s\S]*<\/svg>/)[0])) {
+      for (const svg of (q.svgOpts ? q.options : []).concat(q.pic ? [q.pic] : []).map((x) => (x.match(/<svg[\s\S]*<\/svg>/) || [])[0]).filter(Boolean)) {
         const doc = parser.parseFromString(svg, 'image/svg+xml'); f(!doc.getElementsByTagName('parsererror').length && !/NaN|undefined/.test(svg), tag + ': broken picture');
       }
       if (q.svgOpts) f(new Set(q.options.map((o) => o.replace(/<span[\s\S]*/, ''))).size === q.options.length, tag + ': two pictures look the same');
-    } else f(q.kind === 'order' && q.items.length === 4, tag + ': unknown task kind ' + q.kind);
+    } else f(q.kind === 'order' && q.items.length === (q.group === 'silben:2' ? q.items.length : 4) && q.items.length >= 3, tag + ': unknown task kind or wrong length ' + q.kind);
+    if (q.group === 'silben:2') { const w = D.SILBEN_ORDER.find(([x]) => q.qid === 'l1so_' + x);
+      f(w && q.order.map((id) => q.items.find((x) => x.id === id).text).join('') === w[0].toUpperCase() && q.display.some((x, j) => x.id !== q.order[j]), tag + ': syllable order'); }
+    // the voice says letter names („Es“), not sounds, so Klasse 1 never hears a single letter
+    if (m === 'laute1') f(!/(^|[^\p{L}])\p{L}(?!\p{L})/u.test(spoken(cfg, q)), tag + ': a single letter is read aloud: ' + spoken(cfg, q));
+    // Lesen: the shown letter or word is never read aloud – only the question is
+    if (q.mod === 'lesen') {
+      f(!spoken(cfg, { q: '', pic: q.pic }), tag + ': the shown letter or word is read aloud');
+      if (q.tier === 2) f(spoken(cfg, q) === q.q, tag + ': more than the question is read aloud');
+    }
     K.record(know, q.qid, Math.random() < 0.7, seq);
   }
 }
@@ -52,10 +71,19 @@ D.REIME.forEach((g, i) => { f(new Set(g.map(rime)).size === 1, 'rhyme group does
   D.REIME.forEach((h, j) => { if (j !== i) f(rime(g[0]) !== rime(h[0]), 'groups rhyme with each other: ' + g[0] + ' ' + h[0]); }); });
 for (const pair of D.PIC_REIME) f(pair.every((id) => D.PICS[id]) && D.REIME.some((g) => pair.every((id) => g.includes(D.PICS[id].w))), 'picture rhyme pair ' + pair);
 
+// Lesen: b, d, p, q and g each start their words; Silben ordnen only with different syllables
+for (const [x, ws] of Object.entries(D.MIRROR_WORDS)) f(D.MIRROR.includes(x) && ws.length >= 3 && ws.every((w) => w[0] === x && !K3.test(w)), 'mirror words ' + x);
+f(D.SILBEN_ORDER.length >= 10 && D.SILBEN_ORDER.every(([, syl]) => syl.split('-').length >= 3), 'Silben ordnen: too few words');
+
 // spelling: the wrong form differs from the right one only where the task is about
 const allRight = new Set([].concat(D.BESONDERS, D.DOPPEL, D.ABLEIT).map((x) => x[0]));
 const KIND = { st: /^st/i, sp: /^sp/i, nk: /nk/, qu: /qu/i, x: /x/, ie: /ie/, i: /i/ };
 D.BESONDERS.forEach(([r, w, k]) => { f(r !== w && !allRight.has(w), 'besonders same or real: ' + r); f(KIND[k].test(r) && (k !== 'i' || !/ie/.test(r)), 'besonders without ' + k + ': ' + r); f(!KIND[k].test(w) || k === 'i', 'besonders wrong form keeps ' + k + ': ' + w); });
+// Merkwörter: the mark is in the right form only; no silbentrennendes h (Kl. 3/4) and no wrong form that is a real word
+const MARK = { v: [/v/i, /f/i], ß: [/ß/, /s/], h: [/[aeiouäöü]h/i, /^[^h]*$/], vv: [/aa|ee|oo/, /^(?!.*(aa|ee|oo))/], ai: [/ai/, /ei/], chs: [/chs/, /ks/] };
+const SILB_H = ['Kuh', 'Schuh', 'Reh', 'Zeh', 'Floh', 'froh', 'früh', 'roh', 'gehen', 'sehen', 'stehen', 'drehen', 'Ruhe', 'Weihnachten'];
+D.MERK.forEach(([r, w, k]) => { f(MARK[k] && MARK[k][0].test(r) && !MARK[k][0].test(w) && MARK[k][1].test(w) && !allRight.has(w), 'merkwort ' + r + '/' + w); f(!SILB_H.includes(r) && !K3.test(r + w), 'merkwort Kl. 3/4: ' + r); });
+f(new Set(D.MERK.map((x) => x[2])).size === 6, 'merkwörter: v, ß, h, Doppelvokal, ai and chs');
 D.DOPPEL.forEach(([r, w]) => { const dbl = /(.)\1/.test(r); f(dbl ? r.replace(/(.)\1/, '$1') === w : w.replace(/(.)\1/, '$1') === r, 'doppel pair ' + r + '/' + w); });
 D.VERL.forEach(([w, l]) => f('dtgkbp'.includes(w.slice(-1)) && l.includes('-') && norm(l.replace(/-/g, '')).includes(norm(w).slice(0, -1)), 'verlaengern ' + w));
 D.ABLEIT.forEach(([r, w, b]) => f(/ä/i.test(r) && r.replace(/äu/g, 'eu').replace(/Äu/g, 'Eu').replace(/ä/g, 'e').replace(/Ä/g, 'E') === w && /a/i.test(b), 'ableiten ' + r));
@@ -77,16 +105,21 @@ D.ZUSAMMEN.forEach(([a, b, z]) => { const n = (x) => x.split(' ')[1]; f(n(z) ===
 D.FAMILIEN.forEach(([stem, w, fam, other]) => { f(fam.length >= 3 && fam.every((x) => norm(x).includes(stem)) && norm(w).includes(stem), 'wortfamilie ' + w); f(other.every((x) => !norm(x).includes(stem)), 'wortfamilie distractor has the stem ' + w); });
 D.VS_WORDS.forEach(([w, v]) => f(w.startsWith(v) && w.length > v.length + 3, 'vorsilbe ' + w));
 const fw = Object.values(D.WORTFELDER).flat(); f(new Set(fw).size === fw.length, 'a word in two Wortfelder');
-for (const list of [D.BESONDERS, D.DOPPEL, D.VERL, D.ABLEIT, D.GROSS, D.SATZZ, D.KLEIN, D.MEHRZAHL, D.ZUSAMMEN, D.VS_WORDS, D.REIME, D.SILBEN])
+for (const list of [D.BESONDERS, D.MERK, D.DOPPEL, D.VERL, D.ABLEIT, D.GROSS, D.SATZZ, D.KLEIN, D.MEHRZAHL, D.ZUSAMMEN, D.VS_WORDS, D.REIME, D.SILBEN])
   list.flat(2).filter((x) => typeof x === 'string').forEach((x) => f(!K3.test(x), 'Klasse-3 spelling (ck/tz) in a word list: ' + x));
 [D.NOMEN, D.VERBEN, D.ADJEKTIVE, fw, Object.values(D.ABC_WORDS).flat(), D.FAMILIEN.flat(2)].flat().forEach((x) => f(!K3.test(x), 'ck/tz in a word list: ' + x));
 
 // Lesestube: enough short texts, and the right answer is found in the text
 for (const [g, n] of [[1, 6], [2, 8]]) f(TEXTE.filter((t) => t.grade === g).length >= n, `Lesestube: fewer than ${n} texts for grade ${g}`);
+// poems: the author is in by, Strophen and Verse are counted from the text
 TEXTE.filter((t) => t.grade).forEach((t) => t.qs.forEach((q, i) => {
-  const words = q.o[q.a].toLowerCase().replace(/[.,]/g, '').split(' ').filter((w) => w.length >= 3);
-  f(words.some((w) => t.text.toLowerCase().includes(w)), `Lesestube ${t.id} q${i}: answer not in the text`);
+  const right = q.o[q.a]; const stanzas = t.text.split('\n\n').map((x) => x.split('\n').length);
+  if (/Verse/.test(q.q)) f(t.kind === 'Gedicht' && new Set(stanzas).size === 1 && parseInt(right, 10) === stanzas[0], `Lesestube ${t.id} q${i}: number of Verse`);
+  else if (/Strophen/.test(q.q)) f(t.kind === 'Gedicht' && parseInt(right, 10) === stanzas.length, `Lesestube ${t.id} q${i}: number of Strophen`);
+  else { const words = right.toLowerCase().replace(/[.,]/g, '').split(' ').filter((w) => w.length >= 3);
+    f(words.some((w) => (t.text + ' ' + (t.by || '')).toLowerCase().includes(w)), `Lesestube ${t.id} q${i}: answer not in the text`); }
 }));
+f(TEXTE.filter((t) => t.grade === 2 && t.kind === 'Gedicht').length >= 2, 'Lesestube: fewer than 2 poems for grade 2');
 
 console.log('k12 deutsch fails', fails.length, [...new Set(fails)].slice(0, 30));
 if (fails.length) process.exit(1);

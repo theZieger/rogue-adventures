@@ -4,11 +4,16 @@
 const { JSDOM, VirtualConsole } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
+const QR = require('../src/qr.js');
+const SAVECODE = require('../src/savecode.js');
 const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8');
 
 let fails = 0;
 const check = (cond, msg) => { if (!cond) { fails++; console.log('FAIL', msg); } else console.log('ok  ', msg); };
 
+// opts.voice: one speech voice or a list (w.said collects what was read, w.utter is the last utterance, w.utters those since
+// the last cancel, i.e. one reading); opts.ua: the browser's userAgent;
 // opts.url: page address (e.g. with #lade=); opts.zip: give the page the compression streams jsdom lacks; opts.now: the page's clock
 // Every page is a full copy of the app with its own timers, so an open page is never freed. A case works with at most a
 // few pages at once: keep the last LIVE pages and close older ones (their storage stays readable through dump()), which
@@ -25,7 +30,8 @@ function open(storage, opts) {
     beforeParse(w) {
       for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message));
       if (opts.zip) Object.assign(w, { CompressionStream, DecompressionStream, Response, TextEncoder });
-      if (opts.voice) { w.said = []; w.speechSynthesis = { getVoices: () => [opts.voice], cancel() {}, speak(u) { w.said.push(u.text); } }; w.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } }; }
+      if (opts.voice) { w.said = []; w.utters = []; w.speechSynthesis = { getVoices: () => [].concat(opts.voice), cancel() { w.utters = []; }, speak(u) { w.said.push(u.text); w.utter = u; w.utters.push(u); } }; w.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } }; }
+      if (opts.ua) Object.defineProperty(w.navigator, 'userAgent', { value: opts.ua });
       if (opts.now) { const D = w.Date, now = Date.parse(opts.now); w.Date = class extends D { constructor(...a) { super(...(a.length ? a : [now])); } static now() { return now; } }; }
     },
   });
@@ -113,7 +119,10 @@ function answer(p, right, atk) {
   if (p.$('#tutok')) p.click('#tutok');
   p.click(atk || '.atk[data-i="0"]');
   if (p.$('#tutok')) p.click('#tutok');
-  const ans = p.w.__task.answers.map((a) => (right ? a : a + 1));
+  const t = p.w.__task;
+  // weekly goals are drawn from all task types, so the goal type may be a choice task (e.g. Teilbarkeit)
+  if (t.kind === 'choice') { const i = t.options.findIndex((o) => (o === t.answer) === right); p.click(p.d.querySelectorAll('.opt')[i]); return; }
+  const ans = t.answers.map((a) => (right ? a : a + 1));
   const inps = [...p.d.querySelectorAll('.inp')];
   ans.forEach((a, i) => { inps[i].click(); for (const ch of String(a)) p.click(`.numpad [data-k="${ch}"]`); });
   p.click('.numpad [data-k="ok"]');
@@ -299,6 +308,57 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
 // 12. Save code: export, import (replace/merge), broken codes, link import, backup reminder
 const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
 const until = async (fn) => { for (let i = 0; i < 100 && !fn(); i++) await sleep(10); return fn(); };
+// the code as versions before LQ2 made it, and the QR form of an LQ2 code
+const lq1 = (data) => 'LQ1.' + zlib.deflateRawSync(JSON.stringify(data)).toString('base64url');
+const lq2qr = (code) => 'LQ2:' + SAVECODE.to42(Buffer.from(code.slice(4), 'base64url'));
+// a save after many adventures in every unit: all task types practised, nKnow answered questions, Monsterbuch, tutorials, weekly tally
+function busyMeta(p, nKnow) {
+  const m = JSON.parse(JSON.stringify(p.w.__mq.meta)); const MQ = p.w.eval('MQ'), MK = p.w.eval('MK');
+  let seed = 1; const r = (k) => (seed = seed * 16807 % 2147483647) % k;
+  for (const [g, s] of Object.entries(m.stats)) for (const [k, st] of Object.entries(s)) {
+    st.t = 5 + r(60); st.c = st.t - r(5); st.hist = Array.from({ length: r(41) }, () => +(r(5) > 0));
+    m.seenTut[`${g}:${k}:1`] = true; m.weekly.tally[`${g}:${k}`] = { c: r(9), t: 9 }; (m.level[g] = m.level[g] || {})[k] = 1 + r(4);
+  }
+  const ids = Object.values(MK.MODES).flatMap((c) => c.pool || []).map((q) => q.id);
+  for (let i = 0; i < nKnow; i++) { const t = 1 + r(6); m.know[ids[i] || 'gk_das Wort ' + i] = { c: r(t + 1), t, ws: r(3), last: i * 3 + r(3) }; }
+  m.knowSeq = nKnow * 3 + 3;
+  const mons = []; const walk = (v) => { if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v === 'object') { if (v.name && v.shape) mons.push(v); Object.values(v).forEach(walk); } };
+  walk([MQ.ENEMIES, MQ.BAU.ENEMIES, Object.values(MK.MODES).map((c) => c.enemies)]);
+  for (const e of mons.slice(0, nKnow / 5)) m.dex[e.name] = { type: e.type, shape: e.shape, world: 1 + r(2), mode: 'math' };
+  Object.assign(m, { runs: 60, wins: 40, stamps: 456, stampsTotal: 600, owned: { 'top-disc-eisen': true, 'hut-dachfenster': true }, materials: { holz: 10, erz: 9 } });
+  return m;
+}
+// reads text and modes back from a QR matrix, versions 1–5 only (one block, at most one alignment pattern)
+function qrRead(m) {
+  const n = m.length, v = (n - 17) / 4, AL = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  const fb = [0, 1, 2, 3, 4, 5].map((i) => m[i][8]).concat([m[7][8], m[8][8], m[8][7]], [9, 10, 11, 12, 13, 14].map((i) => m[8][14 - i]));
+  const f = fb.reduce((a, b, i) => a | (+b << i), 0) ^ 0x5412; const mask = (f >> 10) & 7;
+  const flip = [(x, y) => (x + y) % 2, (x, y) => y % 2, (x, y) => x % 3, (x, y) => (x + y) % 3, (x, y) => (Math.floor(y / 2) + Math.floor(x / 3)) % 2,
+    (x, y) => (x * y) % 2 + (x * y) % 3, (x, y) => ((x * y) % 2 + (x * y) % 3) % 2, (x, y) => ((x + y) % 2 + (x * y) % 3) % 2][mask];
+  const fn = (x, y) => (x < 9 && y < 9) || (x >= n - 8 && y < 9) || (x < 9 && y >= n - 8) || x === 6 || y === 6 || (v > 1 && Math.abs(x - (n - 7)) <= 2 && Math.abs(y - (n - 7)) <= 2);
+  const bits = [];
+  for (let right = n - 1; right >= 1; right -= 2) { if (right === 6) right = 5; for (let k = 0; k < n; k++) for (let j = 0; j < 2; j++) { const x = right - j, y = ((right + 1) & 2) === 0 ? n - 1 - k : k; if (!fn(x, y)) bits.push(+m[y][x] ^ +(flip(x, y) === 0)); } }
+  let i = 0; const take = (k) => { let x = 0; while (k--) x = x * 2 + bits[i++]; return x; };
+  let text = ''; const modes = [];
+  for (let mode = take(4); mode; mode = take(4)) {
+    modes.push(mode);
+    if (mode === 4) { const len = take(8); text += decodeURIComponent(escape(String.fromCharCode(...Array.from({ length: len }, () => take(8))))); }
+    else if (mode === 2) { let len = take(9); for (; len >= 2; len -= 2) { const x = take(11); text += AL[Math.floor(x / 45)] + AL[x % 45]; } if (len) text += AL[take(6)]; }
+    else return null;
+  }
+  return { text, modes, level: f >> 13, v };
+}
+function qrCases() {
+  for (const [t, modes] of [['HELLO WORLD', [2]], ['hallo, Grüße', [4]], ['https://x.de/#lade=LQ2:AB$*-./:9', [4, 2]], ['a:', [4, 2]], ['LQ2:XYZ', [2]]]) {
+    const r = qrRead(QR.matrix(t));
+    check(r && r.text === t && r.level === 1 && r.modes.join() === modes.join(), `QR code reads back ${JSON.stringify(t)} (version ${r && r.v}, modes ${r && r.modes})`);
+  }
+  // published capacities for level L: version 1 holds 25 alphanumeric characters or 17 bytes, version 40 4296 or 2953
+  const ver = (t) => { const m = QR.matrix(t); return m && (m.length - 17) / 4; };
+  check(ver('A'.repeat(25)) === 1 && ver('A'.repeat(26)) === 2 && ver('a'.repeat(17)) === 1 && ver('a'.repeat(18)) === 2, 'QR version 1 holds 25 alphanumeric characters or 17 bytes');
+  check(ver('A'.repeat(4296)) === 40 && ver('A'.repeat(4297)) === null && ver('a'.repeat(2953)) === 40 && ver('a'.repeat(2954)) === null, 'QR version 40 holds 4296 alphanumeric characters or 2953 bytes');
+  for (let n = 0; n < 200; n += 7) { const b = Uint8Array.from({ length: n }, (_, i) => (i * 97 + n) & 255); check(Buffer.from(SAVECODE.from42(SAVECODE.to42(b))).equals(Buffer.from(b)), 'base 42 round trip, ' + n + ' bytes'); }
+}
 async function exportCode(p) {
   p.click('#parents'); p.go('settings', 'save'); p.click('#pexport');
   await until(() => p.$('#pcode'));
@@ -346,16 +406,68 @@ async function saveCodeCases() {
     check(bad.$('#pimsg').textContent.includes('Code') && same(bad.dump(), saved), 'broken code is rejected with a message: ' + JSON.stringify(c.slice(0, 20)));
   }
 
-  // compressed codes (LQ1.) where the browser can compress
+  // compressed codes (LQ2.) where the browser can compress
   const z = open(saved, { zip: true });
-  const zcode = await z.w.__mq.packSave({ v: 1, at: '2026-11-09T08:00:00.000Z', meta: JSON.parse(saved[META]), runs: { math: JSON.parse(saved[RUN]) } });
-  check(zcode.startsWith('LQ1.') && zcode.length < code.length, 'with compression the code starts with LQ1. and is shorter (' + zcode.length + ' vs ' + code.length + ')');
+  const zdata = { v: 1, at: '2026-11-09T08:00:00.000Z', meta: JSON.parse(saved[META]), runs: { math: JSON.parse(saved[RUN]) } };
+  const zcode = await z.w.__mq.packSave(zdata);
+  check(zcode.startsWith('LQ2.') && zcode.length < lq1(zdata).length * 0.8, 'with compression the code starts with LQ2. and is clearly shorter than LQ1. (' + zcode.length + ' vs ' + lq1(zdata).length + ', LQ0. ' + code.length + ')');
   const back = await z.w.__mq.unpackSave(zcode);
-  check(same(back.meta, JSON.parse(saved[META])) && same(back.runs.math, JSON.parse(saved[RUN])), 'LQ1. code reads back to the same save');
+  check(same(back.meta, JSON.parse(saved[META])) && same(back.runs.math, JSON.parse(saved[RUN])), 'LQ2. code reads back to the same save');
+  const oldBack = await z.w.__mq.unpackSave(lq1(zdata));
+  check(same(oldBack.meta, JSON.parse(saved[META])) && same(oldBack.runs.math, JSON.parse(saved[RUN])) && oldBack.at === zdata.at, 'an LQ1. code from older versions still loads');
+  const qrBack = await z.w.__mq.unpackSave('https://example.com/#lade=' + lq2qr(zcode));
+  check(same(qrBack, back), 'the QR form of the code (LQ2: in base 42) reads back to the same save');
   const old = open(saved); old.click('#parents'); old.go('settings', 'save');
-  old.$('#pcodein').value = zcode; old.click('#pmerge');
-  await until(() => old.$('#pimsg').textContent);
-  check(old.$('#pimsg').textContent.includes('Browser'), 'a browser without decompression explains why it cannot read LQ1.');
+  for (const c of [lq1(zdata), zcode]) {
+    old.$('#pcodein').value = c; old.$('#pimsg').textContent = ''; old.click('#pmerge');
+    await until(() => old.$('#pimsg').textContent);
+    check(old.$('#pimsg').textContent.includes('Browser'), 'a browser without decompression explains why it cannot read ' + c.slice(0, 4));
+  }
+  { // export with compression: the whole save fits into the QR code, in a smaller code than the old one would need
+    z.click('#parents'); z.go('settings', 'save'); z.click('#pexport'); await until(() => z.$('#pcode'));
+    const svg = z.$('#pout svg.qr'); const size = (n) => (n - 8 - 17) / 4;
+    const old1 = QR.matrix('https://thezieger.github.io/rogue-adventures/#lade=' + lq1(Object.assign({}, zdata, { meta: z.w.__mq.meta }))); const oldV = old1 ? (old1.length - 17) / 4 : 41;
+    const v = size(+svg.getAttribute('viewBox').split(' ')[2]);
+    check(svg.getAttribute('aria-label') === 'QR-Code mit dem Spielstand' && z.$('#pcode').value.startsWith('LQ2.') && v < oldV, 'the export QR code holds the whole save (version ' + v + ', with LQ1. ' + oldV + ')');
+  }
+  { // „Als Datei sichern“: a .txt file with the link; shared when the device can share files, otherwise downloaded; „Datei auswählen“ reads it back
+    const w = z.w; const read = (f) => new Promise((res) => { const r = new w.FileReader(); r.onload = () => res(r.result); r.readAsText(f); });
+    let shared = null; w.navigator.canShare = (d) => d.files[0].type === 'text/plain'; w.navigator.share = (d) => { shared = d; return Promise.resolve(); };
+    z.click('#pfile');
+    const f = shared && shared.files[0]; const text = f ? await read(f) : '';
+    check(f && /^Lernquest-Spielstand-\d{4}-\d\d-\d\d\.txt$/.test(f.name) && text.includes('#lade=' + z.$('#pcode').value) && text.startsWith('Lernquest-Spielstand vom '), 'the save file is a .txt with the date in its name and the whole code: ' + (f && f.name));
+    let clicked = null; w.navigator.canShare = () => false; w.URL.createObjectURL = (b) => { clicked = b; return 'blob:x'; }; w.URL.revokeObjectURL = () => {};
+    const orig = w.HTMLAnchorElement.prototype.click; w.HTMLAnchorElement.prototype.click = function () { clicked = clicked && this.download; };
+    z.click('#pfile'); w.HTMLAnchorElement.prototype.click = orig;
+    check(clicked === f.name && z.$('#pcmsg').textContent.includes('Download-Ordner'), 'without file sharing the file is downloaded');
+    const pick = async (file) => { const inp = z.$('#pfilein'); Object.defineProperty(inp, 'files', { value: [file], configurable: true }); inp.dispatchEvent(new w.Event('change')); await until(() => z.$('#pimsg').textContent); };
+    z.go('settings', 'save'); z.$('#pimsg').textContent = '';
+    // a messenger may rename the file and wrap its lines
+    await pick({ name: 'Lernquest-Spielstand (1).txt', size: text.length, text: async () => text.replace(/(.{76})/g, '$1\r\n') });
+    check(z.$('#pimsg').textContent.startsWith('Datei gelesen') && (await z.w.__mq.unpackSave(z.$('#pcodein').value)).meta.wins === z.w.__mq.meta.wins, 'a chosen save file is read, even renamed and with wrapped lines');
+    z.click('#pmerge'); await until(() => z.$('.overlay'));
+    check(!!z.$('.overlay') && z.$('.overlay').textContent.includes('zusammenlegen'), 'after reading the file the usual question comes');
+    z.$('.overlay').remove(); z.$('#pimsg').textContent = '';
+    await pick({ name: 'Einkauf.txt', size: 5, text: async () => 'Milch' });
+    check(z.$('#pimsg').textContent.startsWith('Das ist keine Lernquest-Datei'), 'another file gets a clear message');
+  }
+  { // a fresh save and saves after many adventures: everything comes back, and the code is much shorter than LQ1.
+    const fresh = JSON.parse(JSON.stringify(open().w.__mq.meta));
+    for (const [name, nKnow] of [['fresh', 0], ['busy', 400], ['heavy', 1500]]) {
+      const data = { v: 1, at: '2026-11-09T08:00:00.000Z', meta: nKnow ? busyMeta(z, nKnow) : fresh, runs: nKnow ? { math: JSON.parse(saved[RUN]), bau: JSON.parse(saved[RUN]) } : {} };
+      const c = await z.w.__mq.packSave(data); const b = await z.w.__mq.unpackSave(c);
+      check(same(b.meta, data.meta) && same(b.runs, data.runs), name + ' save: LQ2. reads back to the same save');
+      check(c.length < lq1(data).length * 0.75, name + ' save: LQ2. is clearly shorter than LQ1. (' + c.length + ' vs ' + lq1(data).length + ')');
+    }
+  }
+  { // fields that later versions add (or that this one does not know) survive, and so do strings that look like tokens
+    const data = JSON.parse(JSON.stringify(zdata));
+    Object.assign(data.runs.math, { future: { a: [1, '~', '~~x', '~1', 'math:~:seq'], b: { c: { d: 2 }, e: { d: -3.5 } } } });
+    data.meta.know = { 'neu_~frage': { c: 1, t: 2, ws: 0, last: 9, neu: 'x' }, 'gk_der Hund': { c: 1, t: 1, ws: 0, last: 10, neu: 'y' } };
+    data.meta.stats.math.add.extra = [true, null, 1e300];
+    const b = await z.w.__mq.unpackSave(await z.w.__mq.packSave(data));
+    check(same(b.runs, data.runs) && same(b.meta.know, data.meta.know) && same(b.meta.stats.math.add, data.meta.stats.math.add), 'unknown fields and token-like strings come back unchanged');
+  }
 
   // link import on a fresh device: dialog, hash removed, merge takes the adventure
   const link = open(null, { url: 'https://example.com/#lade=' + code });
@@ -1273,10 +1385,10 @@ function topCases() {
 // Vorlesen: an old save gets the switch turned on; the button only appears with a German voice on the device
 {
   const toTask = (p) => { p.click('[data-new="math"]'); p.click('.choice[data-id]'); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')][0]); const ok = p.$('.overlay #tutok'); if (ok) ok.click(); p.click('.atk'); const ok2 = p.$('.overlay #tutok'); if (ok2) ok2.click(); };
-  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.speak; old.setup = { done: true, skipped: true, at: '' };
+  const p0 = open(); const old = JSON.parse(JSON.stringify(p0.w.__mq.meta)); delete old.speak; delete old.voiceName; delete old.speakRate; old.setup = { done: true, skipped: true, at: '' };
   const store = { [META]: JSON.stringify(old) };
   const p = open(store, { voice: { localService: true, lang: 'de-DE' } }); toTask(p);
-  check(p.w.__mq.meta.speak === true && !!p.d.querySelector('.task .speak'), 'old save: reading aloud is on and the task has its button');
+  check(p.w.__mq.meta.speak === true && p.w.__mq.meta.voiceName === '' && p.w.__mq.meta.speakRate === 1 && !!p.d.querySelector('.task .speak'), 'old save: reading aloud is on with the automatic voice at speed 1 and the task has its button');
   p.d.querySelector('.task .speak').click();
   check(p.w.said.length === 1 && p.w.said[0].length > 0 && !/[−·]|= ?\?/.test(p.w.said[0]) && p.errors.length === 0, 'the button reads the task, signs spoken as words');
   const net = open(store, { voice: { localService: false, lang: 'de-DE' } }); toTask(net);
@@ -1285,6 +1397,33 @@ function topCases() {
   check(!off.d.querySelector('.task .speak') && !!off.d.querySelector('.task .tut'), 'switched off by parents: no button');
   const none = open(store); toTask(none);
   check(!none.d.querySelector('.task .speak') && none.errors.length === 0, 'a device without speech shows no button');
+}
+// Vorlesen: parents pick one of the device's German voices and the speed; network voices never appear
+{
+  const A = { name: 'Anna', localService: true, lang: 'de-DE' }, B = { name: 'Google Deutsch', localService: true, lang: 'de-DE' }, N = { name: 'Netzstimme', localService: false, lang: 'de-DE' };
+  const V = { voice: [N, A, B] };
+  const toCard = (p) => { for (let i = 0; i < 5; i++) p.click('#logo'); p.go('settings', 'app'); };
+  const toTask = (p) => { p.click('[data-new="math"]'); p.click('.choice[data-id]'); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')][0]); for (const s of ['.atk', null]) { const ok = p.d.querySelector('.overlay #tutok'); if (ok) ok.click(); if (s) p.click(s); } p.d.querySelector('.task .speak').click(); };
+  const p = open({ [META]: JSON.stringify(SKIPPED) }, V); toCard(p);
+  const names = [...p.d.querySelectorAll('[data-voice]')].map((b) => b.textContent);
+  check(names.join('|') === 'Anna|Google Deutsch' && p.$('[data-voice="0"]').getAttribute('aria-pressed') === 'true', 'the card lists both German voices on the device, the first one chosen, the network voice not');
+  p.click('[data-try="1"]');
+  check(p.w.utter.voice === B && p.w.said.pop() === 'Hallo! So klingt diese Stimme.', '„Probe hören“ speaks a sample with that voice');
+  p.click('[data-voice="1"]');
+  const slider = p.$('#prate');
+  check(slider.type === 'range' && slider.min === '0.6' && slider.max === '1.4' && slider.step === '0.05' && slider.value === '1', 'the speed is a slider from 0.6 to 1.4, at 1 for a new save');
+  slider.value = '1.25'; slider.dispatchEvent(new p.w.Event('change'));
+  check(p.w.__mq.meta.voiceName === 'Google Deutsch' && p.w.__mq.meta.speakRate === 1.25 && p.w.utter.rate === 1.25 && p.w.utter.voice === B && p.$('[data-voice="1"]').getAttribute('aria-pressed') === 'true' && p.errors.length === 0, 'the chosen voice and speed are kept, a sample plays after the slider is let go');
+  const q = open(p.dump(), V); toTask(q);
+  check(q.w.utter.voice === B && q.w.utter.rate === 1.25 && q.errors.length === 0, 'a task is read with the chosen voice and speed after reopening');
+  const gone = open({ [META]: JSON.stringify(Object.assign({}, SKIPPED, { voiceName: 'Weg', speakRate: 2 })) }, { voice: [N, A] }); toTask(gone);
+  check(gone.w.utter.voice === A && gone.w.utter.rate === 1 && gone.errors.length === 0, 'a voice that is gone from the device falls back quietly, an unknown speed to 1');
+  const rates = [0.75, 0.9, 1.05, 0.6, 1.4, 0.5, 'x', null].map((r) => open({ [META]: JSON.stringify(Object.assign({}, SKIPPED, { speakRate: r })) }).w.__mq.meta.speakRate);
+  check(rates.join() === '0.75,0.9,1.05,0.6,1.4,1,1,1', 'the old speeds and any number from 0.6 to 1.4 stay, others become 1');
+  const one = open({ [META]: JSON.stringify(SKIPPED) }, { voice: [N, A] }); toCard(one);
+  check(!one.$('[data-voice]') && !!one.$('#prate') && !one.text().includes('Netzstimme'), 'with one German voice only the speed is offered');
+  const none = open({ [META]: JSON.stringify(SKIPPED) }, { voice: [N] }); toCard(none);
+  check(none.text().includes('fehlt eine deutsche Stimme') && !none.$('#prate') && none.$('.pguide').open, 'without a German voice on the device the card says how to add one, with the guide open');
 }
 // Vorlesen in Klasse 1: tutorials, feedback, events and how a fight starts are read out; the Lesestube text is not
 {
@@ -1327,6 +1466,46 @@ function topCases() {
   check(off.w.said.length === 0 && offE.w.said.length === 0 && !off.$('.speak') && !offE.$('.speak'), 'switched off by parents: nothing is read');
 }
 
+// Vorlesen in English: English words and sentences get an English voice from the device, the rest the German one
+{
+  const DE = { name: 'Anna', localService: true, lang: 'de-DE' }, US = { name: 'Samantha', localService: true, lang: 'en-US' }, GB = { name: 'Daniel', localService: true, lang: 'en-GB' }, NET = { name: 'Netz', localService: false, lang: 'en-GB' };
+  const fight = (voice, atk) => { const p = open({ [META]: JSON.stringify(SKIPPED) }, { voice }); p.click('[data-new="teestube"]'); const c = p.d.querySelector('.choice[data-id]'); if (c) c.click(); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')][0]);
+    for (const s of [`.atk[data-i="${atk}"]`, null]) { const ok = p.d.querySelector('.overlay #tutok'); if (ok) ok.click(); if (s) p.click(s); } p.d.querySelector('.task .speak').click(); return p; };
+  const read = (p) => p.w.utters.map((u) => [u.text, u.voice.name, u.lang]);
+  const en = fight([DE, NET, US, GB], 0); const t = en.w.__task; const r = read(en);
+  check(t.mod === 'en_de' && r.length === 3 && r[0][1] === 'Anna' && r[0][0].startsWith('Was heißt') && r[1][0] === t.english[0] && r[1][1] === 'Daniel' && r[1][2] === 'en-GB' && r[2][1] === 'Anna' && t.options.every((o) => r[2][0].includes(o)) && en.errors.length === 0,
+    'English → German: the English word is read by the British voice, question and German options by the German one');
+  const de = fight([DE, US], 1); const opts = [...de.d.querySelectorAll('.opt')].map((b) => b.textContent); const rd = read(de);
+  check(de.w.__task.mod === 'de_en' && rd.length === 4 && rd[0][1] === 'Anna' && /Wie heißt „.+“ auf Englisch/.test(rd[0][0]) && rd.slice(1).every((x, i) => x[0] === opts[i] && x[1] === 'Samantha' && x[2] === 'en-US') && de.errors.length === 0,
+    'German → English: the English options are read in order by the American voice when there is no British one');
+  const no = fight([DE], 0); const rn = read(no);
+  check(rn.length === 3 && rn.every((x) => x[1] === 'Anna') && rn[1][2] === 'en-GB' && rn[0][2] === 'de-DE', 'without an English voice the German one reads the English word, marked as en-GB');
+  const toCard = (voice, ua) => { const p = open({ [META]: JSON.stringify(SKIPPED) }, { voice, ua }); for (let i = 0; i < 5; i++) p.click('#logo'); p.go('settings', 'app'); return p; };
+  const two = toCard([DE, US, GB]);
+  check([...two.d.querySelectorAll('[data-voice-en]')].map((b) => b.textContent).join() === 'Samantha,Daniel' && two.$('[data-voice-en="1"]').getAttribute('aria-pressed') === 'true' && !two.text().includes('keine englische Stimme'), 'two English voices: parents can pick one, the British one is preselected');
+  two.click('[data-voice-en="0"]');
+  check(two.w.__mq.meta.voiceEn === 'Samantha' && two.w.utter.voice === US && two.w.utter.lang === 'en-US' && two.errors.length === 0, 'picking an English voice keeps it and plays an English sample');
+  const oneEn = toCard([DE, GB]), noEn = toCard([DE]);
+  check(!oneEn.$('[data-voice-en]') && !oneEn.text().includes('keine englische Stimme') && noEn.text().includes('Für Englisch ist keine englische Stimme auf dem Gerät'), 'one English voice is used without a choice; without one the card says so');
+  const android = toCard([DE], 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36');
+  const iphone = toCard([DE], 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1');
+  const g = (p) => p.$('.pguide');
+  check(!g(android).open && g(android).textContent.includes('Sprachausgabe von Google') && g(android).textContent.includes('je nach Hersteller') && !g(android).textContent.includes('Gesprochene Inhalte'), 'Android: the guide shows the Android steps, closed while voices are fine');
+  check(g(iphone).textContent.includes('Gesprochene Inhalte') && g(iphone).textContent.includes('Lautlos') && !g(iphone).textContent.includes('Google') && iphone.errors.length === 0, 'iPhone: the guide shows the iPhone steps');
+}
+// Vorlesen in „Laute und Buchstaben“: the voice would say letter names, so letters are never read
+{
+  const V = { voice: { localService: true, lang: 'de-DE' } };
+  const p = open({ [META]: JSON.stringify(Object.assign({ grade: 1, started: { laute1: 5 }, seenTut: { 'battle:intro2': true } }, SKIPPED)) }, V);
+  p.click('[data-new="laute1"]'); p.click('.choice'); p.click('#go'); p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf'));
+  const atk = [...p.d.querySelectorAll('.atk')].findIndex((b) => b.textContent.includes('Abc-Lied'));
+  const before = p.w.said.length; p.click(`.atk[data-i="${atk}"]`); const tut = p.$('.overlay #tutok'); const from = tut ? p.w.said.length : before; if (tut) p.click(tut);
+  const t = p.w.__task; const said = p.w.said.slice(from).join(' | ');
+  check(t.mod === 'alphabet' && t.quiet && said.includes(t.say) && !/(^|[^\p{L}])\p{L}(?!\p{L})/u.test(said) && !t.options.some((o) => said.includes(` ${o}.`)), 'the question is read without its letters, the letter options not at all');
+  p.click([...p.d.querySelectorAll('.opt')].find((b) => b.textContent !== t.answer));
+  check(p.w.said[p.w.said.length - 1] === 'Daneben' && p.errors.length === 0, 'after a mistake only „Daneben“ is read, not the letter');
+}
+
 // Shorter adventures for Klasse 1 and 2: 6 and 7 floors; an old 8-floor run keeps going to its own end
 {
   const fresh = (m, grade) => { const p = open({ [META]: JSON.stringify(Object.assign({ grade }, SKIPPED)) }); p.click(`[data-new="${m}"]`); const c = p.d.querySelector('.choice[data-id]'); if (c) c.click(); p.click('#go'); return p; };
@@ -1347,6 +1526,67 @@ function topCases() {
   const wins = p1.w.__mq.meta.wins; const after = p1.dump(); const r2 = JSON.parse(after.mathquest_run_zahlen20); r2.node = { type: 'boss', done: true }; after.mathquest_run_zahlen20 = JSON.stringify(r2);
   const p2 = open(after); p2.click('[data-cont="zahlen20"]');
   check(p2.w.__mq.meta.wins === wins + 1 && !p2.dump().mathquest_run_zahlen20 && p2.errors.length === 0, 'after its boss the old 8-floor adventure is won');
+}
+
+// „Erster Buchstabe“ was removed from Laute und Buchstaben: an adventure saved with its attack goes on with another task type
+{
+  const p0 = open({ [META]: JSON.stringify(Object.assign({ grade: 1, started: { laute1: 5 }, seenTut: { 'battle:intro2': true } }, SKIPPED)) });
+  p0.click('[data-new="laute1"]'); p0.click('.choice'); p0.click('#go');
+  const st = p0.dump(); const r = JSON.parse(st.mathquest_run_laute1); r.hero.attacks[0] = { name: 'Anlauttabelle', mod: 'anlaut' }; r.tiers.anlaut = 2; st.mathquest_run_laute1 = JSON.stringify(r);
+  const p = open(st); p.click('[data-cont="laute1"]'); p.click([...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf'));
+  const names = [...p.d.querySelectorAll('.atk')].map((b) => b.textContent);
+  p.click('.atk[data-i="0"]'); if (p.$('.overlay #tutok')) p.click('.overlay #tutok');
+  check(names.length === 4 && !names.some((x) => x.includes('Anlauttabelle')) && p.w.__task && p.w.__task.mod !== 'anlaut' && p.errors.length === 0, 'an adventure saved with the removed Anlaut attack goes on with another task type: ' + names.join(' | '));
+}
+
+// Klasse 1 starts with fewer attacks (2, then 3, then 4 per theme) and never has a Kreisel-Arena
+{
+  const old = open({ [META]: JSON.stringify(Object.assign({ runs: 3 }, SKIPPED)) });
+  check(same(old.w.__mq.meta.started, {}) && old.errors.length === 0, 'an old save without started adventures loads with none');
+  const odd = open({ [META]: JSON.stringify(Object.assign({ started: { zahlen20: 'x', laute1: -1, musik1: 1.5, math: 2 } }, SKIPPED)) });
+  check(same(odd.w.__mq.meta.started, { math: 2 }), 'broken started counts are dropped');
+  let p = open({ [META]: JSON.stringify(Object.assign({ grade: 1 }, SKIPPED)) });
+  const s = p.w.eval('MK.MODES.zahlen20.starters[0]'); const M = p.w.eval('MK.MODES.zahlen20.modules');
+  const counts = [], arenas = [];
+  for (let i = 0; i < 5; i++) {
+    if (i) p = open(p.dump());
+    p.click('[data-new="zahlen20"]'); const y = p.$('.overlay #yes'); if (y) y.click();
+    if (i === 0) check(p.$('.choice[data-id] .desc').textContent.includes(`Attacken: ${M[s.attacks[0].mod].name}, ${M[s.attacks[1].mod].name}`) && !p.$('.choice[data-id] .desc').textContent.includes(M[s.attacks[2].mod].name), 'the hero choice lists only the attacks the child gets');
+    p.click('#go'); counts.push(p.w.__mq.run.hero.attacks.length); arenas.push(p.w.__mq.run.map.flat().some((n) => n.t === 'arena'));
+    if (i === 0) {
+      const d = p.dump(); const fight = [...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf');
+      p.click(fight); const ok = p.$('.overlay #tutok'); if (ok) ok.click();
+      check(p.d.querySelectorAll('.atk').length === 2 && p.errors.length === 0, 'the first Klasse-1 fight shows 2 attack buttons');
+      const re = open(d); re.click('[data-cont="zahlen20"]');
+      check(re.w.__mq.run.hero.attacks.length === 2 && re.w.__mq.meta.started.zahlen20 === 1, 'a saved Klasse-1 adventure keeps its attacks');
+    }
+  }
+  check(same(counts, [2, 3, 4, 4, 4]) && same(p.w.__mq.meta.started, { zahlen20: 5 }), 'Klasse 1: 2 attacks in the first adventure, 3 in the second, then 4: ' + counts);
+  check(!arenas.some(Boolean), 'new Klasse-1 maps have no Kreisel-Arena');
+  const mk = (started) => Object.assign(JSON.parse(JSON.stringify(p.w.__mq.meta)), { started });
+  check(same(p.w.__mq.mergeMeta(mk({ zahlen20: 1, laute1: 3 }), mk({ zahlen20: 2 })).started, { zahlen20: 2, laute1: 3 }), 'merge: the higher started count per theme wins');
+  const laute = open({ [META]: JSON.stringify(Object.assign({ grade: 1, started: { zahlen20: 4 } }, SKIPPED)) }); laute.click('[data-new="laute1"]'); laute.click('#go');
+  check(laute.w.__mq.run.hero.attacks.length === 2, 'started adventures count per theme');
+  const tuts = [0, 1, 2, 3].map((i) => {
+    const spk = open({ [META]: JSON.stringify(Object.assign({ grade: 1, started: { laute1: 5 }, seenTut: { 'battle:intro2': true } }, SKIPPED)) }, { voice: { localService: true, lang: 'de-DE' } });
+    spk.click('[data-new="laute1"]'); spk.click('.choice'); spk.click('#go'); spk.click([...spk.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf'));
+    const n = spk.w.said.length; spk.click(`.atk[data-i="${i}"]`); return spk.$('.overlay #tutok') ? spk.w.said.slice(n).join(' ') : '';
+  });
+  check(tuts.filter((x) => x.length > 20).length >= 3 && !tuts.some((x) => /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/.test(x)), 'Laute-und-Buchstaben tutorials are read aloud without naming single letters: ' + tuts.join(' | '));
+  const big = open({ [META]: JSON.stringify(SKIPPED) }); big.click('[data-new="math"]'); big.click('.choice'); big.click('#go');
+  check(big.w.__mq.run.hero.attacks.length === 4 && big.w.__mq.run.map.flat().some((n) => n.t === 'arena'), 'a first Klasse-3 adventure has all 4 attacks and a Kreisel-Arena');
+  // a Klasse-1 weekly goal: its attack is among the first two
+  let g, q;
+  for (let w = 0; w < 8 && !g; w++) {
+    q = open({ [META]: JSON.stringify(Object.assign({ grade: 1 }, SKIPPED)) }, { now: new Date(Date.parse(W49) + w * 7 * 864e5).toISOString() });
+    g = q.w.__mq.weeklyGoals().find((x) => x.kind === 'right' && q.w.__mq.subjectOf(x.m) && q.w.eval(`MK.MODES.${x.m} && MK.MODES.${x.m}.grade`) === 1);
+  }
+  if (!g) check(false, 'found a week with a Klasse-1 right-answers goal');
+  else {
+    q.click('#weekly'); q.click(`[data-goal="${g.i}"]`); const c = q.$('.choice[data-id]'); if (c) c.click(); q.click('#go');
+    const a = q.w.__mq.run.hero.attacks;
+    check(q.w.__mq.run.mode === g.m && a.length === 2 && a.some((x) => x.mod === g.mod) && q.errors.length === 0, `a first Klasse-1 adventure for a weekly goal has the goal's attack (${g.m}: ${g.mod})`);
+  }
 }
 
 // Remembered level per task type: warm-up start, faster steps, save code and merge; a weaker counter-hit when it is hard going
@@ -1393,7 +1633,107 @@ async function levelCases() {
   check(wrongHit(5, 0) === 1.5, 'fewer than 8 answers: no relief yet');
 }
 
-reloadCases().then(readCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
+// Back button (Android, browser): steps back inside the app; the parents' area locks in the background
+async function backCases() {
+  // our own history steps settle first, as they do between real taps
+  const back = async (p) => { await sleep(100); const popped = new Promise((r) => p.w.addEventListener('popstate', r, { once: true })); p.w.history.back(); await popped; await sleep(30); };
+  const q = (p, s) => p.d.querySelector(s);
+  const pin = (p, s) => { for (const ch of s) p.click(`.numpad [data-k="${ch}"]`); };
+  {
+    const p = open(); p.click('#later'); p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
+    check(!!q(p, '.node.open'), 'back test: on the map');
+    await back(p);
+    check(!!q(p, '[data-cont="math"]') && !!p.dump()[RUN], 'back on the map goes to the subject screen, the adventure stays saved');
+    await back(p);
+    check(!!q(p, '#parents') && !!p.dump()[RUN], 'back on the subject screen goes to the title');
+    check(p.errors.length === 0, 'no page errors while going back');
+  }
+  {
+    const p = startMathFight();
+    check(!!q(p, '.overlay #tutok'), 'back test: the first fight explains itself');
+    await back(p);
+    check(!q(p, '.overlay') && !!q(p, '.atk'), 'back closes the explanation and stays in the fight');
+    p.click('.atk[data-i="0"]'); if (q(p, '.overlay #tutok')) await back(p);
+    const task = p.w.__task; const run0 = p.dump()[RUN]; const ans0 = p.w.__mq.run.answered; const tries = () => Object.values(p.w.__mq.meta.stats.math).reduce((n, s) => n + s.t, 0);
+    check(!!task && !!q(p, '.numpad, .opt') && tries() === 0, 'back test: a task is open');
+    await back(p);
+    check(p.w.__task === task && !!q(p, '.numpad, .opt') && tries() === 0 && p.w.__mq.run.answered === ans0 && p.dump()[RUN] === run0, 'back during a task keeps the task, counts no answer and keeps the adventure');
+    if (task.kind === 'choice') p.click([...p.d.querySelectorAll('.opt')].find((b) => b.textContent === task.answer));
+    else { const inps = [...p.d.querySelectorAll('.inp')]; task.answers.forEach((a, i) => { inps[i].click(); pin(p, String(a)); }); p.click('.numpad [data-k="ok"]'); }
+    check(tries() === 1 && p.errors.length === 0, 'the task can be answered after pressing back');
+  }
+  const hide = (p, state) => { Object.defineProperty(p.d, 'visibilityState', { configurable: true, get: () => state }); p.d.dispatchEvent(new p.w.Event('visibilitychange')); };
+  {
+    const p = open(); p.click('#setpin'); pin(p, '1234'); pin(p, '1234');
+    p.click('#parents'); pin(p, '1234'); p.subj('Mathe', 'math');
+    check(!!q(p, '#pback') && !!q(p, '[data-pm="math"]'), 'parents\' area: a subject page is open');
+    hide(p, 'hidden');
+    check(!q(p, '.ptabs') && !!q(p, '.numpad') && !p.text().includes('Aufgabenarten'), 'in the background the parents\' area is hidden behind the PIN');
+    hide(p, 'visible');
+    check(!q(p, '.ptabs') && !!q(p, '.numpad'), 'coming back asks for the PIN first');
+    pin(p, '1234');
+    check(!!q(p, '#pback') && !!q(p, '[data-pm="math"][aria-selected="true"]'), 'the right PIN returns to the same subject page');
+    await back(p);
+    check(!!q(p, '.ptabs') && !q(p, '#pback') && !!q(p, '[data-pf]'), 'back on a subject page goes to the list of subjects');
+    hide(p, 'hidden'); hide(p, 'visible'); pin(p, '0000');
+    check(!!q(p, '#parents') && !q(p, '.ptabs'), 'a wrong PIN after the lock goes to the title');
+    p.click('#parents'); pin(p, '1234'); await back(p);
+    check(!!q(p, '#parents'), 'back leaves the parents\' area');
+    p.click('#parents');
+    check(!q(p, '.ptabs') && !!q(p, '.numpad'), 'entering the parents\' area again asks for the PIN');
+    check(p.errors.length === 0, 'no page errors in the parents\' area lock');
+  }
+  {
+    const p = open(); p.click('#later'); p.click('#parents'); p.go('settings', 'app');
+    hide(p, 'hidden'); hide(p, 'visible');
+    check(!!q(p, '.ptabs') && !!q(p, '#psound'), 'without a PIN the parents\' area stays open in the background');
+  }
+}
+
+// 29. Start order, English topics, hidden classes and extras (all in meta.hidden: 'en:<topic>', 'grade:<n>', 'extra:<name>')
+{
+  const base = { setup: { done: false, skipped: true, at: 'x' } };
+  const subjCard = (p, name) => p.click([...p.d.querySelectorAll('[data-sub]')].find((b) => b.textContent.includes(name)));
+  const p0 = open({ [META]: JSON.stringify(base) }, { now: W49 });
+  check(same(p0.w.__mq.meta.hidden, []) && p0.d.querySelectorAll('[data-grade]').length === 3 && ['#hut', '#garden', '#duel', '#weekly'].every((s) => p0.d.querySelector(s)), 'old save: no new hidden entries, three class tabs and every extra on the title');
+  subjCard(p0, 'Englisch'); const cards = [...p0.d.querySelectorAll('.modecard')];
+  check(cards[0].textContent.includes('Die Teestube') && !!cards[0].querySelector('.startbadge') && !cards[1].querySelector('.startbadge'), 'the first English theme is the Teestube and has the start badge');
+  check(!!cards[1].querySelector('.pathhint') && cards[1].querySelector('.pathhint').textContent.includes('„Die Teestube“') && !!cards[1].querySelector('[data-new="doppeldecker"]'), 'the Doppeldecker points to the Teestube and stays clickable');
+  const p1 = open({ [META]: JSON.stringify(Object.assign({}, base, { stats: { teestube: { en_de: { c: 1, t: 1, hist: [1] } } } })) }); subjCard(p1, 'Englisch');
+  check(!p1.d.querySelector('.pathhint'), 'no hint once the Teestube was practised');
+  p1.click('#back'); subjCard(p1, 'Mathe');
+  check([...p1.d.querySelectorAll('.modecard h3')].map((h) => h.textContent).join('|') === 'Zahlenquest|Der Jahrmarkt|Die Baustelle', 'Mathe in Klasse 3: Zahlenquest, Jahrmarkt, Baustelle');
+  // English topics
+  p0.click('#back'); p0.click('#parents'); p0.subj('Englisch'); p0.click('[data-hide="en:Tiere"]');
+  const off = p0.w.__mq.meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3)); const MK = p0.w.eval('MK');
+  const animal = new RegExp('\\b(' + MK.EN_THEMES.Tiere.map((x) => x[0]).join('|') + ')s?\\b', 'i'); let seen = 0;
+  for (let i = 0; i < 50; i++) { const m = i % 2 ? 'teestube' : 'doppeldecker'; const mods = Object.keys(MK.MODES[m].modules); const q = MK.generate(m, mods[i % mods.length], 1, {}, i, { enOff: off });
+    if (animal.test(q.mod === 'en_de' || q.mod === 'bedeutung' ? q.q : q.mod === 'de_en' ? q.options.join(' ') : [q.q].concat(q.options || []).join(' '))) seen++; }
+  check(same(off, ['Tiere']) && seen === 0, 'Tiere switched off: no animal word in 50 English tasks');
+  const allOff = Object.keys(MK.EN_THEMES).filter((t) => t !== 'Farben').map((t) => 'en:' + t);
+  const p2 = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: allOff })) }); p2.click('#parents'); p2.subj('Englisch'); p2.click('[data-hide="en:Farben"]');
+  check(!p2.w.__mq.meta.hidden.includes('en:Farben') && p2.text().includes('Mindestens ein Thema muss an bleiben.'), 'the last English topic cannot be switched off');
+  p2.click('[data-hidesub]');
+  check(['teestube', 'doppeldecker'].every((m) => p2.w.__mq.meta.hidden.includes('mode:' + m)), 'the whole subject Englisch can be switched off');
+  // classes
+  p0.go('settings', 'show'); p0.click('[data-hide="grade:3"]');
+  check(p0.w.__mq.meta.hidden.includes('grade:3') && p0.w.__mq.meta.grade === 1, 'hiding the current class switches to the first visible one');
+  p0.click('[data-hide="grade:1"]'); p0.click('[data-hide="grade:2"]');
+  check(same(p0.w.__mq.meta.hidden.filter((x) => x.startsWith('grade:')), ['grade:3', 'grade:1']) && p0.w.__mq.meta.grade === 2 && p0.text().includes('Mindestens eine Klasse muss sichtbar bleiben.'), 'the last class cannot be hidden');
+  p0.click('[data-hide="grade:1"]'); p0.click('#back');
+  check(same([...p0.d.querySelectorAll('[data-grade]')].map((b) => b.dataset.grade), ['1', '2']), 'a hidden class leaves the class tabs');
+  // extras
+  const ex = ['garten', 'huette', 'kreisel', 'duell', 'wochenziele', 'markt'].map((k) => 'extra:' + k);
+  const p3 = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: ex })) }, { now: W49 });
+  check(['#hut', '#garden', '#duel', '#weekly'].every((s) => !p3.d.querySelector(s)) && !!p3.d.querySelector('#news') && !!p3.d.querySelector('#feedback'), 'hidden extras leave the title');
+  p3.click('#stamps');
+  check(!p3.d.querySelector('#kb') && !p3.d.querySelector('#werkbank') && !p3.text().includes('Zweites Zimmer'), 'Kreisel and Werkbank leave the Stempelheft');
+  p3.click('#back'); p3.click('[data-new="math"]'); p3.click('.choice'); p3.click('#go');
+  const types = p3.w.__mq.run.map.flat().map((n) => n.t);
+  check(!types.some((t) => ['arena', 'weekboss', 'markt'].includes(t)), 'a new map has no Kreisel-Arena, Wochenboss or Markt when they are hidden');
+}
+
+reloadCases().then(backCases).then(readCases).then(qrCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
