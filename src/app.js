@@ -51,7 +51,7 @@
     setup: { done: false, skipped: false, at: '' }, pin: '', storage: { persisted: false, warnedAt: '' }, stamps: 0, stampsTotal: 0, stampCard: {}, owned: {}, worn: {}, backupAt: '', progressAt: '', garden: { beds: [0, 1, 2, 3].map(() => ({ crop: null, plantedAt: 0 })) }, materials: {}, pantry: [], hut: { rooms: 1, items: [] }, top: { tip: 'stahl', ring: 'zahn', disc: 'leicht' },
     weekly: { week: '', progress: [], done: false, beaten: [], tally: {} }, hidden: [], level: {}, started: {},
     // Turmwacht: subjects = fixed by parents per grade, { [grade]: [1–3 subjects] } (null: the child chooses); last = right/total per subject of the latest run
-    turm: { runs: 0, wins: 0, best: 0, subjects: null, last: {} } });
+    turm: { on: false, runs: 0, wins: 0, best: 0, subjects: null, last: {} } });
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const TOP = MQ.TOP_PARTS;
   const hasPart = (slot, id, m) => TOP[slot][0].id === id || (TOP[slot].some((p) => p.id === id) && !!(m || meta).owned[`top-${slot}-${id}`]);
@@ -83,7 +83,7 @@
     m.top = Object.fromEntries(Object.keys(TOP).map((s) => [s, hasPart(s, m.top[s], m) ? m.top[s] : TOP[s][0].id]));
     m.garden = { beds: defaultMeta().garden.beds.map((d, i) => { const b = beds[i]; return isObj(b) && MK.CROPS[b.crop] && Number.isFinite(b.plantedAt) ? { crop: b.crop, plantedAt: b.plantedAt } : d; }) };
     const t = m.turm, subs = t.subjects;
-    m.turm = { runs: nat(t.runs), wins: nat(t.wins), best: Number.isInteger(t.best) && t.best >= 0 && t.best <= TW.WAVES.length ? t.best : 0,
+    m.turm = { on: t.on === true, runs: nat(t.runs), wins: nat(t.wins), best: Number.isInteger(t.best) && t.best >= 0 && t.best <= TW.WAVES.length ? t.best : 0,
       subjects: turmFixed(subs),
       last: isObj(t.last) ? Object.fromEntries(Object.entries(t.last).filter(([x, v]) => own(SUBJECTS, x) && okScore(v))) : {} };
     return m;
@@ -116,7 +116,7 @@
   // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
   const shown = (m) => !meta.hidden.includes('mode:' + m);
   const EXTRAS = { garten: ['Schulgarten', 'Beete bepflanzen und ernten.'], huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'], kreisel: ['Kreisel-Arena', 'Kreiselkämpfe auf der Karte und „Kreisel bauen“ im Stempelheft.'],
-    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], turm: ['Turmwacht', 'Schon geübte Aufgaben aus ein bis drei Fächern wiederholen und damit den Wissensturm verteidigen, ab Klasse 2.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
+    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
   const extraOn = (k) => !meta.hidden.includes('extra:' + k);
   const enOff = () => meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
   const heroShown = (m, s) => !meta.hidden.includes(`hero:${m}:${s.id}`);
@@ -836,7 +836,7 @@
     const dt = m.turm, it = inc.turm;
     for (const k of ['runs', 'wins', 'best']) dt[k] = Math.max(dt[k], it[k]);
     if (!Object.keys(dt.last).length) dt.last = it.last;
-    if (!dev.pin && inc.pin) { for (const k of ['off', 'hidden', 'sound', 'speak', 'grade', 'pin', 'setup']) m[k] = inc[k]; dt.subjects = it.subjects; }
+    if (!dev.pin && inc.pin) { for (const k of ['off', 'hidden', 'sound', 'speak', 'grade', 'pin', 'setup']) m[k] = inc[k]; dt.subjects = it.subjects; dt.on = it.on; }
     return m;
   }
   function applySave(s, how) {
@@ -1963,7 +1963,8 @@
   }
 
   /* Turm screens. They never call CFG()-based helpers: the global mode is only the unit that asked last. */
-  const turmOn = () => extraOn('turm') && curGrade().grade !== 1;
+  // off until the parents switch it on: Turmwacht is still being tried out
+  const turmOn = () => meta.turm.on && curGrade().grade !== 1;
   const TW_FLAG = '<svg class="twflag" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5v15" fill="none" stroke="#FFF9EE" stroke-width="2.2" stroke-linecap="round"/><path d="M6 3.5h9.5l-2.6 3.2 2.6 3.3H6Z" fill="#FF6A3D" stroke="#1C2541" stroke-width="1.4" stroke-linejoin="round"/></svg>';
   const TURM_BAG = { full: 'Der Turm ist heil.', later: 'Das geht nur, solange eine Welle läuft.',
     desc: { trank: `Repariert ${ITEMS.trank.heal} ❤️ am Turm. Während einer Welle kostet das einen Zug.`, grosstrank: `Repariert ${ITEMS.grosstrank.heal} ❤️ am Turm. Während einer Welle kostet das einen Zug.`, schild: 'Wirkt, sobald ein Monster am Turm ankommt.', keks: 'Dein nächster Treffer macht doppelten Schaden.', lupe: 'Ein Tipp bei der nächsten Aufgabe.' } };
@@ -2737,7 +2738,7 @@
         const topics = played.map((m) => { const r = loadRun(m); return card(`${MODES[m].icon} ${MODES[m].title}`, Object.keys(MODES[m].modules).filter((k) => meta.stats[m][k].t > 0).map((k) => { const s = meta.stats[m][k]; return srow(MODES[m].modules[k].icon, MODES[m].modules[k].name, s.c, s.t, r ? ` · Stufe ${r.tiers[k] || 1}` : ''); }).join('')); }).join('');
         const weakFacts = Object.entries(meta.know).filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7).map(([id, k]) => { const q = Object.values(MK.MODES).flatMap((c) => c.pool).find((p) => p.id === id.replace('_find', '')); return q ? stat(esc(q.q), `${k.c} von ${k.t}`) : ''; }).join('');
         return card('Seit dem ersten Tag', `${stat('Abenteuer begonnen', meta.runs)}${stat('Bis zum Ende geschafft', meta.wins)}${stat('Stempel verdient insgesamt', meta.stampsTotal)}${stat('Davon noch übrig', meta.stamps)}${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`)
-          + (meta.turm.runs || turmOn() ? card('🏰 Turmwacht', `${stat('Begonnen', meta.turm.runs)}${stat('Bis zum Ende geschafft', meta.turm.wins)}${stat('Rekord', meta.turm.best ? `Welle ${meta.turm.best} von ${TW.WAVES.length}` : '–')}${Object.values(meta.turm.last).some((v) => v.t) ? `<p class="plead">Letzte Turmwacht</p>${Object.entries(meta.turm.last).filter(([, v]) => v.t).map(([s, v]) => srow(SUBJECTS[s], s, v.c, v.t)).join('')}` : ''}${note(ELTERN.TURM.counts)}`) : '')
+          + (meta.turm.runs || meta.turm.on ? card('🏰 Turmwacht', `${stat('Begonnen', meta.turm.runs)}${stat('Bis zum Ende geschafft', meta.turm.wins)}${stat('Rekord', meta.turm.best ? `Welle ${meta.turm.best} von ${TW.WAVES.length}` : '–')}${Object.values(meta.turm.last).some((v) => v.t) ? `<p class="plead">Letzte Turmwacht</p>${Object.entries(meta.turm.last).filter(([, v]) => v.t).map(([s, v]) => srow(SUBJECTS[s], s, v.c, v.t)).join('')}` : ''}${note(ELTERN.TURM.counts)}`) : '')
           + card('Trefferquote je Thema', topics ? `${note('Hier stehen nur Themen und Aufgabenarten, die schon geübt wurden. „Stufe“ zeigt, wie schwer die Aufgaben im laufenden Abenteuer gerade sind.')}${LEGEND}` : note('Noch nichts geübt.'))
           + topics
           + card('Wissensfragen mit Schwierigkeiten', weakFacts ? `${note('Diese Fragen waren öfter falsch. Lernquest stellt sie bald wieder.')}${weakFacts}` : note('Noch keine – oder noch nicht genug geübt.'));
@@ -2775,7 +2776,8 @@
         + `<p class="center muted">Lernquest, Version ${esc((document.querySelector('meta[name=app-version]') || {}).content || '?')}</p>`,
       show: () => card('Klassen', `${note('Ausgeschaltete Klassen verschwinden von der Startseite. Mindestens eine bleibt an.')}${CURRICULUM.map((g) => sw(grades().includes(g), `data-hide="grade:${g.grade}"`, esc(g.label), `<span>${g.subjects.map((x) => esc(x.subject)).join(', ')}</span>`)).join('')}${msg}`)
         + card('Extras', `${note('Ausgeschaltete Extras verschwinden von der Startseite und kommen in neuen Abenteuern nicht mehr vor. Was Ihr Kind dort schon gesammelt hat, bleibt gespeichert.')}${Object.entries(EXTRAS).map(([k, [t, d]]) => sw(extraOn(k), `data-hide="extra:${k}"`, esc(t), `<span>${esc(d)}</span>`)).join('')}`)
-        + (extraOn('turm') ? turmSubjCard() : ''),
+        + card('🏰 Turmwacht <span class="ptag">zum Ausprobieren</span>', sw(meta.turm.on, 'data-turmon', 'Turmwacht anzeigen', `<span>${esc(ELTERN.TURM.what)}</span>`) + note(ELTERN.TURM.beta))
+        + (meta.turm.on ? turmSubjCard() : ''),
       reset: () => card('', `<p class="plead">Hier wird gelöscht. Vor jedem Löschen fragt Lernquest noch einmal nach.</p>${note('Tipp: Sichern Sie vorher den Spielstand unter „Spielstand“.')}`)
         + card('Statistik zurücksetzen', `${note('Löscht nur die Zahlen unter „Überblick“. Stempel, Monsterbuch und laufende Abenteuer bleiben.')}<button class="btn small secondary" id="rstats">Statistik zurücksetzen</button>`)
         + card('Alles löschen', `${note('Setzt Lernquest ganz auf Anfang: Abenteuer, Stempel, Monsterbuch, Statistik und Einstellungen.')}<button class="btn small danger" id="rall">Alles löschen</button>`),
@@ -2860,6 +2862,7 @@
       // a hero that is a reward does not count: it may still be locked
       if (hide && kind === 'hero' && !REWARDS.some((r) => r.hero === id) && !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))) return say(b, 'Mindestens ein Held muss bleiben.');
       setHidden([key], hide); meta.grade = curGrade().grade; saveAll(); again(); });
+    on('[data-turmon]', () => { meta.turm.on = !meta.turm.on; saveAll(); again(); });
     on('[data-tsub]', (b) => {
       const [g, s] = b.dataset.tsub.split(':'), all = Object.assign({}, meta.turm.subjects), cur = all[g] || [];
       if (!cur.includes(s) && cur.length >= 3) return say(b, 'Höchstens drei Fächer.');

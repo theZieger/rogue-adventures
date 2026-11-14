@@ -223,6 +223,7 @@ async function turmBot(){
   // a finished run (end screen, or the title when the fake clock let a late history „back“ through first): the main loop
   // counts it and taps „Neue Turmwacht“ if it is there
   const was=turmAt&&turmAt.r; if(was&&!turmRuns.includes(turmAt)&&(was.turm.phase==='won'||(was.turm.phase==='fallen'&&!w.__mq.turm.TW.canRetry(was)))){ turmDone(); return 'end'; }
+  if(!w.__mq.meta.turm.on&&$('#logo')){ w.__mq.meta.turm.on=true; w.__mq.screenTitle(); return true; } // off by default: parents switch it on
   if($('#turm')){ const g=process.env.GRADE&&$(`.gradechip[data-grade="${process.env.GRADE}"]`); if(g&&!g.classList.contains('on')){ click(g); return true; } click($('#turm')); return true; }
   if($('.tw-saved')){ click($('#cont')); return true; }
   if($('.tw-heroes')){

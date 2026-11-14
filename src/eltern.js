@@ -383,6 +383,8 @@ const ELTERN = (() => {
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {
+    what: 'Schon geübte Aufgaben aus ein bis drei Fächern wiederholen und damit den Wissensturm verteidigen, ab Klasse 2.',
+    beta: 'Die Turmwacht ist neu und deshalb zuerst ausgeschaltet. Regeln und Schwierigkeit können sich noch ändern. Ein begonnener Turm und der Rekord bleiben gespeichert, auch wenn Sie sie wieder ausschalten.',
     subjects: 'Ohne Auswahl wählt Ihr Kind zu Beginn ein bis drei Fächer selbst. Lernquest schlägt die Fächer vor, die noch am wenigsten sicher sitzen. Schalten Sie hier Fächer ein, beginnt jede neue Turmwacht mit genau diesen, höchstens drei.',
     counts: 'Gefragt werden die Aufgabenarten, die Ihr Kind im Fach schon geübt hat, mindestens zwei: Fehlt eine, kommt sie aus dem ersten geübten Thema, bei einem neuen Fach aus dem ersten Thema. Antworten aus der Turmwacht zählen bei den Themen und im Wochenbericht mit, genau wie im Abenteuer.',
     level: 'Die Turmwacht stellt ihre Aufgaben auf denselben Stufen und verschiebt sie nach denselben Regeln.',

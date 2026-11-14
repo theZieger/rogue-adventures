@@ -391,6 +391,7 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .parentbtn .gear { width: 20px; height: 20px; }
 .setup .hero h1 { font-size: 40px; }
 .setup .card p { margin: 6px 0; }
+.ptag { font: 700 12px/1 var(--font-body, inherit); letter-spacing: .04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--gold); color: #1C2541; vertical-align: middle; white-space: nowrap; }
 .hintsmall, .pnote { font-size: 15px; color: var(--ink-soft); margin: 4px 0 8px; }
 .hintsmall { margin-top: 12px; }
 .warncard { position: relative; border: 3px solid var(--gold); }

@@ -1739,7 +1739,7 @@ async function turmCases() {
   // a save from before Turmwacht
   const old = { setup, runs: 5, wins: 2, dex: { Sumpfbrocken: { world: 1 } }, stamps: 7 };
   const dst = open({ [META]: JSON.stringify(old) }), mq = dst.w.__mq;
-  check(same(mq.meta.turm, { runs: 0, wins: 0, best: 0, subjects: null, last: {} }) && mq.meta.runs === 5 && mq.meta.wins === 2 && mq.meta.stamps === 7 && !!mq.meta.dex.Sumpfbrocken, 'a save from before Turmwacht loads, with empty Turm fields');
+  check(same(mq.meta.turm, { on: false, runs: 0, wins: 0, best: 0, subjects: null, last: {} }) && mq.meta.runs === 5 && mq.meta.wins === 2 && mq.meta.stamps === 7 && !!mq.meta.dex.Sumpfbrocken, 'a save from before Turmwacht loads, with empty Turm fields');
   const norm = (turm) => mq.normMeta(Object.assign({}, old, { turm })).turm;
   const good = { runs: 4, wins: 1, best: 5, subjects: { 2: ['Musik'], 3: ['Mathe', 'Deutsch'] }, last: { Mathe: { c: 3, t: 4 } } };
   check(same(norm(good), good), 'valid Turm fields stay');

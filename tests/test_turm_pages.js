@@ -30,7 +30,7 @@ function open(storage, seed = 1) {
   last = { close: () => { closed = true; w.close(); } };
   return p;
 }
-const meta0 = JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, grade: 3 });
+const meta0 = JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, grade: 3, turm: { on: true } });
 
 // answer the question on screen through the real task view, then „Weiter“ (as in tests/test_duel.js)
 function uiAnswer(p, right) {
@@ -201,8 +201,9 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(!v.$('#turm'), 'Klasse 1: no Turmwacht on the title');
   M.grade = 2; v.w.__mq.screenTitle();
   check(!!v.$('#turm'), 'Klasse 2: Turmwacht on the title');
-  M.hidden.push('extra:turm'); v.w.__mq.screenTitle();
-  check(!v.$('#turm'), 'hidden by the parents: no Turmwacht on the title');
+  M.turm.on = false; v.w.__mq.screenTitle();
+  check(!v.$('#turm'), 'switched off by the parents: no Turmwacht on the title');
+  check(v.w.__mq.normMeta({ grade: 2 }).turm.on === false && v.w.__mq.normMeta({ turm: { on: 1 } }).turm.on === false && v.w.__mq.normMeta({ turm: { on: true } }).turm.on === true, 'Turmwacht is off unless the parents switched it on');
   check(v.errors.length === 0, 'no page errors ' + v.errors.join(' '));
 
   // a whole run through the screens, every answer right: banners, wave screens, evolution, victory, Monsterbuch, Stempel
