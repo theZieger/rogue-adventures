@@ -6,6 +6,11 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-14
+
+### Neu
+- Turmwacht ab Klasse 2: Monster aus bis zu drei Fächern laufen auf den Wissensturm zu, richtige Antworten halten sie auf.
+
 ## 2026-11-13
 
 ### Neu

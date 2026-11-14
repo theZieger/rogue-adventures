@@ -362,7 +362,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, COST, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, COST, FIX_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
     lanesFor, newRun, card, canTarget,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };

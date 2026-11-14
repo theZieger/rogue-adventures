@@ -32,6 +32,18 @@ function open(storage, seed = 1) {
 }
 const meta0 = JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, grade: 3 });
 
+// answer the question on screen through the real task view, then „Weiter“ (as in tests/test_duel.js)
+function uiAnswer(p, right) {
+  const t = p.w.__task, c = (s) => (typeof s === 'string' ? p.$(s) : s).click();
+  if (t.kind === 'num') {
+    if (t.col) { const s = String(right ? t.answers[0] : t.answers[0] + 1); const w = t.col.w; [...s].forEach((ch, k) => { c(`.colcalc .inp[data-i="${w - s.length + k}"]`); c(`.numpad [data-k="${ch}"]`); }); }
+    else [...p.d.querySelectorAll('.inp')].forEach((el, i) => { el.click(); for (const ch of String(right ? t.answers[i] : t.answers[i] + 1)) c(`.numpad [data-k="${ch}"]`); });
+    c('.numpad [data-k="ok"]');
+  } else if (t.kind === 'choice' || t.kind === 'parts') { const i = t.options.indexOf(t.answer); c(p.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); }
+  else if (t.kind === 'parts-find') c([...p.d.querySelectorAll('.plant [data-part]')].find((x) => (x.dataset.part === t.part) === right));
+  else { const o = right ? t.order : [t.order[1], t.order[0]].concat(t.order.slice(2)); for (const id of o) c(`.oitem[data-id="${id}"]`); c('#ocheck'); }
+  c('#next');
+}
 // play one turn: the first monster that can be attacked, answered right or wrong, then the monsters step
 const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) => p.T.TW.canTarget(r, y.id)); p.T.ask(x.id); p.T.answer(ok); return p.T.step(); };
 
@@ -120,6 +132,54 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   const c = open({ [META]: snap.task[META], [RUN]: '{"hero":1}', [TURM]: snap.task[TURM] }, 4);
   check(c.w.localStorage.getItem(TURM) === snap.task[TURM] && !!c.T.resume(), 'a broken adventure leaves the Turm run');
   check(c.errors.length === 0, 'no page errors ' + c.errors.join(' '));
+
+  // through the screens: title → start → board → monster card → task → board, then back to the title and into an adventure
+  const u = open({ [META]: meta0 }, 5), ud = u.d, txt = () => ud.querySelector('#app').textContent;
+  check(!!u.$('#turm') && !txt().includes('läuft'), 'Klasse 3: the title shows Turmwacht, nothing running');
+  u.click('#turm');
+  const picked = [...ud.querySelectorAll('button[data-subj]')].filter((b) => b.getAttribute('aria-pressed') === 'true').length;
+  check(picked >= 1 && picked <= 3 && ud.querySelectorAll('[data-h]').length >= 1 && !u.$('#go').disabled, 'start screen: subjects pre-selected, heroes to choose');
+  u.click('#go');
+  check(!!u.$('.overlay #tutok') && ud.querySelectorAll('.tw-mon').length >= 1, 'the board opens with the intro the first time');
+  u.click('.overlay #tutok');
+  check(u.w.__mq.meta.seenTut['turm:intro'] === true && !u.$('.overlay'), 'the intro is seen once');
+  const ask = () => { const r = u.w.__mq.run; [...ud.querySelectorAll('.tw-mon')].find((b) => r.turm.monsters.some((x) => x.id === +b.dataset.id && u.T.TW.canTarget(r, x.id))).click(); const x = r.turm.monsters.find((y) => y.id === +u.$('.tw-mon.sel').dataset.id); check(!!u.$('#atk') && !u.$('#atk').disabled && u.$('#twcard').textContent.includes(x.name) && !!u.$('#twcard .tw-theme'), 'a tap opens the monster card'); u.click('#atk'); if (u.$('.overlay #tutok')) u.click('.overlay #tutok'); return u.saved().turm.asking; };
+  const stat = (a) => ({ ...u.w.__mq.meta.stats[a.m][a.k] });
+  let a1 = ask(); const s0 = stat(a1);
+  check(u.saved().turm.phase === 'task' && same(u.w.__task, a1.task) && !!u.$('.screen.tasking'), 'Angreifen shows the saved question in the normal task view');
+  const snapUi = u.dump();
+  uiAnswer(u, true);
+  let n1 = stat(a1);
+  check(n1.t === s0.t + 1 && n1.c === s0.c + 1 && !u.w.__mq.meta.stats.turm, 'a right answer counts for the unit of the monster, no Turm entry in the statistics');
+  check(!!u.$('.tw-board') && /Schaden/.test(u.$('.tw-log').textContent) && ['choose', 'build'].includes(u.saved().turm.phase), 'back on the board, the log tells what happened');
+  a1 = ask(); const w0 = stat(a1);
+  uiAnswer(u, false);
+  n1 = stat(a1);
+  check(n1.t === w0.t + 1 && n1.c === w0.c && /Die Monster rücken vor/.test(u.$('.tw-log').textContent), 'a wrong answer counts too, the monsters step');
+  u.click('#home');
+  check(u.w.__mq.run === null && !!u.w.localStorage.getItem(TURM) && !!u.$('#turm') && txt().includes('läuft'), '„Titel“ saves the run, clears it from memory, the title shows „läuft“');
+  u.click('#turm');
+  check(!!u.$('#cont') && !!u.$('#new'), 'a saved run: „Weiter“ and „Neu“');
+  u.click('#back');
+  check(!!u.$('#turm'), 'Zurück goes to the title');
+  u.click('[data-sub="0"]'); u.click('[data-new="math"]'); u.click('.choice'); u.click('#go'); u.click('.node.open');
+  check(u.w.__mq.run.mode === 'math' && !!u.$('.atk') && !!u.w.localStorage.getItem(TURM), 'an adventure starts after the Turmwacht, the Turm run stays saved');
+  check(u.errors.length === 0, 'no page errors ' + u.errors.join(' '));
+
+  // reload during a question: the same question through the screens; Klasse 1 and hidden extras have no entry
+  const v = open(snapUi, 6);
+  v.click('#turm'); v.click('#cont');
+  check(same(v.w.__task, JSON.parse(snapUi[TURM]).turm.asking.task) && !!v.$('.screen.tasking'), 'resume during a question shows the same question');
+  uiAnswer(v, true);
+  check(!!v.$('.tw-board') && v.saved().turm.phase !== 'task', 'answered after the reload, back on the board');
+  const M = v.w.__mq.meta;
+  M.grade = 1; v.w.__mq.screenTitle();
+  check(!v.$('#turm'), 'Klasse 1: no Turmwacht on the title');
+  M.grade = 2; v.w.__mq.screenTitle();
+  check(!!v.$('#turm'), 'Klasse 2: Turmwacht on the title');
+  M.hidden.push('extra:turm'); v.w.__mq.screenTitle();
+  check(!v.$('#turm'), 'hidden by the parents: no Turmwacht on the title');
+  check(v.errors.length === 0, 'no page errors ' + v.errors.join(' '));
   last.close();
   console.log(`turm pages fails ${fails} (${opens} pages, ${Date.now() - t0} ms)`);
   if (fails) process.exit(1);
