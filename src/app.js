@@ -2156,7 +2156,7 @@
   }
   /* Bauzeit: cards under the board; a guard card waits for a spot on the board, then for the guard's look */
   let turmMode = null; // 'guard' | 'up' while a card waits for a spot (not saved: a reload shows the cards again)
-  const FLOOR_FX = { chain: 'trifft auch das vorderste Monster auf einem anderen Weg.', stun: 'Das Monster bleibt einen Zug stehen.', repair: `Der Turm bekommt ${TW.REPAIR_HP} ❤️ zurück.`,
+  const FLOOR_FX = { chain: 'trifft auch das vorderste Monster auf einem anderen Weg.', stun: 'Das Monster bleibt einen Zug stehen.', repair: `Der Turm bekommt ${TW.REPAIR_HP} ❤️.`,
     brick: '1 🧱 mehr.', push: 'Das vorderste Monster geht ein Feld zurück.', volley: 'Die Wachen schießen zweimal.' };
   // the coming wave on a path's name chip
   function turmComing(p) {
@@ -2177,7 +2177,7 @@
     const cards = [{ id: 'guard', name: 'Wache aufstellen', pic: 'guard', price: free ? 0 : TW.COST.guard, desc: free ? 'Die erste Wache ist geschenkt.' : 'Schießt auf ihrem Weg mit.', note: full ? 'Alle Plätze sind besetzt. Eine neue Wache ersetzt eine alte.' : '' },
       { id: 'up', name: 'Wache verbessern', pic: 'up', price: upP[0] ?? TW.COST.up[0], label: upP.length > 1 ? upP.join(' / ') : null, desc: `Stufe 2: 💥 ${TW.GUARD_DMG[1]}\nStufe 3: 💥 ${TW.GUARD_DMG[2]}`, why: !G.length ? 'Stell zuerst eine Wache auf.' : !ups.length ? 'Alle Wachen haben Stufe 3.' : '' }]
       .concat([...new Set(t.lanes.map((l) => l.subject))].map((s) => ({ id: 'floor:' + s, name: TWART.ROOMS[s].name, pic: s, price: TW.COST.floor, desc: `Richtig in ${s}: ${FLOOR_FX[TW.FLOORS[s]]}`, why: t.floors.includes(s) ? 'Schon gebaut.' : '' })))
-      .concat({ id: 'fix', name: 'Mauer flicken', pic: 'fix', price: TW.COST.fix, desc: `Der Turm bekommt ${TW.FIX_HP} ❤️ zurück.`, why: run.hero.hp >= run.hero.maxHp ? 'Der Turm ist heil.' : '' });
+      .concat({ id: 'fix', name: 'Mauer flicken', pic: 'fix', price: TW.COST.fix, desc: `Der Turm bekommt ${TW.FIX_HP} ❤️.`, why: run.hero.hp >= run.hero.maxHp ? 'Der Turm ist heil.' : '' });
     for (const c of cards) c.short = c.why ? 0 : Math.max(0, c.price - t.ziegel);
     return cards;
   }
