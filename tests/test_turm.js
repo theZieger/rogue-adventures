@@ -33,7 +33,7 @@ const board = (run, wave, ctx) => { run.turm.phase = 'build'; run.turm.wave = wa
 let nid = 1000;
 const mon = (run, lane, cell, o = {}) => { const x = { id: nid++, lane, cell, m: run.turm.lanes[lane].src[0].m, k: run.turm.lanes[lane].src[0].k, name: 'Regenwicht', shape: 'regenwicht', type: 'wasser', world: 1, hp: 20, maxHp: 20, steps: 1, slow: 0, stun: 0, ...o }; run.turm.monsters.push(x); return x; };
 const hit = (run, id, ok, ctx, info) => { if (run.turm.phase === 'step') run.turm.phase = 'choose'; check(TW.ask(run, id), 'ask', id); return TW.answer(run, ok, ctx, info); };
-const TD = TW.TOWER_DMG, towerDmg = (wave, kind) => Math.ceil(((kind === 'boss' ? TD.boss : TD.normal) + TD.wave * wave) * (kind === 'elite' ? TD.elite : 1));
+const TD = TW.TOWER_DMG, towerDmg = (wave, kind) => Math.min(TW.TURN_LOSS, Math.ceil(((kind === 'boss' ? TD.boss : TD.normal) + TD.wave * wave) * (kind === 'elite' ? TD.elite : 1)));
 const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.monsters) { const k = x.lane + ':' + x.cell; if (seen.has(k) || x.cell < 1 || x.cell > TW.CELLS) return false; seen.add(k); } return true; };
 
 // --- lanes ---
@@ -114,33 +114,46 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   const f = mon(r3, 0, 3, { steps: 2 }); r3.turm.phase = 'step'; TW.step(r3, ctx);
   check(f.cell === 1, 'fast monster walks 2 cells');
   // elites hit harder
-  const r4 = board(start(undefined, 3, ctx), 5, ctx); mon(r4, 0, 1, { elite: true }); r4.turm.phase = 'step';
-  check(TW.step(r4, ctx).find((e) => e.t === 'tower').dmg === towerDmg(5, 'elite') && towerDmg(5, 'elite') > towerDmg(5), 'elite hits harder');
+  const r4 = board(start(undefined, 3, ctx), 2, ctx); mon(r4, 0, 1, { elite: true }); r4.turm.phase = 'step';
+  check(TW.step(r4, ctx).find((e) => e.t === 'tower').dmg === towerDmg(2, 'elite') && towerDmg(2, 'elite') > towerDmg(2), 'elite hits harder');
 }
 
 // --- fairness: wave 1 floor, catch-up, item shield ---
 {
   const ctx = makeCtx(8), run = board(start(undefined, 3, ctx), 1, ctx);
-  run.hero.hp = 3; mon(run, 0, 1); run.turm.phase = 'step';
+  // a second monster keeps the wave going (an empty board ends it and patches the wall)
+  run.hero.hp = 3; mon(run, 0, 1); mon(run, 1, 5); run.turm.phase = 'step';
   let ev = TW.step(run, ctx);
   check(run.hero.hp === 1 && ev.find((e) => e.t === 'tower').dmg === 2, 'wave 1: tower keeps 1 ❤️', ev);
   mon(run, 0, 1); run.turm.phase = 'step'; ev = TW.step(run, ctx);
   check(run.hero.hp === 1 && ev.some((e) => e.t === 'hold') && run.turm.phase !== 'fallen', 'wave 1: tower holds at 1 ❤️', ev);
-  const r2 = board(start(undefined, 3, ctx), 4, ctx);
+  const r2 = board(start(undefined, 3, ctx), 3, ctx);
   // catch-up: from 8 answers, ×1 at ≥ 75 % right, ×0.5 at ≤ 50 %, linear in between, rounded up
   const dmgAt = (c, n) => { r2.hero.hp = 60; r2.turm.score = { Mathe: { c, t: n } }; mon(r2, 0, 1); r2.turm.phase = 'step'; return TW.step(r2, ctx).find((e) => e.t === 'tower').dmg; };
-  const d4 = towerDmg(4);
+  const d4 = towerDmg(3);
   check(dmgAt(4, 8) === Math.ceil(d4 / 2) && dmgAt(2, 10) === Math.ceil(d4 / 2), 'catch-up: half damage rounded up at 50 % or less after 8 answers');
   check(dmgAt(4, 7) === d4, 'no catch-up before 8 answers');
   check(dmgAt(6, 8) === d4 && dmgAt(9, 10) === d4, 'no catch-up at 75 % or more');
   check(dmgAt(5, 8) === Math.ceil(d4 * 0.75), 'catch-up: 62.5 % right → ×0.75');
   const steps = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75].map((x) => dmgAt(Math.round(x * 20), 20));
   check(steps.every((d, i) => !i || d >= steps[i - 1]) && steps[0] < steps[5], 'catch-up grows smoothly with accuracy', steps);
+  // two monsters at the gate in one turn: the tower loses at most TURN_LOSS
+  r2.hero.hp = 60; r2.turm.score = {}; mon(r2, 0, 1); mon(r2, 1, 1, { elite: true }); r2.turm.phase = 'step';
+  ev = TW.step(r2, ctx);
+  check(r2.hero.hp === 60 - TW.TURN_LOSS && ev.filter((e) => e.t === 'tower').reduce((a, e) => a + e.dmg, 0) === TW.TURN_LOSS, 'the tower loses at most TURN_LOSS per turn', ev);
   r2.shield = true; mon(r2, 0, 1); r2.turm.phase = 'step'; const hp = r2.hero.hp;
   check(TW.step(r2, ctx).some((e) => e.t === 'block') && r2.hero.hp === hp && !r2.shield, 'item shield blocks the next monster at the tower');
   // the tower falls from wave 2 on
   r2.hero.hp = 2; mon(r2, 1, 1); r2.turm.phase = 'step';
   check(TW.step(r2, ctx).some((e) => e.t === 'fallen') && r2.turm.phase === 'fallen' && r2.hero.hp === 0, 'tower falls at 0 ❤️');
+}
+
+// --- after a wave the wall is patched up to PATCH_HP, never down ---
+{
+  const ctx = makeCtx(5), patch = (hp) => { const run = board(start(undefined, 3, ctx), 2, ctx); run.hero.hp = hp; run.turm.phase = 'step'; return [run, TW.step(run, ctx)]; };
+  const [low, ev] = patch(7), [high, ev2] = patch(40);
+  check(low.hero.hp === TW.PATCH_HP && ev.some((e) => e.t === 'patch' && e.n === TW.PATCH_HP - 7) && low.turm.phase === 'build', 'a low tower is patched after the wave', ev);
+  check(high.hero.hp === 40 && !ev2.some((e) => e.t === 'patch'), 'a healthy tower keeps its ❤️');
 }
 
 // --- elite protection, hero damage, 🎯, guards ---
@@ -331,7 +344,9 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
 
 // --- bot: full runs through the API only ---
 // buy: 'smart' = like the playtest bot (repair when low, free guard, guards on the busiest path with the type that beats most of
-// its monsters, floors, upgrades); 'none' = a child who never buys anything in the Bauzeit (potions still used)
+// its monsters, floors, upgrades); 'none' = a child who never buys anything in the Bauzeit (potions still used);
+// 'naive' = a child who taps any monster (only a mild pull towards 🎯 and the gate), buys cards in a random order, ignores
+// Schild and Chilischote and drinks a potion only when the tower is below a third
 const LOOKS = { feuer: 'fuchs', wasser: 'kroete', pflanze: 'baer' };
 const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde'], buy = 'smart') => {
   const rnd = seeded(seed * 7919 + Math.round(acc * 100)), right = {}, total = {};
@@ -344,6 +359,23 @@ const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']
     for (const e of ev) if ('dmg' in e || e.t === 'heal') check(Number.isInteger(e.dmg ?? e.n) && (e.dmg ?? e.n) >= 1, 'whole-number damage ≥ 1', e);
     check(cellsOk(run), 'never two monsters on a cell', t().monsters);
     check(Number.isInteger(run.hero.hp) && run.hero.hp >= 0 && run.hero.hp <= run.hero.maxHp, 'tower HP whole and in range', run.hero.hp);
+  };
+  const naiveShop = () => {
+    const T = t(), looks = Object.entries(LOOKS);
+    for (let n = 0; n < 30; n++) {
+      const cards = [{ kind: 'fix' }, ...T.lanes.map((l) => ({ kind: 'floor', subject: l.subject }))];
+      for (let l = 0; l < T.lanes.length; l++) for (let s = 0; s < TW.SPOTS; s++) {
+        const [type, look] = looks[Math.floor(rnd() * looks.length)];
+        cards.push(T.guards[l + ':' + s] ? { kind: 'up', lane: l, spot: s } : { kind: 'guard', lane: l, spot: s, look, type });
+      }
+      const ok = cards.filter((c) => TW.price(run, c) >= 0 && TW.price(run, c) <= T.ziegel);
+      if (!ok.length || !TW.buy(run, ok[Math.floor(rnd() * ok.length)])) break;
+    }
+  };
+  const naiveTarget = (ms) => {
+    const w = ms.map((y) => 1 + (y.id === t().weak ? 1 : 0) + (y.cell === 1 ? 1 : 0)), sum = w.reduce((a, b) => a + b, 0);
+    let r = rnd() * sum;
+    return ms.find((_, i) => (r -= w[i]) < 0) || ms[ms.length - 1];
   };
   const shop = () => {
     const T = t(), pv = TW.preview(run, ctx), w = Math.min(TW.WAVES.length, T.wave + 1);
@@ -366,13 +398,13 @@ const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']
   while (guard++ < 3000) {
     const ph = t().phase;
     if (ph === 'choose') {
-      if (run.hero.hp < 20 && run.items.some((i) => i === 'trank' || i === 'grosstrank')) { potion(run.items.findIndex((x) => x === 'trank' || x === 'grosstrank')); checkEv(TW.step(run, ctx)); continue; }
+      if (run.hero.hp < run.hero.maxHp / 3 && run.items.some((i) => i === 'trank' || i === 'grosstrank')) { potion(run.items.findIndex((x) => x === 'trank' || x === 'grosstrank')); checkEv(TW.step(run, ctx)); continue; }
       const ms = t().monsters.filter((x) => TW.canTarget(run, x.id)).sort((a, b) => a.cell - b.cell);
-      const x = ms.find((y) => y.id === t().weak) || ms[0];
+      const naive = buy === 'naive', x = naive ? naiveTarget(ms) : ms.find((y) => y.id === t().weak) || ms[0];
       check(x, 'something to target', t());
       // the shield when a monster is about to reach the tower, the Chilischote on a boss (neither costs a turn)
-      if (!run.shield && run.items.includes('schild') && t().monsters.some((y) => y.cell === 1)) { run.items.splice(run.items.indexOf('schild'), 1); run.shield = true; }
-      if (!run.power && x.boss && run.items.includes('keks')) { run.items.splice(run.items.indexOf('keks'), 1); run.power = true; }
+      if (!naive && !run.shield && run.items.includes('schild') && t().monsters.some((y) => y.cell === 1)) { run.items.splice(run.items.indexOf('schild'), 1); run.shield = true; }
+      if (!naive && !run.power && x.boss && run.items.includes('keks')) { run.items.splice(run.items.indexOf('keks'), 1); run.power = true; }
       const a = TW.ask(run, x.id), ok = rnd() < acc, sub = t().lanes[a.lane].subject;
       total[sub] = (total[sub] || 0) + 1; if (ok) right[sub] = (right[sub] || 0) + 1;
       const key = subjects.length > 1 ? sub : a.lane; asked[key] = (asked[key] || 0) + 1;
@@ -380,11 +412,12 @@ const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']
       questions++; pass++; maxPass = Math.max(maxPass, pass);
       checkEv(TW.step(run, ctx));
       if (!['choose', 'build', 'reward', 'fallen', 'won'].includes(t().phase)) check(false, 'phase after step', t().phase);
-    } else if (ph === 'reward') TW.takeReward(run, t().offer.indexOf('schild') >= 0 ? t().offer.indexOf('schild') : 0);
+    } else if (ph === 'reward') TW.takeReward(run, buy === 'naive' ? Math.floor(rnd() * 2) : Math.max(0, t().offer.indexOf('schild')));
     else if (ph === 'build') {
       if (t().wave === 2 && !t().cpUsed) bau2 = t().ziegel;
-      if (run.hero.hp <= 30 && run.items.includes('trank')) potion(run.items.indexOf('trank'));
+      if (run.hero.hp <= (buy === 'naive' ? run.hero.maxHp / 3 : 30) && run.items.includes('trank')) potion(run.items.indexOf('trank'));
       if (buy === 'smart') shop();
+      else if (buy === 'naive') naiveShop();
       check(JSON.stringify(JSON.parse(JSON.stringify(run))) === JSON.stringify(run), 'plain JSON');
       const pv = TW.preview(run, ctx);
       checkEv(TW.nextWave(run, ctx));
@@ -397,20 +430,20 @@ const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']
   check(JSON.stringify(JSON.parse(JSON.stringify(run))) === JSON.stringify(run), 'plain JSON');
   check(guard < 3000, 'run terminates', { acc, seed });
   const per = Object.values(asked).map((n) => n / questions);
-  return { won: t().phase === 'won', best: t().best, questions, hurt, maxPass, retries: t().cpUsed, minShare: Math.min(...per), earned, bau2, falls };
+  return { won: t().phase === 'won', hpEnd: run.hero.hp, best: t().best, questions, hurt, maxPass, retries: t().cpUsed, minShare: Math.min(...per), earned, bau2, falls };
 };
 
 // the balance table: printed, not asserted (seeded results shift with any rule change); only invariants are checked
 const rows = [], pct = (n, N) => String(Math.round(100 * n / N)).padStart(3) + '%';
 for (const [grade, subjects, N] of [[3, ['Mathe', 'Deutsch', 'Sachkunde'], 150], [3, ['Mathe'], 80], [2, ['Mathe', 'Deutsch', 'Sachkunde'], 80]]) {
-  rows.push(`K${grade} ${subjects.join('+')}: Treffer/Kauf | Sieg ohne Neustart | Sieg | Welle ≥4 ≥5 ≥6 | Fragen Ø (max/Anlauf) | Neustarts Ø | 🧱 Ø | 🧱 vor Bauzeit 2 min | Fach < 20 % | Stürze in Welle 2–6 pro 100 Läufe`);
-  for (const [acc, buy] of [[1, 'none'], [0.9, 'none'], [0.9, 'smart'], [0.75, 'smart'], [0.65, 'smart'], [0.5, 'smart']]) {
+  rows.push(`K${grade} ${subjects.join('+')}: Treffer/Kauf | Sieg ohne Neustart | Sieg | Welle ≥4 ≥5 ≥6 | Fragen Ø (max/Anlauf) | Neustarts Ø | 🧱 Ø | 🧱 vor Bauzeit 2 min | Fach < 20 % | Stürze in Welle 2–6 pro 100 Läufe | ❤️ am Ende Ø (Siege)`);
+  for (const [acc, buy] of [[1, 'none'], [0.9, 'none'], [0.9, 'smart'], [0.75, 'smart'], [0.65, 'smart'], [0.5, 'smart'], [0.85, 'naive'], [0.7, 'naive'], [0.5, 'naive']]) {
     const res = [];
     for (let s = 1; s <= N; s++) res.push(play(acc, s, grade, subjects, buy));
     res.forEach((r) => check(r.maxPass <= 70, 'never more than 70 questions per attempt', r));
     if (buy === 'smart') res.forEach((r) => check(r.bau2 === null || r.bau2 >= TW.COST.guard, 'the second Bauzeit always allows a guard', r));
     const avg = (f) => res.reduce((a, r) => a + f(r), 0) / N, n = (f) => res.filter(f).length;
-    rows.push(`  ${String(Math.round(acc * 100)).padStart(3)} % ${buy.padEnd(5)} | ${pct(n((r) => r.won && !r.retries), N)} | ${pct(n((r) => r.won), N)} | ${[4, 5, 6].map((w) => pct(n((r) => r.best >= w), N)).join(' ')} | ${Math.round(avg((r) => r.questions))} (${Math.max(...res.map((r) => r.maxPass))}) | ${avg((r) => r.retries).toFixed(1)} | ${Math.round(avg((r) => r.earned))} | ${Math.min(...res.map((r) => r.bau2 ?? 99))} | ${pct(n((r) => r.minShare < 0.2), N)} | ${[2, 3, 4, 5, 6].map((w) => Math.round(100 * avg((r) => r.falls.filter((f) => f === w).length))).join(' ')}`);
+    rows.push(`  ${String(Math.round(acc * 100)).padStart(3)} % ${buy.padEnd(5)} | ${pct(n((r) => r.won && !r.retries), N)} | ${pct(n((r) => r.won), N)} | ${[4, 5, 6].map((w) => pct(n((r) => r.best >= w), N)).join(' ')} | ${Math.round(avg((r) => r.questions))} (${Math.max(...res.map((r) => r.maxPass))}) | ${avg((r) => r.retries).toFixed(1)} | ${Math.round(avg((r) => r.earned))} | ${Math.min(...res.map((r) => r.bau2 ?? 99))} | ${pct(n((r) => r.minShare < 0.2), N)} | ${[2, 3, 4, 5, 6].map((w) => Math.round(100 * avg((r) => r.falls.filter((f) => f === w).length))).join(' ')} | ${Math.round(res.filter((r) => r.won).reduce((a, r) => a + r.hpEnd, 0) / Math.max(1, n((r) => r.won)))}`);
   }
 }
 console.log(rows.join('\n'));

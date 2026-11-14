@@ -9,7 +9,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-14
 
 ### Neu
-- Turmwacht ab Klasse 2: Monster aus bis zu drei Fächern laufen auf den Wissensturm zu, bei richtigen Antworten schießen Held und Wachen.
+- Turmwacht ab Klasse 2: Monster laufen auf den Wissensturm zu, richtige Antworten aus schon geübten Themen halten sie auf.
 - Zwischen den Wellen der Turmwacht ist Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.
 - Eltern können für die Turmwacht die Fächer festlegen und sehen, was zuletzt geübt wurde.
 

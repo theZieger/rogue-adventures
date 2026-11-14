@@ -818,7 +818,13 @@ button.tw-spot { cursor: pointer; border-radius: 12px; }
 .tw-panel { display: flex; flex-direction: column; gap: 8px; flex: 0 1 auto; margin-top: auto; min-height: 0; overflow-y: auto; }
 /* Bauzeit: the board gives up a little height so the cards under it are whole */
 .tw-screen.build .tw-main { min-height: 270px; max-height: min(calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px), calc(100vh - 384px)); }
-.tw-log { flex: none; max-height: calc(2.3em + 22px); overflow-y: auto; overscroll-behavior: contain; }
+.tw-log { flex: none; }
+/* two whole lines; more scrolls inside the text (scrolling the box itself would show a cut line in its padding) */
+.tw-log p { max-height: 2.3em; overflow-y: auto; overscroll-behavior: contain; }
+/* portrait: room the board can't use (it is as wide as the screen) is shared above the board and above the panel */
+.tw-main { margin-top: auto; }
+/* an open monster card: the board shrinks so the card and the buttons under it fit */
+.tw-screen.carded .tw-main { min-height: 200px; }
 .tw-panel .row { margin: 0; }
 .tw-hint { margin: 4px 2px; font-size: 17px; }
 .tw-card { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -882,7 +888,7 @@ i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top
 .tw-bauhead p { margin: 0; font-size: 16px; font-weight: 700; }
 .tw-cards { display: flex; gap: 8px; overflow-x: auto; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); scroll-snap-type: x proximity; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; }
 .tw-cards > div { flex: none; display: flex; scroll-snap-align: start; }
-.tw-buy { width: 150px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 5px 5px 7px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.tw-buy { width: calc((min(100vw, 640px) - 70px) / 2); display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 5px 5px 7px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .tw-buy:active { transform: translateY(3px); box-shadow: none; }
 .tw-pcol { flex: none; position: relative; display: block; }
 .tw-buy .tw-pic { display: block; width: 100%; height: 54px; border-radius: 9px; background: #E3EED6; }
@@ -891,11 +897,11 @@ i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top
 .tw-tcol { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .tw-cards.end { -webkit-mask-image: none; mask-image: none; }
 .tw-buy b { font-size: 16px; line-height: 1.12; }
-.tw-buy .tw-desc { font-size: 13.5px; line-height: 1.2; }
+.tw-buy .tw-desc { font-size: 15px; line-height: 1.2; }
 .tw-price { padding: 0 8px; border-radius: 99px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 700; line-height: 24px; white-space: nowrap; }
 .tw-price:empty { display: none; }
-.tw-price.free { padding: 0 6px; font-size: 13px; }
-.tw-why { padding-top: 2px; font-size: 13.5px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
+.tw-price.free { padding: 0 6px; font-size: 14px; }
+.tw-why { padding-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
 .tw-buy.short, .tw-buy.off { background: #DADDE6; box-shadow: none; }
 .tw-buy.short .tw-pic, .tw-buy.off .tw-pic { filter: grayscale(.9); opacity: .65; }
 .tw-buy.off .tw-why { color: var(--ink-soft); }
@@ -937,8 +943,10 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   /* the board takes the whole height on the left (tokens stay about 40 px); the top bar heads the right column */
   .tw-screen:not(.tasking) { display: grid; grid-template-columns: min(58vw, (100vh - 10px) * var(--bw, .762) + 14px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
   .tw-screen:not(.tasking) > .topbar { grid-column: 2; grid-row: 1; padding: 6px 12px; }
-  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; }
+  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; margin-top: 0; }
   .tw-screen:not(.tasking) .tw-log { grid-column: 2; grid-row: 2; }
+  /* the last turn's log gives way to an open monster card, so the card and the buttons fit */
+  .tw-screen.carded .tw-log { display: none; }
   .tw-screen:not(.tasking) .tw-panel { grid-column: 2; grid-row: 3; max-height: 100%; overflow-y: auto; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); }
   .tw-card p, .tw-stats { font-size: 16px; }
   .tw-card h3 { font-size: 21px; }

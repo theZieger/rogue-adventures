@@ -152,8 +152,11 @@ async function shop(){
   else { let rest=price; for(const v of [1000,500,200,100,50,20,10,5,2,1]) while(v<=rest&&coins().includes(v)){ click($(`.coins .coin[data-v="${v}"]`)); rest-=v; } if(rest) throw new Error('could not pay '+price+' from '+purse); }
   click($('#pay'));
 }
-// Turmwacht (MODE=turm, GRADE=2|3, SUBJECTS=Mathe,Deutsch: default = the pre-selected ones): plays through the real screens
-const TURM=process.env.MODE==='turm';
+// Turmwacht (MODE=turm, GRADE=2|3, SUBJECTS=Mathe,Deutsch: default = the pre-selected ones): plays through the real screens.
+// NAIVE=1 plays like a child who taps any monster (a mild pull towards 🎯 and the gate), buys cards in a random order,
+// ignores Schild and Chilischote and drinks a potion only when the tower is below a third
+const TURM=process.env.MODE==='turm', NAIVE=!!process.env.NAIVE;
+const anyOf=(a)=>a[Math.floor(Math.random()*a.length)];
 const turmRuns=[]; let turmAt=null, turmPotions=0, turmSeen={}; const turmBuys={};
 const turmRun=()=>{ const r=w.__mq.run; return r&&r.mode==='turm'?r:null; };
 const turmQ=(r)=>Object.values(r.turm.score).reduce((a,x)=>a+x.t,0);
@@ -166,7 +169,16 @@ const TW_BEATS={ feuer:'pflanze', pflanze:'wasser', wasser:'feuer' }, TW_TYPE={ 
 const bagItem=(re)=>{ click($('#bag')); const it=$$('.overlay .item').find(b=>re.test(b.getAttribute('aria-label'))); if(it) click(it); if($('.overlay #close')) click($('.overlay #close')); return !!it; };
 const twBought=(k)=>{ turmBuys[k]=(turmBuys[k]||0)+1; };
 // Bauzeit, one purchase per call: repair when low, the free guard, guards on the busiest path, floors, upgrades; then the next wave
+function turmNaiveShop(r){
+  if(r.hero.hp<r.hero.maxHp/3&&r.items.includes('trank')&&bagItem(/^Trank/)){ turmPotions++; return; }
+  const c=anyOf($$('[data-card]').filter(b=>b.getAttribute('aria-disabled')==='false'));
+  if(!c){ click($('#nextwave')); return; }
+  const id=c.dataset.card; click(c);
+  if(id==='guard'||id==='up'){ const sp=anyOf($$('button.tw-spot.pick')); if(!sp){ click($('#pickno')); click($('#nextwave')); return; } click(sp); if(id==='guard') click(anyOf($$('.overlay .tw-look'))); }
+  twBought(id.split(':')[0]);
+}
 function turmShop(r){
+  if(NAIVE) return turmNaiveShop(r);
   const t=r.turm, L=t.lanes.length, card=(id)=>$(`[data-card="${id}"]`), ok=(id)=>!!card(id)&&card(id).getAttribute('aria-disabled')==='false';
   const coming=[...Array(L).keys()].map(l=>{ const c=$(`.tw-lane[data-lane="${l}"] .tw-coming`); return c?parseInt(c.textContent,10):0; });
   const busy=[...Array(L).keys()].sort((a,b)=>coming[b]-coming[a]||a-b);
@@ -188,7 +200,7 @@ function turmDone(){ const e=turmAt.r; if(turmRuns.includes(turmAt)) return; tur
 // one action per call; the board is checked first and the screens are told apart by one class each (queries on the big board are slow in jsdom)
 async function turmBot(){
   const ov=$('.overlay');
-  if(ov){ const it=$$('.tw-item[data-r]',ov); if(it.length){ click(it.find(b=>b.textContent.includes('Schild'))||it[0]); return true; }
+  if(ov){ const it=$$('.tw-item[data-r]',ov); if(it.length){ click(NAIVE?anyOf(it):it.find(b=>b.textContent.includes('Schild'))||it[0]); return true; }
     const c=ov.querySelector('#close, #no'); if(c){ click(c); return true; } return false; }
   const board=$('.tw-screen'), r=turmRun();
   if(board){
@@ -200,11 +212,12 @@ async function turmBot(){
     if($('#twon')){ click($('#twon')); return true; }
     if(board.classList.contains('build')){ if($('.tw-pickhint')) click($('#pickno')); else turmShop(r); return true; }
     if(r.turm.phase!=='choose') return false;
-    if(r.hero.hp<20&&r.items.some(i=>i==='trank'||i==='grosstrank')&&bagItem(/Trank/)){ turmPotions++; return true; }
-    if(!r.shield&&r.items.includes('schild')&&r.turm.monsters.some(x=>x.cell===1)&&bagItem(/^Schild/)) return true;
+    if(r.hero.hp<r.hero.maxHp/3&&r.items.some(i=>i==='trank'||i==='grosstrank')&&bagItem(/Trank/)){ turmPotions++; return true; }
+    if(!NAIVE&&!r.shield&&r.items.includes('schild')&&r.turm.monsters.some(x=>x.cell===1)&&bagItem(/^Schild/)) return true;
     // 🎯 first, else the monster closest to the gate that can be attacked
     const ms=$$('button.tw-mon:not(.guarded)'), cell=(b)=>+b.closest('.tw-cell').dataset.cell;
-    const x=ms.find(b=>b.classList.contains('weak'))||ms.sort((a,b)=>cell(a)-cell(b))[0];
+    const pull=(b)=>1+(b.classList.contains('weak')?1:0)+(cell(b)===1?1:0), weighted=ms.flatMap(b=>Array(pull(b)).fill(b));
+    const x=NAIVE?anyOf(weighted):ms.find(b=>b.classList.contains('weak'))||ms.sort((a,b)=>cell(a)-cell(b))[0];
     if(!x) throw new Error('no monster to attack: '+text().slice(0,200));
     click(x); const atk=$('#atk'); if(!atk||atk.disabled) throw new Error('cannot attack '+x.getAttribute('aria-label')); click(atk); return true; }
   // a finished run (end screen, or the title when the fake clock let a late history „back“ through first): the main loop

@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="c0c884c3b274">
+<meta name="app-version" content="3fa0a1e12917">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -874,7 +874,13 @@ button.tw-spot { cursor: pointer; border-radius: 12px; }
 .tw-panel { display: flex; flex-direction: column; gap: 8px; flex: 0 1 auto; margin-top: auto; min-height: 0; overflow-y: auto; }
 /* Bauzeit: the board gives up a little height so the cards under it are whole */
 .tw-screen.build .tw-main { min-height: 270px; max-height: min(calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px), calc(100vh - 384px)); }
-.tw-log { flex: none; max-height: calc(2.3em + 22px); overflow-y: auto; overscroll-behavior: contain; }
+.tw-log { flex: none; }
+/* two whole lines; more scrolls inside the text (scrolling the box itself would show a cut line in its padding) */
+.tw-log p { max-height: 2.3em; overflow-y: auto; overscroll-behavior: contain; }
+/* portrait: room the board can't use (it is as wide as the screen) is shared above the board and above the panel */
+.tw-main { margin-top: auto; }
+/* an open monster card: the board shrinks so the card and the buttons under it fit */
+.tw-screen.carded .tw-main { min-height: 200px; }
 .tw-panel .row { margin: 0; }
 .tw-hint { margin: 4px 2px; font-size: 17px; }
 .tw-card { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -938,7 +944,7 @@ i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top
 .tw-bauhead p { margin: 0; font-size: 16px; font-weight: 700; }
 .tw-cards { display: flex; gap: 8px; overflow-x: auto; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); scroll-snap-type: x proximity; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; }
 .tw-cards > div { flex: none; display: flex; scroll-snap-align: start; }
-.tw-buy { width: 150px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 5px 5px 7px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.tw-buy { width: calc((min(100vw, 640px) - 70px) / 2); display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 5px 5px 7px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .tw-buy:active { transform: translateY(3px); box-shadow: none; }
 .tw-pcol { flex: none; position: relative; display: block; }
 .tw-buy .tw-pic { display: block; width: 100%; height: 54px; border-radius: 9px; background: #E3EED6; }
@@ -947,11 +953,11 @@ i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top
 .tw-tcol { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .tw-cards.end { -webkit-mask-image: none; mask-image: none; }
 .tw-buy b { font-size: 16px; line-height: 1.12; }
-.tw-buy .tw-desc { font-size: 13.5px; line-height: 1.2; }
+.tw-buy .tw-desc { font-size: 15px; line-height: 1.2; }
 .tw-price { padding: 0 8px; border-radius: 99px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 700; line-height: 24px; white-space: nowrap; }
 .tw-price:empty { display: none; }
-.tw-price.free { padding: 0 6px; font-size: 13px; }
-.tw-why { padding-top: 2px; font-size: 13.5px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
+.tw-price.free { padding: 0 6px; font-size: 14px; }
+.tw-why { padding-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
 .tw-buy.short, .tw-buy.off { background: #DADDE6; box-shadow: none; }
 .tw-buy.short .tw-pic, .tw-buy.off .tw-pic { filter: grayscale(.9); opacity: .65; }
 .tw-buy.off .tw-why { color: var(--ink-soft); }
@@ -993,8 +999,10 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   /* the board takes the whole height on the left (tokens stay about 40 px); the top bar heads the right column */
   .tw-screen:not(.tasking) { display: grid; grid-template-columns: min(58vw, (100vh - 10px) * var(--bw, .762) + 14px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
   .tw-screen:not(.tasking) > .topbar { grid-column: 2; grid-row: 1; padding: 6px 12px; }
-  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; }
+  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; margin-top: 0; }
   .tw-screen:not(.tasking) .tw-log { grid-column: 2; grid-row: 2; }
+  /* the last turn's log gives way to an open monster card, so the card and the buttons fit */
+  .tw-screen.carded .tw-log { display: none; }
   .tw-screen:not(.tasking) .tw-panel { grid-column: 2; grid-row: 3; max-height: 100%; overflow-y: auto; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); }
   .tw-card p, .tw-stats { font-size: 16px; }
   .tw-card h3 { font-size: 21px; }
@@ -3664,7 +3672,7 @@ const MK = (() => {
     1: {
       normal: [
         { name: 'Der Zweifler', type: 'normal', shape: 'zweifler', hp: 26, atk: 3 },
-        { name: 'Der Vergessliche', type: 'normal', shape: 'vergesslicher', hp: 24, atk: 4 },
+        { name: 'Der Vergessliche', acc: 'den Vergesslichen', type: 'normal', shape: 'vergesslicher', hp: 24, atk: 4 },
         { name: 'Der Verwechsler', type: 'normal', shape: 'verwechsler', hp: 28, atk: 4 },
         { name: 'Der Schwindler', type: 'normal', shape: 'schwindler', hp: 30, atk: 3 },
       ],
@@ -16254,26 +16262,31 @@ const TW = (() => {
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
   // (enter 0: the next one only when the board is empty); boss/elite/final = queue position of the special monster
   const WAVES = [
-    { n: 3, hp: 23, start: 1, enter: 0 },
-    { n: 5, hp: 29, start: 2, enter: 2 },
-    { n: 3, hp: 34, start: 2, enter: 2, boss: 1 },
-    { n: 6, hp: 39, start: 3, enter: 2, fast: 3 },
-    { n: 5, hp: 44, start: 3, enter: 2, elite: 2 },
-    { n: 3, hp: 49, start: 3, enter: 2, final: 1 },
+    { n: 3, hp: 25, start: 1, enter: 0 },
+    { n: 5, hp: 32, start: 2, enter: 2 },
+    { n: 3, hp: 37, start: 2, enter: 2, boss: 1 },
+    { n: 6, hp: 43, start: 3, enter: 2, fast: 3 },
+    { n: 5, hp: 48, start: 3, enter: 2, elite: 2 },
+    { n: 3, hp: 54, start: 3, enter: 2, final: 1 },
   ];
   // Klasse 2: fewer monsters, each a little sturdier, so a run still has about as many questions
   const K2_COUNT = 0.8, K2_MIN = 2, K2_HP = 1.2;
   const COST = { guard: 4, up: [7, 11], floor: 12, fix: 3 };
   const FIX_HP = 10, REPAIR_HP = 2;
-  const GUARD_DMG = [4, 6, 8];
+  // after a wave the wall is patched up to PATCH_HP for free, so a child who never repairs does not start a wave nearly fallen
+  const PATCH_HP = 25;
+  const GUARD_DMG = [5, 8, 11];
   const HERO_EVO = 3, HERO_WAVE = 4, STRONG = 1.5, WEAK = 1.5, POWER = 2;
   const TOWER_DMG = { normal: 5, boss: 14, wave: 2.5, elite: 1.5 }; // per hit: normal/boss + wave × wave number, elites × elite, rounded up
+  // most ❤️ the tower can lose in one turn: monsters arriving together weaken the tower but never wipe it out at once
+  const TURN_LOSS = 14;
   const INCOME = { right: 1, weak: 1, wave: 2, clean: 1, floor: 1 };
-  const ELITE_HP = 1.9, BOSS_HP = 3.5, FINAL_HP = 1.6;
+  const ELITE_HP = 1.9, BOSS_HP = 3.5, FINAL_HP = 1.4;
   const PER_MONSTER = 2; // ≈ questions a monster takes, for spreading monsters over the lanes
   const AGAIN_MAX = 3, AGAIN_TASK_MAX = 8192;
-  // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % (no message)
-  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5;
+  // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % and the hero hits
+  // up to 15 % harder, so a struggling child still reaches the end in ≤ 70 questions (no message)
+  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5, CATCHUP_HERO = 0.3;
   const CP_USES = 2;
   const START_ITEMS = ['trank'], BOSS_ITEM = 'grosstrank', OFFER = ['trank', 'schild', 'keks', 'lupe'];
   const FLOORS = { Mathe: 'chain', Ethik: 'stun', Sachkunde: 'repair', Deutsch: 'brick', Musik: 'push', Englisch: 'volley' };
@@ -16445,7 +16458,7 @@ const TW = (() => {
 
   function heroDamage(run, x, ctx) {
     const t = run.turm, strong = BEATS[ctx.heroType] === x.type, weak = t.weak === x.id;
-    const d = (ctx.dmg(x.m, x.k) + HERO_EVO * run.hero.evo + HERO_WAVE * (t.wave - 1)) * (strong ? STRONG : 1) * (weak ? WEAK : 1) * (run.power ? POWER : 1);
+    const d = (ctx.dmg(x.m, x.k) + HERO_EVO * run.hero.evo + HERO_WAVE * (t.wave - 1)) * (strong ? STRONG : 1) * (weak ? WEAK : 1) * (run.power ? POWER : 1) * (1 + CATCHUP_HERO * (1 - catchUp(t)));
     return { dmg: Math.max(1, Math.round(d)), strong, weak };
   }
   const guardDamage = (g, x) => Math.max(1, Math.round(GUARD_DMG[g.lvl - 1] * (BEATS[g.type] === x.type ? STRONG : 1)));
@@ -16539,24 +16552,26 @@ const TW = (() => {
     } else if (fx === 'volley') volley();
   }
 
-  function towerHit(run, x, ev) {
+  function towerHit(run, x, ev, turnLost) {
     const t = run.turm, h = run.hero, gone = !x.boss;
     if (gone) remove(t, x);
-    if (run.shield) { run.shield = false; ev.push({ t: 'block', id: x.id, gone }); return; }
+    if (run.shield) { run.shield = false; ev.push({ t: 'block', id: x.id, gone }); return 0; }
     let d = (x.boss ? TOWER_DMG.boss : TOWER_DMG.normal) + TOWER_DMG.wave * t.wave;
     if (x.elite) d *= TOWER_DMG.elite;
     d = Math.max(1, Math.ceil(d * catchUp(t) - 1e-9));
+    d = Math.min(d, TURN_LOSS - turnLost);
     if (t.wave === 1) d = Math.min(d, h.hp - 1); // wave 1 is safe: the tower keeps at least 1 ❤️
-    if (d < 1) { ev.push({ t: 'hold', id: x.id, gone }); return; }
+    if (d < 1) { ev.push({ t: 'hold', id: x.id, gone }); return 0; }
     h.hp = Math.max(0, h.hp - d); t.hurtThisWave = true;
     ev.push({ t: 'tower', id: x.id, dmg: d, hp: h.hp, gone });
+    return d;
   }
 
   // monsters walk, hit the tower, new ones enter; then the next turn, the wave's end or the fall
   function step(run, ctx) {
     const t = run.turm, ev = [];
     if (t.phase !== 'step' && t.phase !== 'choose') return ev;
-    t.asking = null;
+    t.asking = null; let lost = 0;
     for (const x of t.monsters.slice().sort((a, b) => a.cell - b.cell)) {
       if (x.boss) { const rest = x.slow; x.slow = 1 - x.slow; if (rest) continue; }
       if (x.stun) { x.stun = 0; ev.push({ t: 'stunned', id: x.id }); continue; }
@@ -16567,7 +16582,7 @@ const TW = (() => {
         x.cell--;
       }
       if (x.cell !== from) ev.push({ t: 'move', id: x.id, from, to: x.cell });
-      if (hit) towerHit(run, x, ev);
+      if (hit) lost += towerHit(run, x, ev, lost);
     }
     if (run.hero.hp <= 0) { t.phase = 'fallen'; ev.push({ t: 'fallen', wave: t.wave }); return ev; }
     enter(t, WAVES[t.wave - 1].enter, ev);
@@ -16587,6 +16602,8 @@ const TW = (() => {
     if (!t.hurtThisWave) earn(t, INCOME.clean, 'clean', ev);
     if (w.boss != null || w.final != null) { run.hero.evo = Math.min(2, run.hero.evo + 1); ev.push({ t: 'evolve', evo: run.hero.evo }); }
     if (t.wave === WAVES.length) { t.phase = 'won'; ev.push({ t: 'won' }); return; }
+    const h = run.hero, n = Math.min(PATCH_HP, h.maxHp) - h.hp;
+    if (n > 0) { h.hp += n; ev.push({ t: 'patch', n, hp: h.hp }); }
     if (w.boss != null) {
       run.items.push(BOSS_ITEM); ev.push({ t: 'item', id: BOSS_ITEM });
       const a = pick(ctx, OFFER); t.offer = [a, pick(ctx, OFFER.filter((i) => i !== a))];
@@ -16644,7 +16661,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
     lanesFor, newRun, card, canTarget, preview,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };
@@ -16974,7 +16991,7 @@ const TWART = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster aus bis zu drei Fächern laufen auf den Wissensturm zu, bei richtigen Antworten schießen Held und Wachen.", "Zwischen den Wellen der Turmwacht ist Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Eltern können für die Turmwacht die Fächer festlegen und sehen, was zuletzt geübt wurde."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster laufen auf den Wissensturm zu, richtige Antworten aus schon geübten Themen halten sie auf.", "Zwischen den Wellen der Turmwacht ist Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Eltern können für die Turmwacht die Fächer festlegen und sehen, was zuletzt geübt wurde."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -18797,7 +18814,13 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   const TURM_PHASES = ['choose', 'task', 'step', 'reward', 'build', 'fallen', 'won'];
   // a unit's Turm world: the furthest world reached in an adventure there (running, or a Monsterbuch entry from there)
   const turmWorld = (m) => { const r = loadRun(m); return Math.min(MODES[m].worlds, Math.max(1, r ? r.world : 1, ...Object.values(meta.dex).filter((e) => isObj(e) && e.mode === m && Number.isInteger(e.world)).map((e) => e.world))); };
-  const turmSources = (subject, grade) => MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject && shown(m)).flatMap((m) => fightMods(m).map((k) => ({ m, k })));
+  // Turmwacht is for review: only the task types the child has practised in a subject; with none yet, the first two
+  // of the subject's first theme in title order (so a new subject brings two new explanations, not a dozen)
+  const turmSources = (subject, grade) => {
+    const units = MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject && shown(m)).sort((x, y) => (MODES[x].rank || 0) - (MODES[y].rank || 0)), done = units.filter(practised);
+    if (!done.length) return units.slice(0, 1).flatMap((m) => enabledMods(m).slice(0, 2).map((k) => ({ m, k })));
+    return done.flatMap((m) => fightMods(m).filter((k) => meta.stats[m][k].t > 0).map((k) => ({ m, k })));
+  };
   const turmHero = (h = run.hero) => MODES[h.m].starters.find((s) => s.id === h.id);
   const laneAcc = (lane) => { let c = 0, t = 0; for (const { m, k } of lane.src) { const s = meta.stats[m][k]; c += s.c; t += s.t; } return t ? c / t : 0.6; };
   const turmCtx = (hero) => ({ rnd: Math.random, heroType: turmHero(hero).type, enemies: (m, w) => MODES[m].enemies[w], worlds: (m) => MODES[m].worlds, dmg: (m, k) => MODES[m].modules[k].dmg, acc: laneAcc, on: (m, k) => enabledMods(m).includes(k) });
@@ -18951,6 +18974,8 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   // „Erst den Wackelturm besiegen.“: the data's accusative if it has one, else the article (and an adjective after „Der“) declined
   const accName = (x) => x.acc || x.name.replace(/^(Der|Die|Das) (?:([a-zäöüß]+e) )?/, (_, art, adj) => `${{ Der: 'den', Die: 'die', Das: 'das' }[art]} ${adj ? adj + (art === 'Der' ? 'n ' : ' ') : ''}`);
   const midName = (n) => n.replace(/^(Der|Die|Das) /, (a) => a.toLowerCase());
+  const turmEliteText = (x) => `Das Elitemonster 🛡️ schützt alle Monster hinter sich auf seinem Weg. Erst wenn ${midName(x.name)} besiegt ist, kommst du an sie heran.`;
+  const turmBlocked = (by) => `Erst ${accName(by)} besiegen.`;
   // stage names change only for some heroes, so the new name is said only when there is one (never „wird zu …“)
   function turmEvoText(evo) {
     const N = turmHero().names, a = N[evo - 1], b = N[evo];
@@ -18986,7 +19011,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     render(`<div class="screen">${topbar('🏰 Turmwacht')}<div class="scroll"><div class="stack">
       <p class="center tw-lead">Monster laufen auf den Wissensturm zu. Jede richtige Antwort trifft eins.</p>
       <div class="card"><h3>Fächer</h3>${fixed.length ? `<p class="pnote">Diese Fächer haben deine Eltern ausgewählt.</p><div class="tw-subjs">${subs.filter((s) => fixed.includes(s.subject)).map((s) => subj(s, true)).join('')}</div>`
-        : `<p class="pnote" id="subnote" aria-live="polite">Wähle ein bis drei Fächer. Jedes Fach bekommt einen eigenen Weg.</p><div class="tw-subjs">${subs.map((s) => subj(s)).join('')}</div>`}</div>
+        : `<p class="pnote" id="subnote" aria-live="polite">Wähle ein bis drei Fächer. Jedes Fach bekommt einen eigenen Weg.</p><div class="tw-subjs">${subs.map((s) => subj(s)).join('')}</div>`}<p class="pnote tw-review">Gefragt wird, was du schon geübt hast. Ein neues Fach beginnt mit seinem ersten Thema.</p></div>
       <div class="card"><h3>Dein Held</h3><div class="tw-heroes">${heroes.map((h, i) => `<button class="tw-hero" data-h="${i}" aria-pressed="false">${heroSVG(h.s, 0)}<span>${esc(h.s.names[0])}</span></button>`).join('')}</div><div id="evo"></div></div>
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go">Start</button></div></div></div>`);
     const paint = () => {
@@ -19096,6 +19121,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   // the panel under the board: monster card, hint or Bauzeit
   function turmPanel(say) {
     const t = run.turm, bot = $('#bottom'), x = t.phase === 'choose' && t.monsters.find((y) => y.id === turmSel);
+    $('.tw-screen').classList.toggle('carded', !!x);
     const tools = `<div class="row tw-tools"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div>`;
     if (t.phase === 'build') return turmBau(bot, say);
     if (!x) {
@@ -19111,8 +19137,8 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
       const sh = x.final && x.shields[0], shield = x.final ? `<p class="tw-shieldnow"><i class="dot" style="background:${cols[sh]}" aria-hidden="true"></i><span>Die Aufgabe kommt aus ${SUBJECTS[t.lanes[sh].subject]} ${esc(laneName(sh))}. ${x.shields.length === 1 ? 'Das ist der letzte Schild.' : `Noch ${x.shields.length} Schilde.`}</span></p>` : '';
       const guide = t.wave === 1 && t.turn < 2 ? `<p class="pnote">Tippe auf „Angreifen“. Löst du die Aufgabe richtig, macht dein Held 💥 ${c.dmg} Schaden.</p>` : '';
       bot.innerHTML = `<div class="card tw-card" id="twcard"><div class="tw-cardhead">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<div class="tw-cardinfo"><div class="name">${esc(x.name)}</div><div class="tw-chips">${typeChip(x.type)}<span class="chip tw-theme">${M.icon} ${esc(M.title)}</span></div></div></div>
-        <div class="tw-stats"><span aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp} / ${x.maxHp}</span><span aria-label="Dein Treffer: ${c.dmg} Schaden">💥 ${c.dmg}</span><span aria-label="${z} Ziegel für eine richtige Antwort">${'🧱'.repeat(z)} +${z}</span><span aria-label="${walkSay}">${walk}</span></div>${tags ? `<div class="tags">${tags}</div>` : ''}${shield}${by ? `<p class="tw-guard">Erst ${esc(accName(by))} besiegen.</p>` : guide}<button class="btn" id="atk"${by ? ' disabled' : ''}>Angreifen</button></div>${tools}`;
-      const said = () => joined(x.name, TYPES[x.type].name, 'Thema: ' + M.title, `${x.hp} Lebenspunkte`, `Dein Treffer macht ${c.dmg} Schaden`, c.weak && 'Schwachstelle, doppelte Ziegel', x.steps > 1 && 'schnell', x.final && `Die Aufgabe kommt aus ${laneName(sh)}`, by && `Erst ${accName(by)} besiegen`);
+        <div class="tw-stats"><span aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp} / ${x.maxHp}</span><span aria-label="Dein Treffer: ${c.dmg} Schaden">💥 ${c.dmg}</span><span aria-label="${z} Ziegel für eine richtige Antwort">${'🧱'.repeat(z)} +${z}</span><span aria-label="${walkSay}">${walk}</span></div>${tags ? `<div class="tags">${tags}</div>` : ''}${shield}${by ? `<p class="tw-guard">${esc(turmBlocked(by))}</p>` : guide}<button class="btn" id="atk"${by ? ' disabled' : ''}>Angreifen</button></div>${tools}`;
+      const said = () => joined(x.name, TYPES[x.type].name, 'Thema: ' + M.title, `${x.hp} Lebenspunkte`, `Dein Treffer macht ${c.dmg} Schaden`, c.weak && 'Schwachstelle, doppelte Ziegel', x.steps > 1 && 'schnell', x.final && `Die Aufgabe kommt aus ${laneName(sh)}`, by && turmBlocked(by));
       speakBtn($('.tw-cardinfo .name', bot), 'beforeend', said, say ? said : null, [], run.grade);
       if (by) { const b = $(`.tw-mon[data-id="${x.id}"] .tw-bubble`); if (b) { b.classList.remove('flash'); void b.getBoundingClientRect(); b.classList.add('flash'); } }
     }
@@ -19123,8 +19149,8 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   }
   /* Bauzeit: cards under the board; a guard card waits for a spot on the board, then for the guard's look */
   let turmMode = null; // 'guard' | 'up' while a card waits for a spot (not saved: a reload shows the cards again)
-  const FLOOR_FX = { chain: 'trifft auch das vorderste Monster auf einem anderen Weg.', stun: 'Das Monster bleibt einen Zug lang stehen.', repair: `Der Turm bekommt ${TW.REPAIR_HP} ❤️ zurück.`,
-    brick: 'Es gibt 1 🧱 mehr.', push: 'Das vorderste Monster auf dem Weg geht ein Feld zurück.', volley: 'Die Wachen am Weg schießen zweimal.' };
+  const FLOOR_FX = { chain: 'trifft auch das vorderste Monster auf einem anderen Weg.', stun: 'Das Monster bleibt einen Zug stehen.', repair: `Der Turm bekommt ${TW.REPAIR_HP} ❤️ zurück.`,
+    brick: '1 🧱 mehr.', push: 'Das vorderste Monster geht ein Feld zurück.', volley: 'Die Wachen schießen zweimal.' };
   // the coming wave on a path's name chip
   function turmComing(p) {
     if (!p.n) return '';
@@ -19141,8 +19167,8 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     const t = run.turm, G = Object.values(t.guards), ups = G.filter((g) => g.lvl < TW.GUARD_DMG.length), free = TW.price(run, { kind: 'guard', lane: 0, spot: 0 }) === 0;
     const upP = [...new Set(ups.map((g) => TW.COST.up[g.lvl - 1]))].sort((a, b) => a - b);
     const full = G.length === t.lanes.length * TW.SPOTS;
-    const cards = [{ id: 'guard', name: 'Wache aufstellen', pic: 'guard', price: free ? 0 : TW.COST.guard, desc: free ? 'Die erste Wache ist geschenkt.' : 'Schießt mit, wenn du auf ihrem Weg richtig antwortest.', note: full ? 'Alle Plätze sind besetzt. Eine neue Wache ersetzt eine alte.' : '' },
-      { id: 'up', name: 'Wache verbessern', pic: 'up', price: upP[0] ?? TW.COST.up[0], label: upP.length > 1 ? upP.join(' / ') : null, desc: `Trifft stärker: Stufe 2 mit ${TW.GUARD_DMG[1]}, Stufe 3 mit ${TW.GUARD_DMG[2]} Schaden.`, why: !G.length ? 'Stell zuerst eine Wache auf.' : !ups.length ? 'Alle Wachen haben Stufe 3.' : '' }]
+    const cards = [{ id: 'guard', name: 'Wache aufstellen', pic: 'guard', price: free ? 0 : TW.COST.guard, desc: free ? 'Die erste Wache ist geschenkt.' : 'Schießt auf ihrem Weg mit.', note: full ? 'Alle Plätze sind besetzt. Eine neue Wache ersetzt eine alte.' : '' },
+      { id: 'up', name: 'Wache verbessern', pic: 'up', price: upP[0] ?? TW.COST.up[0], label: upP.length > 1 ? upP.join(' / ') : null, desc: `Stufe 2: 💥 ${TW.GUARD_DMG[1]}, Stufe 3: 💥 ${TW.GUARD_DMG[2]}.`, why: !G.length ? 'Stell zuerst eine Wache auf.' : !ups.length ? 'Alle Wachen haben Stufe 3.' : '' }]
       .concat([...new Set(t.lanes.map((l) => l.subject))].map((s) => ({ id: 'floor:' + s, name: TWART.ROOMS[s].name, pic: s, price: TW.COST.floor, desc: `Richtig in ${s}: ${FLOOR_FX[TW.FLOORS[s]]}`, why: t.floors.includes(s) ? 'Schon gebaut.' : '' })))
       .concat({ id: 'fix', name: 'Mauer flicken', pic: 'fix', price: TW.COST.fix, desc: `Der Turm bekommt ${TW.FIX_HP} ❤️ zurück.`, why: run.hero.hp >= run.hero.maxHp ? 'Der Turm ist heil.' : '' });
     for (const c of cards) c.short = c.why ? 0 : Math.max(0, c.price - t.ziegel);
@@ -19270,6 +19296,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
       else if (e.t === 'push') L.push(`Die Glockenstube schiebt ${acc(e.id)} ein Feld zurück.`);
       else if (e.t === 'floor' && e.fx === 'volley') L.push('Die Plauderstube: Die Wachen schießen noch einmal.');
       else if (e.t === 'heal') L.push(`Der Kartoffelkeller repariert den Turm: +${e.n} ❤️.`);
+      else if (e.t === 'patch') L.push(`Nach der Welle wird die Mauer geflickt: +${e.n} ❤️.`);
       else if (e.t === 'tower') L.push(`${n(e.id)} trifft den Turm: ${e.dmg} Schaden.`);
       else if (e.t === 'hold') L.push(`${n(e.id)} kommt nicht durch die Mauer.`);
       else if (e.t === 'block') L.push(`${n(e.id)} prallt am Schild ab.`);
@@ -19299,7 +19326,13 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     const later = (ms, f) => timers.push(setTimeout(() => { if (!stopped && alive()) f(); }, ms * k));
     const at = (p) => `--x:${p[0]};--y:${p[1]}`;
     const add = (html, p, ms) => { const d = document.createElement('div'); d.className = 'tw-fxi'; d.setAttribute('style', at(p)); d.innerHTML = html; fx.appendChild(d); if (ms) later(ms, () => d.remove()); return d; };
-    const num = (p, n, cls) => add(`<span class="tw-num ${cls || ''}">${n}</span>`, [p[0], p[1] - 14], 1000);
+    // numbers that pop at the same spot while earlier ones still show (hero, then guards) move aside instead of covering them
+    const live = {}, SHIFT = [[0, 0], [26, -18], [-26, -30], [0, -44]];
+    const num = (p, n, cls) => {
+      const key = Math.round(p[0]) + ':' + Math.round(p[1]), i = live[key] = (live[key] || 0) + 1, [dx, dy] = SHIFT[(i - 1) % SHIFT.length];
+      later(1000, () => { live[key]--; });
+      return add(`<span class="tw-num ${cls || ''}">${n}</span>`, [p[0] + dx, p[1] - 14 + dy], 1000);
+    };
     const again = (el, cls) => { if (!el) return; el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); };
     // a thrown thing: an arc from p to q (board units) with the Web Animations API; lands after ms
     const throwIt = (html, p, q, ms, h, spin) => {
@@ -19340,7 +19373,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     const setHp = (hp) => { const pct = (hp / run.hero.maxHp) * 100; hpNow.textContent = hp; res('tw-hpnow').textContent = hp; hpBar.style.width = pct + '%'; hpBar.className = turmBar(pct); };
     const towerArt = (hp) => { const tw = TWART.tower(t.floors, hp, run.hero.maxHp); twt.querySelector('.tw-towerart').outerHTML = tw.back; twt.querySelector('.tw-parapet').outerHTML = tw.front; };
     const level = (hp) => (hp > (run.hero.maxHp * 2) / 3 ? 0 : hp > run.hero.maxHp / 3 ? 1 : 2);
-    const hpEv = ev.find((e) => e.t === 'tower' || e.t === 'heal');
+    const hpEv = ev.find((e) => e.t === 'tower' || e.t === 'heal' || e.t === 'patch');
     let hp = hpEv ? (hpEv.t === 'tower' ? hpEv.hp + hpEv.dmg : hpEv.hp - hpEv.n) : run.hero.hp;
     if (hp !== run.hero.hp) { setHp(hp); if (level(hp) !== level(run.hero.hp)) towerArt(hp); }
     let bricks = t.ziegel - ev.filter((e) => e.t === 'ziegel').reduce((a, e) => a + e.n, 0);
@@ -19407,6 +19440,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
         throwIt('<span class="tw-heart">❤️</span>', r, [heroP[0] + 9, heroP[1] + 30], 460, 26, 0);
         later(460, () => { hp = e.hp; setHp(hp); if (level(hp) !== level(hp - e.n)) towerArt(hp); again(twt, 'tw-heal'); num(towerP, '+' + e.n, 'heal'); });
       }]);
+      else if (e.t === 'patch') B.push([560, () => { hp = e.hp; setHp(hp); if (level(hp) !== level(hp - e.n)) towerArt(hp); again(twt, 'tw-heal'); num(towerP, '+' + e.n, 'heal'); SFX.chime(); }]);
       else if (e.t === 'push') B.push([540, () => {
         const r = roomP(t.lanes.find((l) => TW.FLOORS[l.subject] === 'push').subject), x = t.monsters.find((y) => y.id === e.id) || pre(e.id); SFX.bell();
         fsvg.insertAdjacentHTML('beforeend', `<g class="tw-rings">${[0, 1, 2].map((j) => `<circle cx="${r[0]}" cy="${r[1]}" r="22" style="animation-delay:${j * 0.12 * k}s"/>`).join('')}</g>`);
@@ -19501,7 +19535,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     const t = run.turm, cols = TWART.laneColors(t.lanes);
     const text = x.final ? 'Für jedes Fach trägt der Boss einen Schild. Die Aufgaben kommen der Reihe nach aus diesen Fächern:'
       : x.boss ? 'Der Boss geht nur jeden zweiten Zug ein Feld. Am Tor bleibt er stehen und trifft den Turm, bis er besiegt ist.'
-        : `Das Elitemonster 🛡️ schützt alle Monster hinter sich auf seinem Weg. Erst wenn ${accName(x)} besiegt ist, kommst du an sie heran.`;
+        : turmEliteText(x);
     const list = x.final ? `<div class="tw-shieldlist">${x.shields.map((l) => `<span><i class="dot" style="background:${cols[l]}" aria-hidden="true"></i>${SUBJECTS[t.lanes[l].subject]} ${esc(laneName(l))}</span>`).join('')}</div>` : '';
     const ov = modal(`<div class="tw-banner">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<h2>${esc(x.name)} kommt.</h2></div><p>${esc(text)}</p>${list}<button class="btn" id="tutok">Weiter</button>`);
     ov.classList.add('tw-bannerov'); if (slide) ov.classList.add('slide');
@@ -19865,14 +19899,14 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   screenTitle();
   importFromLink();
   // turm: the rules without the screens, for the page tests
-  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}), motion: (speed) => { turmSpeed = speed == null ? null : speed; } }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}), motion: (speed) => { turmSpeed = speed == null ? null : speed; }, say: { lines: turmLines, elite: turmEliteText, blocked: turmBlocked, acc: accName } }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();
 
 </script>
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'c0c884c3b274';
+  const BUILD = '3fa0a1e12917';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

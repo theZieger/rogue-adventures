@@ -5,26 +5,31 @@ const TW = (() => {
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
   // (enter 0: the next one only when the board is empty); boss/elite/final = queue position of the special monster
   const WAVES = [
-    { n: 3, hp: 23, start: 1, enter: 0 },
-    { n: 5, hp: 29, start: 2, enter: 2 },
-    { n: 3, hp: 34, start: 2, enter: 2, boss: 1 },
-    { n: 6, hp: 39, start: 3, enter: 2, fast: 3 },
-    { n: 5, hp: 44, start: 3, enter: 2, elite: 2 },
-    { n: 3, hp: 49, start: 3, enter: 2, final: 1 },
+    { n: 3, hp: 25, start: 1, enter: 0 },
+    { n: 5, hp: 32, start: 2, enter: 2 },
+    { n: 3, hp: 37, start: 2, enter: 2, boss: 1 },
+    { n: 6, hp: 43, start: 3, enter: 2, fast: 3 },
+    { n: 5, hp: 48, start: 3, enter: 2, elite: 2 },
+    { n: 3, hp: 54, start: 3, enter: 2, final: 1 },
   ];
   // Klasse 2: fewer monsters, each a little sturdier, so a run still has about as many questions
   const K2_COUNT = 0.8, K2_MIN = 2, K2_HP = 1.2;
   const COST = { guard: 4, up: [7, 11], floor: 12, fix: 3 };
   const FIX_HP = 10, REPAIR_HP = 2;
-  const GUARD_DMG = [4, 6, 8];
+  // after a wave the wall is patched up to PATCH_HP for free, so a child who never repairs does not start a wave nearly fallen
+  const PATCH_HP = 25;
+  const GUARD_DMG = [5, 8, 11];
   const HERO_EVO = 3, HERO_WAVE = 4, STRONG = 1.5, WEAK = 1.5, POWER = 2;
   const TOWER_DMG = { normal: 5, boss: 14, wave: 2.5, elite: 1.5 }; // per hit: normal/boss + wave × wave number, elites × elite, rounded up
+  // most ❤️ the tower can lose in one turn: monsters arriving together weaken the tower but never wipe it out at once
+  const TURN_LOSS = 14;
   const INCOME = { right: 1, weak: 1, wave: 2, clean: 1, floor: 1 };
-  const ELITE_HP = 1.9, BOSS_HP = 3.5, FINAL_HP = 1.6;
+  const ELITE_HP = 1.9, BOSS_HP = 3.5, FINAL_HP = 1.4;
   const PER_MONSTER = 2; // ≈ questions a monster takes, for spreading monsters over the lanes
   const AGAIN_MAX = 3, AGAIN_TASK_MAX = 8192;
-  // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % (no message)
-  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5;
+  // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % and the hero hits
+  // up to 15 % harder, so a struggling child still reaches the end in ≤ 70 questions (no message)
+  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5, CATCHUP_HERO = 0.3;
   const CP_USES = 2;
   const START_ITEMS = ['trank'], BOSS_ITEM = 'grosstrank', OFFER = ['trank', 'schild', 'keks', 'lupe'];
   const FLOORS = { Mathe: 'chain', Ethik: 'stun', Sachkunde: 'repair', Deutsch: 'brick', Musik: 'push', Englisch: 'volley' };
@@ -196,7 +201,7 @@ const TW = (() => {
 
   function heroDamage(run, x, ctx) {
     const t = run.turm, strong = BEATS[ctx.heroType] === x.type, weak = t.weak === x.id;
-    const d = (ctx.dmg(x.m, x.k) + HERO_EVO * run.hero.evo + HERO_WAVE * (t.wave - 1)) * (strong ? STRONG : 1) * (weak ? WEAK : 1) * (run.power ? POWER : 1);
+    const d = (ctx.dmg(x.m, x.k) + HERO_EVO * run.hero.evo + HERO_WAVE * (t.wave - 1)) * (strong ? STRONG : 1) * (weak ? WEAK : 1) * (run.power ? POWER : 1) * (1 + CATCHUP_HERO * (1 - catchUp(t)));
     return { dmg: Math.max(1, Math.round(d)), strong, weak };
   }
   const guardDamage = (g, x) => Math.max(1, Math.round(GUARD_DMG[g.lvl - 1] * (BEATS[g.type] === x.type ? STRONG : 1)));
@@ -290,24 +295,26 @@ const TW = (() => {
     } else if (fx === 'volley') volley();
   }
 
-  function towerHit(run, x, ev) {
+  function towerHit(run, x, ev, turnLost) {
     const t = run.turm, h = run.hero, gone = !x.boss;
     if (gone) remove(t, x);
-    if (run.shield) { run.shield = false; ev.push({ t: 'block', id: x.id, gone }); return; }
+    if (run.shield) { run.shield = false; ev.push({ t: 'block', id: x.id, gone }); return 0; }
     let d = (x.boss ? TOWER_DMG.boss : TOWER_DMG.normal) + TOWER_DMG.wave * t.wave;
     if (x.elite) d *= TOWER_DMG.elite;
     d = Math.max(1, Math.ceil(d * catchUp(t) - 1e-9));
+    d = Math.min(d, TURN_LOSS - turnLost);
     if (t.wave === 1) d = Math.min(d, h.hp - 1); // wave 1 is safe: the tower keeps at least 1 ❤️
-    if (d < 1) { ev.push({ t: 'hold', id: x.id, gone }); return; }
+    if (d < 1) { ev.push({ t: 'hold', id: x.id, gone }); return 0; }
     h.hp = Math.max(0, h.hp - d); t.hurtThisWave = true;
     ev.push({ t: 'tower', id: x.id, dmg: d, hp: h.hp, gone });
+    return d;
   }
 
   // monsters walk, hit the tower, new ones enter; then the next turn, the wave's end or the fall
   function step(run, ctx) {
     const t = run.turm, ev = [];
     if (t.phase !== 'step' && t.phase !== 'choose') return ev;
-    t.asking = null;
+    t.asking = null; let lost = 0;
     for (const x of t.monsters.slice().sort((a, b) => a.cell - b.cell)) {
       if (x.boss) { const rest = x.slow; x.slow = 1 - x.slow; if (rest) continue; }
       if (x.stun) { x.stun = 0; ev.push({ t: 'stunned', id: x.id }); continue; }
@@ -318,7 +325,7 @@ const TW = (() => {
         x.cell--;
       }
       if (x.cell !== from) ev.push({ t: 'move', id: x.id, from, to: x.cell });
-      if (hit) towerHit(run, x, ev);
+      if (hit) lost += towerHit(run, x, ev, lost);
     }
     if (run.hero.hp <= 0) { t.phase = 'fallen'; ev.push({ t: 'fallen', wave: t.wave }); return ev; }
     enter(t, WAVES[t.wave - 1].enter, ev);
@@ -338,6 +345,8 @@ const TW = (() => {
     if (!t.hurtThisWave) earn(t, INCOME.clean, 'clean', ev);
     if (w.boss != null || w.final != null) { run.hero.evo = Math.min(2, run.hero.evo + 1); ev.push({ t: 'evolve', evo: run.hero.evo }); }
     if (t.wave === WAVES.length) { t.phase = 'won'; ev.push({ t: 'won' }); return; }
+    const h = run.hero, n = Math.min(PATCH_HP, h.maxHp) - h.hp;
+    if (n > 0) { h.hp += n; ev.push({ t: 'patch', n, hp: h.hp }); }
     if (w.boss != null) {
       run.items.push(BOSS_ITEM); ev.push({ t: 'item', id: BOSS_ITEM });
       const a = pick(ctx, OFFER); t.offer = [a, pick(ctx, OFFER.filter((i) => i !== a))];
@@ -395,7 +404,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
     lanesFor, newRun, card, canTarget, preview,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };

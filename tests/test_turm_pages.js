@@ -57,6 +57,9 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   const run = p.w.__mq.run, snap = {};
   check(run.mode === 'turm' && run.turm.phase === 'choose' && same(p.saved(), run), 'a new Turm run is saved right away');
   check(p.w.__mq.meta.turm.runs === 1 && p.w.localStorage.getItem(RUN) === adv, 'the run counts as begun; the adventure stays saved');
+  const unitsOf = (r, sub) => [...new Set(r.turm.lanes.filter((l) => l.subject === sub).flatMap((l) => l.src.map((s) => s.m)))].join();
+  check(unitsOf(run, 'Mathe') === 'math' && ['Deutsch', 'Sachkunde'].every((s) => unitsOf(run, s) && !unitsOf(run, s).includes(',')), 'nothing practised yet: each subject asks only from its first theme');
+  check(run.turm.lanes.every((l) => l.src.length <= 2), 'nothing practised yet: at most two task types per subject');
   check(Object.keys(run.turm.at).sort().join() === [...new Set(run.turm.lanes.flatMap((l) => l.src.map((s) => s.m)))].sort().join(), 'every unit on the paths gets its own task box');
   snap.choose = p.dump();
   const x = run.turm.monsters[0], task = p.T.ask(x.id);
@@ -81,6 +84,20 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(p.errors.length === 0, 'no page errors ' + p.errors.join(' '));
 
   // reload: every phase loads unchanged and goes on
+  // every Turm sentence with a monster name, for every monster: nominative/accusative forms and no capital article mid-sentence
+  {
+    const S = p.T.say, names = new Map();
+    for (const u of Object.values(require('./units.js'))) for (const w of Object.values(u.enemies)) for (const e of [...w.normal, w.elite, w.boss]) if (e) names.set(e.name, e);
+    const out = [];
+    for (const e of names.values()) {
+      const x = { id: 1, name: e.name, acc: e.acc }, nm = { 1: { name: e.name, acc: S.acc(x) } };
+      const ev = [{ t: 'hit', id: 1, dmg: 5 }, { t: 'shot', id: 1, dmg: 4 }, { t: 'chain', id: 1, dmg: 3 }, { t: 'beaten', id: 1 }, { t: 'stun', id: 1 }, { t: 'push', id: 1 }, { t: 'tower', id: 1, dmg: 9 }, { t: 'hold', id: 1 }, { t: 'block', id: 1 }, { t: 'enter', id: 1, boss: true }];
+      out.push(...S.lines(ev, nm), S.elite(x), S.blocked(x));
+    }
+    if (process.env.TURM_NAMES) console.log(out.join('\n'));
+    const bad = out.filter((l) => / (Der|Die|Das|Den) /.test(l.replace(/^(Der|Die|Das) /, '').replace(/\. (Der|Die|Das) /g, '. ')) || /Erst wenn (den|einen) /.test(l) || /(trifft|hält|schiebt)( auch)? (der|Der) /.test(l) || /\bden [A-ZÄÖÜ][a-zäöüß]+e\b/.test(l));
+    check(names.size > 100 && !bad.length, 'monster names take the right case in every Turm sentence ' + bad.slice(0, 5).join(' | '));
+  }
   const q = open(snap.task, 2);
   check(q.T.resume() && same(q.w.__mq.run, JSON.parse(snap.task[TURM])), 'reload during a question: the run loads unchanged');
   const t1 = q.T.ask(-1), z0 = q.w.__mq.run.turm.ziegel;
@@ -277,8 +294,14 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(same(y.w.__mq.run, zSaved) && !!y.$('.tw-buy') && !y.$('button.tw-spot.pick') && /7/.test(y.$('.tw-res').textContent), 'reload during the Bauzeit: the cards again, guards, floor and Ziegel kept');
   y.click('#home'); y.click('#turm'); y.click('#new'); y.click('.overlay #yes');
   check([...y.d.querySelectorAll('.tw-subj.fixed')].map((e) => e.dataset.subj).join() === 'Mathe,Musik' && !y.$('button[data-subj]'), 'after the reload the start screen shows the parents\' subjects, fixed');
+  check(/schon geübt/.test(y.$('.tw-review').textContent), 'the start screen says the questions come from practised themes');
+  // only Die Baustelle practised in Mathe: the Mathe paths ask only from there
+  const S = y.w.__mq.meta.stats;
+  for (const m of ['math', 'jahrmarkt', 'bau']) for (const k in S[m]) S[m][k] = { c: 0, t: 0 };
+  S.bau[Object.keys(S.bau)[0]] = { c: 1, t: 1 };
   y.click('#go');
   check(same([...new Set(y.w.__mq.run.turm.lanes.map((l) => l.subject))], ['Mathe', 'Musik']), 'the run uses exactly those subjects');
+  check(unitsOf(y.w.__mq.run, 'Mathe') === 'bau' && y.w.__mq.run.turm.lanes.filter((l) => l.subject === 'Mathe').flatMap((l) => l.src.map((x) => x.k)).join() === Object.keys(S.bau)[0], 'a subject asks only the task types the child has practised');
   check(y.errors.length === 0, 'no page errors ' + y.errors.join(' '));
   last.close();
   console.log(`turm pages fails ${fails} (${opens} pages, ${Date.now() - t0} ms)`);
