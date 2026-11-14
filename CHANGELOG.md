@@ -13,6 +13,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Sechs Wellen mit Bossen, dazwischen Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.
 - Die Turmwacht ist zum Ausprobieren und zuerst aus: Eltern schalten sie im Elternbereich unter „Anzeigen“ ein.
 
+### Verbessert
+- Die Knöpfe unten auf der Startseite stehen jetzt immer in einer Zeile.
+
 ## 2026-11-13
 
 ### Neu

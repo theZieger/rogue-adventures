@@ -60,6 +60,12 @@ p { margin: 8px 0; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; }
 .row > .btn { flex: 1 1 140px; min-width: 0; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
+/* title buttons: always one line, two equal columns; badges sit on the corner so they never push the text */
+.trow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.trow > .btn:only-child { grid-column: 1 / -1; }
+.trow > .btn { position: relative; min-width: 0; padding: 10px 6px; white-space: nowrap; font-size: clamp(14px, 4vw, 21px); }
+.trow > .btn .newbadge, .trow > .btn .twrun { position: absolute; top: -10px; right: -6px; flex-basis: auto; padding: 0 8px; border-radius: 999px; font-size: 13px; line-height: 20px; opacity: 1; }
+.trow > .btn .twrun { background: var(--gold); color: #1C2541; }
 
 /* Title */
 .hero { text-align: center; padding: 30px 16px 10px; }
