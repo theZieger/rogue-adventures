@@ -1,7 +1,7 @@
 // Klasse 1/2 mathe: checks beyond the generic ones in test_knowledge.js and test_data.js.
 // Every answer is worked out again from what the child sees (text and picture data), numbers stay in the grade's range.
 const fails = [];
-require('./units.js');
+require('../src/units.js');
 const MK = require('../src/knowledge.js');
 const MQ = require('../src/logic.js');
 const fail = (m) => { if (!fails.includes(m)) fails.push(m); };

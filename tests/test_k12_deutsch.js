@@ -1,7 +1,7 @@
 // Klasse 1/2 deutsch: checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
 const f = (ok, msg) => { if (!ok) fails.push(msg); };
-require('./units.js');
+require('../src/units.js');
 const K = require('../src/knowledge.js');
 const D = require('../src/k12_deutsch.js');
 const TEXTE = require('../src/texte.js');
@@ -12,9 +12,9 @@ const plain = (s) => s.replace(/<[^>]+>/g, ' ');
 const norm = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
 // Klasse 3/4 in the Rechtschreibrahmen: ck, tz; Komma and wörtliche Rede are not asked either
 const K3 = /ck|tz/i;
-// what the read-aloud voice reads in a task: the selector is taken from readAloud in app.js, so both stay in step;
+// what the read-aloud voice reads in a task: the selector is taken from readAloud in src/app/tasks.js, so both stay in step;
 // task.say replaces the question, task.quiet leaves out the options
-const SPOKEN = require('fs').readFileSync(require('path').join(__dirname, '../src/app.js'), 'utf8').match(/function readAloud[\s\S]*?querySelectorAll\('([^']+)'\)/)[1];
+const SPOKEN = require('fs').readFileSync(require('path').join(__dirname, '../src/app/tasks.js'), 'utf8').match(/function readAloud[\s\S]*?querySelectorAll\('([^']+)'\)/)[1];
 const dom = new JSDOM('').window.document;
 const spoken = (cfg, q) => {
   const box = dom.createElement('div');

@@ -104,21 +104,31 @@ src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Au
 src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
 src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
 src/klasse12.js    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
-src/k12_*.js       Klasse-1/2-Einheiten je Fach (Mathe, Deutsch, Sachkunde, Ethik und Musik)
+src/k12_*.js       Klasse-1/2-Einheiten: Mathe, Deutsch, Sachkunde, Ethik (Musik steht mit in k12_ethik.js)
 src/turm.js        Turmwacht-Regeln (Wellen, Wachen, Stockwerke, Bauzeit, Neustart ab der letzten Bauzeit), ohne Oberfläche
 src/turmart.js     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-Bilder
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
-src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
+src/units.js       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
+src/app/           Spiel-Engine in Teilen; build.py setzt sie in der Reihenfolge von `APP` zu einer Funktion zusammen,
+                   sie teilen sich also einen Zustand (meta, run, mode):
+                   core (Einheiten, Lehrplan, Icons) · storage (Spielstand laden und reparieren) · progress (Stufen,
+                   Stempel, Wochenziele) · ui (Anzeige, Zurück, Töne, Erklärungen) · tasks (Aufgaben-UI, Vorlesen) ·
+                   title (Startseite, PIN, „Was ist neu?“) · backup (Spielstand-Code) · map (Held wählen, Karte) ·
+                   battle (Kampf, Kreisel-Arena, Lesestube) · nodes (Kartenfelder) · collection (Abschluss, Monsterbuch,
+                   Stempelheft) · huette (Werkbank, Hütte, Kleiderkammer) · duell · turm, turm_screens (Turmwacht) ·
+                   garten · elternbereich · feedback · boot
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
-build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest
+build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest; Ladereihenfolge in `SCRIPTS`
+GLOSSARY.md        die Begriffe des Projekts (Einheit, Abenteuer, Aufgabenart, Stufe …) und ihre Namen im Code
+adr/               festgehaltene Entscheidungen zur Architektur
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
 tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
-tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
+tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); page.js lädt die gebaute Seite für die Seitentests; Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
 docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
@@ -148,9 +158,9 @@ Inhalte anpassen:
 ## Neue Einheit
 
 Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.js`).
-Startseite, Klassen-Reiter, Statistik, Spielstand und der Bot lesen die Einheiten aus dieser einen Liste.
-Dazu gehören: die Datei in `build.py` einbinden, Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
-`src/monsters.js`, neue Emojis in `src/icons.js`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app.js`).
+`src/units.js` macht daraus die eine Liste `UNITS`: Startseite, Klassen-Reiter, Statistik, Spielstand, Bot und Monster-Bilder lesen sie.
+Dazu gehören: eine neue Datei in `SCRIPTS` (`build.py`) und in `src/units.js` eintragen, Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
+`src/monsters.js`, neue Emojis in `src/icons.js`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app/core.js`).
 
 ## Veröffentlichen (GitHub Pages)
 
@@ -161,7 +171,7 @@ Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI p
 
 „💡 Idee senden“ (Startseite und Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
 
-Ein anderes Formular verwenden: In `FEEDBACK` (`src/app.js`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
+Ein anderes Formular verwenden: In `FEEDBACK` (`src/app/feedback.js`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
 
 ## Texte und Namen
 

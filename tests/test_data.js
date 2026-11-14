@@ -1,7 +1,7 @@
 // Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
 const MQ = require('../src/logic.js');
 const MK = require('../src/knowledge.js');
-const modes = require('./units.js');
+const modes = require('../src/units.js');
 const MONART = require('../src/monsters.js');
 const fails = [];
 const fail = (msg) => fails.push(msg);
@@ -178,6 +178,12 @@ if (modes.turm) fail('turm must not be a unit');
   const ICONS = require('../src/icons.js'); const ids = Object.values(ICONS).flatMap((m) => [...m.matchAll(/\bid="([^"]+)"/g)].map((x) => x[1]));
   for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i))) fail(`icons.js: id ${id} is used twice`);
   for (const [k, m] of Object.entries(ICONS)) { if (/<(script|style|image)|href=|https?:/.test(m)) fail(`icons.js: ${k} must be plain shapes`); if (/\uFE0F/.test(k)) fail(`icons.js: key ${k} must not carry a variation selector`); }
+}
+
+// src/units.js loads the unit files by name in Node: it must end up with the units the built page has
+{
+  const p = require('./page.js').open(); const inPage = p.w.eval('Object.keys(UNITS)'); p.close();
+  if (inPage.join() !== Object.keys(modes).join()) fail(`src/units.js: Node has the units ${Object.keys(modes)}, the page has ${inPage}`);
 }
 
 console.log('data fails', fails.length);

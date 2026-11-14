@@ -1,38 +1,10 @@
 // Duell: two children on one device, nothing is saved (runs the built docs/index.html in jsdom).
-const { JSDOM } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
-const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8');
+const { open, answer } = require('./page.js');
 
 let fails = 0;
 const check = (cond, msg) => { if (!cond) { fails++; console.log('FAIL', msg); } else console.log('ok  ', msg); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const META = 'mathquest_meta_v2';
-
-function open(storage) {
-  const errors = [];
-  const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(w) { for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message)); } });
-  const w = dom.window, d = w.document;
-  // tests were written for one title screen: a game's button sits on its subject screen, so open that from the
-  // title first, and a title button looked for on a subject screen means going back
-  const $ = (s) => d.querySelector(s) || toGame(s) || toTitle(s);
-  const toTitle = (s) => { if (!d.querySelector('[data-new]') || !d.querySelector('#back')) return null; d.querySelector('#back').click(); return d.querySelector(s); };
-  const toGame = (s) => { const m = /data-(?:new|cont)="(\w+)"/.exec(s); const sub = m && d.querySelector('[data-sub]') && w.__mq.subjectOf(m[1]); if (!sub) return null; d.querySelectorAll('[data-sub]')[[...d.querySelectorAll('[data-sub]')].findIndex((b) => b.textContent.includes(sub.subject))].click(); return d.querySelector(s); };
-  const click = (s) => { const el = typeof s === 'string' ? $(s) : s; if (!el) throw new Error('missing ' + s + ' on: ' + d.body.textContent.slice(0, 200)); el.click(); };
-  const dump = () => Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)]));
-  return { w, d, $, click, dump, text: () => $('#app').textContent, errors };
-}
-function answer(p, right) {
-  const t = p.w.__task;
-  if (t.kind === 'num') {
-    if (t.col) { const s = String(right ? t.answers[0] : t.answers[0] + 1); const w = t.col.w; [...s].forEach((ch, k) => { p.click(`.colcalc .inp[data-i="${w - s.length + k}"]`); p.click(`.numpad [data-k="${ch}"]`); }); }
-    else [...p.d.querySelectorAll('.inp')].forEach((el, i) => { el.click(); for (const ch of String(right ? t.answers[i] : t.answers[i] + 1)) p.click(`.numpad [data-k="${ch}"]`); });
-    p.click('.numpad [data-k="ok"]');
-  } else if (t.kind === 'choice' || t.kind === 'parts') { const i = t.options.indexOf(t.answer); p.click(p.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); }
-  else if (t.kind === 'parts-find') p.click([...p.d.querySelectorAll('.plant [data-part]')].find((x) => (x.dataset.part === t.part) === right));
-  else { const o = right ? t.order : [t.order[1], t.order[0]].concat(t.order.slice(2)); for (const id of o) p.click(`.oitem[data-id="${id}"]`); p.click('#ocheck'); }
-  p.click('#next');
-}
 
 (async () => {
   const before = { setup: { done: false, skipped: true, at: 'x' }, stats: { math: { add: { c: 5, t: 6, hist: [1, 1] } } } };

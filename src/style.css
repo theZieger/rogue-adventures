@@ -974,7 +974,7 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   .tw-baurow .btn.small { flex: 1 1 0; }
   .tw-baurow #nextwave { flex: 1 1 100%; order: -1; }
 }
-/* Turmwacht motion (app.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
+/* Turmwacht motion (src/app/turm_screens.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
 .tw-fx { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 .tw-fx > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .tw-fxi { width: 0; height: 0; }

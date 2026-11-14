@@ -1,15 +1,11 @@
 // Turmwacht in the page: saving and resuming runs (runs the built docs/index.html in jsdom, seeded).
 // Page budget for the whole Turm feature: at most 15 page opens in this file.
-const { JSDOM, VirtualConsole } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
-const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8');
+const page = require('./page.js');
 
 const t0 = Date.now();
 let fails = 0, opens = 0;
 const check = (cond, msg) => { if (!cond) { fails++; console.log('FAIL', msg); } else console.log('ok  ', msg); };
 const META = 'mathquest_meta_v2', TURM = 'mathquest_run_turm', RUN = 'mathquest_run_v1';
-const seeded = (s) => () => { s = (s + 0x6D2B79F5) | 0; let x = Math.imul(s ^ (s >>> 15), 1 | s); x ^= x + Math.imul(x ^ (x >>> 7), 61 | x); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
 const same = (a, b) => { const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x)); return canon(a) === canon(b); };
 const clone = (o) => JSON.parse(JSON.stringify(o));
 
@@ -18,32 +14,14 @@ let last = null;
 function open(storage, seed = 1) {
   if (last) last.close();
   opens++;
-  const errors = [], virtualConsole = new VirtualConsole(); let closed = false;
-  virtualConsole.sendTo(console, { omitJSDOMErrors: true }); virtualConsole.on('jsdomError', (e) => { if (!closed) console.error(e); });
-  const dom = new JSDOM(html, { virtualConsole, runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://example.com/', beforeParse(w) {
-    for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v);
-    w.Math.random = seeded(seed); w.addEventListener('error', (e) => errors.push(e.message));
-  } });
-  const w = dom.window, d = w.document;
-  const dump = () => Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)]));
-  const p = { w, d, T: w.__mq.turm, $: (s) => d.querySelector(s), click: (s) => d.querySelector(s).click(), dump, errors, saved: () => JSON.parse(w.localStorage.getItem(TURM)) };
-  last = { close: () => { closed = true; w.close(); } };
+  const p = page.open(storage, { seed }), d = p.d;
+  // plain lookups: this file checks what is on the screen, it never navigates from the title
+  last = Object.assign(p, { T: p.w.__mq.turm, $: (s) => d.querySelector(s), saved: () => JSON.parse(p.w.localStorage.getItem(TURM)) });
   return p;
 }
 const meta0 = JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, grade: 3, turm: { on: true } });
 
-// answer the question on screen through the real task view, then „Weiter“ (as in tests/test_duel.js)
-function uiAnswer(p, right) {
-  const t = p.w.__task, c = (s) => (typeof s === 'string' ? p.$(s) : s).click();
-  if (t.kind === 'num') {
-    if (t.col) { const s = String(right ? t.answers[0] : t.answers[0] + 1); const w = t.col.w; [...s].forEach((ch, k) => { c(`.colcalc .inp[data-i="${w - s.length + k}"]`); c(`.numpad [data-k="${ch}"]`); }); }
-    else [...p.d.querySelectorAll('.inp')].forEach((el, i) => { el.click(); for (const ch of String(right ? t.answers[i] : t.answers[i] + 1)) c(`.numpad [data-k="${ch}"]`); });
-    c('.numpad [data-k="ok"]');
-  } else if (t.kind === 'choice' || t.kind === 'parts') { const i = t.options.indexOf(t.answer); c(p.d.querySelectorAll('.opt')[right ? i : (i + 1) % t.options.length]); }
-  else if (t.kind === 'parts-find') c([...p.d.querySelectorAll('.plant [data-part]')].find((x) => (x.dataset.part === t.part) === right));
-  else { const o = right ? t.order : [t.order[1], t.order[0]].concat(t.order.slice(2)); for (const id of o) c(`.oitem[data-id="${id}"]`); c('#ocheck'); }
-  c('#next');
-}
+const uiAnswer = page.answer;
 // play one turn: the first monster that can be attacked, answered right or wrong, then the monsters step
 const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) => p.T.TW.canTarget(r, y.id)); p.T.ask(x.id); p.T.answer(ok); return p.T.step(); };
 
@@ -87,7 +65,7 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   // every Turm sentence with a monster name, for every monster: nominative/accusative forms and no capital article mid-sentence
   {
     const S = p.T.say, names = new Map();
-    for (const u of Object.values(require('./units.js'))) for (const w of Object.values(u.enemies)) for (const e of [...w.normal, w.elite, w.boss]) if (e) names.set(e.name, e);
+    for (const u of Object.values(require('../src/units.js'))) for (const w of Object.values(u.enemies)) for (const e of [...w.normal, w.elite, w.boss]) if (e) names.set(e.name, e);
     const out = [];
     for (const e of names.values()) {
       const x = { id: 1, name: e.name, acc: e.acc }, nm = { 1: { name: e.name, acc: S.acc(x) } };

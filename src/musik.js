@@ -1,5 +1,5 @@
 // Musik Klasse 3 (Lehrplan Sachsen Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
-// Registers its unit in MK.MODES; app.js picks it up from there.
+// Registers its unit in MK.MODES; src/units.js picks it up from there.
 const MU = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { shuffle, pick } = K;

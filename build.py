@@ -6,33 +6,44 @@ import re
 from pathlib import Path
 ROOT = Path(__file__).parent
 SRC = ROOT / "src"
-def strip_exports(js, name):
-    return js.replace(f"if (typeof module !== 'undefined') module.exports = {name};\n", "")
-css = (SRC / "style.css").read_text(encoding="utf-8")
-logic = strip_exports((SRC / "logic.js").read_text(encoding="utf-8"), "MQ")
-fair = strip_exports((SRC / "jahrmarkt.js").read_text(encoding="utf-8"), "MJ")
-woerter = strip_exports((SRC / "woerter.js").read_text(encoding="utf-8"), "MW")
-english = strip_exports((SRC / "english.js").read_text(encoding="utf-8"), "ENG")
-texte = strip_exports((SRC / "texte.js").read_text(encoding="utf-8"), "TEXTE")
-know = strip_exports((SRC / "knowledge.js").read_text(encoding="utf-8"), "MK")
-sach = strip_exports((SRC / "sachkunde.js").read_text(encoding="utf-8"), "MS")
-sach2 = strip_exports((SRC / "sachkunde2.js").read_text(encoding="utf-8"), "MS2")
-sach3 = strip_exports((SRC / "sachkunde3.js").read_text(encoding="utf-8"), "MS3")
-ethik = strip_exports((SRC / "ethik.js").read_text(encoding="utf-8"), "ME")
-musik = strip_exports((SRC / "musik.js").read_text(encoding="utf-8"), "MU")
-k12 = strip_exports((SRC / "klasse12.js").read_text(encoding="utf-8"), "K12") + "\n" + "\n".join((SRC / f"k12_{f}.js").read_text(encoding="utf-8") for f in ["mathe", "deutsch", "sachkunde", "ethik"])
-mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
-icons = strip_exports((SRC / "icons.js").read_text(encoding="utf-8"), "ICONS")
-eltern = strip_exports((SRC / "eltern.js").read_text(encoding="utf-8"), "ELTERN")
-turm = strip_exports((SRC / "turm.js").read_text(encoding="utf-8"), "TW") + "\n" + strip_exports((SRC / "turmart.js").read_text(encoding="utf-8"), "TWART")
-qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR") + "\n" + strip_exports((SRC / "savecode.js").read_text(encoding="utf-8"), "SAVECODE")
-# Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
-baked = {f.stem: f.read_text(encoding="utf-8").strip() for f in sorted((ROOT / "art" / "monsters" / "svg").glob("*.svg"))}
-assert baked, "art/monsters/svg/ is empty: run npm run svg"
-mon = "const MONBAKED = " + json.dumps(baked, ensure_ascii=False).replace("</", "<\\/") + ";\n" + mon
-app = (SRC / "app.js").read_text(encoding="utf-8")
-manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
-sw_src = (SRC / "sw.js").read_text(encoding="utf-8")
+# Load order: a file may use the globals of the files above it. One inner list = one <script>.
+SCRIPTS = [
+    ["logic.js"],
+    ["jahrmarkt.js", "woerter.js", "english.js"],
+    ["texte.js"],
+    ["knowledge.js"],
+    ["sachkunde.js"],
+    ["sachkunde2.js", "sachkunde3.js", "ethik.js"],
+    ["musik.js"],
+    ["klasse12.js", "k12_mathe.js", "k12_deutsch.js", "k12_sachkunde.js", "k12_ethik.js"],
+    ["monsters.js"],
+    ["icons.js"],
+    ["eltern.js"],
+    ["qr.js", "savecode.js"],
+    ["turm.js", "turmart.js"],
+    ["units.js"],
+]
+# The game itself: the parts of src/app/ in this order inside one function, so they share its state (meta, run, mode).
+APP = ["core", "storage", "progress", "ui", "tasks", "title", "backup", "map", "battle", "nodes", "collection", "huette",
+       "duell", "turm", "turm_screens", "garten", "elternbereich", "feedback", "boot"]
+def read(name):
+    return (SRC / name).read_text(encoding="utf-8")
+def source(name):
+    """A file as the page gets it: without the line that exports it to the Node tests."""
+    js = re.sub(r"if \(typeof module !== 'undefined'\) module\.exports = \w+;\n", "", read(name))
+    if name == "monsters.js":
+        # Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
+        baked = {f.stem: f.read_text(encoding="utf-8").strip() for f in sorted((ROOT / "art" / "monsters" / "svg").glob("*.svg"))}
+        assert baked, "art/monsters/svg/ is empty: run npm run svg"
+        js = "const MONBAKED = " + json.dumps(baked, ensure_ascii=False).replace("</", "<\\/") + ";\n" + js
+    return js
+assert sorted(f for g in SCRIPTS for f in g) == sorted(f.name for f in SRC.glob("*.js") if f.name != "sw.js"), "build.py SCRIPTS must list every file in src/"
+assert sorted(f"{n}.js" for n in APP) == sorted(f.name for f in (SRC / "app").glob("*.js")), "build.py APP must list every file in src/app/"
+css = read("style.css")
+scripts = "\n".join("<script>\n" + "\n".join(source(f) for f in group) + "\n</script>" for group in SCRIPTS)
+app = "(() => {\n" + "".join(read(f"app/{n}.js") for n in APP) + "})();\n"
+manifest = read("manifest.webmanifest")
+sw_src = read("sw.js")
 
 # -> [{"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["..."]}]}]
 GROUPS = ["Neu", "Verbessert", "Behoben"]
@@ -103,49 +114,7 @@ html = f"""<!DOCTYPE html>
 </head>
 <body>
 <div id="app"></div>
-<script>
-{logic}
-</script>
-<script>
-{fair}
-{woerter}
-{english}
-</script>
-<script>
-{texte}
-</script>
-<script>
-{know}
-</script>
-<script>
-{sach}
-</script>
-<script>
-{sach2}
-{sach3}
-{ethik}
-</script>
-<script>
-{musik}
-</script>
-<script>
-{k12}
-</script>
-<script>
-{mon}
-</script>
-<script>
-{icons}
-</script>
-<script>
-{eltern}
-</script>
-<script>
-{qr}
-</script>
-<script>
-{turm}
-</script>
+{scripts}
 <script>
 const CHANGELOG = {changelog_js};
 </script>

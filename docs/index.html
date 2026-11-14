@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="9ead5e6fed23">
+<meta name="app-version" content="b3d8fa77e2f2">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1030,7 +1030,7 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   .tw-baurow .btn.small { flex: 1 1 0; }
   .tw-baurow #nextwave { flex: 1 1 100%; order: -1; }
 }
-/* Turmwacht motion (app.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
+/* Turmwacht motion (src/app/turm_screens.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
 .tw-fx { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 .tw-fx > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .tw-fxi { width: 0; height: 0; }
@@ -2250,7 +2250,10 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
+  BAU.MODE = { modules: BAU.MODULES, starters: BAU.STARTERS, extra: BAU.EXTRA, enemies: BAU.ENEMIES, events: BAU.EVENTS, moves: BAU.MOVES, tut: BAU.TUT, worlds: 2, worldAttacks: BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA_ATTACKS, enemies: ENEMIES, events: EVENTS, moves: ENEMY_MOVES, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 };
+
+  return { MODE, rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
 })();
 
 </script>
@@ -2652,7 +2655,7 @@ const MJ = (() => {
     { title: 'Die Bank am Riesenrad', text: 'Neben dem Riesenrad steht eine Bank im Schatten. Du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
-  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben', rank: 2 };
   return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG, barhSVG };
 })();
 
@@ -4888,7 +4891,7 @@ const MK = (() => {
 </script>
 <script>
 // Sachkunde Klasse 3 (Lehrplan Sachsen, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
-// Registers its units in MK.MODES; app.js picks them up from there.
+// Registers its units in MK.MODES; src/units.js picks them up from there.
 const MS = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { shuffle, pick, rnd, weightedPick } = K;
@@ -6763,7 +6766,7 @@ const MS3 = (() => {
 })();
 
 // Ethik Klasse 3 (Lehrplan Sachsen, Lernbereiche 1 und 4): „Ich, wir und die Welt“, Welt 1 „Ich im Wir“, Welt 2 „Wir in der Welt“.
-// Registers its unit in MK.MODES; app.js picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
+// Registers its unit in MK.MODES; src/units.js picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
 const ME = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { weightedPick } = K;
@@ -7090,7 +7093,7 @@ const ME = (() => {
 </script>
 <script>
 // Musik Klasse 3 (Lehrplan Sachsen Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
-// Registers its unit in MK.MODES; app.js picks it up from there.
+// Registers its unit in MK.MODES; src/units.js picks it up from there.
 const MU = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { shuffle, pick } = K;
@@ -9012,7 +9015,6 @@ const K12D = (() => {
   K.MODES.laute1 = LAUTE1; K.MODES.schreiben2 = SCHREIBEN2; K.MODES.woerter2 = WOERTER2;
   return { PICS, LAUTPOS, SILBEN, SILBEN_ORDER, REIME, PIC_REIME, MIRROR, MIRROR_WORDS, BESONDERS, MERK, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
 })();
-if (typeof module !== 'undefined') module.exports = K12D;
 
 // Sachkunde Klasse 1 und 2 (Lehrplan Sachsen 2019, Sachunterricht Kl. 1/2): Mein Körper, Durch das Jahr (Klasse 1),
 // Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (Klasse 2). Units register in MK.MODES like sachkunde3.js;
@@ -10323,7 +10325,6 @@ const MSK12 = (() => {
   return { WX, SEASONS, DAYTIMES, MONTHS, DAYS, WEAR, HEALTHY, SWEET, LAUB, NADEL, FRUITS, SPRING, OBST, OBST_ART, BIRDS, BIRD_TRAITS, SMALL_LIST, GHS, SOLVE, SHINE, AIR,
     HAENDE, ZAEHNE, NOTRUF, TAG, QUEREN, KEIM, BLUETE, SAEN, NEST, STORCH, laborSet, thermoSVG, timeName };
 })();
-if (typeof module !== 'undefined') module.exports = MSK12;
 
 // Klasse 1 und 2, Ethik (Lehrplan Sachsen 2019): „Ich und die anderen“ (Klasse 1, LB 1 und 2) und „Feste und die Welt“
 // (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen) und Klasse 1 „Die Klangkiste“
@@ -11149,7 +11150,6 @@ const K12E = (() => {
 
   return { SHAPES, FORMS, FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
 })();
-if (typeof module !== 'undefined') module.exports = K12E;
 
 </script>
 <script>
@@ -15526,7 +15526,7 @@ const MONART = (() => {
 
 </script>
 <script>
-// Drawn icons that take the place of emojis (app.js swaps them in), so every device shows the same picture.
+// Drawn icons that take the place of emojis (src/app/core.js swaps them in), so every device shows the same picture.
 // Key: the emoji without variation selector. Value: the inside of an <svg viewBox="0 0 32 32">. Style: outline #1C2541,
 // 2 px, gradient fill, one white highlight; plain marks (✓ ✕ arrows, operators) are drawn in currentColor.
 // ids must be unique across the whole file (tests/test_data.js checks).
@@ -16286,8 +16286,8 @@ const SAVECODE = (() => {
 
 </script>
 <script>
-// Turmwacht rules: pure changes on a plain-JSON run object, no DOM, no app.js globals.
-// app.js passes everything unit-specific in through ctx (described at newRun).
+// Turmwacht rules: pure changes on a plain-JSON run object, no DOM, no globals of the game (src/app/).
+// src/app/turm.js passes everything unit-specific in through ctx (described at newRun).
 const TW = (() => {
   const CELLS = 5, SPOTS = 2, TOWER_HP = 60;
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
@@ -16711,7 +16711,7 @@ const TW = (() => {
 
 // Turmwacht drawings: the board scene, the Wissensturm, token marks and the Bauzeit card pictures.
 // Same hand as monsters.js: ink #1C2541, round joins, gradients lit from the top left, one white highlight.
-// Board units: the scene is drawn in a W × H box (geo); app.js places the HTML tokens with the same numbers.
+// Board units: the scene is drawn in a W × H box (geo); src/app/turm_screens.js places the HTML tokens with the same numbers.
 const TWART = (() => {
   const INK = '#1C2541';
   let uid = 0;
@@ -16953,7 +16953,7 @@ const TWART = (() => {
   }
 
   /* ---------- small marks on the board ---------- */
-  // walking speed: one drawn 👣 per field a turn (the icon sheet app.js puts in the page); faded = rests this turn
+  // walking speed: one drawn 👣 per field a turn (the icon sheet src/app/core.js puts in the page); faded = rests this turn
   // (boss) or stopped (Druckerei)
   const feet = (n, faded) => `<svg class="tw-feet${faded ? ' rest' : ''}" viewBox="0 0 ${n * 26 + 2} 28" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<use href="#i-1f463" x="${i * 26 - 1}" y="-1" width="30" height="30"/>`).join('')}</svg>`;
   // guard level 1–3 as gold rank chevrons
@@ -16977,7 +16977,7 @@ const TWART = (() => {
   }
 
 
-  /* ---------- motion pieces (app.js animates them) ---------- */
+  /* ---------- motion pieces (src/app/turm_screens.js animates them) ---------- */
   // drawn poof: puffs of cloud with an ink rim and two sparkles; each puff is its own element so CSS can scatter them
   const poof = () => `<svg class="tw-poof" viewBox="-30 -30 60 60" aria-hidden="true">${[[-12, 4, 10], [10, 6, 11], [0, -9, 12], [-15, -10, 7], [16, -8, 8]].map(([x, y, r], i) => `<g class="p" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}" fill="#F4F1EA" ${S(2)}/><circle cx="${x - r / 3}" cy="${y - r / 3}" r="${r / 3}" fill="#fff"/></g>`).join('')}<g class="s">${spark(-22, -22, 5)}${spark(22, 16, 4, '#fff')}</g></svg>`;
   // a shot: glowing ball in the shooter's type colour; big = 🎯 or a level-3 guard
@@ -17033,17 +17033,25 @@ const TWART = (() => {
 
 </script>
 <script>
+// Every unit of Lernquest by id, in the order the units register. The game, the tests, the bot and the monster art
+// (tools/svg.js) all read this one list. A unit adds itself to MK.MODES in its own file (README „Neue Einheit“);
+// Zahlenquest, Baustelle and Jahrmarkt come from the two files that are loaded before MK exists.
+const UNITS = (() => {
+  const node = typeof module !== 'undefined';
+  // Node has no page that loads every file: tests/test_data.js checks this list against the built page
+  if (node) for (const f of ['sachkunde', 'sachkunde2', 'sachkunde3', 'ethik', 'musik', 'k12_mathe', 'k12_deutsch', 'k12_sachkunde', 'k12_ethik']) require(`./${f}.js`);
+  const Q = node ? require('./logic.js') : MQ, J = node ? require('./jahrmarkt.js') : MJ, K = node ? require('./knowledge.js') : MK;
+  return Object.assign({ math: Q.MODE, bau: Q.BAU.MODE, jahrmarkt: J.MODE }, K.MODES);
+})();
+
+</script>
+<script>
 const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster laufen auf den Wissensturm zu, richtige Antworten aus schon geübten Themen halten sie auf.", "Sechs Wellen mit Bossen, dazwischen Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Die Turmwacht ist zum Ausprobieren und zuerst aus: Eltern schalten sie im Elternbereich unter „Anzeigen“ ein."]}, {"title": "Verbessert", "items": ["Die Knöpfe unten auf der Startseite stehen immer in einer Zeile, und die Turmwacht ist aufgeräumt und besser lesbar.", "Zahlenquest: Aus dem Markt wird der Kaufladen. Du hilfst Kunden beim Bezahlen und gibst Rückgeld, eigene Münzen gibt es nicht mehr."]}, {"title": "Behoben", "items": ["Englisch: „painting“ heißt jetzt „malen“ statt „das Malen“, dazu weitere Wörter und Sätze verbessert."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
-  const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
-  // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES.
-  const MODES = Object.assign({
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 },
-    jahrmarkt: Object.assign({ rank: 2 }, MJ.MODE),
-  }, MK.MODES);
+  const { rnd, pick, shuffle, TYPES, BEATS, ITEMS, makeMap, euro } = MQ;
+  const MODES = UNITS;
   // the Monsterbuch and the hero lists keep this order; new units follow in the order they register
   const FIRST = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
   const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
@@ -18172,7 +18180,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     });
   }
   function enemyTurn(b, mult) {
-    const h = run.hero; const move = pick(CFG().moves || ENEMY_MOVES);
+    const h = run.hero; const move = pick(CFG().moves);
     b.taken = 0; delete b.enemy.pending;
     if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); b.taken = dmg; h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
@@ -19987,7 +19995,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '9ead5e6fed23';
+  const BUILD = 'b3d8fa77e2f2';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

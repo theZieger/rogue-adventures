@@ -1,6 +1,6 @@
 // Turmwacht drawings: the board scene, the Wissensturm, token marks and the Bauzeit card pictures.
 // Same hand as monsters.js: ink #1C2541, round joins, gradients lit from the top left, one white highlight.
-// Board units: the scene is drawn in a W × H box (geo); app.js places the HTML tokens with the same numbers.
+// Board units: the scene is drawn in a W × H box (geo); src/app/turm_screens.js places the HTML tokens with the same numbers.
 const TWART = (() => {
   const INK = '#1C2541';
   let uid = 0;
@@ -242,7 +242,7 @@ const TWART = (() => {
   }
 
   /* ---------- small marks on the board ---------- */
-  // walking speed: one drawn 👣 per field a turn (the icon sheet app.js puts in the page); faded = rests this turn
+  // walking speed: one drawn 👣 per field a turn (the icon sheet src/app/core.js puts in the page); faded = rests this turn
   // (boss) or stopped (Druckerei)
   const feet = (n, faded) => `<svg class="tw-feet${faded ? ' rest' : ''}" viewBox="0 0 ${n * 26 + 2} 28" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<use href="#i-1f463" x="${i * 26 - 1}" y="-1" width="30" height="30"/>`).join('')}</svg>`;
   // guard level 1–3 as gold rank chevrons
@@ -266,7 +266,7 @@ const TWART = (() => {
   }
 
 
-  /* ---------- motion pieces (app.js animates them) ---------- */
+  /* ---------- motion pieces (src/app/turm_screens.js animates them) ---------- */
   // drawn poof: puffs of cloud with an ink rim and two sparkles; each puff is its own element so CSS can scatter them
   const poof = () => `<svg class="tw-poof" viewBox="-30 -30 60 60" aria-hidden="true">${[[-12, 4, 10], [10, 6, 11], [0, -9, 12], [-15, -10, 7], [16, -8, 8]].map(([x, y, r], i) => `<g class="p" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}" fill="#F4F1EA" ${S(2)}/><circle cx="${x - r / 3}" cy="${y - r / 3}" r="${r / 3}" fill="#fff"/></g>`).join('')}<g class="s">${spark(-22, -22, 5)}${spark(22, 16, 4, '#fff')}</g></svg>`;
   // a shot: glowing ball in the shooter's type colour; big = 🎯 or a level-3 guard
