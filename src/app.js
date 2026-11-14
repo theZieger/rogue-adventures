@@ -476,8 +476,14 @@
   const gap = (t) => t.replace(/_{2,}/g, '___');
   function pieces(text, en) {
     const list = [...new Set(en.map(gap))].sort((a, b) => b.length - a.length).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const all = list.length ? gap(text).split(new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u')) : [text];
-    return all.map((t, i) => [t, i % 2 === 1]).filter(([t]) => /[\p{L}\p{N}]/u.test(t));
+    const re = new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u'), words = en.map(gap), out = [];
+    const add = (t, isEn) => { const last = out[out.length - 1]; if (last && last[1] === isEn) last[0] += t; else out.push([t, isEn]); };
+    // a quoted German word stays German even if an English answer is part of it („der September“ with the option September)
+    gap(text).split(/(„[^“]*“)/).forEach((seg, i) => {
+      if (!list.length || (i % 2 && !words.includes(seg) && !words.includes(seg.slice(1, -1)))) add(seg, false);
+      else seg.split(re).forEach((t, k) => add(t, k % 2 === 1));
+    });
+    return out.filter(([t]) => /[\p{L}\p{N}]/u.test(t));
   }
   // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
   function speak(text, v = voice(), en = [], ve = enVoice()) {

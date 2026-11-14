@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="613cbf79dcfc">
+<meta name="app-version" content="e3666c80b2ef">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -4657,8 +4657,9 @@ const MK = (() => {
   Object.entries(EN_THEMES).filter(([t]) => t !== 'Zahlen').forEach(([t, list]) => list.forEach(([en, de]) => {
     // the quoted word only: „September“ is also German, and the answer „der September“ is read by the German voice
     T_POOL.push({ id: 'ende_' + en, mod: 'en_de', g: 'woerter', en: [t], q: `Was heißt „${en}“ auf Deutsch?`, o: [de].concat(others(list.map((x) => x[1]), de, 2)), a: 0, english: [`„${en}“`] });
+    // not for a word that is the same in both languages (orange)
     const o = [en].concat(others(list.map((x) => x[0]), en, 2));
-    T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o, a: 0, english: o });
+    if (en !== de) T_POOL.push({ id: 'deen_' + en, mod: 'de_en', g: 'woerter', en: [t], q: `Wie heißt „${de}“ auf Englisch?`, o, a: 0, english: o });
   }));
   const NUM = Object.fromEntries(E.zahlen.map(([en, , n]) => [n, en]));
   // 21 to 99 follow the English pattern: tens, hyphen, ones (forty-two)
@@ -17507,8 +17508,14 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   const gap = (t) => t.replace(/_{2,}/g, '___');
   function pieces(text, en) {
     const list = [...new Set(en.map(gap))].sort((a, b) => b.length - a.length).map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const all = list.length ? gap(text).split(new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u')) : [text];
-    return all.map((t, i) => [t, i % 2 === 1]).filter(([t]) => /[\p{L}\p{N}]/u.test(t));
+    const re = new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u'), words = en.map(gap), out = [];
+    const add = (t, isEn) => { const last = out[out.length - 1]; if (last && last[1] === isEn) last[0] += t; else out.push([t, isEn]); };
+    // a quoted German word stays German even if an English answer is part of it („der September“ with the option September)
+    gap(text).split(/(„[^“]*“)/).forEach((seg, i) => {
+      if (!list.length || (i % 2 && !words.includes(seg) && !words.includes(seg.slice(1, -1)))) add(seg, false);
+      else seg.split(re).forEach((t, k) => add(t, k % 2 === 1));
+    });
+    return out.filter(([t]) => /[\p{L}\p{N}]/u.test(t));
   }
   // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
   function speak(text, v = voice(), en = [], ve = enVoice()) {
@@ -19977,7 +19984,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '613cbf79dcfc';
+  const BUILD = 'e3666c80b2ef';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
