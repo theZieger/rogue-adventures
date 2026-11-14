@@ -1222,7 +1222,7 @@ const MK = (() => {
     for (let i = 0; i < items.length; i++) { r -= w[i]; if (r <= 0) return items[i]; }
     return items[items.length - 1];
   }
-  // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
+  // opts (optional): { g } = nur Fragen zu diesem Themengebiet (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
   // { world }: in Modi mit byWorld kommen nur Fragen und Reihenfolgen dieser Welt dran (w fehlt = Welt 1)
   function generate(mode, mod, tier, know, seqNow, opts) {
     const cfg = MODES[mode]; const world = (opts && opts.world) || 1;

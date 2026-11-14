@@ -415,7 +415,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX,
     lanesFor, newRun, card, canTarget, preview, threats,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };

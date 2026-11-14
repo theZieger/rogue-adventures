@@ -317,6 +317,6 @@ const TWART = (() => {
     return `<svg class="tw-pic" viewBox="0 0 80 56" aria-hidden="true">${D.out()}${body}</svg>`;
   }
 
-  return { ROOMS, laneColors, subjColor, geo, scene, tower, towerH, TOWER: { TOP, FLOOR, BASE }, poof, orb, leaflet, brickOne, guardShield, spark: (c) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
+  return { ROOMS, laneColors, geo, scene, tower, towerH, TOWER: { TOP, FLOOR, BASE }, poof, orb, leaflet, brickOne, guardShield, spark: (c) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
 })();
 if (typeof module !== 'undefined') module.exports = TWART;

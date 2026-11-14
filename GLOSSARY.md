@@ -36,7 +36,7 @@ A fixed question with a stored answer, as opposed to a generated Aufgabe. Wrong 
 
 **Themengebiet** (code: `g`, as key `note`):
 A topic inside an Einheit that groups its Wissensfragen, with one Notizkarte.
-_Avoid_: Thema (taken by Einheit on screen)
+_Avoid_: Thema (taken by Einheit on screen), Lernbereich (a section of the Saxon curriculum)
 
 **Notizkarte** (code: `notes`):
 The short summary of a Themengebiet that the child can read again.

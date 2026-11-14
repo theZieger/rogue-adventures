@@ -396,6 +396,6 @@ const MU = (() => {
       { title: 'Das Foyer', text: 'In der Pause stehen im Foyer Stühle und ein Tisch mit Wasser. Hier ruhst du dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] };
   K.MODES.musik = MODE;
-  return { MODE, VALUES, TONES, INSTR, FAM, HOW, KOMP, WORLD, DANCES, TERMS, FACTS, makeBar, noteSVG };
+  return { MODE, TONES, INSTR, FAM, HOW, KOMP, WORLD, TERMS, FACTS, makeBar };
 })();
 if (typeof module !== 'undefined') module.exports = MU;

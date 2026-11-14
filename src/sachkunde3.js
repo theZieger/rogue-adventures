@@ -544,6 +544,6 @@ const MS3 = (() => {
   FR.gen = frGen(FR);
 
   K.MODES.wiese = WI; K.MODES.frueher = FR;
-  return { FLORA, TRAITS, LAYERS, ANIMALS, DEV, HERBAR, TOOLS, LINES, SOURCES, LOOKUP, floraSVG };
+  return { FLORA, TRAITS, LAYERS, DEV, HERBAR, TOOLS, LINES, SOURCES, LOOKUP, floraSVG };
 })();
 if (typeof module !== 'undefined') module.exports = MS3;

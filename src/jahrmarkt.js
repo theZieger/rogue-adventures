@@ -1,7 +1,6 @@
 const MJ = (() => {
-  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const Q = typeof MQ !== 'undefined' ? MQ : require('./logic.js');
+  const { rnd, pick, shuffle } = Q;
 
   // Lehrplan Mathematik Klasse 3: Größen und Messen, Daten und Zufall
   const MODULES = {
@@ -21,7 +20,7 @@ const MJ = (() => {
   const qty = (s) => { let v = 0; s.replace(/(½|\d+) (km|m|cm|kg|g)\b/g, (_, n, u) => { v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u]; }); return v; };
   const two = (v, big, small) => { const a = Math.floor(v / UNIT[big]), b = (v % UNIT[big]) / UNIT[small]; return a && b ? `${a} ${big} ${b} ${small}` : a ? `${a} ${big}` : `${b} ${small}`; };
   // amounts and times never break across lines (non-breaking spaces)
-  const euro = (ct) => (typeof MQ !== 'undefined' ? MQ : require('./logic.js')).euro(ct).replace(/ /g, '\u00a0');
+  const euro = (ct) => Q.euro(ct).replace(/ /g, '\u00a0');
   const pad = (m) => String(m).padStart(2, '0');
   const tm = (min) => `${Math.floor(min / 60)}:${pad(min % 60)}\u00a0Uhr`;
   const NAMES = ['Mia', 'Ole', 'Lena', 'Tim', 'Emil', 'Lotta', 'Can', 'Aylin', 'Jonas', 'Paula'];
@@ -396,6 +395,6 @@ const MJ = (() => {
   ];
 
   const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben', rank: 2 };
-  return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG, barhSVG };
+  return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG };
 })();
 if (typeof module !== 'undefined') module.exports = MJ;

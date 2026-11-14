@@ -11,7 +11,6 @@ const K12E = (() => {
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const INK = '#1C2541', WOOD = '#E9A15B', DARK = '#8A5A2B', EBONY = '#3B2A26', METAL = '#C9CEDD', GOLD = '#FFD25A', RED = '#E8344A', BLUE = '#7CC2FF', GREEN = '#4FC96A', FIR = '#2E9E57', WHITE = '#FFFFFF', PAPER = '#FFFDF5';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by pic and optPic)
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
   const USED = new Set();
   const fl = (c) => (/^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c);
   const ln = (d, w, c) => `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -163,13 +162,11 @@ const K12E = (() => {
   const steps = (prefix, texts) => texts.map((text, i) => ({ id: prefix + (i + 1), text }));
   // events ask for one topic (opts.g): those questions come from the pool
   const wantsPool = (pool, mod, opts) => !!(opts && opts.g && pool.some((p) => p.mod === mod && p.g === opts.g));
-  const unit = (set, attacks, o) => Object.assign({ worlds: 1, starters: [Object.assign({}, S.SETS[set].hero, { attacks })], enemies: S.SETS[set].enemies, moves: S.SETS[set].moves }, o);
   const RF = ['Hör dir den Satz an.', 'Stimmt er? Dann tippe auf „Richtig“.', 'Stimmt er nicht? Dann tippe auf „Falsch“.'];
   const UNDO = 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.';
-  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
   const ask = (title, text, task, g, win, lose) => ({ title, text, opts: [{ label: 'Antworten', task, g, win, lose }, { label: 'Weitergehen', effect: {} }] });
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung
-  const dilemma = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
+  const { unit, rest, dilemma, tone } = S;
 
   /* ======================= Klasse 1: Ich und die anderen ======================= */
   const NOTES1 = {
@@ -820,6 +817,6 @@ const K12E = (() => {
     ],
   });
 
-  return { SHAPES, FORMS, FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
+  return { SHAPES, FORMS, FACES, SYMS, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
 })();
 if (typeof module !== 'undefined') module.exports = K12E;
