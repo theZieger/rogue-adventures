@@ -1741,10 +1741,10 @@ async function turmCases() {
   const dst = open({ [META]: JSON.stringify(old) }), mq = dst.w.__mq;
   check(same(mq.meta.turm, { on: false, runs: 0, wins: 0, best: 0, subjects: null, last: {} }) && mq.meta.runs === 5 && mq.meta.wins === 2 && mq.meta.stamps === 7 && !!mq.meta.dex.Sumpfbrocken, 'a save from before Turmwacht loads, with empty Turm fields');
   const norm = (turm) => mq.normMeta(Object.assign({}, old, { turm })).turm;
-  const good = { runs: 4, wins: 1, best: 5, subjects: { 2: ['Musik'], 3: ['Mathe', 'Deutsch'] }, last: { Mathe: { c: 3, t: 4 } } };
+  const good = { on: true, runs: 4, wins: 1, best: 5, subjects: { 2: ['Musik'], 3: ['Mathe', 'Deutsch'] }, last: { Mathe: { c: 3, t: 4 } } };
   check(same(norm(good), good), 'valid Turm fields stay');
-  const bad = [['runs', NaN], ['runs', -1], ['runs', '4'], ['runs', 2.5], ['wins', Infinity], ['best', 99], ['best', -2], ['best', null], ['subjects', 'Mathe'], ['subjects', ['Mathe', 'Kochen']], ['subjects', []], ['subjects', ['Mathe', 'Mathe']], ['subjects', ['Mathe', 'Deutsch', 'Ethik', 'Musik']], ['subjects', {}], ['subjects', { 1: ['Mathe'], 2: ['Englisch'], 3: ['Mathe', 'Mathe'] }], ['last', []], ['last', 3]];
-  const fallback = { subjects: null, last: {} };
+  const bad = [['on', 1], ['on', 'true'], ['on', null], ['runs', NaN], ['runs', -1], ['runs', '4'], ['runs', 2.5], ['wins', Infinity], ['best', 99], ['best', -2], ['best', null], ['subjects', 'Mathe'], ['subjects', ['Mathe', 'Kochen']], ['subjects', []], ['subjects', ['Mathe', 'Mathe']], ['subjects', ['Mathe', 'Deutsch', 'Ethik', 'Musik']], ['subjects', {}], ['subjects', { 1: ['Mathe'], 2: ['Englisch'], 3: ['Mathe', 'Mathe'] }], ['last', []], ['last', 3]];
+  const fallback = { on: false, subjects: null, last: {} };
   for (const [k, v] of bad) check(same(norm(Object.assign({}, good, { [k]: v })), Object.assign({}, good, { [k]: k in fallback ? fallback[k] : 0 })), `broken Turm field ${k} = ${typeof v === 'number' ? v : JSON.stringify(v)} falls back alone`);
   // fixed subjects: an early save had one list for all grades, each grade keeps what it has; one broken grade falls back alone
   check(same(norm(Object.assign({}, good, { subjects: ['Mathe', 'Englisch'] })).subjects, { 2: ['Mathe'], 3: ['Mathe', 'Englisch'] }) && same(norm(Object.assign({}, good, { subjects: ['Englisch'] })).subjects, { 3: ['Englisch'] }), 'the old list of fixed subjects becomes one list per grade');
@@ -1765,8 +1765,8 @@ async function turmCases() {
   // merge into the old device: no Turm run here yet, so it is taken; the higher counts win
   dst.click('#parents'); dst.go('settings', 'save');
   dst.$('#pcodein').value = fromFile; dst.click('#pmerge'); await until(() => dst.$('.overlay #yes')); dst.click('.overlay #yes');
-  // the fixed subjects are a setting: a device that is already set up keeps its own
-  check(dst.dump()[TURM] === run && same(dst.w.__mq.meta.turm, Object.assign({}, mt, { subjects: null })), 'merge takes the Turm run and the Turm record');
+  // the fixed subjects and the parents' switch are settings: a device that is already set up keeps its own
+  check(dst.dump()[TURM] === run && same(dst.w.__mq.meta.turm, Object.assign({}, mt, { subjects: null, on: false })), 'merge takes the Turm run and the Turm record');
   // merge again with a local run and a higher local record: both stay, the other counts take the maximum
   const local = JSON.parse(run); local.turm.ziegel = 9; dst.w.localStorage.setItem(TURM, JSON.stringify(local));
   Object.assign(dst.w.__mq.meta.turm, { best: 6, runs: 1 });
@@ -1781,7 +1781,7 @@ async function turmCases() {
 
   // resets: statistics keep the run and the parents' subjects, „Alles löschen“ removes the run
   dst.click('#parents'); dst.go('settings', 'reset'); dst.click('#rstats'); dst.click('.overlay #yes');
-  check(same(dst.w.__mq.meta.turm, { runs: 0, wins: 0, best: 0, subjects: good.subjects, last: {} }) && dst.dump()[TURM] === run, '„Statistik zurücksetzen“ clears the Turm numbers and keeps the run and the subjects');
+  check(same(dst.w.__mq.meta.turm, { on: true, runs: 0, wins: 0, best: 0, subjects: good.subjects, last: {} }) && dst.dump()[TURM] === run, '„Statistik zurücksetzen“ clears the Turm numbers and keeps the run, the subjects and the parents\' switch');
   dst.click('#rall'); dst.click('.overlay #yes');
   check(!dst.dump()[TURM] && dst.w.__mq.meta.turm.subjects === null, '„Alles löschen“ removes the Turm run');
   check(src.errors.length === 0 && dst.errors.length === 0, 'no page errors ' + src.errors.concat(dst.errors).join(' '));

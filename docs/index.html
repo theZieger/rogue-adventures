@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="7c9e5cf88a5a">
+<meta name="app-version" content="94fc4b548800">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -19830,7 +19830,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     on('#psound', () => { meta.sound = !meta.sound; saveAll(); if (meta.sound) { SFX.unlock(); setTimeout(SFX.right, 150); } again(); });
     on('#rtut', (b) => { meta.seenTut = {}; saveAll(); say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.'); });
     on('#pfeedback', () => screenFeedback(() => screenParent('appsec', back)));
-    on('#rstats', () => confirmBox('Statistik zurücksetzen?', '<p>Alle Trefferquoten, die Zahl der Abenteuer und der Rekord der Turmwacht werden gelöscht. Stempel, Monsterbuch und laufende Abenteuer bleiben.</p><p>Das kann man nicht rückgängig machen.</p>', 'Ja, Statistik löschen', () => { meta.stats = defaultMeta().stats; meta.know = {}; meta.runs = 0; meta.wins = 0; meta.turm = Object.assign(defaultMeta().turm, { subjects: meta.turm.subjects }); saveAll(); again(); }, true));
+    on('#rstats', () => confirmBox('Statistik zurücksetzen?', '<p>Alle Trefferquoten, die Zahl der Abenteuer und der Rekord der Turmwacht werden gelöscht. Stempel, Monsterbuch und laufende Abenteuer bleiben.</p><p>Das kann man nicht rückgängig machen.</p>', 'Ja, Statistik löschen', () => { meta.stats = defaultMeta().stats; meta.know = {}; meta.runs = 0; meta.wins = 0; meta.turm = Object.assign(defaultMeta().turm, { subjects: meta.turm.subjects, on: meta.turm.on }); saveAll(); again(); }, true));
     on('#rall', () => confirmBox('Wirklich alles löschen?', '<p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht.</p><p>Das kann man nicht rückgängig machen.</p>', 'Ja, alles löschen', () => { meta = defaultMeta(); run = null; for (const m of MODE_KEYS.concat('turm')) clear(KEY_RUN_FOR(m)); saveAll(); screenTitle(); }, true));
     const copy = (text, box, out) => { const tell = (t) => { $(out).textContent = t; }; const mark = () => { $(box).focus(); $(box).select(); tell('Der Text ist markiert. Bitte jetzt kopieren.'); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => tell('Kopiert.'), mark); else mark(); };
@@ -19936,7 +19936,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '7c9e5cf88a5a';
+  const BUILD = '94fc4b548800';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {
