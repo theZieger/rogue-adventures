@@ -1,5 +1,5 @@
 // Parent area: what each task type practises, in one plain sentence (INFO[mode][task type]), and where a topic
-// sits in the Saxon curriculum (PLAN[mode]). tests/test_data.js checks that nothing is missing.
+// sits in the Saxon curriculum (PLAN[mode]), and the Turmwacht texts (TURM). tests/test_data.js checks that nothing is missing.
 const ELTERN = (() => {
   const facts = (thema) => ({
     rf: `Ihr Kind liest einen Satz ${thema} und entscheidet: richtig oder falsch?`,
@@ -381,6 +381,12 @@ const ELTERN = (() => {
     tiere2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
     natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
   };
-  return { INFO, PLAN };
+  // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
+  const TURM = {
+    subjects: 'Ohne Auswahl wählt Ihr Kind zu Beginn ein bis drei Fächer selbst. Lernquest schlägt die Fächer vor, die noch am wenigsten sicher sitzen. Schalten Sie hier Fächer ein, beginnt jede neue Turmwacht mit genau diesen, höchstens drei.',
+    counts: 'Antworten aus der Turmwacht zählen bei den Themen und im Wochenbericht mit, genau wie im Abenteuer.',
+    level: 'Die Turmwacht stellt ihre Aufgaben auf denselben Stufen und verschiebt sie nach denselben Regeln.',
+  };
+  return { INFO, PLAN, TURM };
 })();
 if (typeof module !== 'undefined') module.exports = ELTERN;

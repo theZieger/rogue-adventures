@@ -98,24 +98,46 @@ const TW = (() => {
     return us.find((m) => !t.boss3 || bossOf(m) !== t.boss3.name) || us[0];
   }
 
-  function buildWave(run, ctx) {
-    const t = run.turm, w = WAVES[t.wave - 1], k2 = run.grade === 2, L = t.lanes.length, weak = weakest(t, ctx);
+  // which path each monster of the coming wave walks on: the same plan builds the wave and the Bauzeit preview
+  function plan(run, ctx, wave) {
+    const t = run.turm, w = WAVES[wave - 1], k2 = run.grade === 2, L = t.lanes.length, weak = weakest(t, ctx);
     const n = k2 ? Math.max(K2_MIN, Math.round(w.n * K2_COUNT)) : w.n;
     // spread over the lanes so every path gets its share of questions, then one more for the weakest lane
     const lanes = [], load = t.lanes.map((_, i) => usedOf(t, i));
     for (let i = 0; i < n; i++) { const l = load.indexOf(Math.min(...load)); lanes.push(l); load[l] += PER_MONSTER; }
     lanes.push(weak[0]);
-    const again = t.again.splice(0, lanes.length).filter((e) => e.lane < L);
-    const q = lanes.map((lane, i) => {
-      const e = again[i], x = spawn(run, ctx, e ? e.lane : lane, 'normal', e && { m: e.m, k: e.k });
-      if (e) x.again = e;
-      if (w.fast && !k2 && i % w.fast === w.fast - 1) x.steps = 2;
+    const again = t.again.slice(0, lanes.length).filter((e) => e.lane < L);
+    const normal = lanes.map((lane, i) => ({ lane: again[i] ? again[i].lane : lane, again: again[i], fast: !!w.fast && !k2 && i % w.fast === w.fast - 1 }));
+    const finalLane = (L > 1 && t.boss3 ? weak.find((i) => i !== t.boss3.lane) : null) ?? weak[0];
+    return { w, weak, normal, n: lanes.length, finalLane };
+  }
+
+  function buildWave(run, ctx) {
+    const t = run.turm, p = plan(run, ctx, t.wave), w = p.w, weak = p.weak;
+    t.again.splice(0, p.n);
+    const q = p.normal.map((e) => {
+      const x = spawn(run, ctx, e.lane, 'normal', e.again && { m: e.again.m, k: e.again.k });
+      if (e.again) x.again = e.again;
+      if (e.fast) x.steps = 2;
       return x;
     });
     if (w.boss != null) { const x = spawn(run, ctx, weak[0], 'boss'); t.boss3 = { lane: x.lane, name: x.name }; q.splice(w.boss, 0, x); }
     if (w.elite != null) q.splice(w.elite, 0, spawn(run, ctx, weak[0], 'elite'));
-    if (w.final != null) q.splice(w.final, 0, spawn(run, ctx, (L > 1 && t.boss3 && weak.find((i) => i !== t.boss3.lane)) ?? weak[0], 'final'));
+    if (w.final != null) q.splice(w.final, 0, spawn(run, ctx, p.finalLane, 'final'));
     return q;
+  }
+
+  // Bauzeit: what the next wave brings on each path → [{ n, fast, boss, elite, final }] (n counts every monster)
+  function preview(run, ctx) {
+    const t = run.turm;
+    if (t.phase !== 'build' || t.wave >= WAVES.length) return null;
+    const p = plan(run, ctx, t.wave + 1), out = t.lanes.map(() => ({ n: 0, fast: 0, boss: false, elite: false, final: false }));
+    for (const e of p.normal) { out[e.lane].n++; if (e.fast) out[e.lane].fast++; }
+    const add = (lane, k) => { out[lane].n++; out[lane][k] = true; };
+    if (p.w.boss != null) add(p.weak[0], 'boss');
+    if (p.w.elite != null) add(p.weak[0], 'elite');
+    if (p.w.final != null) add(p.finalLane, 'final');
+    return out;
   }
 
   function enter(t, max, ev) {
@@ -363,8 +385,8 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, COST, FIX_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
-    lanesFor, newRun, card, canTarget,
+    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, COST, FIX_HP, REPAIR_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    lanesFor, newRun, card, canTarget, preview,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };
 })();

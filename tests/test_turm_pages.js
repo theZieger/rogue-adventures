@@ -224,6 +224,54 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(!tries[2].retry && !tries[2].saved && gr().turm.cpUsed === 2, 'after two retries the third fall ends the run');
   check(/Turm ist gefallen/.test(g.$('.tw-end.center:last-child, .tw-result').textContent) && /geübt/.test(g.$('.tw-end h2').textContent), 'the end screen leads with what was practised');
   check(g.errors.length === 0, 'no page errors ' + g.errors.join(' '));
+
+  // the Bauzeit through the real cards: every kind bought, refusals, then the parents fix the subjects
+  const z = open({ [META]: meta0 }, 9), zr = () => z.w.__mq.run, zt = () => zr().turm, card = (id) => z.click(`[data-card="${id}"]`), spot = (l, s) => z.click(`.tw-spot[data-lane="${l}"][data-spot="${s}"]`);
+  const log = () => (z.$('.tw-log') || { textContent: '' }).textContent, bmsg = () => z.$('.tw-bmsg').textContent;
+  z.w.__mq.meta.dex.Moorschlund = { type: 'wasser', shape: 'moorschlund', world: 1, mode: 'math' };
+  z.T.start(['Mathe', 'Deutsch', 'Sachkunde'], { m: 'math', id: 'fuchs' });
+  for (let n = 0; n < 100 && zt().phase !== 'build'; n++) { if (zt().phase === 'step') z.T.step(); else turn(z, true); }
+  z.T.board();
+  check(!!z.$('.overlay #tutok') && /Bauzeit/.test(z.$('.overlay h2').textContent), 'the first Bauzeit explains itself');
+  z.click('.overlay #tutok');
+  check(z.w.__mq.meta.seenTut['turm:bau'] === true && /geschenkt/.test(z.$('[data-card="guard"]').textContent) && z.d.querySelectorAll('.tw-coming').length >= 1, 'the guard card says the first guard is free, the paths show the coming wave');
+  const free0 = zt().ziegel;
+  card('guard'); spot(0, 1);
+  check(z.d.querySelectorAll('.overlay [data-l]').length === 4 && /stark gegen/.test(z.$('.overlay').textContent), 'a spot asks for the look: three typed guards and the boss from the Monsterbuch');
+  z.click('.overlay [data-l="0"]');
+  check(same(zt().guards['0:1'], { look: 'fuchs', type: 'feuer', lvl: 1 }) && zt().ziegel === free0 && /Glutfuchs steht jetzt/.test(log()) && same(z.saved(), zr()), 'the free guard is placed and saved');
+  zt().ziegel = 30; zr().hero.hp = 40; z.T.buy({ kind: 'none' }); z.T.board();
+  card('guard'); spot(1, 0); z.click('.overlay [data-l="3"]');
+  check(same(zt().guards['1:0'], { look: 'moorschlund', type: 'normal', lvl: 1 }) && zt().ziegel === 26 && /Moorschlund hilft dir jetzt\./.test(log()), 'a boss as a guard: normal type, 4 Ziegel, „… hilft dir jetzt.“');
+  card('up'); spot(0, 1); card('up'); spot(0, 1);
+  check(zt().guards['0:1'].lvl === 3 && zt().ziegel === 11 && /Stufe 3/.test(log()) && z.d.querySelectorAll('.tw-spot.on').length === 2, 'upgrades: level 2 for 6, level 3 for 9');
+  card('floor:Mathe');
+  check(same(zt().floors, ['Mathe']) && zt().ziegel === 3 && !!z.$('#twt .tw-fl[data-subject="Mathe"]') && /Rechenstube ist fertig/.test(log()), 'a floor is built and drawn on the tower');
+  card('fix');
+  check(zr().hero.hp === 50 && zt().ziegel === 0, 'Mauer flicken: +10 ❤️ for 3');
+  card('floor:Deutsch');
+  check(zt().floors.length === 1 && bmsg() === 'Dafür fehlen dir noch 8 Ziegel.' && z.$('[data-card="floor:Deutsch"]').classList.contains('short') && /Noch 8/.test(z.$('[data-card="floor:Deutsch"]').textContent), 'too expensive: greyed, „Noch 8 🧱“, nothing bought');
+  card('floor:Mathe');
+  check(bmsg() === 'Schon gebaut.', 'a built floor says why it can\'t be built again');
+  zt().ziegel = 7; z.T.buy({ kind: 'none' }); z.T.board(); card('guard'); // a refused buy still saves
+  const zSaved = z.saved();
+  check(z.d.querySelectorAll('button.tw-spot.pick').length === 6 && same(zSaved, zr()), 'a guard card waits for a spot; everything bought is saved');
+  z.w.__mq.screenTitle();
+  for (let i = 0; i < 5; i++) z.click('#logo');
+  z.click('[data-pt="settings"]'); z.click('[data-ps="show"]');
+  z.click('[data-tsub="3:Mathe"]'); z.click('[data-tsub="3:Musik"]'); z.click('[data-tsub="2:Ethik"]');
+  check(same(z.w.__mq.meta.turm.subjects, { 2: ['Ethik'], 3: ['Mathe', 'Musik'] }) && same(JSON.parse(z.w.localStorage.getItem(META)).turm.subjects, { 2: ['Ethik'], 3: ['Mathe', 'Musik'] }), 'parents fix the Turm subjects per grade');
+  check(z.errors.length === 0, 'no page errors ' + z.errors.join(' '));
+
+  // reload in the middle of placing a guard: back to the cards, nothing lost; the start screen keeps the parents' subjects
+  const y = open(z.dump(), 10);
+  y.click('#turm'); y.click('#cont');
+  check(same(y.w.__mq.run, zSaved) && !!y.$('.tw-buy') && !y.$('button.tw-spot.pick') && /7/.test(y.$('.tw-res').textContent), 'reload during the Bauzeit: the cards again, guards, floor and Ziegel kept');
+  y.click('#home'); y.click('#turm'); y.click('#new'); y.click('.overlay #yes');
+  check([...y.d.querySelectorAll('.tw-subj.fixed')].map((e) => e.dataset.subj).join() === 'Mathe,Musik' && !y.$('button[data-subj]'), 'after the reload the start screen shows the parents\' subjects, fixed');
+  y.click('#go');
+  check(same([...new Set(y.w.__mq.run.turm.lanes.map((l) => l.subject))], ['Mathe', 'Musik']), 'the run uses exactly those subjects');
+  check(y.errors.length === 0, 'no page errors ' + y.errors.join(' '));
   last.close();
   console.log(`turm pages fails ${fails} (${opens} pages, ${Date.now() - t0} ms)`);
   if (fails) process.exit(1);

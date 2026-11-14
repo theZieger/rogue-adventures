@@ -366,7 +366,10 @@ const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']
         if (c.kind === 'guard') cards[cards.indexOf(c)] = { kind: 'up', lane: c.lane, spot: c.spot };
       }
       check(JSON.stringify(JSON.parse(JSON.stringify(run))) === JSON.stringify(run), 'plain JSON');
+      const pv = TW.preview(run, ctx);
       checkEv(TW.nextWave(run, ctx));
+      const all = t().monsters.concat(t().queue), got = pv.map((_, l) => { const on = all.filter((x) => x.lane === l); return { n: on.length, fast: on.filter((x) => x.steps === 2 && !x.boss).length, boss: on.some((x) => x.boss && !x.final), elite: on.some((x) => x.elite), final: on.some((x) => x.final) }; });
+      check(JSON.stringify(got) === JSON.stringify(pv), 'the Bauzeit preview matches the wave that comes', { pv, got });
     } else if (ph === 'fallen') { if (!TW.retry(run)) break; pass = 0; }
     else if (ph === 'won') break;
     else { check(false, 'unknown phase', ph); break; }
