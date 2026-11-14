@@ -194,7 +194,10 @@ for(const mod of M.MODULE_KEYS){ const tk=M.generate(mod,1); console.log(mod, JS
 console.log(JSON.stringify(M.generate('riddle',2)), JSON.stringify(M.generate('riddle',3)));
 // money is written „3 € 50 ct“, never with a comma
 for(const [c,t] of [[350,'3 € 50 ct'],[205,'2 € 05 ct'],[300,'3 €'],[60,'60 ct'],[0,'0 ct'],[1000,'10 €']]) check(M.euro(c)===t,'euro '+c,M.euro(c));
-check(Object.keys(M.PRICES).every(k=>M.ITEMS[k]&&Number.isInteger(M.PRICES[k])),'market prices are whole cents of real items',M.PRICES);
+check(M.SHOP_GIFTS.every(k=>M.ITEMS[k]),'Kaufladen gifts are real items',M.SHOP_GIFTS);
+for(const w of [1,2,3]) for(let i=0;i<300;i++){ const cs=M.shopCustomers(w); const big=w===3?[500,1000]:[100,200];
+  check(cs.length===3&&new Set(cs.map(c=>c.who)).size===3&&new Set(cs.map(c=>c.ware)).size===3,'three different customers',cs);
+  for(const c of cs) check(Number.isInteger(c.price)&&c.price>0&&c.price%5===0&&(w===1?c.paid===0&&c.price<200:big.includes(c.paid)&&c.paid>c.price),'customer price and payment in world '+w,c); }
 // path map rules (see makeMap in src/logic.js)
 const quiet = ['rest', 'treasure', 'elite', 'event'];
 if (M.FLOORS !== 8 || M.makeMap().length !== 8) fails.push('map: 8 floors by default');

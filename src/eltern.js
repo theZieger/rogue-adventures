@@ -34,7 +34,7 @@ const ELTERN = (() => {
       zmul: 'Malnehmen mit Zehnerzahlen (4 · 70) und halbschriftlich: 6 · 23 = 6 · 20 + 6 · 3.',
       vergl: 'Dreistellige Zahlen mit <, > und = vergleichen, auch in Hunderter, Zehner und Einer, und vier Zahlen der Größe nach ordnen.',
       ueber: 'Ihr Kind rundet auf Hunderter und erkennt so, welches Ergebnis stimmen kann (nur in Welt 3).',
-      geld: 'Mit Euro und Cent passend bezahlen und Rückgeld ausrechnen. Ohne „Geld“ gibt es keinen Markt und keine Münzen.',
+      geld: 'Im Kaufladen Kunden bedienen: Euro und Cent passend abzählen und Rückgeld geben. Ohne „Geld“ gibt es keinen Kaufladen.',
     },
     bau: {
       wz: 'Ein Bauplan zeigt ein Würfelgebäude von oben. Ihr Kind zählt die Würfel.',
