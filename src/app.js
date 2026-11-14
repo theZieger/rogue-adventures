@@ -1996,30 +1996,40 @@
     screenTurmBoard({ lines: ['Die Turmwacht geht weiter.'], quiet: true });
   }
 
-  /* the board: tower column on the left, one road per path, cell 1 touches the tower (art comes in step E7) */
+  /* the board: an illustrated scene (TWART) with the Wissensturm in the middle and up to three paths to its gate.
+     Everything is placed in board units (--x/--y of TWART.geo); CSS turns them into percentages of the board. */
   let turmSel = null; // id of the monster whose card is open
   const turmTop = () => topbar(`🏰 Welle ${run.turm.wave}/${TW.WAVES.length}`, `<div class="world tw-res"><span aria-label="Turm: ${run.hero.hp} von ${run.hero.maxHp} Lebenspunkten">❤️ ${run.hero.hp}</span><span aria-label="${run.turm.ziegel} Ziegel">🧱 ${run.turm.ziegel}</span></div>`);
   function turmMonLabel(x) {
     const t = run.turm;
     return [x.name, `Weg ${laneName(x.lane)}`, `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`, `${x.hp} Lebenspunkte`, t.weak === x.id && 'Schwachstelle', x.again && 'kommt wieder', !TW.canTarget(run, x.id) && 'geschützt'].filter(Boolean).join(', ');
   }
-  function turmMon(x) {
-    const t = run.turm, sel = x.id === turmSel, pct = Math.max(4, (x.hp / x.maxHp) * 100);
-    const tags = [t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑'].filter(Boolean).join('');
-    return `<button class="tw-mon${sel ? ' sel' : ''}${TW.canTarget(run, x.id) ? '' : ' guarded'}${t.weak === x.id ? ' weak' : ''}" data-id="${x.id}" aria-pressed="${sel}" aria-label="${esc(turmMonLabel(x))}">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<i class="tw-hp"><b class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></b></i>${tags ? `<span class="tw-tags" aria-hidden="true">${tags}</span>` : ''}</button>`;
+  // a monster faces the gate: the plain sprite looks right, the mirrored enemy sprite (flipped back by CSS) looks left
+  function turmMon(x, cols, right) {
+    const t = run.turm, sel = x.id === turmSel, pct = Math.max(4, (x.hp / x.maxHp) * 100), free = TW.canTarget(run, x.id);
+    const tags = [t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑'].filter(Boolean).map((e) => `<i>${e}</i>`).join('');
+    const ring = x.final ? TWART.shields(x.shields.map((l) => cols[l]), Math.round(x.maxHp / x.part) - x.shields.length) : '';
+    return `<button class="tw-mon${sel ? ' sel' : ''}${free ? '' : ' guarded'}${t.weak === x.id ? ' weak' : ''}${right ? ' r' : ''}${x.boss || x.elite ? ' big' : ''}" data-id="${x.id}" aria-pressed="${sel}" aria-label="${esc(turmMonLabel(x))}">${monsterSVG(x.shape, TYPES[x.type].color, 0, right ? '' : 'enemy', { elite: x.elite, boss: x.boss })}${ring}${free ? '' : TWART.bubble()}` +
+      `<span class="tw-stat">${TWART.feet(x.boss ? 1 : x.steps, (x.boss && x.slow) || x.stun)}<i class="tw-hp"><b class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></b></i></span>${tags ? `<span class="tw-tags" aria-hidden="true">${tags}</span>` : ''}</button>`;
   }
+  // guards: the three typed starters or a boss from the Monsterbuch (look = its shape)
+  const GUARD_LOOK = { fuchs: ['fox', 'feuer'], kroete: ['toad', 'wasser'], baer: ['bear', 'pflanze'] };
+  const turmGuardSVG = (g) => { const [shape, type] = GUARD_LOOK[g.look] || [g.look, g.type in TYPES ? g.type : 'normal']; return monsterSVG(shape, TYPES[type].color, 0, '', { boss: !GUARD_LOOK[g.look] }); };
   function turmBoardHtml() {
-    const t = run.turm, h = run.hero, pct = (h.hp / h.maxHp) * 100;
-    const lanes = t.lanes.map((l, i) => {
-      const q = t.queue.filter((x) => x.lane === i).length;
-      const cells = Array.from({ length: TW.CELLS }, (_, c) => { const x = t.monsters.find((y) => y.lane === i && y.cell === c + 1); return `<div class="tw-cell" data-cell="${c + 1}">${x ? turmMon(x) : ''}</div>`; }).join('');
-      return `<div class="tw-lane" data-lane="${i}" style="grid-row:${i + 2}" role="group" aria-label="Weg ${esc(laneName(i))}"><div class="tw-lanehead"><span>${SUBJECTS[l.subject]} ${esc(laneName(i))}</span>${q ? `<span class="tw-queue">${q} ${q === 1 ? 'wartet' : 'warten'}</span>` : ''}</div><div class="tw-road">${cells}</div></div>`;
+    const t = run.turm, h = run.hero, G = TWART.geo(t.lanes.length), cols = TWART.laneColors(t.lanes), pct = (h.hp / h.maxHp) * 100, build = t.phase === 'build';
+    const at = ([x, y]) => `--x:${x};--y:${y}`;
+    const tw = TWART.tower(t.floors, h.hp, h.maxHp);
+    const lanes = G.lanes.slice(0, t.lanes.length).map((g, i) => {
+      const q = t.queue.filter((x) => x.lane === i).length, [hx, hy, side] = g.head;
+      const cells = g.cells.map((c, k) => { const x = t.monsters.find((y) => y.lane === i && y.cell === k + 1); return `<div class="tw-cell" data-lane="${i}" data-cell="${k + 1}" style="${at(c)}">${x ? turmMon(x, cols, c[0] < G.gate[0] - 4) : ''}</div>`; }).join('');
+      const spots = g.spots.map((p, s) => { const gd = t.guards[i + ':' + s], tag = build ? 'button' : 'div';
+        return `<${tag} class="tw-spot${gd ? ' on' : ''}" data-lane="${i}" data-spot="${s}" style="${at(p)}"${build ? ` aria-label="${esc(`Wachplatz ${s + 1} am Weg ${laneName(i)}: ${gd ? `Wache Stufe ${gd.lvl}` : 'frei'}`)}"` : ' aria-hidden="true"'}>${gd ? `${turmGuardSVG(gd)}${TWART.pips(gd.lvl)}` : ''}</${tag}>`; }).join('');
+      return `<div class="tw-lane" data-lane="${i}" role="group" aria-label="Weg ${esc(laneName(i))}" style="--c:${cols[i]}"><div class="tw-lanehead ${side}" style="${at([hx, hy])}"><span class="nm">${SUBJECTS[t.lanes[i].subject]} ${esc(laneName(i))}</span>${q ? `<span class="tw-queue">${q} ${q === 1 ? 'wartet' : 'warten'}</span>` : ''}</div>${spots}${cells}</div>`;
     }).join('');
-    return `<div class="tw-board" style="--rows:${t.lanes.length}">
-      <div class="tw-heroslot">${heroSVG(turmHero(), h.evo)}</div>
-      <div class="tw-hpbox"><div class="hpbar" aria-hidden="true"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">Turm ❤️ ${h.hp} / ${h.maxHp}${run.shield ? ' 🛡️' : ''}</div></div>
-      <div class="tw-tower" id="twt" aria-hidden="true">${t.lanes.map((l) => `<div class="tw-floor"><span class="tw-win">${SUBJECTS[l.subject]}</span></div>`).join('')}</div>
-      ${lanes}</div>`;
+    return `<div class="tw-board">${TWART.scene(t.lanes)}
+      <div class="tw-tower" id="twt" style="--x:${G.gate[0]};--y:${G.gate[1] + 8};--th:${tw.h};--feet:${tw.feet}" data-floors="${t.floors.length}">${tw.back}<div class="tw-heroslot">${heroSVG(turmHero(), h.evo)}</div>${tw.front}</div>
+      ${lanes}
+      <div class="tw-hpbox ${G.hp[2]}" style="${at(G.hp)}"><span class="hptext">Turm ❤️ ${h.hp} / ${h.maxHp}${run.shield ? ' 🛡️' : ''}</span><span class="hpbar" aria-hidden="true"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></span></div></div>`;
   }
   // o: { ev: engine events to show, names: id → name from before the answer, lines: extra log lines first, quiet: no auto-reading }
   function screenTurmBoard(o = {}) {
@@ -2027,7 +2037,7 @@
     if (t.phase === 'fallen' || t.phase === 'won') return screenTurmEnd(o);
     if (!t.monsters.some((x) => x.id === turmSel)) turmSel = null;
     const text = (o.lines || []).concat(o.ev ? turmLines(o.ev, o.names || {}) : []).join(' ');
-    render(`<div class="screen tw-screen">${turmTop()}<div class="tw-main">${turmBoardHtml()}</div>${text ? `<div class="log tw-log"><p>${esc(text)}</p></div>` : ''}<div class="taskwrap" id="taskwrap"></div><div class="bottom tw-panel" id="bottom"></div></div>`, !!o.ev);
+    render(`<div class="screen tw-screen">${turmTop()}<div class="tw-main" style="--W:${TWART.geo(t.lanes.length).w};--H:${TWART.geo(t.lanes.length).h}">${turmBoardHtml()}</div>${text ? `<div class="log tw-log"><p>${esc(text)}</p></div>` : ''}<div class="taskwrap" id="taskwrap"></div><div class="bottom tw-panel" id="bottom"></div></div>`, !!o.ev);
     backTo = () => turmLeave(screenTurm);
     if (text) { announce(text); speakBtn($('.tw-log'), 'afterbegin', () => text, o.quiet ? null : () => text, [], run.grade); }
     app.querySelectorAll('.tw-mon').forEach((b) => { b.onclick = () => { turmSel = +b.dataset.id; turmPick(); }; });
@@ -2441,5 +2451,5 @@
   screenTitle();
   importFromLink();
   // turm: the rules without the screens, for the page tests
-  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}) }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();

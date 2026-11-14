@@ -24,7 +24,7 @@ k12 = strip_exports((SRC / "klasse12.js").read_text(encoding="utf-8"), "K12") + 
 mon = strip_exports((SRC / "monsters.js").read_text(encoding="utf-8"), "MONART")
 icons = strip_exports((SRC / "icons.js").read_text(encoding="utf-8"), "ICONS")
 eltern = strip_exports((SRC / "eltern.js").read_text(encoding="utf-8"), "ELTERN")
-turm = strip_exports((SRC / "turm.js").read_text(encoding="utf-8"), "TW")
+turm = strip_exports((SRC / "turm.js").read_text(encoding="utf-8"), "TW") + "\n" + strip_exports((SRC / "turmart.js").read_text(encoding="utf-8"), "TWART")
 qr = strip_exports((SRC / "qr.js").read_text(encoding="utf-8"), "QR") + "\n" + strip_exports((SRC / "savecode.js").read_text(encoding="utf-8"), "SAVECODE")
 # Baked, svgo-optimised monster art (npm run svg -> art/monsters/svg/*.svg); monsters.js prefers it over drawing at runtime.
 baked = {f.stem: f.read_text(encoding="utf-8").strip() for f in sorted((ROOT / "art" / "monsters" / "svg").glob("*.svg"))}
