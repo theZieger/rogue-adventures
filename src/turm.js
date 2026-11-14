@@ -41,7 +41,8 @@ const TW = (() => {
   const weakest = (t, ctx) => order(t, (i) => accOf(t, i, ctx), (i) => usedOf(t, i));
   const leastUsed = (t, ctx) => order(t, (i) => usedOf(t, i), (i) => accOf(t, i, ctx));
   const remove = (t, x) => { t.monsters = t.monsters.filter((y) => y !== x); if (t.weak === x.id) t.weak = null; };
-  const earn = (t, n, why, ev) => { t.ziegel += n; ev.push({ t: 'ziegel', n, why, total: t.ziegel }); };
+  // earned: this wave's Ziegel by reason, for the wave-cleared screen
+  const earn = (t, n, why, ev) => { t.ziegel += n; t.earned[why] = (t.earned[why] || 0) + n; ev.push({ t: 'ziegel', n, why, total: t.ziegel }); };
   const catchUp = (t) => { const s = Object.values(t.score), c = s.reduce((a, x) => a + x.c, 0), n = s.reduce((a, x) => a + x.t, 0); return n >= CATCHUP_AFTER && c / n < CATCHUP_BELOW; };
   // the final boss only takes damage from questions of its current shield's path
   const hittable = (lane) => (x) => !x.final || x.shields[0] === lane;
@@ -137,7 +138,7 @@ const TW = (() => {
   function nextWave(run, ctx) {
     const t = run.turm;
     if (t.phase !== 'build' || t.wave >= WAVES.length) return [];
-    t.wave++; t.best = Math.max(t.best, t.wave); t.turn = 0; t.hurtThisWave = false; t.phase = 'choose'; t.offer = null;
+    t.wave++; t.best = Math.max(t.best, t.wave); t.turn = 0; t.hurtThisWave = false; t.phase = 'choose'; t.offer = null; t.earned = {}; t.stamps = 0;
     t.queue = buildWave(run, ctx);
     const ev = [{ t: 'wave', wave: t.wave }];
     enter(t, WAVES[t.wave - 1].start, ev);
@@ -153,7 +154,7 @@ const TW = (() => {
       items: START_ITEMS.slice(), shield: false, power: false, hint: false, right: 0, answered: 0, solved: 0,
       turm: {
         wave: 0, turn: 0, phase: 'build', lanes: clone(lanes), at: {}, used: {}, monsters: [], queue: [], guards: {}, floors: [],
-        ziegel: 0, again: [], score: {}, asking: null, weak: null, offer: null, boss3: null, free: true,
+        ziegel: 0, earned: {}, stamps: 0, again: [], score: {}, asking: null, weak: null, offer: null, boss3: null, free: true,
         cp: null, cpUsed: 0, best: 0, nextId: 1, hurtThisWave: false,
       },
     };
@@ -362,7 +363,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, COST, FIX_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, COST, FIX_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
     lanesFor, newRun, card, canTarget,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };

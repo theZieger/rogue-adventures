@@ -180,6 +180,50 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   M.hidden.push('extra:turm'); v.w.__mq.screenTitle();
   check(!v.$('#turm'), 'hidden by the parents: no Turmwacht on the title');
   check(v.errors.length === 0, 'no page errors ' + v.errors.join(' '));
+
+  // a whole run through the screens, every answer right: banners, wave screens, evolution, victory, Monsterbuch, Stempel
+  const f = open({ [META]: meta0 }, 7), fd = f.d, fr = () => f.w.__mq.run, FM = f.w.__mq.meta, stamps0 = FM.stamps;
+  f.click('#turm'); f.click('#go'); f.click('.overlay #tutok');
+  const seen = { banner: [], cleared: 0, evo: [], guard: '' }; let guard = false;
+  for (let n = 0; n < 400 && !f.$('.tw-endbtns'); n++) {
+    const ov = f.$('.overlay #tutok');
+    if (ov) { const h = f.$('.overlay h2'); if (h && / kommt\.$/.test(h.textContent)) seen.banner.push(h.textContent); ov.click(); continue; }
+    if (f.$('#tobuild') || f.$('#pick')) { seen.cleared++; const e = f.$('.tw-evo p'); if (e) seen.evo.push(e.textContent); if (f.$('#pick')) { f.click('#pick'); f.click('.overlay [data-r="0"]'); } else f.click('#tobuild'); continue; }
+    if (f.$('#nextwave')) { f.click('#nextwave'); continue; }
+    const r = fr(); r.hero.hp = r.hero.maxHp; // this run checks the screens, not the balance
+    const prot = !guard && [...fd.querySelectorAll('.tw-mon.guarded')][0];
+    if (prot) { guard = true; prot.click(); seen.guard = f.$('.tw-guard').textContent; seen.flash = !!f.$('.tw-mon.sel .tw-bubble.flash') && f.$('#atk').disabled; }
+    [...fd.querySelectorAll('.tw-mon')].find((b) => f.T.TW.canTarget(r, +b.dataset.id)).click();
+    f.click('#atk'); while (f.$('.overlay #tutok')) f.click('.overlay #tutok');
+    uiAnswer(f, true);
+  }
+  const L = FM.turm.last, right = Object.values(L).reduce((a, v) => a + v.c, 0), dex = Object.values(FM.dex);
+  check(!!f.$('.tw-endtower .tw-heroslot') && f.$('#home').className === 'btn' && /geübt/.test(f.$('.tw-end h2').textContent), 'victory: what was practised first, the hero on the finished tower, „Zum Titel“ as the main button');
+  check(seen.banner.length === 3 && seen.cleared === 5 && seen.evo.length === 1 && /bekommt eine neue Gestalt/.test(seen.evo[0]) && !/wird zu/.test(seen.evo[0]), 'boss, elite and final boss arrive with a banner; five wave screens, the evolution after the wave-3 boss: ' + seen.banner.join(' | '));
+  check(/^Erst (den |die |das )?[A-ZÄÖÜa-zäöü].* besiegen\.$/.test(seen.guard) && !/Erst (Der|Die|Das) /.test(seen.guard) && seen.flash, 'a protected monster: the bubble flashes, „' + seen.guard + '“');
+  check(FM.turm.runs === 1 && FM.turm.wins === 1 && FM.turm.best === 6 && Object.keys(L).length >= 1 && right >= 40, 'meta.turm: begun, won, record 6, latest scores');
+  check(dex.length >= 8 && dex.every((e) => e.mode !== 'turm' && f.w.__mq.subjectOf(e.mode) && Number.isInteger(e.world)), 'every monster seen is in the Monsterbuch under its own unit');
+  check(FM.stamps - stamps0 === 2 * dex.length + 5 + 5 + 10 + Math.floor(right / 10), 'Stempel as in an adventure: new entries, two boss waves, the victory, 1 per 10 right answers');
+  f.click('#home');
+  check(!f.w.localStorage.getItem(TURM) && f.w.__mq.run === null && !!f.$('#turm'), 'after the victory the run is over, back on the title');
+  check(f.errors.length === 0, 'no page errors ' + f.errors.join(' '));
+
+  // the tower falls: „Ab Welle N weitermachen“ twice, then the run is over
+  const g = open({ [META]: meta0 }, 8), gr = () => g.w.__mq.run;
+  g.T.start(['Mathe', 'Deutsch'], { m: 'math', id: 'kroete' });
+  for (let n = 0; n < 300 && !(gr().turm.wave === 4 && gr().turm.phase === 'choose'); n++) { const t = gr().turm; gr().hero.hp = 60; if (t.phase === 'build') g.T.nextWave(); else if (t.phase === 'reward') g.T.reward(0); else if (t.phase === 'step') g.T.step(); else turn(g, true); }
+  const fall = () => { g.T.board(); gr().hero.hp = 1; for (let n = 0; n < 40 && g.$('.tw-mon'); n++) { [...g.d.querySelectorAll('.tw-mon')].find((b) => g.T.TW.canTarget(gr(), +b.dataset.id)).click(); g.click("#atk"); while (g.$(".overlay #tutok")) g.click(".overlay #tutok"); uiAnswer(g, false); while (g.$('.overlay #tutok')) g.click('.overlay #tutok'); } };
+  const tries = [];
+  for (let k = 0; k < 3; k++) {
+    fall();
+    tries.push({ retry: g.$('#retry') && g.$('#retry').textContent, note: (g.$('.tw-endbtns .pnote') || {}).textContent, saved: !!g.w.localStorage.getItem(TURM) });
+    if (!g.$('#retry')) break;
+    g.click('#retry'); g.click('#nextwave');
+  }
+  check(tries.length === 3 && tries[0].retry === 'Ab Welle 4 weitermachen' && /zweimal/.test(tries[0].note) && /einmal/.test(tries[1].note) && tries[0].saved && tries[1].saved, 'fallen: „Ab Welle 4 weitermachen“, the screen says how often it still works');
+  check(!tries[2].retry && !tries[2].saved && gr().turm.cpUsed === 2, 'after two retries the third fall ends the run');
+  check(/Turm ist gefallen/.test(g.$('.tw-end.center:last-child, .tw-result').textContent) && /geübt/.test(g.$('.tw-end h2').textContent), 'the end screen leads with what was practised');
+  check(g.errors.length === 0, 'no page errors ' + g.errors.join(' '));
   last.close();
   console.log(`turm pages fails ${fails} (${opens} pages, ${Date.now() - t0} ms)`);
   if (fails) process.exit(1);

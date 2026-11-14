@@ -1803,6 +1803,8 @@
   // after every rule change: record and latest scores go to meta, and everything is saved at once
   function turmSync(x) {
     const t = run.turm; meta.turm.best = Math.max(meta.turm.best, t.best);
+    // a monster on the board is seen: Monsterbuch entry under its own unit and world, +2 Stempel when new (as in an adventure)
+    for (const y of t.monsters) if (!meta.dex[y.name]) { meta.dex[y.name] = { type: y.type, shape: y.shape, world: y.world, mode: y.unit || y.m }; y.fresh = true; t.stamps += giveStamps(2); }
     if (Object.keys(t.score).length) meta.turm.last = JSON.parse(JSON.stringify(t.score));
     saveAll(); return x;
   }
@@ -1828,11 +1830,19 @@
     const a = run.turm.asking;
     if (run.turm.phase !== 'task' || !a) return [];
     mode = a.m; turmBox(a.m); recordAnswer(a.k, ok, a.task);
-    return turmSync(TW.answer(run, ok, turmCtx(run.hero), { task: a.task }));
+    const elites = run.turm.monsters.filter((x) => x.elite), ev = TW.answer(run, ok, turmCtx(run.hero), { task: a.task });
+    for (const x of elites) if (ev.some((e) => e.t === 'beaten' && e.id === x.id)) { mode = x.m; weeklyStep('elite'); }
+    mode = a.m;
+    return turmSync(ev);
   }
+  // Stempel as in an adventure: the answers pay at the end of every wave and at the fall, +5 per boss wave, +10 for the victory
   function turmStep() {
-    const ev = TW.step(run, turmCtx(run.hero));
-    if (ev.some((e) => e.t === 'won')) meta.turm.wins++;
+    const t = run.turm, w = TW.WAVES[t.wave - 1];
+    for (const x of t.monsters) delete x.fresh; // „Neu im Monsterbuch“ shows for the turn the monster arrives
+    const ev = TW.step(run, turmCtx(run.hero)), has = (k) => ev.some((e) => e.t === k);
+    if (has('cleared') || has('fallen')) t.stamps += payAnswers();
+    if (has('cleared') && (w.boss != null || w.final != null)) t.stamps += giveStamps(5);
+    if (has('won')) { meta.turm.wins++; t.stamps += giveStamps(10); meta.progressAt = new Date().toISOString(); }
     return turmSync(ev);
   }
   const turmReward = (i) => turmSync(TW.takeReward(run, i));
@@ -1873,7 +1883,7 @@
       if (typeof x.shape !== 'string') x.shape = 'sumpfbrocken';
       if (!own(TYPES, x.type)) x.type = 'normal';
       x.world = int(x.world, 1, 9) ? x.world : 1; x.steps = x.steps === 2 ? 2 : 1; x.slow = x.slow === 1 ? 1 : 0; x.stun = x.stun === 1 ? 1 : 0;
-      for (const k of ['elite', 'boss', 'final']) if (x[k] !== true) delete x[k];
+      for (const k of ['elite', 'boss', 'final', 'fresh']) if (x[k] !== true) delete x[k];
       if (typeof x.acc !== 'string') delete x.acc;
       if (x.again !== undefined && !okAgain(x.again)) delete x.again;
       // the final boss loses one shield per path; its HP must still reach the next shield
@@ -1905,7 +1915,8 @@
     t.at = Object.fromEntries(Object.entries(isObj(t.at) ? t.at : {}).filter(([m, b]) => own(MODES, m) && isObj(b) && int(b.world, 1, MODES[m].worlds)).map(([m, b]) => [m, {
       world: b.world, tiers: Object.fromEntries(Object.entries(isObj(b.tiers) ? b.tiers : {}).filter(([k, n]) => own(MODES[m].modules, k) && int(n, 1, 99))),
       recent: Object.fromEntries(Object.entries(isObj(b.recent) ? b.recent : {}).filter(([, x]) => Array.isArray(x))) }]));
-    for (const k of ['ziegel', 'turn']) t[k] = nat(t[k]);
+    for (const k of ['ziegel', 'turn', 'stamps']) t[k] = nat(t[k]);
+    t.earned = Object.fromEntries(Object.entries(isObj(t.earned) ? t.earned : {}).filter(([, n]) => Number.isInteger(n) && n > 0));
     for (const k of ['free', 'hurtThisWave']) t[k] = t[k] === true;
     t.cpUsed = int(t.cpUsed, 0, TW.CP_USES) ? t.cpUsed : 0;
     t.best = Math.min(TW.WAVES.length, Math.max(t.wave, nat(t.best)));
@@ -1932,7 +1943,16 @@
     return met.length ? met : all.length ? all : [{ m: units[0], s: MODES[units[0]].starters[0] }];
   }
   const turmLeave = (to) => { saveAll(); run = null; to(); };
-  const turmNames = () => Object.fromEntries(run.turm.monsters.concat(run.turm.queue).map((x) => [x.id, x.name]));
+  // id → monster as it was before the answer (beaten ones are gone afterwards), for the log
+  const turmNames = () => Object.fromEntries(run.turm.monsters.concat(run.turm.queue).map((x) => [x.id, { name: x.name, acc: accName(x) }]));
+  // „Erst den Wackelturm besiegen.“: the data's accusative if it has one, else the article (and an adjective after „Der“) declined
+  const accName = (x) => x.acc || x.name.replace(/^(Der|Die|Das) (?:([a-zäöüß]+e) )?/, (_, art, adj) => `${{ Der: 'den', Die: 'die', Das: 'das' }[art]} ${adj ? adj + (art === 'Der' ? 'n ' : ' ') : ''}`);
+  const midName = (n) => n.replace(/^(Der|Die|Das) /, (a) => a.toLowerCase());
+  // stage names change only for some heroes, so the new name is said only when there is one (never „wird zu …“)
+  function turmEvoText(evo) {
+    const N = turmHero().names, a = N[evo - 1], b = N[evo];
+    return `${a} bekommt eine neue Gestalt${a !== b ? ` und heißt jetzt ${midName(b)}` : ''}. Jede Attacke macht ${TW.HERO_EVO} Schaden mehr.`;
+  }
   const laneName = (i) => { const L = run.turm.lanes, s = L[i].subject, same = L.filter((l) => l.subject === s); return same.length > 1 ? `${s} ${same.indexOf(L[i]) + 1}` : s; };
 
   // start: a saved run first, else subjects and hero
@@ -2002,14 +2022,16 @@
   const turmTop = () => topbar(`🏰 Welle ${run.turm.wave}/${TW.WAVES.length}`, `<div class="world tw-res"><span aria-label="Turm: ${run.hero.hp} von ${run.hero.maxHp} Lebenspunkten">❤️ ${run.hero.hp}</span><span aria-label="${run.turm.ziegel} Ziegel">🧱 ${run.turm.ziegel}</span></div>`);
   function turmMonLabel(x) {
     const t = run.turm;
-    return [x.name, `Weg ${laneName(x.lane)}`, `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`, `${x.hp} Lebenspunkte`, t.weak === x.id && 'Schwachstelle', x.again && 'kommt wieder', !TW.canTarget(run, x.id) && 'geschützt'].filter(Boolean).join(', ');
+    return [x.name, `Weg ${laneName(x.lane)}`, `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`, `${x.hp} Lebenspunkte`, t.weak === x.id && 'Schwachstelle', x.again && 'Aufgabe von vorhin', !TW.canTarget(run, x.id) && 'geschützt', x.fresh && 'neu im Monsterbuch'].filter(Boolean).join(', ');
   }
   // a monster faces the gate: the plain sprite looks right, the mirrored enemy sprite (flipped back by CSS) looks left
   function turmMon(x, cols, right) {
     const t = run.turm, sel = x.id === turmSel, pct = Math.max(4, (x.hp / x.maxHp) * 100), free = TW.canTarget(run, x.id);
-    const tags = [t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑'].filter(Boolean).map((e) => `<i>${e}</i>`).join('');
+    const tags = [t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑', x.fresh && '📖'].filter(Boolean).map((e) => `<i>${e}</i>`).join('');
     const ring = x.final ? TWART.shields(x.shields.map((l) => cols[l]), Math.round(x.maxHp / x.part) - x.shields.length) : '';
-    return `<button class="tw-mon${sel ? ' sel' : ''}${free ? '' : ' guarded'}${t.weak === x.id ? ' weak' : ''}${right ? ' r' : ''}${x.boss || x.elite ? ' big' : ''}" data-id="${x.id}" aria-pressed="${sel}" aria-label="${esc(turmMonLabel(x))}">${monsterSVG(x.shape, TYPES[x.type].color, 0, right ? '' : 'enemy', { elite: x.elite, boss: x.boss })}${ring}${free ? '' : TWART.bubble()}` +
+    // guided wave 1: the first monster is marked until it is tapped
+    const guide = t.wave === 1 && t.turn === 0 && turmSel === null && t.phase === 'choose';
+    return `<button class="tw-mon${sel ? ' sel' : ''}${free ? '' : ' guarded'}${t.weak === x.id ? ' weak' : ''}${right ? ' r' : ''}${x.boss || x.elite ? ' big' : ''}${guide ? ' guide' : ''}" data-id="${x.id}" aria-pressed="${sel}" aria-label="${esc(turmMonLabel(x))}">${monsterSVG(x.shape, TYPES[x.type].color, 0, right ? '' : 'enemy', { elite: x.elite, boss: x.boss })}${ring}${free ? '' : TWART.bubble()}` +
       `<span class="tw-stat">${TWART.feet(x.boss ? 1 : x.steps, (x.boss && x.slow) || x.stun)}<i class="tw-hp"><b class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></b></i></span>${tags ? `<span class="tw-tags" aria-hidden="true">${tags}</span>` : ''}</button>`;
   }
   // guards: the three typed starters or a boss from the Monsterbuch (look = its shape)
@@ -2035,6 +2057,7 @@
   function screenTurmBoard(o = {}) {
     depth = 2; const t = run.turm;
     if (t.phase === 'fallen' || t.phase === 'won') return screenTurmEnd(o);
+    if (t.phase === 'reward' || (o.ev && o.ev.some((e) => e.t === 'cleared'))) return screenTurmCleared(o);
     if (!t.monsters.some((x) => x.id === turmSel)) turmSel = null;
     const text = (o.lines || []).concat(o.ev ? turmLines(o.ev, o.names || {}) : []).join(' ');
     render(`<div class="screen tw-screen">${turmTop()}<div class="tw-main" style="--W:${TWART.geo(t.lanes.length).w};--H:${TWART.geo(t.lanes.length).h}">${turmBoardHtml()}</div>${text ? `<div class="log tw-log"><p>${esc(text)}</p></div>` : ''}<div class="taskwrap" id="taskwrap"></div><div class="bottom tw-panel" id="bottom"></div></div>`, !!o.ev);
@@ -2043,31 +2066,38 @@
     app.querySelectorAll('.tw-mon').forEach((b) => { b.onclick = () => { turmSel = +b.dataset.id; turmPick(); }; });
     turmPanel();
     if (o.ev) turmFx(o.ev);
+    const big = o.ev && o.ev.find((e) => e.t === 'enter' && (e.boss || e.elite)), bx = big && t.monsters.find((x) => x.id === big.id);
     if (t.phase === 'choose' && !meta.seenTut['turm:intro']) turmIntro();
+    else if (bx) turmBanner(bx);
   }
   function turmPick() {
-    app.querySelectorAll('.tw-mon').forEach((b) => { const on = +b.dataset.id === turmSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+    app.querySelectorAll('.tw-mon').forEach((b) => { const on = +b.dataset.id === turmSel; b.classList.toggle('sel', on); b.classList.remove('guide'); b.setAttribute('aria-pressed', on); });
     turmPanel(true);
   }
-  // the panel under the board: monster card, Bauzeit or reward (the full Bauzeit comes in step E6)
+  // the panel under the board: monster card or Bauzeit (the full Bauzeit comes in step E6)
   function turmPanel(say) {
     const t = run.turm, bot = $('#bottom'), x = t.phase === 'choose' && t.monsters.find((y) => y.id === turmSel);
     const tools = `<div class="row tw-tools"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div>`;
     if (t.phase === 'build') {
       const p = TW.price(run, { kind: 'fix' }), short = p > t.ziegel ? p - t.ziegel : 0;
       bot.innerHTML = `<div class="card tw-card"><h3>Bauzeit</h3><p>Als Nächstes kommt Welle ${t.wave + 1} von ${TW.WAVES.length}.</p><button class="btn small secondary" id="fix"${p < 0 || short ? ' disabled' : ''}><span>Mauer flicken: +${TW.FIX_HP} ❤️ für ${TW.COST.fix} 🧱</span></button>${p < 0 ? '<p class="pnote">Der Turm ist heil.</p>' : short ? `<p class="pnote">Noch ${short} 🧱</p>` : ''}<button class="btn" id="nextwave">Welle ${t.wave + 1} starten</button></div>${tools}`;
-    } else if (t.phase === 'reward') {
-      bot.innerHTML = `<div class="card tw-card"><h3>Belohnung</h3><p>Such dir noch etwas für deinen Beutel aus.</p><div class="stack">${t.offer.map((id, i) => `<button class="choice tw-item" data-r="${i}"><span class="tw-itemic" aria-hidden="true">${ITEMS[id].icon}</span><span class="meta"><span class="name">${ITEMS[id].name}</span><span class="desc">${esc(TURM_BAG.desc[id] || ITEMS[id].desc)}</span></span></button>`).join('')}</div></div>${tools}`;
     } else if (!x) {
-      bot.innerHTML = `<p class="tw-hint">Tippe auf ein Monster. 🎯 zeigt, wo du gerade besonders stark triffst.</p>${tools}`;
+      const hint = t.wave > 1 ? 'Tippe auf ein Monster. 🎯 zeigt, wo du gerade besonders stark triffst.' : t.turn === 0 ? 'Tippe auf das Monster auf dem Weg.' : 'Tippe auf ein Monster, bevor es am Turm ankommt.';
+      bot.innerHTML = `<p class="tw-hint">${hint}</p>${tools}`;
     } else {
-      const c = TW.card(run, x.id, turmCtx(run.hero)), M = MODES[x.m], by = c.blockedBy && t.monsters.find((y) => y.id === c.blockedBy);
-      const tags = [c.weak && '<span class="tag weak">🎯 Schwachstelle</span>', c.strong && `<span class="tag strong">💪 stark gegen ${TYPES[x.type].name}</span>`, run.power && '<span class="tag power">🌶️ doppelt</span>', c.again && '<span class="tag again">🔁 kommt wieder</span>'].filter(Boolean).join('');
-      const walk = x.boss ? '👣 jeden zweiten Zug' : x.steps > 1 ? '👣👣 2 Felder' : '👣 1 Feld';
+      const c = TW.card(run, x.id, turmCtx(run.hero)), M = MODES[x.m], by = c.blockedBy && t.monsters.find((y) => y.id === c.blockedBy), cols = TWART.laneColors(t.lanes);
+      const tags = [x.fresh && '<span class="tag new">📖 Neu im Monsterbuch</span>', x.boss && '<span class="tag boss">👑 Boss</span>', x.elite && '<span class="tag elite">🛡️ schützt die Monster hinter sich</span>', c.weak && '<span class="tag weak">🎯 Schwachstelle</span>', c.strong && `<span class="tag strong">💪 stark gegen ${TYPES[x.type].name}</span>`, run.power && '<span class="tag power">🌶️ doppelt</span>', c.again && '<span class="tag again">🔁 Aufgabe von vorhin</span>'].filter(Boolean).join('');
+      const walk = x.boss ? '👣 langsam: jeden 2. Zug' : x.steps > 1 ? '👣👣 schnell: 2 Felder' : '👣 1 Feld';
+      const walkSay = x.boss ? 'geht nur jeden zweiten Zug ein Feld' : x.steps > 1 ? 'schnell: geht 2 Felder pro Zug' : 'geht 1 Feld pro Zug';
+      const z = 1 + (c.weak ? 1 : 0);
+      // the final boss: which subject the question comes from now, and how many shields are left
+      const sh = x.final && x.shields[0], shield = x.final ? `<p class="tw-shieldnow"><i class="dot" style="background:${cols[sh]}" aria-hidden="true"></i><span>Die Aufgabe kommt aus ${SUBJECTS[t.lanes[sh].subject]} ${esc(laneName(sh))}. ${x.shields.length === 1 ? 'Das ist der letzte Schild.' : `Noch ${x.shields.length} Schilde.`}</span></p>` : '';
+      const guide = t.wave === 1 && t.turn < 2 ? `<p class="pnote">Tippe auf „Angreifen“. Löst du die Aufgabe richtig, macht dein Held 💥 ${c.dmg} Schaden.</p>` : '';
       bot.innerHTML = `<div class="card tw-card" id="twcard"><div class="tw-cardhead">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<div class="tw-cardinfo"><div class="name">${esc(x.name)}</div><div class="tw-chips">${typeChip(x.type)}<span class="chip tw-theme">${M.icon} ${esc(M.title)}</span></div></div></div>
-        <div class="tw-stats"><span aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp} / ${x.maxHp}</span><span aria-label="Dein Treffer: ${c.dmg} Schaden">💥 ${c.dmg}</span><span aria-label="${x.boss ? 'geht jeden zweiten Zug ein Feld' : `geht ${x.steps} ${x.steps > 1 ? 'Felder' : 'Feld'} pro Zug`}">${walk}</span></div>${tags ? `<div class="tags">${tags}</div>` : ''}${by ? `<p class="tw-guard">Erst ${esc(by.acc || by.name)} besiegen.</p>` : ''}<button class="btn" id="atk"${by ? ' disabled' : ''}>Angreifen</button></div>${tools}`;
-      const said = () => joined(x.name, TYPES[x.type].name, 'Thema: ' + M.title, `${x.hp} Lebenspunkte`, `Dein Treffer macht ${c.dmg} Schaden`, c.weak && 'Schwachstelle', by && `Erst ${by.acc || by.name} besiegen`);
+        <div class="tw-stats"><span aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp} / ${x.maxHp}</span><span aria-label="Dein Treffer: ${c.dmg} Schaden">💥 ${c.dmg}</span><span aria-label="${z} Ziegel für eine richtige Antwort">${'🧱'.repeat(z)} +${z}</span><span aria-label="${walkSay}">${walk}</span></div>${tags ? `<div class="tags">${tags}</div>` : ''}${shield}${by ? `<p class="tw-guard">Erst ${esc(accName(by))} besiegen.</p>` : guide}<button class="btn" id="atk"${by ? ' disabled' : ''}>Angreifen</button></div>${tools}`;
+      const said = () => joined(x.name, TYPES[x.type].name, 'Thema: ' + M.title, `${x.hp} Lebenspunkte`, `Dein Treffer macht ${c.dmg} Schaden`, c.weak && 'Schwachstelle, doppelte Ziegel', x.steps > 1 && 'schnell', x.final && `Die Aufgabe kommt aus ${laneName(sh)}`, by && `Erst ${accName(by)} besiegen`);
       speakBtn($('.tw-cardinfo .name', bot), 'beforeend', said, say ? said : null, [], run.grade);
+      if (by) { const b = $(`.tw-mon[data-id="${x.id}"] .tw-bubble`); if (b) { b.classList.remove('flash'); void b.getBoundingClientRect(); b.classList.add('flash'); } }
     }
     const on = (s, f) => { const el = $(s, bot); if (el) el.onclick = f; };
     on('#atk', () => { const names = turmNames(), task = turmAsk(turmSel); if (task) turmTask(task, names); });
@@ -2075,7 +2105,6 @@
     on('#home', () => turmLeave(screenTitle));
     on('#fix', () => { if (turmBuy({ kind: 'fix' })) screenTurmBoard({ lines: [`Die Mauer ist geflickt: ❤️ ${run.hero.hp} / ${run.hero.maxHp}.`] }); });
     on('#nextwave', () => { const ev = turmNextWave(); screenTurmBoard({ ev, names: turmNames() }); });
-    bot.querySelectorAll('[data-r]').forEach((b) => { b.onclick = () => { const id = t.offer[+b.dataset.r]; if (turmReward(+b.dataset.r)) screenTurmBoard({ lines: [`${ITEMS[id].icon} ${ITEMS[id].name} ist jetzt in deinem Beutel.`] }); }; });
   }
   // the normal task view; answered → the engine's events and the monsters' step are shown on the board
   function turmTask(task, names) {
@@ -2095,27 +2124,44 @@
       screenTurmBoard({ lines: [it.shield ? 'Der Schild hält das nächste Monster am Turm auf.' : it.power ? 'Dein nächster Treffer macht doppelten Schaden.' : 'Bei der nächsten Aufgabe gibt es einen Tipp.'] });
     }, TURM_BAG);
   }
-  // the log under the board, one short sentence per thing that happened
+  // the log under the board, one short sentence per thing that happened. names: id → { name, acc } from before the answer
   function turmLines(ev, names) {
-    const n = (id) => names[id] || 'Ein Monster', L = [];
+    const t = run.turm, cur = turmNames(), who = (id) => names[id] || cur[id] || { name: 'Ein Monster', acc: 'ein Monster' };
+    const n = (id) => who(id).name, acc = (id) => who(id).acc, L = [];
     let fresh = 0, z = 0;
     ev.forEach((e, i) => {
-      const gone = ev[i + 1] && ev[i + 1].t === 'beaten' && ev[i + 1].id === e.id; // the engine reports 'beaten' right after the hit
+      const next = ev[i + 1], gone = next && next.t === 'beaten' && next.id === e.id;
       if (e.t === 'wave') L.push(`Welle ${e.wave} von ${TW.WAVES.length}.`);
       else if (e.t === 'wrong') L.push('Die Monster rücken vor.');
-      else if (e.t === 'hit' || e.t === 'shot' || e.t === 'chain') L.push(`${n(e.id)} bekommt ${e.dmg} Schaden${gone ? ' und ist besiegt' : ''}.`);
+      else if (e.t === 'again' && t.wave < TW.WAVES.length && !meta.seenTut['turm:again']) { meta.seenTut['turm:again'] = true; L.push('🔁 Diese Aufgabe kommt in der nächsten Welle noch einmal.'); }
+      else if (e.t === 'hit') L.push(`${n(e.id)} bekommt ${e.dmg} Schaden${gone ? ' und ist besiegt' : ''}.`);
+      else if (e.t === 'shot') {
+        // the guards of a path fire one after another at the same monster: one sentence for all of them
+        if (ev[i - 1] && ev[i - 1].t === 'shot' && ev[i - 1].id === e.id) return;
+        let k = i, d = 0; while (ev[k] && ev[k].t === 'shot' && ev[k].id === e.id) d += ev[k++].dmg;
+        L.push(`${k - i > 1 ? 'Die Wachen treffen' : 'Die Wache trifft'} ${acc(e.id)}: ${d} Schaden.`);
+      } else if (e.t === 'chain') L.push(`Die Rechenstube trifft auch ${acc(e.id)}: ${e.dmg} Schaden.`);
+      else if (e.t === 'beaten') { const p = ev[i - 1]; if (!(p && p.t === 'hit' && p.id === e.id)) L.push(`${n(e.id)} ist besiegt.`); }
+      else if (e.t === 'shield') {
+        const x = t.monsters.find((y) => y.id === e.id);
+        L.push(`Der Schild für ${laneName(e.lane)} ist zerbrochen.${x ? ` Jetzt kommen die Aufgaben aus ${laneName(x.shields[0])}.` : ''}`);
+      } else if (e.t === 'stun') L.push(`Die Druckerei hält ${acc(e.id)} einen Zug lang auf.`);
+      else if (e.t === 'push') L.push(`Die Glockenstube schiebt ${acc(e.id)} ein Feld zurück.`);
+      else if (e.t === 'floor' && e.fx === 'volley') L.push('Die Plauderstube: Die Wachen schießen noch einmal.');
+      else if (e.t === 'heal') L.push(`Der Kartoffelkeller repariert den Turm: +${e.n} ❤️.`);
       else if (e.t === 'tower') L.push(`${n(e.id)} trifft den Turm: ${e.dmg} Schaden.`);
       else if (e.t === 'hold') L.push(`${n(e.id)} kommt nicht durch die Mauer.`);
       else if (e.t === 'block') L.push(`${n(e.id)} prallt am Schild ab.`);
-      else if (e.t === 'heal') L.push(`Der Turm wird repariert: +${e.n} ❤️.`);
-      else if (e.t === 'enter') { if (e.boss) L.push(`${n(e.id)} kommt.`); else if (!ev.some((x) => x.t === 'wave')) fresh++; }
+      else if (e.t === 'enter') { if (e.boss || e.elite) L.push(`${n(e.id)} kommt.`); else if (!ev.some((x) => x.t === 'wave')) fresh++; }
       else if (e.t === 'cleared') L.push(`Welle ${e.wave} ist vorbei.`);
-      else if (e.t === 'evolve') L.push(`${turmHero().names[e.evo]} bekommt eine neue Gestalt.`);
-      else if (e.t === 'item') L.push(`Für den Boss gibt es: ${ITEMS[e.id].icon} ${ITEMS[e.id].name}.`);
       else if (e.t === 'ziegel') z += e.n;
     });
     if (fresh) L.push(fresh === 1 ? 'Ein neues Monster kommt.' : `${fresh} neue Monster kommen.`);
-    if (z) L.push(`+${z} 🧱`);
+    // guided wave 1: the first step is explained once it has happened
+    if (t.wave === 1 && t.turn === 1 && t.phase === 'choose' && ev.some((e) => e.t === 'move') && !ev.some((e) => e.t === 'wrong')) L.push('Nach jeder Aufgabe gehen die Monster ein Feld weiter.');
+    if (z) L.push(`+${z} 🧱${ev.some((e) => e.t === 'ziegel' && e.why === 'weak') ? ', doppelt durch 🎯' : ''}.`);
+    const seen = t.monsters.filter((x) => x.fresh).map((x) => x.name);
+    if (seen.length) L.push(`Neu im Monsterbuch: ${seen.join(', ')}.`);
     return L;
   }
   // simple feedback for now; the animations come in step E8
@@ -2132,16 +2178,55 @@
     speakBtn($('h2', ov), 'afterbegin', () => joined(...steps), undefined, [], run.grade);
     $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['turm:intro'] = true; saveAll(); };
   }
-  // fallen or won: first what was practised, then the result (checkpoint and full end screens come in step E5)
+  // a boss or the elite arrives: a still banner over the board until it is tapped away (no timer)
+  function turmBanner(x) {
+    const t = run.turm, cols = TWART.laneColors(t.lanes);
+    const text = x.final ? 'Für jedes Fach trägt der Boss einen Schild. Die Aufgaben kommen der Reihe nach aus diesen Fächern:'
+      : x.boss ? 'Der Boss geht nur jeden zweiten Zug ein Feld. Am Tor bleibt er stehen und trifft den Turm, bis er besiegt ist.'
+        : `Das Elitemonster 🛡️ schützt alle Monster hinter sich auf seinem Weg. Erst wenn ${accName(x)} besiegt ist, kommst du an sie heran.`;
+    const list = x.final ? `<div class="tw-shieldlist">${x.shields.map((l) => `<span><i class="dot" style="background:${cols[l]}" aria-hidden="true"></i>${SUBJECTS[t.lanes[l].subject]} ${esc(laneName(l))}</span>`).join('')}</div>` : '';
+    const ov = modal(`<div class="tw-banner">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<h2>${esc(x.name)} kommt.</h2></div><p>${esc(text)}</p>${list}<button class="btn" id="tutok">Weiter</button>`);
+    ov.classList.add('tw-bannerov');
+    const said = () => joined(`${x.name} kommt`, text, x.final && x.shields.map(laneName).join(', '));
+    speakBtn($('h2', ov), 'beforeend', said, said, [], run.grade);
+    const close = () => ov.remove();
+    $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = close;
+    ov.onclick = (e) => { if (e.target === ov) close(); };
+  }
+  // after a wave: the Ziegel with their reasons and the Stempel; after the wave-3 boss also the new shape and the item choice
+  function screenTurmCleared() {
+    depth = 2; const t = run.turm, boss = TW.WAVES[t.wave - 1].boss != null, H = turmHero();
+    const why = { right: 'Richtige Antworten', weak: '🎯 Schwachstelle', floor: 'Schreibstube', wave: 'Welle vorbei', clean: 'Der Turm blieb heil' };
+    const rows = Object.keys(why).filter((k) => t.earned[k]).map((k) => `<li><span>${why[k]}</span><b>+${t.earned[k]} 🧱</b></li>`).join('');
+    const evo = boss ? `<div class="card center tw-evo"><h3>Neue Gestalt</h3><div class="evo-row">${heroSVG(H, run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(H, run.hero.evo, 'after')}</div><p>${esc(turmEvoText(run.hero.evo))}</p></div>` : '';
+    const offer = t.phase === 'reward' && t.offer;
+    render(`<div class="screen">${turmTop()}<div class="scroll"><div class="stack"><div class="card center tw-cleared"><h2>Welle ${t.wave} ist vorbei.</h2>${rows ? `<ul class="tw-earned">${rows}</ul>` : ''}<p>Du hast jetzt ${t.ziegel} 🧱.</p>${stampLine(t.stamps)}<p class="pnote">Gleich ist Bauzeit: Mit Ziegeln machst du den Turm stärker.</p></div>${evo}</div></div>
+      <div class="bottom">${offer ? '<button class="btn" id="pick">Belohnung aussuchen</button>' : '<button class="btn" id="tobuild">Zur Bauzeit</button>'}</div></div>`);
+    backTo = () => turmLeave(screenTurm);
+    speakBtn($('.tw-cleared h2'), 'beforeend', () => joined(`Welle ${t.wave} ist vorbei`, `Du hast jetzt ${t.ziegel} Ziegel`, boss && turmEvoText(run.hero.evo)), undefined, [], run.grade);
+    setTimeout(boss ? SFX.levelup : SFX.win, 150);
+    if (!offer) { $('#tobuild').onclick = () => screenTurmBoard(); return; }
+    $('#pick').onclick = () => {
+      const ov = modal(`<h2>Belohnung</h2><p>Für den Boss ist schon ${ITEMS.grosstrank.icon} ${ITEMS.grosstrank.name} in deinem Beutel. Such dir noch etwas aus:</p><div class="stack">${offer.map((id, i) => `<button class="choice tw-item" data-r="${i}"><span class="tw-itemic" aria-hidden="true">${ITEMS[id].icon}</span><span class="meta"><span class="name">${ITEMS[id].name}</span><span class="desc">${esc(TURM_BAG.desc[id] || ITEMS[id].desc)}</span></span></button>`).join('')}<button class="btn secondary" id="no">Zurück</button></div>`);
+      $('#no', ov).onclick = () => ov.remove();
+      ov.querySelectorAll('[data-r]').forEach((b) => { b.onclick = () => { const id = t.offer[+b.dataset.r]; ov.remove(); if (turmReward(+b.dataset.r)) screenTurmBoard({ lines: [`${ITEMS[id].icon} ${ITEMS[id].name} ist jetzt in deinem Beutel.`] }); }; });
+    };
+  }
+  // fallen or won: first what was practised, then the result
   function screenTurmEnd(o = {}) {
-    depth = 2; const t = run.turm, won = t.phase === 'won', retry = TW.canRetry(run);
-    const rows = [...new Set(t.lanes.map((l) => l.subject))].map((s) => { const v = t.score[s] || { c: 0, t: 0 }; return `<li>${SUBJECTS[s]} ${esc(s)}: ${v.c} von ${v.t} richtig</li>`; }).join('');
+    depth = 2; const t = run.turm, won = t.phase === 'won', retry = TW.canRetry(run), left = TW.CP_USES - t.cpUsed, H = turmHero();
+    const rows = [...new Set(t.lanes.map((l) => l.subject))].map((s) => { const v = t.score[s] || { c: 0, t: 0 }; return `<li><span>${SUBJECTS[s]} ${esc(s)}</span><b>${v.c} von ${v.t} richtig</b></li>`; }).join('');
     if (!retry) endRun(); // over for good; record and scores are already in meta
     if (o.ev) setTimeout(won ? SFX.finale : SFX.lose, 150);
-    render(`<div class="screen">${topbar('🏰 Turmwacht')}${won ? CONFETTI : ''}<div class="scroll"><div class="card center tw-end"><h2>Das hast du geübt</h2><ul class="tw-score">${rows}</ul>${heroSVG(turmHero(), run.hero.evo)}
-      <p>${won ? 'Der Wissensturm hat allen Wellen standgehalten.' : `Der Turm ist gefallen. Du bist bis Welle ${t.wave} gekommen.`}</p><p>Rekord: Welle ${meta.turm.best}</p></div></div>
-      <div class="bottom"><div class="stack tw-endbtns">${retry ? `<button class="btn" id="retry">Ab Welle ${t.cp.turm.wave + 1} weitermachen</button>` : ''}${won ? '<button class="btn" id="home">Zum Titel</button><button class="btn secondary" id="again">Neue Turmwacht</button>'
+    // the finished tower with every floor built in this run and the hero in its last shape on top
+    const tw = TWART.tower(t.floors, run.hero.hp, run.hero.maxHp);
+    const pic = won ? `<div class="tw-endtower"><div class="tw-tower" style="--th:${tw.h};--feet:${tw.feet}">${tw.back}<div class="tw-heroslot">${heroSVG(H, run.hero.evo)}</div>${tw.front}</div></div>` : heroSVG(H, run.hero.evo);
+    const result = won ? 'Der Wissensturm hat allen Wellen standgehalten.' : `Der Turm ist gefallen. Du bist bis Welle ${t.wave} gekommen.`;
+    render(`<div class="screen">${topbar('🏰 Turmwacht')}${won ? CONFETTI : ''}<div class="scroll"><div class="stack"><div class="card center tw-end"><h2>Das hast du geübt</h2><ul class="tw-score">${rows}</ul></div>
+      <div class="card center tw-end${won ? ' won' : ''}">${pic}<p class="tw-result">${result}</p>${won ? `<p>${esc(H.names[run.hero.evo])} steht ganz oben auf dem Turm.</p>` : ''}${stampLine(t.stamps)}<p>Rekord: Welle ${meta.turm.best}</p></div></div></div>
+      <div class="bottom"><div class="stack tw-endbtns">${retry ? `<button class="btn" id="retry">Ab Welle ${t.cp.turm.wave + 1} weitermachen</button><p class="pnote center">Das geht in dieser Turmwacht noch ${left === 1 ? 'einmal' : 'zweimal'}.</p>` : ''}${won ? '<button class="btn" id="home">Zum Titel</button><button class="btn secondary" id="again">Neue Turmwacht</button>'
         : `<button class="btn${retry ? ' secondary' : ''}" id="again">Neue Turmwacht</button><button class="btn ghost" id="home">Zum Titel</button>`}</div></div></div>`);
+    speakBtn($('.tw-end h2'), 'beforeend', () => joined('Das hast du geübt', ...[...app.querySelectorAll('.tw-score li')].map((li) => li.textContent.replace(/^\S+\s/, '')), result), undefined, [], run.grade);
     const home = () => turmLeave(screenTitle);
     backTo = home; $('#home').onclick = home;
     $('#again').onclick = () => { endRun(); run = null; screenTurmNew(); };

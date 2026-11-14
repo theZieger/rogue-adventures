@@ -840,9 +840,36 @@ button.tw-spot:not(.on)::after { content: ''; position: absolute; left: -6%; rig
 .tw-item .meta .name { font-size: 24px; }
 .tw-item .meta .desc { font-size: 15px; line-height: 1.25; }
 .tw-itemic { font-size: 30px; line-height: 1; }
-.tw-score { list-style: none; padding: 0; margin: 8px 0; font-size: 19px; font-weight: 700; }
 .tw-screen.tasking .tw-main, .tw-screen.tasking .tw-log { display: none; }
 .tw-res { display: flex; gap: 10px; font-weight: 700; }
+.tw-mon.guide::before { left: -6%; right: -6%; bottom: -20%; height: 44%; border: calc(3 * var(--u)) dashed var(--gold); }
+.tw-bubble.flash { animation: tw-flash .5s ease-in-out 3; }
+@keyframes tw-flash { 50% { filter: drop-shadow(0 0 calc(6 * var(--u)) #fff) brightness(1.5); } }
+@media (prefers-reduced-motion: reduce) { .tw-bubble.flash { animation: none; filter: drop-shadow(0 0 calc(4 * var(--u)) #fff) brightness(1.4); } }
+.tw-shieldnow { display: flex; gap: 8px; align-items: flex-start; font-weight: 700; }
+.tw-card .tw-shieldnow, .tw-shieldnow { font-size: 16px; line-height: 1.3; }
+i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; border: 2.5px solid var(--ink); }
+.tw-shieldlist { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 4px 0 14px; font-size: 18px; font-weight: 700; }
+.tw-shieldlist span { display: inline-flex; align-items: center; gap: 6px; }
+.tw-card .tag.new { background: #E3EEFF; color: #1D4B8F; }
+.tw-card .tag.boss { background: #FFE3D6; color: #8A2E12; }
+.tw-card .tag.elite { background: #DDF1FF; color: #1D4B8F; }
+.tw-bannerov { align-items: center; }
+.tw-banner { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.tw-banner .mon { width: 120px; height: 120px; transform: scaleX(-1); }
+.tw-banner h2 { margin: 4px 0 6px; }
+.tw-bannerov .modal > p { font-size: 19px; margin: 0 0 12px; }
+.tw-earned, .tw-score { list-style: none; padding: 0; margin: 8px 0; text-align: left; }
+.tw-earned li, .tw-score li { display: flex; justify-content: space-between; gap: 10px; padding: 5px 2px; border-bottom: 2px dashed rgba(28,37,65,.15); font-size: 18px; }
+.tw-earned li:last-child, .tw-score li:last-child { border-bottom: 0; }
+.tw-earned b, .tw-score b { white-space: nowrap; }
+.tw-cleared h2, .tw-end h2 { margin-bottom: 4px; }
+.tw-cleared p, .tw-end p { margin: 6px 0; }
+.tw-evo .evo-row .mon { width: 96px; height: 96px; }
+.tw-endtower { --u: .82px; display: flex; justify-content: center; padding-top: 8px; }
+.tw-endtower .tw-tower { position: relative; translate: none; }
+.tw-result { font-size: 20px; font-weight: 700; }
+.tw-endbtns .pnote { margin: -4px 0 2px; color: #C9CFDD; }
 @media (max-height: 760px) {
   .tw-log { font-size: 18px; padding: 5px 10px; margin: 4px 12px; }
   .tw-cardhead .mon { width: 44px; height: 44px; }
