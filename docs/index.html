@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="e3666c80b2ef">
+<meta name="app-version" content="9ead5e6fed23">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -649,17 +649,16 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .readcard p.by { font-size: 16px; color: var(--ink-soft); margin-top: 8px; }
 .nameinput { width: 100%; border: 3px solid var(--ink-soft); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 20px; color: var(--ink); background: #fff; }
 .nameinput:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 4px rgba(63,160,255,.3); }
-/* market */
+/* Kaufladen */
 .seller .stall { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto 6px; }
 .seller .row { align-items: center; gap: 10px; }
 .seller .say { flex: 1; margin: 0; font-family: var(--hand); font-size: 23px; line-height: 1.15; }
 .seller .tut { flex: none; min-height: 44px; min-width: 44px; border-radius: 999px; border: 3px solid var(--ink); background: #fff; color: var(--ink); font-size: 18px; cursor: pointer; }
 .offer .ic { font-size: 34px; flex: none; }
 .offer .meta .name { font-size: 24px; }
-.offer .price { flex: none; font-weight: 700; font-size: 19px; white-space: nowrap; }
-.offer.sold { opacity: .55; cursor: default; }
-.purse .row { justify-content: space-between; font-size: 19px; }
-.purse .lbl { margin-top: 8px; font-weight: 700; font-size: 15px; color: var(--ink-soft); }
+.till .lbl { font-weight: 700; font-size: 15px; color: var(--ink-soft); }
+.till .cust { margin: 2px 0 10px; font-size: 20px; line-height: 1.3; }
+.till .cust b { white-space: nowrap; }
 .counter { min-height: 64px; margin: 4px 0 10px; padding: 6px; border: 3px dashed var(--ink-soft); border-radius: 14px; background: #F3E2C4; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .counter .muted { color: var(--ink-soft); font-size: 15px; padding: 0 4px; }
 .coins { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
@@ -669,7 +668,6 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .coin.euro { background: radial-gradient(circle, #F2CF5B 52%, #C9CED6 54%); }
 .coin.note { width: 84px; border-radius: 8px; }
 .coin.n500 { background: #C9C9CF; } .coin.n1000 { background: #EBA39B; }
-.coin:disabled { opacity: .35; cursor: default; }
 .counter .coin { width: 48px; height: 48px; font-size: 13px; }
 .counter .coin.note { width: 70px; }
 
@@ -1492,7 +1490,7 @@ const MQ = (() => {
     if (t === 1) { const cs = Array.from({ length: rnd(2, 4) }, () => pick(COINS.slice(1))).sort((a, b) => b - a); const s = cs.reduce((a, b) => a + b, 0);
       return task(cs.map(euro).join(' + '), [Math.floor(s / 100), s % 100], { ask: 'Wie viel Geld ist das zusammen?', labels: ['€', 'ct'], money: true }); }
     const price = rnd(7, 99) * 5; const paid = pick([200, 500, 1000].filter((p) => p > price)); const c = paid - price;
-    return task(`${euro(paid)} − ${euro(price)}`, [Math.floor(c / 100), c % 100], { ask: 'Wie viel Rückgeld bekommst du?', labels: ['€', 'ct'], money: true });
+    return task(`${euro(paid)} − ${euro(price)}`, [Math.floor(c / 100), c % 100], { ask: 'Wie viel Rückgeld ist das?', labels: ['€', 'ct'], money: true });
   }
   function task(text, answers, extra) { return Object.assign({ text, answers }, extra || {}); }
 
@@ -1564,8 +1562,8 @@ const MQ = (() => {
       2: { title: 'Verdoppeln und Halbieren bis 1000', steps: ['Zerlege die Zahl in Hunderter, Zehner und Einer.', 'Das Doppelte von 236: 400 + 60 + 12 = 472.', 'Die Hälfte von 470: 400 + 70. Die Hälfte von 400 ist 200, von 70 ist 35. Zusammen 235.'] },
     },
     geld: {
-      1: { title: 'Passend bezahlen', steps: ['100 ct sind 1 €. Zähle erst die Euro, dann die Cent.', 'Tippe auf eine Ware. Lege dann Münzen auf den Ladentisch, bis es genau der Preis ist.', 'Beispiel: Die Chilischote kostet 85 ct. Du legst 50 ct, 20 ct, 10 ct und 5 ct hin.', '50 + 20 + 10 + 5 = 85. Das sind genau 85 ct. Dann tippst du auf „Bezahlen“.'] },
-      2: { title: 'Rückgeld ausrechnen', steps: ['Du darfst auch mehr Geld hinlegen. Dann bekommst du Rückgeld.', 'Beispiel: Der Trank kostet 1 € 20 ct. Du gibst 2 €.', 'Von 1 € 20 ct bis 2 € fehlen 80 ct. Du bekommst 0 € und 80 ct zurück.', 'Zum Prüfen rechnest du plus: 1 € 20 ct + 80 ct = 2 €.'] },
+      1: { title: 'Passend abzählen', steps: ['100 ct sind 1 €. Zähle erst die Euro, dann die Cent.', 'Im Kaufladen hilfst du beim Bezahlen. Tippe auf Münzen, bis genau der Preis auf dem Ladentisch liegt.', 'Beispiel: Die Birne kostet 85 ct. Du legst 50 ct, 20 ct, 10 ct und 5 ct hin.', '50 + 20 + 10 + 5 = 85. Das sind genau 85 ct. Dann tippst du auf „Prüfen“.'] },
+      2: { title: 'Rückgeld geben', steps: ['Manche Kunden geben mehr Geld, als die Ware kostet. Dann bekommen sie Rückgeld.', 'Beispiel: Das Brot kostet 1 € 20 ct. Der Kunde bezahlt mit 2 €.', 'Von 1 € 20 ct bis 2 € fehlen 80 ct. Du legst 80 ct auf den Ladentisch.', 'Zum Prüfen rechnest du plus: 1 € 20 ct + 80 ct = 2 €.'] },
     },
   });
   Object.assign(TUT, {
@@ -1690,8 +1688,17 @@ const MQ = (() => {
     stern: { name: 'Fleißbienchen', icon: '🐝', desc: 'Ein Stempel fürs Üben: Dein Monster bekommt sofort 25 XP.', xp: 25 },
   };
 
-  // market prices in cents
-  const PRICES = { trank: 120, beere: 60, schild: 205, keks: 85, lupe: 150, engel: 300 };
+  // Kaufladen: thank-you items, and three customers per visit (world 1 pays the exact price, later ones get change)
+  const SHOP_GIFTS = ['trank', 'beere', 'schild', 'keks', 'lupe', 'engel'];
+  const SHOP_WHO = ['Die Försterin', 'Der Schmied', 'Ein Mädchen', 'Ein Junge', 'Die Müllerin', 'Die Bäuerin'];
+  const SHOP_WARE = ['einen Apfel', 'eine Birne', 'ein Brot', 'einen Kürbis', 'ein Glas Honig', 'einen Korb Kartoffeln', 'einen Bund Möhren'];
+  function shopCustomers(world) {
+    const who = shuffle(SHOP_WHO), ware = shuffle(SHOP_WARE);
+    return [0, 1, 2].map((i) => {
+      const price = world >= 3 ? 10 * rnd(21, 95) : 5 * rnd(world === 2 ? 5 : 3, 39); const small = world >= 3 ? 500 : 100;
+      return { who: who[i], ware: ware[i], price, paid: world < 2 ? 0 : price < small && rnd(0, 1) ? small : small * 2 };
+    });
+  }
   // Kreisel parts: each changes one number (tip: Wucht, ring: Panzer, disc: Schwung). The first of each row is the starter part,
   // the others are owned['top-<slot>-<id>']: bought (price), found in a chest of that world (chest), or from the first ore (mine).
   const TOP_PARTS = {
@@ -1711,8 +1718,8 @@ const MQ = (() => {
     { title: 'Der Chilibauer', text: 'Ein Bauer hat Chilischoten geerntet, aber ein paar sind schon verkauft. „Rechne aus, wie viele noch da sind, dann bekommst du eine.“', opts: [{ label: 'Minus rechnen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Bienenstock', text: 'Vor einem Bienenstock summt es. Die Bienen fliegen in einer Zahlenreihe ein und aus. Setze die Reihe fort, dann bekommst du ein Fleißbienchen.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Lieber Abstand halten', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
-    { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann gibt er dir 50 ct Finderlohn.', opts: [{ label: 'Geld zählen', task: 'geld', win: { coins: 50 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. Die Fahrt kostet 40 ct. Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Fahrt bezahlen (40 ct)', effect: { coins: -40 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
+    { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann schenkt er dir zum Dank eine Beere.', opts: [{ label: 'Geld zählen', task: 'geld', win: { item: 'beere' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. „Hilf mir beim Teilen, dann setze ich dich über.“ Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Beim Teilen helfen', task: 'div', win: { xp: 10 }, lose: { hp: -6 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
     { title: 'Die Backstube', text: 'Der Bäcker verteilt frische Brötchen auf seine Körbe: die Hälfte in den großen, ein Viertel in den kleinen. Rechnest du ihm einen Bruchteil aus, gibt er dir Beeren für unterwegs.', opts: [{ label: 'Bruchteil rechnen', task: 'bruch', win: { item: 'beere', xp: 10 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Holzplatz', text: 'Eine Försterin stapelt Holzscheite in gleich langen Reihen. Wer ausrechnet, wie viele es sind, darf zwei Scheite für die Werkbank mitnehmen.', opts: [{ label: 'Scheite zählen', task: 'mul', win: { holz: 2 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
   ];
@@ -2243,7 +2250,7 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
 })();
 
 </script>
@@ -15587,7 +15594,6 @@ const ICONS = {
   "🪵": "<defs><linearGradient id=\"e05-bark\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#D9A066\"/><stop offset=\"1\" stop-color=\"#8A5530\"/></linearGradient><linearGradient id=\"e05-ring\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE9B8\"/><stop offset=\"1\" stop-color=\"#E8C48A\"/></linearGradient></defs><path d=\"M9.5 5.5h16a3 3 0 0 1 3 3v15a3 3 0 0 1-3 3h-16Z\" fill=\"url(#e05-bark)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><ellipse cx=\"9.5\" cy=\"16\" rx=\"6\" ry=\"10.5\" fill=\"url(#e05-ring)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><ellipse cx=\"9.5\" cy=\"16\" rx=\"2.8\" ry=\"5\" fill=\"none\" stroke=\"#B8763E\" stroke-width=\"1.5\"/><path d=\"M16 12.5h8M18 20h7\" fill=\"none\" stroke=\"#8A5530\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M15.5 8.5h8\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/>",
   "💔": "<defs><linearGradient id=\"e05-bheart\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FF8A8A\"/><stop offset=\"1\" stop-color=\"#E8344A\"/></linearGradient></defs><path d=\"M14.5 26.5C6 20.5 3 15.5 3 11a6.5 6.5 0 0 1 11.5-4.2L13 12l3 4-2 4.5 1 6Z\" fill=\"url(#e05-bheart)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M18 27.5C26 21.5 29 15.5 29 11a6.5 6.5 0 0 0-11.7-3.9L16 12l3 4-2.2 4.5Z\" fill=\"url(#e05-bheart)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M7.5 10q1-3 4-3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/>",
   "🧪": "<defs><linearGradient id=\"e05-liquid\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FF8A8A\"/><stop offset=\"1\" stop-color=\"#E8344A\"/></linearGradient><linearGradient id=\"e05-glass\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFFFFF\"/><stop offset=\"1\" stop-color=\"#C9CEDD\"/></linearGradient><linearGradient id=\"e05-cork\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#D9A066\"/><stop offset=\"1\" stop-color=\"#8A5530\"/></linearGradient></defs><path d=\"M12.5 7h7v5c4 1.5 6.5 5 6.5 8.5a10 7.5 0 0 1-20 0C6 17 8.5 13.5 12.5 12Z\" fill=\"url(#e05-glass)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M7.2 19h17.6c.5 4.5-3.5 7.5-8.8 7.5S6.7 23.5 7.2 19Z\" fill=\"url(#e05-liquid)\" stroke=\"#1C2541\" stroke-width=\"1.4\" stroke-linejoin=\"round\"/><rect x=\"11.5\" y=\"2.5\" width=\"9\" height=\"5\" rx=\"1.5\" fill=\"url(#e05-cork)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M10 15.5q1.5-1.5 3-2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/>",
-  "👛": "<defs><linearGradient id=\"e05-purse\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FF8FC7\"/><stop offset=\"1\" stop-color=\"#E8344A\"/></linearGradient><linearGradient id=\"e05-clasp\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE27A\"/><stop offset=\"1\" stop-color=\"#F0A500\"/></linearGradient></defs><path d=\"M5 14.5c0-2 1.5-3.5 3.5-3.5h15c2 0 3.5 1.5 3.5 3.5l1 9.5c0 2.5-2 4-4.5 4h-15C6 28 4 26.5 4 24Z\" fill=\"url(#e05-purse)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M8 11.5c0-4 3.5-6 8-6s8 2 8 6\" fill=\"none\" stroke=\"#1C2541\" stroke-width=\"5\" stroke-linecap=\"round\"/><path d=\"M8 11.5c0-4 3.5-6 8-6s8 2 8 6\" fill=\"none\" stroke=\"url(#e05-clasp)\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><circle cx=\"13.5\" cy=\"5.5\" r=\"2.5\" fill=\"url(#e05-clasp)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><circle cx=\"18.5\" cy=\"5.5\" r=\"2.5\" fill=\"url(#e05-clasp)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M7.5 16q.5-1.8 2.2-2.2\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/>",
   "❔": "<defs><linearGradient id=\"e05-q\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFFFFF\"/><stop offset=\"1\" stop-color=\"#C9CEDD\"/></linearGradient></defs><path d=\"M9 11.5a7 7 0 1 1 10.5 6c-1.5 1-2 1.5-2 3v1h-4.5v-1.5c0-3 1.5-4.5 3.5-5.7 1.5-.8 1.5-3.5-.5-3.6-1.5 0-2 .8-2.2 1.8Z\" fill=\"url(#e05-q)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><circle cx=\"15.3\" cy=\"26.5\" r=\"2.7\" fill=\"url(#e05-q)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M11.5 9.5q1-2.5 3.5-3\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/>",
   "★": "<path d=\"M16 4L19.2 11.8 27.5 12.5 21.2 18 23.1 26.2 16 21.8 8.9 26.2 10.8 18 4.5 12.5 12.8 11.8Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linejoin=\"round\"/>",
   "💡": "<defs><linearGradient id=\"e05-bulb\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE27A\"/><stop offset=\"1\" stop-color=\"#F0A500\"/></linearGradient><linearGradient id=\"e05-base\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#C9CEDD\"/><stop offset=\"1\" stop-color=\"#8E96B5\"/></linearGradient></defs><path d=\"M16 2.5a9.5 9.5 0 0 1 5.8 17c-1 .8-1.3 1.8-1.3 3v.5h-9v-.5c0-1.2-.3-2.2-1.3-3A9.5 9.5 0 0 1 16 2.5Z\" fill=\"url(#e05-bulb)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M13.5 18v-3.5a2.5 2.5 0 0 1 5 0V18\" fill=\"none\" stroke=\"#C98A00\" stroke-width=\"1.5\" stroke-linecap=\"round\"/><path d=\"M11.5 23h9v3a2.5 2.5 0 0 1-2.5 2.5h-4A2.5 2.5 0 0 1 11.5 26Z\" fill=\"url(#e05-base)\" stroke=\"#1C2541\" stroke-width=\"2\" stroke-linejoin=\"round\" stroke-linecap=\"round\"/><path d=\"M9.5 10q1-3.5 4.5-4.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/>",
@@ -15722,7 +15728,7 @@ const ELTERN = (() => {
       zmul: 'Malnehmen mit Zehnerzahlen (4 · 70) und halbschriftlich: 6 · 23 = 6 · 20 + 6 · 3.',
       vergl: 'Dreistellige Zahlen mit <, > und = vergleichen, auch in Hunderter, Zehner und Einer, und vier Zahlen der Größe nach ordnen.',
       ueber: 'Ihr Kind rundet auf Hunderter und erkennt so, welches Ergebnis stimmen kann (nur in Welt 3).',
-      geld: 'Mit Euro und Cent passend bezahlen und Rückgeld ausrechnen. Ohne „Geld“ gibt es keinen Markt und keine Münzen.',
+      geld: 'Im Kaufladen Kunden bedienen: Euro und Cent passend abzählen und Rückgeld geben. Ohne „Geld“ gibt es keinen Kaufladen.',
     },
     bau: {
       wz: 'Ein Bauplan zeigt ein Würfelgebäude von oben. Ihr Kind zählt die Würfel.',
@@ -17027,7 +17033,7 @@ const TWART = (() => {
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster laufen auf den Wissensturm zu, richtige Antworten aus schon geübten Themen halten sie auf.", "Sechs Wellen mit Bossen, dazwischen Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Die Turmwacht ist zum Ausprobieren und zuerst aus: Eltern schalten sie im Elternbereich unter „Anzeigen“ ein."]}, {"title": "Verbessert", "items": ["Die Knöpfe unten auf der Startseite stehen jetzt immer in einer Zeile.", "Turmwacht aufgeräumt: größere Monster, kurze Karten, Bauen erst nach einem Tipp auf „Bauen“, Treffer am Turm deutlich sichtbar."]}, {"title": "Behoben", "items": ["Englisch: „painting“ heißt jetzt „malen“ statt „das Malen“, dazu weitere Wörter und Sätze verbessert."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster laufen auf den Wissensturm zu, richtige Antworten aus schon geübten Themen halten sie auf.", "Sechs Wellen mit Bossen, dazwischen Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Die Turmwacht ist zum Ausprobieren und zuerst aus: Eltern schalten sie im Elternbereich unter „Anzeigen“ ein."]}, {"title": "Verbessert", "items": ["Die Knöpfe unten auf der Startseite stehen immer in einer Zeile, und die Turmwacht ist aufgeräumt und besser lesbar.", "Zahlenquest: Aus dem Markt wird der Kaufladen. Du hilfst Kunden beim Bezahlen und gibst Rückgeld, eigene Münzen gibt es nicht mehr."]}, {"title": "Behoben", "items": ["Englisch: „painting“ heißt jetzt „malen“ statt „das Malen“, dazu weitere Wörter und Sätze verbessert."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -17148,7 +17154,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
   const shown = (m) => !meta.hidden.includes('mode:' + m);
   const EXTRAS = { garten: ['Schulgarten', 'Beete bepflanzen und ernten.'], huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'], kreisel: ['Kreisel-Arena', 'Kreiselkämpfe auf der Karte und „Kreisel bauen“ im Stempelheft.'],
-    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
+    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Kaufladen in Zahlenquest', 'Im Kaufladen Kunden bedienen: Geld abzählen und Rückgeld geben.'] };
   const extraOn = (k) => !meta.hidden.includes('extra:' + k);
   const enOff = () => meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
   const heroShown = (m, s) => !meta.hidden.includes(`hero:${m}:${s.id}`);
@@ -17157,7 +17163,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
   const inWorld = (m, k) => { const c = MODES[m].modules[k].worldCap; const b = run && (run.mode === m ? run : run.mode === 'turm' && run.turm.at[m]); return c[Math.min(b ? b.world : 1, c.length) - 1] > 0; };
   const enabledMods = (m) => { m = m || mode; const all = fightMods(m).filter((k) => inWorld(m, k)); const on = all.filter((k) => !offList(m).includes(k)); return on.length >= 2 ? on : all; };
-  // coins and the market only exist in Zahlenquest, and only while parents leave „Geld“ on
+  // the Kaufladen (node type `markt`) only exists in Zahlenquest, and only while parents leave „Geld“ on
   const marketOn = () => mode === 'math' && !offList('math').includes('geld') && extraOn('markt');
   const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
   // a saved run is only removed by endRun or a new run, never as a side effect of saving
@@ -17172,7 +17178,6 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     if (!r.map.every((fl) => Array.isArray(fl) && fl.length && fl.every((n) => isObj(n) && NODE_INFO[n.t] && Array.isArray(n.n) && Number.isFinite(n.c)))) { clear(KEY_RUN_FOR(m)); return null; }
     if (isObj(r.node) && !NODE_INFO[r.node.type]) r.node = null;
     r.items = r.items.filter((it) => ITEMS[it]);
-    r.coins = Number.isFinite(r.coins) ? Math.max(0, Math.floor(r.coins)) : 0;
     r.hero.attacks.forEach((a) => { if (RENAMES[a.name]) a.name = RENAMES[a.name]; });
     if (isObj(r.node) && isObj(r.node.enemy) && RENAMES[r.node.enemy.name]) r.node.enemy.name = RENAMES[r.node.enemy.name];
     r.mode = m; return r;
@@ -17930,7 +17935,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
     app.querySelectorAll('.choice[data-id]').forEach((b) => { b.onclick = () => { sel = b.dataset.id; app.querySelectorAll('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b)); $('#go').disabled = false; paintSwap(); }; });
     paintSwap();
-    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: kit(s).map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), coins: marketOn() ? 100 : 0, tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
+    $('#go').onclick = () => { if (!sel) return; const s = CFG().starters.find((x) => x.id === sel); run = { mode, world: 1, floor: 1, map: [], hero: { id: s.id, evo: 0, level: 1, xp: 0, hp: s.hp, maxHp: s.hp, attacks: kit(s).map((a) => ({ name: a.name, mod: a.mod })) }, items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)), tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])), path: [], shield: false };
       run.map = makeMapFor(1);
       if (swap && swapOn) { const a = run.hero.attacks.find((x) => x.mod === swap.from); if (a) { a.mod = swap.to; a.name = CFG().extra[swap.to]; } }
       if (rec && sel === rec) run.items.push('stern');
@@ -17964,7 +17969,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     return Object.assign({}, e, { name: e.name + ' der Woche', base: e.name, hp: Math.round(e.hp * 1.25), weekboss: true, weakOrder: seededOrder(r, MODKEYS()) });
   }
 
-  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], taeusch: ['👁️', 'Sinnestäuschung'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Markt'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'], arena: ['🌀', 'Kreisel-Arena'] };
+  const NODE_INFO = { fight: ['⚔️', 'Kampf'], elite: ['💀', 'Elite'], event: ['❓', 'Ereignis'], rest: ['🔥', 'Rast'], treasure: ['🎁', 'Schatz'], boss: ['👑', 'Boss'], school: ['✏️', 'Zeichenschule'], labor: ['🔬', 'Forscherlabor'], taeusch: ['👁️', 'Sinnestäuschung'], karte: ['🗺️', 'Schatzkarte'], weekboss: ['🏅', 'Wochenboss'], markt: ['🧺', 'Kaufladen'], lesen: ['📖', 'Lesestube'], bergwerk: ['⛏️', 'Bergwerk'], arena: ['🌀', 'Kreisel-Arena'] };
   function screenMap() {
     depth = 2;
     const h = run.hero;
@@ -17981,7 +17986,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
       return `<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}" ${isOpen ? '' : 'tabindex="-1" disabled'} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`; }).join('')).join('');
     const look = mode === 'math' && REWARDS.find((r) => r.world === run.world && meta.owned[r.id]);
     render(`<div class="screen"${look ? ` style="background:${look.bg}"` : ''}>${topbar(`${heroSVG(heroSpec(), h.evo, 'tbhero')}${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
-      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span>${marketOn() ? `<span>🪙 ${euro(run.coins)}</span>` : ''}</div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
+      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < .3 ? 'low' : h.hp / h.maxHp < .6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
     app.querySelectorAll('.node.open').forEach((b) => { b.onclick = () => { const ni = +b.dataset.n; run.path[run.floor - 1] = ni; const type = run.map[run.floor - 1][ni].t; run.node = { type }; saveAll(); enterNode(type); }; });
@@ -18186,7 +18191,6 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
     else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
     run.items.push(...drops);
-    const coins = marketOn() ? (e.boss ? rnd(40, 60) : e.elite ? rnd(20, 40) : rnd(6, 16)) * 5 : 0; run.coins += coins;
     const wood = mode === 'kartoffel' ? (e.boss ? 3 : 1) : 0; if (wood) addMat('holz', wood);
     // the Monsterbuch stamps were given when the enemy appeared, they are only shown here
     const stamps = payAnswers() + (e.boss ? giveStamps(5) : 0) + (e.fresh ? 2 : 0);
@@ -18196,7 +18200,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     let evoMsg = '';
     if (e.boss && run.hero.evo < 2 && CFG().worlds > 1 && run.world < CFG().worlds) { run.hero.evo++; run.hero.maxHp += 15; heal(20); meta.evoUnlocked[run.hero.id + run.hero.evo] = true; const wa = CFG().worldAttacks && CFG().worldAttacks[run.world + 1]; evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${heroSVG(heroSpec(), run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(heroSpec(), run.hero.evo, 'after')}</div><p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`; }
     saveAll();
-    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${coins ? `<p>🪙 +${euro(coins)}</p>` : ''}${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
+    render(`<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`);
     sayCard();
     $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
   }
@@ -18307,11 +18311,11 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   /* ---------- Event ---------- */
   function screenEvent(resumeOpt) {
     // run.node.ev indexes the whole list, so new events are only ever appended; w = only in that world
-    const EV = CFG().events; const coinEv = (ev) => ev.opts.some((o) => [o.effect, o.win, o.lose].some((x) => x && x.coins));
-    const ids = EV.map((_, i) => i).filter((i) => (!EV[i].w || EV[i].w === run.world) && (marketOn() || !coinEv(EV[i])));
+    const EV = CFG().events; const geldEv = (ev) => ev.opts.some((o) => o.task === 'geld');
+    const ids = EV.map((_, i) => i).filter((i) => (!EV[i].w || EV[i].w === run.world) && (marketOn() || !geldEv(EV[i])));
     if (!Number.isInteger(run.node && run.node.ev) || !EV[run.node.ev]) { if (run.node) run.node.ev = pick(ids); saveAll(); }
     const ev = run.node ? EV[run.node.ev] : EV[pick(ids)];
-    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p>${ev.dilemma ? '<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>' : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-i="${i}" ${o.effect && run.coins < -(o.effect.coins || 0) ? 'disabled' : ''}>${esc(o.label)}</button>`).join('')}</div></div></div>`);
+    render(`<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p>${ev.dilemma ? '<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>' : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`);
     const runOpt = (i) => { const o = ev.opts[i]; if (!o) return screenEvent();
       if (!o.task) { applyEffect(ev.dilemma ? ev.reward : o.effect); showEffect(ev.title, o); return; }
       if (run.node) { run.node.opt = i; saveAll(); }
@@ -18327,7 +18331,6 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   function applyEffect(eff) {
     const lines = []; run.node && (run.node.lines = lines);
     if (eff.hp) { if (eff.hp > 0) { heal(eff.hp); lines.push(`❤️ +${eff.hp} Lebenspunkte`); } else { run.hero.hp = Math.max(1, run.hero.hp + eff.hp); lines.push(`💔 −${Math.abs(eff.hp)} Lebenspunkte`); } }
-    if (eff.coins) { run.coins = Math.max(0, run.coins + eff.coins); lines.push(`🪙 ${eff.coins > 0 ? '+' : '−'}${euro(Math.abs(eff.coins))}`); }
     if (eff.maxhp) { run.hero.maxHp += eff.maxhp; heal(eff.maxhp); lines.push(`💪 +${eff.maxhp} maximale Lebenspunkte`); }
     if (eff.item) { run.items.push(eff.item); lines.push(`${ITEMS[eff.item].icon} ${ITEMS[eff.item].name} erhalten`); }
     if (eff.holz) { addMat('holz', eff.holz); lines.push(`🪵 +${eff.holz} Holz für die Werkbank`); }
@@ -18442,49 +18445,49 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${14 + i * 32} 12L${24 + i * 28.7} 3H${24 + (i + 1) * 28.7}L${14 + (i + 1) * 32} 12z" fill="url(#ms-${i % 2 ? 'c' : 'r'})" ${ln(2.2)}/>`).join('')}
     ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${14 + i * 32} 12h32v18a16 9 0 0 1-32 0z" fill="url(#ms-${i % 2 ? 'c' : 'r'})" ${ln(2.5)}/><path d="M${18 + i * 32} 15v13" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".35"/>`).join('')}<path d="M14 12h192" fill="none" ${ln(3)}/></svg>`;
   const coinBtn = (v, attr) => `<button class="coin ${v >= 500 ? 'note n' + v : v >= 100 ? 'euro' : v >= 10 ? 'brass' : 'copper'}" ${attr} aria-label="${euro(v)}">${euro(v)}</button>`;
+  // Kaufladen: the child serves three customers (world 1: count out the price, later: give the change) and gets a
+  // thank-you item. Nobody owns money here; adventures saved with the old market (node.offers, run.coins) open this one.
   function screenMarket(msg) {
-    const n = run.node || {}; const tier = run.world >= 2 ? 2 : 1; const P = MQ.PRICES;
-    if (!Array.isArray(n.offers) || n.offers.length !== 3 || !n.offers.every((id) => P[id])) { n.offers = shuffle(Object.keys(P)).slice(0, 3); n.sold = []; saveAll(); }
-    if (!Array.isArray(n.sold)) n.sold = [];
-    run.tiers.geld = tier;
+    const n = run.node || {}; const tier = run.world >= 2 ? 2 : 1;
+    if (!Array.isArray(n.cust) || n.cust.length !== 3 || !n.cust.every((c) => isObj(c) && c.price > 0 && (c.paid || 0) >= 0)) { n.cust = MQ.shopCustomers(run.world); n.i = 0; n.tries = 0; }
+    if (!Array.isArray(n.gifts) || n.gifts.length !== 3 || !n.gifts.every((id) => ITEMS[id])) n.gifts = shuffle(MQ.SHOP_GIFTS).slice(0, 3);
+    if (!Number.isInteger(n.i) || n.i < 0) n.i = 0; if (!Number.isInteger(n.tries)) n.tries = 0;
+    run.tiers.geld = tier; saveAll();
+    const seller = (t) => `<div class="card seller">${STALL}<div class="row"><p class="say" id="say" role="status">${esc(t)}</p><button class="tut" type="button" id="mtut" aria-label="Erklärung anzeigen">🛈</button></div></div>`;
+    if (n.i >= 3) {
+      render(`<div class="screen market">${topbar('🧺 Kaufladen')}<div class="scroll"><div class="stack">${seller('Danke für deine Hilfe! Such dir zum Dank etwas aus.')}
+        ${n.gifts.map((id, i) => `<button class="choice offer" data-i="${i}"><span class="ic" aria-hidden="true">${ITEMS[id].icon}</span><div class="meta"><div class="name">${ITEMS[id].name}</div><div class="desc">${esc(ITEMS[id].desc)}</div></div></button>`).join('')}</div></div></div>`);
+      $('#mtut').onclick = () => showTutorial('geld:' + tier);
+      app.querySelectorAll('.offer').forEach((b) => { b.onclick = () => { run.items.push(n.gifts[+b.dataset.i]); nodeDone(); saveAll(); advance(); }; });
+      return;
+    }
+    const c = n.cust[n.i]; const paid = tier === 2 && c.paid > c.price ? c.paid : 0; const want = paid ? paid - c.price : c.price;
     const kinds = MQ.COINS.concat(run.world >= 3 ? [1000, 500] : []).sort((a, b) => b - a);
-    let sel = null; const counter = []; const sum = () => counter.reduce((a, b) => a + b, 0);
-    const hello = tier === 1 ? 'Was darf es sein? Bei mir bezahlst du passend.' : 'Was darf es sein? Du darfst auch mehr geben, das Rückgeld rechnest du dann selbst aus.';
-    render(`<div class="screen market" data-tier="${tier}">${topbar('🧺 Markt')}<div class="scroll"><div class="stack">
-      <div class="card seller">${STALL}<div class="row"><p class="say" id="say" role="status">${esc(msg || hello)}</p><button class="tut" type="button" id="mtut" aria-label="Erklärung anzeigen">🛈</button></div></div>
-      ${n.offers.map((id, i) => { const sold = n.sold.includes(i); return `<button class="choice offer ${sold ? 'sold' : ''}" data-i="${i}" data-price="${P[id]}" ${sold ? 'disabled' : ''}><span class="ic" aria-hidden="true">${ITEMS[id].icon}</span><div class="meta"><div class="name">${ITEMS[id].name}</div><div class="desc">${esc(ITEMS[id].desc)}</div></div><span class="price">${sold ? 'verkauft' : euro(P[id])}</span></button>`; }).join('')}
-      <div class="card purse"><div class="row"><span>👛 Geldbeutel</span><b id="purse" data-cents="${run.coins}">${euro(run.coins)}</b></div><div class="lbl">Ladentisch</div><div class="counter" id="counter"></div><div class="coins">${kinds.map((v) => coinBtn(v, `data-v="${v}"`)).join('')}</div></div>
-      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="leave">Weitergehen</button><button class="btn" id="pay" disabled>Bezahlen</button></div></div></div>`);
-    const show = (el) => { if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest' }); };
-    const say = (t) => { $('#say').textContent = t; show($('.seller')); };
+    const counter = []; const sum = () => counter.reduce((a, b) => a + b, 0);
+    const hello = paid ? 'Heute ist viel los. Hilfst du mir an der Kasse? Gib jedem Kunden das Rückgeld.' : 'Heute ist viel los. Hilfst du mir? Zähle für jeden Kunden das Geld passend ab.';
+    render(`<div class="screen market" data-want="${want}">${topbar('🧺 Kaufladen')}<div class="scroll"><div class="stack">${seller(msg || hello)}
+      <div class="card till"><div class="lbl">Kunde ${n.i + 1} von 3</div><p class="cust">${esc(c.who)} kauft ${esc(c.ware)} für <b>${euro(c.price)}</b>${paid ? ` und bezahlt mit <b>${euro(paid)}</b>. Lege das Rückgeld hin.` : `. Zähle ${euro(c.price)} passend ab.`}</p>
+      <div class="lbl">Ladentisch</div><div class="counter" id="counter"></div><div class="lbl">${paid ? 'Kasse' : 'Münzen'}</div><div class="coins">${kinds.map((v) => coinBtn(v, `data-v="${v}"`)).join('')}</div></div>
+      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="leave">Weitergehen</button><button class="btn" id="pay" disabled>✓ Prüfen</button></div></div></div>`);
     const paint = () => {
-      $('#counter').innerHTML = counter.length ? counter.map((v, j) => coinBtn(v, `data-j="${j}"`)).join('') : `<span class="muted">${sel === null ? 'Tippe zuerst auf eine Ware.' : 'Tippe auf Münzen, um sie hinzulegen.'}</span>`;
-      app.querySelectorAll('.coins .coin').forEach((b) => { b.disabled = sel === null || sum() + +b.dataset.v > run.coins; });
-      app.querySelectorAll('.offer').forEach((b) => b.classList.toggle('selected', +b.dataset.i === sel));
-      $('#pay').disabled = sel === null || !counter.length;
+      $('#counter').innerHTML = counter.length ? counter.map((v, j) => coinBtn(v, `data-j="${j}"`)).join('') : '<span class="muted">Tippe auf Münzen, um sie hinzulegen.</span>';
+      $('#pay').disabled = !counter.length;
       $('#counter').querySelectorAll('.coin').forEach((b) => { b.onclick = () => { counter.splice(+b.dataset.j, 1); paint(); }; });
     };
     paint();
-    app.querySelectorAll('.offer').forEach((b) => { b.onclick = () => { const i = +b.dataset.i; const it = ITEMS[n.offers[i]]; counter.length = 0;
-      if (P[n.offers[i]] > run.coins) { sel = null; say(`${it.name} kostet ${euro(P[n.offers[i]])}. Dafür reicht dein Geld noch nicht.`); } else { sel = i; say(`${it.name} kostet ${euro(P[n.offers[i]])}.`); }
-      paint(); if (sel !== null) show($('.purse')); }; });
     app.querySelectorAll('.coins .coin').forEach((b) => { b.onclick = () => { counter.push(+b.dataset.v); paint(); }; });
     $('#mtut').onclick = () => showTutorial('geld:' + tier);
     $('#leave').onclick = () => { nodeDone(); saveAll(); advance(); };
-    const buy = (bonus) => { const id = n.offers[sel]; run.coins -= P[id]; run.items.push(id); n.sold.push(sel); if (bonus) run.items.push('beere'); saveAll();
-      return `Bitte schön, ${ITEMS[id].name} ist jetzt in deinem Beutel.${bonus ? ' Weil du passend bezahlt hast, bekommst du eine Beere dazu.' : ''}`; };
     $('#pay').onclick = () => {
-      const id = n.offers[sel], price = P[id], paid = sum(), name = ITEMS[id].name;
-      if (paid === price) { recordAnswer('geld', true); return screenMarket(buy(tier === 1)); }
-      if (tier === 1 || paid < price) { recordAnswer('geld', false); saveAll(); counter.length = 0; paint(); return say(`Das sind ${euro(paid)}. ${name} kostet ${euro(price)}. Hier hast du dein Geld zurück.`); }
-      const c = paid - price; let ok = false;
-      const t = { kind: 'num', mod: 'geld', tier: 2, group: 'geld:2', text: `${euro(paid)} − ${euro(price)}`, ask: `Du gibst ${euro(paid)}. ${name} kostet ${euro(price)}. Wie viel Rückgeld bekommst du?`, answers: [Math.floor(c / 100), c % 100], labels: ['€', 'ct'], money: true };
-      let done = '';
-      render(`<div class="screen">${topbar('🧺 Rückgeld')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`);
-      ensureTutorial(t, () => runTask(t, { container: $('#taskwrap'), bottom: $('#bottom'), subtitle: 'Markt', onResult: (r) => { ok = r; recordAnswer('geld', r, t); if (r) done = buy(false); else saveAll(); } },
-        () => screenMarket(ok ? done : 'Das Rückgeld stimmt nicht. Hier hast du dein Geld zurück. Du kannst neu bezahlen oder weitergehen.')));
+      const ok = sum() === want;
+      // only the first try for a customer counts in the statistics: after a miss the answer is as good as given
+      if (!n.tries) recordAnswer('geld', ok);
+      if (ok) { n.i++; n.tries = 0; saveAll(); return screenMarket(n.i < 3 ? 'Stimmt genau, danke! Da kommt schon der Nächste.' : ''); }
+      n.tries++; saveAll(); const was = `Das sind ${euro(sum())}. `; counter.length = 0; paint();
+      $('#say').textContent = was + (!paid ? `Gebraucht werden ${euro(c.price)}. Versuch es noch einmal.` : n.tries === 1 ? `Prüfe mit Plus: ${euro(c.price)} und das Rückgeld sind zusammen ${euro(paid)}.` : `Das Rückgeld sind ${euro(want)}. Lege sie auf den Ladentisch.`);
+      if ($('.seller').scrollIntoView) $('.seller').scrollIntoView({ block: 'nearest' });
     };
-    if (!msg && !meta.seenTut[tutKey('geld:1')]) showTutorial('geld:1', null, null, true);
+    if (!msg && !meta.seenTut[tutKey('geld:' + tier)]) showTutorial('geld:' + tier, null, null, true);
   }
 
   /* ---------- Zeichenschule ---------- */
@@ -19984,7 +19987,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'e3666c80b2ef';
+  const BUILD = '9ead5e6fed23';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

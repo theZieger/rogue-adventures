@@ -334,7 +334,7 @@ const MQ = (() => {
     if (t === 1) { const cs = Array.from({ length: rnd(2, 4) }, () => pick(COINS.slice(1))).sort((a, b) => b - a); const s = cs.reduce((a, b) => a + b, 0);
       return task(cs.map(euro).join(' + '), [Math.floor(s / 100), s % 100], { ask: 'Wie viel Geld ist das zusammen?', labels: ['€', 'ct'], money: true }); }
     const price = rnd(7, 99) * 5; const paid = pick([200, 500, 1000].filter((p) => p > price)); const c = paid - price;
-    return task(`${euro(paid)} − ${euro(price)}`, [Math.floor(c / 100), c % 100], { ask: 'Wie viel Rückgeld bekommst du?', labels: ['€', 'ct'], money: true });
+    return task(`${euro(paid)} − ${euro(price)}`, [Math.floor(c / 100), c % 100], { ask: 'Wie viel Rückgeld ist das?', labels: ['€', 'ct'], money: true });
   }
   function task(text, answers, extra) { return Object.assign({ text, answers }, extra || {}); }
 
@@ -406,8 +406,8 @@ const MQ = (() => {
       2: { title: 'Verdoppeln und Halbieren bis 1000', steps: ['Zerlege die Zahl in Hunderter, Zehner und Einer.', 'Das Doppelte von 236: 400 + 60 + 12 = 472.', 'Die Hälfte von 470: 400 + 70. Die Hälfte von 400 ist 200, von 70 ist 35. Zusammen 235.'] },
     },
     geld: {
-      1: { title: 'Passend bezahlen', steps: ['100 ct sind 1 €. Zähle erst die Euro, dann die Cent.', 'Tippe auf eine Ware. Lege dann Münzen auf den Ladentisch, bis es genau der Preis ist.', 'Beispiel: Die Chilischote kostet 85 ct. Du legst 50 ct, 20 ct, 10 ct und 5 ct hin.', '50 + 20 + 10 + 5 = 85. Das sind genau 85 ct. Dann tippst du auf „Bezahlen“.'] },
-      2: { title: 'Rückgeld ausrechnen', steps: ['Du darfst auch mehr Geld hinlegen. Dann bekommst du Rückgeld.', 'Beispiel: Der Trank kostet 1 € 20 ct. Du gibst 2 €.', 'Von 1 € 20 ct bis 2 € fehlen 80 ct. Du bekommst 0 € und 80 ct zurück.', 'Zum Prüfen rechnest du plus: 1 € 20 ct + 80 ct = 2 €.'] },
+      1: { title: 'Passend abzählen', steps: ['100 ct sind 1 €. Zähle erst die Euro, dann die Cent.', 'Im Kaufladen hilfst du beim Bezahlen. Tippe auf Münzen, bis genau der Preis auf dem Ladentisch liegt.', 'Beispiel: Die Birne kostet 85 ct. Du legst 50 ct, 20 ct, 10 ct und 5 ct hin.', '50 + 20 + 10 + 5 = 85. Das sind genau 85 ct. Dann tippst du auf „Prüfen“.'] },
+      2: { title: 'Rückgeld geben', steps: ['Manche Kunden geben mehr Geld, als die Ware kostet. Dann bekommen sie Rückgeld.', 'Beispiel: Das Brot kostet 1 € 20 ct. Der Kunde bezahlt mit 2 €.', 'Von 1 € 20 ct bis 2 € fehlen 80 ct. Du legst 80 ct auf den Ladentisch.', 'Zum Prüfen rechnest du plus: 1 € 20 ct + 80 ct = 2 €.'] },
     },
   });
   Object.assign(TUT, {
@@ -532,8 +532,17 @@ const MQ = (() => {
     stern: { name: 'Fleißbienchen', icon: '🐝', desc: 'Ein Stempel fürs Üben: Dein Monster bekommt sofort 25 XP.', xp: 25 },
   };
 
-  // market prices in cents
-  const PRICES = { trank: 120, beere: 60, schild: 205, keks: 85, lupe: 150, engel: 300 };
+  // Kaufladen: thank-you items, and three customers per visit (world 1 pays the exact price, later ones get change)
+  const SHOP_GIFTS = ['trank', 'beere', 'schild', 'keks', 'lupe', 'engel'];
+  const SHOP_WHO = ['Die Försterin', 'Der Schmied', 'Ein Mädchen', 'Ein Junge', 'Die Müllerin', 'Die Bäuerin'];
+  const SHOP_WARE = ['einen Apfel', 'eine Birne', 'ein Brot', 'einen Kürbis', 'ein Glas Honig', 'einen Korb Kartoffeln', 'einen Bund Möhren'];
+  function shopCustomers(world) {
+    const who = shuffle(SHOP_WHO), ware = shuffle(SHOP_WARE);
+    return [0, 1, 2].map((i) => {
+      const price = world >= 3 ? 10 * rnd(21, 95) : 5 * rnd(world === 2 ? 5 : 3, 39); const small = world >= 3 ? 500 : 100;
+      return { who: who[i], ware: ware[i], price, paid: world < 2 ? 0 : price < small && rnd(0, 1) ? small : small * 2 };
+    });
+  }
   // Kreisel parts: each changes one number (tip: Wucht, ring: Panzer, disc: Schwung). The first of each row is the starter part,
   // the others are owned['top-<slot>-<id>']: bought (price), found in a chest of that world (chest), or from the first ore (mine).
   const TOP_PARTS = {
@@ -553,8 +562,8 @@ const MQ = (() => {
     { title: 'Der Chilibauer', text: 'Ein Bauer hat Chilischoten geerntet, aber ein paar sind schon verkauft. „Rechne aus, wie viele noch da sind, dann bekommst du eine.“', opts: [{ label: 'Minus rechnen', task: 'sub', win: { item: 'keks' }, lose: { hp: -5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Bienenstock', text: 'Vor einem Bienenstock summt es. Die Bienen fliegen in einer Zahlenreihe ein und aus. Setze die Reihe fort, dann bekommst du ein Fleißbienchen.', opts: [{ label: 'Reihe fortsetzen', task: 'seq', win: { item: 'stern' }, lose: { xp: 5 } }, { label: 'Lieber Abstand halten', effect: {} }] },
     { title: 'Die Gitterhöhle', text: 'In der Höhle leuchtet ein Zahlengitter an der Wand. Wer es löst, findet einen Schatz.', opts: [{ label: 'Gitter lösen', task: 'grid', win: { item: 'trank', xp: 10 }, lose: { hp: -5 } }, { label: 'Draußen bleiben', effect: {} }] },
-    { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann gibt er dir 50 ct Finderlohn.', opts: [{ label: 'Geld zählen', task: 'geld', win: { coins: 50 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
-    { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. Die Fahrt kostet 40 ct. Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Fahrt bezahlen (40 ct)', effect: { coins: -40 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
+    { title: 'Die Spardose', text: 'Einem Jungen ist die Spardose heruntergefallen. Die Münzen liegen im Gras. Zähl mit ihm, wie viel Geld es ist, dann schenkt er dir zum Dank eine Beere.', opts: [{ label: 'Geld zählen', task: 'geld', win: { item: 'beere' }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
+    { title: 'Der Fährmann', text: 'Am Fluss wartet ein Fährmann. „Hilf mir beim Teilen, dann setze ich dich über.“ Ohne Fähre musst du durchs kalte Wasser waten.', opts: [{ label: 'Beim Teilen helfen', task: 'div', win: { xp: 10 }, lose: { hp: -6 } }, { label: 'Durchs Wasser (−6 LP)', effect: { hp: -6 } }] },
     { title: 'Die Backstube', text: 'Der Bäcker verteilt frische Brötchen auf seine Körbe: die Hälfte in den großen, ein Viertel in den kleinen. Rechnest du ihm einen Bruchteil aus, gibt er dir Beeren für unterwegs.', opts: [{ label: 'Bruchteil rechnen', task: 'bruch', win: { item: 'beere', xp: 10 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
     { title: 'Der Holzplatz', text: 'Eine Försterin stapelt Holzscheite in gleich langen Reihen. Wer ausrechnet, wie viele es sind, darf zwei Scheite für die Werkbank mitnehmen.', opts: [{ label: 'Scheite zählen', task: 'mul', win: { holz: 2 }, lose: { xp: 5 } }, { label: 'Weitergehen', effect: {} }] },
   ];
@@ -1085,6 +1094,6 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, PRICES, TOP_PARTS, BAU };
+  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;

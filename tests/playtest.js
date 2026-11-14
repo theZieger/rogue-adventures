@@ -139,17 +139,11 @@ async function solveKnow(forceWrong){
   const good=fb.classList.contains('good'); if(forceWrong&&good) throw new Error('wrong marked good '+t.kind); if(!forceWrong&&!good) throw new Error('correct marked bad '+t.kind+' '+JSON.stringify(t));
   if(good) correctAnswers++; else wrongAnswers++; click($('#next'));
 }
-// market: buy exactly one affordable thing, then leave; in world 2+ mostly overpay to get the change task
+// Kaufladen: serve the customers (sometimes with a wrong amount first), then take a thank-you item
 async function shop(){
-  const sold=$$('.offer.sold').length; const purse=+$('#purse').dataset.cents;
-  if(sold>1) throw new Error('bot bought more than one thing');
-  const offer=$$('.offer:not(.sold)').find(o=>+o.dataset.price<=purse);
-  if(sold||!offer){ markets++; bought+=sold; click($('#leave')); return; }
-  click(offer); const price=+offer.dataset.price; const tier=+$('.market').dataset.tier;
-  const coins=()=>$$('.coins .coin:not([disabled])').map(b=>+b.dataset.v);
-  const big=coins().filter(v=>v>price).pop();
-  if(tier>=2&&big&&Math.random()<0.7) click($(`.coins .coin[data-v="${big}"]`));
-  else { let rest=price; for(const v of [1000,500,200,100,50,20,10,5,2,1]) while(v<=rest&&coins().includes(v)){ click($(`.coins .coin[data-v="${v}"]`)); rest-=v; } if(rest) throw new Error('could not pay '+price+' from '+purse); }
+  const gift=$('.market .offer'); if(gift){ markets++; bought++; click(gift); return; }
+  const want=+$('.market').dataset.want; const lay=(sum)=>{ for(const v of [1000,500,200,100,50,20,10,5,2,1]) while(v<=sum&&$(`.coins .coin[data-v="${v}"]`)){ click($(`.coins .coin[data-v="${v}"]`)); sum-=v; } if(sum) throw new Error('could not lay '+want); };
+  if(Math.random()>ACC) click($('.coins .coin[data-v="1"]')); else lay(want);
   click($('#pay'));
 }
 // Turmwacht (MODE=turm, GRADE=2|3, SUBJECTS=Mathe,Deutsch: default = the pre-selected ones): plays through the real screens.
@@ -323,6 +317,6 @@ function turmEnd(m, ends, steps){
   if(['woerterwerkstatt','satzbaustelle','ethik','kirchenjahr','ichwelt'].includes(mode)&&readNodes<RUNS){ console.error('PLAYTEST FAIL: Lesestube not played'); process.exit(1); }
   if(mode==='ichwelt'&&!m.stats.ichwelt.welten.t){ console.error('PLAYTEST FAIL: never sorted into the three worlds'); process.exit(1); }
   if(mode==='math'&&!W3&&!arenas){ console.error('PLAYTEST FAIL: never played the Kreisel-Arena'); process.exit(1); }
-  if(mode==='math'&&!W3&&!bought){ console.error('PLAYTEST FAIL: never bought anything at a market'); process.exit(1); }
+  if(mode==='math'&&!W3&&!bought){ console.error('PLAYTEST FAIL: never got a thank-you item at a Kaufladen'); process.exit(1); }
   if(ends<RUNS){ console.error('PLAYTEST FAIL: did not finish '+RUNS+' run(s) in '+steps+' steps'); process.exit(1); }
 })().catch(e=>{console.error('PLAYTEST FAIL',e.message); console.log(errors); process.exit(1);});

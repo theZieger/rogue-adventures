@@ -251,57 +251,57 @@ const typePin = (p, pin) => { for (const ch of pin) p.click(`.numpad [data-k="${
   check(!!p2.dump().mathquest_run_kirchenjahr && !!p2.$('[data-cont="kirchenjahr"]'), 'Kirchenjahr adventure is saved and can be continued');
 }
 
-// 19. Markt: coins in the run, one market per world, paying, change, reload inside the market
+// 19. Kaufladen (node type markt): no money of the child's own, three customers, a thank-you item, reload inside the shop
 {
   const skip = { setup: { done: false, skipped: true, at: 'x' } };
   const p1 = startMathFight(); const r0 = p1.w.__mq.run;
-  check(r0.coins === 100, 'a new Zahlenquest adventure starts with 1 € in the purse');
+  check(!('coins' in r0) && !p1.text().includes('🪙'), 'a new Zahlenquest adventure has no purse');
   const markets = r0.map.flatMap((fl, f) => fl.filter((n) => n.t === 'markt').map(() => f));
-  check(markets.length === 1 && markets[0] >= 2 && markets[0] <= 5, 'exactly one market per world, on floors 3–6');
-  { // an adventure saved before coins existed loads with an empty purse
-    const saved = p1.dump(); const r = JSON.parse(saved[RUN]); delete r.coins; r.map.forEach((fl) => fl.forEach((n) => { if (n.t === 'markt') n.t = 'event'; })); saved[RUN] = JSON.stringify(r);
-    const p = open(saved); p.click('[data-cont="math"]');
-    check(p.errors.length === 0 && p.w.__mq.run.coins === 0 && !!p.$('#fe'), 'old adventure without coins continues with 0 ct');
-  }
-  { // parents switch „Geld“ off: no market in new maps, no coins on the map
+  check(markets.length === 1 && markets[0] >= 2 && markets[0] <= 5, 'exactly one Kaufladen per world, on floors 3–6');
+  { // parents switch „Geld“ off: no Kaufladen in new maps
     const p = open({ [META]: JSON.stringify(Object.assign({ off: { math: ['geld'] } }, skip)) });
     p.click('[data-new="math"]'); p.click('.choice'); p.click('#go');
-    check(!p.w.__mq.run.map.flat().some((n) => n.t === 'markt') && !p.text().includes('🪙'), 'with „Geld“ switched off there is no market and no purse');
+    check(!p.w.__mq.run.map.flat().some((n) => n.t === 'markt'), 'with „Geld“ switched off there is no Kaufladen');
     const k = open({ [META]: JSON.stringify(skip) }); k.click('[data-new="kartoffel"]'); k.click('.choice'); k.click('#go');
-    check(!k.w.__mq.run.map.flat().some((n) => n.t === 'markt'), 'other subjects have no market');
+    check(!k.w.__mq.run.map.flat().some((n) => n.t === 'markt'), 'other subjects have no Kaufladen');
   }
-  // stand in front of the market with a fixed purse and offers, then reopen the app
-  const atMarket = (world, coins) => { const saved = p1.dump(); const r = JSON.parse(saved[RUN]); const f = r.map.findIndex((fl) => fl.some((n) => n.t === 'markt'));
-    r.world = world; r.floor = f + 1; r.path = r.map.slice(0, f + 1).map((fl, k) => (k === f ? fl.findIndex((n) => n.t === 'markt') : 0)); r.coins = coins;
-    r.node = { type: 'markt', offers: ['beere', 'trank', 'engel'], sold: [] }; saved[RUN] = JSON.stringify(r);
+  // stand in the shop with a given node state, then reopen the app
+  const atMarket = (world, node, extra) => { const saved = p1.dump(); const r = JSON.parse(saved[RUN]); const f = r.map.findIndex((fl) => fl.some((n) => n.t === 'markt'));
+    r.world = world; r.floor = f + 1; r.path = r.map.slice(0, f + 1).map((fl, k) => (k === f ? fl.findIndex((n) => n.t === 'markt') : 0));
+    r.node = Object.assign({ type: 'markt' }, node); Object.assign(r, extra); saved[RUN] = JSON.stringify(r);
     const p = open(saved); p.click('[data-cont="math"]'); if (p.$('#tutok')) p.click('#tutok'); return p; };
   const coin = (p, v) => p.click(`.coins .coin[data-v="${v}"]`);
-  const offer = (p, i) => p.click(`.offer[data-i="${i}"]`);
   const stat = (p) => p.w.__mq.meta.stats.math.geld;
-  {
-    const p = atMarket(1, 150);
-    check(!!p.$('.market') && p.errors.length === 0 && p.$('#purse').textContent === '1 € 50 ct' && [...p.d.querySelectorAll('.offer .name')].map((x) => x.textContent).join() === 'Beere,Trank,Schutzengel', 'a saved run inside the market reopens with the same offers and purse');
-    offer(p, 2); check(p.$('#pay').disabled && p.d.querySelectorAll('.coins .coin:not([disabled])').length === 0 && p.text().includes('reicht dein Geld noch nicht'), 'no purchase without enough money');
-    offer(p, 0); coin(p, 50); p.click('#pay');
-    check(p.w.__mq.run.coins === 150 && !p.$('.offer.sold') && stat(p).t === 1 && stat(p).c === 0 && p.text().includes('Das sind 50 ct'), 'paying the wrong amount gives the money back and counts as a try');
-    offer(p, 0); coin(p, 100);
-    check(p.$('.coins .coin[data-v="100"]').disabled && !p.$('.coins .coin[data-v="50"]').disabled, 'coins worth more than what is left in the purse are greyed out');
-    p.click('#counter .coin'); check(!p.$('#counter .coin') && !p.$('.coins .coin[data-v="100"]').disabled, 'tapping a coin on the counter takes it back');
-    coin(p, 20); coin(p, 20); coin(p, 10); coin(p, 10); p.click('#pay');
-    const r = p.w.__mq.run;
-    check(r.coins === 90 && r.items.filter((x) => x === 'beere').length === 2 && !!p.$('.offer.sold[data-i="0"]') && stat(p).c === 1 && stat(p).t === 2, 'paying exactly buys the berry plus a bonus berry');
-    const p2 = open(p.dump()); p2.click('[data-cont="math"]');
-    check(!!p2.$('.offer.sold[data-i="0"]') && p2.w.__mq.run.coins === 90, 'after reopening the bought item stays sold and the purse stays the same');
-    p2.click('#leave'); check(!!p2.$('.wmap') && p2.w.__mq.run.floor === r.floor + 1, 'leaving the market moves on');
+  const cust = [{ who: 'Ein Junge', ware: 'eine Birne', price: 85, paid: 0 }, { who: 'Die Müllerin', ware: 'ein Brot', price: 120, paid: 0 }, { who: 'Der Schmied', ware: 'einen Apfel', price: 15, paid: 0 }];
+  { // an adventure saved inside the old market, with a purse: opens the Kaufladen, nothing is lost
+    const p = atMarket(1, { offers: ['beere', 'trank', 'engel'], sold: [0] }, { coins: 150 });
+    const n = p.w.__mq.run.node;
+    check(p.errors.length === 0 && !!p.$('.market') && n.cust.length === 3 && n.i === 0 && !p.text().includes('Geldbeutel') && !p.$('.offer'), 'an adventure saved in the old market opens the Kaufladen with three customers');
   }
   {
-    const p = atMarket(2, 300); offer(p, 1); coin(p, 200); p.click('#pay'); if (p.$('#tutok')) p.click('#tutok');
-    const answer = (e, c) => { const inps = p.d.querySelectorAll('.inp'); inps[0].click(); for (const ch of String(e)) p.click(`.numpad [data-k="${ch}"]`); inps[1].click(); for (const ch of String(c)) p.click(`.numpad [data-k="${ch}"]`); p.click('.numpad [data-k="ok"]'); };
-    check(p.$('.expr').textContent === '2 € − 1 € 20 ct' && p.d.querySelectorAll('.inp').length === 2, 'overpaying in world 2 asks for the change in € and ct');
-    answer(0, 70); check(p.text().includes('Richtig wäre: 80 ct'), 'a wrong change answer shows the right amount without a comma'); p.click('#next');
-    check(!!p.$('.market') && p.w.__mq.run.coins === 300 && !p.$('.offer.sold') && stat(p).t === 1, 'wrong change: money back, nothing bought, the try counts');
-    offer(p, 1); coin(p, 200); p.click('#pay'); answer(0, 80); p.click('#next');
-    check(p.w.__mq.run.coins === 180 && !!p.$('.offer.sold[data-i="1"]') && p.w.__mq.run.items.filter((x) => x === 'beere').length === 0 && stat(p).c === 1, 'right change buys the potion (no bonus berry in world 2)');
+    const p = atMarket(1, { cust, i: 0, tries: 0, gifts: ['beere', 'trank', 'engel'] });
+    check(p.errors.length === 0 && p.text().includes('Kunde 1 von 3') && p.text().includes('Ein Junge kauft eine Birne für 85 ct') && p.$('#pay').disabled, 'world 1: the first customer pays the exact price');
+    coin(p, 50); p.click('#pay');
+    check(p.w.__mq.run.node.i === 0 && stat(p).t === 1 && stat(p).c === 0 && p.text().includes('Das sind 50 ct') && !p.$('#counter .coin'), 'a wrong amount: the coins go back, the try counts, the customer stays');
+    coin(p, 100); p.click('#counter .coin'); check(!p.$('#counter .coin') && p.$('#pay').disabled, 'tapping a coin on the counter takes it back');
+    coin(p, 50); coin(p, 20); coin(p, 10); coin(p, 5); p.click('#pay');
+    check(p.w.__mq.run.node.i === 1 && stat(p).t === 1 && p.text().includes('Kunde 2 von 3'), 'the right amount after a miss moves on without counting twice');
+    const p2 = open(p.dump()); p2.click('[data-cont="math"]');
+    check(p2.text().includes('Kunde 2 von 3') && p2.text().includes('Die Müllerin kauft ein Brot'), 'after reopening the same customer waits');
+    coin(p2, 100); coin(p2, 20); p2.click('#pay'); coin(p2, 10); coin(p2, 5); p2.click('#pay');
+    check(stat(p2).t === 3 && stat(p2).c === 2 && p2.d.querySelectorAll('.offer').length === 3 && !p2.$('#pay'), 'after three customers the thank-you items are offered');
+    const p3 = open(p2.dump()); p3.click('[data-cont="math"]');
+    check([...p3.d.querySelectorAll('.offer .name')].map((x) => x.textContent).join() === 'Beere,Trank,Schutzengel', 'after reopening the same thank-you items are offered');
+    const items = p3.w.__mq.run.items.length, floor = p3.w.__mq.run.floor; p3.click('.offer[data-i="2"]');
+    check(p3.w.__mq.run.items.length === items + 1 && p3.w.__mq.run.items.includes('engel') && !!p3.$('.wmap') && p3.w.__mq.run.floor === floor + 1, 'picking one item adds it and moves on');
+  }
+  {
+    const p = atMarket(2, { cust: [{ who: 'Ein Junge', ware: 'eine Birne', price: 120, paid: 200 }, cust[1], cust[2]], i: 0, tries: 0, gifts: ['beere', 'trank', 'engel'] });
+    check(p.text().includes('für 1 € 20 ct und bezahlt mit 2 €') && p.$('.market').dataset.want === '80', 'world 2: the customer overpays and gets change');
+    coin(p, 50); coin(p, 20); p.click('#pay'); check(p.text().includes('Prüfe mit Plus'), 'wrong change: a hint to check with plus');
+    coin(p, 50); p.click('#pay'); check(p.text().includes('Das Rückgeld sind 80 ct') && stat(p).t === 1, 'wrong again: the change is named, only the first try counts');
+    coin(p, 50); coin(p, 20); coin(p, 10); p.click('#pay'); check(p.w.__mq.run.node.i === 1, 'the right change serves the customer');
+    const floor = p.w.__mq.run.floor; p.click('#leave'); check(!!p.$('.wmap') && p.w.__mq.run.floor === floor + 1, 'leaving the Kaufladen early moves on');
   }
 }
 

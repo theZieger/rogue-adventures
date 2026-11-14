@@ -14,8 +14,8 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Die Turmwacht ist zum Ausprobieren und zuerst aus: Eltern schalten sie im Elternbereich unter „Anzeigen“ ein.
 
 ### Verbessert
-- Die Knöpfe unten auf der Startseite stehen jetzt immer in einer Zeile.
-- Turmwacht aufgeräumt: größere Monster, kurze Karten, Bauen erst nach einem Tipp auf „Bauen“, Treffer am Turm deutlich sichtbar.
+- Die Knöpfe unten auf der Startseite stehen immer in einer Zeile, und die Turmwacht ist aufgeräumt und besser lesbar.
+- Zahlenquest: Aus dem Markt wird der Kaufladen. Du hilfst Kunden beim Bezahlen und gibst Rückgeld, eigene Münzen gibt es nicht mehr.
 
 ### Behoben
 - Englisch: „painting“ heißt jetzt „malen“ statt „das Malen“, dazu weitere Wörter und Sätze verbessert.
