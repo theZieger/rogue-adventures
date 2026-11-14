@@ -247,17 +247,18 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(z.d.querySelectorAll('.overlay [data-l]').length === 4 && /stark gegen/.test(z.$('.overlay').textContent), 'a spot asks for the look: three typed guards and the boss from the Monsterbuch');
   z.click('.overlay [data-l="0"]');
   check(same(zt().guards['0:1'], { look: 'fuchs', type: 'feuer', lvl: 1 }) && zt().ziegel === free0 && /Glutfuchs steht jetzt/.test(log()) && same(z.saved(), zr()), 'the free guard is placed and saved');
-  zt().ziegel = 30; zr().hero.hp = 40; z.T.buy({ kind: 'none' }); z.T.board();
+  const C = z.T.TW.COST;
+  zt().ziegel = C.guard + C.up[0] + C.up[1] + C.floor + C.fix; zr().hero.hp = 40; z.T.buy({ kind: 'none' }); z.T.board();
   card('guard'); spot(1, 0); z.click('.overlay [data-l="3"]');
-  check(same(zt().guards['1:0'], { look: 'moorschlund', type: 'normal', lvl: 1 }) && zt().ziegel === 26 && /Moorschlund hilft dir jetzt\./.test(log()), 'a boss as a guard: normal type, 4 Ziegel, „… hilft dir jetzt.“');
+  check(same(zt().guards['1:0'], { look: 'moorschlund', type: 'normal', lvl: 1 }) && zt().ziegel === C.up[0] + C.up[1] + C.floor + C.fix && /Moorschlund hilft dir jetzt\./.test(log()), 'a boss as a guard: normal type, costs Ziegel, „… hilft dir jetzt.“');
   card('up'); spot(0, 1); card('up'); spot(0, 1);
-  check(zt().guards['0:1'].lvl === 3 && zt().ziegel === 11 && /Stufe 3/.test(log()) && z.d.querySelectorAll('.tw-spot.on').length === 2, 'upgrades: level 2 for 6, level 3 for 9');
+  check(zt().guards['0:1'].lvl === 3 && zt().ziegel === C.floor + C.fix && /Stufe 3/.test(log()) && z.d.querySelectorAll('.tw-spot.on').length === 2, 'upgrades: level 2, then level 3');
   card('floor:Mathe');
-  check(same(zt().floors, ['Mathe']) && zt().ziegel === 3 && !!z.$('#twt .tw-fl[data-subject="Mathe"]') && /Rechenstube ist fertig/.test(log()), 'a floor is built and drawn on the tower');
+  check(same(zt().floors, ['Mathe']) && zt().ziegel === C.fix && !!z.$('#twt .tw-fl[data-subject="Mathe"]') && /Rechenstube ist fertig/.test(log()), 'a floor is built and drawn on the tower');
   card('fix');
-  check(zr().hero.hp === 50 && zt().ziegel === 0, 'Mauer flicken: +10 ❤️ for 3');
+  check(zr().hero.hp === 50 && zt().ziegel === 0, 'Mauer flicken: +10 ❤️');
   card('floor:Deutsch');
-  check(zt().floors.length === 1 && bmsg() === 'Dafür fehlen dir noch 8 Ziegel.' && z.$('[data-card="floor:Deutsch"]').classList.contains('short') && /Noch 8/.test(z.$('[data-card="floor:Deutsch"]').textContent), 'too expensive: greyed, „Noch 8 🧱“, nothing bought');
+  check(zt().floors.length === 1 && bmsg() === `Dafür fehlen dir noch ${C.floor} Ziegel.` && z.$('[data-card="floor:Deutsch"]').classList.contains('short') && z.$('[data-card="floor:Deutsch"]').textContent.includes(`Noch ${C.floor}`), 'too expensive: greyed, „Noch n 🧱“, nothing bought');
   card('floor:Mathe');
   check(bmsg() === 'Schon gebaut.', 'a built floor says why it can\'t be built again');
   zt().ziegel = 7; z.T.buy({ kind: 'none' }); z.T.board(); card('guard'); // a refused buy still saves

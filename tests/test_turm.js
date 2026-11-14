@@ -33,7 +33,7 @@ const board = (run, wave, ctx) => { run.turm.phase = 'build'; run.turm.wave = wa
 let nid = 1000;
 const mon = (run, lane, cell, o = {}) => { const x = { id: nid++, lane, cell, m: run.turm.lanes[lane].src[0].m, k: run.turm.lanes[lane].src[0].k, name: 'Regenwicht', shape: 'regenwicht', type: 'wasser', world: 1, hp: 20, maxHp: 20, steps: 1, slow: 0, stun: 0, ...o }; run.turm.monsters.push(x); return x; };
 const hit = (run, id, ok, ctx, info) => { if (run.turm.phase === 'step') run.turm.phase = 'choose'; check(TW.ask(run, id), 'ask', id); return TW.answer(run, ok, ctx, info); };
-const TD = TW.TOWER_DMG, towerDmg = (wave, kind) => ((kind === 'boss' ? TD.boss : TD.normal) + TD.wave * wave) * (kind === 'elite' ? TD.elite : 1);
+const TD = TW.TOWER_DMG, towerDmg = (wave, kind) => Math.ceil(((kind === 'boss' ? TD.boss : TD.normal) + TD.wave * wave) * (kind === 'elite' ? TD.elite : 1));
 const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.monsters) { const k = x.lane + ':' + x.cell; if (seen.has(k) || x.cell < 1 || x.cell > TW.CELLS) return false; seen.add(k); } return true; };
 
 // --- lanes ---
@@ -113,9 +113,9 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   check(e3.some((e) => e.t === 'tower' && e.id === x.id && e.dmg === towerDmg(2) && e.gone) && !r3.turm.monsters.includes(x), 'normal monster hits once and is gone', e3);
   const f = mon(r3, 0, 3, { steps: 2 }); r3.turm.phase = 'step'; TW.step(r3, ctx);
   check(f.cell === 1, 'fast monster walks 2 cells');
-  // elite hits double
+  // elites hit harder
   const r4 = board(start(undefined, 3, ctx), 5, ctx); mon(r4, 0, 1, { elite: true }); r4.turm.phase = 'step';
-  check(TW.step(r4, ctx).find((e) => e.t === 'tower').dmg === towerDmg(5, 'elite') && towerDmg(5, 'elite') === 2 * towerDmg(5), 'elite hits double');
+  check(TW.step(r4, ctx).find((e) => e.t === 'tower').dmg === towerDmg(5, 'elite') && towerDmg(5, 'elite') > towerDmg(5), 'elite hits harder');
 }
 
 // --- fairness: wave 1 floor, catch-up, item shield ---
@@ -126,12 +126,16 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   check(run.hero.hp === 1 && ev.find((e) => e.t === 'tower').dmg === 2, 'wave 1: tower keeps 1 ❤️', ev);
   mon(run, 0, 1); run.turm.phase = 'step'; ev = TW.step(run, ctx);
   check(run.hero.hp === 1 && ev.some((e) => e.t === 'hold') && run.turm.phase !== 'fallen', 'wave 1: tower holds at 1 ❤️', ev);
-  const r2 = board(start(undefined, 3, ctx), 4, ctx); r2.turm.score = { Mathe: { c: 4, t: 8 } }; mon(r2, 0, 1); r2.turm.phase = 'step';
-  check(TW.step(r2, ctx).find((e) => e.t === 'tower').dmg === Math.ceil(towerDmg(4) / 2), 'catch-up: half damage rounded up below 60 % after 8 answers');
-  r2.turm.score = { Mathe: { c: 4, t: 7 } }; mon(r2, 0, 1); r2.turm.phase = 'step';
-  check(TW.step(r2, ctx).find((e) => e.t === 'tower').dmg === towerDmg(4), 'no catch-up before 8 answers');
-  r2.turm.score = { Mathe: { c: 5, t: 8 } }; mon(r2, 0, 1); r2.turm.phase = 'step';
-  check(TW.step(r2, ctx).find((e) => e.t === 'tower').dmg === towerDmg(4), 'no catch-up at 60 % or more');
+  const r2 = board(start(undefined, 3, ctx), 4, ctx);
+  // catch-up: from 8 answers, ×1 at ≥ 75 % right, ×0.5 at ≤ 50 %, linear in between, rounded up
+  const dmgAt = (c, n) => { r2.hero.hp = 60; r2.turm.score = { Mathe: { c, t: n } }; mon(r2, 0, 1); r2.turm.phase = 'step'; return TW.step(r2, ctx).find((e) => e.t === 'tower').dmg; };
+  const d4 = towerDmg(4);
+  check(dmgAt(4, 8) === Math.ceil(d4 / 2) && dmgAt(2, 10) === Math.ceil(d4 / 2), 'catch-up: half damage rounded up at 50 % or less after 8 answers');
+  check(dmgAt(4, 7) === d4, 'no catch-up before 8 answers');
+  check(dmgAt(6, 8) === d4 && dmgAt(9, 10) === d4, 'no catch-up at 75 % or more');
+  check(dmgAt(5, 8) === Math.ceil(d4 * 0.75), 'catch-up: 62.5 % right → ×0.75');
+  const steps = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75].map((x) => dmgAt(Math.round(x * 20), 20));
+  check(steps.every((d, i) => !i || d >= steps[i - 1]) && steps[0] < steps[5], 'catch-up grows smoothly with accuracy', steps);
   r2.shield = true; mon(r2, 0, 1); r2.turm.phase = 'step'; const hp = r2.hero.hp;
   check(TW.step(r2, ctx).some((e) => e.t === 'block') && r2.hero.hp === hp && !r2.shield, 'item shield blocks the next monster at the tower');
   // the tower falls from wave 2 on
@@ -148,14 +152,15 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   t.guards['0:0'] = { look: 'fuchs', type: 'feuer', lvl: 1 };
   const ev = hit(run, elite.id, true, ctx);
   check(ev.find((e) => e.t === 'shot').id === lead.id, 'guards hit the front monster anyway', ev);
-  // hero damage: module dmg + 3 × stage + 2 × (wave − 1), × 1.5 strong, × 1.5 🎯, × 2 Chilischote
+  // hero damage: module dmg + 3 × stage + HERO_WAVE × (wave − 1), × 1.5 strong, × 1.5 🎯, × 2 Chilischote
   const r2 = board(start(undefined, 3, ctx), 3, ctx);
   const plant = mon(r2, 0, 3, { type: 'pflanze', hp: 500, maxHp: 500 }), base = ctx.dmg(plant.m, plant.k);
   r2.hero.evo = 1; r2.turm.weak = null; r2.turm.phase = 'choose';
-  check(TW.card(r2, plant.id, ctx).dmg === Math.round((base + 3 + 4) * 1.5), 'hero damage formula, strong', TW.card(r2, plant.id, ctx));
+  const hw = 3 + 2 * TW.HERO_WAVE;
+  check(TW.card(r2, plant.id, ctx).dmg === Math.round((base + hw) * 1.5), 'hero damage formula, strong', TW.card(r2, plant.id, ctx));
   r2.turm.weak = plant.id; r2.power = true;
   const e2 = hit(r2, plant.id, true, ctx), h = e2.find((e) => e.t === 'hit');
-  check(h.dmg === Math.round((base + 7) * 1.5 * 1.5 * 2) && h.weak && h.strong && !r2.power, '🎯 × 1.5 and Chilischote × 2 (used up)', h);
+  check(h.dmg === Math.round((base + hw) * 1.5 * 1.5 * 2) && h.weak && h.strong && !r2.power, '🎯 × 1.5 and Chilischote × 2 (used up)', h);
   check(e2.filter((e) => e.t === 'ziegel').map((e) => e.why).join() === 'right,weak' && r2.turm.ziegel === 2, '🎯 gives double Ziegel', e2);
   // 🎯: exactly one, front monster of the least practised lane
   const r3 = board(start(undefined, 3, ctx), 2, ctx), t3 = r3.turm;
@@ -163,14 +168,15 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   for (const s of t3.lanes[0].src.concat(t3.lanes[2].src)) t3.used[s.m + ':' + s.k] = 2;
   t3.phase = 'step'; TW.step(r3, ctx);
   check(t3.weak === w1.id && w1b.id !== t3.weak, '🎯 on the front monster of the least practised lane', t3.weak);
-  // guard damage: 4 / 7 / 10, × 1.5 if its type beats the monster's; normal-type guards no bonus
+  // guard damage by level (GUARD_DMG), × 1.5 if its type beats the monster's; normal-type guards no bonus
   const r4 = board(start(undefined, 3, ctx), 2, ctx), y = mon(r4, 1, 4, { type: 'pflanze', hp: 500, maxHp: 500 }), z = mon(r4, 1, 2, { type: 'normal', hp: 500, maxHp: 500 });
   r4.turm.guards = { '1:0': { look: 'fuchs', type: 'feuer', lvl: 3 }, '1:1': { look: 'boss', type: 'normal', lvl: 2 } };
   const e4 = hit(r4, y.id, true, ctx).filter((e) => e.t === 'shot');
-  check(e4.map((e) => e.id + ':' + e.dmg).join() === `${z.id}:10,${z.id}:7`, 'guards fire at the front monster of their lane', e4);
+  const [, g2, g3] = TW.GUARD_DMG;
+  check(e4.map((e) => e.id + ':' + e.dmg).join() === `${z.id}:${g3},${z.id}:${g2}`, 'guards fire at the front monster of their lane', e4);
   z.type = 'pflanze'; r4.turm.phase = 'step'; TW.step(r4, ctx); r4.turm.phase = 'choose';
   const e5 = hit(r4, y.id, true, ctx).filter((e) => e.t === 'shot');
-  check(e5[0].dmg === 15 && e5[0].strong && e5[1].dmg === 7, 'guard type bonus × 1.5', e5);
+  check(e5[0].dmg === Math.round(g3 * 1.5) && e5[0].strong && e5[1].dmg === g2, 'guard type bonus × 1.5', e5);
   // wrong answer: nothing fires, no Ziegel
   const e6 = hit(r4, y.id, false, ctx);
   check(!e6.some((e) => e.t === 'shot' || e.t === 'hit' || e.t === 'ziegel') && r4.turm.phase === 'step', 'wrong: nothing fires', e6);
@@ -244,23 +250,24 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
 // --- Bauzeit: income, costs, free first guard, floors, reward, evolution ---
 {
   const ctx = makeCtx(12), run = start(undefined, 3, ctx), t = run.turm;
-  // clear wave 1 without damage: +3 wave +2 clean
+  // clear wave 1 without damage: wave + clean bonus
   t.monsters = []; t.queue = []; t.phase = 'step';
   let ev = TW.step(run, ctx);
-  check(ev.filter((e) => e.t === 'ziegel').map((e) => e.why + e.n).join() === 'wave3,clean2' && t.phase === 'build' && t.cp, 'wave income and Bauzeit with checkpoint', ev);
-  t.ziegel = 30;
+  check(ev.filter((e) => e.t === 'ziegel').map((e) => e.why + e.n).join() === `wave${TW.INCOME.wave},clean${TW.INCOME.clean}` && t.phase === 'build' && t.cp, 'wave income and Bauzeit with checkpoint', ev);
+  const C = TW.COST;
+  t.ziegel = C.guard + C.up[0] + C.up[1] + C.floor + C.fix;
   const g = { kind: 'guard', lane: 0, spot: 0, look: 'fuchs', type: 'feuer' };
-  check(TW.price(run, g) === 0 && TW.buy(run, g) && t.ziegel === 30, 'first guard is free in the first Bauzeit');
-  check(TW.price(run, { ...g, spot: 1 }) === 4 && TW.buy(run, { ...g, spot: 1 }) && t.ziegel === 26, 'second guard costs 4');
+  check(TW.price(run, g) === 0 && TW.buy(run, g) && t.ziegel === C.guard + C.up[0] + C.up[1] + C.floor + C.fix, 'first guard is free in the first Bauzeit');
+  check(TW.price(run, { ...g, spot: 1 }) === C.guard && TW.buy(run, { ...g, spot: 1 }) && t.ziegel === C.up[0] + C.up[1] + C.floor + C.fix, 'second guard costs');
   check(TW.price(run, { ...g, spot: 2 }) === -1 && TW.price(run, { ...g, lane: 3 }) === -1, 'only 2 spots per lane, only existing lanes');
   const up = { kind: 'up', lane: 0, spot: 0 };
-  check(TW.price(run, up) === 6 && TW.buy(run, up) && TW.price(run, up) === 9 && TW.buy(run, up) && TW.price(run, up) === -1 && t.guards['0:0'].lvl === 3 && t.ziegel === 11, 'upgrade 6 → 9, max level 3');
+  check(TW.price(run, up) === C.up[0] && TW.buy(run, up) && TW.price(run, up) === C.up[1] && TW.buy(run, up) && TW.price(run, up) === -1 && t.guards['0:0'].lvl === 3 && t.ziegel === C.floor + C.fix, 'upgrade twice, max level 3');
   check(TW.price(run, { kind: 'floor', subject: 'Musik' }) === -1, 'only floors for subjects on the lanes');
-  check(TW.price(run, { kind: 'floor', subject: 'Mathe' }) === 8 && TW.buy(run, { kind: 'floor', subject: 'Mathe' }) && TW.price(run, { kind: 'floor', subject: 'Mathe' }) === -1 && t.ziegel === 3, 'floor 8, once');
+  check(TW.price(run, { kind: 'floor', subject: 'Mathe' }) === C.floor && TW.buy(run, { kind: 'floor', subject: 'Mathe' }) && TW.price(run, { kind: 'floor', subject: 'Mathe' }) === -1 && t.ziegel === C.fix, 'a floor once');
   check(TW.price(run, { kind: 'fix' }) === -1, 'no repair on a whole tower');
   run.hero.hp = 55;
-  check(TW.buy(run, { kind: 'floor', subject: 'Deutsch' }) === null && t.ziegel === 3, 'can’t buy without enough Ziegel');
-  check(TW.price(run, { kind: 'fix' }) === 3 && TW.buy(run, { kind: 'fix' }) && run.hero.hp === 60 && t.ziegel === 0, 'repair 3 Ziegel, +10 ❤️ up to max');
+  check(TW.buy(run, { kind: 'floor', subject: 'Deutsch' }) === null && t.ziegel === C.fix, 'can’t buy without enough Ziegel');
+  check(TW.price(run, { kind: 'fix' }) === C.fix && TW.buy(run, { kind: 'fix' }) && run.hero.hp === 60 && t.ziegel === 0, 'repair: +10 ❤️ up to max');
   t.ziegel = 4; t.phase = 'choose';
   check(TW.buy(run, g) === null && t.ziegel === 4, 'nothing to buy outside Bauzeit');
   // free guard only in the first Bauzeit
@@ -323,72 +330,87 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
 }
 
 // --- bot: full runs through the API only ---
-const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']) => {
+// buy: 'smart' = like the playtest bot (repair when low, free guard, guards on the busiest path with the type that beats most of
+// its monsters, floors, upgrades); 'none' = a child who never buys anything in the Bauzeit (potions still used)
+const LOOKS = { feuer: 'fuchs', wasser: 'kroete', pflanze: 'baer' };
+const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde'], buy = 'smart') => {
   const rnd = seeded(seed * 7919 + Math.round(acc * 100)), right = {}, total = {};
   const ctx = makeCtx(seed, { acc: (l) => (total[l.subject] ? right[l.subject] / total[l.subject] : 0.6) });
   const run = TW.newRun({ grade, lanes: TW.lanesFor(subjects, sourcesOf), hero: { m: 'math', id: 'fuchs' } }, ctx), t = () => run.turm;
-  let questions = 0, hurt = 0, pass = 0, maxPass = 0, guard = 0, reached = 1, lanesAsked = {};
-  const looks = [['fuchs', 'feuer'], ['kroete', 'wasser'], ['baer', 'pflanze']];
+  let questions = 0, hurt = 0, pass = 0, maxPass = 0, guard = 0, earned = 0, bau2 = null;
+  const asked = {}, falls = [], potion = (i) => { run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + (run.items[i] === 'trank' ? 30 : 60)); run.items.splice(i, 1); };
   const checkEv = (ev) => {
-    for (const e of ev) if (e.t === 'tower') hurt += e.dmg;
+    for (const e of ev) if (e.t === 'tower') hurt += e.dmg; else if (e.t === 'ziegel') earned += e.n;
     for (const e of ev) if ('dmg' in e || e.t === 'heal') check(Number.isInteger(e.dmg ?? e.n) && (e.dmg ?? e.n) >= 1, 'whole-number damage ≥ 1', e);
     check(cellsOk(run), 'never two monsters on a cell', t().monsters);
     check(Number.isInteger(run.hero.hp) && run.hero.hp >= 0 && run.hero.hp <= run.hero.maxHp, 'tower HP whole and in range', run.hero.hp);
   };
+  const shop = () => {
+    const T = t(), pv = TW.preview(run, ctx), w = Math.min(TW.WAVES.length, T.wave + 1);
+    const busy = T.lanes.map((_, l) => l).sort((a, b) => pv[b].n - pv[a].n || a - b);
+    // the guard type that beats most monster types the path's units bring
+    const typeFor = (l) => {
+      const types = T.lanes[l].src.flatMap((s) => ctx.enemies(s.m, Math.min(ctx.worlds(s.m), Math.ceil(w * ctx.worlds(s.m) / TW.WAVES.length))).normal.map((x) => x.type));
+      return Object.keys(LOOKS).sort((a, b) => types.filter((x) => TW.BEATS[b] === x).length - types.filter((x) => TW.BEATS[a] === x).length)[0];
+    };
+    for (let n = 0; n < 30; n++) {
+      if (run.hero.hp <= run.hero.maxHp / 2 && TW.buy(run, { kind: 'fix' })) continue;
+      const cands = [];
+      for (const l of busy) for (let s = 0; s < TW.SPOTS; s++) if (!T.guards[l + ':' + s] && pv[l].n) { const type = typeFor(l); cands.push({ kind: 'guard', lane: l, spot: s, look: LOOKS[type], type }); }
+      for (const l of busy) cands.push({ kind: 'floor', subject: T.lanes[l].subject });
+      for (const l of busy) for (let s = 0; s < TW.SPOTS; s++) if (T.guards[l + ':' + s]) cands.push({ kind: 'up', lane: l, spot: s });
+      const c = cands.find((c) => TW.price(run, c) === 0) || cands.find((c) => TW.price(run, c) >= 0 && TW.price(run, c) <= T.ziegel);
+      if (!c || !TW.buy(run, c)) break;
+    }
+  };
   while (guard++ < 3000) {
     const ph = t().phase;
-    reached = Math.max(reached, t().wave);
     if (ph === 'choose') {
-      if (run.hero.hp < 20 && run.items.some((i) => i === 'trank' || i === 'grosstrank')) {
-        const i = run.items.findIndex((x) => x === 'trank' || x === 'grosstrank');
-        run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + (run.items[i] === 'trank' ? 30 : 60)); run.items.splice(i, 1);
-        checkEv(TW.step(run, ctx)); continue;
-      }
+      if (run.hero.hp < 20 && run.items.some((i) => i === 'trank' || i === 'grosstrank')) { potion(run.items.findIndex((x) => x === 'trank' || x === 'grosstrank')); checkEv(TW.step(run, ctx)); continue; }
       const ms = t().monsters.filter((x) => TW.canTarget(run, x.id)).sort((a, b) => a.cell - b.cell);
       const x = ms.find((y) => y.id === t().weak) || ms[0];
       check(x, 'something to target', t());
+      // the shield when a monster is about to reach the tower, the Chilischote on a boss (neither costs a turn)
+      if (!run.shield && run.items.includes('schild') && t().monsters.some((y) => y.cell === 1)) { run.items.splice(run.items.indexOf('schild'), 1); run.shield = true; }
+      if (!run.power && x.boss && run.items.includes('keks')) { run.items.splice(run.items.indexOf('keks'), 1); run.power = true; }
       const a = TW.ask(run, x.id), ok = rnd() < acc, sub = t().lanes[a.lane].subject;
       total[sub] = (total[sub] || 0) + 1; if (ok) right[sub] = (right[sub] || 0) + 1;
-      lanesAsked[a.lane] = (lanesAsked[a.lane] || 0) + 1;
+      const key = subjects.length > 1 ? sub : a.lane; asked[key] = (asked[key] || 0) + 1;
       checkEv(TW.answer(run, ok, ctx, { task: { kind: 'choice', q: 'Frage ' + questions, options: ['a', 'b'], answer: 'a' }, tier: 1 }));
       questions++; pass++; maxPass = Math.max(maxPass, pass);
       checkEv(TW.step(run, ctx));
       if (!['choose', 'build', 'reward', 'fallen', 'won'].includes(t().phase)) check(false, 'phase after step', t().phase);
-    } else if (ph === 'reward') TW.takeReward(run, 0);
+    } else if (ph === 'reward') TW.takeReward(run, t().offer.indexOf('schild') >= 0 ? t().offer.indexOf('schild') : 0);
     else if (ph === 'build') {
-      const L = t().lanes.length, cards = [];
-      for (let l = 0; l < L; l++) for (let s = 0; s < TW.SPOTS; s++) { const lk = looks[(l + s) % 3]; cards.push(t().guards[l + ':' + s] ? { kind: 'up', lane: l, spot: s } : { kind: 'guard', lane: l, spot: s, look: lk[0], type: lk[1] }); }
-      for (const l of t().lanes) cards.push({ kind: 'floor', subject: l.subject });
-      for (let n = 0; n < 20; n++) {
-        if (run.hero.hp < 40 && TW.buy(run, { kind: 'fix' })) continue;
-        const c = cards.filter((c) => TW.price(run, c) >= 0 && TW.price(run, c) <= t().ziegel && !(c.kind === 'guard' && t().guards[c.lane + ':' + c.spot])).sort((a, b) => TW.price(run, a) - TW.price(run, b))[0];
-        if (!c || !TW.buy(run, c)) break;
-        if (c.kind === 'guard') cards[cards.indexOf(c)] = { kind: 'up', lane: c.lane, spot: c.spot };
-      }
+      if (t().wave === 2 && !t().cpUsed) bau2 = t().ziegel;
+      if (run.hero.hp <= 30 && run.items.includes('trank')) potion(run.items.indexOf('trank'));
+      if (buy === 'smart') shop();
       check(JSON.stringify(JSON.parse(JSON.stringify(run))) === JSON.stringify(run), 'plain JSON');
       const pv = TW.preview(run, ctx);
       checkEv(TW.nextWave(run, ctx));
       const all = t().monsters.concat(t().queue), got = pv.map((_, l) => { const on = all.filter((x) => x.lane === l); return { n: on.length, fast: on.filter((x) => x.steps === 2 && !x.boss).length, boss: on.some((x) => x.boss && !x.final), elite: on.some((x) => x.elite), final: on.some((x) => x.final) }; });
       check(JSON.stringify(got) === JSON.stringify(pv), 'the Bauzeit preview matches the wave that comes', { pv, got });
-    } else if (ph === 'fallen') { if (!TW.retry(run)) break; pass = 0; }
+    } else if (ph === 'fallen') { falls.push(t().wave); if (!TW.retry(run)) break; pass = 0; }
     else if (ph === 'won') break;
     else { check(false, 'unknown phase', ph); break; }
   }
   check(JSON.stringify(JSON.parse(JSON.stringify(run))) === JSON.stringify(run), 'plain JSON');
   check(guard < 3000, 'run terminates', { acc, seed });
-  const per = Object.values(lanesAsked).map((n) => n / questions);
-  return { won: t().phase === 'won', best: t().best, questions, hurt, maxPass, retries: t().cpUsed, minShare: Math.min(...per) };
+  const per = Object.values(asked).map((n) => n / questions);
+  return { won: t().phase === 'won', best: t().best, questions, hurt, maxPass, retries: t().cpUsed, minShare: Math.min(...per), earned, bau2, falls };
 };
 
-const rows = [];
-for (const [grade, subjects, N] of [[3, ['Mathe', 'Deutsch', 'Sachkunde'], 200], [2, ['Mathe', 'Deutsch', 'Sachkunde'], 60], [3, ['Mathe'], 60]]) {
-  for (const acc of [0.9, 0.65, 0.5]) {
+// the balance table: printed, not asserted (seeded results shift with any rule change); only invariants are checked
+const rows = [], pct = (n, N) => String(Math.round(100 * n / N)).padStart(3) + '%';
+for (const [grade, subjects, N] of [[3, ['Mathe', 'Deutsch', 'Sachkunde'], 150], [3, ['Mathe'], 80], [2, ['Mathe', 'Deutsch', 'Sachkunde'], 80]]) {
+  rows.push(`K${grade} ${subjects.join('+')}: Treffer/Kauf | Sieg ohne Neustart | Sieg | Welle ≥4 ≥5 ≥6 | Fragen Ø (max/Anlauf) | Neustarts Ø | 🧱 Ø | 🧱 vor Bauzeit 2 min | Fach < 20 % | Stürze in Welle 2–6 pro 100 Läufe`);
+  for (const [acc, buy] of [[1, 'none'], [0.9, 'none'], [0.9, 'smart'], [0.75, 'smart'], [0.65, 'smart'], [0.5, 'smart']]) {
     const res = [];
-    for (let s = 1; s <= N; s++) res.push(play(acc, s, grade, subjects));
-    res.forEach((r) => check(r.questions <= 70 * (1 + r.retries) && r.maxPass <= 70, 'never more than 70 questions per attempt', r));
-    const avg = (f) => Math.round(res.reduce((a, r) => a + f(r), 0) / N);
-    const waves = [1, 2, 3, 4, 5, 6].map((w) => Math.round(100 * res.filter((r) => r.best >= w).length / N) + '%');
-    rows.push(`K${grade} ${subjects.length === 1 ? subjects[0].padEnd(9) : '3 Fächer '} ${Math.round(acc * 100)} %: Sieg ${Math.round(100 * res.filter((r) => r.won).length / N)} % (ohne Neustart ${Math.round(100 * res.filter((r) => r.won && !r.retries).length / N)} %), Welle ≥1..6 ${waves.join(' ')}, Fragen Ø ${avg((r) => r.questions)} (max ${Math.max(...res.map((r) => r.questions))}, pro Anlauf max ${Math.max(...res.map((r) => r.maxPass))}), Turmschaden Ø ${avg((r) => r.hurt)}, Neustarts Ø ${(res.reduce((a, r) => a + r.retries, 0) / N).toFixed(1)}, Läufe mit einem Weg unter 20 % ${Math.round(100 * res.filter((r) => r.minShare < 0.2).length / N)} %`);
+    for (let s = 1; s <= N; s++) res.push(play(acc, s, grade, subjects, buy));
+    res.forEach((r) => check(r.maxPass <= 70, 'never more than 70 questions per attempt', r));
+    if (buy === 'smart') res.forEach((r) => check(r.bau2 === null || r.bau2 >= TW.COST.guard, 'the second Bauzeit always allows a guard', r));
+    const avg = (f) => res.reduce((a, r) => a + f(r), 0) / N, n = (f) => res.filter(f).length;
+    rows.push(`  ${String(Math.round(acc * 100)).padStart(3)} % ${buy.padEnd(5)} | ${pct(n((r) => r.won && !r.retries), N)} | ${pct(n((r) => r.won), N)} | ${[4, 5, 6].map((w) => pct(n((r) => r.best >= w), N)).join(' ')} | ${Math.round(avg((r) => r.questions))} (${Math.max(...res.map((r) => r.maxPass))}) | ${avg((r) => r.retries).toFixed(1)} | ${Math.round(avg((r) => r.earned))} | ${Math.min(...res.map((r) => r.bau2 ?? 99))} | ${pct(n((r) => r.minShare < 0.2), N)} | ${[2, 3, 4, 5, 6].map((w) => Math.round(100 * avg((r) => r.falls.filter((f) => f === w).length))).join(' ')}`);
   }
 }
 console.log(rows.join('\n'));

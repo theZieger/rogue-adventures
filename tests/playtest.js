@@ -21,7 +21,7 @@ const w = dom.window, d = w.document;
 let gradeTry=0; // a unit of another Klasse: try the grade tabs until its subject shows
 const RUNS=+(process.env.RUNS||2); const ACC=+(process.env.ACC||0.85); const errors=[]; w.addEventListener('error', e=>errors.push(e.message));
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms*TIME));
-const $ = (s)=>d.querySelector(s); const $$=(s)=>[...d.querySelectorAll(s)];
+const $ = (s)=>d.querySelector(s); const $$=(s,root=d)=>[...root.querySelectorAll(s)];
 // drawn icons count as their emoji again
 const text = ()=>{ const c=$('#app').cloneNode(true); c.querySelectorAll('svg.emo').forEach(s=>s.replaceWith(s.getAttribute('aria-label'))); return c.textContent.replace(/\s+/g,' ').trim(); };
 function click(el){ if(!el) throw new Error('no element to click: '+text().slice(0,200)); if(typeof el.click==='function') el.click(); else el.dispatchEvent(new w.MouseEvent('click',{bubbles:true})); }
@@ -152,9 +152,80 @@ async function shop(){
   else { let rest=price; for(const v of [1000,500,200,100,50,20,10,5,2,1]) while(v<=rest&&coins().includes(v)){ click($(`.coins .coin[data-v="${v}"]`)); rest-=v; } if(rest) throw new Error('could not pay '+price+' from '+purse); }
   click($('#pay'));
 }
+// Turmwacht (MODE=turm, GRADE=2|3, SUBJECTS=Mathe,Deutsch: default = the pre-selected ones): plays through the real screens
+const TURM=process.env.MODE==='turm';
+const turmRuns=[]; let turmAt=null, turmPotions=0, turmSeen={}; const turmBuys={};
+const turmRun=()=>{ const r=w.__mq.run; return r&&r.mode==='turm'?r:null; };
+const turmQ=(r)=>Object.values(r.turm.score).reduce((a,x)=>a+x.t,0);
+// questions per attempt (a retry starts a new one) and the monster types seen per path, for the guards' looks
+const turmMax=(r)=>{ turmAt.max=Math.max(turmAt.max, turmQ(r)-turmAt.start); turmAt.r=r; };
+function turmWatch(){ const r=turmRun(); if(!r||!turmAt) return; turmMax(r);
+  for(const x of r.turm.monsters) if(x.cell===5){ const s=turmSeen[x.lane]=turmSeen[x.lane]||{}; s[x.type]=(s[x.type]||0)+1; }
+  const said=$$('.tw-log, #bottom, .topbar, .tw-hpbox').map(e=>e.textContent).join(' '); if(/\d,\d/.test(said)) throw new Error('comma number on screen: '+said.slice(0,200)); }
+const TW_BEATS={ feuer:'pflanze', pflanze:'wasser', wasser:'feuer' }, TW_TYPE={ Feuer:'feuer', Wasser:'wasser', Pflanze:'pflanze' };
+const bagItem=(re)=>{ click($('#bag')); const it=$$('.overlay .item').find(b=>re.test(b.getAttribute('aria-label'))); if(it) click(it); if($('.overlay #close')) click($('.overlay #close')); return !!it; };
+const twBought=(k)=>{ turmBuys[k]=(turmBuys[k]||0)+1; };
+// Bauzeit, one purchase per call: repair when low, the free guard, guards on the busiest path, floors, upgrades; then the next wave
+function turmShop(r){
+  const t=r.turm, L=t.lanes.length, card=(id)=>$(`[data-card="${id}"]`), ok=(id)=>!!card(id)&&card(id).getAttribute('aria-disabled')==='false';
+  const coming=[...Array(L).keys()].map(l=>{ const c=$(`.tw-lane[data-lane="${l}"] .tw-coming`); return c?parseInt(c.textContent,10):0; });
+  const busy=[...Array(L).keys()].sort((a,b)=>coming[b]-coming[a]||a-b);
+  if(r.hero.hp<=30&&r.items.includes('trank')&&bagItem(/^Trank/)){ turmPotions++; return; }
+  if(r.hero.hp<=r.hero.maxHp/2&&ok('fix')){ click(card('fix')); twBought('fix'); return; }
+  const spot=busy.filter(l=>coming[l]).flatMap(l=>[0,1].map(s=>[l,s])).find(([l,s])=>!t.guards[l+':'+s]);
+  if(spot&&ok('guard')){ const [l,s]=spot; click(card('guard')); click($(`button.tw-spot[data-lane="${l}"][data-spot="${s}"]`));
+    // the look whose type beats most of the monsters seen on this path
+    const seen=turmSeen[l]||{}, score=(b)=>seen[TW_BEATS[TW_TYPE[b.querySelector('.tw-chips').textContent.trim().split(/\s+/).pop()]]]||0;
+    click($$('.overlay .tw-look').slice(0,3).sort((a,b)=>score(b)-score(a))[0]); if(!r.turm.guards[l+':'+s]) throw new Error('guard not placed'); twBought('guard'); return; }
+  const fl=busy.map(l=>'floor:'+t.lanes[l].subject).find(ok);
+  if(fl){ click(card(fl)); twBought('floor'); return; }
+  const up=busy.flatMap(l=>[0,1].map(s=>[l,s])).find(([l,s])=>{ const g=t.guards[l+':'+s]; return g&&g.lvl<3&&w.__mq.turm.TW.COST.up[g.lvl-1]<=t.ziegel; });
+  if(up&&ok('up')){ const [l,s]=up, k=l+':'+s, lvl=t.guards[k].lvl; click(card('up')); click($(`button.tw-spot[data-lane="${l}"][data-spot="${s}"]`)); if(r.turm.guards[k].lvl!==lvl+1) throw new Error('upgrade failed'); twBought('up'); return; }
+  click($('#nextwave'));
+}
+function turmDone(){ const e=turmAt.r; if(turmRuns.includes(turmAt)) return; turmMax(e);
+  Object.assign(turmAt,{ won:e.turm.phase==='won', best:e.turm.best, retries:e.turm.cpUsed, q:turmQ(e), score:JSON.parse(JSON.stringify(e.turm.score)), subjects:[...new Set(e.turm.lanes.map(l=>l.subject))], grade:e.grade }); turmRuns.push(turmAt); }
+// one action per call; the board is checked first and the screens are told apart by one class each (queries on the big board are slow in jsdom)
+async function turmBot(){
+  const ov=$('.overlay');
+  if(ov){ const it=$$('.tw-item[data-r]',ov); if(it.length){ click(it.find(b=>b.textContent.includes('Schild'))||it[0]); return true; }
+    const c=ov.querySelector('#close, #no'); if(c){ click(c); return true; } return false; }
+  const board=$('.tw-screen'), r=turmRun();
+  if(board){
+    turmWatch();
+    if(board.classList.contains('tasking')){
+      if($('.inp')){ await solveTask(Math.random()>ACC); return true; }
+      if($('.opt, .oitem, .plant.clickable, .kmap.clickable')){ await solveKnow(Math.random()>ACC); return true; }
+      return false; }
+    if($('#twon')){ click($('#twon')); return true; }
+    if(board.classList.contains('build')){ if($('.tw-pickhint')) click($('#pickno')); else turmShop(r); return true; }
+    if(r.turm.phase!=='choose') return false;
+    if(r.hero.hp<20&&r.items.some(i=>i==='trank'||i==='grosstrank')&&bagItem(/Trank/)){ turmPotions++; return true; }
+    if(!r.shield&&r.items.includes('schild')&&r.turm.monsters.some(x=>x.cell===1)&&bagItem(/^Schild/)) return true;
+    // 🎯 first, else the monster closest to the gate that can be attacked
+    const ms=$$('button.tw-mon:not(.guarded)'), cell=(b)=>+b.closest('.tw-cell').dataset.cell;
+    const x=ms.find(b=>b.classList.contains('weak'))||ms.sort((a,b)=>cell(a)-cell(b))[0];
+    if(!x) throw new Error('no monster to attack: '+text().slice(0,200));
+    click(x); const atk=$('#atk'); if(!atk||atk.disabled) throw new Error('cannot attack '+x.getAttribute('aria-label')); click(atk); return true; }
+  // a finished run (end screen, or the title when the fake clock let a late history „back“ through first): the main loop
+  // counts it and taps „Neue Turmwacht“ if it is there
+  const was=turmAt&&turmAt.r; if(was&&!turmRuns.includes(turmAt)&&(was.turm.phase==='won'||(was.turm.phase==='fallen'&&!w.__mq.turm.TW.canRetry(was)))){ turmDone(); return 'end'; }
+  if($('#turm')){ const g=process.env.GRADE&&$(`.gradechip[data-grade="${process.env.GRADE}"]`); if(g&&!g.classList.contains('on')){ click(g); return true; } click($('#turm')); return true; }
+  if($('.tw-saved')){ click($('#cont')); return true; }
+  if($('.tw-heroes')){
+    if(process.env.SUBJECTS){ const want=process.env.SUBJECTS.split(','), bs=()=>$$('button[data-subj]');
+      for(const b of bs()) if(b.classList.contains('on')&&!want.includes(b.dataset.subj)) click(b);
+      for(const s of want){ const b=bs().find(x=>x.dataset.subj===s); if(!b) throw new Error('no subject '+s+' on the Turmwacht start screen'); if(!b.classList.contains('on')) click(b); } }
+    const hs=$$('[data-h]'); click(hs[runNo%hs.length]); click($('#go')); turmAt={ start:0, max:0, falls:[] }; turmSeen={}; return true; }
+  if(r&&turmAt) turmMax(r);
+  if($('#retry')){ turmAt.start=turmQ(r); turmAt.falls.push(r.turm.wave); click($('#retry')); return true; }
+  const b=$('#tobuild')||$('#pick'); if(b){ click(b); return true; }
+  return false;
+}
 async function step(){
   if(await closeModal()) return;
   if($('#later')){ click($('#later')); return; }
+  if(TURM){ const t=await turmBot(); if(t) return t; }
   const tx=text();
   // once per playtest: build a Schild at the Werkbank (materials seeded) and look into the hut; the Schild must come along into the adventure
   if($('[data-sub]')&&!crafted){ crafted=true; const m=w.__mq.meta; m.materials=Object.assign({holz:2,erz:1},m.materials);
@@ -198,15 +269,28 @@ async function step(){
   if(/❤\uFE0F? 0 \//.test(tx)){ await sleep(700); return; }
   throw new Error('stuck at: '+tx.slice(0,300));
 }
+// Turmwacht: what was asked, how far each run got; CI checks only the invariants (no win rates)
+function turmEnd(m, ends, steps){
+  const fail=(msg)=>{ console.error('PLAYTEST FAIL: '+msg); process.exit(1); };
+  console.log({steps,correctAnswers,wrongAnswers,tutorialsSeen,potions:turmPotions,bought:turmBuys,dex:Object.keys(m.dex).length,turm:m.turm,errors});
+  for(const r of turmRuns) console.log(`Klasse ${r.grade} ${r.won?'gewonnen':'gefallen'}: Welle ${r.best}, ${r.q} Fragen (pro Anlauf max ${r.max}), Neustarts ${r.retries}${r.falls.length?` (gefallen in Welle ${r.falls.join(', ')})`:''},`, Object.entries(r.score).map(([s,v])=>s+' '+v.c+'/'+v.t).join(', '));
+  if(errors.length) fail('page errors '+errors.join(' | '));
+  if(ends<RUNS||turmRuns.length<RUNS) fail('did not finish '+RUNS+' Turmwacht run(s) in '+steps+' steps');
+  for(const r of turmRuns){
+    if(r.max>70) fail('more than 70 questions in one attempt: '+r.max);
+    if(r.subjects.length>1) for(const s of r.subjects){ const n=(r.score[s]||{t:0}).t; if(n<0.2*r.q) fail(s+' got only '+n+' of '+r.q+' questions'); }
+  }
+}
 (async()=>{
   let steps=0; let ends=0;
-  while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; click($('#again')); }
+  while(steps<4000){ steps++; const r=await step(); await sleep(0); if(r==='end'){ ends++; runNo++; if(ends>=RUNS) break; if($('#again')) click($('#again')); }
     // battle pauses (up to ~2 s between actions): wait until something is clickable again
-    for(let w=0; w<6 && !$('.mblock')&&!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')&&!$('.opt')&&!$('[data-cell]'); w++) await sleep(500);
+    for(let w=0; w<6 && !TURM && !$('.mblock')&&!$('.inp')&&!$('.atk:not(.locked)')&&!$('#next')&&!$('.node.open')&&!$('#go')&&!$('#new')&&!$('#train')&&!$('.bottom .btn[data-i]')&&!$('.choice[data-i]')&&!$('#again')&&!$('.overlay')&&!$('.opt')&&!$('[data-cell]'); w++) await sleep(500);
   }
   const m=w.__mq.meta;
   console.log({steps,colTasks,readNodes,correctAnswers,wrongAnswers,tutorialsSeen,battles,events,dilemmas,rests,treasures,eliteRewards,labs,maps,markets,bought,mines,arenas,materials:m.materials,runs:m.runs,wins:m.wins,bestWorld:m.bestWorld,dex:Object.keys(m.dex).length,errors});
   const mode=process.env.MODE||'math'; console.log('seed', SEED);
+  if(TURM){ turmEnd(m, ends, steps); return; }
   console.log('stats',JSON.stringify(Object.fromEntries(Object.entries(m.stats[mode]).map(([k,v])=>[k,v.c+'/'+v.t]))));
   console.log('saved run?', !!w.localStorage.getItem(mode==='math'?'mathquest_run_v1':'mathquest_run_'+mode));
   const goals=w.__mq.weeklyGoals(); const done=goals.filter((g)=>(m.weekly.progress[g.i]||0)>=g.n).length;

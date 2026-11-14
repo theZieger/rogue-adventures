@@ -5,24 +5,26 @@ const TW = (() => {
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
   // (enter 0: the next one only when the board is empty); boss/elite/final = queue position of the special monster
   const WAVES = [
-    { n: 3, hp: 18, start: 1, enter: 0 },
-    { n: 5, hp: 22, start: 2, enter: 2 },
-    { n: 3, hp: 26, start: 2, enter: 2, boss: 1 },
-    { n: 6, hp: 30, start: 3, enter: 2, fast: 3 },
-    { n: 5, hp: 34, start: 3, enter: 2, elite: 2 },
-    { n: 3, hp: 38, start: 3, enter: 2, final: 1 },
+    { n: 3, hp: 23, start: 1, enter: 0 },
+    { n: 5, hp: 29, start: 2, enter: 2 },
+    { n: 3, hp: 34, start: 2, enter: 2, boss: 1 },
+    { n: 6, hp: 39, start: 3, enter: 2, fast: 3 },
+    { n: 5, hp: 44, start: 3, enter: 2, elite: 2 },
+    { n: 3, hp: 49, start: 3, enter: 2, final: 1 },
   ];
-  const K2_COUNT = 0.8, K2_MIN = 2;
-  const COST = { guard: 4, up: [6, 9], floor: 8, fix: 3 };
+  // Klasse 2: fewer monsters, each a little sturdier, so a run still has about as many questions
+  const K2_COUNT = 0.8, K2_MIN = 2, K2_HP = 1.2;
+  const COST = { guard: 4, up: [7, 11], floor: 12, fix: 3 };
   const FIX_HP = 10, REPAIR_HP = 2;
-  const GUARD_DMG = [4, 7, 10];
-  const HERO_EVO = 3, HERO_WAVE = 2, STRONG = 1.5, WEAK = 1.5, POWER = 2;
-  const TOWER_DMG = { normal: 6, boss: 10, wave: 2, elite: 2 }; // per hit: normal/boss + wave × wave number, elites × elite
-  const INCOME = { right: 1, weak: 1, wave: 3, clean: 2, floor: 1 };
-  const ELITE_HP = 2.2, BOSS_HP = 3.5, FINAL_HP = 1.6;
+  const GUARD_DMG = [4, 6, 8];
+  const HERO_EVO = 3, HERO_WAVE = 4, STRONG = 1.5, WEAK = 1.5, POWER = 2;
+  const TOWER_DMG = { normal: 5, boss: 14, wave: 2.5, elite: 1.5 }; // per hit: normal/boss + wave × wave number, elites × elite, rounded up
+  const INCOME = { right: 1, weak: 1, wave: 2, clean: 1, floor: 1 };
+  const ELITE_HP = 1.9, BOSS_HP = 3.5, FINAL_HP = 1.6;
   const PER_MONSTER = 2; // ≈ questions a monster takes, for spreading monsters over the lanes
   const AGAIN_MAX = 3, AGAIN_TASK_MAX = 8192;
-  const CATCHUP_AFTER = 8, CATCHUP_BELOW = 0.6;
+  // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % (no message)
+  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5;
   const CP_USES = 2;
   const START_ITEMS = ['trank'], BOSS_ITEM = 'grosstrank', OFFER = ['trank', 'schild', 'keks', 'lupe'];
   const FLOORS = { Mathe: 'chain', Ethik: 'stun', Sachkunde: 'repair', Deutsch: 'brick', Musik: 'push', Englisch: 'volley' };
@@ -43,7 +45,10 @@ const TW = (() => {
   const remove = (t, x) => { t.monsters = t.monsters.filter((y) => y !== x); if (t.weak === x.id) t.weak = null; };
   // earned: this wave's Ziegel by reason, for the wave-cleared screen
   const earn = (t, n, why, ev) => { t.ziegel += n; t.earned[why] = (t.earned[why] || 0) + n; ev.push({ t: 'ziegel', n, why, total: t.ziegel }); };
-  const catchUp = (t) => { const s = Object.values(t.score), c = s.reduce((a, x) => a + x.c, 0), n = s.reduce((a, x) => a + x.t, 0); return n >= CATCHUP_AFTER && c / n < CATCHUP_BELOW; };
+  const catchUp = (t) => {
+    const s = Object.values(t.score), c = s.reduce((a, x) => a + x.c, 0), n = s.reduce((a, x) => a + x.t, 0);
+    return n < CATCHUP_AFTER ? 1 : Math.min(1, Math.max(0.5, 0.5 + 0.5 * (c / n - CATCHUP_HALF) / (CATCHUP_FULL - CATCHUP_HALF)));
+  };
   // the final boss only takes damage from questions of its current shield's path
   const hittable = (lane) => (x) => !x.final || x.shields[0] === lane;
   const protector = (t, x) => t.monsters.filter((e) => e.elite && e.lane === x.lane && e.cell < x.cell).sort((a, b) => b.cell - a.cell)[0] || null;
@@ -71,7 +76,7 @@ const TW = (() => {
   }
 
   function spawn(run, ctx, lane, kind, src) {
-    const t = run.turm, w = WAVES[t.wave - 1];
+    const t = run.turm, w = WAVES[t.wave - 1], base = w.hp * (run.grade === 2 ? K2_HP : 1);
     src = src || nextSource(run, lane, null, ctx);
     const unit = kind === 'final' ? finalUnit(run, ctx, lane) : src.m;
     const worlds = ctx.worlds(unit), world = Math.min(worlds, Math.ceil(t.wave * worlds / WAVES.length));
@@ -79,12 +84,12 @@ const TW = (() => {
     const sp = kind === 'normal' ? pick(ctx, pool.normal) : kind === 'elite' ? pool.elite : pool.boss;
     const x = { id: t.nextId++, lane, cell: 0, m: src.m, k: src.k, name: sp.name, shape: sp.shape, type: sp.type, world, steps: 1, slow: 0, stun: 0 };
     if (sp.acc) x.acc = sp.acc;
-    let hp = w.hp * (kind === 'normal' ? sp.hp / avg : kind === 'elite' ? ELITE_HP : BOSS_HP);
+    let hp = base * (kind === 'normal' ? sp.hp / avg : kind === 'elite' ? ELITE_HP : BOSS_HP);
     if (kind === 'elite') x.elite = true;
     if (kind === 'boss' || kind === 'final') x.boss = true;
     if (kind === 'final') {
       // one shield per path, least practised first; the HP bar is split into equal parts
-      x.final = true; x.unit = unit; x.shields = leastUsed(t, ctx); x.part = Math.round(w.hp * FINAL_HP); hp = x.part * x.shields.length;
+      x.final = true; x.unit = unit; x.shields = leastUsed(t, ctx); x.part = Math.round(base * FINAL_HP); hp = x.part * x.shields.length;
       Object.assign(x, nextSource(run, x.shields[0], null, ctx));
     }
     x.hp = x.maxHp = Math.max(1, Math.round(hp));
@@ -102,12 +107,17 @@ const TW = (() => {
   function plan(run, ctx, wave) {
     const t = run.turm, w = WAVES[wave - 1], k2 = run.grade === 2, L = t.lanes.length, weak = weakest(t, ctx);
     const n = k2 ? Math.max(K2_MIN, Math.round(w.n * K2_COUNT)) : w.n;
-    // spread over the lanes so every path gets its share of questions, then one more for the weakest lane
-    const lanes = [], load = t.lanes.map((_, i) => usedOf(t, i));
-    for (let i = 0; i < n; i++) { const l = load.indexOf(Math.min(...load)); lanes.push(l); load[l] += PER_MONSTER; }
-    lanes.push(weak[0]);
-    const again = t.again.slice(0, lanes.length).filter((e) => e.lane < L);
-    const normal = lanes.map((lane, i) => ({ lane: again[i] ? again[i].lane : lane, again: again[i], fast: !!w.fast && !k2 && i % w.fast === w.fast - 1 }));
+    // spread over the lanes so every path gets its share of questions, then one more for a weak lane;
+    // 🔁 monsters walk their own path and the boss/elite's many questions count first, so the others go elsewhere
+    const load = t.lanes.map((_, i) => usedOf(t, i)), special = w.boss != null ? BOSS_HP : w.elite != null ? ELITE_HP : 0;
+    load[weak[0]] += special * PER_MONSTER;
+    const again = t.again.slice(0, n + 1).filter((e) => e.lane < L), lanes = again.map((e) => e.lane);
+    for (const l of lanes) load[l] += PER_MONSTER;
+    while (lanes.length < n) { const l = load.indexOf(Math.min(...load)); lanes.push(l); load[l] += PER_MONSTER; }
+    // the extra monster: the weakest path that has not had more than its share of questions yet
+    const used = t.lanes.map((_, i) => usedOf(t, i)), fair = used.reduce((x, y) => x + y, 0) / L;
+    if (lanes.length < n + 1) lanes.push(weak.find((i) => used[i] <= fair) ?? weak[0]);
+    const normal = lanes.map((lane, i) => ({ lane, again: again[i], fast: !!w.fast && !k2 && i % w.fast === w.fast - 1 }));
     const finalLane = (L > 1 && t.boss3 ? weak.find((i) => i !== t.boss3.lane) : null) ?? weak[0];
     return { w, weak, normal, n: lanes.length, finalLane };
   }
@@ -286,7 +296,7 @@ const TW = (() => {
     if (run.shield) { run.shield = false; ev.push({ t: 'block', id: x.id, gone }); return; }
     let d = (x.boss ? TOWER_DMG.boss : TOWER_DMG.normal) + TOWER_DMG.wave * t.wave;
     if (x.elite) d *= TOWER_DMG.elite;
-    if (catchUp(t)) d = Math.ceil(d / 2);
+    d = Math.max(1, Math.ceil(d * catchUp(t) - 1e-9));
     if (t.wave === 1) d = Math.min(d, h.hp - 1); // wave 1 is safe: the tower keeps at least 1 ❤️
     if (d < 1) { ev.push({ t: 'hold', id: x.id, gone }); return; }
     h.hp = Math.max(0, h.hp - d); t.hurtThisWave = true;
@@ -385,7 +395,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, COST, FIX_HP, REPAIR_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
     lanesFor, newRun, card, canTarget, preview,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };
