@@ -42,14 +42,15 @@ const TWART = (() => {
 
   /* ---------- board geometry ---------- */
   // cells[0] is cell 1 (at the gate) … cells[4] cell 5; spots = the two guard pedestals; head = where the name chip sits
-  // (anchor: 'l' left edge, 'r' right edge, 'c' centre); hp = the tower's ❤️ chip (anchor 'c' top centre, 'rb' bottom right corner); path = extra points before cell 5 (from the board edge) and after cell 1
+  // (anchor: 'l' left edge, 'lb' left edge with the chips stacked, 'r' right edge, 'c' centre); hp = the tower's ❤️ chip (anchor 'c' top centre, 'rb' bottom right corner); path = extra points before cell 5 (from the board edge) and after cell 1
   const W = 358;
   const LEFT = { cells: [[118, 270], [86, 236], [66, 194], [58, 148], [62, 101]], spots: [[30, 252], [106, 150]], from: [[70, -14], [64, 52]], to: [[146, 290]], head: [8, 8, 'l'] };
   const mirror = (g) => ({ cells: g.cells.map(([x, y]) => [W - x, y]), spots: g.spots.map(([x, y]) => [W - x, y]), from: g.from.map(([x, y]) => [W - x, y]), to: g.to.map(([x, y]) => [W - x, y]), head: [W - g.head[0], g.head[1], 'r'] });
-  const BOTTOM = { cells: [[179, 326], [214, 358], [212, 404], [176, 434], [134, 452]], spots: [[120, 372], [262, 398]], from: [[58, 500], [92, 468]], to: [[179, 290]], head: [8, 404, 'l'] };
+  const BOTTOM = { cells: [[179, 326], [214, 358], [212, 404], [176, 434], [134, 452]], spots: [[120, 372], [262, 398]], from: [[58, 500], [92, 468]], to: [[179, 290]], head: [8, 404, 'lb'] };
   function geo(L) {
     if (L >= 3) return { w: W, h: 470, gate: [179, 262], lanes: [LEFT, mirror(LEFT), BOTTOM], hp: [W - 8, 462, 'rb'] };
-    if (L === 2) return { w: W, h: 340, gate: [179, 262], lanes: [LEFT, mirror(LEFT)], hp: [179, 302, 'c'] };
+    // two paths: top left and bottom, so the board keeps the size of the others (no empty space under it)
+    if (L === 2) return { w: W, h: 470, gate: [179, 262], lanes: [LEFT, BOTTOM], hp: [W - 8, 462, 'rb'] };
     return { w: W, h: 470, gate: [179, 262], lanes: [BOTTOM], hp: [W - 8, 462, 'rb'] };
   }
 
@@ -90,7 +91,7 @@ const TWART = (() => {
     const dusk = D.linS([[0, '#24305A', 0.55], [0.35, '#24305A', 0]]);
     let s = `<rect width="${w}" height="${h}" fill="${ground}"/><rect width="${w}" height="${h}" fill="${dusk}"/>`;
     // calm ground detail: a few grass tufts and pale flowers, kept away from the paths
-    const tufts = [[24, 40], [150, 30], [210, 22], [330, 60], [20, 340], [334, 330], [120, 100], [244, 108], [300, 200], [52, 300], [180, 186], [262, 300]].concat(lanes.length >= 3 ? [[300, 420], [240, 452], [60, 366], [150, 400], [250, 352]] : [[60, 324], [300, 322]]);
+    const tufts = [[24, 40], [150, 30], [210, 22], [330, 60], [20, 340], [334, 330], [120, 100], [244, 108], [300, 200], [52, 300], [180, 186], [262, 300]].concat(lanes.length >= 2 ? [[300, 420], [240, 452], [60, 366], [150, 400], [250, 352]] : [[60, 324], [300, 322]]);
     s += tufts.filter(([x, y]) => y < h - 6).map(([x, y], i) => tuft(x, y, 1, i % 2 ? '#6FA067' : '#5E8F5B')).join('');
     s += [[36, 196], [324, 150], [200, 40], [140, 236], [16, 120]].filter(([x, y]) => y < h).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.2" fill="#FFF3C4" opacity=".8"/><circle cx="${x + 4}" cy="${y + 2}" r="1.6" fill="#F7B6D0" opacity=".8"/>`).join('');
     // fireflies
@@ -107,7 +108,7 @@ const TWART = (() => {
     G.lanes.slice(0, lanes.length).forEach((g, i) => { s += g.cells.map(([x, y]) => stone(x, y, cols[i])).join(''); });
     // trees and bushes frame the free corners
     const deco = lanes.length >= 3 ? [['t', 30, 384, 0.62], ['b', 330, 300, 0.8], ['b', 30, 322, 0.7], ['t', 334, 384, 0.62], ['b', 186, 40, 0.6], ['b', 80, 470, 0.7]]
-      : lanes.length === 2 ? [['t', 30, 334, 0.7], ['t', 330, 334, 0.7], ['b', 179, 36, 0.6], ['b', 92, 324, 0.6], ['b', 266, 324, 0.6]]
+      : lanes.length === 2 ? [['t', 30, 384, 0.62], ['b', 330, 300, 0.8], ['b', 30, 322, 0.7], ['t', 334, 384, 0.62], ['b', 186, 40, 0.6], ['b', 80, 470, 0.7], ['t', 292, 128, 0.85], ['t', 326, 206, 0.7], ['b', 262, 58, 0.65], ['b', 244, 226, 0.55]]
         : [['t', 40, 120, 0.8], ['t', 316, 140, 0.8], ['b', 60, 250, 0.7], ['b', 300, 250, 0.7], ['b', 180, 40, 0.6]];
     s += deco.map(([k, x, y, z]) => (k === 't' ? tree(D, x, y, z) : bush(D, x, y, z))).join('');
     G.lanes.slice(0, lanes.length).forEach((g, i) => { s += g.spots.map(([x, y]) => pedestal(D, x, y, cols[i])).join(''); });
@@ -141,12 +142,14 @@ const TWART = (() => {
       s += [0, 1, 2].map((r) => { const ry = wy + 7.5 + r * 5.5, col = ['#FF6A3D', '#FFC93C', '#4FC96A'][r]; return `<path d="M${wx + 5} ${ry} H${wx + ww - 5}" stroke="#C9CED8" stroke-width="1"/>` + [0, 1, 2, 3, 4].map((b) => `<circle cx="${wx + 9 + b * 4.2 + (b > 1 + r % 2 ? 9 : 0)}" cy="${ry}" r="2.1" fill="${col}" stroke="${INK}" stroke-width=".8"/>`).join(''); }).join('');
       return s + sill(wx, wy + wh, ww);
     },
-    // arched window, a lectern with a sheet and a quill
+    // arched window with a big open book on a lectern and a quill in the ink pot (read at board size: few, bold shapes)
     Deutsch(D, y, c) {
-      const wx = 39, wy = y + 5, ww = 32, wh = 27;
-      let s = `<path d="${arch(wx - 4, wy - 3, ww + 8, wh + 3)}" fill="${c}" ${S(2)}/><path d="${arch(wx, wy, ww, wh)}" fill="#2A2F4A" ${S(2)}/>`;
-      s += `<path d="M${wx + 7} ${wy + wh} L${wx + 12} ${wy + 16} L${wx + 25} ${wy + 16} L${wx + 22} ${wy + wh}" fill="#8E5E36" ${S(1.4)}/><path d="M${wx + 9} ${wy + 16} L${wx + 13} ${wy + 9} L${wx + 26} ${wy + 9} L${wx + 25} ${wy + 16} Z" fill="#FFF7E6" ${S(1.4)}/><path d="M${wx + 15} ${wy + 12} h8 M${wx + 14} ${wy + 14} h8" stroke="#8A8FA3" stroke-width=".9"/>`;
-      s += `<path d="M${wx + 24} ${wy + 10} Q${wx + 30} ${wy + 1} ${wx + 29} ${wy - 2} Q${wx + 25} ${wy + 3} ${wx + 24} ${wy + 10} Z" fill="#FFFDF5" ${S(1.2)}/>`;
+      const wx = 31, wy = y + 4, ww = 48, wh = 28;
+      let s = `<path d="${arch(wx - 4, wy - 2, ww + 8, wh + 2)}" fill="${c}" ${S(2)}/><path d="${arch(wx, wy, ww, wh)}" fill="#2A2F4A" ${S(2)}/>`;
+      s += `<path d="M${wx + 18} ${wy + wh} L${wx + 21} ${wy + 20} H${wx + 27} L${wx + 30} ${wy + wh} Z" fill="#8E5E36" ${S(1.6)}/>`;
+      s += `<path d="M${wx + 24} ${wy + 21} Q${wx + 15} ${wy + 16} ${wx + 5} ${wy + 19} L${wx + 7} ${wy + 9} Q${wx + 16} ${wy + 6} ${wx + 24} ${wy + 11} Q${wx + 32} ${wy + 6} ${wx + 41} ${wy + 9} L${wx + 43} ${wy + 19} Q${wx + 33} ${wy + 16} ${wx + 24} ${wy + 21} Z" fill="#FFFDF5" ${S(1.8)}/><path d="M${wx + 24} ${wy + 11} V${wy + 21}" ${S(1.4)}/>`;
+      s += [0, 1, 2].map((k) => `<path d="M${wx + 9} ${wy + 12 + k * 2.6} q6 -1.6 12 0.4 M${wx + 27} ${wy + 12.4 + k * 2.6} q6 -2 12 -0.4" fill="none" stroke="${c}" stroke-width="1.3" stroke-linecap="round"/>`).join('');
+      s += `<path d="M${wx + 40} ${wy + 9} Q${wx + 50} ${wy - 6} ${wx + 52} ${wy - 4} Q${wx + 50} ${wy + 4} ${wx + 42} ${wy + 10} Z" fill="#FFFDF5" ${S(1.6)}/><path d="M${wx + 41} ${wy + 9.5} L${wx + 49} ${wy - 2}" stroke="#8A8FA3" stroke-width="1"/>`;
       return s + sill(wx, wy + wh, ww);
     },
     // half-timbered cellar floor: hatch with a potato sack
@@ -158,13 +161,14 @@ const TWART = (() => {
         [[61, y + 30], [66, y + 31], [64, y + 26]].map(([px, py]) => `<ellipse cx="${px}" cy="${py}" rx="3.2" ry="2.4" fill="#D9A55A" stroke="${INK}" stroke-width="1"/>`).join('');
       return s;
     },
-    // a printing press behind a wide window, printed sheets on a line
+    // a big wooden printing press with its screw and handle; a fresh sheet hangs on the left (bold shapes for board size)
     Ethik(D, y, c) {
-      const wx = 30, wy = y + 6, ww = 50, wh = 25;
-      let s = `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#2A2F4A" ${S(2)}/><path d="M${wx + 2} ${wy + 5} H${wx + ww - 2}" stroke="#C9CED8" stroke-width=".9"/>`;
-      s += [0, 1, 2].map((k) => `<rect x="${wx + 6 + k * 7}" y="${wy + 5}" width="5.5" height="7" fill="#FFFDF5" stroke="${INK}" stroke-width=".8"/><path d="M${wx + 7 + k * 7} ${wy + 8} h3.5 M${wx + 7 + k * 7} ${wy + 10} h3.5" stroke="${c}" stroke-width=".9"/>`).join('');
-      s += `<rect x="${wx + 30}" y="${wy + 6}" width="3" height="${wh - 6}" fill="#8E5E36" stroke="${INK}" stroke-width="1"/><rect x="${wx + 44}" y="${wy + 6}" width="3" height="${wh - 6}" fill="#8E5E36" stroke="${INK}" stroke-width="1"/><rect x="${wx + 29}" y="${wy + 5}" width="19" height="4" fill="#A87442" stroke="${INK}" stroke-width="1"/>`;
-      s += `<path d="M${wx + 39} ${wy + 9} V${wy + 15}" stroke="#C9CED8" stroke-width="2.4"/><rect x="${wx + 33}" y="${wy + 15}" width="12" height="3" fill="#C9CED8" stroke="${INK}" stroke-width=".9"/><path d="M${wx + 39} ${wy + 11} L${wx + 30} ${wy + 9}" stroke="#E2B07A" stroke-width="1.8" stroke-linecap="round"/><rect x="${wx + 31}" y="${wy + 19}" width="15" height="3" fill="#FFFDF5" stroke="${INK}" stroke-width=".8"/>`;
+      const wx = 24, wy = y + 5, ww = 62, wh = 27;
+      let s = `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#2A2F4A" ${S(2)}/>`;
+      s += `<path d="M${wx + 4} ${wy + 4} H${wx + 15}" stroke="#C9CED8" stroke-width="1"/><path d="M${wx + 5} ${wy + 4} h9 v13 h-9 Z" fill="#FFFDF5" ${S(1.4)}/><path d="M${wx + 7} ${wy + 8} h5 M${wx + 7} ${wy + 11} h5 M${wx + 7} ${wy + 14} h3" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>`;
+      s += `<rect x="${wx + 22}" y="${wy + 5}" width="4.5" height="${wh - 5}" fill="#A87442" ${S(1.6)}/><rect x="${wx + 51}" y="${wy + 5}" width="4.5" height="${wh - 5}" fill="#A87442" ${S(1.6)}/><rect x="${wx + 19}" y="${wy + 2}" width="40" height="5.5" rx="1" fill="#C68A4E" ${S(1.6)}/>`;
+      s += `<path d="M${wx + 39} ${wy + 7} V${wy + 15}" stroke="${INK}" stroke-width="4.6"/><path d="M${wx + 39} ${wy + 7} V${wy + 15}" stroke="#D3D8E4" stroke-width="2.2"/><path d="M${wx + 29} ${wy + 10} H${wx + 49}" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/><path d="M${wx + 29} ${wy + 10} H${wx + 49}" stroke="#FFC93C" stroke-width="1.6" stroke-linecap="round"/>`;
+      s += `<rect x="${wx + 30}" y="${wy + 15}" width="18" height="4" rx="1" fill="#D3D8E4" ${S(1.5)}/><rect x="${wx + 28}" y="${wy + 20}" width="22" height="3.6" fill="#FFFDF5" ${S(1.3)}/><rect x="${wx + 24}" y="${wy + 23.5}" width="30" height="3.5" fill="#8E5E36" ${S(1.4)}/>`;
       return s + `<rect x="${wx - 4}" y="${wy - 4}" width="${ww + 8}" height="5" rx="1.5" fill="${c}" ${S(1.8)}/>` + sill(wx, wy + wh, ww);
     },
     // open belfry: two arches and a golden bell
@@ -210,17 +214,17 @@ const TWART = (() => {
     const n = floors.length, H = towerH(n), D = defs(), foot = H - 8, yb = foot - BASE, yt = TOP;
     const dmg = hp > (maxHp * 2) / 3 ? 0 : hp > maxHp / 3 ? 1 : 2;
     let s = `<ellipse cx="${CX}" cy="${foot + 1}" rx="50" ry="7" fill="${INK}" opacity=".3"/>`;
-    // turret at the back right with its cone roof and the flag
-    s += `<rect x="78" y="${yt - 34}" width="26" height="34" fill="${wallGrad(D)}" ${S(2.4)}/>${ashlar(78, 104, yt - 34, yt, 8.5, 1)}<path d="M89 ${yt - 26} v8" stroke="#2A2F4A" stroke-width="3.4" stroke-linecap="round"/>`;
+    // turret at the back right with its cone roof and the flag; everything above the floors is in g.tw-top (lifts when a floor is built)
+    s += `<g class="tw-top"><rect x="78" y="${yt - 34}" width="26" height="34" fill="${wallGrad(D)}" ${S(2.4)}/>${ashlar(78, 104, yt - 34, yt, 8.5, 1)}<path d="M89 ${yt - 26} v8" stroke="#2A2F4A" stroke-width="3.4" stroke-linecap="round"/>`;
     s += `<path d="M74 ${yt - 32} L91 ${yt - 58} L108 ${yt - 32} Z" fill="${D.linS([[0, '#F07A62'], [0.5, '#D9453B'], [1, '#A42E2A']], true)}" ${S(2.4)}/><path d="M80 ${yt - 36} L91 ${yt - 52} M86 ${yt - 34} L93 ${yt - 46}" stroke="#FFB4A0" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>`;
-    s += `<path d="M91 ${yt - 56} V${yt - 76}" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="M91 ${yt - 57} V${yt - 75}" stroke="#E9ECF3" stroke-width="1.4" stroke-linecap="round"/><path d="M92 ${yt - 76} q7 -1 13 2 q-5 3 -1 7 q-6 -2 -12 1 Z" fill="${D.lin('#FF8A5C', '#E2502A')}" ${S(1.8)}/><circle cx="91" cy="${yt - 57}" r="2.6" fill="#FFC93C" ${S(1.4)}/>`;
+    s += `<path d="M91 ${yt - 56} V${yt - 76}" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="M91 ${yt - 57} V${yt - 75}" stroke="#E9ECF3" stroke-width="1.4" stroke-linecap="round"/><path class="tw-flag" d="M92 ${yt - 76} q7 -1 13 2 q-5 3 -1 7 q-6 -2 -12 1 Z" fill="${D.lin('#FF8A5C', '#E2502A')}" ${S(1.8)}/><circle cx="91" cy="${yt - 57}" r="2.6" fill="#FFC93C" ${S(1.4)}/>`;
     // the parapet back: the platform the hero stands on
     const merlon = (x, y, h) => `<rect x="${x}" y="${y}" width="13" height="${h}" fill="${wallGrad(D)}" ${S(2.4)}/>`;
-    s += [12, 32, 52].map((x) => merlon(x, yt - 26, 12)).join('') + (dmg > 1 ? merlon(72, yt - 20, 6) : merlon(72, yt - 26, 12)) + `<rect x="10" y="${yt - 15}" width="90" height="16" fill="#8E97B0" ${S(2.4)}/><path d="M13 ${yt - 12} H97" stroke="#C9CFDD" stroke-width="1.4"/>`;
+    s += [12, 32, 52].map((x) => merlon(x, yt - 26, 12)).join('') + (dmg > 1 ? merlon(72, yt - 20, 6) : merlon(72, yt - 26, 12)) + `<rect x="10" y="${yt - 15}" width="90" height="16" fill="#8E97B0" ${S(2.4)}/><path d="M13 ${yt - 12} H97" stroke="#C9CFDD" stroke-width="1.4"/></g>`;
     // floors bottom → top
     for (let i = 0; i < n; i++) s += `<g class="tw-fl" data-floor="${i}" data-subject="${floors[i]}">${floorArt(D, floors[i], yb - FLOOR * (i + 1), i)}</g>`;
     // corbel band under the parapet
-    s += `<rect x="13" y="${yt}" width="84" height="6" fill="#B6BED0" ${S(2.2)}/>` + [20, 32, 44, 56, 68, 80, 92].map((x) => `<path d="M${x - 3} ${yt + 6} q3 5 6 0" fill="#9AA3BC" ${S(1.6)}/>`).join('');
+    s += `<g class="tw-top"><rect x="13" y="${yt}" width="84" height="6" fill="#B6BED0" ${S(2.2)}/>` + [20, 32, 44, 56, 68, 80, 92].map((x) => `<path d="M${x - 3} ${yt + 6} q3 5 6 0" fill="#9AA3BC" ${S(1.6)}/>`).join('') + '</g>';
     // base with the gate
     s += `<rect x="13" y="${yb}" width="84" height="${BASE}" fill="${wallGrad(D)}" ${S(3)}/>${ashlar(13, 97, yb, foot, 10, 0)}`;
     s += `<rect x="9" y="${foot - 8}" width="92" height="9" rx="2" fill="${D.lin('#A9B1C5', '#7C86A2')}" ${S(2.6)}/>`;
@@ -261,6 +265,19 @@ const TWART = (() => {
     return `<svg class="tw-shields" viewBox="0 0 64 64" aria-hidden="true">${cols.map((c, i) => arc(i, c, i === 0, false)).join('')}${Array.from({ length: gone }, (_, i) => arc(cols.length + i, '', false, true)).join('')}</svg>`;
   }
 
+
+  /* ---------- motion pieces (app.js animates them) ---------- */
+  // drawn poof: puffs of cloud with an ink rim and two sparkles; each puff is its own element so CSS can scatter them
+  const poof = () => `<svg class="tw-poof" viewBox="-30 -30 60 60" aria-hidden="true">${[[-12, 4, 10], [10, 6, 11], [0, -9, 12], [-15, -10, 7], [16, -8, 8]].map(([x, y, r], i) => `<g class="p" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}" fill="#F4F1EA" ${S(2)}/><circle cx="${x - r / 3}" cy="${y - r / 3}" r="${r / 3}" fill="#fff"/></g>`).join('')}<g class="s">${spark(-22, -22, 5)}${spark(22, 16, 4, '#fff')}</g></svg>`;
+  // a shot: glowing ball in the shooter's type colour; big = 🎯 or a level-3 guard
+  const orb = (c, big) => `<svg class="tw-orb${big ? ' big' : ''}" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="10" fill="${c}" opacity=".35"/><circle r="6.5" fill="${c}" ${S(2)}/><circle cx="-2" cy="-2" r="2.2" fill="#fff" opacity=".85"/></svg>`;
+  // one Ziegel flying to the counter
+  const brickOne = () => `<svg viewBox="-1 -1 18 10" aria-hidden="true">${brick(1, 1)}</svg>`;
+  // Druckerei leaflet with printed lines
+  const leaflet = (c) => `<svg class="tw-leaf" viewBox="0 0 14 18" aria-hidden="true"><path d="M1 1 H10 L13 4 V17 H1 Z" fill="#FFFDF5" ${S(1.4)}/><path d="M3.5 6 h7 M3.5 9 h7 M3.5 12 h5" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+  // the shield item at the gate
+  const guardShield = () => `<svg class="tw-bigshield" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 3 L36 9 V22 C36 33 28 40 20 43 C12 40 4 33 4 22 V9 Z" fill="#7CC2FF" ${S(2.6)}/><path d="M20 8 L31 12 V22 C31 30 26 35 20 38 Z" fill="#2478D6" opacity=".5"/><path d="M9 13 Q9 10 13 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+
   /* ---------- Bauzeit card pictures (viewBox 0 0 80 56) ---------- */
   const mini = (shape, color, x, y, s, o = {}) => MONART.monsterSVG(shape, color, 0, o.mirror ? 'enemy' : '', o).replace('<svg', `<svg x="${x}" y="${y}" width="${s}" height="${s}"`);
   const bolt = (x0, y0, x1, y1, c) => `<path d="M${x0} ${y0} Q${(x0 + x1) / 2} ${Math.min(y0, y1) - 10} ${x1} ${y1}" fill="none" stroke="${c || '#FFE066'}" stroke-width="2.4" stroke-dasharray="1 4.5" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="3.6" fill="${c || '#FFE066'}" ${S(1.4)}/>`;
@@ -300,6 +317,6 @@ const TWART = (() => {
     return `<svg class="tw-pic" viewBox="0 0 80 56" aria-hidden="true">${D.out()}${body}</svg>`;
   }
 
-  return { ROOMS, laneColors, subjColor, geo, scene, tower, towerH, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
+  return { ROOMS, laneColors, subjColor, geo, scene, tower, towerH, TOWER: { TOP, FLOOR, BASE }, poof, orb, leaflet, brickOne, guardShield, spark: (c) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
 })();
 if (typeof module !== 'undefined') module.exports = TWART;

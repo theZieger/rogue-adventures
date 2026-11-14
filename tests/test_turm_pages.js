@@ -156,6 +156,13 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   uiAnswer(u, false);
   n1 = stat(a1);
   check(n1.t === w0.t + 1 && n1.c === w0.c && /Die Monster rücken vor/.test(u.$('.tw-log').textContent), 'a wrong answer counts too, the monsters step');
+  // with motion (forced, 100× faster): the turn plays over the saved board and ends on the same board (or the wave's end)
+  u.T.motion(0.01); a1 = ask(); uiAnswer(u, true);
+  const played = !!u.$('.tw-screen.playing'), saved1 = u.saved();
+  await new Promise((r) => setTimeout(r, 300));
+  const R1 = u.w.__mq.run;
+  check(played && !u.$('.tw-screen.playing') && !u.$('.tw-ghost') && same(saved1, u.saved()) && (!!u.$('#tobuild') || ud.querySelectorAll('button.tw-mon').length === R1.turm.monsters.length), 'with motion the turn plays after it is saved and ends on the board');
+  u.T.motion(null); if (u.$('#tobuild')) u.click('#tobuild'); while (u.$('.overlay #tutok')) u.click('.overlay #tutok');
   u.click('#home');
   check(u.w.__mq.run === null && !!u.w.localStorage.getItem(TURM) && !!u.$('#turm') && txt().includes('läuft'), '„Titel“ saves the run, clears it from memory, the title shows „läuft“');
   u.click('#turm');

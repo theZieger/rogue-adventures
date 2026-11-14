@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="fa6773964639">
+<meta name="app-version" content="07cc9d67a073">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -794,7 +794,9 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 
 /* Turmwacht. Board: grid with the tower column on the left and one road per path (--rows); cell 1 touches the tower.
    The tower and road drawings are placeholders until the proper art. */
-#turm { flex-wrap: wrap; row-gap: 0; }
+#turm { flex-wrap: wrap; row-gap: 0; border-color: rgba(255,201,60,.55); }
+#turm > span:first-child { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+#turm > span:first-child .emo { width: 30px; height: 30px; flex: none; }
 .twrun { display: flex; flex-basis: 100%; align-items: center; justify-content: center; gap: 2px; font-size: 14px; font-weight: 700; opacity: .9; }
 .twflag { width: 18px; height: 18px; }
 .tw-lead { margin: 0; }
@@ -819,7 +821,7 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 
 /* Turmwacht board: a W × H scene in board units (1 tower drawing unit = 1 board unit); --x/--y place things, --u keeps sizes in step with the board */
 /* the board takes the room the panel leaves, but no more than its full width needs; leftover space goes above the panel */
-.tw-main { flex: 1 1 auto; min-height: 270px; max-height: calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px); container-type: size; display: flex; justify-content: center; align-items: flex-start; padding: 6px 0 0; }
+.tw-main { flex: 1 1 auto; min-height: max(270px, 50vh); max-height: calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px); container-type: size; display: flex; justify-content: center; align-items: flex-start; padding: 6px 0 0; }
 .tw-board { --u: calc(100cqw / var(--W)); position: relative; container-type: inline-size; width: min(100cqw - 16px, (100cqh - 4px) * var(--W) / var(--H)); aspect-ratio: var(--W) / var(--H); border: 3px solid var(--ink); border-radius: 14px; overflow: hidden; background: #3B664E; box-shadow: var(--shadow); }
 .tw-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tw-board .tw-lane { display: contents; }
@@ -854,9 +856,10 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .tw-spot .mon { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tw-spot .tw-pips { position: absolute; left: 50%; bottom: calc(-26 * var(--u)); translate: -50% 0; height: calc(11 * var(--u)); width: auto; padding: calc(1 * var(--u)) calc(3 * var(--u)); border-radius: 99px; background: var(--ink); box-sizing: content-box; }
 button.tw-spot { cursor: pointer; border-radius: 12px; }
-.tw-lanehead { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: calc(150 * var(--u)); font-weight: 700; font-size: max(10px, calc(14 * var(--u))); line-height: 1.15; }
-.tw-lanehead.r { align-items: flex-end; translate: -100% 0; }
-.tw-lanehead.c { align-items: center; translate: -50% 0; }
+.tw-lanehead { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 3px; max-width: calc(210 * var(--u)); z-index: 1; font-weight: 700; font-size: max(10px, calc(14 * var(--u))); line-height: 1.15; }
+.tw-lanehead.r { flex-direction: row-reverse; translate: -100% 0; }
+.tw-lanehead.c { justify-content: center; translate: -50% 0; }
+.tw-lanehead.lb { flex-direction: column; align-items: flex-start; } /* bottom path: its far field is right of the chips */
 .tw-lanehead > span { padding: calc(2 * var(--u)) calc(8 * var(--u)); border-radius: 99px; background: var(--ink); color: #fff; white-space: nowrap; }
 .tw-lanehead .nm { border: 2px solid var(--c); box-shadow: inset 0 -3px 0 var(--c); }
 .tw-lanehead .tw-queue { font-size: .86em; background: rgba(28,37,65,.92); }
@@ -869,7 +872,9 @@ button.tw-spot { cursor: pointer; border-radius: 12px; }
 .tw-log { margin: 6px 12px; min-height: 0; font-size: 20px; }
 .tw-log p { margin: 0; }
 .tw-panel { display: flex; flex-direction: column; gap: 8px; flex: 0 1 auto; margin-top: auto; min-height: 0; overflow-y: auto; }
-.tw-log { flex: none; }
+/* Bauzeit: the board gives up a little height so the cards under it are whole */
+.tw-screen.build .tw-main { min-height: 270px; max-height: min(calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px), calc(100vh - 384px)); }
+.tw-log { flex: none; max-height: calc(2.3em + 22px); overflow-y: auto; overscroll-behavior: contain; }
 .tw-panel .row { margin: 0; }
 .tw-hint { margin: 4px 2px; font-size: 17px; }
 .tw-card { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -931,19 +936,22 @@ i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top
 .tw-bauhead { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px; }
 .tw-bauhead h3 { margin: 0; font-size: 22px; }
 .tw-bauhead p { margin: 0; font-size: 16px; font-weight: 700; }
-.tw-cards { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; }
+.tw-cards { display: flex; gap: 8px; overflow-x: auto; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); scroll-snap-type: x proximity; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; }
 .tw-cards > div { flex: none; display: flex; scroll-snap-align: start; }
-.tw-buy { width: 238px; display: flex; gap: 8px; align-items: flex-start; padding: 6px 8px 7px 6px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.tw-buy { width: 150px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 5px 5px 7px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .tw-buy:active { transform: translateY(3px); box-shadow: none; }
-.tw-pcol { flex: none; width: 80px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.tw-buy .tw-pic { display: block; width: 80px; height: 56px; border-radius: 8px; background: #E3EED6; }
+.tw-pcol { flex: none; position: relative; display: block; }
+.tw-buy .tw-pic { display: block; width: 100%; height: 54px; border-radius: 9px; background: #E3EED6; }
+.tw-pcol .tw-price { position: absolute; right: 4px; bottom: 4px; border: 2px solid #FFF9EE; }
+.tw-tcol { padding: 0 3px; }
 .tw-tcol { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.tw-buy b { font-size: 17px; line-height: 1.15; }
-.tw-buy .tw-desc { font-size: 14px; line-height: 1.25; }
+.tw-cards.end { -webkit-mask-image: none; mask-image: none; }
+.tw-buy b { font-size: 16px; line-height: 1.12; }
+.tw-buy .tw-desc { font-size: 13.5px; line-height: 1.2; }
 .tw-price { padding: 0 8px; border-radius: 99px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 700; line-height: 24px; white-space: nowrap; }
 .tw-price:empty { display: none; }
 .tw-price.free { padding: 0 6px; font-size: 13px; }
-.tw-why { padding-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
+.tw-why { padding-top: 2px; font-size: 13.5px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
 .tw-buy.short, .tw-buy.off { background: #DADDE6; box-shadow: none; }
 .tw-buy.short .tw-pic, .tw-buy.off .tw-pic { filter: grayscale(.9); opacity: .65; }
 .tw-buy.off .tw-why { color: var(--ink-soft); }
@@ -971,12 +979,21 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
 .psubhead { margin: 14px 0 0; }
 @media (max-height: 760px) {
   .tw-log { font-size: 18px; padding: 5px 10px; margin: 4px 12px; }
-  .tw-cardhead .mon { width: 44px; height: 44px; }
+  /* small phones: the card gets compact so the board keeps its size (the tapped monster is marked on the board) */
+  .tw-main { min-height: max(270px, 55vh); }
+  .tw-cardhead .mon { display: none; }
+  .tw-card { padding: 7px 10px; gap: 4px; }
+  .tw-cardinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
+  .tw-cardinfo .name { font-size: 23px; }
+  .tw-stats { font-size: 16px; gap: 2px 12px; }
+  .tw-card .btn { min-height: 46px; }
+  .tw-card .pnote, .tw-card .tw-shieldnow { font-size: 15px; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
-  .tw-screen:not(.tasking) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 42%); grid-template-rows: auto auto minmax(0, 1fr); }
-  .tw-screen:not(.tasking) > .topbar { grid-column: 1 / -1; }
-  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 2 / 4; max-height: none; }
+  /* the board takes the whole height on the left (tokens stay about 40 px); the top bar heads the right column */
+  .tw-screen:not(.tasking) { display: grid; grid-template-columns: min(58vw, (100vh - 10px) * var(--bw, .762) + 14px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
+  .tw-screen:not(.tasking) > .topbar { grid-column: 2; grid-row: 1; padding: 6px 12px; }
+  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; }
   .tw-screen:not(.tasking) .tw-log { grid-column: 2; grid-row: 2; }
   .tw-screen:not(.tasking) .tw-panel { grid-column: 2; grid-row: 3; max-height: 100%; overflow-y: auto; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); }
   .tw-card p, .tw-stats { font-size: 16px; }
@@ -986,9 +1003,124 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   .tw-bau { flex: none; }
   .tw-cards { flex-direction: column; overflow: visible; margin: 0; padding: 2px 0 4px; }
   .tw-cards > div, .tw-buy { width: 100%; }
+  .tw-cards { -webkit-mask-image: none; mask-image: none; }
+  .tw-buy { flex-direction: row; gap: 8px; }
+  .tw-pcol { width: 96px; } .tw-buy .tw-pic { height: 62px; }
   .tw-baurow { position: sticky; bottom: -10px; flex-wrap: wrap; margin: 0 -12px -10px; padding: 8px 12px 10px; background: var(--bg2); }
   .tw-baurow .btn.small { flex: 1 1 0; }
   .tw-baurow #nextwave { flex: 1 1 100%; order: -1; }
+}
+/* Turmwacht motion (app.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
+.tw-fx { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.tw-fx > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tw-fxi { width: 0; height: 0; }
+.tw-fxi > * { position: absolute; left: 0; top: 0; translate: -50% -50%; }
+.tw-orb { width: calc(22 * var(--u)); height: calc(22 * var(--u)); overflow: visible; filter: drop-shadow(0 0 calc(4 * var(--u)) #fff); }
+.tw-orb.big { width: calc(34 * var(--u)); height: calc(34 * var(--u)); filter: drop-shadow(0 0 calc(8 * var(--u)) #FFE066); }
+.tw-orb.g1 { width: calc(16 * var(--u)); height: calc(16 * var(--u)); }
+.tw-orb.g2 { width: calc(19 * var(--u)); height: calc(19 * var(--u)); }
+.tw-orb.g3 { width: calc(24 * var(--u)); height: calc(24 * var(--u)); filter: drop-shadow(0 0 calc(6 * var(--u)) #FFE066); }
+.tw-num { font-family: var(--hand); font-size: max(20px, calc(30 * var(--u))); line-height: 1; color: #fff; white-space: nowrap; text-shadow: 0 2px 0 var(--ink), 0 0 5px rgba(0,0,0,.5); animation: tw-num 1s ease-out both; }
+.tw-num.crit { color: var(--gold); font-size: max(26px, calc(40 * var(--u))); }
+.tw-num.hurt { color: #FF8A8A; font-size: max(24px, calc(36 * var(--u))); }
+.tw-num.heal { color: #8FE3A0; }
+@keyframes tw-num { 0% { opacity: 0; scale: .4; } 15% { opacity: 1; scale: 1.25; } 30% { scale: 1; } 75% { opacity: 1; } 100% { opacity: 0; translate: -50% calc(-50% - 26px); } }
+.tw-burst { width: calc(64 * var(--u)); height: calc(64 * var(--u)); border-radius: 50%; border: calc(5 * var(--u)) solid var(--gold); box-shadow: 0 0 calc(10 * var(--u)) #FFE066; animation: tw-burst .55s ease-out both; }
+@keyframes tw-burst { from { scale: .2; opacity: 1; } to { scale: 1.5; opacity: 0; } }
+.tw-poof { width: calc(66 * var(--u)); height: calc(66 * var(--u)); overflow: visible; }
+.tw-poof .p { transform-box: fill-box; transform-origin: center; animation: tw-puff .7s ease-out calc(var(--i) * 25ms) both; }
+.tw-poof .s { animation: tw-sparkle .7s ease-out both; }
+@keyframes tw-puff { 0% { scale: .2; opacity: 0; } 25% { scale: 1.1; opacity: 1; } 65% { opacity: 1; } 100% { scale: 1.35; opacity: 0; translate: 0 -4px; } }
+@keyframes tw-sparkle { 0%, 20% { opacity: 0; scale: .5; } 45% { opacity: 1; scale: 1.2; } 100% { opacity: 0; scale: .8; } }
+.tw-shard { width: calc(15 * var(--u)); height: calc(7 * var(--u)); border: 2px solid var(--ink); border-radius: 3px 8px 3px 8px; animation: tw-shard .7s cubic-bezier(.2, .8, .4, 1) both; }
+@keyframes tw-shard { from { opacity: 1; translate: -50% -50%; rotate: 0deg; } to { opacity: 0; translate: calc(-50% + var(--dx)) calc(-50% + var(--dy)); rotate: 300deg; } }
+.tw-say { padding: 1px 7px; border: 2px solid var(--ink); border-radius: 10px 10px 10px 2px; background: #FFFDF5; color: var(--ink); font-weight: 700; font-size: max(12px, calc(15 * var(--u))); white-space: nowrap; animation: tw-say .8s ease-out both; }
+.tw-say.r { border-radius: 10px 10px 2px 10px; }
+@keyframes tw-say { 0% { scale: 0; opacity: 0; } 20% { scale: 1.15; opacity: 1; } 35% { scale: 1; } 80% { opacity: 1; } 100% { opacity: 0; translate: -50% calc(-50% - 10px); } }
+.tw-leaf { width: calc(18 * var(--u)); height: calc(23 * var(--u)); filter: drop-shadow(0 1px 0 rgba(0,0,0,.3)); }
+#twt .tw-fl.tw-glow { animation: tw-room .6s ease-out; }
+@keyframes tw-room { 35% { filter: brightness(1.35) drop-shadow(0 0 4px #FFE066); } }
+.tw-read .tw-leaf { width: calc(22 * var(--u)); height: calc(28 * var(--u)); }
+.tw-read { animation: tw-read .9s ease-in-out both; }
+@keyframes tw-read { 0% { opacity: 0; } 15%, 75% { opacity: 1; rotate: -6deg; } 45% { rotate: 6deg; } 100% { opacity: 0; } }
+.tw-heart .emo { width: max(20px, calc(26 * var(--u))); height: max(20px, calc(26 * var(--u))); }
+.tw-spark { width: calc(14 * var(--u)); height: calc(14 * var(--u)); animation: tw-sparkle .9s ease-out both; }
+.tw-rings circle { fill: none; stroke: #FFC2D4; stroke-width: 4.5; transform-box: fill-box; transform-origin: center; animation: tw-ring-out .75s ease-out both; }
+@keyframes tw-ring-out { from { scale: .5; opacity: 1; } to { scale: 3.2; opacity: 0; } }
+.tw-zap { animation: tw-zap .5s ease-out both; }
+@keyframes tw-zap { 0% { opacity: 0; } 15%, 55% { opacity: 1; } 100% { opacity: 0; } }
+.tw-dust { width: calc(50 * var(--u)); height: calc(18 * var(--u)); border-radius: 50%; background: rgba(230,220,190,.85); animation: tw-burst .6s ease-out both; }
+.tw-bigshield { width: calc(40 * var(--u)); height: calc(46 * var(--u)); animation: tw-shieldup .7s ease-out both; }
+@keyframes tw-shieldup { 0% { scale: .2; opacity: 0; } 25% { scale: 1.15; opacity: 1; } 40% { scale: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.tw-wavebanner { padding: calc(6 * var(--u)) calc(16 * var(--u)); border: 3px solid var(--ink); border-radius: 14px; background: var(--gold); color: var(--ink); font-family: var(--hand); font-size: max(20px, calc(30 * var(--u))); white-space: nowrap; box-shadow: var(--shadow); animation: tw-banner 1.4s cubic-bezier(.3, 1.3, .5, 1) both; }
+@keyframes tw-banner { 0% { translate: -160% -50%; opacity: 0; } 25% { translate: -50% -50%; opacity: 1; } 80% { translate: -50% -50%; opacity: 1; } 100% { translate: -50% -50%; opacity: 0; } }
+/* tokens */
+.tw-mon > .mon, .tw-spot > .mon { transition: none; }
+.tw-mon.tw-hit > .mon { animation: tw-hit .42s ease-out; }
+@keyframes tw-hit { 0%, 100% { filter: none; translate: 0 0; } 20% { filter: brightness(2.3) saturate(0); translate: -5% 0; } 45% { translate: 5% 0; } 70% { translate: -3% 0; } }
+.tw-mon.tw-step > .mon { animation: tw-step .3s ease-in-out; }
+@keyframes tw-step { 50% { translate: 0 -10%; } }
+.tw-mon.tw-gone { scale: 0; opacity: 0; transition: scale .25s ease-in, opacity .25s ease-in !important; }
+.tw-mon.tw-dizzy > .mon { animation: tw-dizzy .6s ease-in-out; }
+@keyframes tw-dizzy { 25% { rotate: -10deg; } 75% { rotate: 10deg; } }
+.tw-mon.tw-taunt > .mon { animation: tw-taunt .4s ease-out; }
+@keyframes tw-taunt { 40% { translate: 0 -14%; } 70% { translate: 0 2%; } }
+.tw-mon.tw-land > .mon { animation: tw-land .35s ease-out; transform-origin: 50% 100%; }
+@keyframes tw-land { 30% { scale: 1.15 .82; } 65% { scale: .95 1.06; } }
+.tw-mon.tw-ghost { pointer-events: none; }
+.tw-mon .tw-hp b { transition: width .35s ease-out; }
+.tw-spot.tw-fire > .mon { animation: tw-fire .3s ease-out; }
+@keyframes tw-fire { 30% { translate: 0 -8%; scale: 1.08; } }
+.tw-spot.tw-arrive > .mon { animation: tw-arrive .6s cubic-bezier(.3, 1.2, .5, 1) both; transform-origin: 50% 100%; }
+@keyframes tw-arrive { 0% { translate: -30% -120%; opacity: 0; } 50% { translate: 0 -40%; opacity: 1; } 75% { translate: 0 0; scale: 1.12 .85; } 100% { scale: 1; } }
+.tw-spot.tw-upnow .tw-pips { animation: tw-pop .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes tw-pop { 0% { scale: .2; } 60% { scale: 1.6; filter: drop-shadow(0 0 6px #FFE066); } 100% { scale: 1; } }
+.tw-heroslot.tw-throw .mon { animation: tw-throw .32s ease-out; transform-origin: 50% 100%; }
+@keyframes tw-throw { 35% { scale: 1.12; rotate: -8deg; } }
+.tw-heroslot.tw-evolve .mon { animation: tw-evolve .8s ease-in-out; transform-origin: 50% 100%; }
+@keyframes tw-evolve { 0% { filter: none; } 40% { filter: brightness(3) saturate(0); scale: 1.2; } 50% { filter: brightness(3) saturate(0); scale: .9; } 100% { filter: none; scale: 1; } }
+/* the tower */
+#twt.tw-shake > * { animation: tw-shake .45s ease-out; }
+@keyframes tw-shake { 0%, 100% { transform: none; } 20% { transform: translateX(-4px) rotate(-1deg); } 45% { transform: translateX(4px) rotate(1deg); } 70% { transform: translateX(-2px); } }
+#twt.tw-heal .tw-towerart { animation: tw-healglow .7s ease-out; }
+@keyframes tw-healglow { 40% { filter: drop-shadow(0 0 8px #8FE3A0) brightness(1.15); } }
+#twt.tw-fall > * { animation: tw-fall 1s ease-in both; }
+@keyframes tw-fall { 0% { transform: none; filter: none; } 15% { transform: translateX(-6px) rotate(-2deg); } 30% { transform: translateX(6px) rotate(2deg); } 45% { transform: translateX(-4px); } 100% { transform: translateY(4px); filter: grayscale(.7) brightness(.8); } }
+.tw-board.tw-won .tw-flag { transform-box: fill-box; transform-origin: 0 50%; animation: tw-flag .5s ease-in-out 3; }
+@keyframes tw-flag { 50% { transform: scaleX(.75) skewY(-8deg); } }
+.tw-board.tw-won #twt .tw-towerart { animation: tw-healglow 1s ease-out; }
+.tw-board::after { content: ''; position: absolute; inset: 0; background: #0B1022; opacity: 0; pointer-events: none; z-index: 2; }
+.tw-board.tw-dim::after { animation: tw-dim 1.2s ease-in-out both; }
+.tw-mon.tw-star { z-index: 4; filter: drop-shadow(0 0 calc(6 * var(--u)) #FFE066); }
+@keyframes tw-dim { 30%, 60% { opacity: .5; } }
+.tw-board .confetti i { animation-duration: 1.8s; }
+/* Bauzeit: a new floor lifts what is above it, drops in and puffs; a mended wall loses its cracks */
+#twt .tw-fl.new { animation: tw-drop .5s cubic-bezier(.3, 1.5, .5, 1) .32s both; }
+@keyframes tw-drop { from { transform: translateY(-46px); opacity: 0; } 40% { opacity: 1; } }
+#twt.tw-grow .tw-top { animation: tw-lift .4s ease-out both; }
+#twt.tw-grow .tw-heroslot, #twt.tw-grow .tw-parapet { animation: tw-lift-h .4s ease-out both; }
+@keyframes tw-lift { from { transform: translateY(38px); } }
+@keyframes tw-lift-h { from { transform: translateY(calc(38 * var(--u))); } }
+.tw-dustpuff { position: absolute; left: -10%; right: -10%; bottom: calc(var(--fy) * var(--u)); height: calc(16 * var(--u)); pointer-events: none; }
+.tw-dustpuff::before, .tw-dustpuff::after { content: ''; position: absolute; bottom: 0; width: 34%; height: 100%; border-radius: 50%; background: rgba(240,232,210,.9); border: 2px solid rgba(28,37,65,.5); animation: tw-dust .55s ease-out .78s both; }
+.tw-dustpuff::before { left: 0; } .tw-dustpuff::after { right: 0; }
+@keyframes tw-dust { 0% { opacity: 0; scale: .3; } 30% { opacity: 1; } 100% { opacity: 0; scale: 1.4; translate: 0 -6px; } }
+#twt .tw-oldart { animation: tw-fadeout .7s ease-in .25s both; }
+@keyframes tw-fadeout { to { opacity: 0; } }
+#twt.tw-mend .tw-towerart:not(.tw-oldart) { animation: tw-healglow .9s ease-out .2s; }
+.tw-hpbox .hpbar i { transition: width .4s ease-out; }
+.topbar .tw-tick .emo { animation: tw-pop .35s ease-out; }
+.tw-fly { position: absolute; z-index: 20; translate: -50% -50%; pointer-events: none; }
+.tw-fly svg { display: block; width: 30px; height: 17px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
+.tw-bannerov.slide { animation: tw-dimin .4s ease-out both; }
+.tw-bannerov.slide .modal { animation: tw-slidein .55s cubic-bezier(.3, 1.3, .5, 1) both; }
+@keyframes tw-dimin { from { background-color: transparent; } }
+@keyframes tw-slidein { from { translate: -110vw 0; } }
+.tw-endtower.rise .tw-tower { animation: tw-drop .7s cubic-bezier(.3, 1.4, .5, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .tw-fx, .tw-fly { display: none; }
+  .tw-mon > .mon, .tw-spot > .mon, .tw-spot .tw-pips, .tw-heroslot .mon, #twt > *, #twt .tw-fl.new, #twt .tw-top, .tw-board::after, .tw-bannerov.slide, .tw-bannerov.slide .modal, .tw-endtower .tw-tower, .tw-flag { animation: none !important; }
+  .tw-dustpuff, #twt .tw-oldart { display: none; }
 }
 
 </style>
@@ -16552,14 +16684,15 @@ const TWART = (() => {
 
   /* ---------- board geometry ---------- */
   // cells[0] is cell 1 (at the gate) … cells[4] cell 5; spots = the two guard pedestals; head = where the name chip sits
-  // (anchor: 'l' left edge, 'r' right edge, 'c' centre); hp = the tower's ❤️ chip (anchor 'c' top centre, 'rb' bottom right corner); path = extra points before cell 5 (from the board edge) and after cell 1
+  // (anchor: 'l' left edge, 'lb' left edge with the chips stacked, 'r' right edge, 'c' centre); hp = the tower's ❤️ chip (anchor 'c' top centre, 'rb' bottom right corner); path = extra points before cell 5 (from the board edge) and after cell 1
   const W = 358;
   const LEFT = { cells: [[118, 270], [86, 236], [66, 194], [58, 148], [62, 101]], spots: [[30, 252], [106, 150]], from: [[70, -14], [64, 52]], to: [[146, 290]], head: [8, 8, 'l'] };
   const mirror = (g) => ({ cells: g.cells.map(([x, y]) => [W - x, y]), spots: g.spots.map(([x, y]) => [W - x, y]), from: g.from.map(([x, y]) => [W - x, y]), to: g.to.map(([x, y]) => [W - x, y]), head: [W - g.head[0], g.head[1], 'r'] });
-  const BOTTOM = { cells: [[179, 326], [214, 358], [212, 404], [176, 434], [134, 452]], spots: [[120, 372], [262, 398]], from: [[58, 500], [92, 468]], to: [[179, 290]], head: [8, 404, 'l'] };
+  const BOTTOM = { cells: [[179, 326], [214, 358], [212, 404], [176, 434], [134, 452]], spots: [[120, 372], [262, 398]], from: [[58, 500], [92, 468]], to: [[179, 290]], head: [8, 404, 'lb'] };
   function geo(L) {
     if (L >= 3) return { w: W, h: 470, gate: [179, 262], lanes: [LEFT, mirror(LEFT), BOTTOM], hp: [W - 8, 462, 'rb'] };
-    if (L === 2) return { w: W, h: 340, gate: [179, 262], lanes: [LEFT, mirror(LEFT)], hp: [179, 302, 'c'] };
+    // two paths: top left and bottom, so the board keeps the size of the others (no empty space under it)
+    if (L === 2) return { w: W, h: 470, gate: [179, 262], lanes: [LEFT, BOTTOM], hp: [W - 8, 462, 'rb'] };
     return { w: W, h: 470, gate: [179, 262], lanes: [BOTTOM], hp: [W - 8, 462, 'rb'] };
   }
 
@@ -16600,7 +16733,7 @@ const TWART = (() => {
     const dusk = D.linS([[0, '#24305A', 0.55], [0.35, '#24305A', 0]]);
     let s = `<rect width="${w}" height="${h}" fill="${ground}"/><rect width="${w}" height="${h}" fill="${dusk}"/>`;
     // calm ground detail: a few grass tufts and pale flowers, kept away from the paths
-    const tufts = [[24, 40], [150, 30], [210, 22], [330, 60], [20, 340], [334, 330], [120, 100], [244, 108], [300, 200], [52, 300], [180, 186], [262, 300]].concat(lanes.length >= 3 ? [[300, 420], [240, 452], [60, 366], [150, 400], [250, 352]] : [[60, 324], [300, 322]]);
+    const tufts = [[24, 40], [150, 30], [210, 22], [330, 60], [20, 340], [334, 330], [120, 100], [244, 108], [300, 200], [52, 300], [180, 186], [262, 300]].concat(lanes.length >= 2 ? [[300, 420], [240, 452], [60, 366], [150, 400], [250, 352]] : [[60, 324], [300, 322]]);
     s += tufts.filter(([x, y]) => y < h - 6).map(([x, y], i) => tuft(x, y, 1, i % 2 ? '#6FA067' : '#5E8F5B')).join('');
     s += [[36, 196], [324, 150], [200, 40], [140, 236], [16, 120]].filter(([x, y]) => y < h).map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.2" fill="#FFF3C4" opacity=".8"/><circle cx="${x + 4}" cy="${y + 2}" r="1.6" fill="#F7B6D0" opacity=".8"/>`).join('');
     // fireflies
@@ -16617,7 +16750,7 @@ const TWART = (() => {
     G.lanes.slice(0, lanes.length).forEach((g, i) => { s += g.cells.map(([x, y]) => stone(x, y, cols[i])).join(''); });
     // trees and bushes frame the free corners
     const deco = lanes.length >= 3 ? [['t', 30, 384, 0.62], ['b', 330, 300, 0.8], ['b', 30, 322, 0.7], ['t', 334, 384, 0.62], ['b', 186, 40, 0.6], ['b', 80, 470, 0.7]]
-      : lanes.length === 2 ? [['t', 30, 334, 0.7], ['t', 330, 334, 0.7], ['b', 179, 36, 0.6], ['b', 92, 324, 0.6], ['b', 266, 324, 0.6]]
+      : lanes.length === 2 ? [['t', 30, 384, 0.62], ['b', 330, 300, 0.8], ['b', 30, 322, 0.7], ['t', 334, 384, 0.62], ['b', 186, 40, 0.6], ['b', 80, 470, 0.7], ['t', 292, 128, 0.85], ['t', 326, 206, 0.7], ['b', 262, 58, 0.65], ['b', 244, 226, 0.55]]
         : [['t', 40, 120, 0.8], ['t', 316, 140, 0.8], ['b', 60, 250, 0.7], ['b', 300, 250, 0.7], ['b', 180, 40, 0.6]];
     s += deco.map(([k, x, y, z]) => (k === 't' ? tree(D, x, y, z) : bush(D, x, y, z))).join('');
     G.lanes.slice(0, lanes.length).forEach((g, i) => { s += g.spots.map(([x, y]) => pedestal(D, x, y, cols[i])).join(''); });
@@ -16651,12 +16784,14 @@ const TWART = (() => {
       s += [0, 1, 2].map((r) => { const ry = wy + 7.5 + r * 5.5, col = ['#FF6A3D', '#FFC93C', '#4FC96A'][r]; return `<path d="M${wx + 5} ${ry} H${wx + ww - 5}" stroke="#C9CED8" stroke-width="1"/>` + [0, 1, 2, 3, 4].map((b) => `<circle cx="${wx + 9 + b * 4.2 + (b > 1 + r % 2 ? 9 : 0)}" cy="${ry}" r="2.1" fill="${col}" stroke="${INK}" stroke-width=".8"/>`).join(''); }).join('');
       return s + sill(wx, wy + wh, ww);
     },
-    // arched window, a lectern with a sheet and a quill
+    // arched window with a big open book on a lectern and a quill in the ink pot (read at board size: few, bold shapes)
     Deutsch(D, y, c) {
-      const wx = 39, wy = y + 5, ww = 32, wh = 27;
-      let s = `<path d="${arch(wx - 4, wy - 3, ww + 8, wh + 3)}" fill="${c}" ${S(2)}/><path d="${arch(wx, wy, ww, wh)}" fill="#2A2F4A" ${S(2)}/>`;
-      s += `<path d="M${wx + 7} ${wy + wh} L${wx + 12} ${wy + 16} L${wx + 25} ${wy + 16} L${wx + 22} ${wy + wh}" fill="#8E5E36" ${S(1.4)}/><path d="M${wx + 9} ${wy + 16} L${wx + 13} ${wy + 9} L${wx + 26} ${wy + 9} L${wx + 25} ${wy + 16} Z" fill="#FFF7E6" ${S(1.4)}/><path d="M${wx + 15} ${wy + 12} h8 M${wx + 14} ${wy + 14} h8" stroke="#8A8FA3" stroke-width=".9"/>`;
-      s += `<path d="M${wx + 24} ${wy + 10} Q${wx + 30} ${wy + 1} ${wx + 29} ${wy - 2} Q${wx + 25} ${wy + 3} ${wx + 24} ${wy + 10} Z" fill="#FFFDF5" ${S(1.2)}/>`;
+      const wx = 31, wy = y + 4, ww = 48, wh = 28;
+      let s = `<path d="${arch(wx - 4, wy - 2, ww + 8, wh + 2)}" fill="${c}" ${S(2)}/><path d="${arch(wx, wy, ww, wh)}" fill="#2A2F4A" ${S(2)}/>`;
+      s += `<path d="M${wx + 18} ${wy + wh} L${wx + 21} ${wy + 20} H${wx + 27} L${wx + 30} ${wy + wh} Z" fill="#8E5E36" ${S(1.6)}/>`;
+      s += `<path d="M${wx + 24} ${wy + 21} Q${wx + 15} ${wy + 16} ${wx + 5} ${wy + 19} L${wx + 7} ${wy + 9} Q${wx + 16} ${wy + 6} ${wx + 24} ${wy + 11} Q${wx + 32} ${wy + 6} ${wx + 41} ${wy + 9} L${wx + 43} ${wy + 19} Q${wx + 33} ${wy + 16} ${wx + 24} ${wy + 21} Z" fill="#FFFDF5" ${S(1.8)}/><path d="M${wx + 24} ${wy + 11} V${wy + 21}" ${S(1.4)}/>`;
+      s += [0, 1, 2].map((k) => `<path d="M${wx + 9} ${wy + 12 + k * 2.6} q6 -1.6 12 0.4 M${wx + 27} ${wy + 12.4 + k * 2.6} q6 -2 12 -0.4" fill="none" stroke="${c}" stroke-width="1.3" stroke-linecap="round"/>`).join('');
+      s += `<path d="M${wx + 40} ${wy + 9} Q${wx + 50} ${wy - 6} ${wx + 52} ${wy - 4} Q${wx + 50} ${wy + 4} ${wx + 42} ${wy + 10} Z" fill="#FFFDF5" ${S(1.6)}/><path d="M${wx + 41} ${wy + 9.5} L${wx + 49} ${wy - 2}" stroke="#8A8FA3" stroke-width="1"/>`;
       return s + sill(wx, wy + wh, ww);
     },
     // half-timbered cellar floor: hatch with a potato sack
@@ -16668,13 +16803,14 @@ const TWART = (() => {
         [[61, y + 30], [66, y + 31], [64, y + 26]].map(([px, py]) => `<ellipse cx="${px}" cy="${py}" rx="3.2" ry="2.4" fill="#D9A55A" stroke="${INK}" stroke-width="1"/>`).join('');
       return s;
     },
-    // a printing press behind a wide window, printed sheets on a line
+    // a big wooden printing press with its screw and handle; a fresh sheet hangs on the left (bold shapes for board size)
     Ethik(D, y, c) {
-      const wx = 30, wy = y + 6, ww = 50, wh = 25;
-      let s = `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#2A2F4A" ${S(2)}/><path d="M${wx + 2} ${wy + 5} H${wx + ww - 2}" stroke="#C9CED8" stroke-width=".9"/>`;
-      s += [0, 1, 2].map((k) => `<rect x="${wx + 6 + k * 7}" y="${wy + 5}" width="5.5" height="7" fill="#FFFDF5" stroke="${INK}" stroke-width=".8"/><path d="M${wx + 7 + k * 7} ${wy + 8} h3.5 M${wx + 7 + k * 7} ${wy + 10} h3.5" stroke="${c}" stroke-width=".9"/>`).join('');
-      s += `<rect x="${wx + 30}" y="${wy + 6}" width="3" height="${wh - 6}" fill="#8E5E36" stroke="${INK}" stroke-width="1"/><rect x="${wx + 44}" y="${wy + 6}" width="3" height="${wh - 6}" fill="#8E5E36" stroke="${INK}" stroke-width="1"/><rect x="${wx + 29}" y="${wy + 5}" width="19" height="4" fill="#A87442" stroke="${INK}" stroke-width="1"/>`;
-      s += `<path d="M${wx + 39} ${wy + 9} V${wy + 15}" stroke="#C9CED8" stroke-width="2.4"/><rect x="${wx + 33}" y="${wy + 15}" width="12" height="3" fill="#C9CED8" stroke="${INK}" stroke-width=".9"/><path d="M${wx + 39} ${wy + 11} L${wx + 30} ${wy + 9}" stroke="#E2B07A" stroke-width="1.8" stroke-linecap="round"/><rect x="${wx + 31}" y="${wy + 19}" width="15" height="3" fill="#FFFDF5" stroke="${INK}" stroke-width=".8"/>`;
+      const wx = 24, wy = y + 5, ww = 62, wh = 27;
+      let s = `<rect x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#2A2F4A" ${S(2)}/>`;
+      s += `<path d="M${wx + 4} ${wy + 4} H${wx + 15}" stroke="#C9CED8" stroke-width="1"/><path d="M${wx + 5} ${wy + 4} h9 v13 h-9 Z" fill="#FFFDF5" ${S(1.4)}/><path d="M${wx + 7} ${wy + 8} h5 M${wx + 7} ${wy + 11} h5 M${wx + 7} ${wy + 14} h3" stroke="${c}" stroke-width="1.5" stroke-linecap="round"/>`;
+      s += `<rect x="${wx + 22}" y="${wy + 5}" width="4.5" height="${wh - 5}" fill="#A87442" ${S(1.6)}/><rect x="${wx + 51}" y="${wy + 5}" width="4.5" height="${wh - 5}" fill="#A87442" ${S(1.6)}/><rect x="${wx + 19}" y="${wy + 2}" width="40" height="5.5" rx="1" fill="#C68A4E" ${S(1.6)}/>`;
+      s += `<path d="M${wx + 39} ${wy + 7} V${wy + 15}" stroke="${INK}" stroke-width="4.6"/><path d="M${wx + 39} ${wy + 7} V${wy + 15}" stroke="#D3D8E4" stroke-width="2.2"/><path d="M${wx + 29} ${wy + 10} H${wx + 49}" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/><path d="M${wx + 29} ${wy + 10} H${wx + 49}" stroke="#FFC93C" stroke-width="1.6" stroke-linecap="round"/>`;
+      s += `<rect x="${wx + 30}" y="${wy + 15}" width="18" height="4" rx="1" fill="#D3D8E4" ${S(1.5)}/><rect x="${wx + 28}" y="${wy + 20}" width="22" height="3.6" fill="#FFFDF5" ${S(1.3)}/><rect x="${wx + 24}" y="${wy + 23.5}" width="30" height="3.5" fill="#8E5E36" ${S(1.4)}/>`;
       return s + `<rect x="${wx - 4}" y="${wy - 4}" width="${ww + 8}" height="5" rx="1.5" fill="${c}" ${S(1.8)}/>` + sill(wx, wy + wh, ww);
     },
     // open belfry: two arches and a golden bell
@@ -16720,17 +16856,17 @@ const TWART = (() => {
     const n = floors.length, H = towerH(n), D = defs(), foot = H - 8, yb = foot - BASE, yt = TOP;
     const dmg = hp > (maxHp * 2) / 3 ? 0 : hp > maxHp / 3 ? 1 : 2;
     let s = `<ellipse cx="${CX}" cy="${foot + 1}" rx="50" ry="7" fill="${INK}" opacity=".3"/>`;
-    // turret at the back right with its cone roof and the flag
-    s += `<rect x="78" y="${yt - 34}" width="26" height="34" fill="${wallGrad(D)}" ${S(2.4)}/>${ashlar(78, 104, yt - 34, yt, 8.5, 1)}<path d="M89 ${yt - 26} v8" stroke="#2A2F4A" stroke-width="3.4" stroke-linecap="round"/>`;
+    // turret at the back right with its cone roof and the flag; everything above the floors is in g.tw-top (lifts when a floor is built)
+    s += `<g class="tw-top"><rect x="78" y="${yt - 34}" width="26" height="34" fill="${wallGrad(D)}" ${S(2.4)}/>${ashlar(78, 104, yt - 34, yt, 8.5, 1)}<path d="M89 ${yt - 26} v8" stroke="#2A2F4A" stroke-width="3.4" stroke-linecap="round"/>`;
     s += `<path d="M74 ${yt - 32} L91 ${yt - 58} L108 ${yt - 32} Z" fill="${D.linS([[0, '#F07A62'], [0.5, '#D9453B'], [1, '#A42E2A']], true)}" ${S(2.4)}/><path d="M80 ${yt - 36} L91 ${yt - 52} M86 ${yt - 34} L93 ${yt - 46}" stroke="#FFB4A0" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>`;
-    s += `<path d="M91 ${yt - 56} V${yt - 76}" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="M91 ${yt - 57} V${yt - 75}" stroke="#E9ECF3" stroke-width="1.4" stroke-linecap="round"/><path d="M92 ${yt - 76} q7 -1 13 2 q-5 3 -1 7 q-6 -2 -12 1 Z" fill="${D.lin('#FF8A5C', '#E2502A')}" ${S(1.8)}/><circle cx="91" cy="${yt - 57}" r="2.6" fill="#FFC93C" ${S(1.4)}/>`;
+    s += `<path d="M91 ${yt - 56} V${yt - 76}" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="M91 ${yt - 57} V${yt - 75}" stroke="#E9ECF3" stroke-width="1.4" stroke-linecap="round"/><path class="tw-flag" d="M92 ${yt - 76} q7 -1 13 2 q-5 3 -1 7 q-6 -2 -12 1 Z" fill="${D.lin('#FF8A5C', '#E2502A')}" ${S(1.8)}/><circle cx="91" cy="${yt - 57}" r="2.6" fill="#FFC93C" ${S(1.4)}/>`;
     // the parapet back: the platform the hero stands on
     const merlon = (x, y, h) => `<rect x="${x}" y="${y}" width="13" height="${h}" fill="${wallGrad(D)}" ${S(2.4)}/>`;
-    s += [12, 32, 52].map((x) => merlon(x, yt - 26, 12)).join('') + (dmg > 1 ? merlon(72, yt - 20, 6) : merlon(72, yt - 26, 12)) + `<rect x="10" y="${yt - 15}" width="90" height="16" fill="#8E97B0" ${S(2.4)}/><path d="M13 ${yt - 12} H97" stroke="#C9CFDD" stroke-width="1.4"/>`;
+    s += [12, 32, 52].map((x) => merlon(x, yt - 26, 12)).join('') + (dmg > 1 ? merlon(72, yt - 20, 6) : merlon(72, yt - 26, 12)) + `<rect x="10" y="${yt - 15}" width="90" height="16" fill="#8E97B0" ${S(2.4)}/><path d="M13 ${yt - 12} H97" stroke="#C9CFDD" stroke-width="1.4"/></g>`;
     // floors bottom → top
     for (let i = 0; i < n; i++) s += `<g class="tw-fl" data-floor="${i}" data-subject="${floors[i]}">${floorArt(D, floors[i], yb - FLOOR * (i + 1), i)}</g>`;
     // corbel band under the parapet
-    s += `<rect x="13" y="${yt}" width="84" height="6" fill="#B6BED0" ${S(2.2)}/>` + [20, 32, 44, 56, 68, 80, 92].map((x) => `<path d="M${x - 3} ${yt + 6} q3 5 6 0" fill="#9AA3BC" ${S(1.6)}/>`).join('');
+    s += `<g class="tw-top"><rect x="13" y="${yt}" width="84" height="6" fill="#B6BED0" ${S(2.2)}/>` + [20, 32, 44, 56, 68, 80, 92].map((x) => `<path d="M${x - 3} ${yt + 6} q3 5 6 0" fill="#9AA3BC" ${S(1.6)}/>`).join('') + '</g>';
     // base with the gate
     s += `<rect x="13" y="${yb}" width="84" height="${BASE}" fill="${wallGrad(D)}" ${S(3)}/>${ashlar(13, 97, yb, foot, 10, 0)}`;
     s += `<rect x="9" y="${foot - 8}" width="92" height="9" rx="2" fill="${D.lin('#A9B1C5', '#7C86A2')}" ${S(2.6)}/>`;
@@ -16771,6 +16907,19 @@ const TWART = (() => {
     return `<svg class="tw-shields" viewBox="0 0 64 64" aria-hidden="true">${cols.map((c, i) => arc(i, c, i === 0, false)).join('')}${Array.from({ length: gone }, (_, i) => arc(cols.length + i, '', false, true)).join('')}</svg>`;
   }
 
+
+  /* ---------- motion pieces (app.js animates them) ---------- */
+  // drawn poof: puffs of cloud with an ink rim and two sparkles; each puff is its own element so CSS can scatter them
+  const poof = () => `<svg class="tw-poof" viewBox="-30 -30 60 60" aria-hidden="true">${[[-12, 4, 10], [10, 6, 11], [0, -9, 12], [-15, -10, 7], [16, -8, 8]].map(([x, y, r], i) => `<g class="p" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}" fill="#F4F1EA" ${S(2)}/><circle cx="${x - r / 3}" cy="${y - r / 3}" r="${r / 3}" fill="#fff"/></g>`).join('')}<g class="s">${spark(-22, -22, 5)}${spark(22, 16, 4, '#fff')}</g></svg>`;
+  // a shot: glowing ball in the shooter's type colour; big = 🎯 or a level-3 guard
+  const orb = (c, big) => `<svg class="tw-orb${big ? ' big' : ''}" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="10" fill="${c}" opacity=".35"/><circle r="6.5" fill="${c}" ${S(2)}/><circle cx="-2" cy="-2" r="2.2" fill="#fff" opacity=".85"/></svg>`;
+  // one Ziegel flying to the counter
+  const brickOne = () => `<svg viewBox="-1 -1 18 10" aria-hidden="true">${brick(1, 1)}</svg>`;
+  // Druckerei leaflet with printed lines
+  const leaflet = (c) => `<svg class="tw-leaf" viewBox="0 0 14 18" aria-hidden="true"><path d="M1 1 H10 L13 4 V17 H1 Z" fill="#FFFDF5" ${S(1.4)}/><path d="M3.5 6 h7 M3.5 9 h7 M3.5 12 h5" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+  // the shield item at the gate
+  const guardShield = () => `<svg class="tw-bigshield" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 3 L36 9 V22 C36 33 28 40 20 43 C12 40 4 33 4 22 V9 Z" fill="#7CC2FF" ${S(2.6)}/><path d="M20 8 L31 12 V22 C31 30 26 35 20 38 Z" fill="#2478D6" opacity=".5"/><path d="M9 13 Q9 10 13 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+
   /* ---------- Bauzeit card pictures (viewBox 0 0 80 56) ---------- */
   const mini = (shape, color, x, y, s, o = {}) => MONART.monsterSVG(shape, color, 0, o.mirror ? 'enemy' : '', o).replace('<svg', `<svg x="${x}" y="${y}" width="${s}" height="${s}"`);
   const bolt = (x0, y0, x1, y1, c) => `<path d="M${x0} ${y0} Q${(x0 + x1) / 2} ${Math.min(y0, y1) - 10} ${x1} ${y1}" fill="none" stroke="${c || '#FFE066'}" stroke-width="2.4" stroke-dasharray="1 4.5" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="3.6" fill="${c || '#FFE066'}" ${S(1.4)}/>`;
@@ -16810,12 +16959,12 @@ const TWART = (() => {
     return `<svg class="tw-pic" viewBox="0 0 80 56" aria-hidden="true">${D.out()}${body}</svg>`;
   }
 
-  return { ROOMS, laneColors, subjColor, geo, scene, tower, towerH, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
+  return { ROOMS, laneColors, subjColor, geo, scene, tower, towerH, TOWER: { TOP, FLOOR, BASE }, poof, orb, leaflet, brickOne, guardShield, spark: (c) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
 })();
 
 </script>
 <script>
-const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster aus bis zu drei Fächern laufen auf den Wissensturm zu, richtige Antworten halten sie auf.", "Zwischen den Wellen der Turmwacht ist Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Eltern können für die Turmwacht die Fächer festlegen und sehen, was zuletzt geübt wurde."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
+const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": ["Turmwacht ab Klasse 2: Monster aus bis zu drei Fächern laufen auf den Wissensturm zu, bei richtigen Antworten schießen Held und Wachen.", "Zwischen den Wellen der Turmwacht ist Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.", "Eltern können für die Turmwacht die Fächer festlegen und sehen, was zuletzt geübt wurde."]}]}, {"date": "2026-11-13", "groups": [{"title": "Neu", "items": ["Neue Aufgaben: „Formen und Flächen“ (Klasse 2), Wörter lesen, Silben und Geld (Klasse 1), Kopfrechnen bis 1000 (Klasse 3).", "Eltern können ganze Klassen, Englisch-Themen und Extras wie Garten, Hütte oder Duell ausblenden.", "Vorlesen: Stimme und Tempo wählbar, Englisch mit englischer Stimme, dazu eine kurze Anleitung fürs Handy."]}, {"title": "Verbessert", "items": ["Zahlenquest wird Stufe für Stufe schwerer, Klasse 2 hat mehr zum Üben, die Startseite zeigt den besten Anfang.", "Klasse 1: farbige Silben in der Lesestube, anfangs weniger Angriffe, keine Kreisel-Arena; „Erster Buchstabe“ fällt vorerst weg.", "Den Spielstand gibt es jetzt auch als Datei zum Teilen, der Code und der QR-Code sind kürzer."]}, {"title": "Behoben", "items": ["Die Zurück-Taste funktioniert, der Elternbereich fragt nach einer Pause wieder nach der PIN, dazu kleine Textfehler."]}]}, {"date": "2026-11-11", "groups": [{"title": "Neu", "items": ["Lernquest gibt es jetzt für Klasse 1, 2 und 3. Beim Einrichten wählen Eltern die Klasse, auf der Startseite wechselt man sie jederzeit.", "Klasse 1 und 2: 17 neue Themen, orientiert am Lehrplan Sachsen – Zahlen bis 20 und bis 100, Formen, Malnehmen, Geld, Länge und Zeit, Laute und Buchstaben, Richtig schreiben, Wörter und Sätze, Mein Körper, Durch das Jahr, Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser, Ethik und Musik.", "Klasse 3: 17 neue Themen – Baustelle, Jahrmarkt, Wörterwerkstatt, Satzbaustelle, Kirchenjahr, Gute Freunde, Ich, wir und die Welt, Kornkammer, Wetterstation, Kompass und Karte, Wiese, Früher und heute, Die fünf Sinne, Sicher im Verkehr, Konzertsaal, Teestube und Doppeldecker.", "Neue Fächer: Deutsch, Musik und Englisch (ab Klasse 3). Die Startseite ordnet alles nach Klasse und Fach.", "Vorlesen: Ein Lautsprecher-Knopf liest Aufgaben, Antworten, Erklärungen und Ereignisse vor. In Klasse 1 und 2 geschieht das von selbst.", "Lesestube mit kurzen Texten und Fragen, in Klasse 1 und 2 mit leichteren Texten.", "Stempelheft: Für Üben, neue Monster, Bosse und Wochenaufgaben gibt es Stempel. Damit holst du Kleidung für deine Helden, neue Helden und Kreisel-Teile.", "Wochenziele und Wochenboss: Jede Woche neue Ziele mit „Jetzt loslegen“-Knopf, dazu ein besonderer Gegner.", "Meine Hütte, Schulgarten und Werkbank: Pflanzen, ernten, Holz, Stein und Erz sammeln und daraus Tränke, Schilde oder Möbel bauen.", "Neue Felder auf der Karte: Markt, Bergwerk, Lesestube, Zeichenschule, Forscherlabor, Schatzkarte, Sinnestäuschung und die Kreisel-Arena.", "Duell zu zweit: Zwei Kinder üben abwechselnd an einem Gerät.", "Dilemma-Karten in Ethik und Sachkunde: Fragen zum Nachdenken ohne falsche Antwort."]}, {"title": "Verbessert", "items": ["Abenteuer in Klasse 1 und 2 sind kürzer, ohne leichter zu werden.", "Die Aufgaben passen sich schneller an: Lernquest merkt sich, was dein Kind schon kann, wird früher schwerer und hilft, wenn es hakt.", "Elternbereich neu geordnet in Überblick, Inhalte und Einstellungen: mit PIN, Wochenbericht, Spielstand-Code und QR-Code zum Mitnehmen auf ein anderes Gerät.", "Eltern können Fächer, Themen, Helden und einzelne Aufgabenarten ausblenden und sehen zu jeder Aufgabenart, was sie übt und wo sie im Lehrplan steht.", "Mehr Aufgabenarten in Zahlenquest: Teilen mit Rest, Runden, Zahlenmauern, Bruchteile, schriftliches Rechnen und mehr.", "In Klasse 2 tippst du Geldbeträge in zwei Felder: Euro und Cent getrennt.", "Neue Monster für die neuen Themen, und viele Bilder in Aufgaben sind genauer gezeichnet, von Bäumen und Vögeln bis zu Instrumenten und Münzen. Kleine Symbole sehen auf jedem Gerät gleich aus.", "Klarere Wörter: Lernquest spricht von Themen, Üben und Loslegen statt von Spielen."]}, {"title": "Behoben", "items": ["Aufgaben mit zwei richtigen Antworten, unklaren Bildern oder zu früh schwerem Stoff sind korrigiert.", "Hut, Krone und Kranz sitzen bei allen Helden richtig."]}]}, {"date": "2026-11-09", "groups": [{"title": "Neu", "items": ["Alle Monster sind neu gezeichnet und passen zu ihrem Namen. Elitegegner sehen stärker aus, Entwicklungen wachsen sichtbar."]}, {"title": "Verbessert", "items": ["Neues App-Symbol und neuer Startbildschirm mit dem Sonnenfuchs.", "Die Zahl der gespielten und geschafften Abenteuer steht jetzt erklärt im Elternbereich."]}]}, {"date": "2026-11-08", "groups": [{"title": "Neu", "items": ["Neue Wegekarte: Jeder Weg sperrt andere. Elitegegner bewachen Truhen, ihre Beute suchst du dir aus.", "Jeder Gegner hat eine 🎯 Schwachstelle. Sie wandert zu der Attacke, die du am wenigsten geübt hast.", "„Idee senden“: Wünsche und Fehler direkt aus dem Spiel schicken – ohne Konto."]}, {"title": "Verbessert", "items": ["Etwas schwerer: Rast, Schatz und Ereignis kommen seltener, und Gegner halten mehr aus. Gleiche Dinge stapeln sich im Beutel.", "Der Kampf ist neu aufgebaut wie in klassischen Monsterspielen, mit echten Tönen und kurzen Pausen.", "Neue Schriften, Karopapier, ruhigere Texte und neue Luther-Fragen. Zahlenrätsel kommen ohne „Quersumme“ aus."]}, {"title": "Behoben", "items": ["Das Zahlengitter rechnet jetzt wie die Hundertertafel: rechts + 1, unten + 10.", "Wer die App mitten im Kampf schließt, verliert nichts mehr. Dazu viele kleine Text- und Anzeigefehler."]}]}, {"date": "2026-11-07", "groups": [{"title": "Neu", "items": ["Lernquest ist online! Drei Abenteuer für Klasse 3: Zahlenquest (Mathe), Luthers Weg (Ethik) und Kartoffel-Werkstatt (Sachkunde).", "Jede Attacke ist eine Aufgabe – ohne Zeitdruck, und das Spiel passt sich deinem Können an.", "Als App auf Handy, Tablet oder Computer installierbar, spielbar auch ohne Internet.", "Elternbereich: 5× auf „Lernquest“ tippen."]}]}];
 </script>
 <script>
 (() => {
@@ -17139,6 +17288,20 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     function play(k) { const c = ensure(); if (!c || !buffers[k]) return; try { const src = c.createBufferSource(); src.buffer = buffers[k]; const g = c.createGain(); g.gain.value = FILES[k]; src.connect(g); g.connect(c.destination); src.start(); } catch (e) { } }
     const api = { unlock: ensure, loaded: () => Object.keys(buffers).length };
     for (const k of Object.keys(FILES)) api[k] = () => play(k);
+    // short Turmwacht sounds made in code (no files); quiet on purpose, parents hear them too
+    const tone = (c, t, type, f0, f1, dur, vol) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.03); };
+    const hiss = (c, t, dur, vol, freq) => { const b = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 2; const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; g.gain.value = vol; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t); };
+    const SYN = {
+      pop: (c, t) => { tone(c, t, 'sine', 700, 140, 0.13, 0.22); hiss(c, t, 0.08, 0.25, 1800); },
+      clink: (c, t, k = 0) => { const f = 1700 * 2 ** (k / 12); tone(c, t, 'triangle', f, f * 0.98, 0.09, 0.09); tone(c, t + 0.012, 'sine', f * 1.5, f * 1.5, 0.07, 0.05); },
+      shatter: (c, t) => { hiss(c, t, 0.4, 0.35, 4200); [2600, 3300, 2100, 3900].forEach((f, i) => tone(c, t + i * 0.035, 'sine', f, f * 0.9, 0.12, 0.05)); },
+      bell: (c, t) => { [[660, 0.12], [1320, 0.05], [1980, 0.03]].forEach(([f, v]) => tone(c, t, 'sine', f, f * 0.995, 1.1, v)); },
+      shot: (c, t, k = 1) => { tone(c, t, 'triangle', 900 + 150 * k, 320, 0.1, 0.07); if (k > 1) tone(c, t, 'sine', 180, 90, 0.12, 0.08); },
+      swish: (c, t) => hiss(c, t, 0.16, 0.18, 900),
+      chime: (c, t) => [784, 988, 1175].forEach((f, i) => tone(c, t + i * 0.08, 'sine', f, f, 0.35, 0.07)),
+      thud: (c, t) => { tone(c, t, 'sine', 140, 55, 0.22, 0.25); hiss(c, t, 0.12, 0.2, 400); },
+    };
+    for (const k of Object.keys(SYN)) api[k] = (arg) => { const c = ensure(); if (c) try { SYN[k](c, c.currentTime + 0.005, arg); } catch (e) { } };
     return api;
   })();
   ['pointerdown', 'keydown', 'touchstart'].forEach((ev) => document.addEventListener(ev, () => SFX.unlock(), { capture: true, passive: true }));
@@ -18774,7 +18937,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   }
   const turmLeave = (to) => { saveAll(); run = null; turmMode = null; to(); };
   // id → monster as it was before the answer (beaten ones are gone afterwards), for the log
-  const turmNames = () => Object.fromEntries(run.turm.monsters.concat(run.turm.queue).map((x) => [x.id, { name: x.name, acc: accName(x) }]));
+  const turmNames = () => Object.fromEntries(run.turm.monsters.concat(run.turm.queue).map((x) => [x.id, { name: x.name, acc: accName(x), x: JSON.parse(JSON.stringify(x)) }]));
   // „Erst den Wackelturm besiegen.“: the data's accusative if it has one, else the article (and an adjective after „Der“) declined
   const accName = (x) => x.acc || x.name.replace(/^(Der|Die|Das) (?:([a-zäöüß]+e) )?/, (_, art, adj) => `${{ Der: 'den', Die: 'die', Das: 'das' }[art]} ${adj ? adj + (art === 'Der' ? 'n ' : ' ') : ''}`);
   const midName = (n) => n.replace(/^(Der|Die|Das) /, (a) => a.toLowerCase());
@@ -18834,7 +18997,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     $('#go').onclick = () => {
       if (!sel.length) return;
       startTurm(subs.map((s) => s.subject).filter((s) => sel.includes(s)), { m: hero.m, id: hero.s.id });
-      turmSel = null; screenTurmBoard({ lines: [`Welle 1 von ${TW.WAVES.length}.`] });
+      turmSel = null; screenTurmBoard({ ev: [{ t: 'wave', wave: 1 }].concat(run.turm.monsters.map((x) => ({ t: 'enter', id: x.id, lane: x.lane, cell: x.cell }))) });
     };
     paint();
   }
@@ -18842,21 +19005,21 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   function resumeTurm() {
     turmSel = null; turmMode = null; const t = run.turm;
     if (t.phase === 'task') { const names = turmNames(); screenTurmBoard(); return turmTask(turmAsk(), names); }
-    if (t.phase === 'step') return screenTurmBoard({ ev: turmStep(), names: turmNames() });
+    if (t.phase === 'step') { const names = turmNames(); return screenTurmBoard({ ev: turmStep(), names }); }
     screenTurmBoard({ lines: ['Die Turmwacht geht weiter.'], quiet: true });
   }
 
   /* the board: an illustrated scene (TWART) with the Wissensturm in the middle and up to three paths to its gate.
      Everything is placed in board units (--x/--y of TWART.geo); CSS turns them into percentages of the board. */
   let turmSel = null; // id of the monster whose card is open
-  const turmTop = () => topbar(`🏰 Welle ${run.turm.wave}/${TW.WAVES.length}`, `<div class="world tw-res"><span aria-label="Turm: ${run.hero.hp} von ${run.hero.maxHp} Lebenspunkten">❤️ ${run.hero.hp}</span><span aria-label="${run.turm.ziegel} Ziegel">🧱 ${run.turm.ziegel}</span></div>`);
+  const turmTop = () => topbar(`🏰 Welle ${run.turm.wave}/${TW.WAVES.length}`, `<div class="world tw-res"><span class="tw-hpnow" aria-label="Turm: ${run.hero.hp} von ${run.hero.maxHp} Lebenspunkten">❤️ <b>${run.hero.hp}</b></span><span class="tw-bricks" aria-label="${run.turm.ziegel} Ziegel">🧱 <b>${run.turm.ziegel}</b></span></div>`);
   function turmMonLabel(x) {
     const t = run.turm;
     return [x.name, `Weg ${laneName(x.lane)}`, `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`, `${x.hp} Lebenspunkte`, t.weak === x.id && 'Schwachstelle', x.again && 'Aufgabe von vorhin', !TW.canTarget(run, x.id) && 'geschützt', x.fresh && 'neu im Monsterbuch'].filter(Boolean).join(', ');
   }
   // a monster faces the gate: the plain sprite looks right, the mirrored enemy sprite (flipped back by CSS) looks left
-  function turmMon(x, cols, right) {
-    const t = run.turm, sel = x.id === turmSel, pct = Math.max(4, (x.hp / x.maxHp) * 100), free = TW.canTarget(run, x.id);
+  function turmMon(x, cols, right, ghost) {
+    const t = run.turm, sel = x.id === turmSel, pct = Math.max(4, (x.hp / x.maxHp) * 100), free = ghost || TW.canTarget(run, x.id);
     const tags = [t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑', x.fresh && '📖'].filter(Boolean).map((e) => `<i>${e}</i>`).join('');
     const ring = x.final ? TWART.shields(x.shields.map((l) => cols[l]), Math.round(x.maxHp / x.part) - x.shields.length) : '';
     // guided wave 1: the first monster is marked until it is tapped
@@ -18867,8 +19030,9 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   // guards: the three typed starters or a boss from the Monsterbuch (look = its shape)
   const GUARD_LOOK = { fuchs: ['fox', 'feuer'], kroete: ['toad', 'wasser'], baer: ['bear', 'pflanze'] };
   const turmGuardSVG = (g) => { const [shape, type] = GUARD_LOOK[g.look] || [g.look, g.type in TYPES ? g.type : 'normal']; return monsterSVG(shape, TYPES[type].color, 0, '', { boss: !GUARD_LOOK[g.look] }); };
-  function turmBoardHtml() {
-    const t = run.turm, h = run.hero, G = TWART.geo(t.lanes.length), cols = TWART.laneColors(t.lanes), pct = (h.hp / h.maxHp) * 100, build = t.phase === 'build';
+  // outro: the last turn of a wave on the board, without the Bauzeit marks
+  function turmBoardHtml(outro) {
+    const t = run.turm, h = run.hero, G = TWART.geo(t.lanes.length), cols = TWART.laneColors(t.lanes), pct = (h.hp / h.maxHp) * 100, build = t.phase === 'build' && !outro;
     const at = ([x, y]) => `--x:${x};--y:${y}`, pv = build && TW.preview(run, turmCtx(run.hero));
     const pick = (gd) => build && (turmMode === 'guard' || (turmMode === 'up' && gd && gd.lvl < TW.GUARD_DMG.length));
     const tw = TWART.tower(t.floors, h.hp, h.maxHp);
@@ -18882,31 +19046,39 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     return `<div class="tw-board">${TWART.scene(t.lanes)}
       <div class="tw-tower" id="twt" style="--x:${G.gate[0]};--y:${G.gate[1] + 8};--th:${tw.h};--feet:${tw.feet}" data-floors="${t.floors.length}">${tw.back}<div class="tw-heroslot">${heroSVG(turmHero(), h.evo)}</div>${tw.front}</div>
       ${lanes}
-      <div class="tw-hpbox ${G.hp[2]}" style="${at(G.hp)}"><span class="hptext">Turm ❤️ ${h.hp} / ${h.maxHp}${run.shield ? ' 🛡️' : ''}</span><span class="hpbar" aria-hidden="true"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></span></div></div>`;
+      <div class="tw-hpbox ${G.hp[2]}" style="${at(G.hp)}"><span class="hptext">Turm ❤️ <b>${h.hp}</b> / ${h.maxHp}${run.shield ? ' 🛡️' : ''}</span><span class="hpbar" aria-hidden="true"><i class="${turmBar(pct)}" style="width:${pct}%"></i></span></div>
+      <div class="tw-fx" aria-hidden="true"><svg viewBox="0 0 ${G.w} ${G.h}" preserveAspectRatio="none"></svg></div></div>`;
   }
-  // o: { ev: engine events to show, names: id → name from before the answer, lines: extra log lines first, quiet: no auto-reading }
-  // o.still: the same screen again (a Bauzeit card was tapped), without the enter animation
+  const turmBar = (pct) => (pct < 30 ? 'low' : pct < 60 ? 'mid' : '');
+  // o: { ev: engine events to show, names: id → { name, acc, x } from before the answer, lines: extra log lines first, quiet: no auto-reading }
+  // o.still: the same screen again (a Bauzeit card was tapped), without the enter animation; o.bau: what was just bought (motion)
   function screenTurmBoard(o = {}) {
     depth = 2; const t = run.turm;
-    if (t.phase === 'fallen' || t.phase === 'won') return screenTurmEnd(o);
-    if (t.phase === 'reward' || (o.ev && o.ev.some((e) => e.t === 'cleared'))) return screenTurmCleared(o);
+    const end = t.phase === 'fallen' || t.phase === 'won', next = end ? () => screenTurmEnd(o) : () => screenTurmCleared(o);
+    const outro = o.ev && o.ev.some((e) => e.t === 'cleared' || e.t === 'fallen');
+    // the wave's last turn plays on the board first; without motion the next screen comes at once
+    if ((end || t.phase === 'reward' || outro) && !(outro && turmMotion(true))) return next();
     if (!t.monsters.some((x) => x.id === turmSel)) turmSel = null;
-    if (t.phase !== 'build') turmMode = null;
+    if (t.phase !== 'build' || outro) turmMode = null;
     const text = (o.lines || []).concat(o.ev ? turmLines(o.ev, o.names || {}) : []).join(' ');
-    render(`<div class="screen tw-screen">${turmTop()}<div class="tw-main" style="--W:${TWART.geo(t.lanes.length).w};--H:${TWART.geo(t.lanes.length).h}">${turmBoardHtml()}</div>${text ? `<div class="log tw-log"><p>${esc(text)}</p></div>` : ''}<div class="taskwrap" id="taskwrap"></div><div class="bottom tw-panel" id="bottom"></div></div>`, !!o.ev || !!o.still);
+    render(`<div class="screen tw-screen">${turmTop()}<div class="tw-main" style="--W:${TWART.geo(t.lanes.length).w};--H:${TWART.geo(t.lanes.length).h}">${turmBoardHtml(outro)}</div>${text ? `<div class="log tw-log"><p>${esc(text)}</p></div>` : ''}<div class="taskwrap" id="taskwrap"></div><div class="bottom tw-panel" id="bottom"></div></div>`, !!o.ev || !!o.still);
     backTo = turmMode ? () => { turmMode = null; screenTurmBoard({ still: true }); } : () => turmLeave(screenTurm);
-    if (t.phase === 'build') $('.tw-screen').classList.add('build');
+    if (t.phase === 'build' && !outro) $('.tw-screen').classList.add('build');
     if (text) { announce(text); speakBtn($('.tw-log'), 'afterbegin', () => text, o.quiet ? null : () => text, [], run.grade); }
-    app.querySelectorAll('.tw-mon').forEach((b) => { b.onclick = () => { turmSel = +b.dataset.id; turmPick(); }; });
-    const bauTut = t.phase === 'build' && !meta.seenTut['turm:bau'];
-    turmPanel(t.phase === 'build' && !text && !o.still && !bauTut);
-    if (o.ev) turmFx(o.ev);
-    if (o.built) { const f = $(`#twt .tw-fl[data-subject="${o.built}"]`); if (f) f.classList.add('new'); }
+    turmBind();
+    const bauTut = t.phase === 'build' && !outro && !meta.seenTut['turm:bau'];
+    if (outro) $('#bottom').innerHTML = '<button class="btn" id="twon">Weiter</button>';
+    else turmPanel(t.phase === 'build' && !text && !o.still && !bauTut);
     const big = o.ev && o.ev.find((e) => e.t === 'enter' && (e.boss || e.elite)), bx = big && t.monsters.find((x) => x.id === big.id);
-    if (t.phase === 'choose' && !meta.seenTut['turm:intro']) turmIntro();
+    const intro = t.phase === 'choose' && !meta.seenTut['turm:intro'];
+    if (o.ev && !intro && turmMotion()) turmPlay(o, outro ? next : bx ? () => turmBanner(bx, true) : null);
+    else if (o.ev) turmFx(o.ev);
+    if (o.bau) turmBuilt(o.bau);
+    if (intro) turmIntro();
     else if (bauTut) turmBauTut();
-    else if (bx) turmBanner(bx);
+    else if (bx && !$('.tw-screen.playing')) turmBanner(bx);
   }
+  const turmBind = () => app.querySelectorAll('button.tw-mon').forEach((b) => { b.onclick = () => { turmSel = +b.dataset.id; turmPick(); }; });
   function turmPick() {
     app.querySelectorAll('.tw-mon').forEach((b) => { const on = +b.dataset.id === turmSel; b.classList.toggle('sel', on); b.classList.remove('guide'); b.setAttribute('aria-pressed', on); });
     turmPanel(true);
@@ -18984,17 +19156,19 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     const said = () => joined('Bauzeit', coming, ...cards.map((c) => joined(c.name, c.why || (c.price ? `${c.label || c.price} Ziegel` : 'geschenkt'), c.desc)));
     speakBtn($('.tw-bauhead h3'), 'beforeend', said, say ? said : null, [], run.grade);
     const msg = (m) => { $('.tw-bmsg', bot).textContent = m; };
+    const strip = $('.tw-cards', bot), end = () => strip.classList.toggle('end', strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4);
+    strip.onscroll = end; end();
     bot.querySelectorAll('[data-card]').forEach((b) => { b.onclick = () => {
       const c = cards.find((x) => x.id === b.dataset.card);
       if (c.why) return msg(c.why);
       if (c.short) return msg(`Dafür fehlen dir noch ${c.short} Ziegel.`);
       if (c.id === 'guard' || c.id === 'up') { turmMode = c.id; return screenTurmBoard({ still: true }); }
-      if (c.id === 'fix') { if (turmBuy({ kind: 'fix' })) screenTurmBoard({ still: true, lines: [`Die Mauer ist geflickt: ❤️ ${run.hero.hp} / ${run.hero.maxHp}.`] }); return; }
+      if (c.id === 'fix') { const hp = run.hero.hp; if (turmBuy({ kind: 'fix' })) screenTurmBoard({ still: true, bau: { fix: hp }, lines: [`Die Mauer ist geflickt: ❤️ ${run.hero.hp} / ${run.hero.maxHp}.`] }); return; }
       const s = c.id.slice(6);
-      if (turmBuy({ kind: 'floor', subject: s })) { SFX.levelup(); screenTurmBoard({ still: true, built: s, lines: [`${TWART.ROOMS[s].name} ist fertig. ${c.desc}`] }); }
+      if (turmBuy({ kind: 'floor', subject: s })) { SFX.levelup(); screenTurmBoard({ still: true, bau: { floor: s }, lines: [`${TWART.ROOMS[s].name} ist fertig. ${c.desc}`] }); }
     }; });
     $('#bag', bot).onclick = turmBag; $('#home', bot).onclick = home;
-    $('#nextwave', bot).onclick = () => { const ev = turmNextWave(); screenTurmBoard({ ev, names: turmNames() }); };
+    $('#nextwave', bot).onclick = () => { const names = turmNames(), ev = turmNextWave(); screenTurmBoard({ ev, names }); };
   }
   function turmSpot(lane, spot) {
     const t = run.turm, k = lane + ':' + spot, g = t.guards[k];
@@ -19003,7 +19177,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     if (p < 0) return;
     if (p > t.ziegel) { $('.tw-bmsg').textContent = `Dafür fehlen dir noch ${p - t.ziegel} Ziegel.`; return; }
     turmBuy({ kind: 'up', lane, spot }); turmMode = null;
-    screenTurmBoard({ still: true, lines: [`Die Wache am Weg ${laneName(lane)} ist jetzt auf Stufe ${g.lvl}.`] });
+    screenTurmBoard({ still: true, bau: { up: k }, lines: [`Die Wache am Weg ${laneName(lane)} ist jetzt auf Stufe ${g.lvl}.`] });
   }
   // the three typed guards, and the bosses of this grade from the Monsterbuch as normal-type guards
   function turmGuardLooks() {
@@ -19024,8 +19198,8 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     ov.querySelectorAll('[data-l]').forEach((b) => { b.onclick = () => {
       const x = looks[+b.dataset.l]; ov.remove();
       if (!turmBuy({ kind: 'guard', lane, spot, look: x.look, type: x.type })) return;
-      turmMode = null; SFX.right();
-      screenTurmBoard({ still: true, lines: [GUARD_LOOK[x.look] ? `${x.name} steht jetzt am Weg ${laneName(lane)}.` : `${x.name} hilft dir jetzt.`] });
+      turmMode = null;
+      screenTurmBoard({ still: true, bau: { guard: lane + ':' + spot }, lines: [GUARD_LOOK[x.look] ? `${x.name} steht jetzt am Weg ${laneName(lane)}.` : `${x.name} hilft dir jetzt.`] });
     }; });
   }
   function turmBauTut() {
@@ -19101,7 +19275,204 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     if (seen.length) L.push(`Neu im Monsterbuch: ${seen.join(', ')}.`);
     return L;
   }
-  // simple feedback for now; the animations come in step E8
+  /* Motion. The board is drawn in its final state first (saved, tappable, what screen readers and tests see); turmPlay then
+     replays the turn on top of it in short beats. A tap on the board jumps to the end. Timers only touch a board that is still
+     on screen and not covered by a task. Without layout (tests) or with „Bewegung reduzieren“ everything is shown at once. */
+  let turmSpeed = null; // test hook: a number forces the motion, at that speed factor
+  const turmMotion = () => turmSpeed != null || (!reducedMotion && app.clientWidth > 0);
+  const TW_STEP = 300; // one field of walking, ms
+  function turmPlay(o, after) {
+    const t = run.turm, scr = $('.tw-screen'), board = $('.tw-board', scr), G = TWART.geo(t.lanes.length), cols = TWART.laneColors(t.lanes);
+    const names = o.names || {}, ev = o.ev, k = turmSpeed || 1, timers = [], fx = $('.tw-fx', board), fsvg = $('svg', fx), flyers = [];
+    const alive = () => board.isConnected && !scr.classList.contains('tasking');
+    let stopped = false;
+    const later = (ms, f) => timers.push(setTimeout(() => { if (!stopped && alive()) f(); }, ms * k));
+    const at = (p) => `--x:${p[0]};--y:${p[1]}`;
+    const add = (html, p, ms) => { const d = document.createElement('div'); d.className = 'tw-fxi'; d.setAttribute('style', at(p)); d.innerHTML = html; fx.appendChild(d); if (ms) later(ms, () => d.remove()); return d; };
+    const num = (p, n, cls) => add(`<span class="tw-num ${cls || ''}">${n}</span>`, [p[0], p[1] - 14], 1000);
+    const again = (el, cls) => { if (!el) return; el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); };
+    // a thrown thing: an arc from p to q (board units) with the Web Animations API; lands after ms
+    const throwIt = (html, p, q, ms, h, spin) => {
+      const d = add(html, p), u = board.clientWidth / G.w, dx = (q[0] - p[0]) * u, dy = (q[1] - p[1]) * u, up = h * u;
+      if (d.animate) d.animate([0, 0.25, 0.5, 0.75, 1].map((f) => ({ translate: `${dx * f}px ${dy * f - up * 4 * f * (1 - f)}px`, rotate: spin ? `${spin * f}deg` : '0deg' })), { duration: ms * k, easing: 'linear', fill: 'forwards' });
+      later(ms, () => d.remove());
+      return d;
+    };
+    // where things are: monster bodies, the hero, the tower's rooms, the gate
+    const cellP = (lane, c) => G.lanes[lane].cells[c - 1];
+    const body = (p) => [p[0], p[1] - 20];
+    const n = t.floors.length, top = G.gate[1] + 8 - TWART.towerH(n);
+    const heroP = [G.gate[0] - 9, top + TWART.TOWER.TOP - 26], roomP = (s) => [G.gate[0], G.gate[1] - 69 - 38 * Math.max(0, t.floors.indexOf(s))];
+    const towerP = [G.gate[0], G.gate[1] - 40];
+    // every token: its element, the point it is anchored at and where it shows now
+    const tok = {}, anchor = {}, cur = {};
+    const place = (id, p, ms) => { const el = tok[id]; if (!el) return; const a = anchor[id]; el.style.transition = ms ? `translate ${ms * k}ms ease-in-out, opacity ${ms * k}ms` : 'none'; el.style.translate = `calc(${p[0] - a[0]} * var(--u)) calc(${p[1] - a[1]} * var(--u))`; cur[id] = p; };
+    const pre = (id) => names[id] && names[id].x;
+    board.querySelectorAll('button.tw-mon').forEach((b) => { const id = +b.dataset.id, x = t.monsters.find((y) => y.id === id); tok[id] = b; anchor[id] = cur[id] = cellP(x.lane, x.cell); });
+    // beaten monsters and those that walked into the gate come back as ghosts where they stood
+    for (const id of new Set(ev.filter((e) => e.t === 'beaten' || e.gone).map((e) => e.id))) {
+      const x = pre(id); if (!x || !x.cell || tok[id]) continue;
+      const c = cellP(x.lane, x.cell), cell = board.querySelector(`.tw-cell[data-lane="${x.lane}"][data-cell="${x.cell}"]`);
+      cell.insertAdjacentHTML('beforeend', turmMon(x, cols, c[0] < G.gate[0] - 4, true).replace('<button class="tw-mon', '<div aria-hidden="true" class="tw-mon tw-ghost').replace(/<\/button>$/, '</div>'));
+      tok[id] = cell.lastElementChild; anchor[id] = cur[id] = c;
+    }
+    // back to how it looked before the answer
+    const entering = ev.filter((e) => e.t === 'enter');
+    for (const id of Object.keys(tok)) {
+      const x = pre(id), first = ev.find((e) => e.id === +id && (e.t === 'move' || e.t === 'push'));
+      if (entering.some((e) => e.id === +id)) { const L = t.monsters.find((y) => y.id === +id).lane; place(id, G.lanes[L].from[0]); tok[id].style.opacity = 0; }
+      else if (x && x.cell) place(id, cellP(x.lane, x.cell));
+      else if (first) place(id, cellP(t.monsters.find((y) => y.id === +id).lane, first.from));
+      const bar = $('.tw-hp b', tok[id]);
+      if (x && bar && !tok[id].classList.contains('tw-ghost')) bar.style.width = Math.max(4, (x.hp / x.maxHp) * 100) + '%';
+    }
+    const res = (cls) => $(`.topbar .${cls} b`, scr), hpBox = $('.tw-hpbox', board), hpNow = $('.hptext b', hpBox), hpBar = $('.hpbar i', hpBox), twt = $('#twt', board);
+    const setHp = (hp) => { const pct = (hp / run.hero.maxHp) * 100; hpNow.textContent = hp; res('tw-hpnow').textContent = hp; hpBar.style.width = pct + '%'; hpBar.className = turmBar(pct); };
+    const towerArt = (hp) => { const tw = TWART.tower(t.floors, hp, run.hero.maxHp); twt.querySelector('.tw-towerart').outerHTML = tw.back; twt.querySelector('.tw-parapet').outerHTML = tw.front; };
+    const level = (hp) => (hp > (run.hero.maxHp * 2) / 3 ? 0 : hp > run.hero.maxHp / 3 ? 1 : 2);
+    const hpEv = ev.find((e) => e.t === 'tower' || e.t === 'heal');
+    let hp = hpEv ? (hpEv.t === 'tower' ? hpEv.hp + hpEv.dmg : hpEv.hp - hpEv.n) : run.hero.hp;
+    if (hp !== run.hero.hp) { setHp(hp); if (level(hp) !== level(run.hero.hp)) towerArt(hp); }
+    let bricks = t.ziegel - ev.filter((e) => e.t === 'ziegel').reduce((a, e) => a + e.n, 0);
+    res('tw-bricks').textContent = bricks;
+    const evo = ev.find((e) => e.t === 'evolve'), slot = $('.tw-heroslot', board);
+    if (evo) slot.innerHTML = heroSVG(turmHero(), evo.evo - 1);
+    const shieldEv = ev.find((e) => e.t === 'shield'), ringNow = shieldEv && tok[shieldEv.id] && $('.tw-shields', tok[shieldEv.id]);
+    if (ringNow) { const x = pre(shieldEv.id); ringNow.insertAdjacentHTML('afterend', TWART.shields(x.shields.map((l) => cols[l]), Math.round(x.maxHp / x.part) - x.shields.length)); ringNow.hidden = true; }
+
+    /* the beats: [ms until the next one, what happens] */
+    const hit = (id, dmg, big, crit, hp1) => {
+      const el = tok[id]; again(el, 'tw-hit'); num(body(cur[id] || [0, 0]), '−' + dmg, crit ? 'crit' : '');
+      const x = pre(id), bar = el && $('.tw-hp b', el);
+      if (bar && x) { const pct = Math.max(4, (Math.max(0, hp1) / x.maxHp) * 100); bar.style.width = pct + '%'; bar.className = pct < 30 ? 'low' : pct < 60 ? 'mid' : ''; }
+      if (big) { add('<i class="tw-burst"></i>', body(cur[id]), 600); SFX.crit(); } else if (crit) SFX.crit(); else SFX.hit();
+    };
+    const heroType = TYPES[turmHero().type].color, B = [];
+    const walk = (id, path, ms) => path.forEach((p, i) => later(i * ms, () => { place(id, p, ms); again(tok[id], 'tw-step'); }));
+    const lastHit = {}; // who was hit last, so the Ziegel fly from there
+    for (let i = 0; i < ev.length; i++) {
+      const e = ev[i];
+      if (e.t === 'hit') B.push([e.weak ? 520 : 450, () => {
+        again(slot, 'tw-throw'); SFX.swish(); lastHit.p = body(cur[e.id]);
+        throwIt(TWART.orb(heroType, e.weak), [heroP[0], heroP[1] - 6], body(cur[e.id]), 340, 34, 0);
+        later(340, () => hit(e.id, e.dmg, e.weak, e.weak || e.strong, e.hp));
+      }]);
+      else if (e.t === 'shot') {
+        const [L, sp] = e.from.split(':').map(Number), g = t.guards[e.from], p = G.lanes[L].spots[sp];
+        B.push([ev[i + 1] && ev[i + 1].t === 'shot' ? 200 : 300, () => {
+          again(board.querySelector(`.tw-spot[data-lane="${L}"][data-spot="${sp}"]`), 'tw-fire'); SFX.shot(g ? g.lvl : 1);
+          throwIt(TWART.orb(TYPES[g ? g.type : 'normal'].color, g && g.lvl > 2).replace('tw-orb', `tw-orb g${g ? g.lvl : 1}`), [p[0], p[1] - 24], body(cur[e.id]), 260, 18, 0);
+          later(260, () => hit(e.id, e.dmg, false, e.strong, e.hp));
+        }]);
+      } else if (e.t === 'chain') B.push([380, () => {
+        const a = body(cur[e.from] || lastHit.p || towerP), b = body(cur[e.id]), mid = (f, j) => [a[0] + (b[0] - a[0]) * f + j, a[1] + (b[1] - a[1]) * f - j];
+        const d = [a, mid(0.25, 9), mid(0.45, -8), mid(0.65, 8), mid(0.82, -6), b].map((p) => p.join(' ')).join(' L');
+        fsvg.insertAdjacentHTML('beforeend', `<g class="tw-zap"><path d="M${d}" fill="none" stroke="#1C2541" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/><path d="M${d}" fill="none" stroke="#FFE066" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/></g>`);
+        const z = fsvg.lastElementChild; later(520, () => z.remove()); SFX.shot(3);
+        later(160, () => hit(e.id, e.dmg, false, false, e.hp));
+      }]);
+      else if (e.t === 'beaten') B.push([300, () => {
+        const p = body(cur[e.id] || [0, 0]); if (tok[e.id]) tok[e.id].classList.add('tw-gone');
+        add(TWART.poof(), p, 800); SFX.pop();
+      }]);
+      else if (e.t === 'shield') B.push([520, () => {
+        if (ringNow) { ringNow.nextElementSibling.remove(); ringNow.hidden = false; }
+        const p = body(cur[e.id]); again(tok[e.id], 'tw-hit'); SFX.shatter();
+        add(`<i class="tw-burst" style="border-color:${cols[e.lane]}"></i>`, p, 600);
+        for (let j = 0; j < 8; j++) { const a = (j / 8) * Math.PI * 2 + 0.3; const d = add(`<i class="tw-shard" style="background:${cols[e.lane]}"></i>`, p, 750); d.firstChild.style.setProperty('--dx', Math.cos(a) * 64 + 'px'); d.firstChild.style.setProperty('--dy', Math.sin(a) * 64 + 'px'); }
+      }]);
+      else if (e.t === 'floor') B.push([e.fx === 'volley' ? 380 : 260, () => {
+        const r = roomP(e.subject), f = twt.querySelector(`.tw-fl[data-subject="${e.subject}"]`);
+        again(f, 'tw-glow');
+        if (e.fx === 'volley') { add('<span class="tw-say">Hi!</span>', [r[0] - 40, r[1] - 8], 900); later(140, () => add('<span class="tw-say r">Yes!</span>', [r[0] + 40, r[1] - 14], 760)); SFX.chime(); }
+        else if (e.fx === 'brick') add('<span class="tw-say">+🧱</span>', [r[0] + 44, r[1] - 10], 900);
+      }]);
+      else if (e.t === 'stun') B.push([560, () => {
+        const r = roomP(t.lanes.find((l) => TW.FLOORS[l.subject] === 'stun').subject), q = body(cur[e.id]); SFX.swish();
+        [0, 1, 2].forEach((j) => later(j * 90, () => throwIt(TWART.leaflet(TWART.ROOMS.Ethik.c), [r[0] + (j - 1) * 12, r[1]], [q[0] + (j - 1) * 12, q[1] - 20 + j * 6], 420, 30, (j - 1) * 160 + 40)));
+        later(520, () => { add(`<span class="tw-read">${TWART.leaflet(TWART.ROOMS.Ethik.c)}</span>`, [q[0], q[1] - 14], 900); again(tok[e.id], 'tw-dizzy'); });
+      }]);
+      else if (e.t === 'heal') B.push([560, () => {
+        const r = roomP(t.lanes.find((l) => TW.FLOORS[l.subject] === 'repair').subject); SFX.chime();
+        throwIt('<span class="tw-heart">❤️</span>', r, [heroP[0] + 9, heroP[1] + 30], 460, 26, 0);
+        later(460, () => { hp = e.hp; setHp(hp); if (level(hp) !== level(hp - e.n)) towerArt(hp); again(twt, 'tw-heal'); num(towerP, '+' + e.n, 'heal'); });
+      }]);
+      else if (e.t === 'push') B.push([540, () => {
+        const r = roomP(t.lanes.find((l) => TW.FLOORS[l.subject] === 'push').subject), x = t.monsters.find((y) => y.id === e.id) || pre(e.id); SFX.bell();
+        fsvg.insertAdjacentHTML('beforeend', `<g class="tw-rings">${[0, 1, 2].map((j) => `<circle cx="${r[0]}" cy="${r[1]}" r="22" style="animation-delay:${j * 0.12 * k}s"/>`).join('')}</g>`);
+        const g = fsvg.lastElementChild; later(900, () => g.remove());
+        later(240, () => { place(e.id, cellP(x.lane, e.to), 320); again(tok[e.id], 'tw-dizzy'); });
+      }]);
+      else if (e.t === 'ziegel') {
+        const list = []; for (; ev[i] && ev[i].t === 'ziegel'; i++) list.push(ev[i]); i--;
+        const all = list.flatMap((z) => Array.from({ length: z.n }, () => z.why)), from = (why) => (why === 'floor' ? roomP(t.lanes.find((l) => TW.FLOORS[l.subject] === 'brick').subject) : lastHit.p || towerP);
+        B.push([150, () => all.forEach((why, j) => later(j * 120, () => fly(from(why), j)))]);
+      } else if (e.t === 'wrong') B.push([380, () => again(tok[e.id], 'tw-taunt')]);
+      else if (e.t === 'move' || e.t === 'stunned' || e.t === 'enter') {
+        // the monsters' step: everyone walks at once, new ones come in from the edge meanwhile
+        const group = []; for (; ev[i] && ['move', 'stunned', 'enter', 'tower', 'block', 'hold'].includes(ev[i].t); i++) group.push(ev[i]); i--;
+        const moves = group.filter((g) => g.t === 'move'), ins = group.filter((g) => g.t === 'enter'), hits = group.filter((g) => ['tower', 'block', 'hold'].includes(g.t));
+        const boss = ins.some((g) => g.boss || g.elite), wIn = boss ? 1.5 * TW_STEP : 1.2 * TW_STEP;
+        const len = Math.max(0, ...moves.map((m) => m.from - m.to)) * TW_STEP, inLen = ins.length ? 2 * wIn + 140 * (ins.length - 1) : 0;
+        const walkBeat = () => {
+          for (const m of moves) { const x = t.monsters.find((y) => y.id === m.id) || pre(m.id); if (!x) continue; walk(m.id, Array.from({ length: m.from - m.to }, (_, s) => cellP(x.lane, m.from - s - 1)), TW_STEP); }
+          for (const g of group.filter((x) => x.t === 'stunned')) again(tok[g.id], 'tw-dizzy');
+          if (boss) { again(board, 'tw-dim'); }
+          ins.forEach((g, j) => later(j * 140, () => { const L = G.lanes[g.lane]; tok[g.id].style.opacity = 1; if (g.boss || g.elite) tok[g.id].classList.add('tw-star'); walk(g.id, [L.from[1], L.cells[4]], wIn); if (g.boss || g.elite) later(2 * wIn, () => { SFX.thud(); again(tok[g.id], 'tw-land'); }); }));
+        };
+        if (moves.length || ins.length) B.push([Math.max(len, inLen, 200) + 60, walkBeat]);
+        for (const h of hits) B.push([h.t === 'tower' ? 520 : 460, () => impact(h)]);
+      } else if (e.t === 'cleared') B.push([850, () => { again(board, 'tw-won'); add(`<div class="tw-wavebanner">${t.phase === 'won' ? 'Alle Wellen sind vorbei.' : `Welle ${e.wave} ist vorbei.`}</div>`, [G.w / 2, G.gate[1] - 150], 1400); SFX.chime(); }]);
+      else if (e.t === 'evolve') B.push([900, () => { again(slot, 'tw-evolve'); later(380, () => { slot.innerHTML = heroSVG(turmHero(), e.evo); }); [0, 1, 2, 3, 4].forEach((j) => add(TWART.spark(j % 2 ? '#fff' : '#FFE066'), [heroP[0] + Math.cos(j * 1.26) * 30, heroP[1] + Math.sin(j * 1.26) * 26], 900)); SFX.levelup(); }]);
+      else if (e.t === 'won') B.push([1300, () => { board.insertAdjacentHTML('beforeend', CONFETTI); }]);
+      else if (e.t === 'fallen') B.push([1100, () => { again(twt, 'tw-fall'); add(TWART.poof(), [G.gate[0], G.gate[1] - 10], 1000); SFX.thud(); }]);
+    }
+    // a monster at the gate: it runs at the tower; a shield or the wall can stop it
+    function impact(h) {
+      const x = t.monsters.find((y) => y.id === h.id) || pre(h.id); if (!x) return;
+      const g = G.lanes[x.lane].to[0], c = cur[h.id] || cellP(x.lane, 1), p = [c[0] + (g[0] - c[0]) * 0.7, c[1] + (g[1] - c[1]) * 0.7];
+      place(h.id, p, 180);
+      later(180, () => {
+        if (h.t === 'tower') { again(twt, 'tw-shake'); hp = h.hp; setHp(hp); if (level(hp) !== level(hp + h.dmg)) towerArt(hp); num(towerP, '−' + h.dmg, 'hurt'); SFX.hurt(); }
+        else if (h.t === 'block') { add(TWART.guardShield(), [g[0], g[1] - 18], 700); SFX.block(); }
+        else { add('<i class="tw-dust"></i>', g, 600); SFX.thud(); }
+        if (h.gone) { tok[h.id].classList.add('tw-gone'); add(TWART.poof(), body(p), 700); } else place(h.id, c, 260);
+      });
+    }
+    // a Ziegel flies from the board to the counter in the top bar, which ticks up when it lands
+    function fly(p, j) {
+      const counter = $('.topbar .tw-bricks', scr), sr = scr.getBoundingClientRect(), br = board.getBoundingClientRect(), cr = counter.getBoundingClientRect(), u = br.width / G.w;
+      const x0 = br.left - sr.left + p[0] * u, y0 = br.top - sr.top + p[1] * u, x1 = cr.left - sr.left + 12, y1 = cr.top - sr.top + cr.height / 2;
+      const d = document.createElement('span'); d.className = 'tw-fly'; d.innerHTML = TWART.brickOne(); d.style.left = x0 + 'px'; d.style.top = y0 + 'px'; scr.appendChild(d); flyers.push(d);
+      const dx = x1 - x0, dy = y1 - y0;
+      if (d.animate) d.animate([0, 0.25, 0.5, 0.75, 1].map((f) => ({ translate: `${dx * f}px ${dy * f - 60 * 4 * f * (1 - f)}px`, scale: String(1 + 0.4 * Math.sin(f * Math.PI)) })), { duration: 520 * k, easing: 'ease-in', fill: 'forwards' });
+      later(520, () => { d.remove(); bricks++; res('tw-bricks').textContent = bricks; again(counter, 'tw-tick'); SFX.clink(j); });
+    }
+    const finish = () => {
+      if (stopped) return; stopped = true; timers.forEach(clearTimeout); flyers.forEach((d) => d.remove());
+      scr.removeEventListener('click', tap, true); scr.classList.remove('playing'); backTo = keepBack;
+      if (!board.isConnected) return;
+      if (after) return after();
+      if (alive()) { $('.tw-main', scr).innerHTML = turmBoardHtml(); $('.topbar', scr).outerHTML = turmTop(); turmBind(); }
+    };
+    // a tap skips; a tap on a monster also selects it (its own handler runs after the board is redrawn)
+    const tap = (e) => { const real = e.target.closest && e.target.closest('button.tw-mon'); if (!real && e.target.closest && e.target.closest('.tw-main, #twon')) { e.stopPropagation(); e.preventDefault(); } finish(); };
+    scr.addEventListener('click', tap, true); scr.classList.add('playing');
+    const keepBack = backTo; backTo = finish;
+    let b = 0;
+    const beat = () => { if (stopped) return; if (!alive()) { stopped = true; return; } const x = B[b++]; if (!x) return finish(); x[1](); timers.push(setTimeout(beat, x[0] * k)); };
+    timers.push(setTimeout(beat, 80 * k));
+  }
+  // Bauzeit: what was just bought moves into place (CSS only, nothing waits)
+  function turmBuilt(bau) {
+    if (!turmMotion()) { if (bau.guard) SFX.right(); return; }
+    const twt = $('#twt'), spot = (key) => $(`.tw-spot[data-lane="${key[0]}"][data-spot="${key[2]}"]`);
+    if (bau.guard) { const s = spot(bau.guard); if (s) s.classList.add('tw-arrive'); SFX.thud(); setTimeout(SFX.right, 380); }
+    if (bau.up) { const s = spot(bau.up); if (s) s.classList.add('tw-upnow'); SFX.chime(); }
+    if (bau.floor) { const f = $(`.tw-fl[data-subject="${bau.floor}"]`, twt); if (f) { f.classList.add('new'); twt.classList.add('tw-grow'); twt.insertAdjacentHTML('beforeend', `<i class="tw-dustpuff" style="--fy:${TWART.TOWER.BASE + 8 + TWART.TOWER.FLOOR * (+f.dataset.floor)}"></i>`); setTimeout(() => SFX.thud(), 620); } }
+    if (bau.fix != null) { const old = TWART.tower(run.turm.floors, bau.fix, run.hero.maxHp); $('.tw-towerart', twt).insertAdjacentHTML('afterend', old.back.replace('class="tw-towerart"', 'class="tw-towerart tw-oldart"')); twt.classList.add('tw-mend'); [0, 1, 2].forEach((j) => setTimeout(() => SFX.clink(j * 3), 150 + j * 160)); }
+  }
+  // without motion: the numbers and the sound at once
   function turmFx(ev) {
     for (const e of ev) if (e.t === 'hit' || e.t === 'shot' || e.t === 'chain') fx(`.tw-mon[data-id="${e.id}"]`, '−' + e.dmg, e.weak ? 'crit' : '');
     const hurt = ev.filter((e) => e.t === 'tower');
@@ -19116,14 +19487,14 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['turm:intro'] = true; saveAll(); };
   }
   // a boss or the elite arrives: a still banner over the board until it is tapped away (no timer)
-  function turmBanner(x) {
+  function turmBanner(x, slide) {
     const t = run.turm, cols = TWART.laneColors(t.lanes);
     const text = x.final ? 'Für jedes Fach trägt der Boss einen Schild. Die Aufgaben kommen der Reihe nach aus diesen Fächern:'
       : x.boss ? 'Der Boss geht nur jeden zweiten Zug ein Feld. Am Tor bleibt er stehen und trifft den Turm, bis er besiegt ist.'
         : `Das Elitemonster 🛡️ schützt alle Monster hinter sich auf seinem Weg. Erst wenn ${accName(x)} besiegt ist, kommst du an sie heran.`;
     const list = x.final ? `<div class="tw-shieldlist">${x.shields.map((l) => `<span><i class="dot" style="background:${cols[l]}" aria-hidden="true"></i>${SUBJECTS[t.lanes[l].subject]} ${esc(laneName(l))}</span>`).join('')}</div>` : '';
     const ov = modal(`<div class="tw-banner">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<h2>${esc(x.name)} kommt.</h2></div><p>${esc(text)}</p>${list}<button class="btn" id="tutok">Weiter</button>`);
-    ov.classList.add('tw-bannerov');
+    ov.classList.add('tw-bannerov'); if (slide) ov.classList.add('slide');
     const said = () => joined(`${x.name} kommt`, text, x.final && x.shields.map(laneName).join(', '));
     speakBtn($('h2', ov), 'beforeend', said, said, [], run.grade);
     const close = () => ov.remove();
@@ -19155,6 +19526,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     const rows = [...new Set(t.lanes.map((l) => l.subject))].map((s) => { const v = t.score[s] || { c: 0, t: 0 }; return `<li><span>${SUBJECTS[s]} ${esc(s)}</span><b>${v.c} von ${v.t} richtig</b></li>`; }).join('');
     if (!retry) endRun(); // over for good; record and scores are already in meta
     if (o.ev) setTimeout(won ? SFX.finale : SFX.lose, 150);
+    if (won && o.ev && !reducedMotion) setTimeout(() => { const e = $('.tw-endtower'); if (e) e.classList.add('rise'); }, 0);
     // the finished tower with every floor built in this run and the hero in its last shape on top
     const tw = TWART.tower(t.floors, run.hero.hp, run.hero.maxHp);
     const pic = won ? `<div class="tw-endtower"><div class="tw-tower" style="--th:${tw.h};--feet:${tw.feet}">${tw.back}<div class="tw-heroslot">${heroSVG(H, run.hero.evo)}</div>${tw.front}</div></div>` : heroSVG(H, run.hero.evo);
@@ -19483,14 +19855,14 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
   screenTitle();
   importFromLink();
   // turm: the rules without the screens, for the page tests
-  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}) }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}), motion: (speed) => { turmSpeed = speed == null ? null : speed; } }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();
 
 </script>
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = 'fa6773964639';
+  const BUILD = '07cc9d67a073';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

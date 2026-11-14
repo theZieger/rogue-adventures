@@ -738,7 +738,9 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 
 /* Turmwacht. Board: grid with the tower column on the left and one road per path (--rows); cell 1 touches the tower.
    The tower and road drawings are placeholders until the proper art. */
-#turm { flex-wrap: wrap; row-gap: 0; }
+#turm { flex-wrap: wrap; row-gap: 0; border-color: rgba(255,201,60,.55); }
+#turm > span:first-child { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+#turm > span:first-child .emo { width: 30px; height: 30px; flex: none; }
 .twrun { display: flex; flex-basis: 100%; align-items: center; justify-content: center; gap: 2px; font-size: 14px; font-weight: 700; opacity: .9; }
 .twflag { width: 18px; height: 18px; }
 .tw-lead { margin: 0; }
@@ -763,7 +765,7 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 
 /* Turmwacht board: a W × H scene in board units (1 tower drawing unit = 1 board unit); --x/--y place things, --u keeps sizes in step with the board */
 /* the board takes the room the panel leaves, but no more than its full width needs; leftover space goes above the panel */
-.tw-main { flex: 1 1 auto; min-height: 270px; max-height: calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px); container-type: size; display: flex; justify-content: center; align-items: flex-start; padding: 6px 0 0; }
+.tw-main { flex: 1 1 auto; min-height: max(270px, 50vh); max-height: calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px); container-type: size; display: flex; justify-content: center; align-items: flex-start; padding: 6px 0 0; }
 .tw-board { --u: calc(100cqw / var(--W)); position: relative; container-type: inline-size; width: min(100cqw - 16px, (100cqh - 4px) * var(--W) / var(--H)); aspect-ratio: var(--W) / var(--H); border: 3px solid var(--ink); border-radius: 14px; overflow: hidden; background: #3B664E; box-shadow: var(--shadow); }
 .tw-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tw-board .tw-lane { display: contents; }
@@ -798,9 +800,10 @@ body { background-image: radial-gradient(900px 520px at 50% -12%, rgba(63,160,25
 .tw-spot .mon { position: absolute; inset: 0; width: 100%; height: 100%; }
 .tw-spot .tw-pips { position: absolute; left: 50%; bottom: calc(-26 * var(--u)); translate: -50% 0; height: calc(11 * var(--u)); width: auto; padding: calc(1 * var(--u)) calc(3 * var(--u)); border-radius: 99px; background: var(--ink); box-sizing: content-box; }
 button.tw-spot { cursor: pointer; border-radius: 12px; }
-.tw-lanehead { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; max-width: calc(150 * var(--u)); font-weight: 700; font-size: max(10px, calc(14 * var(--u))); line-height: 1.15; }
-.tw-lanehead.r { align-items: flex-end; translate: -100% 0; }
-.tw-lanehead.c { align-items: center; translate: -50% 0; }
+.tw-lanehead { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 3px; max-width: calc(210 * var(--u)); z-index: 1; font-weight: 700; font-size: max(10px, calc(14 * var(--u))); line-height: 1.15; }
+.tw-lanehead.r { flex-direction: row-reverse; translate: -100% 0; }
+.tw-lanehead.c { justify-content: center; translate: -50% 0; }
+.tw-lanehead.lb { flex-direction: column; align-items: flex-start; } /* bottom path: its far field is right of the chips */
 .tw-lanehead > span { padding: calc(2 * var(--u)) calc(8 * var(--u)); border-radius: 99px; background: var(--ink); color: #fff; white-space: nowrap; }
 .tw-lanehead .nm { border: 2px solid var(--c); box-shadow: inset 0 -3px 0 var(--c); }
 .tw-lanehead .tw-queue { font-size: .86em; background: rgba(28,37,65,.92); }
@@ -813,7 +816,9 @@ button.tw-spot { cursor: pointer; border-radius: 12px; }
 .tw-log { margin: 6px 12px; min-height: 0; font-size: 20px; }
 .tw-log p { margin: 0; }
 .tw-panel { display: flex; flex-direction: column; gap: 8px; flex: 0 1 auto; margin-top: auto; min-height: 0; overflow-y: auto; }
-.tw-log { flex: none; }
+/* Bauzeit: the board gives up a little height so the cards under it are whole */
+.tw-screen.build .tw-main { min-height: 270px; max-height: min(calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px), calc(100vh - 384px)); }
+.tw-log { flex: none; max-height: calc(2.3em + 22px); overflow-y: auto; overscroll-behavior: contain; }
 .tw-panel .row { margin: 0; }
 .tw-hint { margin: 4px 2px; font-size: 17px; }
 .tw-card { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -875,19 +880,22 @@ i.dot { flex: none; display: inline-block; width: 16px; height: 16px; margin-top
 .tw-bauhead { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 10px; }
 .tw-bauhead h3 { margin: 0; font-size: 22px; }
 .tw-bauhead p { margin: 0; font-size: 16px; font-weight: 700; }
-.tw-cards { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; }
+.tw-cards { display: flex; gap: 8px; overflow-x: auto; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); scroll-snap-type: x proximity; margin: 0 -12px; padding: 2px 12px 6px; scroll-padding-inline: 12px; }
 .tw-cards > div { flex: none; display: flex; scroll-snap-align: start; }
-.tw-buy { width: 238px; display: flex; gap: 8px; align-items: flex-start; padding: 6px 8px 7px 6px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
+.tw-buy { width: 150px; display: flex; flex-direction: column; gap: 4px; align-items: stretch; padding: 5px 5px 7px; border: 3px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.3); }
 .tw-buy:active { transform: translateY(3px); box-shadow: none; }
-.tw-pcol { flex: none; width: 80px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.tw-buy .tw-pic { display: block; width: 80px; height: 56px; border-radius: 8px; background: #E3EED6; }
+.tw-pcol { flex: none; position: relative; display: block; }
+.tw-buy .tw-pic { display: block; width: 100%; height: 54px; border-radius: 9px; background: #E3EED6; }
+.tw-pcol .tw-price { position: absolute; right: 4px; bottom: 4px; border: 2px solid #FFF9EE; }
+.tw-tcol { padding: 0 3px; }
 .tw-tcol { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.tw-buy b { font-size: 17px; line-height: 1.15; }
-.tw-buy .tw-desc { font-size: 14px; line-height: 1.25; }
+.tw-cards.end { -webkit-mask-image: none; mask-image: none; }
+.tw-buy b { font-size: 16px; line-height: 1.12; }
+.tw-buy .tw-desc { font-size: 13.5px; line-height: 1.2; }
 .tw-price { padding: 0 8px; border-radius: 99px; background: var(--ink); color: #fff; font-size: 15px; font-weight: 700; line-height: 24px; white-space: nowrap; }
 .tw-price:empty { display: none; }
 .tw-price.free { padding: 0 6px; font-size: 13px; }
-.tw-why { padding-top: 2px; font-size: 14px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
+.tw-why { padding-top: 2px; font-size: 13.5px; font-weight: 700; line-height: 1.2; color: #8A2E12; }
 .tw-buy.short, .tw-buy.off { background: #DADDE6; box-shadow: none; }
 .tw-buy.short .tw-pic, .tw-buy.off .tw-pic { filter: grayscale(.9); opacity: .65; }
 .tw-buy.off .tw-why { color: var(--ink-soft); }
@@ -915,12 +923,21 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
 .psubhead { margin: 14px 0 0; }
 @media (max-height: 760px) {
   .tw-log { font-size: 18px; padding: 5px 10px; margin: 4px 12px; }
-  .tw-cardhead .mon { width: 44px; height: 44px; }
+  /* small phones: the card gets compact so the board keeps its size (the tapped monster is marked on the board) */
+  .tw-main { min-height: max(270px, 55vh); }
+  .tw-cardhead .mon { display: none; }
+  .tw-card { padding: 7px 10px; gap: 4px; }
+  .tw-cardinfo { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; }
+  .tw-cardinfo .name { font-size: 23px; }
+  .tw-stats { font-size: 16px; gap: 2px 12px; }
+  .tw-card .btn { min-height: 46px; }
+  .tw-card .pnote, .tw-card .tw-shieldnow { font-size: 15px; }
 }
 @media (max-height: 500px) and (orientation: landscape) {
-  .tw-screen:not(.tasking) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 42%); grid-template-rows: auto auto minmax(0, 1fr); }
-  .tw-screen:not(.tasking) > .topbar { grid-column: 1 / -1; }
-  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 2 / 4; max-height: none; }
+  /* the board takes the whole height on the left (tokens stay about 40 px); the top bar heads the right column */
+  .tw-screen:not(.tasking) { display: grid; grid-template-columns: min(58vw, (100vh - 10px) * var(--bw, .762) + 14px) minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
+  .tw-screen:not(.tasking) > .topbar { grid-column: 2; grid-row: 1; padding: 6px 12px; }
+  .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; }
   .tw-screen:not(.tasking) .tw-log { grid-column: 2; grid-row: 2; }
   .tw-screen:not(.tasking) .tw-panel { grid-column: 2; grid-row: 3; max-height: 100%; overflow-y: auto; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); }
   .tw-card p, .tw-stats { font-size: 16px; }
@@ -930,7 +947,122 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   .tw-bau { flex: none; }
   .tw-cards { flex-direction: column; overflow: visible; margin: 0; padding: 2px 0 4px; }
   .tw-cards > div, .tw-buy { width: 100%; }
+  .tw-cards { -webkit-mask-image: none; mask-image: none; }
+  .tw-buy { flex-direction: row; gap: 8px; }
+  .tw-pcol { width: 96px; } .tw-buy .tw-pic { height: 62px; }
   .tw-baurow { position: sticky; bottom: -10px; flex-wrap: wrap; margin: 0 -12px -10px; padding: 8px 12px 10px; background: var(--bg2); }
   .tw-baurow .btn.small { flex: 1 1 0; }
   .tw-baurow #nextwave { flex: 1 1 100%; order: -1; }
+}
+/* Turmwacht motion (app.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
+.tw-fx { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.tw-fx > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tw-fxi { width: 0; height: 0; }
+.tw-fxi > * { position: absolute; left: 0; top: 0; translate: -50% -50%; }
+.tw-orb { width: calc(22 * var(--u)); height: calc(22 * var(--u)); overflow: visible; filter: drop-shadow(0 0 calc(4 * var(--u)) #fff); }
+.tw-orb.big { width: calc(34 * var(--u)); height: calc(34 * var(--u)); filter: drop-shadow(0 0 calc(8 * var(--u)) #FFE066); }
+.tw-orb.g1 { width: calc(16 * var(--u)); height: calc(16 * var(--u)); }
+.tw-orb.g2 { width: calc(19 * var(--u)); height: calc(19 * var(--u)); }
+.tw-orb.g3 { width: calc(24 * var(--u)); height: calc(24 * var(--u)); filter: drop-shadow(0 0 calc(6 * var(--u)) #FFE066); }
+.tw-num { font-family: var(--hand); font-size: max(20px, calc(30 * var(--u))); line-height: 1; color: #fff; white-space: nowrap; text-shadow: 0 2px 0 var(--ink), 0 0 5px rgba(0,0,0,.5); animation: tw-num 1s ease-out both; }
+.tw-num.crit { color: var(--gold); font-size: max(26px, calc(40 * var(--u))); }
+.tw-num.hurt { color: #FF8A8A; font-size: max(24px, calc(36 * var(--u))); }
+.tw-num.heal { color: #8FE3A0; }
+@keyframes tw-num { 0% { opacity: 0; scale: .4; } 15% { opacity: 1; scale: 1.25; } 30% { scale: 1; } 75% { opacity: 1; } 100% { opacity: 0; translate: -50% calc(-50% - 26px); } }
+.tw-burst { width: calc(64 * var(--u)); height: calc(64 * var(--u)); border-radius: 50%; border: calc(5 * var(--u)) solid var(--gold); box-shadow: 0 0 calc(10 * var(--u)) #FFE066; animation: tw-burst .55s ease-out both; }
+@keyframes tw-burst { from { scale: .2; opacity: 1; } to { scale: 1.5; opacity: 0; } }
+.tw-poof { width: calc(66 * var(--u)); height: calc(66 * var(--u)); overflow: visible; }
+.tw-poof .p { transform-box: fill-box; transform-origin: center; animation: tw-puff .7s ease-out calc(var(--i) * 25ms) both; }
+.tw-poof .s { animation: tw-sparkle .7s ease-out both; }
+@keyframes tw-puff { 0% { scale: .2; opacity: 0; } 25% { scale: 1.1; opacity: 1; } 65% { opacity: 1; } 100% { scale: 1.35; opacity: 0; translate: 0 -4px; } }
+@keyframes tw-sparkle { 0%, 20% { opacity: 0; scale: .5; } 45% { opacity: 1; scale: 1.2; } 100% { opacity: 0; scale: .8; } }
+.tw-shard { width: calc(15 * var(--u)); height: calc(7 * var(--u)); border: 2px solid var(--ink); border-radius: 3px 8px 3px 8px; animation: tw-shard .7s cubic-bezier(.2, .8, .4, 1) both; }
+@keyframes tw-shard { from { opacity: 1; translate: -50% -50%; rotate: 0deg; } to { opacity: 0; translate: calc(-50% + var(--dx)) calc(-50% + var(--dy)); rotate: 300deg; } }
+.tw-say { padding: 1px 7px; border: 2px solid var(--ink); border-radius: 10px 10px 10px 2px; background: #FFFDF5; color: var(--ink); font-weight: 700; font-size: max(12px, calc(15 * var(--u))); white-space: nowrap; animation: tw-say .8s ease-out both; }
+.tw-say.r { border-radius: 10px 10px 2px 10px; }
+@keyframes tw-say { 0% { scale: 0; opacity: 0; } 20% { scale: 1.15; opacity: 1; } 35% { scale: 1; } 80% { opacity: 1; } 100% { opacity: 0; translate: -50% calc(-50% - 10px); } }
+.tw-leaf { width: calc(18 * var(--u)); height: calc(23 * var(--u)); filter: drop-shadow(0 1px 0 rgba(0,0,0,.3)); }
+#twt .tw-fl.tw-glow { animation: tw-room .6s ease-out; }
+@keyframes tw-room { 35% { filter: brightness(1.35) drop-shadow(0 0 4px #FFE066); } }
+.tw-read .tw-leaf { width: calc(22 * var(--u)); height: calc(28 * var(--u)); }
+.tw-read { animation: tw-read .9s ease-in-out both; }
+@keyframes tw-read { 0% { opacity: 0; } 15%, 75% { opacity: 1; rotate: -6deg; } 45% { rotate: 6deg; } 100% { opacity: 0; } }
+.tw-heart .emo { width: max(20px, calc(26 * var(--u))); height: max(20px, calc(26 * var(--u))); }
+.tw-spark { width: calc(14 * var(--u)); height: calc(14 * var(--u)); animation: tw-sparkle .9s ease-out both; }
+.tw-rings circle { fill: none; stroke: #FFC2D4; stroke-width: 4.5; transform-box: fill-box; transform-origin: center; animation: tw-ring-out .75s ease-out both; }
+@keyframes tw-ring-out { from { scale: .5; opacity: 1; } to { scale: 3.2; opacity: 0; } }
+.tw-zap { animation: tw-zap .5s ease-out both; }
+@keyframes tw-zap { 0% { opacity: 0; } 15%, 55% { opacity: 1; } 100% { opacity: 0; } }
+.tw-dust { width: calc(50 * var(--u)); height: calc(18 * var(--u)); border-radius: 50%; background: rgba(230,220,190,.85); animation: tw-burst .6s ease-out both; }
+.tw-bigshield { width: calc(40 * var(--u)); height: calc(46 * var(--u)); animation: tw-shieldup .7s ease-out both; }
+@keyframes tw-shieldup { 0% { scale: .2; opacity: 0; } 25% { scale: 1.15; opacity: 1; } 40% { scale: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.tw-wavebanner { padding: calc(6 * var(--u)) calc(16 * var(--u)); border: 3px solid var(--ink); border-radius: 14px; background: var(--gold); color: var(--ink); font-family: var(--hand); font-size: max(20px, calc(30 * var(--u))); white-space: nowrap; box-shadow: var(--shadow); animation: tw-banner 1.4s cubic-bezier(.3, 1.3, .5, 1) both; }
+@keyframes tw-banner { 0% { translate: -160% -50%; opacity: 0; } 25% { translate: -50% -50%; opacity: 1; } 80% { translate: -50% -50%; opacity: 1; } 100% { translate: -50% -50%; opacity: 0; } }
+/* tokens */
+.tw-mon > .mon, .tw-spot > .mon { transition: none; }
+.tw-mon.tw-hit > .mon { animation: tw-hit .42s ease-out; }
+@keyframes tw-hit { 0%, 100% { filter: none; translate: 0 0; } 20% { filter: brightness(2.3) saturate(0); translate: -5% 0; } 45% { translate: 5% 0; } 70% { translate: -3% 0; } }
+.tw-mon.tw-step > .mon { animation: tw-step .3s ease-in-out; }
+@keyframes tw-step { 50% { translate: 0 -10%; } }
+.tw-mon.tw-gone { scale: 0; opacity: 0; transition: scale .25s ease-in, opacity .25s ease-in !important; }
+.tw-mon.tw-dizzy > .mon { animation: tw-dizzy .6s ease-in-out; }
+@keyframes tw-dizzy { 25% { rotate: -10deg; } 75% { rotate: 10deg; } }
+.tw-mon.tw-taunt > .mon { animation: tw-taunt .4s ease-out; }
+@keyframes tw-taunt { 40% { translate: 0 -14%; } 70% { translate: 0 2%; } }
+.tw-mon.tw-land > .mon { animation: tw-land .35s ease-out; transform-origin: 50% 100%; }
+@keyframes tw-land { 30% { scale: 1.15 .82; } 65% { scale: .95 1.06; } }
+.tw-mon.tw-ghost { pointer-events: none; }
+.tw-mon .tw-hp b { transition: width .35s ease-out; }
+.tw-spot.tw-fire > .mon { animation: tw-fire .3s ease-out; }
+@keyframes tw-fire { 30% { translate: 0 -8%; scale: 1.08; } }
+.tw-spot.tw-arrive > .mon { animation: tw-arrive .6s cubic-bezier(.3, 1.2, .5, 1) both; transform-origin: 50% 100%; }
+@keyframes tw-arrive { 0% { translate: -30% -120%; opacity: 0; } 50% { translate: 0 -40%; opacity: 1; } 75% { translate: 0 0; scale: 1.12 .85; } 100% { scale: 1; } }
+.tw-spot.tw-upnow .tw-pips { animation: tw-pop .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes tw-pop { 0% { scale: .2; } 60% { scale: 1.6; filter: drop-shadow(0 0 6px #FFE066); } 100% { scale: 1; } }
+.tw-heroslot.tw-throw .mon { animation: tw-throw .32s ease-out; transform-origin: 50% 100%; }
+@keyframes tw-throw { 35% { scale: 1.12; rotate: -8deg; } }
+.tw-heroslot.tw-evolve .mon { animation: tw-evolve .8s ease-in-out; transform-origin: 50% 100%; }
+@keyframes tw-evolve { 0% { filter: none; } 40% { filter: brightness(3) saturate(0); scale: 1.2; } 50% { filter: brightness(3) saturate(0); scale: .9; } 100% { filter: none; scale: 1; } }
+/* the tower */
+#twt.tw-shake > * { animation: tw-shake .45s ease-out; }
+@keyframes tw-shake { 0%, 100% { transform: none; } 20% { transform: translateX(-4px) rotate(-1deg); } 45% { transform: translateX(4px) rotate(1deg); } 70% { transform: translateX(-2px); } }
+#twt.tw-heal .tw-towerart { animation: tw-healglow .7s ease-out; }
+@keyframes tw-healglow { 40% { filter: drop-shadow(0 0 8px #8FE3A0) brightness(1.15); } }
+#twt.tw-fall > * { animation: tw-fall 1s ease-in both; }
+@keyframes tw-fall { 0% { transform: none; filter: none; } 15% { transform: translateX(-6px) rotate(-2deg); } 30% { transform: translateX(6px) rotate(2deg); } 45% { transform: translateX(-4px); } 100% { transform: translateY(4px); filter: grayscale(.7) brightness(.8); } }
+.tw-board.tw-won .tw-flag { transform-box: fill-box; transform-origin: 0 50%; animation: tw-flag .5s ease-in-out 3; }
+@keyframes tw-flag { 50% { transform: scaleX(.75) skewY(-8deg); } }
+.tw-board.tw-won #twt .tw-towerart { animation: tw-healglow 1s ease-out; }
+.tw-board::after { content: ''; position: absolute; inset: 0; background: #0B1022; opacity: 0; pointer-events: none; z-index: 2; }
+.tw-board.tw-dim::after { animation: tw-dim 1.2s ease-in-out both; }
+.tw-mon.tw-star { z-index: 4; filter: drop-shadow(0 0 calc(6 * var(--u)) #FFE066); }
+@keyframes tw-dim { 30%, 60% { opacity: .5; } }
+.tw-board .confetti i { animation-duration: 1.8s; }
+/* Bauzeit: a new floor lifts what is above it, drops in and puffs; a mended wall loses its cracks */
+#twt .tw-fl.new { animation: tw-drop .5s cubic-bezier(.3, 1.5, .5, 1) .32s both; }
+@keyframes tw-drop { from { transform: translateY(-46px); opacity: 0; } 40% { opacity: 1; } }
+#twt.tw-grow .tw-top { animation: tw-lift .4s ease-out both; }
+#twt.tw-grow .tw-heroslot, #twt.tw-grow .tw-parapet { animation: tw-lift-h .4s ease-out both; }
+@keyframes tw-lift { from { transform: translateY(38px); } }
+@keyframes tw-lift-h { from { transform: translateY(calc(38 * var(--u))); } }
+.tw-dustpuff { position: absolute; left: -10%; right: -10%; bottom: calc(var(--fy) * var(--u)); height: calc(16 * var(--u)); pointer-events: none; }
+.tw-dustpuff::before, .tw-dustpuff::after { content: ''; position: absolute; bottom: 0; width: 34%; height: 100%; border-radius: 50%; background: rgba(240,232,210,.9); border: 2px solid rgba(28,37,65,.5); animation: tw-dust .55s ease-out .78s both; }
+.tw-dustpuff::before { left: 0; } .tw-dustpuff::after { right: 0; }
+@keyframes tw-dust { 0% { opacity: 0; scale: .3; } 30% { opacity: 1; } 100% { opacity: 0; scale: 1.4; translate: 0 -6px; } }
+#twt .tw-oldart { animation: tw-fadeout .7s ease-in .25s both; }
+@keyframes tw-fadeout { to { opacity: 0; } }
+#twt.tw-mend .tw-towerart:not(.tw-oldart) { animation: tw-healglow .9s ease-out .2s; }
+.tw-hpbox .hpbar i { transition: width .4s ease-out; }
+.topbar .tw-tick .emo { animation: tw-pop .35s ease-out; }
+.tw-fly { position: absolute; z-index: 20; translate: -50% -50%; pointer-events: none; }
+.tw-fly svg { display: block; width: 30px; height: 17px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.35)); }
+.tw-bannerov.slide { animation: tw-dimin .4s ease-out both; }
+.tw-bannerov.slide .modal { animation: tw-slidein .55s cubic-bezier(.3, 1.3, .5, 1) both; }
+@keyframes tw-dimin { from { background-color: transparent; } }
+@keyframes tw-slidein { from { translate: -110vw 0; } }
+.tw-endtower.rise .tw-tower { animation: tw-drop .7s cubic-bezier(.3, 1.4, .5, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .tw-fx, .tw-fly { display: none; }
+  .tw-mon > .mon, .tw-spot > .mon, .tw-spot .tw-pips, .tw-heroslot .mon, #twt > *, #twt .tw-fl.new, #twt .tw-top, .tw-board::after, .tw-bannerov.slide, .tw-bannerov.slide .modal, .tw-endtower .tw-tower, .tw-flag { animation: none !important; }
+  .tw-dustpuff, #twt .tw-oldart { display: none; }
 }
