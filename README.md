@@ -70,6 +70,7 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 - Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
 - Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
 - Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
+- Turmwacht (Titel, Klasse 2 und 3): Wiederholen am Wissensturm. Das Kind wählt ein bis drei Fächer (vorgeschlagen werden die schwächsten), jedes Fach bekommt einen Weg (ein Fach allein: bis zu drei Wege nach Thema oder Aufgabenart), auf dem Monster zum Turm laufen; jede richtige Antwort trifft eins. Gefragt werden nur schon geübte Aufgabenarten, mindestens zwei je Fach (ein neues Fach beginnt mit seinem ersten Thema). Sechs Wellen, Boss in Welle 3, Elitemonster in Welle 5, Endboss in Welle 6; Klasse 2 mit weniger und keinen schnellen Monstern. Richtige Antworten bringen Ziegel 🧱, mit denen man in der Bauzeit nach jeder Welle Wachen aufstellt und verbessert, Stockwerke für die Fächer baut (jedes mit eigener Wirkung) oder die Mauer flickt; nach jeder Welle wird die Mauer außerdem bis 30 ❤️ geflickt. Fällt der Turm, geht es zweimal pro Turmwacht ab der letzten Bauzeit weiter. Kein Zeitdruck; die Antworten zählen in Statistik und Wochenbericht. Eltern können die Turmwacht ausblenden und die Fächer festlegen. Regeln in `src/turm.js`, Turm und Wege in `src/turmart.js`.
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da – nur in Klasse 1 beginnt das erste Abenteuer eines Themas mit zwei, das zweite mit drei Attacken; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
 - Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
@@ -78,7 +79,7 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 - „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
 - Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
-- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset). Unter „Anzeigen“ lassen sich ganze Klassen und Extras (Schulgarten, Hütte, Kreisel-Arena, Duell, Wochenziele, Markt) ausblenden, bei Englisch die Wortthemen aus dem Unterricht wählen; alles steht als `grade:<n>`, `extra:<name>` und `en:<Thema>` in `meta.hidden`.
+- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset). Unter „Anzeigen“ lassen sich ganze Klassen und Extras (Schulgarten, Hütte, Kreisel-Arena, Duell, Turmwacht, Wochenziele, Markt) ausblenden, für die Turmwacht die Fächer festlegen, bei Englisch die Wortthemen aus dem Unterricht wählen; alles steht als `grade:<n>`, `extra:<name>` und `en:<Thema>` in `meta.hidden`.
 - Startseite: Klasse → Fach (Kachel) → Thema. Sie baut sich aus `grade` und `subject` der Einheiten selbst auf (siehe „Neue Einheit“). Haben die Themen eines Fachs ein `rank` (Mathe und Englisch in Klasse 3), stehen sie von leicht nach schwer: Das erste trägt „Hier anfangen“, ein schwereres verweist auf das leichteste noch nicht geübte. Gesperrt ist nichts.
 - „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
 - Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
@@ -103,6 +104,8 @@ src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, 
 src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
 src/klasse12.js    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
 src/k12_*.js       Klasse-1/2-Einheiten je Fach (Mathe, Deutsch, Sachkunde, Ethik und Musik)
+src/turm.js        Turmwacht-Regeln (Wellen, Wachen, Stockwerke, Bauzeit, Neustart ab der letzten Bauzeit), ohne Oberfläche
+src/turmart.js     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-Bilder
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/app.js         Spiel-Engine (Screens, Kampf, Aufgaben-UI, Speicherung)
@@ -114,7 +117,7 @@ tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur ge
 tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
-tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom)
+tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
 docs/index.html    gebaute Spieldatei → GitHub Pages
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
@@ -130,6 +133,7 @@ npm install          # nur jsdom für die Tests
 npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
 npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/)
 npm run playtest     # Bot spielt alle Modi durch
+MODE=turm GRADE=3 SUBJECTS=Mathe,Deutsch ACC=0.9 RUNS=1 node tests/playtest.js   # nur die Turmwacht (SEED=n, NAIVE=1 tippt wie ein Kind beliebige Monster an)
 ```
 
 Inhalte anpassen:

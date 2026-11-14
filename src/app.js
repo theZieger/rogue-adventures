@@ -116,7 +116,7 @@
   // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
   const shown = (m) => !meta.hidden.includes('mode:' + m);
   const EXTRAS = { garten: ['Schulgarten', 'Beete bepflanzen und ernten.'], huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'], kreisel: ['Kreisel-Arena', 'Kreiselkämpfe auf der Karte und „Kreisel bauen“ im Stempelheft.'],
-    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], turm: ['Turmwacht', 'Den Wissensturm gegen Monster aus mehreren Fächern verteidigen, ab Klasse 2.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
+    duell: ['Duell zu zweit', 'Zwei Kinder lösen an einem Gerät abwechselnd Aufgaben.'], turm: ['Turmwacht', 'Schon geübte Aufgaben aus ein bis drei Fächern wiederholen und damit den Wissensturm verteidigen, ab Klasse 2.'], wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'], markt: ['Markt in Zahlenquest', 'Münzen sammeln und auf dem Markt einkaufen.'] };
   const extraOn = (k) => !meta.hidden.includes('extra:' + k);
   const enOff = () => meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
   const heroShown = (m, s) => !meta.hidden.includes(`hero:${m}:${s.id}`);
@@ -1983,6 +1983,9 @@
   const midName = (n) => n.replace(/^(Der|Die|Das) /, (a) => a.toLowerCase());
   const turmEliteText = (x) => `Das Elitemonster 🛡️ schützt alle Monster hinter sich auf seinem Weg. Erst wenn ${midName(x.name)} besiegt ist, kommst du an sie heran.`;
   const turmBlocked = (by) => `Erst ${accName(by)} besiegen.`;
+  // the warning for monsters that reach the tower in the next step (TW.threats): card line and the hint under the board
+  const turmGateLine = (x) => (x.boss ? 'Schlägt im nächsten Zug zu.' : 'Ist im nächsten Zug am Turm.');
+  const turmGateText = (xs) => !xs.length ? '' : `${xs.length > 2 ? `${xs.length} Monster` : xs.map((x, i) => (i ? midName(x.name) : x.name)).join(' und ')} ${xs.length > 1 ? 'sind' : 'ist'} im nächsten Zug am Turm.`;
   // stage names change only for some heroes, so the new name is said only when there is one (never „wird zu …“)
   function turmEvoText(evo) {
     const N = turmHero().names, a = N[evo - 1], b = N[evo];
@@ -2057,12 +2060,12 @@
   const turmTop = () => topbar(`🏰 Welle ${run.turm.wave}/${TW.WAVES.length}`, `<div class="world tw-res"><span class="tw-hpnow" aria-label="Turm: ${run.hero.hp} von ${run.hero.maxHp} Lebenspunkten">❤️ <b>${run.hero.hp}</b></span><span class="tw-bricks" aria-label="${run.turm.ziegel} Ziegel">🧱 <b>${run.turm.ziegel}</b></span></div>`);
   function turmMonLabel(x) {
     const t = run.turm;
-    return [x.name, `Weg ${laneName(x.lane)}`, `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`, `${x.hp} Lebenspunkte`, t.weak === x.id && 'Schwachstelle', x.again && 'Aufgabe von vorhin', !TW.canTarget(run, x.id) && 'geschützt', x.fresh && 'neu im Monsterbuch'].filter(Boolean).join(', ');
+    return [x.name, `Weg ${laneName(x.lane)}`, `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`, TW.threats(run).includes(x.id) && (x.boss ? 'schlägt im nächsten Zug zu' : 'ist im nächsten Zug am Turm'), `${x.hp} Lebenspunkte`, t.weak === x.id && 'Schwachstelle', x.again && 'Aufgabe von vorhin', !TW.canTarget(run, x.id) && 'geschützt', x.fresh && 'neu im Monsterbuch'].filter(Boolean).join(', ');
   }
   // a monster faces the gate: the plain sprite looks right, the mirrored enemy sprite (flipped back by CSS) looks left
   function turmMon(x, cols, right, ghost) {
     const t = run.turm, sel = x.id === turmSel, pct = Math.max(4, (x.hp / x.maxHp) * 100), free = ghost || TW.canTarget(run, x.id);
-    const tags = [t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑', x.fresh && '📖'].filter(Boolean).map((e) => `<i>${e}</i>`).join('');
+    const tags = [!ghost && TW.threats(run).includes(x.id) && '⚠️', t.weak === x.id && '🎯', x.again && '🔁', x.elite && '🛡️', x.boss && '👑', x.fresh && '📖'].filter(Boolean).map((e) => `<i>${e}</i>`).join('');
     const ring = x.final ? TWART.shields(x.shields.map((l) => cols[l]), Math.round(x.maxHp / x.part) - x.shields.length) : '';
     // guided wave 1: the first monster is marked until it is tapped
     const guide = t.wave === 1 && t.turn === 0 && turmSel === null && t.phase === 'choose';
@@ -2132,20 +2135,21 @@
     const tools = `<div class="row tw-tools"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div>`;
     if (t.phase === 'build') return turmBau(bot, say);
     if (!x) {
-      const hint = t.wave > 1 ? 'Tippe auf ein Monster. 🎯 zeigt, wo du gerade besonders stark triffst.' : t.turn === 0 ? 'Tippe auf das Monster auf dem Weg.' : 'Tippe auf ein Monster, bevor es am Turm ankommt.';
+      const warn = turmGateText(t.monsters.filter((y) => TW.threats(run).includes(y.id)));
+      const hint = warn ? `⚠️ ${warn} Tippe auf ein Monster.` : t.wave > 1 ? 'Tippe auf ein Monster. 🎯 zeigt, wo du gerade besonders stark triffst.' : t.turn === 0 ? 'Tippe auf das Monster auf dem Weg.' : 'Tippe auf ein Monster, bevor es am Turm ankommt.';
       bot.innerHTML = `<p class="tw-hint">${hint}</p>${tools}`;
     } else {
       const c = TW.card(run, x.id, turmCtx(run.hero)), M = MODES[x.m], by = c.blockedBy && t.monsters.find((y) => y.id === c.blockedBy), cols = TWART.laneColors(t.lanes);
       const tags = [x.fresh && '<span class="tag new">📖 Neu im Monsterbuch</span>', x.boss && '<span class="tag boss">👑 Boss</span>', x.elite && '<span class="tag elite">🛡️ schützt die Monster hinter sich</span>', c.weak && '<span class="tag weak">🎯 Schwachstelle</span>', c.strong && `<span class="tag strong">💪 stark gegen ${TYPES[x.type].name}</span>`, run.power && '<span class="tag power">🌶️ doppelt</span>', c.again && '<span class="tag again">🔁 Aufgabe von vorhin</span>'].filter(Boolean).join('');
       const walk = x.boss ? '👣 langsam: jeden 2. Zug' : x.steps > 1 ? '👣👣 schnell: 2 Felder' : '👣 1 Feld';
       const walkSay = x.boss ? 'geht nur jeden zweiten Zug ein Feld' : x.steps > 1 ? 'schnell: geht 2 Felder pro Zug' : 'geht 1 Feld pro Zug';
-      const z = 1 + (c.weak ? 1 : 0);
+      const z = 1 + (c.weak ? 1 : 0), gate = TW.threats(run).includes(x.id) && turmGateLine(x);
       // the final boss: which subject the question comes from now, and how many shields are left
       const sh = x.final && x.shields[0], shield = x.final ? `<p class="tw-shieldnow"><i class="dot" style="background:${cols[sh]}" aria-hidden="true"></i><span>Die Aufgabe kommt aus ${SUBJECTS[t.lanes[sh].subject]} ${esc(laneName(sh))}. ${x.shields.length === 1 ? 'Das ist der letzte Schild.' : `Noch ${x.shields.length} Schilde.`}</span></p>` : '';
       const guide = t.wave === 1 && t.turn < 2 ? `<p class="pnote">Tippe auf „Angreifen“. Löst du die Aufgabe richtig, macht dein Held 💥 ${c.dmg} Schaden.</p>` : '';
       bot.innerHTML = `<div class="card tw-card" id="twcard"><div class="tw-cardhead">${monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })}<div class="tw-cardinfo"><div class="name">${esc(x.name)}</div><div class="tw-chips">${typeChip(x.type)}<span class="chip tw-theme">${M.icon} ${esc(M.title)}</span></div></div></div>
-        <div class="tw-stats"><span aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp} / ${x.maxHp}</span><span aria-label="Dein Treffer: ${c.dmg} Schaden">💥 ${c.dmg}</span><span aria-label="${z} Ziegel für eine richtige Antwort">${'🧱'.repeat(z)} +${z}</span><span aria-label="${walkSay}">${walk}</span></div>${tags ? `<div class="tags">${tags}</div>` : ''}${shield}${by ? `<p class="tw-guard">${esc(turmBlocked(by))}</p>` : guide}<button class="btn" id="atk"${by ? ' disabled' : ''}>Angreifen</button></div>${tools}`;
-      const said = () => joined(x.name, TYPES[x.type].name, 'Thema: ' + M.title, `${x.hp} Lebenspunkte`, `Dein Treffer macht ${c.dmg} Schaden`, c.weak && 'Schwachstelle, doppelte Ziegel', x.steps > 1 && 'schnell', x.final && `Die Aufgabe kommt aus ${laneName(sh)}`, by && turmBlocked(by));
+        <div class="tw-stats"><span aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp} / ${x.maxHp}</span><span aria-label="Dein Treffer: ${c.dmg} Schaden">💥 ${c.dmg}</span><span aria-label="${z} Ziegel für eine richtige Antwort">${'🧱'.repeat(z)} +${z}</span><span aria-label="${walkSay}">${walk}</span></div>${tags ? `<div class="tags">${tags}</div>` : ''}${shield}${gate ? `<p class="tw-gate">⚠️ ${gate}</p>` : ''}${by ? `<p class="tw-guard">${esc(turmBlocked(by))}</p>` : guide}<button class="btn" id="atk"${by ? ' disabled' : ''}>Angreifen</button></div>${tools}`;
+      const said = () => joined(x.name, TYPES[x.type].name, 'Thema: ' + M.title, `${x.hp} Lebenspunkte`, `Dein Treffer macht ${c.dmg} Schaden`, gate, c.weak && 'Schwachstelle, doppelte Ziegel', x.steps > 1 && 'schnell', x.final && `Die Aufgabe kommt aus ${laneName(sh)}`, by && turmBlocked(by));
       speakBtn($('.tw-cardinfo .name', bot), 'beforeend', said, say ? said : null, [], run.grade);
       if (by) { const b = $(`.tw-mon[data-id="${x.id}"] .tw-bubble`); if (b) { b.classList.remove('flash'); void b.getBoundingClientRect(); b.classList.add('flash'); } }
     }
@@ -2532,7 +2536,7 @@
   }
   function turmIntro() {
     const steps = ['Monster laufen auf den Wissensturm zu. Jeder Weg gehört zu einem Fach.', 'Tippe auf ein Monster und dann auf „Angreifen“. Du bekommst eine Aufgabe.', 'Richtig gelöst: Dein Held trifft das Monster. 🎯 zeigt, wo er besonders stark trifft.',
-      'Nach jeder Aufgabe gehen die Monster ein Feld weiter. Kommt eins am Turm an, verliert der Turm ❤️.', 'Für richtige Antworten gibt es Ziegel 🧱. Nach jeder Welle ist Bauzeit.'];
+      'Nach jeder Aufgabe gehen die Monster weiter. Kommt eins am Turm an, verliert der Turm ❤️. ⚠️ zeigt, wer im nächsten Zug ankommt.', 'Für richtige Antworten gibt es Ziegel 🧱. Nach jeder Welle ist Bauzeit.'];
     const ov = modal(`<h2>🏰 Turmwacht</h2><ol>${steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`);
     speakBtn($('h2', ov), 'afterbegin', () => joined(...steps), undefined, [], run.grade);
     $('#tutok', ov).focus({ preventScroll: true }); $('#tutok', ov).onclick = () => { ov.remove(); meta.seenTut['turm:intro'] = true; saveAll(); };
@@ -2906,5 +2910,5 @@
   screenTitle();
   importFromLink();
   // turm: the rules without the screens, for the page tests
-  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}), motion: (speed) => { turmSpeed = speed == null ? null : speed; }, say: { lines: turmLines, elite: turmEliteText, blocked: turmBlocked, acc: accName } }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
+  window.__mq = { get run() { return run; }, normMeta, turm: { TW, start: startTurm, resume: () => (run = loadTurm()), ask: turmAsk, answer: turmAnswer, step: turmStep, reward: turmReward, buy: turmBuy, nextWave: turmNextWave, retry: turmRetry, screen: screenTurm, board: (o) => screenTurmBoard(o || {}), motion: (speed) => { turmSpeed = speed == null ? null : speed; }, say: { lines: turmLines, elite: turmEliteText, blocked: turmBlocked, gate: turmGateText, acc: accName } }, subjectOf, recordAnswer, get meta() { return meta; }, get mode() { return mode; }, screenMap, screenTitle, packSave, unpackSave, mergeMeta, weeklyGoals, screenWardrobe, screenTop, RECIPES, craft };
 })();

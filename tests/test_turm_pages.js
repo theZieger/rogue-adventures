@@ -92,7 +92,7 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
     for (const e of names.values()) {
       const x = { id: 1, name: e.name, acc: e.acc }, nm = { 1: { name: e.name, acc: S.acc(x) } };
       const ev = [{ t: 'hit', id: 1, dmg: 5 }, { t: 'shot', id: 1, dmg: 4 }, { t: 'chain', id: 1, dmg: 3 }, { t: 'beaten', id: 1 }, { t: 'stun', id: 1 }, { t: 'push', id: 1 }, { t: 'tower', id: 1, dmg: 9 }, { t: 'hold', id: 1 }, { t: 'block', id: 1 }, { t: 'enter', id: 1, boss: true }];
-      out.push(...S.lines(ev, nm), S.elite(x), S.blocked(x));
+      out.push(...S.lines(ev, nm), S.elite(x), S.blocked(x), S.gate([x]), S.gate([x, x]), S.gate([x, x, x]));
     }
     if (process.env.TURM_NAMES) console.log(out.join('\n'));
     const bad = out.filter((l) => / (Der|Die|Das|Den) /.test(l.replace(/^(Der|Die|Das) /, '').replace(/\. (Der|Die|Das) /g, '. ')) || /Erst wenn (den|einen) /.test(l) || /(trifft|hält|schiebt)( auch)? (der|Der) /.test(l) || /\bden [A-ZÄÖÜ][a-zäöüß]+e\b/.test(l));

@@ -113,6 +113,11 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   check(e3.some((e) => e.t === 'tower' && e.id === x.id && e.dmg === towerDmg(2) && e.gone) && !r3.turm.monsters.includes(x), 'normal monster hits once and is gone', e3);
   const f = mon(r3, 0, 3, { steps: 2 }); r3.turm.phase = 'step'; TW.step(r3, ctx);
   check(f.cell === 1, 'fast monster walks 2 cells');
+  // warning: who reaches the tower in the next step (a fast one from cell 2, not a stopped one, not a resting boss)
+  const r5 = board(start(undefined, 3, ctx), 2, ctx), w1 = mon(r5, 0, 1), w2 = mon(r5, 1, 2, { steps: 2 }), w3 = mon(r5, 2, 1, { stun: 1 }), w4 = mon(r5, 0, 2, { steps: 2 });
+  check(TW.threats(r5).sort().join() === [w1.id, w2.id, w4.id].sort().join() && w1.cell === 1 && w4.cell === 2, 'threats: arriving monsters, also a fast one behind an arriving one', TW.threats(r5));
+  w3.stun = 0; w3.boss = true; w3.slow = 1; check(!TW.threats(r5).includes(w3.id), 'threats: a resting boss at the gate waits');
+  w3.slow = 0; check(TW.threats(r5).includes(w3.id), 'threats: a boss at the gate hits on its walking turn');
   // elites hit harder
   const r4 = board(start(undefined, 3, ctx), 2, ctx); mon(r4, 0, 1, { elite: true }); r4.turm.phase = 'step';
   check(TW.step(r4, ctx).find((e) => e.t === 'tower').dmg === towerDmg(2, 'elite') && towerDmg(2, 'elite') > towerDmg(2), 'elite hits harder');
@@ -415,7 +420,10 @@ const play = (acc, seed, grade = 3, subjects = ['Mathe', 'Deutsch', 'Sachkunde']
       const key = subjects.length > 1 ? sub : a.lane; asked[key] = (asked[key] || 0) + 1;
       checkEv(TW.answer(run, ok, ctx, { task: { kind: 'choice', q: 'Frage ' + questions, options: ['a', 'b'], answer: 'a' }, tier: 1 }));
       questions++; pass++; maxPass = Math.max(maxPass, pass);
-      checkEv(TW.step(run, ctx));
+      // the board's warning names exactly the monsters that reach the tower in this step
+      const warned = t().phase === 'step' ? TW.threats(run).sort().join() : '', sev = TW.step(run, ctx), came = sev.filter((e) => ['tower', 'block', 'hold'].includes(e.t)).map((e) => e.id).sort().join();
+      if (warned !== came) check(false, 'threats() predicts the monsters that reach the tower', [warned, came]);
+      checkEv(sev);
       if (!['choose', 'build', 'reward', 'fallen', 'won'].includes(t().phase)) check(false, 'phase after step', t().phase);
     } else if (ph === 'reward') TW.takeReward(run, buy === 'naive' ? Math.floor(rnd() * 2) : Math.max(0, t().offer.indexOf('schild')));
     else if (ph === 'build') {

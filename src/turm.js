@@ -311,23 +311,33 @@ const TW = (() => {
     return d;
   }
 
+  // every monster walks its turn, front first; hit(x) for each one that reaches the gate (it must remove a non-boss)
+  function walk(t, ev, hit) {
+    for (const x of t.monsters.slice().sort((a, b) => a.cell - b.cell)) {
+      if (x.boss) { const rest = x.slow; x.slow = 1 - x.slow; if (rest) continue; }
+      if (x.stun) { x.stun = 0; ev.push({ t: 'stunned', id: x.id }); continue; }
+      const from = x.cell; let n = x.steps, reached = false;
+      while (n-- > 0) {
+        if (x.cell === 1) { reached = true; break; }
+        if (at(t, x.lane, x.cell - 1)) break;
+        x.cell--;
+      }
+      if (x.cell !== from) ev.push({ t: 'move', id: x.id, from, to: x.cell });
+      if (reached) hit(x);
+    }
+  }
+  // ids of the monsters that reach the tower in the next step (the board warns about them)
+  function threats(run) {
+    const t = clone(run.turm), ids = [];
+    walk(t, [], (x) => { ids.push(x.id); if (!x.boss) remove(t, x); });
+    return ids;
+  }
   // monsters walk, hit the tower, new ones enter; then the next turn, the wave's end or the fall
   function step(run, ctx) {
     const t = run.turm, ev = [];
     if (t.phase !== 'step' && t.phase !== 'choose') return ev;
     t.asking = null; let lost = 0;
-    for (const x of t.monsters.slice().sort((a, b) => a.cell - b.cell)) {
-      if (x.boss) { const rest = x.slow; x.slow = 1 - x.slow; if (rest) continue; }
-      if (x.stun) { x.stun = 0; ev.push({ t: 'stunned', id: x.id }); continue; }
-      const from = x.cell; let n = x.steps, hit = false;
-      while (n-- > 0) {
-        if (x.cell === 1) { hit = true; break; }
-        if (at(t, x.lane, x.cell - 1)) break;
-        x.cell--;
-      }
-      if (x.cell !== from) ev.push({ t: 'move', id: x.id, from, to: x.cell });
-      if (hit) lost += towerHit(run, x, ev, lost);
-    }
+    walk(t, ev, (x) => { lost += towerHit(run, x, ev, lost); });
     if (run.hero.hp <= 0) { t.phase = 'fallen'; ev.push({ t: 'fallen', wave: t.wave }); return ev; }
     enter(t, WAVES[t.wave - 1].enter, ev);
     t.turn++;
@@ -406,7 +416,7 @@ const TW = (() => {
 
   return {
     CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
-    lanesFor, newRun, card, canTarget, preview,
+    lanesFor, newRun, card, canTarget, preview, threats,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };
 })();

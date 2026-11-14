@@ -846,6 +846,7 @@ button.tw-spot { cursor: pointer; border-radius: 12px; }
 .tw-card .tag.power { background: #FFF1C7; color: #6B4E00; }
 .tw-card .tag.again { background: #E3EEFF; color: #1D4B8F; }
 .tw-guard { font-weight: 700; color: #A42020; }
+.tw-gate { font-weight: 700; color: #9A3A0A; }
 .tw-card .btn { min-height: 50px; }
 .tw-card .btn.small { width: 100%; }
 .tw-item { padding: 6px 12px; gap: 10px; box-shadow: none; }
