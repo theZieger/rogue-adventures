@@ -301,7 +301,8 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   S.bau[Object.keys(S.bau)[0]] = { c: 1, t: 1 };
   y.click('#go');
   check(same([...new Set(y.w.__mq.run.turm.lanes.map((l) => l.subject))], ['Mathe', 'Musik']), 'the run uses exactly those subjects');
-  check(unitsOf(y.w.__mq.run, 'Mathe') === 'bau' && y.w.__mq.run.turm.lanes.filter((l) => l.subject === 'Mathe').flatMap((l) => l.src.map((x) => x.k)).join() === Object.keys(S.bau)[0], 'a subject asks only the task types the child has practised');
+  const ks = y.w.__mq.run.turm.lanes.filter((l) => l.subject === 'Mathe').flatMap((l) => l.src.map((x) => x.k));
+  check(unitsOf(y.w.__mq.run, 'Mathe') === 'bau' && ks.length === 2 && ks.includes(Object.keys(S.bau)[0]), 'a subject asks only from practised themes: the practised task type and one more from there', ks);
   check(y.errors.length === 0, 'no page errors ' + y.errors.join(' '));
   last.close();
   console.log(`turm pages fails ${fails} (${opens} pages, ${Date.now() - t0} ms)`);

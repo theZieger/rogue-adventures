@@ -1818,12 +1818,15 @@
   const TURM_PHASES = ['choose', 'task', 'step', 'reward', 'build', 'fallen', 'won'];
   // a unit's Turm world: the furthest world reached in an adventure there (running, or a Monsterbuch entry from there)
   const turmWorld = (m) => { const r = loadRun(m); return Math.min(MODES[m].worlds, Math.max(1, r ? r.world : 1, ...Object.values(meta.dex).filter((e) => isObj(e) && e.mode === m && Number.isInteger(e.world)).map((e) => e.world))); };
-  // Turmwacht is for review: only the task types the child has practised in a subject; with none yet, the first two
-  // of the subject's first theme in title order (so a new subject brings two new explanations, not a dozen)
+  // Turmwacht is for review: only the task types the child has practised in a subject, topped up to two from the first
+  // practised theme, else from the subject's first theme in title order (a new subject brings two explanations, not a dozen)
   const turmSources = (subject, grade) => {
     const units = MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject && shown(m)).sort((x, y) => (MODES[x].rank || 0) - (MODES[y].rank || 0)), done = units.filter(practised);
-    if (!done.length) return units.slice(0, 1).flatMap((m) => enabledMods(m).slice(0, 2).map((k) => ({ m, k })));
-    return done.flatMap((m) => fightMods(m).filter((k) => meta.stats[m][k].t > 0).map((k) => ({ m, k })));
+    const seen = done.flatMap((m) => fightMods(m).filter((k) => meta.stats[m][k] && meta.stats[m][k].t > 0).map((k) => ({ m, k })));
+    // at least two task types, so a subject alone still gets two paths
+    const m = done[0] || units[0];
+    for (const k of enabledMods(m)) if (seen.length < 2 && !seen.some((s) => s.m === m && s.k === k)) seen.push({ m, k });
+    return seen;
   };
   const turmHero = (h = run.hero) => MODES[h.m].starters.find((s) => s.id === h.id);
   const laneAcc = (lane) => { let c = 0, t = 0; for (const { m, k } of lane.src) { const s = meta.stats[m][k]; c += s.c; t += s.t; } return t ? c / t : 0.6; };
@@ -2172,7 +2175,7 @@
     const upP = [...new Set(ups.map((g) => TW.COST.up[g.lvl - 1]))].sort((a, b) => a - b);
     const full = G.length === t.lanes.length * TW.SPOTS;
     const cards = [{ id: 'guard', name: 'Wache aufstellen', pic: 'guard', price: free ? 0 : TW.COST.guard, desc: free ? 'Die erste Wache ist geschenkt.' : 'Schießt auf ihrem Weg mit.', note: full ? 'Alle Plätze sind besetzt. Eine neue Wache ersetzt eine alte.' : '' },
-      { id: 'up', name: 'Wache verbessern', pic: 'up', price: upP[0] ?? TW.COST.up[0], label: upP.length > 1 ? upP.join(' / ') : null, desc: `Stufe 2: 💥 ${TW.GUARD_DMG[1]}, Stufe 3: 💥 ${TW.GUARD_DMG[2]}.`, why: !G.length ? 'Stell zuerst eine Wache auf.' : !ups.length ? 'Alle Wachen haben Stufe 3.' : '' }]
+      { id: 'up', name: 'Wache verbessern', pic: 'up', price: upP[0] ?? TW.COST.up[0], label: upP.length > 1 ? upP.join(' / ') : null, desc: `Stufe 2: 💥 ${TW.GUARD_DMG[1]}\nStufe 3: 💥 ${TW.GUARD_DMG[2]}`, why: !G.length ? 'Stell zuerst eine Wache auf.' : !ups.length ? 'Alle Wachen haben Stufe 3.' : '' }]
       .concat([...new Set(t.lanes.map((l) => l.subject))].map((s) => ({ id: 'floor:' + s, name: TWART.ROOMS[s].name, pic: s, price: TW.COST.floor, desc: `Richtig in ${s}: ${FLOOR_FX[TW.FLOORS[s]]}`, why: t.floors.includes(s) ? 'Schon gebaut.' : '' })))
       .concat({ id: 'fix', name: 'Mauer flicken', pic: 'fix', price: TW.COST.fix, desc: `Der Turm bekommt ${TW.FIX_HP} ❤️ zurück.`, why: run.hero.hp >= run.hero.maxHp ? 'Der Turm ist heil.' : '' });
     for (const c of cards) c.short = c.why ? 0 : Math.max(0, c.price - t.ziegel);
@@ -2312,7 +2315,7 @@
     // guided wave 1: the first step is explained once it has happened
     if (t.wave === 1 && t.turn === 1 && t.phase === 'choose' && ev.some((e) => e.t === 'move') && !ev.some((e) => e.t === 'wrong')) L.push('Nach jeder Aufgabe gehen die Monster ein Feld weiter.');
     if (z) L.push(`+${z} 🧱${ev.some((e) => e.t === 'ziegel' && e.why === 'weak') ? ', doppelt durch 🎯' : ''}.`);
-    const seen = t.monsters.filter((x) => x.fresh).map((x) => x.name);
+    const seen = t.monsters.filter((x) => x.fresh).map((x) => midName(x.name));
     if (seen.length) L.push(`Neu im Monsterbuch: ${seen.join(', ')}.`);
     return L;
   }

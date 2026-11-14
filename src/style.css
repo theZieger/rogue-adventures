@@ -821,6 +821,9 @@ button.tw-spot { cursor: pointer; border-radius: 12px; }
 .tw-log { flex: none; }
 /* two whole lines; more scrolls inside the text (scrolling the box itself would show a cut line in its padding) */
 .tw-log p { max-height: 2.3em; overflow-y: auto; overscroll-behavior: contain; }
+/* tall phones have room under the board for a third line while no monster card is open */
+@media (min-height: 800px) and (orientation: portrait) { .tw-screen:not(.carded):not(.build) .tw-log p { max-height: 3.45em; } }
+.tw-buy .tw-desc { white-space: pre-line; }
 /* portrait: room the board can't use (it is as wide as the screen) is shared above the board and above the panel */
 .tw-main { margin-top: auto; }
 /* an open monster card: the board shrinks so the card and the buttons under it fit */
@@ -945,6 +948,7 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   .tw-screen:not(.tasking) > .topbar { grid-column: 2; grid-row: 1; padding: 6px 12px; }
   .tw-screen:not(.tasking) .tw-main { grid-column: 1; grid-row: 1 / 4; max-height: none; min-height: 0; padding: 5px 0; margin-top: 0; }
   .tw-screen:not(.tasking) .tw-log { grid-column: 2; grid-row: 2; }
+  .tw-screen:not(.tasking) .tw-log p { max-height: 4.6em; }
   /* the last turn's log gives way to an open monster card, so the card and the buttons fit */
   .tw-screen.carded .tw-log { display: none; }
   .tw-screen:not(.tasking) .tw-panel { grid-column: 2; grid-row: 3; max-height: 100%; overflow-y: auto; border-top: 0; border-left: 3px solid rgba(255,255,255,.08); }

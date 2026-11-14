@@ -28,8 +28,8 @@ const TW = (() => {
   const PER_MONSTER = 2; // ≈ questions a monster takes, for spreading monsters over the lanes
   const AGAIN_MAX = 3, AGAIN_TASK_MAX = 8192;
   // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % and the hero hits
-  // up to 15 % harder, so a struggling child still reaches the end in ≤ 70 questions (no message)
-  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5, CATCHUP_HERO = 0.3;
+  // up to 20 % harder, so a struggling child still reaches the end in ≤ 70 questions (no message)
+  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5, CATCHUP_HERO = 0.4;
   const CP_USES = 2;
   const START_ITEMS = ['trank'], BOSS_ITEM = 'grosstrank', OFFER = ['trank', 'schild', 'keks', 'lupe'];
   const FLOORS = { Mathe: 'chain', Ethik: 'stun', Sachkunde: 'repair', Deutsch: 'brick', Musik: 'push', Englisch: 'volley' };
@@ -116,7 +116,8 @@ const TW = (() => {
     // 🔁 monsters walk their own path and the boss/elite's many questions count first, so the others go elsewhere
     const load = t.lanes.map((_, i) => usedOf(t, i)), special = w.boss != null ? BOSS_HP : w.elite != null ? ELITE_HP : 0;
     load[weak[0]] += special * PER_MONSTER;
-    const again = t.again.slice(0, n + 1).filter((e) => e.lane < L), lanes = again.map((e) => e.lane);
+    // at most half the wave are 🔁 monsters: they walk the path of the wrong answer, so more would starve the other subjects
+    const took = t.again.slice(0, Math.ceil(n / 2)), again = took.filter((e) => e.lane < L), lanes = again.map((e) => e.lane);
     for (const l of lanes) load[l] += PER_MONSTER;
     while (lanes.length < n) { const l = load.indexOf(Math.min(...load)); lanes.push(l); load[l] += PER_MONSTER; }
     // the extra monster: the weakest path that has not had more than its share of questions yet
@@ -124,12 +125,12 @@ const TW = (() => {
     if (lanes.length < n + 1) lanes.push(weak.find((i) => used[i] <= fair) ?? weak[0]);
     const normal = lanes.map((lane, i) => ({ lane, again: again[i], fast: !!w.fast && !k2 && i % w.fast === w.fast - 1 }));
     const finalLane = (L > 1 && t.boss3 ? weak.find((i) => i !== t.boss3.lane) : null) ?? weak[0];
-    return { w, weak, normal, n: lanes.length, finalLane };
+    return { w, weak, normal, n: lanes.length, took: took.length, finalLane };
   }
 
   function buildWave(run, ctx) {
     const t = run.turm, p = plan(run, ctx, t.wave), w = p.w, weak = p.weak;
-    t.again.splice(0, p.n);
+    t.again.splice(0, p.took);
     const q = p.normal.map((e) => {
       const x = spawn(run, ctx, e.lane, 'normal', e.again && { m: e.again.m, k: e.again.k });
       if (e.again) x.again = e.again;

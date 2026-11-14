@@ -234,7 +234,8 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
 
 // --- 🔁 returning questions ---
 {
-  const ctx = makeCtx(11), run = board(start(undefined, 3, ctx), 2, ctx), t = run.turm;
+  // wave 3, so the next wave (6 monsters) has room for all three 🔁 (at most half a wave)
+  const ctx = makeCtx(11), run = board(start(undefined, 3, ctx), 3, ctx), t = run.turm;
   const x = mon(run, 0, 4, { hp: 500, maxHp: 500 }), y = mon(run, 1, 4, { hp: 500, maxHp: 500 }), z = mon(run, 2, 4, { hp: 500, maxHp: 500 });
   const small = { kind: 'choice', q: 'Welches Wort?', options: ['a', 'b'], answer: 'a', tier: 2 };
   const big = { kind: 'choice', fig: '<svg>' + 'x'.repeat(9000) + '</svg>', options: ['a', 'b'], answer: 'a', tier: 1 };
@@ -258,6 +259,9 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   check(a.again && a.again.task.q === small.q, 'ask hands the stored task back');
   TW.answer(run, false, ctx, { task: small });
   check(!c0.again && t.again.length === 0, '🔁 comes back once: a wrong answer doesn’t add it again', t.again);
+  // a wave of 3 takes at most 2 🔁; the third waits for the next wave
+  t.again = [0, 1, 2].map((l) => ({ ...t.lanes[l].src[0], lane: l, tier: 1 })); t.phase = 'build'; t.wave = 2; t.monsters = []; t.queue = []; TW.nextWave(run, ctx);
+  check(t.monsters.concat(t.queue).filter((m) => m.again).length === 2 && t.again.length === 1, 'at most half a wave carries 🔁', t.again);
 }
 
 // --- Bauzeit: income, costs, free first guard, floors, reward, evolution ---
