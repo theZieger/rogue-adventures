@@ -95,7 +95,7 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
       out.push(...S.lines(ev, nm), S.elite(x), S.blocked(x), S.gate([x]), S.gate([x, x]), S.gate([x, x, x]));
     }
     if (process.env.TURM_NAMES) console.log(out.join('\n'));
-    const bad = out.filter((l) => / (Der|Die|Das|Den) /.test(l.replace(/^(Der|Die|Das) /, '').replace(/\. (Der|Die|Das) /g, '. ')) || /Erst wenn (den|einen) /.test(l) || /(trifft|hält|schiebt)( auch)? (der|Der) /.test(l) || /\bden [A-ZÄÖÜ][a-zäöüß]+e\b/.test(l));
+    const bad = out.filter((l) => / (Der|Die|Das|Den) /.test(l.replace(/^(Der|Die|Das) /, '').replace(/[.!] (Der|Die|Das) /g, '. ')) || /Erst wenn (den|einen) /.test(l) || /(trifft|hält|schiebt)( auch)? (der|Der) /.test(l) || /\bden [A-ZÄÖÜ][a-zäöüß]+e\b/.test(l));
     check(names.size > 100 && !bad.length, 'monster names take the right case in every Turm sentence ' + bad.slice(0, 5).join(' | '));
   }
   const q = open(snap.task, 2);
@@ -160,7 +160,7 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(!!u.$('.overlay #tutok') && ud.querySelectorAll('.tw-mon').length >= 1, 'the board opens with the intro the first time');
   u.click('.overlay #tutok');
   check(u.w.__mq.meta.seenTut['turm:intro'] === true && !u.$('.overlay'), 'the intro is seen once');
-  const ask = () => { const r = u.w.__mq.run; [...ud.querySelectorAll('.tw-mon')].find((b) => r.turm.monsters.some((x) => x.id === +b.dataset.id && u.T.TW.canTarget(r, x.id))).click(); const x = r.turm.monsters.find((y) => y.id === +u.$('.tw-mon.sel').dataset.id); check(!!u.$('#atk') && !u.$('#atk').disabled && u.$('#twcard').textContent.includes(x.name) && !!u.$('#twcard .tw-theme'), 'a tap opens the monster card'); u.click('#atk'); if (u.$('.overlay #tutok')) u.click('.overlay #tutok'); return u.saved().turm.asking; };
+  const ask = () => { const r = u.w.__mq.run; [...ud.querySelectorAll('.tw-mon')].find((b) => r.turm.monsters.some((x) => x.id === +b.dataset.id && u.T.TW.canTarget(r, x.id))).click(); const x = r.turm.monsters.find((y) => y.id === +u.$('.tw-mon.sel').dataset.id); check(!!u.$('#atk') && !u.$('#atk').disabled && u.$('#twcard').textContent.includes(x.name) && !!u.$('#twcard .tw-from'), 'a tap opens the monster card'); u.click('#atk'); if (u.$('.overlay #tutok')) u.click('.overlay #tutok'); return u.saved().turm.asking; };
   const stat = (a) => ({ ...u.w.__mq.meta.stats[a.m][a.k] });
   let a1 = ask(); const s0 = stat(a1);
   check(u.saved().turm.phase === 'task' && same(u.w.__task, a1.task) && !!u.$('.screen.tasking'), 'Angreifen shows the saved question in the normal task view');
@@ -168,11 +168,11 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   uiAnswer(u, true);
   let n1 = stat(a1);
   check(n1.t === s0.t + 1 && n1.c === s0.c + 1 && !u.w.__mq.meta.stats.turm, 'a right answer counts for the unit of the monster, no Turm entry in the statistics');
-  check(!!u.$('.tw-board') && /Schaden/.test(u.$('.tw-log').textContent) && ['choose', 'build'].includes(u.saved().turm.phase), 'back on the board, the log tells what happened');
+  check(!!u.$('.tw-board') && !/Schaden/.test((u.$('.tw-log') || { textContent: '' }).textContent) && ['choose', 'build'].includes(u.saved().turm.phase), 'back on the board; the log stays quiet about what the board shows');
   a1 = ask(); const w0 = stat(a1);
   uiAnswer(u, false);
   n1 = stat(a1);
-  check(n1.t === w0.t + 1 && n1.c === w0.c && /Die Monster rücken vor/.test(u.$('.tw-log').textContent), 'a wrong answer counts too, the monsters step');
+  check(n1.t === w0.t + 1 && n1.c === w0.c, 'a wrong answer counts too');
   // with motion (forced, 100× faster): the turn plays over the saved board and ends on the same board (or the wave's end)
   u.T.motion(0.01); a1 = ask(); uiAnswer(u, true);
   const played = !!u.$('.tw-screen.playing'), saved1 = u.saved();
@@ -251,7 +251,7 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(g.errors.length === 0, 'no page errors ' + g.errors.join(' '));
 
   // the Bauzeit through the real cards: every kind bought, refusals, then the parents fix the subjects
-  const z = open({ [META]: meta0 }, 9), zr = () => z.w.__mq.run, zt = () => zr().turm, card = (id) => z.click(`[data-card="${id}"]`), spot = (l, s) => z.click(`.tw-spot[data-lane="${l}"][data-spot="${s}"]`);
+  const z = open({ [META]: meta0 }, 9), zr = () => z.w.__mq.run, zt = () => zr().turm, card = (id) => { z.click(`[data-card="${id}"]`); const b = z.$('.overlay #build'); if (b && !b.disabled) b.click(); }, spot = (l, s) => z.click(`.tw-spot[data-lane="${l}"][data-spot="${s}"]`);
   const log = () => (z.$('.tw-log') || { textContent: '' }).textContent, bmsg = () => z.$('.tw-bmsg').textContent;
   z.w.__mq.meta.dex.Moorschlund = { type: 'wasser', shape: 'moorschlund', world: 1, mode: 'math' };
   z.T.start(['Mathe', 'Deutsch', 'Sachkunde'], { m: 'math', id: 'fuchs' });
@@ -262,7 +262,7 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(z.w.__mq.meta.seenTut['turm:bau'] === true && /geschenkt/.test(z.$('[data-card="guard"]').textContent) && z.d.querySelectorAll('.tw-coming').length >= 1, 'the guard card says the first guard is free, the paths show the coming wave');
   const free0 = zt().ziegel;
   card('guard'); spot(0, 1);
-  check(z.d.querySelectorAll('.overlay [data-l]').length === 4 && /stark gegen/.test(z.$('.overlay').textContent), 'a spot asks for the look: three typed guards and the boss from the Monsterbuch');
+  check(z.d.querySelectorAll('.overlay [data-l]').length === 4 && !/stark gegen/.test(z.$('.overlay').textContent) && z.$('.overlay .tw-look .name').textContent === 'Glutfuchs', 'a spot asks for the look by picture and name: three guards and the boss from the Monsterbuch');
   z.click('.overlay [data-l="0"]');
   check(same(zt().guards['0:1'], { look: 'fuchs', type: 'feuer', lvl: 1 }) && zt().ziegel === free0 && /Glutfuchs steht jetzt/.test(log()) && same(z.saved(), zr()), 'the free guard is placed and saved');
   const C = z.T.TW.COST;
@@ -277,8 +277,9 @@ const turn = (p, ok) => { const r = p.w.__mq.run, x = r.turm.monsters.find((y) =
   check(zr().hero.hp === 50 && zt().ziegel === 0, 'Mauer flicken: +10 ❤️');
   card('floor:Deutsch');
   check(zt().floors.length === 1 && bmsg() === `Dafür fehlen dir noch ${C.floor} Ziegel.` && z.$('[data-card="floor:Deutsch"]').classList.contains('short') && z.$('[data-card="floor:Deutsch"]').textContent.includes(`Noch ${C.floor}`), 'too expensive: greyed, „Noch n 🧱“, nothing bought');
-  card('floor:Mathe');
-  check(bmsg() === 'Schon gebaut.', 'a built floor says why it can\'t be built again');
+  z.click('.overlay #no'); card('floor:Mathe');
+  check(bmsg() === 'Schon gebaut.' && z.$('.overlay #build').disabled, 'a built floor says why it can\'t be built again');
+  z.click('.overlay #no');
   zt().ziegel = 7; z.T.buy({ kind: 'none' }); z.T.board(); card('guard'); // a refused buy still saves
   const zSaved = z.saved();
   check(z.d.querySelectorAll('button.tw-spot.pick').length === 6 && same(zSaved, zr()), 'a guard card waits for a spot; everything bought is saved');

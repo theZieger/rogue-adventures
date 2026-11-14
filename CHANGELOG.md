@@ -15,6 +15,11 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Verbessert
 - Die Knöpfe unten auf der Startseite stehen jetzt immer in einer Zeile.
+- Turmwacht aufgeräumt: größere Monster, kurze Karten, und ein Treffer am Turm ist jetzt deutlich zu sehen.
+- In der Bauzeit stehen alle Bauteile nebeneinander, gebaut wird erst nach einem Tipp auf „Bauen“.
+
+### Behoben
+- Englisch: „painting“ heißt jetzt „malen“ statt „das Malen“, dazu weitere Wörter und Sätze verbessert.
 
 ## 2026-11-13
 

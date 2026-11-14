@@ -5,6 +5,7 @@
 
   Regeln für alle Listen:
   - Erst Englisch, dann Deutsch. Deutsche Nomen immer mit Artikel: ['dog', 'der Hund'].
+    Tätigkeiten als Verb, nicht als Nomen: ['painting', 'malen'], nicht 'das Malen'.
   - Britische Schreibweise: colour, favourite, grey.
   - Texte in einfachen Anführungszeichen. Ein Apostroph im Text wird als ’ geschrieben (What’s), nie als '.
   - Jedes englische Wort nur einmal in der ganzen Datei; innerhalb eines Themas jede deutsche Bedeutung nur einmal
@@ -34,12 +35,12 @@ const ENG = {
       ['book', 'das Buch'], ['exercise book', 'das Heft'], ['schoolbag', 'die Schultasche'], ['pencil case', 'die Federtasche'],
       ['glue', 'der Kleber'], ['scissors', 'die Schere'], ['sharpener', 'der Anspitzer'], ['board', 'die Tafel'],
       ['table', 'der Tisch'], ['chair', 'der Stuhl'], ['window', 'das Fenster'], ['door', 'die Tür'],
-      ['bin', 'der Mülleimer'], ['teacher', 'die Lehrerin'], ['classroom', 'das Klassenzimmer'],
+      ['bin', 'der Mülleimer'], ['teacher', 'der Lehrer / die Lehrerin'], ['classroom', 'das Klassenzimmer'],
     ],
     'Familie': [
       ['mum', 'die Mama'], ['dad', 'der Papa'], ['sister', 'die Schwester'], ['brother', 'der Bruder'],
       ['grandma', 'die Oma'], ['grandpa', 'der Opa'], ['baby', 'das Baby'], ['family', 'die Familie'],
-      ['aunt', 'die Tante'], ['uncle', 'der Onkel'], ['friend', 'der Freund'],
+      ['aunt', 'die Tante'], ['uncle', 'der Onkel'], ['friend', 'der Freund / die Freundin'],
     ],
     'Tiere': [
       ['dog', 'der Hund'], ['cat', 'die Katze'], ['rabbit', 'das Kaninchen'], ['guinea pig', 'das Meerschweinchen'],
@@ -75,9 +76,9 @@ const ENG = {
       ['cold', 'kalt'], ['hot', 'heiß'],
     ],
     'Hobbys': [
-      ['football', 'der Fußball'], ['basketball', 'der Basketball'], ['tennis', 'das Tennis'], ['swimming', 'das Schwimmen'],
-      ['reading', 'das Lesen'], ['painting', 'das Malen'], ['dancing', 'das Tanzen'], ['singing', 'das Singen'],
-      ['cycling', 'das Radfahren'], ['riding', 'das Reiten'], ['piano', 'das Klavier'], ['guitar', 'die Gitarre'],
+      ['football', 'der Fußball'], ['basketball', 'der Basketball'], ['tennis', 'das Tennis'], ['swimming', 'schwimmen'],
+      ['reading', 'lesen'], ['painting', 'malen'], ['dancing', 'tanzen'], ['singing', 'singen'],
+      ['cycling', 'Rad fahren'], ['riding', 'reiten'], ['piano', 'das Klavier'], ['guitar', 'die Gitarre'],
       ['drums', 'das Schlagzeug'],
     ],
     'In der Stadt': [
@@ -129,7 +130,7 @@ const ENG = {
     ['I ___ nine years old.', 'am', 'is', 'are'],
     ['How ___ are you? I am eight.', 'old', 'dog', 'Monday'],
     ['What ___ is it? It is blue.', 'colour', 'number', 'day'],
-    ['It is ___. I can build a snowman.', 'snowing', 'sunny', 'hot'],
+    ['It is ___. I can build a snowman.', 'snowing', 'raining', 'hot'],
     ['Be ___, please.', 'quiet', 'eat', 'table'],
     ['I am wearing a red ___.', 'jumper', 'apple', 'Tuesday'],
     ['Anna is my ___. She is ten.', 'sister', 'brother', 'dad'],
@@ -177,7 +178,7 @@ const ENG = {
     ['What colour is a banana?', 'It is yellow.', 'It is blue.', 'It is Friday.'],
     ['How many legs has a dog got?', 'It has got four legs.', 'It has got two legs.', 'It is brown.'],
     ['Who is this?', 'This is my brother.', 'It is sunny.', 'I like cake.'],
-    ['What’s your favourite food?', 'I like pizza.', 'I like blue.', 'I am fine.'],
+    ['What’s your favourite food?', 'My favourite food is pizza.', 'I like blue.', 'I am fine.'],
     ['What have you got in your schoolbag?', 'I have got a ruler and a book.', 'I am in the park.', 'It is cold.'],
     ['Is it cold today?', 'Yes, it is.', 'Yes, I can.', 'Yes, I do.'],
     ['How do you go to school?', 'I go by bike.', 'I go on Monday.', 'I am nine.'],

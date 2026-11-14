@@ -265,7 +265,7 @@ for(const c of Object.keys(K.CROPS)){ if(K.GARDEN_POOL.filter(e=>e.crop===c).len
   const all=Object.values(E.woerter).flat().concat(E.farben,E.zahlen,E.tage,E.monate);
   all.forEach(w=>en.push(w[0])); en.filter((x,i)=>en.indexOf(x)!==i).forEach(x=>fail('word twice: '+x));
   if(all.length<180) fail('only '+all.length+' words');
-  for(const w of Object.values(E.woerter).flat()) if(/^[A-ZÄÖÜ]/.test(w[1])&&!/^(der|die|das) /.test(w[1])) fail('German noun without article: '+w[1]);
+  for(const w of Object.values(E.woerter).flat()) if(/^[A-ZÄÖÜ]/.test(w[1])&&!/^(der|die|das) /.test(w[1])&&w[1]!=='Rad fahren') fail('German noun without article: '+w[1]);
   for(const f of E.farben) if(!/^#[0-9A-F]{6}$/i.test(f[2])) fail('colour '+f[0]+' without #RRGGBB');
   for(const z of E.zahlen) if(!Number.isInteger(z[2])) fail('number '+z[0]+' without value');
   for(let n=1;n<=20;n++) if(!E.zahlen.some(z=>z[2]===n)) fail('number word missing for '+n);

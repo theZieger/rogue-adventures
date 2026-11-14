@@ -167,13 +167,14 @@ function turmWatch(){ const r=turmRun(); if(!r||!turmAt) return; turmMax(r);
   const said=$$('.tw-log, #bottom, .topbar, .tw-hpbox').map(e=>e.textContent).join(' '); if(/\d,\d/.test(said)) throw new Error('comma number on screen: '+said.slice(0,200)); }
 const TW_BEATS={ feuer:'pflanze', pflanze:'wasser', wasser:'feuer' }, TW_TYPE={ Feuer:'feuer', Wasser:'wasser', Pflanze:'pflanze' };
 const bagItem=(re)=>{ click($('#bag')); const it=$$('.overlay .item').find(b=>re.test(b.getAttribute('aria-label'))); if(it) click(it); if($('.overlay #close')) click($('.overlay #close')); return !!it; };
+const buyCard=(c)=>{ click(c); const b=$('.overlay #build'); if(b) click(b); };
 const twBought=(k)=>{ turmBuys[k]=(turmBuys[k]||0)+1; };
 // Bauzeit, one purchase per call: repair when low, the free guard, guards on the busiest path, floors, upgrades; then the next wave
 function turmNaiveShop(r){
   if(r.hero.hp<r.hero.maxHp/3&&r.items.includes('trank')&&bagItem(/^Trank/)){ turmPotions++; return; }
   const c=anyOf($$('[data-card]').filter(b=>b.getAttribute('aria-disabled')==='false'));
   if(!c){ click($('#nextwave')); return; }
-  const id=c.dataset.card; click(c);
+  const id=c.dataset.card; buyCard(c);
   if(id==='guard'||id==='up'){ const sp=anyOf($$('button.tw-spot.pick')); if(!sp){ click($('#pickno')); click($('#nextwave')); return; } click(sp); if(id==='guard') click(anyOf($$('.overlay .tw-look'))); }
   twBought(id.split(':')[0]);
 }
@@ -183,16 +184,16 @@ function turmShop(r){
   const coming=[...Array(L).keys()].map(l=>{ const c=$(`.tw-lane[data-lane="${l}"] .tw-coming`); return c?parseInt(c.textContent,10):0; });
   const busy=[...Array(L).keys()].sort((a,b)=>coming[b]-coming[a]||a-b);
   if(r.hero.hp<=30&&r.items.includes('trank')&&bagItem(/^Trank/)){ turmPotions++; return; }
-  if(r.hero.hp<=r.hero.maxHp/2&&ok('fix')){ click(card('fix')); twBought('fix'); return; }
+  if(r.hero.hp<=r.hero.maxHp/2&&ok('fix')){ buyCard(card('fix')); twBought('fix'); return; }
   const spot=busy.filter(l=>coming[l]).flatMap(l=>[0,1].map(s=>[l,s])).find(([l,s])=>!t.guards[l+':'+s]);
-  if(spot&&ok('guard')){ const [l,s]=spot; click(card('guard')); click($(`button.tw-spot[data-lane="${l}"][data-spot="${s}"]`));
+  if(spot&&ok('guard')){ const [l,s]=spot; buyCard(card('guard')); click($(`button.tw-spot[data-lane="${l}"][data-spot="${s}"]`));
     // the look whose type beats most of the monsters seen on this path
-    const seen=turmSeen[l]||{}, score=(b)=>seen[TW_BEATS[TW_TYPE[b.querySelector('.tw-chips').textContent.trim().split(/\s+/).pop()]]]||0;
+    const seen=turmSeen[l]||{}, score=(b)=>seen[TW_BEATS[TW_TYPE[{ Glutfuchs:'Feuer', Wellenkröte:'Wasser', Moosbär:'Pflanze' }[b.textContent.trim()]]]]||0;
     click($$('.overlay .tw-look').slice(0,3).sort((a,b)=>score(b)-score(a))[0]); if(!r.turm.guards[l+':'+s]) throw new Error('guard not placed'); twBought('guard'); return; }
   const fl=busy.map(l=>'floor:'+t.lanes[l].subject).find(ok);
-  if(fl){ click(card(fl)); twBought('floor'); return; }
+  if(fl){ buyCard(card(fl)); twBought('floor'); return; }
   const up=busy.flatMap(l=>[0,1].map(s=>[l,s])).find(([l,s])=>{ const g=t.guards[l+':'+s]; return g&&g.lvl<3&&w.__mq.turm.TW.COST.up[g.lvl-1]<=t.ziegel; });
-  if(up&&ok('up')){ const [l,s]=up, k=l+':'+s, lvl=t.guards[k].lvl; click(card('up')); click($(`button.tw-spot[data-lane="${l}"][data-spot="${s}"]`)); if(r.turm.guards[k].lvl!==lvl+1) throw new Error('upgrade failed'); twBought('up'); return; }
+  if(up&&ok('up')){ const [l,s]=up, k=l+':'+s, lvl=t.guards[k].lvl; buyCard(card('up')); click($(`button.tw-spot[data-lane="${l}"][data-spot="${s}"]`)); if(r.turm.guards[k].lvl!==lvl+1) throw new Error('upgrade failed'); twBought('up'); return; }
   click($('#nextwave'));
 }
 function turmDone(){ const e=turmAt.r; if(turmRuns.includes(turmAt)) return; turmMax(e);

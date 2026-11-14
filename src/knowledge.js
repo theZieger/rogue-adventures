@@ -1068,7 +1068,7 @@ const MK = (() => {
   // every theme as [[English, German], …]; numbers, colours, days and months count as themes for „Was passt nicht?“
   const EN_THEMES = Object.assign({}, E.woerter, { Farben: E.farben, Zahlen: E.zahlen.filter((z) => z[2] <= 20), Wochentage: E.tage, Monate: E.monate });
   // themes that share words in a child's head (school is a place in town, a bus drives through it)
-  const EN_NEAR = ['Schule|In der Stadt', 'Hobbys|In der Stadt', 'Verkehrsmittel|In der Stadt', 'Essen und Trinken|Tiere'];
+  const EN_NEAR = ['Schule|In der Stadt', 'Hobbys|In der Stadt', 'Verkehrsmittel|In der Stadt', 'Essen und Trinken|Tiere', 'Essen und Trinken|Farben', 'Hobbys|Verkehrsmittel'];
   const near = (a, b) => EN_NEAR.includes(a + '|' + b) || EN_NEAR.includes(b + '|' + a);
   const others = (list, x, n) => shuffle(list.filter((y) => y !== x)).slice(0, n);
   // parents switch topics off (opts.enOff); a task type with nothing left keeps all topics
@@ -1115,7 +1115,7 @@ const MK = (() => {
   }
   const groupsOf = (list, n) => Array.from({ length: Math.ceil(list.length / n) }, (_, i) => list.slice(i * n, i * n + n).map((x) => `${x[0]} – ${x[1]}`).join(', '));
   const T_NOTES = {
-    woerter: { title: 'Englische Wörter', lines: ['Im Englischen gibt es nur einen Artikel: the. the dog – der Hund, the cat – die Katze.', 'Manche Wörter klingen fast wie im Deutschen: house – das Haus, apple – der Apfel.', 'Sprich das Wort leise auf Englisch und denk an das Bild dazu.'] },
+    woerter: { title: 'Englische Wörter', lines: ['Für der, die und das gibt es im Englischen nur ein Wort: the. the dog – der Hund, the cat – die Katze.', 'Manche Wörter klingen fast wie im Deutschen: house – das Haus, apple – der Apfel.', 'Sprich das Wort leise auf Englisch und denk an das Bild dazu.'] },
     zahlen: { title: 'Zahlen', lines: ['13 bis 19 enden auf -teen: thirteen, fourteen, fifteen.', 'Die Zehner enden auf -ty: twenty, thirty, forty. 100 heißt one hundred.', 'Bei 21 bis 99 kommt zuerst der Zehner, dann der Einer: forty-two = 42.'] },
     farben: { title: 'Farben', lines: groupsOf(E.farben, 4) },
     odd: { title: 'Was passt nicht?', lines: ['Drei Wörter gehören zu einem Thema, eines nicht.', 'Übersetze jedes Wort im Kopf: dog – Hund, cat – Katze, pig – Schwein, red – rot.', 'Hund, Katze und Schwein sind Tiere. Rot ist eine Farbe.'] },
