@@ -17,19 +17,19 @@ const TW = (() => {
   const COST = { guard: 4, up: [7, 11], floor: 12, fix: 3 };
   const FIX_HP = 10, REPAIR_HP = 2;
   // after a wave the wall is patched up to PATCH_HP for free, so a child who never repairs does not start a wave nearly fallen
-  const PATCH_HP = 25;
+  const PATCH_HP = 30;
   const GUARD_DMG = [5, 8, 11];
   const HERO_EVO = 3, HERO_WAVE = 4, STRONG = 1.5, WEAK = 1.5, POWER = 2;
-  const TOWER_DMG = { normal: 5, boss: 14, wave: 2.5, elite: 1.5 }; // per hit: normal/boss + wave × wave number, elites × elite, rounded up
+  const TOWER_DMG = { normal: 4, boss: 14, wave: 2.5, elite: 1.5 }; // per hit: normal/boss + wave × wave number, elites × elite, rounded up
   // most ❤️ the tower can lose in one turn: monsters arriving together weaken the tower but never wipe it out at once
-  const TURN_LOSS = 14;
+  const TURN_LOSS = 11;
   const INCOME = { right: 1, weak: 1, wave: 2, clean: 1, floor: 1 };
   const ELITE_HP = 1.9, BOSS_HP = 3.5, FINAL_HP = 1.4;
   const PER_MONSTER = 2; // ≈ questions a monster takes, for spreading monsters over the lanes
   const AGAIN_MAX = 3, AGAIN_TASK_MAX = 8192;
   // catch-up: from 8 answers on, tower damage shrinks smoothly from ×1 at 75 % right down to ×0.5 at 50 % and the hero hits
-  // up to 20 % harder, so a struggling child still reaches the end in ≤ 70 questions (no message)
-  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5, CATCHUP_HERO = 0.4;
+  // up to 35 % harder, so a struggling child still reaches the end in ≤ 70 questions (no message)
+  const CATCHUP_AFTER = 8, CATCHUP_FULL = 0.75, CATCHUP_HALF = 0.5, CATCHUP_HERO = 0.7;
   const CP_USES = 2;
   const START_ITEMS = ['trank'], BOSS_ITEM = 'grosstrank', OFFER = ['trank', 'schild', 'keks', 'lupe'];
   const FLOORS = { Mathe: 'chain', Ethik: 'stun', Sachkunde: 'repair', Deutsch: 'brick', Musik: 'push', Englisch: 'volley' };

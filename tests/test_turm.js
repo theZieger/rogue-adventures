@@ -127,10 +127,11 @@ const cellsOk = (run) => { const seen = new Set(); for (const x of run.turm.mons
   check(run.hero.hp === 1 && ev.find((e) => e.t === 'tower').dmg === 2, 'wave 1: tower keeps 1 ❤️', ev);
   mon(run, 0, 1); run.turm.phase = 'step'; ev = TW.step(run, ctx);
   check(run.hero.hp === 1 && ev.some((e) => e.t === 'hold') && run.turm.phase !== 'fallen', 'wave 1: tower holds at 1 ❤️', ev);
-  const r2 = board(start(undefined, 3, ctx), 3, ctx);
+  const r2 = board(start(undefined, 3, ctx), 2, ctx);
   // catch-up: from 8 answers, ×1 at ≥ 75 % right, ×0.5 at ≤ 50 %, linear in between, rounded up
   const dmgAt = (c, n) => { r2.hero.hp = 60; r2.turm.score = { Mathe: { c, t: n } }; mon(r2, 0, 1); r2.turm.phase = 'step'; return TW.step(r2, ctx).find((e) => e.t === 'tower').dmg; };
-  const d4 = towerDmg(3);
+  const d4 = towerDmg(2);
+  check(d4 < TW.TURN_LOSS, 'catch-up checks run below the per-turn cap');
   check(dmgAt(4, 8) === Math.ceil(d4 / 2) && dmgAt(2, 10) === Math.ceil(d4 / 2), 'catch-up: half damage rounded up at 50 % or less after 8 answers');
   check(dmgAt(4, 7) === d4, 'no catch-up before 8 answers');
   check(dmgAt(6, 8) === d4 && dmgAt(9, 10) === d4, 'no catch-up at 75 % or more');
