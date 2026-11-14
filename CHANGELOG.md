@@ -6,6 +6,16 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-14
+
+### Neu
+- Turmwacht ab Klasse 2: Monster laufen auf den Wissensturm zu, richtige Antworten aus schon geübten Themen halten sie auf.
+- Sechs Wellen mit Bossen, dazwischen Bauzeit: Mit Ziegeln Wachen aufstellen, Stockwerke bauen und die Mauer flicken.
+- Die Turmwacht ist zum Ausprobieren und zuerst aus: Eltern schalten sie im Elternbereich unter „Anzeigen“ ein.
+
+### Verbessert
+- Die Knöpfe unten auf der Startseite stehen jetzt immer in einer Zeile.
+
 ## 2026-11-13
 
 ### Neu

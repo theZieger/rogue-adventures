@@ -118,7 +118,7 @@ const MK = (() => {
     1: {
       normal: [
         { name: 'Der Zweifler', type: 'normal', shape: 'zweifler', hp: 26, atk: 3 },
-        { name: 'Der Vergessliche', type: 'normal', shape: 'vergesslicher', hp: 24, atk: 4 },
+        { name: 'Der Vergessliche', acc: 'den Vergesslichen', type: 'normal', shape: 'vergesslicher', hp: 24, atk: 4 },
         { name: 'Der Verwechsler', type: 'normal', shape: 'verwechsler', hp: 28, atk: 4 },
         { name: 'Der Schwindler', type: 'normal', shape: 'schwindler', hp: 30, atk: 3 },
       ],

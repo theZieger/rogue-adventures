@@ -1733,7 +1733,61 @@ async function backCases() {
   check(!types.some((t) => ['arena', 'weekboss', 'markt'].includes(t)), 'a new map has no Kreisel-Arena, Wochenboss or Markt when they are hidden');
 }
 
-reloadCases().then(backCases).then(readCases).then(qrCases).then(saveCodeCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
+// Turmwacht: the new meta fields and the Turm run in save codes and resets (the run itself: tests/test_turm_pages.js)
+async function turmCases() {
+  const TURM = 'mathquest_run_turm', setup = { done: false, skipped: true, at: 'x' }, clone = (o) => JSON.parse(JSON.stringify(o));
+  // a save from before Turmwacht
+  const old = { setup, runs: 5, wins: 2, dex: { Sumpfbrocken: { world: 1 } }, stamps: 7 };
+  const dst = open({ [META]: JSON.stringify(old) }), mq = dst.w.__mq;
+  check(same(mq.meta.turm, { on: false, runs: 0, wins: 0, best: 0, subjects: null, last: {} }) && mq.meta.runs === 5 && mq.meta.wins === 2 && mq.meta.stamps === 7 && !!mq.meta.dex.Sumpfbrocken, 'a save from before Turmwacht loads, with empty Turm fields');
+  const norm = (turm) => mq.normMeta(Object.assign({}, old, { turm })).turm;
+  const good = { on: true, runs: 4, wins: 1, best: 5, subjects: { 2: ['Musik'], 3: ['Mathe', 'Deutsch'] }, last: { Mathe: { c: 3, t: 4 } } };
+  check(same(norm(good), good), 'valid Turm fields stay');
+  const bad = [['on', 1], ['on', 'true'], ['on', null], ['runs', NaN], ['runs', -1], ['runs', '4'], ['runs', 2.5], ['wins', Infinity], ['best', 99], ['best', -2], ['best', null], ['subjects', 'Mathe'], ['subjects', ['Mathe', 'Kochen']], ['subjects', []], ['subjects', ['Mathe', 'Mathe']], ['subjects', ['Mathe', 'Deutsch', 'Ethik', 'Musik']], ['subjects', {}], ['subjects', { 1: ['Mathe'], 2: ['Englisch'], 3: ['Mathe', 'Mathe'] }], ['last', []], ['last', 3]];
+  const fallback = { on: false, subjects: null, last: {} };
+  for (const [k, v] of bad) check(same(norm(Object.assign({}, good, { [k]: v })), Object.assign({}, good, { [k]: k in fallback ? fallback[k] : 0 })), `broken Turm field ${k} = ${typeof v === 'number' ? v : JSON.stringify(v)} falls back alone`);
+  // fixed subjects: an early save had one list for all grades, each grade keeps what it has; one broken grade falls back alone
+  check(same(norm(Object.assign({}, good, { subjects: ['Mathe', 'Englisch'] })).subjects, { 2: ['Mathe'], 3: ['Mathe', 'Englisch'] }) && same(norm(Object.assign({}, good, { subjects: ['Englisch'] })).subjects, { 3: ['Englisch'] }), 'the old list of fixed subjects becomes one list per grade');
+  check(same(norm(Object.assign({}, good, { subjects: { 2: ['Kochen'], 3: ['Ethik'] } })).subjects, { 3: ['Ethik'] }), 'a broken grade in the fixed subjects falls back alone');
+  check(same(norm(Object.assign({}, good, { last: { Mathe: { c: 5, t: 4 }, Deutsch: { c: 1, t: 2 }, Kochen: { c: 1, t: 1 }, Ethik: { c: NaN, t: 1 } } })).last, { Deutsch: { c: 1, t: 2 } }), 'broken scores of the latest run are dropped one by one');
+  check(same(mq.normMeta(Object.assign({}, old, { turm: 'x' })).turm, mq.normMeta(old).turm) && mq.normMeta(Object.assign({}, old, { turm: 'x' })).runs === 5, 'a broken Turm entry falls back without touching the rest');
+
+  // source device: progress, fixed subjects and a running Turm run
+  const src = open({ [META]: JSON.stringify(Object.assign({}, old, { turm: good })) });
+  src.w.__mq.turm.start(['Mathe', 'Deutsch'], { m: 'math', id: 'fuchs' });
+  src.w.__mq.screenTitle();
+  const code = await exportCode(src), run = src.dump()[TURM], mt = clone(src.w.__mq.meta.turm);
+  check(!!run && mt.runs === 5 && src.text().includes('Laufende Abenteuer: Turmwacht'), 'export lists the running Turmwacht');
+  const fromFile = 'https://example.com/#lade=' + code;
+  const back = await dst.w.__mq.unpackSave(fromFile);
+  check(same(back.runs.turm, JSON.parse(run)) && same(back.meta.turm, mt), 'the save code carries the Turm run and the Turm fields');
+
+  // merge into the old device: no Turm run here yet, so it is taken; the higher counts win
+  dst.click('#parents'); dst.go('settings', 'save');
+  dst.$('#pcodein').value = fromFile; dst.click('#pmerge'); await until(() => dst.$('.overlay #yes')); dst.click('.overlay #yes');
+  // the fixed subjects and the parents' switch are settings: a device that is already set up keeps its own
+  check(dst.dump()[TURM] === run && same(dst.w.__mq.meta.turm, Object.assign({}, mt, { subjects: null, on: false })), 'merge takes the Turm run and the Turm record');
+  // merge again with a local run and a higher local record: both stay, the other counts take the maximum
+  const local = JSON.parse(run); local.turm.ziegel = 9; dst.w.localStorage.setItem(TURM, JSON.stringify(local));
+  Object.assign(dst.w.__mq.meta.turm, { best: 6, runs: 1 });
+  dst.click('#parents'); dst.go('settings', 'save');
+  dst.$('#pcodein').value = fromFile; dst.click('#pmerge'); await until(() => dst.$('.overlay #yes')); dst.click('.overlay #yes');
+  const m2 = dst.w.__mq.meta.turm;
+  check(JSON.parse(dst.dump()[TURM]).turm.ziegel === 9 && m2.best === 6 && m2.runs === 5 && m2.wins === 1 && m2.subjects === null, 'merge keeps the local Turm run, the higher record and this device\'s subject setting');
+  // replace takes everything from the code
+  dst.click('#parents'); dst.go('settings', 'save');
+  dst.$('#pcodein').value = fromFile; dst.click('#preplace'); await until(() => dst.$('.overlay #yes')); dst.click('.overlay #yes');
+  check(dst.dump()[TURM] === run && same(dst.w.__mq.meta.turm, mt), 'replace restores the Turm run and the Turm fields');
+
+  // resets: statistics keep the run and the parents' subjects, „Alles löschen“ removes the run
+  dst.click('#parents'); dst.go('settings', 'reset'); dst.click('#rstats'); dst.click('.overlay #yes');
+  check(same(dst.w.__mq.meta.turm, { on: true, runs: 0, wins: 0, best: 0, subjects: good.subjects, last: {} }) && dst.dump()[TURM] === run, '„Statistik zurücksetzen“ clears the Turm numbers and keeps the run, the subjects and the parents\' switch');
+  dst.click('#rall'); dst.click('.overlay #yes');
+  check(!dst.dump()[TURM] && dst.w.__mq.meta.turm.subjects === null, '„Alles löschen“ removes the Turm run');
+  check(src.errors.length === 0 && dst.errors.length === 0, 'no page errors ' + src.errors.concat(dst.errors).join(' '));
+}
+
+reloadCases().then(backCases).then(readCases).then(qrCases).then(saveCodeCases).then(turmCases).then(stampCases).then(gardenCases).then(gardenWinCases).then(weeklyCases).then(wardrobeCases).then(topCases).then(levelCases).then(() => {
   console.log('storage fails', fails);
   if (fails) process.exit(1);
 });
