@@ -3,6 +3,7 @@ import { MK } from '../knowledge.ts';
 import { MQ } from '../logic.ts';
 import { MONART } from '../monsters.ts';
 import { isObj } from '../save.ts';
+import { html, raw } from '../ui/html.ts';
 import { $, CFG, MODULES_OF, TYPES } from './core.ts';
 import { state } from './state.ts';
 import { curGrade, enOff, enabledMods, extraOn, shown } from './storage.ts';
@@ -258,10 +259,10 @@ export function showWeeklyNews() {
   if (!weeklyNews) return;
   weeklyNews = false;
   const ov = modal(
-    `<h2>Wochenaufgabe geschafft</h2><p>Alle Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>${stampLine(10)}<button class="btn" id="tutok">Weiter</button>`,
+    html`<h2>Wochenaufgabe geschafft</h2><p>Alle Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>${raw(stampLine(10))}<button class="btn" id="tutok" data-action="close">Weiter</button>`,
+    { close: () => ov.remove() },
   );
   $('#tutok', ov).focus({ preventScroll: true });
-  $('#tutok', ov).onclick = () => ov.remove();
 }
 export const stampLine = (n) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
 export function weakestModule() {

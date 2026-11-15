@@ -1,11 +1,12 @@
 import { MK } from '../knowledge.ts';
-import { $, app, esc } from './core.ts';
+import { html, raw } from '../ui/html.ts';
+import { $ } from './core.ts';
 import { giveStamps, markWeek, stampLine } from './progress.ts';
 import { state } from './state.ts';
 import { saveAll } from './storage.ts';
 import { INK, lg, ln, r1, rg, shadow } from './tasks.ts';
 import { screenTitle } from './title.ts';
-import { SFX, modal, render, topbar } from './ui.ts';
+import { SFX, modal, screen, topbar } from './ui.ts';
 
 /* ---------- Schulgarten ---------- */
 const DAY = 864e5;
@@ -128,47 +129,45 @@ export function screenGarden() {
   state.depth = 1;
   const bed = (b, i) => {
     if (!bedOpen(i))
-      return `<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
+      return html`<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
     if (!b.crop)
-      return `<div class="bed">${plantSVG(null, 0)}<div class="bedname">Beet ${i + 1}</div><div class="beddesc">Noch leer.</div><button class="btn small" data-plant="${i}">Pflanzen</button></div>`;
+      return html`<div class="bed">${raw(plantSVG(null, 0))}<div class="bedname">Beet ${i + 1}</div><div class="beddesc">Noch leer.</div><button class="btn small" data-action="plant" data-plant="${i}">Pflanzen</button></div>`;
     const c = MK.CROPS[b.crop];
     const ph = bedPhase(b);
     const d = bedDays(b);
-    return `<div class="bed${ph === 3 ? ' ripe' : ''}">${plantSVG(b.crop, ph)}<div class="bedname">${c.name}</div><div class="beddesc">${ph === 3 ? 'Reif' : d ? `${[c.put, 'Keimling', c.top][ph]}<br>Tag ${d} von 7` : `Heute ${c.put.toLowerCase()}`}</div>${ph === 3 ? `<button class="btn small" data-harvest="${i}">Ernten</button>` : ''}</div>`;
+    return html`<div class="bed${ph === 3 ? ' ripe' : ''}">${raw(plantSVG(b.crop, ph))}<div class="bedname">${c.name}</div><div class="beddesc">${ph === 3 ? 'Reif' : d ? html`${[c.put, 'Keimling', c.top][ph]}<br>Tag ${d} von 7` : `Heute ${c.put.toLowerCase()}`}</div>${ph === 3 ? html`<button class="btn small" data-action="harvest" data-harvest="${i}">Ernten</button>` : ''}</div>`;
   };
   const got = Object.keys(MK.CROPS)
     .filter((k) => state.meta.materials[k])
     .map((k) => `${MK.CROPS[k].name} ${state.meta.materials[k]}`);
-  render(`<div class="screen">${topbar('Schulgarten')}<div class="scroll"><div class="stack">
-      <div class="card"><p>Beete wachsen auch, wenn du Pause machst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
-      <div class="beds">${state.meta.garden.beds.map(bed).join('')}</div>
-      </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
-  $('#back').onclick = screenTitle;
-  app.querySelectorAll<HTMLElement>('[data-plant]').forEach((el) => {
-    el.onclick = () => plantDialog(+el.dataset.plant!);
-  });
-  app.querySelectorAll<HTMLElement>('[data-harvest]').forEach((el) => {
-    el.onclick = () => harvest(+el.dataset.harvest!);
-  });
+  screen(
+    html`<div class="screen">${raw(topbar('Schulgarten'))}<div class="scroll"><div class="stack">
+      <div class="card"><p>Beete wachsen auch, wenn du Pause machst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? html`<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
+      <div class="beds">${state.meta.garden.beds.map(bed)}</div>
+      </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
+    {
+      back: screenTitle,
+      plant: (button) => plantDialog(+button.dataset.plant!),
+      harvest: (button) => harvest(+button.dataset.harvest!),
+    },
+  );
 }
 function plantDialog(i) {
   const ov = modal(
-    `<h2>Was pflanzt du in Beet ${i + 1}?</h2><div class="stack">${Object.entries(MK.CROPS)
-      .map(
-        ([k, c]) =>
-          `<button class="choice cropchoice" data-crop="${k}">${plantSVG(k, 3)}<div class="meta"><div class="name">${c.name}</div><div class="desc">${c.desc}</div></div></button>`,
-      )
-      .join('')}<button class="btn secondary" id="no">Zurück</button></div>`,
+    html`<h2>Was pflanzt du in Beet ${i + 1}?</h2><div class="stack">${Object.entries(MK.CROPS).map(
+      ([k, c]) =>
+        html`<button class="choice cropchoice" data-action="plant" data-crop="${k}">${raw(plantSVG(k, 3))}<div class="meta"><div class="name">${c.name}</div><div class="desc">${c.desc}</div></div></button>`,
+    )}<button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
+    {
+      no: () => ov.remove(),
+      plant: (choice) => {
+        state.meta.garden.beds[i] = { crop: choice.dataset.crop!, plantedAt: clock() };
+        markWeek();
+        saveAll();
+        screenGarden();
+      },
+    },
   );
-  $('#no', ov).onclick = () => ov.remove();
-  ov.querySelectorAll<HTMLElement>('[data-crop]').forEach((el) => {
-    el.onclick = () => {
-      state.meta.garden.beds[i] = { crop: el.dataset.crop!, plantedAt: clock() };
-      markWeek();
-      saveAll();
-      screenGarden();
-    };
-  });
 }
 function harvest(i) {
   const b = state.meta.garden.beds[i];
@@ -176,31 +175,31 @@ function harvest(i) {
   const c = MK.CROPS[b.crop];
   const t = MK.gardenQuestion(b.crop);
   const ov = modal(
-    `<h2>${c.name} ernten</h2><p>Erst eine Frage zur Pflanze:</p><div class="question">${esc(t.q)}</div><div class="options" style="margin-top:12px">${t.options.map((o, k) => `<button class="opt" data-i="${k}">${esc(o)}</button>`).join('')}</div><div id="hfb" role="status" aria-live="polite"></div>`,
+    html`<h2>${c.name} ernten</h2><p>Erst eine Frage zur Pflanze:</p><div class="question">${t.q}</div><div class="options" style="margin-top:12px">${t.options.map((o, k) => html`<button class="opt" data-action="answer" data-i="${k}">${o}</button>`)}</div><div id="hfb" role="status" aria-live="polite"></div>`,
+    {
+      answer: (chosen) => {
+        const ok = t.options[+chosen.dataset.i!] === t.answer;
+        const first = !state.meta.owned['outfit-aehrenkranz'];
+        // the harvest pays either way: the question is for learning, not a gate
+        state.meta.garden.beds[i] = { crop: null, plantedAt: 0 };
+        state.meta.materials[b.crop!] = (state.meta.materials[b.crop!] || 0) + 1;
+        giveStamps(4);
+        state.meta.owned['outfit-aehrenkranz'] = true;
+        state.meta.progressAt = new Date().toISOString();
+        markWeek();
+        saveAll();
+        if (ok) SFX.right();
+        else SFX.wrong();
+        ov.querySelectorAll<HTMLButtonElement>('.opt').forEach((o) => {
+          o.disabled = true;
+          if (t.options[+o.dataset.i!] === t.answer) o.classList.add('right');
+          else if (o === chosen) o.classList.add('wrong');
+        });
+        $('#hfb', ov).innerHTML =
+          html`${ok ? html`<div class="feedback good">Richtig! ✔</div>` : html`<div class="feedback bad">Daneben<small>Richtig wäre: ${t.answer}</small></div>`}<p>Du hast ${c.name} geerntet.</p>${raw(stampLine(4))}${first ? html`<p>Das war deine erste Ernte. Dafür bekommst du den Ährenkranz für die Kleiderkammer.</p>` : ''}<button class="btn" id="hnext" data-action="next">Weiter</button>`.text;
+        $('#hnext', ov).focus();
+      },
+      next: screenGarden,
+    },
   );
-  ov.querySelectorAll<HTMLElement>('.opt').forEach((el) => {
-    el.onclick = () => {
-      const ok = t.options[+el.dataset.i!] === t.answer;
-      const first = !state.meta.owned['outfit-aehrenkranz'];
-      // the harvest pays either way: the question is for learning, not a gate
-      state.meta.garden.beds[i] = { crop: null, plantedAt: 0 };
-      state.meta.materials[b.crop!] = (state.meta.materials[b.crop!] || 0) + 1;
-      giveStamps(4);
-      state.meta.owned['outfit-aehrenkranz'] = true;
-      state.meta.progressAt = new Date().toISOString();
-      markWeek();
-      saveAll();
-      if (ok) SFX.right();
-      else SFX.wrong();
-      ov.querySelectorAll<HTMLButtonElement>('.opt').forEach((o) => {
-        o.disabled = true;
-        if (t.options[+o.dataset.i!] === t.answer) o.classList.add('right');
-        else if (o === el) o.classList.add('wrong');
-      });
-      $('#hfb', ov).innerHTML =
-        `${ok ? '<div class="feedback good">Richtig! ✔</div>' : `<div class="feedback bad">Daneben<small>Richtig wäre: ${esc(t.answer)}</small></div>`}<p>Du hast ${c.name} geerntet.</p>${stampLine(4)}${first ? '<p>Das war deine erste Ernte. Dafür bekommst du den Ährenkranz für die Kleiderkammer.</p>' : ''}<button class="btn" id="hnext">Weiter</button>`;
-      $('#hnext', ov).focus();
-      $('#hnext', ov).onclick = screenGarden;
-    };
-  });
 }
