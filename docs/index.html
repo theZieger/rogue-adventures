@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="msapplication-TileColor" content="#1C2541">
 <meta name="msapplication-TileImage" content="icons/icon-192.png">
-<meta name="app-version" content="9ead5e6fed23">
+<meta name="app-version" content="a32bfdb8513d">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-landscape.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
 <link rel="apple-touch-startup-image" href="splash/splash-1024x1366@2-portrait.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
 <link rel="apple-touch-startup-image" href="splash/splash-1032x1376@2-landscape.png" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)">
@@ -1030,7 +1030,7 @@ button.tw-spot.pick.on::after { bottom: calc(-30 * var(--u)); }
   .tw-baurow .btn.small { flex: 1 1 0; }
   .tw-baurow #nextwave { flex: 1 1 100%; order: -1; }
 }
-/* Turmwacht motion (app.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
+/* Turmwacht motion (src/app/turm_screens.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
 .tw-fx { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 .tw-fx > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .tw-fxi { width: 0; height: 0; }
@@ -2250,15 +2250,17 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
+  BAU.MODE = { modules: BAU.MODULES, starters: BAU.STARTERS, extra: BAU.EXTRA, enemies: BAU.ENEMIES, events: BAU.EVENTS, moves: BAU.MOVES, tut: BAU.TUT, worlds: 2, worldAttacks: BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA_ATTACKS, enemies: ENEMIES, events: EVENTS, moves: ENEMY_MOVES, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 };
+
+  return { MODE, rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
 })();
 
 </script>
 <script>
 const MJ = (() => {
-  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const Q = typeof MQ !== 'undefined' ? MQ : require('./logic.js');
+  const { rnd, pick, shuffle } = Q;
 
   // Lehrplan Mathematik Klasse 3: Größen und Messen, Daten und Zufall
   const MODULES = {
@@ -2278,7 +2280,7 @@ const MJ = (() => {
   const qty = (s) => { let v = 0; s.replace(/(½|\d+) (km|m|cm|kg|g)\b/g, (_, n, u) => { v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u]; }); return v; };
   const two = (v, big, small) => { const a = Math.floor(v / UNIT[big]), b = (v % UNIT[big]) / UNIT[small]; return a && b ? `${a} ${big} ${b} ${small}` : a ? `${a} ${big}` : `${b} ${small}`; };
   // amounts and times never break across lines (non-breaking spaces)
-  const euro = (ct) => (typeof MQ !== 'undefined' ? MQ : require('./logic.js')).euro(ct).replace(/ /g, '\u00a0');
+  const euro = (ct) => Q.euro(ct).replace(/ /g, '\u00a0');
   const pad = (m) => String(m).padStart(2, '0');
   const tm = (min) => `${Math.floor(min / 60)}:${pad(min % 60)}\u00a0Uhr`;
   const NAMES = ['Mia', 'Ole', 'Lena', 'Tim', 'Emil', 'Lotta', 'Can', 'Aylin', 'Jonas', 'Paula'];
@@ -2652,8 +2654,8 @@ const MJ = (() => {
     { title: 'Die Bank am Riesenrad', text: 'Neben dem Riesenrad steht eine Bank im Schatten. Du kannst dich ausruhen.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
   ];
 
-  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben' };
-  return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG, barhSVG };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA, enemies: ENEMIES, events: EVENTS, moves: MOVES, numGen: generate, numTut: TUT, worlds: 2, grade: 3, subject: 'Mathe', title: 'Der Jahrmarkt', icon: '🎪', sub: 'Uhrzeit, Fahrplan, Längen, Gewichte, Zufall und Sachaufgaben', rank: 2 };
+  return { MODE, MODULES, generate, TUT, STARTERS, EXTRA, ENEMIES, MOVES, EVENTS, REF, qty, clockSVG, wheelSVG, chartSVG };
 })();
 
 /*
@@ -4804,7 +4806,7 @@ const MK = (() => {
     for (let i = 0; i < items.length; i++) { r -= w[i]; if (r <= 0) return items[i]; }
     return items[items.length - 1];
   }
-  // opts (optional): { g } = nur Fragen zu diesem Thema (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
+  // opts (optional): { g } = nur Fragen zu diesem Themengebiet (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
   // { world }: in Modi mit byWorld kommen nur Fragen und Reihenfolgen dieser Welt dran (w fehlt = Welt 1)
   function generate(mode, mod, tier, know, seqNow, opts) {
     const cfg = MODES[mode]; const world = (opts && opts.world) || 1;
@@ -4888,7 +4890,7 @@ const MK = (() => {
 </script>
 <script>
 // Sachkunde Klasse 3 (Lehrplan Sachsen, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
-// Registers its units in MK.MODES; app.js picks them up from there.
+// Registers its units in MK.MODES; src/units.js picks them up from there.
 const MS = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { shuffle, pick, rnd, weightedPick } = K;
@@ -6210,7 +6212,7 @@ const MS2 = (() => {
   VE.gen = veGen(VE);
 
   K.MODES.sinne = SI; K.MODES.verkehr = VE;
-  return { EYE_PARTS, EAR_PARTS, BIKE_PARTS, SENSES, ILLUSIONS, SIGNS, VEHICLES, RIGHT_OF, ABBIEGEN, QUEREN, illusionSet, signTask, rightOfWayTask, missingTask, senseTask, signSVG };
+  return { EYE_PARTS, EAR_PARTS, BIKE_PARTS, SIGNS, RIGHT_OF, ABBIEGEN, QUEREN, signTask, missingTask, signSVG };
 })();
 
 // Sachkunde Klasse 3 (Lehrplan Sachsen, LB 3 „Lebensraum Wiese“ und LB 1 „Zusammen leben und lernen“): Die Wiese, Früher und heute.
@@ -6759,11 +6761,11 @@ const MS3 = (() => {
   FR.gen = frGen(FR);
 
   K.MODES.wiese = WI; K.MODES.frueher = FR;
-  return { FLORA, TRAITS, LAYERS, ANIMALS, DEV, HERBAR, TOOLS, LINES, SOURCES, LOOKUP, floraSVG };
+  return { FLORA, TRAITS, LAYERS, DEV, HERBAR, TOOLS, LINES, SOURCES, LOOKUP, floraSVG };
 })();
 
 // Ethik Klasse 3 (Lehrplan Sachsen, Lernbereiche 1 und 4): „Ich, wir und die Welt“, Welt 1 „Ich im Wir“, Welt 2 „Wir in der Welt“.
-// Registers its unit in MK.MODES; app.js picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
+// Registers its unit in MK.MODES; src/units.js picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
 const ME = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { weightedPick } = K;
@@ -7090,7 +7092,7 @@ const ME = (() => {
 </script>
 <script>
 // Musik Klasse 3 (Lehrplan Sachsen Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
-// Registers its unit in MK.MODES; app.js picks it up from there.
+// Registers its unit in MK.MODES; src/units.js picks it up from there.
 const MU = (() => {
   const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
   const { shuffle, pick } = K;
@@ -7487,14 +7489,14 @@ const MU = (() => {
       { title: 'Das Foyer', text: 'In der Pause stehen im Foyer Stühle und ein Tisch mit Wasser. Hier ruhst du dich aus.', opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] },
     ] };
   K.MODES.musik = MODE;
-  return { MODE, VALUES, TONES, INSTR, FAM, HOW, KOMP, WORLD, DANCES, TERMS, FACTS, makeBar, noteSVG };
+  return { MODE, TONES, INSTR, FAM, HOW, KOMP, WORLD, TERMS, FACTS, makeBar };
 })();
 
 </script>
 <script>
 // Klasse 1 und 2: one hero and one set of opponents per subject, shared by all units of that subject in both grades
 // (fewer drawings; the owner's choice). A shared opponent counts once in the Monsterbuch. A unit gives the hero its own
-// four attacks: Object.assign({}, K12.SETS.<fach>.hero, { attacks }).
+// four attacks: K12.unit(<fach>, attacks, { everything else of the unit }).
 // Hero ids and opponent names are stored in saves: never rename them once released.
 const K12 = (() => {
   const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
@@ -7555,7 +7557,13 @@ const K12 = (() => {
       { name: 'Der Presslufthammer', acc: 'den Presslufthammer', type: 'normal', shape: 'presslufthammer', hp: 58, atk: 5, boss: true },
       ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß']),
   };
-  return { SETS };
+  const unit = (fach, attacks, o) => Object.assign({ worlds: 1, starters: [Object.assign({}, SETS[fach].hero, { attacks })], enemies: SETS[fach].enemies, moves: SETS[fach].moves }, o);
+  // events every Klasse-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
+  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
+  const dilemma = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
+  // lighter (t > 0) or darker shade of a colour for the pictures
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  return { SETS, unit, rest, dilemma, tone };
 })();
 
 // Klasse 1 und 2, Mathe: Zahlen bis 20 und Formen (Klasse 1); Zahlen bis 100, Malnehmen und Teilen, Größen, Formen und Flächen (Klasse 2).
@@ -7571,7 +7579,7 @@ const K12 = (() => {
   const OUT = '#1C2541', NB = ' ';
 
   // fl(colour): a soft light-to-shade gradient of the colour; svgOf adds the defs a drawing uses
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const { tone, rest } = S;
   const fl = (c) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
   const grad = (c) => `<linearGradient id="km${c}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone('#' + c, 0.32)}"/><stop offset=".5" stop-color="#${c}"/><stop offset="1" stop-color="${tone('#' + c, -0.16)}"/></linearGradient>`;
   const svgOf = (w, h, body, label, attrs) => { const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u) => u.slice(7, 13)))];
@@ -7592,12 +7600,11 @@ const K12 = (() => {
     };
   }
   function register(key, def, gen) {
-    const set = S.SETS.mathe; const { attacks, ...rest } = def;
-    const mode = Object.assign({ worlds: 1, subject: 'Mathe', pool: [], starters: [Object.assign({}, set.hero, { attacks })], enemies: set.enemies, moves: set.moves }, rest);
+    const { attacks, ...o } = def;
+    const mode = S.unit('mathe', attacks, Object.assign({ subject: 'Mathe', pool: [] }, o));
     mode.gen = (mod, tier) => gen(mod, Math.max(1, Math.min(mode.modules[mod].maxTier, tier)));
     K.MODES[key] = mode;
   }
-  const restEv = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
   const ev = (title, text, label, task, win, lose) => ({ title, text, opts: [{ label, task, win, lose }, { label: 'Weitergehen', effect: {} }] });
 
   /* ---------- Drawings ---------- */
@@ -7779,7 +7786,7 @@ const K12 = (() => {
       ev('Die Gartenmauer', 'Ein Maurer baut eine Mauer aus Zahlensteinen. Findest du den fehlenden Stein, leiht er dir einen Schild.', 'Stein finden', 'mauer', { item: 'schild' }, { hp: -5 }),
       ev('Die Bäckerei', 'Die Bäckerin zählt Brötchen in Tüten. Rechne mit, dann verrät sie dir eine Eselsbrücke.', 'Mitrechnen', 'rechnen', { item: 'lupe' }, { xp: 5 }),
       ev('Der Kaufmannsladen', 'Im Klassenzimmer steht ein Kaufmannsladen. Zählst du das Geld in der Kasse, bekommst du einen Schild.', 'Geld zählen', 'geld', { item: 'schild' }, { hp: -5 }),
-      restEv('Die Leseecke', 'In der Klasse liegt eine Ecke voller Kissen. Hier ruhst du dich aus.'),
+      rest('Die Leseecke', 'In der Klasse liegt eine Ecke voller Kissen. Hier ruhst du dich aus.'),
     ],
   }, genZ20);
 
@@ -7922,7 +7929,7 @@ const K12 = (() => {
       ev('Die Bastelecke', 'Ein Mädchen schneidet Formen aus Papier aus. Sie fragt dich nach einem Namen.', 'Antworten', 'formen', { xp: 20 }, { xp: 5 }),
       ev('Die Perlenkette', 'Am Basteltisch fädelt ein Junge ein Muster auf. Wer es fortsetzt, bekommt eine Chilischote.', 'Muster fortsetzen', 'muster', { item: 'keks' }, { hp: -5 }),
       ev('Die Bauklötze', 'In der Bauecke steht ein Turm aus Würfeln. Zählst du die Würfel, bekommst du einen Schild.', 'Würfel zählen', 'bauen', { item: 'schild' }, { hp: -5 }),
-      restEv('Die Turnmatte', 'In der Turnhalle liegt eine weiche Matte. Du legst dich kurz hin.'),
+      rest('Die Turnmatte', 'In der Turnhalle liegt eine weiche Matte. Du legst dich kurz hin.'),
     ],
   }, genForm);
 
@@ -8089,7 +8096,7 @@ const K12 = (() => {
       ev('Die Schulkasse', 'Die Sekretärin zählt das Geld für den Wandertag. Rechnest du mit, verrät sie dir eine Eselsbrücke.', 'Mitrechnen', 'plus', { item: 'lupe' }, { xp: 5 }),
       ev('Das Rätselheft', 'Auf einer Bank liegt ein Heft mit Rechendreiecken. Löst du eins, findest du darin einen Schild.', 'Rätsel lösen', 'dreieck', { item: 'schild' }, { hp: -5 }),
       ev('Die Schulhofmauer', 'Der Hausmeister repariert die Mauer am Schulhof. Auf den Steinen stehen Zahlen, einer fehlt.', 'Stein finden', 'mauer', { xp: 20 }, { xp: 5 }),
-      restEv('Die Bank im Schulgarten', 'Unter dem Apfelbaum im Schulgarten steht eine Bank. Du ruhst dich aus.'),
+      rest('Die Bank im Schulgarten', 'Unter dem Apfelbaum im Schulgarten steht eine Bank. Du ruhst dich aus.'),
     ],
   }, genZ100);
 
@@ -8190,7 +8197,7 @@ const K12 = (() => {
       ev('Die Geburtstagstorte', 'Ein Junge will seine Torte gerecht verteilen. Hilfst du ihm, bekommst du eine Chilischote.', 'Verteilen', 'teilen', { item: 'keks' }, { hp: -5 }),
       ev('Der Einkaufszettel', 'Ein Vater steht mit einem langen Zettel im Laden. Rechnest du mit, verrät er dir eine Eselsbrücke.', 'Mitrechnen', 'sach', { item: 'lupe' }, { xp: 5 }),
       ev('Das Turnier', 'Der Sportlehrer stellt Mannschaften auf. Wer die Reihe kennt, bekommt einen Schild.', 'Antworten', 'reihe', { item: 'schild' }, { hp: -5 }),
-      restEv('Die Picknickdecke', 'Im Park liegt eine Picknickdecke in der Sonne. Du ruhst dich aus.'),
+      rest('Die Picknickdecke', 'Im Park liegt eine Picknickdecke in der Sonne. Du ruhst dich aus.'),
     ],
   }, genMal);
 
@@ -8402,7 +8409,7 @@ const K12 = (() => {
       ev('Der Klassenkalender', 'An der Tafel hängt der Klassenkalender. Die Lehrerin fragt nach einem Tag und verrät dir eine Eselsbrücke.', 'Antworten', 'kalender', { item: 'lupe' }, { xp: 5 }),
       ev('Die Umfrage', 'Die Klasse hat eine Strichliste gemacht. Liest du sie richtig, bekommst du eine Chilischote.', 'Liste lesen', 'daten', { item: 'keks' }, { hp: -5 }),
       ev('Die Garderobe', 'In der Garderobe hängen Mützen und Schals. Ein Junge fragt, wie viele Paare er bilden kann.', 'Mitzählen', 'kombi', { xp: 20 }, { xp: 5 }),
-      restEv('Die Hofpause', 'Es klingelt zur Hofpause. Du setzt dich auf die Treppe und ruhst dich aus.'),
+      rest('Die Hofpause', 'Es klingelt zur Hofpause. Du setzt dich auf die Treppe und ruhst dich aus.'),
     ],
   }, genGr2);
 
@@ -8533,7 +8540,7 @@ const K12 = (() => {
       ev('Die Kreidelinien', 'Auf dem Schulhof malt ein Junge Linien mit Kreide. Er will wissen, wie sie heißen.', 'Antworten', 'linien', { xp: 20 }, { xp: 5 }),
       ev('Die Bauecke', 'In der Bauecke steht ein Gebäude aus Steckwürfeln. Zählst du die Würfel, bekommst du einen Schild.', 'Würfel zählen', 'bauen', { item: 'schild' }, { hp: -5 }),
       ev('Die Kiste im Werkraum', 'Im Werkraum klebt ein Lehrer die Kanten einer Kiste ab. Zählst du mit, bekommst du eine Chilischote.', 'Mitzählen', 'koerper', { item: 'keks' }, { hp: -5 }),
-      restEv('Die Fensterbank', 'Auf der breiten Fensterbank im Flur scheint die Sonne. Du ruhst dich aus.'),
+      rest('Die Fensterbank', 'Auf der breiten Fensterbank im Flur scheint die Sonne. Du ruhst dich aus.'),
     ],
   }, genForm2);
 })();
@@ -8550,13 +8557,11 @@ const K12D = (() => {
   const choice = (mod, tier, note, q, answer, wrongs, qid, extra) => Object.assign({ kind: 'choice', mod, tier, group: mod + ':' + tier, note, q, options: shuffle([answer].concat(wrongs)), answer, qid, cols: wrongs.length === 1 ? 2 : 1 }, extra || {});
   // gen items: { id, make(id) } – weightedPick brings back what went wrong
   const ask = (items, know, seq) => { const it = weightedPick(items, know, seq); return it.make(it.id); };
-  const hero = (attacks) => [Object.assign({}, S.SETS.deutsch.hero, { attacks })];
-  const set = { enemies: S.SETS.deutsch.enemies, moves: S.SETS.deutsch.moves, worlds: 1, subject: 'Deutsch' };
 
   /* ---------- Bilder für Klasse 1: ein Ding je Bild, eindeutig benannt ---------- */
   const O = '#1C2541';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const { tone } = S;
   const USED = new Set();
   const fl = (c) => { const h = c.length === 4 ? '#' + [...c.slice(1)].map((x) => x + x).join('') : c; if (!/^#[0-9A-F]{6}$/i.test(h) || h === O) return c; USED.add(h.toUpperCase()); return `url(#kd${h.slice(1).toUpperCase()})`; };
   const p = (d, fill, w) => `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
@@ -8727,9 +8732,8 @@ const K12D = (() => {
     reim: { name: 'Reimwörter', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 14 },
     lesen: { name: 'Lesen', icon: '📗', maxTier: 2, worldCap: [2], dmg: 14 },
   };
-  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Selbstlaute und Mitlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
+  const LAUTE1 = S.unit('deutsch', [{ name: 'Buchstabenhaus', mod: 'laute' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }], { subject: 'Deutsch', grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Selbstlaute und Mitlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
     modules: L1_MODULES, tut: L1_TUT, notes: L1_NOTES, pool: [],
-    starters: hero([{ name: 'Buchstabenhaus', mod: 'laute' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }]),
     extra: { laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim', lesen: 'Fibel' },
     events: [
       { title: 'Die Buchstabenkiste', text: 'Frau Klein hat eine Kiste mit Buchstaben aus Holz. Sie hält einen hoch und fragt, ob er ein Selbstlaut oder ein Mitlaut ist. Wer es weiß, bekommt einen Trank.', opts: [{ label: 'Antworten', task: 'laute', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
@@ -8862,9 +8866,8 @@ const K12D = (() => {
     kleinw: { name: 'Kleine Wörter', icon: '🗒️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
   // the options sound alike or give the answer away when read aloud
-  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, Merkwörter, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
+  const SCHREIBEN2 = S.unit('deutsch', [{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }], { subject: 'Deutsch', grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, Merkwörter, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
     modules: S2_MODULES, tut: S2_TUT, notes: S2_NOTES, pool: S2_POOL,
-    starters: hero([{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }]),
     extra: { besonders: 'Wörterkartei', doppel: 'Silbengelenk', verl: 'Verlängerung', gross: 'Großbuchstabe', satzz: 'Schlusspunkt', alphabet: 'Daumenregister', kleinw: 'Blitzlesekarte' },
     events: [
       { title: 'Das Diktat', text: 'Auf dem Lehrertisch liegt ein Diktat. Findest du das richtig geschriebene Wort, bekommst du einen Schild.', opts: [{ label: 'Nachsehen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Liegen lassen', effect: {} }] },
@@ -8994,9 +8997,8 @@ const K12D = (() => {
     feld: { name: 'Wortfeld', icon: '☀️', maxTier: 1, worldCap: [1], dmg: 12 },
     satzart: { name: 'Satzarten', icon: '💬', maxTier: 1, worldCap: [1], dmg: 14 },
   };
-  const WOERTER2 = Object.assign({}, set, { grade: 2, title: 'Wörter und Sätze', icon: '🏷️', sub: 'Nomen, Verb, Adjektiv und Artikel, Einzahl und Mehrzahl, Wortfamilien und Satzarten',
+  const WOERTER2 = S.unit('deutsch', [{ name: 'Textmarker', mod: 'wortart' }, { name: 'Begleiterkarte', mod: 'artikel' }, { name: 'Wortfamilienhaus', mod: 'familie' }, { name: 'Satzmelodie', mod: 'satzart' }], { subject: 'Deutsch', grade: 2, title: 'Wörter und Sätze', icon: '🏷️', sub: 'Nomen, Verb, Adjektiv und Artikel, Einzahl und Mehrzahl, Wortfamilien und Satzarten',
     modules: W2_MODULES, tut: W2_TUT, notes: W2_NOTES, pool: W2_POOL,
-    starters: hero([{ name: 'Textmarker', mod: 'wortart' }, { name: 'Begleiterkarte', mod: 'artikel' }, { name: 'Wortfamilienhaus', mod: 'familie' }, { name: 'Satzmelodie', mod: 'satzart' }]),
     extra: { wortart: 'Textmarker', mehrzahl: 'Mengenbild', artikel: 'Begleiterkarte', zus: 'Leimtube', familie: 'Wortfamilienhaus', feld: 'Wortfeldsonne', satzart: 'Satzmelodie' },
     events: [
       { title: 'Das Wortfamilienhaus', text: 'An der Klassenwand hängt ein Wortfamilienhaus aus Pappe. Ein Wort hat sich ins falsche Zimmer verirrt. Findest du das richtige, bekommst du einen Trank.', opts: [{ label: 'Suchen', task: 'familie', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
@@ -9012,7 +9014,6 @@ const K12D = (() => {
   K.MODES.laute1 = LAUTE1; K.MODES.schreiben2 = SCHREIBEN2; K.MODES.woerter2 = WOERTER2;
   return { PICS, LAUTPOS, SILBEN, SILBEN_ORDER, REIME, PIC_REIME, MIRROR, MIRROR_WORDS, BESONDERS, MERK, DOPPEL, VERL, ABLEIT, GROSS, SATZZ, ABC_WORDS, KLEIN, NOMEN, VERBEN, ADJEKTIVE, VERBFORMEN, MEHRZAHL, ZUSAMMEN, FAMILIEN, VS_WORDS, WORTFELDER, SATZARTEN };
 })();
-if (typeof module !== 'undefined') module.exports = K12D;
 
 // Sachkunde Klasse 1 und 2 (Lehrplan Sachsen 2019, Sachunterricht Kl. 1/2): Mein Körper, Durch das Jahr (Klasse 1),
 // Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (Klasse 2). Units register in MK.MODES like sachkunde3.js;
@@ -9025,14 +9026,12 @@ const MSK12 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, choice, orderTask, wantsPool, partsSVG, plantTask, partPool } = S;
   const OUT = '#1C2541';
-  const SET = S12.SETS.sachkunde;
 
   /* ---------- helpers ---------- */
   // pool rows: [question, [answer, wrong, wrong]] or [statement, true] or [statement, false, why].
   // ids follow the position in the list, so new questions go at the end and a deleted one stays as null.
   const P = (pre, mod, g, rows) => rows.flatMap((r, i) => !r ? [] : Object.assign({ id: pre + (i + 1), mod, g, q: r[0] }, Array.isArray(r[1]) ? { o: r[1], a: 0 } : { rf: true, a: r[1], why: r[2] || '' }));
-  const unit = (o) => Object.assign(o, { worlds: 1, subject: 'Sachkunde', enemies: SET.enemies, moves: SET.moves,
-    starters: [Object.assign({}, SET.hero, { attacks: o.attacks })], extra: Object.fromEntries(Object.entries(o.modules).map(([k, m]) => [k, m.atk])) });
+  const unit = ({ attacks, ...o }) => S12.unit('sachkunde', attacks, Object.assign(o, { subject: 'Sachkunde', extra: Object.fromEntries(Object.entries(o.modules).map(([k, m]) => [k, m.atk])) }));
   const mod = (name, icon, atk, dmg, maxTier) => ({ name, icon, atk, maxTier: maxTier || 1, worldCap: [maxTier || 1], dmg });
   const others = (list, keep, n) => shuffle(list.filter((x) => x !== keep)).slice(0, n || 2);
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
@@ -9294,9 +9293,8 @@ const MSK12 = (() => {
       return null;
     };
   }
-  const dil = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
   const ask = (title, text, task, g, win, lose) => ({ title, text, opts: [{ label: 'Antworten', task, g, win, lose: lose || { hp: -5 } }, { label: 'Weitergehen', effect: {} }] });
-  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
+  const { rest, dilemma } = S12;
   const KO = unit({ grade: 1, title: 'Mein Körper', icon: '🙂', sub: 'Körperteile, Zähne putzen, gesund essen, Kleidung, Nein sagen und Erste Hilfe', school: ['koerper12', 'gesicht12'],
     modules: { parts: mod('Körperteile', '🙂', 'Hampelmann', 12, 2), pflege: mod('Sauber und gesund', '💧', 'Zahnbürste', 12), essen: mod('Gesund essen', '🍞', 'Brotdose', 12),
       kleidung: mod('Kleidung zum Wetter', '🌦', 'Gummistiefel', 12), schutz: mod('Nein sagen', '🛑', 'Lautes Nein', 10), hilfe: mod('Erste Hilfe', '🦺', 'Pflaster', 14) },
@@ -9309,19 +9307,19 @@ const MSK12 = (() => {
       ask('Der Erste-Hilfe-Kasten', 'Der Hausmeister zeigt dir den Erste-Hilfe-Kasten. Er fragt dich, was man bei kleinen Verletzungen tut.', 'hilfe', 'erstehilfe', { item: 'engel' }),
       ask('Die Garderobe', 'An der Garderobe hängen Jacken, Mützen und Regenhosen. Ein Junge fragt dich, was man bei welchem Wetter anzieht.', 'kleidung', 'kleidung', { xp: 20 }, { xp: 5 }),
       rest('Die Turnhalle', 'In der Turnhalle liegen dicke Matten. Hier ruhst du dich aus.'),
-      dil('Die Umarmung', 'Tante Gisela will dich zur Begrüßung fest drücken. Du hast heute keine Lust auf eine Umarmung.', [
+      dilemma('Die Umarmung', 'Tante Gisela will dich zur Begrüßung fest drücken. Du hast heute keine Lust auf eine Umarmung.', [
         ['Ich gebe ihr die Hand.', 'Tante Gisela lächelt und schüttelt deine Hand. Das ist auch eine schöne Begrüßung.', 'Wie kannst du jemanden begrüßen, ohne ihn zu umarmen?'],
         ['Ich sage: „Heute lieber nicht.“', 'Mama nickt dir zu. Tante Gisela sagt: „Na gut, dann winken wir.“', 'Warum darfst du selbst entscheiden, wer dich umarmt?'],
         ['Ich lasse es geschehen.', 'Du fühlst dich nicht wohl dabei. Später erzählst du es Mama.', 'Was könntest du beim nächsten Mal sagen?']]),
-      dil('Das Geheimnis', 'Ein älteres Kind sagt: „Ich zeig dir was. Aber du darfst es keinem erzählen!“ Dir ist dabei mulmig.', [
+      dilemma('Das Geheimnis', 'Ein älteres Kind sagt: „Ich zeig dir was. Aber du darfst es keinem erzählen!“ Dir ist dabei mulmig.', [
         ['„Nein, ich will das nicht.“', 'Du gehst zu deinen Freunden. Das mulmige Gefühl wird kleiner.', 'Woran erkennst du ein schlechtes Geheimnis?'],
         [HELP, 'Du erzählst es deiner Lehrerin. Sie hört dir zu und kümmert sich darum.', 'Wem kannst du alles erzählen?'],
         ['Ich gehe einfach weg.', 'Zu Hause erzählst du Papa davon. Er hört dir zu und ist froh, dass du es ihm gesagt hast.', 'Warum ist Weggehen auch ein Nein?']]),
-      dil('Die Frühstücksflocken', 'Im Fernsehen läuft Werbung für bunte Frühstücksflocken mit Spielzeug in der Packung. Du willst sie unbedingt haben.', [
+      dilemma('Die Frühstücksflocken', 'Im Fernsehen läuft Werbung für bunte Frühstücksflocken mit Spielzeug in der Packung. Du willst sie unbedingt haben.', [
         ['Ich frage Papa, ob wir sie kaufen.', 'Papa liest dir vor, wie viel Zucker darin ist. Ihr kauft sie als Ausnahme für Sonntag.', 'Warum steckt Spielzeug in der Packung?'],
         ['Ich esse lieber Haferflocken mit Obst.', 'Das hält lange satt. Die Werbung hast du bald vergessen.', 'Was macht ein Frühstück gesund?'],
         ['Ich schaue mir die Packung im Laden an.', 'Vorn ist ein lachender Löwe, aber innen ist vor allem Zucker.', 'Was will Werbung von dir?']]),
-      dil('Die Mütze', 'Draußen ist es kalt. Deine Freundin lacht: „Mützen sind doch doof!“', [
+      dilemma('Die Mütze', 'Draußen ist es kalt. Deine Freundin lacht: „Mützen sind doch doof!“', [
         ['Ich setze sie trotzdem auf.', 'Deine Ohren bleiben warm. Nach der Pause setzt deine Freundin ihre Kapuze auf.', 'Warum ist dir dein Körper wichtiger als ein Spruch?'],
         ['Ich stecke sie in die Tasche.', 'Nach der Pause sind deine Ohren eiskalt und rot.', 'Was hättest du deiner Freundin sagen können?'],
         ['Ich frage: „Was ist daran doof?“', 'Sie zuckt mit den Schultern. Eigentlich weiß sie es selbst nicht.', 'Warum macht man manchmal einfach mit, was andere sagen?']]),
@@ -9499,7 +9497,7 @@ const MSK12 = (() => {
       ask('Die Wetterwand', 'An der Wetterwand der Klasse hängen bunte Zeichen. Die Lehrerin kennt eine Eselsbrücke und verrät sie dir für eine richtige Antwort.', 'wetter', 'wetter', { item: 'lupe' }, { xp: 5 }),
       ask('Der Apfelbaum', 'Auf dem Schulhof steht ein Apfelbaum. Ein Mädchen fragt dich nach den Jahreszeiten.', 'zeiten', 'zeiten', { xp: 20 }, { xp: 5 }),
       rest('Die Bank am Schulhof', 'Auf dem Schulhof steht eine Bank in der Sonne. Hier ruhst du dich aus.'),
-      dil('Die Abkürzung', 'Dein Freund will zwischen parkenden Autos über die Straße. Der Weg zur Ampel ist länger.', [
+      dilemma('Die Abkürzung', 'Dein Freund will zwischen parkenden Autos über die Straße. Der Weg zur Ampel ist länger.', [
         ['Ich gehe zur Ampel.', 'Du kommst zwei Minuten später an. Dein Freund wartet schon und winkt.', 'Warum ist der längere Weg manchmal der bessere?'],
         ['Ich frage ihn, ob er mitkommt.', 'Ihr geht zusammen zur Ampel und erzählt euch unterwegs Witze.', 'Wie kannst du einen Freund überzeugen?'],
         ['Ich gehe mit ihm.', 'Zwischen den Autos seht ihr nichts. Ein Auto bremst laut, ihr erschreckt euch sehr.', 'Warum sehen Autofahrer Kinder zwischen parkenden Autos schlecht?']]),
@@ -9859,7 +9857,7 @@ const MSK12 = (() => {
       ask('Das Keimglas', 'Auf der Fensterbank steht ein Glas mit keimenden Bohnen. Die Lehrerin kennt eine Eselsbrücke und verrät sie dir.', 'keim', 'keim', { item: 'lupe' }, { xp: 5 }),
       ask('Der Stadtpark', 'Im Stadtpark blühen die ersten Krokusse. Ein Gärtner fragt dich nach den Frühblühern.', 'frueh', 'frueh', { xp: 20 }, { xp: 5 }),
       rest('Der Baumstumpf', 'Am Waldrand steht ein breiter Baumstumpf. Du zählst die Jahresringe und ruhst dich aus.'),
-      dil('Der junge Baum', 'Auf dem Schulhof steht ein frisch gepflanzter Baum. Dein Freund will einen Zweig abbrechen, als Zauberstab.', [
+      dilemma('Der junge Baum', 'Auf dem Schulhof steht ein frisch gepflanzter Baum. Dein Freund will einen Zweig abbrechen, als Zauberstab.', [
         ['Wir suchen einen Stock am Boden.', 'Unter der alten Linde liegen viele Stöcke. Ihr findet einen, der sogar noch schöner ist.', 'Wo findest du Stöcke, ohne einen Baum zu verletzen?'],
         ['Ich sage ihm, dass der Baum noch klein ist.', 'Dein Freund nickt. Zusammen gießt ihr den Baum mit der Gießkanne.', 'Was braucht ein junger Baum zum Wachsen?'],
         ['Ich schaue weg.', 'Der Zweig knackt ab. Am Baum bleibt eine Wunde, und den Zauberstab wirft dein Freund bald weg.', 'Was passiert mit einem Baum, wenn ein Zweig abbricht?']]),
@@ -10073,11 +10071,11 @@ const MSK12 = (() => {
       ask('Der Laubhaufen', 'Im Garten liegt ein großer Laubhaufen. Ein Mädchen fragt dich nach den Tieren darin und gibt dir eine Chilischote.', 'klein', 'klein', { item: 'keks' }, { xp: 5 }),
       ask('Das Futterhaus', 'Am Futterhaus im Park picken Meisen und Spatzen. Ein Opa fragt dich nach den Vögeln.', 'vogel', 'vogel', { xp: 20 }, { xp: 5 }),
       rest('Der Heuboden', 'Auf dem Heuboden ist es warm und weich. Hier ruhst du dich aus.'),
-      dil('Der Hundewunsch', 'Dein Freund bekommt einen jungen Hund. Du willst auch einen. Mama fragt: „Wer geht dann jeden Tag mit ihm raus?“', [
+      dilemma('Der Hundewunsch', 'Dein Freund bekommt einen jungen Hund. Du willst auch einen. Mama fragt: „Wer geht dann jeden Tag mit ihm raus?“', [
         ['Ich verspreche, jeden Tag zu gehen.', 'Mama schlägt vor: Du gehst eine Woche lang mit dem Hund der Nachbarin. Danach redet ihr weiter.', 'Was braucht ein Hund jeden Tag?'],
         ['Ich helfe erst im Tierheim mit.', 'Im Tierheim gehst du mit einem alten Hund spazieren. Du merkst, wie viel Arbeit ein Hund macht.', 'Warum landen manche Tiere im Tierheim?'],
         ['Ich frage, ob ein kleineres Tier passt.', 'Ihr lest zusammen, was Meerschweinchen brauchen. Auch das ist viel Arbeit.', 'Welches Tier passt zu deiner Familie?']]),
-      dil('Die Nachbarskatze', 'Die Katze der Nachbarn sitzt vor deiner Tür und miaut laut.', [
+      dilemma('Die Nachbarskatze', 'Die Katze der Nachbarn sitzt vor deiner Tür und miaut laut.', [
         ['Ich gebe ihr eine Schale Milch.', 'Die Katze trinkt. Später hat sie Bauchweh, denn viele Katzen vertragen keine Kuhmilch.', 'Was trinken Katzen am besten?'],
         ['Ich klingle bei den Nachbarn.', 'Die Nachbarin bedankt sich. Die Katze war ausgesperrt.', 'Wem gehört die Katze, und wer sorgt für sie?'],
         ['Ich streichle sie vorsichtig.', 'Die Katze schnurrt und läuft nach einer Weile nach Hause.', 'Woran merkst du, ob eine Katze gestreichelt werden will?']]),
@@ -10308,11 +10306,11 @@ const MSK12 = (() => {
       ask('Das Schattentheater', 'In der Turnhalle zeigt eine Klasse Schattentheater. Die Lehrerin gibt dir eine Chilischote für eine richtige Antwort.', 'licht', 'schatten', { item: 'keks' }, { xp: 5 }),
       ask('Die Windmühle', 'Auf dem Hügel dreht sich eine alte Windmühle. Der Müller fragt dich nach dem Wind.', 'luft', 'luft', { xp: 20 }, { xp: 5 }),
       rest('Der Dorfbrunnen', 'Am Dorfbrunnen trinkst du frisches Wasser und ruhst dich aus.'),
-      dil('Der tropfende Wasserhahn', 'Im Waschraum der Schule tropft ein Wasserhahn. Deine Freundin sagt: „Das sind doch nur Tropfen.“', [
+      dilemma('Der tropfende Wasserhahn', 'Im Waschraum der Schule tropft ein Wasserhahn. Deine Freundin sagt: „Das sind doch nur Tropfen.“', [
         ['Ich drehe ihn fest zu.', 'Es tropft langsamer, aber es tropft weiter.', 'Wer kann einen kaputten Wasserhahn reparieren?'],
         ['Ich sage es dem Hausmeister.', 'Er wechselt eine Dichtung. Jetzt tropft nichts mehr.', 'Warum lohnt es sich, auch kleine Dinge zu melden?'],
         ['Ich lasse ihn tropfen.', 'Am nächsten Morgen ist unter dem Hahn ein ganzer Eimer voll Wasser verloren.', 'Wie viel Wasser kann in einer Nacht verloren gehen?']]),
-      dil('Die Sonnencreme', 'Am Badesee will Ben keine Sonnencreme: „Die klebt so.“ Die Sonne scheint sehr stark.', [
+      dilemma('Die Sonnencreme', 'Am Badesee will Ben keine Sonnencreme: „Die klebt so.“ Die Sonne scheint sehr stark.', [
         ['Ich leihe ihm mein T-Shirt.', 'Ben zieht es an. Sein Rücken bleibt geschützt.', 'Was schützt außer Sonnencreme noch vor Sonne?'],
         ['Wir setzen uns in den Schatten.', 'Unter dem Baum ist es kühler. Ihr baut dort eine Sandburg.', 'Wann ist die Sonne am stärksten?'],
         ['Ich sage nichts.', 'Abends hat Ben einen roten, brennenden Rücken.', 'Wie hättest du Ben helfen können?']]),
@@ -10320,10 +10318,8 @@ const MSK12 = (() => {
   NA.gen = naGen(NA);
 
   K.MODES.koerper1 = KO; K.MODES.jahr1 = JA; K.MODES.baeume2 = BA; K.MODES.tiere2 = TI; K.MODES.natur2 = NA;
-  return { WX, SEASONS, DAYTIMES, MONTHS, DAYS, WEAR, HEALTHY, SWEET, LAUB, NADEL, FRUITS, SPRING, OBST, OBST_ART, BIRDS, BIRD_TRAITS, SMALL_LIST, GHS, SOLVE, SHINE, AIR,
-    HAENDE, ZAEHNE, NOTRUF, TAG, QUEREN, KEIM, BLUETE, SAEN, NEST, STORCH, laborSet, thermoSVG, timeName };
+  return { WX, MONTHS, DAYS, WEAR, OBST, OBST_ART, BIRDS, BIRD_TRAITS, HAENDE, ZAEHNE, NOTRUF, TAG, QUEREN, KEIM, BLUETE, SAEN, NEST, STORCH, laborSet, thermoSVG, timeName };
 })();
-if (typeof module !== 'undefined') module.exports = MSK12;
 
 // Klasse 1 und 2, Ethik (Lehrplan Sachsen 2019): „Ich und die anderen“ (Klasse 1, LB 1 und 2) und „Feste und die Welt“
 // (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen) und Klasse 1 „Die Klangkiste“
@@ -10338,7 +10334,6 @@ const K12E = (() => {
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const INK = '#1C2541', WOOD = '#E9A15B', DARK = '#8A5A2B', EBONY = '#3B2A26', METAL = '#C9CEDD', GOLD = '#FFD25A', RED = '#E8344A', BLUE = '#7CC2FF', GREEN = '#4FC96A', FIR = '#2E9E57', WHITE = '#FFFFFF', PAPER = '#FFFDF5';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by pic and optPic)
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
   const USED = new Set();
   const fl = (c) => (/^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c);
   const ln = (d, w, c) => `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -10490,13 +10485,11 @@ const K12E = (() => {
   const steps = (prefix, texts) => texts.map((text, i) => ({ id: prefix + (i + 1), text }));
   // events ask for one topic (opts.g): those questions come from the pool
   const wantsPool = (pool, mod, opts) => !!(opts && opts.g && pool.some((p) => p.mod === mod && p.g === opts.g));
-  const unit = (set, attacks, o) => Object.assign({ worlds: 1, starters: [Object.assign({}, S.SETS[set].hero, { attacks })], enemies: S.SETS[set].enemies, moves: S.SETS[set].moves }, o);
   const RF = ['Hör dir den Satz an.', 'Stimmt er? Dann tippe auf „Richtig“.', 'Stimmt er nicht? Dann tippe auf „Falsch“.'];
   const UNDO = 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.';
-  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
   const ask = (title, text, task, g, win, lose) => ({ title, text, opts: [{ label: 'Antworten', task, g, win, lose }, { label: 'Weitergehen', effect: {} }] });
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung
-  const dilemma = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
+  const { unit, rest, dilemma, tone } = S;
 
   /* ======================= Klasse 1: Ich und die anderen ======================= */
   const NOTES1 = {
@@ -11147,9 +11140,8 @@ const K12E = (() => {
     ],
   });
 
-  return { SHAPES, FORMS, FACES, SYMS, FESTE, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
+  return { SHAPES, FORMS, FACES, SYMS, INSTR, FAM, HOWS, PAIRS, JAHR, WACHSEN, FESTORD, ORDER1, symFits, ORFF, SPIEL1, OPP, MOODS, BODY, SIGNS, PATS, moodFits, wrongHow };
 })();
-if (typeof module !== 'undefined') module.exports = K12E;
 
 </script>
 <script>
@@ -15526,7 +15518,7 @@ const MONART = (() => {
 
 </script>
 <script>
-// Drawn icons that take the place of emojis (app.js swaps them in), so every device shows the same picture.
+// Drawn icons that take the place of emojis (src/app/core.js swaps them in), so every device shows the same picture.
 // Key: the emoji without variation selector. Value: the inside of an <svg viewBox="0 0 32 32">. Style: outline #1C2541,
 // 2 px, gradient fill, one white highlight; plain marks (✓ ✕ arrows, operators) are drawn in currentColor.
 // ids must be unique across the whole file (tests/test_data.js checks).
@@ -16286,8 +16278,8 @@ const SAVECODE = (() => {
 
 </script>
 <script>
-// Turmwacht rules: pure changes on a plain-JSON run object, no DOM, no app.js globals.
-// app.js passes everything unit-specific in through ctx (described at newRun).
+// Turmwacht rules: pure changes on a plain-JSON run object, no DOM, no globals of the game (src/app/).
+// src/app/turm.js passes everything unit-specific in through ctx (described at newRun).
 const TW = (() => {
   const CELLS = 5, SPOTS = 2, TOWER_HP = 60;
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
@@ -16703,7 +16695,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX,
     lanesFor, newRun, card, canTarget, preview, threats,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };
@@ -16711,7 +16703,7 @@ const TW = (() => {
 
 // Turmwacht drawings: the board scene, the Wissensturm, token marks and the Bauzeit card pictures.
 // Same hand as monsters.js: ink #1C2541, round joins, gradients lit from the top left, one white highlight.
-// Board units: the scene is drawn in a W × H box (geo); app.js places the HTML tokens with the same numbers.
+// Board units: the scene is drawn in a W × H box (geo); src/app/turm_screens.js places the HTML tokens with the same numbers.
 const TWART = (() => {
   const INK = '#1C2541';
   let uid = 0;
@@ -16953,7 +16945,7 @@ const TWART = (() => {
   }
 
   /* ---------- small marks on the board ---------- */
-  // walking speed: one drawn 👣 per field a turn (the icon sheet app.js puts in the page); faded = rests this turn
+  // walking speed: one drawn 👣 per field a turn (the icon sheet src/app/core.js puts in the page); faded = rests this turn
   // (boss) or stopped (Druckerei)
   const feet = (n, faded) => `<svg class="tw-feet${faded ? ' rest' : ''}" viewBox="0 0 ${n * 26 + 2} 28" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<use href="#i-1f463" x="${i * 26 - 1}" y="-1" width="30" height="30"/>`).join('')}</svg>`;
   // guard level 1–3 as gold rank chevrons
@@ -16977,7 +16969,7 @@ const TWART = (() => {
   }
 
 
-  /* ---------- motion pieces (app.js animates them) ---------- */
+  /* ---------- motion pieces (src/app/turm_screens.js animates them) ---------- */
   // drawn poof: puffs of cloud with an ink rim and two sparkles; each puff is its own element so CSS can scatter them
   const poof = () => `<svg class="tw-poof" viewBox="-30 -30 60 60" aria-hidden="true">${[[-12, 4, 10], [10, 6, 11], [0, -9, 12], [-15, -10, 7], [16, -8, 8]].map(([x, y, r], i) => `<g class="p" style="--i:${i}"><circle cx="${x}" cy="${y}" r="${r}" fill="#F4F1EA" ${S(2)}/><circle cx="${x - r / 3}" cy="${y - r / 3}" r="${r / 3}" fill="#fff"/></g>`).join('')}<g class="s">${spark(-22, -22, 5)}${spark(22, 16, 4, '#fff')}</g></svg>`;
   // a shot: glowing ball in the shooter's type colour; big = 🎯 or a level-3 guard
@@ -17028,7 +17020,20 @@ const TWART = (() => {
     return `<svg class="tw-pic" viewBox="0 0 80 56" aria-hidden="true">${D.out()}${body}</svg>`;
   }
 
-  return { ROOMS, laneColors, subjColor, geo, scene, tower, towerH, TOWER: { TOP, FLOOR, BASE }, poof, orb, leaflet, brickOne, guardShield, spark: (c) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
+  return { ROOMS, laneColors, geo, scene, tower, towerH, TOWER: { TOP, FLOOR, BASE }, poof, orb, leaflet, brickOne, guardShield, spark: (c) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`, feet, pips, bubble, shields, picture, PICS: Object.keys(PICS) };
+})();
+
+</script>
+<script>
+// Every unit of Lernquest by id, in the order the units register. The game, the tests, the bot and the monster art
+// (tools/svg.js) all read this one list. A unit adds itself to MK.MODES in its own file (README „Neue Einheit“);
+// Zahlenquest, Baustelle and Jahrmarkt come from the two files that are loaded before MK exists.
+const UNITS = (() => {
+  const node = typeof module !== 'undefined';
+  // Node has no page that loads every file: tests/test_data.js checks this list against the built page
+  if (node) for (const f of ['sachkunde', 'sachkunde2', 'sachkunde3', 'ethik', 'musik', 'k12_mathe', 'k12_deutsch', 'k12_sachkunde', 'k12_ethik']) require(`./${f}.js`);
+  const Q = node ? require('./logic.js') : MQ, J = node ? require('./jahrmarkt.js') : MJ, K = node ? require('./knowledge.js') : MK;
+  return Object.assign({ math: Q.MODE, bau: Q.BAU.MODE, jahrmarkt: J.MODE }, K.MODES);
 })();
 
 </script>
@@ -17037,13 +17042,8 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
 </script>
 <script>
 (() => {
-  const { rnd, pick, shuffle, TYPES, BEATS, ENEMY_MOVES, ITEMS, makeMap, euro } = MQ;
-  // A unit registers itself: src/knowledge.js and the files after it add theirs to MK.MODES.
-  const MODES = Object.assign({
-    math: { modules: MQ.MODULES, starters: MQ.STARTERS, extra: MQ.EXTRA_ATTACKS, enemies: MQ.ENEMIES, events: MQ.EVENTS, tut: null, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 },
-    bau: { modules: MQ.BAU.MODULES, starters: MQ.BAU.STARTERS, extra: MQ.BAU.EXTRA, enemies: MQ.BAU.ENEMIES, events: MQ.BAU.EVENTS, moves: MQ.BAU.MOVES, tut: MQ.BAU.TUT, worlds: 2, worldAttacks: MQ.BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 },
-    jahrmarkt: Object.assign({ rank: 2 }, MJ.MODE),
-  }, MK.MODES);
+  const { rnd, pick, shuffle, TYPES, BEATS, ITEMS, makeMap, euro } = MQ;
+  const MODES = UNITS;
   // the Monsterbuch and the hero lists keep this order; new units follow in the order they register
   const FIRST = ['math', 'bau', 'ethik', 'kirchenjahr', 'kartoffel', 'woerterwerkstatt', 'satzbaustelle', 'kornkammer', 'wetterstation', 'kompass', 'freunde', 'jahrmarkt', 'wiese', 'frueher', 'sinne', 'verkehr', 'musik', 'ichwelt', 'teestube', 'doppeldecker'];
   const MODE_KEYS = FIRST.concat(Object.keys(MODES).filter((m) => !FIRST.includes(m)));
@@ -18172,7 +18172,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
     });
   }
   function enemyTurn(b, mult) {
-    const h = run.hero; const move = pick(CFG().moves || ENEMY_MOVES);
+    const h = run.hero; const move = pick(CFG().moves);
     b.taken = 0; delete b.enemy.pending;
     if (run.shield) { run.shield = false; b.log = `${b.enemy.name} greift mit ${move} an – dein Schild blockt alles! 🛡️`; b.logCls = 'hit'; }
     else { let dmg = Math.round(b.enemy.atk * mult * (0.85 + Math.random() * 0.3)); if (BEATS[b.enemy.type] === heroSpec().type) dmg = Math.round(dmg * 1.25); if (heroSpec().perk === 'tank') dmg = Math.round(dmg * 0.85); dmg = Math.max(1, dmg); b.taken = dmg; h.hp = Math.max(0, h.hp - dmg); b.log = `${b.enemy.name} greift mit ${move} an: ${dmg} Schaden${mult > 1 ? ' (freier Schlag)' : ''}`; b.logCls = 'miss'; }
@@ -19987,7 +19987,7 @@ const CHANGELOG = [{"date": "2026-11-14", "groups": [{"title": "Neu", "items": [
 <script>
 (function () {
   if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
-  const BUILD = '9ead5e6fed23';
+  const BUILD = 'a32bfdb8513d';
   const loadedAt = Date.now();
   let pending = false;
   function refresh(v) {

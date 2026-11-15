@@ -1094,6 +1094,9 @@ const MQ = (() => {
     ],
   };
 
-  return { rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ENEMY_MOVES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, qsum, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
+  BAU.MODE = { modules: BAU.MODULES, starters: BAU.STARTERS, extra: BAU.EXTRA, enemies: BAU.ENEMIES, events: BAU.EVENTS, moves: BAU.MOVES, tut: BAU.TUT, worlds: 2, worldAttacks: BAU.WORLD_ATTACKS, grade: 3, subject: 'Mathe', title: 'Die Baustelle', icon: '🏗️', sub: 'Würfel, Körper, Netze, Flächen, Spiegelbilder und Vielecke', mine: true, rank: 3 };
+  const MODE = { modules: MODULES, starters: STARTERS, extra: EXTRA_ATTACKS, enemies: ENEMIES, events: EVENTS, moves: ENEMY_MOVES, worlds: 3, grade: 3, subject: 'Mathe', title: 'Zahlenquest', icon: '🧮', sub: 'Rechnen und Zahlen', mine: true, rank: 1 };
+
+  return { MODE, rnd, pick, shuffle, MODULES, MODULE_KEYS, generate, TUT, TYPES, BEATS, STARTERS, EXTRA_ATTACKS, ENEMIES, ITEMS, EVENTS, makeMap, FLOORS, digits, numWord, isoWeek, schoolWeeks, seeded, euro, COINS, SHOP_GIFTS, shopCustomers, TOP_PARTS, BAU };
 })();
 if (typeof module !== 'undefined') module.exports = MQ;

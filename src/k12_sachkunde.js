@@ -9,14 +9,12 @@ const MSK12 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, choice, orderTask, wantsPool, partsSVG, plantTask, partPool } = S;
   const OUT = '#1C2541';
-  const SET = S12.SETS.sachkunde;
 
   /* ---------- helpers ---------- */
   // pool rows: [question, [answer, wrong, wrong]] or [statement, true] or [statement, false, why].
   // ids follow the position in the list, so new questions go at the end and a deleted one stays as null.
   const P = (pre, mod, g, rows) => rows.flatMap((r, i) => !r ? [] : Object.assign({ id: pre + (i + 1), mod, g, q: r[0] }, Array.isArray(r[1]) ? { o: r[1], a: 0 } : { rf: true, a: r[1], why: r[2] || '' }));
-  const unit = (o) => Object.assign(o, { worlds: 1, subject: 'Sachkunde', enemies: SET.enemies, moves: SET.moves,
-    starters: [Object.assign({}, SET.hero, { attacks: o.attacks })], extra: Object.fromEntries(Object.entries(o.modules).map(([k, m]) => [k, m.atk])) });
+  const unit = ({ attacks, ...o }) => S12.unit('sachkunde', attacks, Object.assign(o, { subject: 'Sachkunde', extra: Object.fromEntries(Object.entries(o.modules).map(([k, m]) => [k, m.atk])) }));
   const mod = (name, icon, atk, dmg, maxTier) => ({ name, icon, atk, maxTier: maxTier || 1, worldCap: [maxTier || 1], dmg });
   const others = (list, keep, n) => shuffle(list.filter((x) => x !== keep)).slice(0, n || 2);
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
@@ -278,9 +276,8 @@ const MSK12 = (() => {
       return null;
     };
   }
-  const dil = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
   const ask = (title, text, task, g, win, lose) => ({ title, text, opts: [{ label: 'Antworten', task, g, win, lose: lose || { hp: -5 } }, { label: 'Weitergehen', effect: {} }] });
-  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
+  const { rest, dilemma } = S12;
   const KO = unit({ grade: 1, title: 'Mein Körper', icon: '🙂', sub: 'Körperteile, Zähne putzen, gesund essen, Kleidung, Nein sagen und Erste Hilfe', school: ['koerper12', 'gesicht12'],
     modules: { parts: mod('Körperteile', '🙂', 'Hampelmann', 12, 2), pflege: mod('Sauber und gesund', '💧', 'Zahnbürste', 12), essen: mod('Gesund essen', '🍞', 'Brotdose', 12),
       kleidung: mod('Kleidung zum Wetter', '🌦', 'Gummistiefel', 12), schutz: mod('Nein sagen', '🛑', 'Lautes Nein', 10), hilfe: mod('Erste Hilfe', '🦺', 'Pflaster', 14) },
@@ -293,19 +290,19 @@ const MSK12 = (() => {
       ask('Der Erste-Hilfe-Kasten', 'Der Hausmeister zeigt dir den Erste-Hilfe-Kasten. Er fragt dich, was man bei kleinen Verletzungen tut.', 'hilfe', 'erstehilfe', { item: 'engel' }),
       ask('Die Garderobe', 'An der Garderobe hängen Jacken, Mützen und Regenhosen. Ein Junge fragt dich, was man bei welchem Wetter anzieht.', 'kleidung', 'kleidung', { xp: 20 }, { xp: 5 }),
       rest('Die Turnhalle', 'In der Turnhalle liegen dicke Matten. Hier ruhst du dich aus.'),
-      dil('Die Umarmung', 'Tante Gisela will dich zur Begrüßung fest drücken. Du hast heute keine Lust auf eine Umarmung.', [
+      dilemma('Die Umarmung', 'Tante Gisela will dich zur Begrüßung fest drücken. Du hast heute keine Lust auf eine Umarmung.', [
         ['Ich gebe ihr die Hand.', 'Tante Gisela lächelt und schüttelt deine Hand. Das ist auch eine schöne Begrüßung.', 'Wie kannst du jemanden begrüßen, ohne ihn zu umarmen?'],
         ['Ich sage: „Heute lieber nicht.“', 'Mama nickt dir zu. Tante Gisela sagt: „Na gut, dann winken wir.“', 'Warum darfst du selbst entscheiden, wer dich umarmt?'],
         ['Ich lasse es geschehen.', 'Du fühlst dich nicht wohl dabei. Später erzählst du es Mama.', 'Was könntest du beim nächsten Mal sagen?']]),
-      dil('Das Geheimnis', 'Ein älteres Kind sagt: „Ich zeig dir was. Aber du darfst es keinem erzählen!“ Dir ist dabei mulmig.', [
+      dilemma('Das Geheimnis', 'Ein älteres Kind sagt: „Ich zeig dir was. Aber du darfst es keinem erzählen!“ Dir ist dabei mulmig.', [
         ['„Nein, ich will das nicht.“', 'Du gehst zu deinen Freunden. Das mulmige Gefühl wird kleiner.', 'Woran erkennst du ein schlechtes Geheimnis?'],
         [HELP, 'Du erzählst es deiner Lehrerin. Sie hört dir zu und kümmert sich darum.', 'Wem kannst du alles erzählen?'],
         ['Ich gehe einfach weg.', 'Zu Hause erzählst du Papa davon. Er hört dir zu und ist froh, dass du es ihm gesagt hast.', 'Warum ist Weggehen auch ein Nein?']]),
-      dil('Die Frühstücksflocken', 'Im Fernsehen läuft Werbung für bunte Frühstücksflocken mit Spielzeug in der Packung. Du willst sie unbedingt haben.', [
+      dilemma('Die Frühstücksflocken', 'Im Fernsehen läuft Werbung für bunte Frühstücksflocken mit Spielzeug in der Packung. Du willst sie unbedingt haben.', [
         ['Ich frage Papa, ob wir sie kaufen.', 'Papa liest dir vor, wie viel Zucker darin ist. Ihr kauft sie als Ausnahme für Sonntag.', 'Warum steckt Spielzeug in der Packung?'],
         ['Ich esse lieber Haferflocken mit Obst.', 'Das hält lange satt. Die Werbung hast du bald vergessen.', 'Was macht ein Frühstück gesund?'],
         ['Ich schaue mir die Packung im Laden an.', 'Vorn ist ein lachender Löwe, aber innen ist vor allem Zucker.', 'Was will Werbung von dir?']]),
-      dil('Die Mütze', 'Draußen ist es kalt. Deine Freundin lacht: „Mützen sind doch doof!“', [
+      dilemma('Die Mütze', 'Draußen ist es kalt. Deine Freundin lacht: „Mützen sind doch doof!“', [
         ['Ich setze sie trotzdem auf.', 'Deine Ohren bleiben warm. Nach der Pause setzt deine Freundin ihre Kapuze auf.', 'Warum ist dir dein Körper wichtiger als ein Spruch?'],
         ['Ich stecke sie in die Tasche.', 'Nach der Pause sind deine Ohren eiskalt und rot.', 'Was hättest du deiner Freundin sagen können?'],
         ['Ich frage: „Was ist daran doof?“', 'Sie zuckt mit den Schultern. Eigentlich weiß sie es selbst nicht.', 'Warum macht man manchmal einfach mit, was andere sagen?']]),
@@ -483,7 +480,7 @@ const MSK12 = (() => {
       ask('Die Wetterwand', 'An der Wetterwand der Klasse hängen bunte Zeichen. Die Lehrerin kennt eine Eselsbrücke und verrät sie dir für eine richtige Antwort.', 'wetter', 'wetter', { item: 'lupe' }, { xp: 5 }),
       ask('Der Apfelbaum', 'Auf dem Schulhof steht ein Apfelbaum. Ein Mädchen fragt dich nach den Jahreszeiten.', 'zeiten', 'zeiten', { xp: 20 }, { xp: 5 }),
       rest('Die Bank am Schulhof', 'Auf dem Schulhof steht eine Bank in der Sonne. Hier ruhst du dich aus.'),
-      dil('Die Abkürzung', 'Dein Freund will zwischen parkenden Autos über die Straße. Der Weg zur Ampel ist länger.', [
+      dilemma('Die Abkürzung', 'Dein Freund will zwischen parkenden Autos über die Straße. Der Weg zur Ampel ist länger.', [
         ['Ich gehe zur Ampel.', 'Du kommst zwei Minuten später an. Dein Freund wartet schon und winkt.', 'Warum ist der längere Weg manchmal der bessere?'],
         ['Ich frage ihn, ob er mitkommt.', 'Ihr geht zusammen zur Ampel und erzählt euch unterwegs Witze.', 'Wie kannst du einen Freund überzeugen?'],
         ['Ich gehe mit ihm.', 'Zwischen den Autos seht ihr nichts. Ein Auto bremst laut, ihr erschreckt euch sehr.', 'Warum sehen Autofahrer Kinder zwischen parkenden Autos schlecht?']]),
@@ -843,7 +840,7 @@ const MSK12 = (() => {
       ask('Das Keimglas', 'Auf der Fensterbank steht ein Glas mit keimenden Bohnen. Die Lehrerin kennt eine Eselsbrücke und verrät sie dir.', 'keim', 'keim', { item: 'lupe' }, { xp: 5 }),
       ask('Der Stadtpark', 'Im Stadtpark blühen die ersten Krokusse. Ein Gärtner fragt dich nach den Frühblühern.', 'frueh', 'frueh', { xp: 20 }, { xp: 5 }),
       rest('Der Baumstumpf', 'Am Waldrand steht ein breiter Baumstumpf. Du zählst die Jahresringe und ruhst dich aus.'),
-      dil('Der junge Baum', 'Auf dem Schulhof steht ein frisch gepflanzter Baum. Dein Freund will einen Zweig abbrechen, als Zauberstab.', [
+      dilemma('Der junge Baum', 'Auf dem Schulhof steht ein frisch gepflanzter Baum. Dein Freund will einen Zweig abbrechen, als Zauberstab.', [
         ['Wir suchen einen Stock am Boden.', 'Unter der alten Linde liegen viele Stöcke. Ihr findet einen, der sogar noch schöner ist.', 'Wo findest du Stöcke, ohne einen Baum zu verletzen?'],
         ['Ich sage ihm, dass der Baum noch klein ist.', 'Dein Freund nickt. Zusammen gießt ihr den Baum mit der Gießkanne.', 'Was braucht ein junger Baum zum Wachsen?'],
         ['Ich schaue weg.', 'Der Zweig knackt ab. Am Baum bleibt eine Wunde, und den Zauberstab wirft dein Freund bald weg.', 'Was passiert mit einem Baum, wenn ein Zweig abbricht?']]),
@@ -1057,11 +1054,11 @@ const MSK12 = (() => {
       ask('Der Laubhaufen', 'Im Garten liegt ein großer Laubhaufen. Ein Mädchen fragt dich nach den Tieren darin und gibt dir eine Chilischote.', 'klein', 'klein', { item: 'keks' }, { xp: 5 }),
       ask('Das Futterhaus', 'Am Futterhaus im Park picken Meisen und Spatzen. Ein Opa fragt dich nach den Vögeln.', 'vogel', 'vogel', { xp: 20 }, { xp: 5 }),
       rest('Der Heuboden', 'Auf dem Heuboden ist es warm und weich. Hier ruhst du dich aus.'),
-      dil('Der Hundewunsch', 'Dein Freund bekommt einen jungen Hund. Du willst auch einen. Mama fragt: „Wer geht dann jeden Tag mit ihm raus?“', [
+      dilemma('Der Hundewunsch', 'Dein Freund bekommt einen jungen Hund. Du willst auch einen. Mama fragt: „Wer geht dann jeden Tag mit ihm raus?“', [
         ['Ich verspreche, jeden Tag zu gehen.', 'Mama schlägt vor: Du gehst eine Woche lang mit dem Hund der Nachbarin. Danach redet ihr weiter.', 'Was braucht ein Hund jeden Tag?'],
         ['Ich helfe erst im Tierheim mit.', 'Im Tierheim gehst du mit einem alten Hund spazieren. Du merkst, wie viel Arbeit ein Hund macht.', 'Warum landen manche Tiere im Tierheim?'],
         ['Ich frage, ob ein kleineres Tier passt.', 'Ihr lest zusammen, was Meerschweinchen brauchen. Auch das ist viel Arbeit.', 'Welches Tier passt zu deiner Familie?']]),
-      dil('Die Nachbarskatze', 'Die Katze der Nachbarn sitzt vor deiner Tür und miaut laut.', [
+      dilemma('Die Nachbarskatze', 'Die Katze der Nachbarn sitzt vor deiner Tür und miaut laut.', [
         ['Ich gebe ihr eine Schale Milch.', 'Die Katze trinkt. Später hat sie Bauchweh, denn viele Katzen vertragen keine Kuhmilch.', 'Was trinken Katzen am besten?'],
         ['Ich klingle bei den Nachbarn.', 'Die Nachbarin bedankt sich. Die Katze war ausgesperrt.', 'Wem gehört die Katze, und wer sorgt für sie?'],
         ['Ich streichle sie vorsichtig.', 'Die Katze schnurrt und läuft nach einer Weile nach Hause.', 'Woran merkst du, ob eine Katze gestreichelt werden will?']]),
@@ -1292,11 +1289,11 @@ const MSK12 = (() => {
       ask('Das Schattentheater', 'In der Turnhalle zeigt eine Klasse Schattentheater. Die Lehrerin gibt dir eine Chilischote für eine richtige Antwort.', 'licht', 'schatten', { item: 'keks' }, { xp: 5 }),
       ask('Die Windmühle', 'Auf dem Hügel dreht sich eine alte Windmühle. Der Müller fragt dich nach dem Wind.', 'luft', 'luft', { xp: 20 }, { xp: 5 }),
       rest('Der Dorfbrunnen', 'Am Dorfbrunnen trinkst du frisches Wasser und ruhst dich aus.'),
-      dil('Der tropfende Wasserhahn', 'Im Waschraum der Schule tropft ein Wasserhahn. Deine Freundin sagt: „Das sind doch nur Tropfen.“', [
+      dilemma('Der tropfende Wasserhahn', 'Im Waschraum der Schule tropft ein Wasserhahn. Deine Freundin sagt: „Das sind doch nur Tropfen.“', [
         ['Ich drehe ihn fest zu.', 'Es tropft langsamer, aber es tropft weiter.', 'Wer kann einen kaputten Wasserhahn reparieren?'],
         ['Ich sage es dem Hausmeister.', 'Er wechselt eine Dichtung. Jetzt tropft nichts mehr.', 'Warum lohnt es sich, auch kleine Dinge zu melden?'],
         ['Ich lasse ihn tropfen.', 'Am nächsten Morgen ist unter dem Hahn ein ganzer Eimer voll Wasser verloren.', 'Wie viel Wasser kann in einer Nacht verloren gehen?']]),
-      dil('Die Sonnencreme', 'Am Badesee will Ben keine Sonnencreme: „Die klebt so.“ Die Sonne scheint sehr stark.', [
+      dilemma('Die Sonnencreme', 'Am Badesee will Ben keine Sonnencreme: „Die klebt so.“ Die Sonne scheint sehr stark.', [
         ['Ich leihe ihm mein T-Shirt.', 'Ben zieht es an. Sein Rücken bleibt geschützt.', 'Was schützt außer Sonnencreme noch vor Sonne?'],
         ['Wir setzen uns in den Schatten.', 'Unter dem Baum ist es kühler. Ihr baut dort eine Sandburg.', 'Wann ist die Sonne am stärksten?'],
         ['Ich sage nichts.', 'Abends hat Ben einen roten, brennenden Rücken.', 'Wie hättest du Ben helfen können?']]),
@@ -1304,7 +1301,6 @@ const MSK12 = (() => {
   NA.gen = naGen(NA);
 
   K.MODES.koerper1 = KO; K.MODES.jahr1 = JA; K.MODES.baeume2 = BA; K.MODES.tiere2 = TI; K.MODES.natur2 = NA;
-  return { WX, SEASONS, DAYTIMES, MONTHS, DAYS, WEAR, HEALTHY, SWEET, LAUB, NADEL, FRUITS, SPRING, OBST, OBST_ART, BIRDS, BIRD_TRAITS, SMALL_LIST, GHS, SOLVE, SHINE, AIR,
-    HAENDE, ZAEHNE, NOTRUF, TAG, QUEREN, KEIM, BLUETE, SAEN, NEST, STORCH, laborSet, thermoSVG, timeName };
+  return { WX, MONTHS, DAYS, WEAR, OBST, OBST_ART, BIRDS, BIRD_TRAITS, HAENDE, ZAEHNE, NOTRUF, TAG, QUEREN, KEIM, BLUETE, SAEN, NEST, STORCH, laborSet, thermoSVG, timeName };
 })();
 if (typeof module !== 'undefined') module.exports = MSK12;

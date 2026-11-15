@@ -1,5 +1,5 @@
-// Turmwacht rules: pure changes on a plain-JSON run object, no DOM, no app.js globals.
-// app.js passes everything unit-specific in through ctx (described at newRun).
+// Turmwacht rules: pure changes on a plain-JSON run object, no DOM, no globals of the game (src/app/).
+// src/app/turm.js passes everything unit-specific in through ctx (described at newRun).
 const TW = (() => {
   const CELLS = 5, SPOTS = 2, TOWER_HP = 60;
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
@@ -415,7 +415,7 @@ const TW = (() => {
   }
 
   return {
-    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX, AGAIN_TASK_MAX,
+    CELLS, SPOTS, TOWER_HP, TURN_LOSS, WAVES, KEEP, HERO_EVO, HERO_WAVE, INCOME, COST, FIX_HP, REPAIR_HP, PATCH_HP, GUARD_DMG, TOWER_DMG, FLOORS, CP_USES, BEATS, AGAIN_MAX,
     lanesFor, newRun, card, canTarget, preview, threats,
     ask, answer, step, takeReward, price, buy, nextWave, canRetry, retry,
   };

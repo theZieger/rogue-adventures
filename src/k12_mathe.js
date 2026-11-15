@@ -11,7 +11,7 @@
   const OUT = '#1C2541', NB = ' ';
 
   // fl(colour): a soft light-to-shade gradient of the colour; svgOf adds the defs a drawing uses
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const { tone, rest } = S;
   const fl = (c) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
   const grad = (c) => `<linearGradient id="km${c}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone('#' + c, 0.32)}"/><stop offset=".5" stop-color="#${c}"/><stop offset="1" stop-color="${tone('#' + c, -0.16)}"/></linearGradient>`;
   const svgOf = (w, h, body, label, attrs) => { const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u) => u.slice(7, 13)))];
@@ -32,12 +32,11 @@
     };
   }
   function register(key, def, gen) {
-    const set = S.SETS.mathe; const { attacks, ...rest } = def;
-    const mode = Object.assign({ worlds: 1, subject: 'Mathe', pool: [], starters: [Object.assign({}, set.hero, { attacks })], enemies: set.enemies, moves: set.moves }, rest);
+    const { attacks, ...o } = def;
+    const mode = S.unit('mathe', attacks, Object.assign({ subject: 'Mathe', pool: [] }, o));
     mode.gen = (mod, tier) => gen(mod, Math.max(1, Math.min(mode.modules[mod].maxTier, tier)));
     K.MODES[key] = mode;
   }
-  const restEv = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
   const ev = (title, text, label, task, win, lose) => ({ title, text, opts: [{ label, task, win, lose }, { label: 'Weitergehen', effect: {} }] });
 
   /* ---------- Drawings ---------- */
@@ -219,7 +218,7 @@
       ev('Die Gartenmauer', 'Ein Maurer baut eine Mauer aus Zahlensteinen. Findest du den fehlenden Stein, leiht er dir einen Schild.', 'Stein finden', 'mauer', { item: 'schild' }, { hp: -5 }),
       ev('Die Bäckerei', 'Die Bäckerin zählt Brötchen in Tüten. Rechne mit, dann verrät sie dir eine Eselsbrücke.', 'Mitrechnen', 'rechnen', { item: 'lupe' }, { xp: 5 }),
       ev('Der Kaufmannsladen', 'Im Klassenzimmer steht ein Kaufmannsladen. Zählst du das Geld in der Kasse, bekommst du einen Schild.', 'Geld zählen', 'geld', { item: 'schild' }, { hp: -5 }),
-      restEv('Die Leseecke', 'In der Klasse liegt eine Ecke voller Kissen. Hier ruhst du dich aus.'),
+      rest('Die Leseecke', 'In der Klasse liegt eine Ecke voller Kissen. Hier ruhst du dich aus.'),
     ],
   }, genZ20);
 
@@ -362,7 +361,7 @@
       ev('Die Bastelecke', 'Ein Mädchen schneidet Formen aus Papier aus. Sie fragt dich nach einem Namen.', 'Antworten', 'formen', { xp: 20 }, { xp: 5 }),
       ev('Die Perlenkette', 'Am Basteltisch fädelt ein Junge ein Muster auf. Wer es fortsetzt, bekommt eine Chilischote.', 'Muster fortsetzen', 'muster', { item: 'keks' }, { hp: -5 }),
       ev('Die Bauklötze', 'In der Bauecke steht ein Turm aus Würfeln. Zählst du die Würfel, bekommst du einen Schild.', 'Würfel zählen', 'bauen', { item: 'schild' }, { hp: -5 }),
-      restEv('Die Turnmatte', 'In der Turnhalle liegt eine weiche Matte. Du legst dich kurz hin.'),
+      rest('Die Turnmatte', 'In der Turnhalle liegt eine weiche Matte. Du legst dich kurz hin.'),
     ],
   }, genForm);
 
@@ -529,7 +528,7 @@
       ev('Die Schulkasse', 'Die Sekretärin zählt das Geld für den Wandertag. Rechnest du mit, verrät sie dir eine Eselsbrücke.', 'Mitrechnen', 'plus', { item: 'lupe' }, { xp: 5 }),
       ev('Das Rätselheft', 'Auf einer Bank liegt ein Heft mit Rechendreiecken. Löst du eins, findest du darin einen Schild.', 'Rätsel lösen', 'dreieck', { item: 'schild' }, { hp: -5 }),
       ev('Die Schulhofmauer', 'Der Hausmeister repariert die Mauer am Schulhof. Auf den Steinen stehen Zahlen, einer fehlt.', 'Stein finden', 'mauer', { xp: 20 }, { xp: 5 }),
-      restEv('Die Bank im Schulgarten', 'Unter dem Apfelbaum im Schulgarten steht eine Bank. Du ruhst dich aus.'),
+      rest('Die Bank im Schulgarten', 'Unter dem Apfelbaum im Schulgarten steht eine Bank. Du ruhst dich aus.'),
     ],
   }, genZ100);
 
@@ -630,7 +629,7 @@
       ev('Die Geburtstagstorte', 'Ein Junge will seine Torte gerecht verteilen. Hilfst du ihm, bekommst du eine Chilischote.', 'Verteilen', 'teilen', { item: 'keks' }, { hp: -5 }),
       ev('Der Einkaufszettel', 'Ein Vater steht mit einem langen Zettel im Laden. Rechnest du mit, verrät er dir eine Eselsbrücke.', 'Mitrechnen', 'sach', { item: 'lupe' }, { xp: 5 }),
       ev('Das Turnier', 'Der Sportlehrer stellt Mannschaften auf. Wer die Reihe kennt, bekommt einen Schild.', 'Antworten', 'reihe', { item: 'schild' }, { hp: -5 }),
-      restEv('Die Picknickdecke', 'Im Park liegt eine Picknickdecke in der Sonne. Du ruhst dich aus.'),
+      rest('Die Picknickdecke', 'Im Park liegt eine Picknickdecke in der Sonne. Du ruhst dich aus.'),
     ],
   }, genMal);
 
@@ -842,7 +841,7 @@
       ev('Der Klassenkalender', 'An der Tafel hängt der Klassenkalender. Die Lehrerin fragt nach einem Tag und verrät dir eine Eselsbrücke.', 'Antworten', 'kalender', { item: 'lupe' }, { xp: 5 }),
       ev('Die Umfrage', 'Die Klasse hat eine Strichliste gemacht. Liest du sie richtig, bekommst du eine Chilischote.', 'Liste lesen', 'daten', { item: 'keks' }, { hp: -5 }),
       ev('Die Garderobe', 'In der Garderobe hängen Mützen und Schals. Ein Junge fragt, wie viele Paare er bilden kann.', 'Mitzählen', 'kombi', { xp: 20 }, { xp: 5 }),
-      restEv('Die Hofpause', 'Es klingelt zur Hofpause. Du setzt dich auf die Treppe und ruhst dich aus.'),
+      rest('Die Hofpause', 'Es klingelt zur Hofpause. Du setzt dich auf die Treppe und ruhst dich aus.'),
     ],
   }, genGr2);
 
@@ -973,7 +972,7 @@
       ev('Die Kreidelinien', 'Auf dem Schulhof malt ein Junge Linien mit Kreide. Er will wissen, wie sie heißen.', 'Antworten', 'linien', { xp: 20 }, { xp: 5 }),
       ev('Die Bauecke', 'In der Bauecke steht ein Gebäude aus Steckwürfeln. Zählst du die Würfel, bekommst du einen Schild.', 'Würfel zählen', 'bauen', { item: 'schild' }, { hp: -5 }),
       ev('Die Kiste im Werkraum', 'Im Werkraum klebt ein Lehrer die Kanten einer Kiste ab. Zählst du mit, bekommst du eine Chilischote.', 'Mitzählen', 'koerper', { item: 'keks' }, { hp: -5 }),
-      restEv('Die Fensterbank', 'Auf der breiten Fensterbank im Flur scheint die Sonne. Du ruhst dich aus.'),
+      rest('Die Fensterbank', 'Auf der breiten Fensterbank im Flur scheint die Sonne. Du ruhst dich aus.'),
     ],
   }, genForm2);
 })();

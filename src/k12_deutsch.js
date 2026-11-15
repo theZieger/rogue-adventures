@@ -10,13 +10,11 @@ const K12D = (() => {
   const choice = (mod, tier, note, q, answer, wrongs, qid, extra) => Object.assign({ kind: 'choice', mod, tier, group: mod + ':' + tier, note, q, options: shuffle([answer].concat(wrongs)), answer, qid, cols: wrongs.length === 1 ? 2 : 1 }, extra || {});
   // gen items: { id, make(id) } – weightedPick brings back what went wrong
   const ask = (items, know, seq) => { const it = weightedPick(items, know, seq); return it.make(it.id); };
-  const hero = (attacks) => [Object.assign({}, S.SETS.deutsch.hero, { attacks })];
-  const set = { enemies: S.SETS.deutsch.enemies, moves: S.SETS.deutsch.moves, worlds: 1, subject: 'Deutsch' };
 
   /* ---------- Bilder für Klasse 1: ein Ding je Bild, eindeutig benannt ---------- */
   const O = '#1C2541';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const { tone } = S;
   const USED = new Set();
   const fl = (c) => { const h = c.length === 4 ? '#' + [...c.slice(1)].map((x) => x + x).join('') : c; if (!/^#[0-9A-F]{6}$/i.test(h) || h === O) return c; USED.add(h.toUpperCase()); return `url(#kd${h.slice(1).toUpperCase()})`; };
   const p = (d, fill, w) => `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
@@ -187,9 +185,8 @@ const K12D = (() => {
     reim: { name: 'Reimwörter', icon: '🎵', maxTier: 1, worldCap: [1], dmg: 14 },
     lesen: { name: 'Lesen', icon: '📗', maxTier: 2, worldCap: [2], dmg: 14 },
   };
-  const LAUTE1 = Object.assign({}, set, { grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Selbstlaute und Mitlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
+  const LAUTE1 = S.unit('deutsch', [{ name: 'Buchstabenhaus', mod: 'laute' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }], { subject: 'Deutsch', grade: 1, title: 'Laute und Buchstaben', icon: '🔤', sub: 'Selbstlaute und Mitlaute, Silben, das Abc, Reimwörter und erste Wörter lesen',
     modules: L1_MODULES, tut: L1_TUT, notes: L1_NOTES, pool: [],
-    starters: hero([{ name: 'Buchstabenhaus', mod: 'laute' }, { name: 'Silbenklatschen', mod: 'silben' }, { name: 'Abc-Lied', mod: 'alphabet' }, { name: 'Kinderreim', mod: 'reim' }]),
     extra: { laute: 'Buchstabenhaus', lautpos: 'Lautgebärde', silben: 'Silbenklatschen', alphabet: 'Abc-Lied', reim: 'Kinderreim', lesen: 'Fibel' },
     events: [
       { title: 'Die Buchstabenkiste', text: 'Frau Klein hat eine Kiste mit Buchstaben aus Holz. Sie hält einen hoch und fragt, ob er ein Selbstlaut oder ein Mitlaut ist. Wer es weiß, bekommt einen Trank.', opts: [{ label: 'Antworten', task: 'laute', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },
@@ -322,9 +319,8 @@ const K12D = (() => {
     kleinw: { name: 'Kleine Wörter', icon: '🗒️', maxTier: 1, worldCap: [1], dmg: 10 },
   };
   // the options sound alike or give the answer away when read aloud
-  const SCHREIBEN2 = Object.assign({}, set, { grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, Merkwörter, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
+  const SCHREIBEN2 = S.unit('deutsch', [{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }], { subject: 'Deutsch', grade: 2, speakOptions: false, title: 'Richtig schreiben', icon: '📝', sub: 'st und sp, ie, Merkwörter, doppelte Mitlaute, Verlängern, groß und klein, Satzzeichen, Wörterbuch',
     modules: S2_MODULES, tut: S2_TUT, notes: S2_NOTES, pool: S2_POOL,
-    starters: hero([{ name: 'Silbengelenk', mod: 'doppel' }, { name: 'Verlängerung', mod: 'verl' }, { name: 'Großbuchstabe', mod: 'gross' }, { name: 'Schlusspunkt', mod: 'satzz' }]),
     extra: { besonders: 'Wörterkartei', doppel: 'Silbengelenk', verl: 'Verlängerung', gross: 'Großbuchstabe', satzz: 'Schlusspunkt', alphabet: 'Daumenregister', kleinw: 'Blitzlesekarte' },
     events: [
       { title: 'Das Diktat', text: 'Auf dem Lehrertisch liegt ein Diktat. Findest du das richtig geschriebene Wort, bekommst du einen Schild.', opts: [{ label: 'Nachsehen', task: 'any', win: { item: 'schild' }, lose: { hp: -5 } }, { label: 'Liegen lassen', effect: {} }] },
@@ -454,9 +450,8 @@ const K12D = (() => {
     feld: { name: 'Wortfeld', icon: '☀️', maxTier: 1, worldCap: [1], dmg: 12 },
     satzart: { name: 'Satzarten', icon: '💬', maxTier: 1, worldCap: [1], dmg: 14 },
   };
-  const WOERTER2 = Object.assign({}, set, { grade: 2, title: 'Wörter und Sätze', icon: '🏷️', sub: 'Nomen, Verb, Adjektiv und Artikel, Einzahl und Mehrzahl, Wortfamilien und Satzarten',
+  const WOERTER2 = S.unit('deutsch', [{ name: 'Textmarker', mod: 'wortart' }, { name: 'Begleiterkarte', mod: 'artikel' }, { name: 'Wortfamilienhaus', mod: 'familie' }, { name: 'Satzmelodie', mod: 'satzart' }], { subject: 'Deutsch', grade: 2, title: 'Wörter und Sätze', icon: '🏷️', sub: 'Nomen, Verb, Adjektiv und Artikel, Einzahl und Mehrzahl, Wortfamilien und Satzarten',
     modules: W2_MODULES, tut: W2_TUT, notes: W2_NOTES, pool: W2_POOL,
-    starters: hero([{ name: 'Textmarker', mod: 'wortart' }, { name: 'Begleiterkarte', mod: 'artikel' }, { name: 'Wortfamilienhaus', mod: 'familie' }, { name: 'Satzmelodie', mod: 'satzart' }]),
     extra: { wortart: 'Textmarker', mehrzahl: 'Mengenbild', artikel: 'Begleiterkarte', zus: 'Leimtube', familie: 'Wortfamilienhaus', feld: 'Wortfeldsonne', satzart: 'Satzmelodie' },
     events: [
       { title: 'Das Wortfamilienhaus', text: 'An der Klassenwand hängt ein Wortfamilienhaus aus Pappe. Ein Wort hat sich ins falsche Zimmer verirrt. Findest du das richtige, bekommst du einen Trank.', opts: [{ label: 'Suchen', task: 'familie', win: { item: 'trank' }, lose: { hp: -4 } }, { label: 'Weitergehen', effect: {} }] },

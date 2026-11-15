@@ -618,6 +618,6 @@ const MS2 = (() => {
   VE.gen = veGen(VE);
 
   K.MODES.sinne = SI; K.MODES.verkehr = VE;
-  return { EYE_PARTS, EAR_PARTS, BIKE_PARTS, SENSES, ILLUSIONS, SIGNS, VEHICLES, RIGHT_OF, ABBIEGEN, QUEREN, illusionSet, signTask, rightOfWayTask, missingTask, senseTask, signSVG };
+  return { EYE_PARTS, EAR_PARTS, BIKE_PARTS, SIGNS, RIGHT_OF, ABBIEGEN, QUEREN, signTask, missingTask, signSVG };
 })();
 if (typeof module !== 'undefined') module.exports = MS2;

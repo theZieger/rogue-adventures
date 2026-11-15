@@ -1,4 +1,4 @@
-// Drawn icons that take the place of emojis (app.js swaps them in), so every device shows the same picture.
+// Drawn icons that take the place of emojis (src/app/core.js swaps them in), so every device shows the same picture.
 // Key: the emoji without variation selector. Value: the inside of an <svg viewBox="0 0 32 32">. Style: outline #1C2541,
 // 2 px, gradient fill, one white highlight; plain marks (✓ ✕ arrows, operators) are drawn in currentColor.
 // ids must be unique across the whole file (tests/test_data.js checks).

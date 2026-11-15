@@ -3,7 +3,7 @@ const fails = [];
 const fail = (m) => fails.push(m);
 const MK = require('../src/knowledge.js');
 const ICONS = require('../src/icons.js');
-require('./units.js');
+require('../src/units.js');
 const E = require('../src/k12_ethik.js');
 
 const UNITS = { ichdu1: [1, 'Ethik'], feste2: [2, 'Ethik'], instrumente2: [2, 'Musik'], musik1: [1, 'Musik'] };

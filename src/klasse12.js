@@ -1,6 +1,6 @@
 // Klasse 1 und 2: one hero and one set of opponents per subject, shared by all units of that subject in both grades
 // (fewer drawings; the owner's choice). A shared opponent counts once in the Monsterbuch. A unit gives the hero its own
-// four attacks: Object.assign({}, K12.SETS.<fach>.hero, { attacks }).
+// four attacks: K12.unit(<fach>, attacks, { everything else of the unit }).
 // Hero ids and opponent names are stored in saves: never rename them once released.
 const K12 = (() => {
   const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
@@ -61,6 +61,12 @@ const K12 = (() => {
       { name: 'Der Presslufthammer', acc: 'den Presslufthammer', type: 'normal', shape: 'presslufthammer', hp: 58, atk: 5, boss: true },
       ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß']),
   };
-  return { SETS };
+  const unit = (fach, attacks, o) => Object.assign({ worlds: 1, starters: [Object.assign({}, SETS[fach].hero, { attacks })], enemies: SETS[fach].enemies, moves: SETS[fach].moves }, o);
+  // events every Klasse-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
+  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
+  const dilemma = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
+  // lighter (t > 0) or darker shade of a colour for the pictures
+  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  return { SETS, unit, rest, dilemma, tone };
 })();
 if (typeof module !== 'undefined') module.exports = K12;

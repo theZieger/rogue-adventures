@@ -1,55 +1,25 @@
 // Regression tests for saving/loading (runs the built docs/index.html in jsdom).
 // Each "page load" is a fresh JSDOM that starts with the localStorage of the previous one,
 // which is what a reload or reopening the app does.
-const { JSDOM, VirtualConsole } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
+const page = require('./page.js');
 const zlib = require('zlib');
 const QR = require('../src/qr.js');
 const SAVECODE = require('../src/savecode.js');
-const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8');
 
 let fails = 0;
 const check = (cond, msg) => { if (!cond) { fails++; console.log('FAIL', msg); } else console.log('ok  ', msg); };
 
-// opts.voice: one speech voice or a list (w.said collects what was read, w.utter is the last utterance, w.utters those since
-// the last cancel, i.e. one reading); opts.ua: the browser's userAgent;
-// opts.url: page address (e.g. with #lade=); opts.zip: give the page the compression streams jsdom lacks; opts.now: the page's clock
-// Every page is a full copy of the app with its own timers, so an open page is never freed. A case works with at most a
-// few pages at once: keep the last LIVE pages and close older ones (their storage stays readable through dump()), which
-// keeps the whole file within Node's default heap.
+// A case works with at most a few pages at once: keep the last LIVE pages and close older ones (their storage
+// stays readable through dump()), which keeps the whole file within Node's default heap. opts: see tests/page.js
 const LIVE = 4; const pages = [];
 function open(storage, opts) {
-  const errors = []; opts = opts || {};
   while (pages.length >= LIVE) pages.shift().close();
-  // a closed page may still flush one pending screen update; only open pages report errors
-  let snap = null; const virtualConsole = new VirtualConsole(); virtualConsole.sendTo(console, { omitJSDOMErrors: true });
-  virtualConsole.on('jsdomError', (e) => { if (!snap) console.error(e); });
-  const dom = new JSDOM(html, {
-    virtualConsole, runScripts: 'dangerously', pretendToBeVisual: true, url: opts.url || 'https://example.com/',
-    beforeParse(w) {
-      for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v); w.addEventListener('error', (e) => errors.push(e.message));
-      if (opts.zip) Object.assign(w, { CompressionStream, DecompressionStream, Response, TextEncoder });
-      if (opts.voice) { w.said = []; w.utters = []; w.speechSynthesis = { getVoices: () => [].concat(opts.voice), cancel() { w.utters = []; }, speak(u) { w.said.push(u.text); w.utter = u; w.utters.push(u); } }; w.SpeechSynthesisUtterance = class { constructor(t) { this.text = t; } }; }
-      if (opts.ua) Object.defineProperty(w.navigator, 'userAgent', { value: opts.ua });
-      if (opts.now) { const D = w.Date, now = Date.parse(opts.now); w.Date = class extends D { constructor(...a) { super(...(a.length ? a : [now])); } static now() { return now; } }; }
-    },
-  });
-  const w = dom.window, d = w.document;
-  pages.push({ close: () => { snap = dump(); w.close(); } });
-  // tests were written for one title screen: a game's button sits on its subject screen, so open that from the
-  // title first, and a title button looked for on a subject screen means going back
-  const $ = (s) => d.querySelector(s) || toGame(s) || toTitle(s);
-  const toTitle = (s) => { if (!d.querySelector('[data-new]') || !d.querySelector('#back')) return null; d.querySelector('#back').click(); return d.querySelector(s); };
-  const toGame = (s) => { const m = /data-(?:new|cont)="(\w+)"/.exec(s); const sub = m && d.querySelector('[data-sub]') && w.__mq.subjectOf(m[1]); if (!sub) return null; d.querySelectorAll('[data-sub]')[[...d.querySelectorAll('[data-sub]')].findIndex((b) => b.textContent.includes(sub.subject))].click(); return d.querySelector(s); };
-  const click = (s) => { const el = typeof s === 'string' ? $(s) : s; if (!el) throw new Error('missing ' + s + ' on: ' + d.body.textContent.slice(0, 200)); el.click(); };
-  const dump = () => snap || Object.fromEntries(Object.keys(w.localStorage).map((k) => [k, w.localStorage.getItem(k)]));
-  // drawn icons count as their emoji again
-  const text = () => { const c = $('#app').cloneNode(true); c.querySelectorAll('svg.emo').forEach((s) => s.replaceWith(s.getAttribute('aria-label'))); return c.textContent; };
+  const p = page.open(storage, opts), { d, click } = p;
+  pages.push(p);
   // parent area: go(tab, sub tab) and subj(subject, topic) open a page of it
   const go = (tab, sub) => { click(`[data-pt="${tab}"]`); click(`[data-ps="${sub}"]`); };
   const subj = (name, m) => { click('[data-pt="practice"]'); click(d.querySelector('#pback') ? '#pback' : '[data-ps="subjects"]'); click([...d.querySelectorAll('[data-pf]')].find((b) => b.textContent.includes(name))); if (m && d.querySelector(`[data-pm="${m}"]`)) click(`[data-pm="${m}"]`); };
-  return { w, d, $, click, dump, text, errors, go, subj };
+  return Object.assign(p, { go, subj });
 }
 const RUN = 'mathquest_run_v1';
 const META = 'mathquest_meta_v2';
