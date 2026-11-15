@@ -11,7 +11,8 @@ npm run build        # src/* -> docs/index.html (one file, open it in a browser)
 npm test             # about two minutes; needs the build
 npm run playtest     # a bot plays every unit
 npm run e2e          # browser tests: offline start, accessibility (once before: npx playwright install chromium)
-npm run format       # Biome formats JS, CSS and JSON
+npm run typecheck    # tsc, strict, over every .ts file
+npm run format       # Biome formats JS, TS, CSS and JSON
 ```
 
 You need Node 22.18 or newer, nothing else. A pull request must be formatted and pass build, test, playtest

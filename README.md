@@ -110,6 +110,9 @@ src/turmart.js     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-B
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/units.js       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
+src/curriculum.ts  Reihenfolge der Einheiten, Fächer und Klassen (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) mit den Typen `Unit` und `TaskType`
+src/save.ts        der Spielstand: Typ `Meta`, Standardwerte, Laden/Speichern und die Reparatur beim Laden (`normMeta`)
+src/savecode.ts    Spielstand-Code (verkleinern, Base42); src/qr.ts zeichnet den QR-Code
 src/app/           Spiel-Engine in Teilen; tools/build.js setzt sie in der Reihenfolge von `APP` zu einer Funktion zusammen,
                    sie teilen sich also einen Zustand (meta, run, mode):
                    core (Einheiten, Lehrplan, Icons) · storage (Spielstand laden und reparieren) · progress (Stufen,
