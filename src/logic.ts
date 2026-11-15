@@ -1,8 +1,8 @@
 import type { Unit } from './curriculum.ts';
 export const MQ = (() => {
   const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
-  const pick = (arr: string | any[]) => arr[Math.floor(Math.random() * arr.length)];
-  const shuffle = (arr: string | any[]) => {
+  const pick = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = <T>(arr: readonly T[]): T[] => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
