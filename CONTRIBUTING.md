@@ -10,11 +10,12 @@ npm install
 npm run build        # src/* -> docs/index.html (one file, open it in a browser)
 npm test             # about two minutes; needs the build
 npm run playtest     # a bot plays every unit
+npm run e2e          # browser tests: offline start, accessibility (once before: npx playwright install chromium)
 npm run format       # Biome formats JS, CSS and JSON
 ```
 
-You need Node 20 or newer, nothing else. A pull request must be formatted and pass build, test and playtest;
-CI checks all four.
+You need Node 20 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
+and e2e; CI checks all five.
 
 ## Find your way
 
@@ -39,7 +40,8 @@ CI checks all four.
    monster changes).
 2. A change a player or parent can notice gets one short German line in `CHANGELOG.md` under today's date
    (format in the file header).
-3. A change a player can see needs before and after screenshots (phone size, 390×844) in the pull request.
+3. A change a player can see needs before and after screenshots in the pull request: `npm run screenshots before`,
+   make the change, `npm run screenshots after`, then `npm run screenshots before after` lists what changed.
 4. Write the least code that solves the problem. Comment a non-obvious *why*, never what the code says.
 
 ## Licences

@@ -19,6 +19,8 @@ jobs:
         run: test -z "$(git status --porcelain -- art/)" || { git status --porcelain -- art/; exit 1; }
       - run: npm test
       - run: npm run playtest
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
       - if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v4
         with: { path: docs }
