@@ -55,5 +55,8 @@ test('playtests', { concurrency: 4 }, async (t) => {
     Object.entries(env)
       .map(([key, value]) => `${key}=${value}`)
       .join(' ');
-  await Promise.all(ALL_RUNS.map((env) => t.test(settings(env), () => play(env))));
+  // TRACE_DIR=folder: every run records what the bot saw (see trace in playtest.js)
+  const traced = (env) =>
+    process.env.TRACE_DIR ? { ...env, TRACE: path.join(process.env.TRACE_DIR, `${settings(env)}.txt`) } : env;
+  await Promise.all(ALL_RUNS.map((env) => t.test(settings(env), () => play(traced(env)))));
 });

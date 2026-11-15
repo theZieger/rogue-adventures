@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { MQ } from '../src/logic.ts';
 import path from 'path';
 import { JSDOM } from 'jsdom';
@@ -45,16 +46,50 @@ function prng(seed) {
 Math.random = prng(SEED + 1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
 const NOW = Date.parse(process.env.NOW || '2026-12-23T10:00:00');
-// Fake time: the game's battle pauses (up to ~2 s) and the bot's waits run 100× faster; TIME=1 plays in real time.
-const TIME = +(process.env.TIME || 0.01);
+// Virtual time: the page's timers do not run by the wall clock but in the order they are due, while the bot waits.
+// So a run takes no real waiting, and the same SEED gives the same run every time, however busy the machine is.
+const timers = [];
+let clock = 0;
+let lastTimer = 0;
+function later(fn, ms, args, every) {
+  timers.push({ id: ++lastTimer, due: clock + (ms || 0), fn, args, every });
+  return lastTimer;
+}
+function cancel(id) {
+  const i = timers.findIndex((timer) => timer.id === id);
+  if (i >= 0) timers.splice(i, 1);
+}
+const breath = () => new Promise((resolve) => setImmediate(resolve));
+async function sleep(ms) {
+  const until = clock + ms;
+  for (;;) {
+    await breath();
+    const next = timers.filter((timer) => timer.due <= until).sort((a, b) => a.due - b.due || a.id - b.id)[0];
+    if (!next) break;
+    clock = Math.max(clock, next.due);
+    if (next.every) next.due = clock + next.every;
+    else cancel(next.id);
+    try {
+      next.fn(...next.args);
+    } catch (e) {
+      errors.push(e.message);
+    }
+  }
+  clock = until;
+  await breath();
+}
+const errors = [];
 const dom = new JSDOM(html, {
   runScripts: 'dangerously',
   pretendToBeVisual: true,
   url: 'https://example.com/',
   beforeParse(win) {
     win.Math.random = prng(SEED);
-    const st = win.setTimeout;
-    win.setTimeout = (fn, ms, ...a) => st.call(win, fn, (ms || 0) * TIME, ...a);
+    win.setTimeout = (fn, ms, ...args) => later(fn, ms, args);
+    win.setInterval = (fn, ms, ...args) => later(fn, ms, args, ms || 1);
+    win.clearTimeout = win.clearInterval = win.cancelAnimationFrame = cancel;
+    win.requestAnimationFrame = (fn) => later(() => fn(clock), 16, []);
+    win.performance.now = () => clock;
     const D = win.Date;
     win.Date = class extends D {
       constructor(...a) {
@@ -76,9 +111,7 @@ Object.assign(w, w.__mq.modules);
 let gradeTry = 0; // a unit of another Klasse: try the grade tabs until its subject shows
 const RUNS = +(process.env.RUNS || 2);
 const ACC = +(process.env.ACC || 0.85);
-const errors = [];
 w.addEventListener('error', (e) => errors.push(e.message));
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms * TIME));
 const $ = (s) => d.querySelector(s);
 const $$ = (s, root = d) => [...root.querySelectorAll(s)];
 // drawn icons count as their emoji again
@@ -1092,11 +1125,19 @@ function turmEnd(m, ends, steps) {
       }
   }
 }
+// TRACE=file records the page at every step (as a hash, or whole with TRACE_FULL=1), so two builds can be compared:
+// a change that should not alter what a child sees leaves the file the same. How a tap is wired is left out.
+function trace() {
+  const page = $('#app').innerHTML.replace(/ data-action="[^"]*"/g, '');
+  const line = process.env.TRACE_FULL ? page.replace(/\n/g, ' ') : createHash('sha1').update(page).digest('hex');
+  fs.appendFileSync(process.env.TRACE, `${line}\n`);
+}
 (async () => {
   let steps = 0;
   let ends = 0;
   while (steps < 4000) {
     steps++;
+    if (process.env.TRACE) trace();
     const r = await step();
     await sleep(0);
     if (r === 'end') {
