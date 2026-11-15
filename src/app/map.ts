@@ -1,4 +1,4 @@
-import { MODES } from '../curriculum.ts';
+import { MODES, type Starter } from '../curriculum.ts';
 import { MQ } from '../logic.ts';
 import { PANTRY_MAX, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
@@ -51,16 +51,6 @@ import { enabledMods, extraOn, heroShown, marketOn, offList, practice, saveAll }
 import { screenSubject, screenTitle, screenWeekly, subjectOf } from './title.ts';
 import { modal, screen, topbar } from './ui.ts';
 
-// a monster to start with, as the unit lists it
-interface Starter {
-  id: string;
-  type: string;
-  shape: string;
-  names: string[];
-  hp: number;
-  desc: string;
-  attacks: Attack[];
-}
 // goal: the weekly goal this adventure was started for; its task type is offered as an attack
 export function screenStarter(goal?: WeeklyGoal) {
   state.depth = 2;
@@ -115,7 +105,7 @@ export function screenStarter(goal?: WeeklyGoal) {
   };
   const go = () => {
     if (!sel) return;
-    const s = CFG().starters.find((x) => x.id === sel);
+    const s = CFG().starters.find((x) => x.id === sel)!;
     state.run = {
       mode: state.mode,
       world: 1,
@@ -182,7 +172,7 @@ export function screenStarter(goal?: WeeklyGoal) {
 const FLOORS_BY_GRADE: Record<number, number> = { 1: 6, 2: 7, 3: 8 };
 // floors are counted on an 8-floor map; m.slice(a, -2) ends before the camp and the boss
 function makeMapFor(world: number) {
-  const m = makeMap(FLOORS_BY_GRADE[CFG().grade] || 8);
+  const m = makeMap(FLOORS_BY_GRADE[CFG().grade] || 8) as MapNode[][];
   if (CFG().school && world === 1) {
     m[1].forEach((n) => {
       n.t = 'school';
@@ -198,7 +188,7 @@ function makeMapFor(world: number) {
         .flat()
         .filter((n) => n.t === t);
     const c = on(sw.from).length ? on(sw.from) : on('fight');
-    if (c.length) pick(c).t = sw.to;
+    if (c.length) pick(c).t = sw.to as MapNode['t'];
   }
   const chests = m.flat().filter((n) => n.t === 'treasure');
   if (CFG().mine && chests.length && !offList('math').includes('rest')) pick(chests).t = 'bergwerk';
@@ -259,7 +249,7 @@ function weekBossSpec(world: number) {
 }
 
 // a place on the map: its type, its lane and the nodes of the next floor it leads to
-interface MapNode {
+export interface MapNode {
   t: keyof typeof NODE_INFO;
   c: number;
   n: number[];
@@ -446,7 +436,7 @@ export function resumeRun() {
       b.phase = 'wait';
       renderBattle(b);
       setTimeout(() => {
-        if (state.run) enemyTurn(b, n.enemy.pending);
+        if (state.run) enemyTurn(b, n.enemy!.pending!);
       }, 1200);
       return;
     } // the enemy still has its turn
@@ -495,8 +485,8 @@ export function advance() {
     state.run.map = makeMapFor(state.run.world);
     state.run.path = [];
     state.meta.bestWorld = Math.max(state.meta.bestWorld, state.run.world);
-    if (CFG().worldAttacks && CFG().worldAttacks[state.run.world]) {
-      state.run.hero.attacks = CFG().worldAttacks[state.run.world].map((x: Attack) => ({
+    if (CFG().worldAttacks && CFG().worldAttacks![state.run.world]) {
+      state.run.hero.attacks = CFG().worldAttacks![state.run.world].map((x: Attack) => ({
         name: x.name,
         mod: x.mod,
       }));

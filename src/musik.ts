@@ -1636,9 +1636,9 @@ export const MU = (() => {
     );
   }
   // the topic filter (events) asks the pool; generated tasks only without a topic
-  const wantsPool = (mod: string, opts: GenOpts) =>
+  const wantsPool = (mod: string, opts?: GenOpts) =>
     !!(opts && opts.g && POOL.some((p) => p.mod === mod && p.g === opts.g));
-  function gen(mod: string, tier: number, know: Know, seq: number, opts: GenOpts) {
+  function gen(mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) {
     if (wantsPool(mod, opts)) return null;
     const r = Math.random();
     if (mod === 'noten') return tier >= 2 || r < 0.75 ? notenTask(tier) : null;

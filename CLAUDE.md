@@ -42,10 +42,14 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 - The game engine is `src/app/*.ts`: ES modules that import what they use; `src/main.ts` lists them in the order they
   start. What several of them change (`meta`, `run`, `mode` …) lives in `src/app/state.ts` as `state.meta` etc.
   Use the words in `GLOSSARY.md`; decisions that should not be re-argued are in `adr/`.
-- A new or reworked screen builds its markup with `html` (`src/ui/html.ts`, escapes what it is given) and passes it to
-  `screen(markup, actions)`; a tap on `data-action="name"` calls `actions.name`. `src/app/feedback.ts` is the example.
-  Older screens use `render()` with strings and `onclick`; move one over when you change it (`adr/0008`).
-- Colours are tokens in `src/styles/tokens.css`, never a hex value in a rule (Stylelint fails it). A new building
+- A screen builds its markup with `html` (`src/ui/html.ts`, escapes what it is given; `raw()` for what is markup
+  already; `String(flag)` for an attribute that must say "false") and passes it to `screen(markup, actions)`, a dialog
+  to `modal(markup, actions)`; a tap on `data-action="name"` calls `actions.name`, and `on(actions)` adds actions for
+  what a screen puts in later. No `onclick` after rendering. `src/app/feedback.ts` is the shortest example (`adr/0008`).
+- A change that must not alter what a child sees is proven with the bot's recording: `TRACE_DIR=before npm run
+  playtest` on the old state, the same with another folder on the new one, and the files must be identical.
+- Colours, font sizes, radii and spacing are tokens in `src/styles/tokens.css`, never a hex or pixel value in a rule
+  (Stylelint fails a hex colour, a pixel font size and a pixel radius). A new building
   block gets a specimen in `src/gallery.ts` (`docs/gallery.html` after a build).
 - Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.ts` (key = the emoji) when shown.
   A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.

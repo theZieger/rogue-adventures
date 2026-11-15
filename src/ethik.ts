@@ -149,7 +149,7 @@ export const ME = (() => {
 
   // Drei Welten sortieren: die drei Knöpfe stehen immer in dieser Reihenfolge
   const WELTEN = ['Natürliche Welt', 'Vom Menschen geschaffene Welt', 'Gedankenwelt'];
-  const DINGE = [
+  const DINGE: [id: string, text: string, welt: number, why?: string][] = [
     ['baum', 'der Baum', 0],
     ['fluss', 'der Fluss', 0],
     ['wolke', 'die Wolke', 0],
@@ -1828,7 +1828,7 @@ export const ME = (() => {
     },
   ];
 
-  const gen = (mod: string, tier: number, know: Know, seqNow: number, opts: GenOpts) => {
+  const gen = (mod: string, tier: number, know: Know, seqNow: number, opts?: GenOpts) => {
     if (mod !== 'welten') return null;
     let cands = POOL.filter((p) => p.mod === 'welten');
     if (opts && opts.g) {

@@ -1,4 +1,5 @@
 import { MK } from '../knowledge.ts';
+import type { Effect, EventOpt, GameEvent } from '../curriculum.ts';
 import { MQ, type Task } from '../logic.ts';
 import { MONART } from '../monsters.ts';
 import { type Experiment, MS } from '../sachkunde.ts';
@@ -23,39 +24,12 @@ import {
   tutKey,
   weakestModule,
 } from './progress.ts';
-import { state } from './state.ts';
+import { type RunNode, state } from './state.ts';
 import { enabledMods, extraOn, marketOn, saveAll } from './storage.ts';
 import { INK, POTATO, joined, lg, ln, plain, plantOf, rg, runTask, shadow, speakBtn } from './tasks.ts';
 import { SFX, ensureTutorial, screen, showTutorial, topbar } from './ui.ts';
 
 /* ---------- Event ---------- */
-// what an event hands out or takes
-interface Effect {
-  hp?: number;
-  maxhp?: number;
-  item?: string;
-  holz?: number;
-  xp?: number;
-}
-// with a task: win or lose; without: effect (in a dilemma the event's reward) and what to think about
-interface EventOpt {
-  label: string;
-  task?: string;
-  g?: string;
-  win?: Effect;
-  lose?: Effect;
-  effect?: Effect;
-  then?: string;
-  think?: string;
-}
-interface GameEvent {
-  title: string;
-  text: string;
-  opts: EventOpt[];
-  w?: number;
-  dilemma?: boolean;
-  reward?: Effect;
-}
 export function screenEvent(resumeOpt?: number): void {
   // run.node.ev indexes the whole list, so new events are only ever appended; w = only in that world
   const EV: GameEvent[] = CFG().events;
@@ -63,11 +37,11 @@ export function screenEvent(resumeOpt?: number): void {
   const ids = EV.map((_, i) => i).filter(
     (i) => (!EV[i].w || EV[i].w === state.run.world) && (marketOn() || !geldEv(EV[i])),
   );
-  if (!Number.isInteger(state.run.node && state.run.node.ev) || !EV[state.run.node.ev]) {
+  if (!Number.isInteger(state.run.node && state.run.node.ev) || !EV[state.run.node!.ev!]) {
     if (state.run.node) state.run.node.ev = pick(ids);
     saveAll();
   }
-  const ev = state.run.node ? EV[state.run.node.ev] : EV[pick(ids)];
+  const ev = state.run.node ? EV[state.run.node.ev!] : EV[pick(ids)];
   screen(
     html`<div class="screen">${raw(topbar('❓ Ereignis'))}<div class="scroll"><div class="card"><h2>${ev.title}</h2><p style="font-size:20px">${ev.text}</p>${ev.dilemma ? html`<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>` : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => html`<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-action="choose" data-i="${i}">${o.label}</button>`)}</div></div></div>`,
     { choose: (button) => runOpt(+button.dataset.i!) },
@@ -210,7 +184,7 @@ function training(mod: string, total: number, done: number) {
       },
       () => training(mod, total, done + 1),
     );
-  if (low && done === 0 && state.meta.seenTut[tutKey(t.group)]) showTutorial(t.group, t.note, go);
+  if (low && done === 0 && state.meta.seenTut[tutKey(t.group!)]) showTutorial(t.group!, t.note, go);
   else ensureTutorial(t, go);
 }
 
@@ -279,7 +253,7 @@ export function screenTreasure(kind?: string) {
     {
       take: (choice) => {
         const o = opts[+choice.dataset.i!];
-        if (o.k === 'item') state.run.items.push(o.item);
+        if (o.k === 'item') state.run.items.push(o.item!);
         if (o.k === 'maxhp') {
           state.run.hero.maxHp += 10;
           heal(10);
@@ -334,7 +308,7 @@ const MB: Record<string, string> = {
 };
 const blockSVG = (k: string) => `<svg viewBox="0 0 40 40" aria-hidden="true">${MB_DEFS}${MB[k || '']}</svg>`;
 // the Bergwerk as its node saves it: what each block turned out to be, the haul, the block being opened
-interface Mine {
+export interface Mine {
   cells: string[];
   got: string[];
   task?: { i: number; t: Task };
@@ -347,7 +321,7 @@ function mineRecord(ok: boolean, t: Task) {
   if (ok) s.c++; // other units count it as practice in Zahlenquest, without changing its levels
 }
 export function screenMine() {
-  const n = state.run.node;
+  const n = state.run.node!;
   if (!isObj(n.mine) || !Array.isArray(n.mine.cells) || !Array.isArray(n.mine.got)) {
     n.mine = { cells: Array(12).fill(''), got: [] };
     saveAll();
@@ -453,8 +427,10 @@ const coinBtn = (v: number, attr: Markup) =>
   html`<button class="coin ${v >= 500 ? 'note n' + v : v >= 100 ? 'euro' : v >= 10 ? 'brass' : 'copper'}" ${attr} aria-label="${euro(v)}">${euro(v)}</button>`;
 // Kaufladen: the child serves three customers (world 1: count out the price, later: give the change) and gets a
 // thank-you item. Nobody owns money here; adventures saved with the old market (node.offers, run.coins) open this one.
+// the node once the checks at the top of screenMarket have run
+type Shop = RunNode & Required<Pick<RunNode, 'cust' | 'i' | 'tries' | 'gifts'>>;
 export function screenMarket(msg?: string) {
-  const n = state.run.node || {};
+  const n = (state.run.node || {}) as Shop;
   const tier = state.run.world >= 2 ? 2 : 1;
   if (
     !Array.isArray(n.cust) ||
@@ -556,10 +532,11 @@ export function screenMarket(msg?: string) {
 }
 
 /* ---------- Zeichenschule ---------- */
-// a unit can draw two pictures: the first on floor 2, the second later (see makeMapFor)
+// a unit can draw two pictures: the first on floor 2, the second later (see makeMapFor);
+// `true` is no key of a picture, so it stands for the potato plant (plantOf)
 const schoolKey = () => {
   const s = CFG().school;
-  return Array.isArray(s) ? s[state.run && state.run.floor > 2 ? 1 : 0] : s;
+  return (Array.isArray(s) ? s[state.run && state.run.floor > 2 ? 1 : 0] : s) as string | undefined;
 };
 export function screenSchool(step: number) {
   const P = plantOf(schoolKey());
@@ -628,14 +605,14 @@ function schoolCheck(ids: string[], i: number) {
 
 /* ---------- Forscherlabor: guess first, then the result; a wrong guess costs nothing ---------- */
 // the Forscherlabor as its node saves it; guess: the option tapped in the open experiment
-interface Lab {
+export interface Lab {
   list: Experiment[];
   i: number;
   right: number;
   guess: number | null;
 }
 export function screenLabor() {
-  const n = state.run.node;
+  const n = state.run.node!;
   if (!isObj(n.lab) || !Array.isArray(n.lab.list)) {
     n.lab = { list: (CFG().labor || MS.laborSet)(), i: 0, right: 0, guess: null };
     saveAll();
@@ -673,8 +650,8 @@ export function screenLabor() {
 }
 // same reward level as an event
 function laborEnd() {
-  const L: Lab = state.run.node.lab;
-  const title = NODE_INFO[state.run.node.type === 'taeusch' ? 'taeusch' : 'labor'].join(' ');
+  const L: Lab = state.run.node!.lab!;
+  const title = NODE_INFO[state.run.node!.type === 'taeusch' ? 'taeusch' : 'labor'].join(' ');
   const m = gainXp(20);
   nodeDone();
   saveAll();
@@ -686,7 +663,7 @@ function laborEnd() {
 
 /* ---------- Schatzkarte: instead of a treasure; found = chest, two misses = a berry ---------- */
 export function screenKarte() {
-  const n = state.run.node;
+  const n = state.run.node!;
   if (!enabledMods().includes('karte') || n.found) return screenTreasure();
   if (!isObj(n.hunt)) n.hunt = { tries: 0, task: null };
   if (!isObj(n.hunt.task)) {
@@ -704,14 +681,14 @@ export function screenKarte() {
       {
         container: $('#taskwrap'),
         bottom: $('#bottom'),
-        subtitle: `Versuch ${n.hunt.tries + 1} von 2`,
+        subtitle: `Versuch ${n.hunt!.tries + 1} von 2`,
         onResult: (ok) => {
           recordAnswer('karte', ok, t);
           if (ok) n.found = true;
           else {
-            n.hunt.tries++;
-            n.hunt.task = null;
-            if (n.hunt.tries >= 2) {
+            n.hunt!.tries++;
+            n.hunt!.task = null;
+            if (n.hunt!.tries >= 2) {
               state.run.items.push('beere');
               nodeDone();
             }

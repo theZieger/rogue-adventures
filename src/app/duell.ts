@@ -13,7 +13,7 @@ import { SFX, announce, fx, on, screen, topbar } from './ui.ts';
 // the device statistics belong to one child and a duel would mix in the other child's answers.
 const DUEL_HP = 60,
   DUEL_HIT = 12;
-const duelSpec = (p: Duellist) => MODES[p.mode].starters.find((s) => s.id === p.hero);
+const duelSpec = (p: Duellist) => MODES[p.mode].starters.find((s) => s.id === p.hero)!;
 // each child plays at the level of the running adventure in that unit, otherwise level 1
 const duelTiers = (m: string) => {
   const r = loadRun(m);
@@ -39,6 +39,12 @@ interface Duellist {
   hero: string;
   hp: number;
   tiers: Record<string, number>;
+}
+// in memory only; recent: the last tasks per task type, as in an adventure
+export interface Duel {
+  p: Duellist[];
+  turn: number;
+  recent?: Record<string, string[]>;
 }
 export function screenDuel(players: DuelPlayer[]) {
   const i = players.length;
@@ -90,7 +96,10 @@ export function screenDuel(players: DuelPlayer[]) {
 }
 function startDuel(players: DuelPlayer[], first: number) {
   state.run = null;
-  state.duel = { p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode!) })), turn: first };
+  state.duel = {
+    p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode!) })) as Duellist[],
+    turn: first,
+  };
   duelTurn(`${esc(state.duel.p[first].name)} fängt an.`, '');
 }
 // child 1 stands at the bottom like the hero in a fight, child 2 at the top
@@ -163,7 +172,7 @@ function duelAttack(atk: Attack) {
 }
 function screenDuelEnd(w: Duellist) {
   const players = state.duel.p;
-  const l = players.find((x: Duellist) => x !== w);
+  const l = players.find((x: Duellist) => x !== w)!;
   state.duel = null;
   setTimeout(SFX.win, 150);
   screen(

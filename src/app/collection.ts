@@ -1,4 +1,4 @@
-import { MODES, MODE_KEYS } from '../curriculum.ts';
+import { type Foe, MODES, MODE_KEYS } from '../curriculum.ts';
 import { MQ } from '../logic.ts';
 import { MONART } from '../monsters.ts';
 import { html, raw } from '../ui/html.ts';
@@ -61,17 +61,9 @@ export function screenVictory() {
     { again: () => screenStarter(), home: screenTitle },
   );
 }
-// an opponent as the unit files list it
-interface Foe {
-  name: string;
-  type: string;
-  shape: string;
-  elite?: boolean;
-  boss?: boolean;
-}
 export function screenDex() {
   state.depth = 1;
-  const all: Foe[] = [];
+  const all: (Foe & { elite?: boolean })[] = [];
   for (const m of MODE_KEYS) {
     const EN = MODES[m].enemies;
     for (const w of Object.keys(EN)) {

@@ -1,6 +1,7 @@
 import { MW as W } from './woerter.ts';
 import { ENG as E } from './english.ts';
 import type { Unit } from './curriculum.ts';
+import type { Task } from './logic.ts';
 
 // one entry of a unit's pool: g = topic, a = true/false, the index of the right option in o, or the answer itself
 export interface Question {
@@ -23,7 +24,7 @@ export interface Question {
   english?: string[];
 }
 // things to put in order (the events of a life, the commandments)
-interface Sequence {
+export interface Sequence {
   items: { id: string; text: string }[];
   note: string;
   q: string;
@@ -5911,7 +5912,7 @@ export const MK = (() => {
       cols: 1,
     };
   }
-  function oddTask(opts: GenOpts) {
+  function oddTask(opts?: GenOpts) {
     const pairs = (names: string[]) =>
       names.flatMap((a) =>
         EN_THEMES[a].length >= 3 ? names.filter((b) => b !== a && !near(a, b)).map((b) => [a, b]) : [],
@@ -5938,7 +5939,7 @@ export const MK = (() => {
       english: three.concat([odd]),
     };
   }
-  function reiheTask(tier: number, opts: GenOpts) {
+  function reiheTask(tier: number, opts?: GenOpts) {
     let months = tier >= 2;
     const off = (m: boolean) => enOff(opts).includes(m ? 'Monate' : 'Wochentage');
     if (off(months) && !off(!months)) {
@@ -6378,11 +6379,11 @@ export const MK = (() => {
   }
   // opts (optional): { g } = nur Fragen zu diesem Themengebiet (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
   // { world }: in Modi mit byWorld kommen nur Fragen und Reihenfolgen dieser Welt dran (w fehlt = Welt 1)
-  function generate(mode: string, mod: string, tier: number, know: Know, seqNow: number, opts?: GenOpts) {
+  function generate(mode: string, mod: string, tier: number, know: Know, seqNow: number, opts?: GenOpts): Task {
     const cfg = MODES[mode];
     const world = (opts && opts.world) || 1;
     const inWorld = (p: { w?: number }) => !cfg.byWorld || (p.w || 1) === world;
-    const pool: Question[] = cfg.pool.filter(inWorld);
+    const pool: Question[] = cfg.pool!.filter(inWorld);
     if (MODES[mode].gen) {
       const t = MODES[mode].gen(mod, tier, know, seqNow, opts);
       if (t) return t;
@@ -6390,7 +6391,7 @@ export const MK = (() => {
     if (mod === 'abc') return abcTask();
     if (mod === 'umstell') return umstellTask();
     if (mod === 'ord') {
-      const o = pick<Sequence>(cfg.order.filter(inWorld));
+      const o = pick<Sequence>(cfg.order!.filter(inWorld));
       const idx = shuffle(o.items.map((_, i) => i))
         .slice(0, 4)
         .sort((a, b) => a - b);
@@ -6809,7 +6810,7 @@ export const MK = (() => {
       icon: '🫖',
       rank: 1,
       sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
-      gen: (mod: string, tier: number, know: Know, seq: number, opts: GenOpts) =>
+      gen: (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) =>
         mod === 'zahl'
           ? zahlTask(tier, know, seq)
           : mod === 'farbe'
@@ -6835,7 +6836,7 @@ export const MK = (() => {
       icon: '🚌',
       rank: 2,
       sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
-      gen: (mod: string, tier: number, know: Know, seq: number, opts: GenOpts) =>
+      gen: (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) =>
         mod === 'reihe' ? reiheTask(tier, opts) : null,
     },
     kartoffel: {

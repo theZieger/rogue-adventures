@@ -149,7 +149,8 @@ docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebu
 npm install          # nur Werkzeuge für Build und Tests (danach einmal: npx playwright install chromium)
 npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
 npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, etwa eine halbe Minute)
-npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js)
+npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js), auf einer virtuellen Uhr:
+                     # gleicher SEED = gleicher Lauf; TRACE_DIR=ordner schreibt jede Seite mit, um zwei Stände zu vergleichen
 npm run e2e          # Browser-Tests (Playwright): Start ohne Internet, Barrierefreiheit jedes Bildschirms
 npm run screenshots vorher   # Bildschirmfotos aller Bildschirme aus tools/screens.js; mit zwei Ordnern: Vergleich
 npm run typecheck    # tsc prüft alle TypeScript-Dateien

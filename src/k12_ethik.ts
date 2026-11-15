@@ -689,7 +689,12 @@ export const K12E = (() => {
       extra || {},
     );
   const some = <T>(list: T[], n: number) => shuffle(list.slice()).slice(0, n);
-  const ord = (mod: string, group: string, src: { items: { id: string }[]; q: string; note: string }, qid: string) => {
+  const ord = (
+    mod: string,
+    group: string,
+    src: { items: { id: string; text: string }[]; q: string; note: string },
+    qid: string,
+  ) => {
     const idx = shuffle(src.items.map((_, i) => i))
       .slice(0, 4)
       .sort((a, b) => a - b);
@@ -2232,16 +2237,18 @@ export const K12E = (() => {
     { id: 'k2fr12', mod: 'rf', g: 'geburtstag', q: 'Die Geburtstagskerze ist ein Zeichen für das Leben.', a: true },
   ];
   // m: Monat.Tag, nur für die Reihenfolge (der 1. Advent liegt immer zwischen dem 27. November und dem 3. Dezember)
-  const JAHR = [
-    ['Neujahr', 1.01],
-    ['Ostern', 3.22],
-    ['Erntedank', 10.01],
-    ['St. Martin', 11.11],
-    ['1. Advent', 11.27],
-    ['Nikolaus', 12.06],
-    ['Weihnachten', 12.24],
-    ['Silvester', 12.31],
-  ].map(([text, m], i) => ({ id: 'fj' + (i + 1), text, m }));
+  const JAHR = (
+    [
+      ['Neujahr', 1.01],
+      ['Ostern', 3.22],
+      ['Erntedank', 10.01],
+      ['St. Martin', 11.11],
+      ['1. Advent', 11.27],
+      ['Nikolaus', 12.06],
+      ['Weihnachten', 12.24],
+      ['Silvester', 12.31],
+    ] as [string, number][]
+  ).map(([text, m], i) => ({ id: 'fj' + (i + 1), text, m }));
   const FESTORD = [
     {
       items: steps('fl', [

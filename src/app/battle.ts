@@ -1,3 +1,4 @@
+import type { Attack, Foe } from '../curriculum.ts';
 import { MONART } from '../monsters.ts';
 import { type Meta, TOP, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
@@ -34,20 +35,10 @@ import { openGoals } from './title.ts';
 import { SFX, announce, ensureTutorial, fx, modal, on, screen, topbar } from './ui.ts';
 
 /* ---------- Battle ---------- */
-// one attack of the hero: its name and the task type it asks
-export interface Attack {
-  name: string;
-  mod: string;
-}
+export type { Attack };
 // what an enemy is made from: an entry of the unit's `enemies` or the week's boss
-interface EnemySpec {
-  name: string;
+interface EnemySpec extends Foe {
   base?: string; // the Monsterbuch entry, if the name differs
-  type: string;
-  shape: string;
-  hp: number;
-  atk: number;
-  boss?: boolean;
   weekboss?: boolean;
   weakOrder?: string[];
 }
@@ -209,8 +200,8 @@ function pickWeak(except?: string) {
   state.run.used = isObj(state.run.used) ? state.run.used : {};
   const mods = [...new Set<string>(heroAttacks().map((a: Attack) => a.mod))];
   const pool = mods.length > 1 ? mods.filter((m) => m !== except) : mods;
-  const least = Math.min(...pool.map((m) => state.run.used[m] || 0));
-  return pick(pool.filter((m) => (state.run.used[m] || 0) === least));
+  const least = Math.min(...pool.map((m) => state.run.used![m] || 0));
+  return pick(pool.filter((m) => (state.run.used![m] || 0) === least));
 }
 function weakName(mod: string) {
   const a = heroAttacks().find((x: Attack) => x.mod === mod);
@@ -446,7 +437,7 @@ export function battleWon(b: Battle) {
     state.run.hero.maxHp += 15;
     heal(20);
     state.meta.evoUnlocked[state.run.hero.id + state.run.hero.evo] = true;
-    const wa = CFG().worldAttacks && CFG().worldAttacks[state.run.world + 1];
+    const wa = CFG().worldAttacks && CFG().worldAttacks![state.run.world + 1];
     evoMsg = html`<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${raw(heroSVG(heroSpec(), state.run.hero.evo - 1, 'before'))}<span aria-hidden="true">➜</span>${raw(heroSVG(heroSpec(), state.run.hero.evo, 'after'))}</div><p>Dein Monster ist jetzt <b>${heroName()}</b>!</p>${wa ? html`<p>Neue Attacken für die nächste Welt: ${wa.map((x: Attack) => x.name).join(', ')}</p>` : ''}</div>`;
   }
   saveAll();
@@ -601,7 +592,7 @@ export const READ_TUT = {
     'Nach den Fragen ist die Lesestunde vorbei.',
   ],
 };
-const readText = () => TEXTE[state.run.node.text];
+const readText = () => TEXTE[state.run.node!.text!];
 // Silbenmethode: syllables alternate two colours, each word starts with the first
 const sylHtml = (s: string) =>
   s
@@ -610,8 +601,8 @@ const sylHtml = (s: string) =>
 const readCard = (t: (typeof TEXTE)[number]) =>
   html`<div class="card readcard"><div class="eyebrow">${t.kind}</div><h2>${t.title}</h2><p${t.syl ? raw(' class="syl"') : ''}>${t.syl ? sylHtml(t.syl) : t.text}</p>${t.by ? html`<p class="by">${t.by}</p>` : ''}</div>`;
 export function screenRead() {
-  if (!Number.isInteger(state.run.node.text) || !TEXTE[state.run.node.text]) {
-    state.run.node.text = pick(textsFor(state.mode));
+  if (!Number.isInteger(state.run.node!.text) || !TEXTE[state.run.node!.text!]) {
+    state.run.node!.text = pick(textsFor(state.mode));
     saveAll();
   }
   const ask = () => {
@@ -624,7 +615,7 @@ export function screenRead() {
       atk: READ_FOE.atk,
       read: { q: 0, right: 0 },
     };
-    state.run.node.enemy = e;
+    state.run.node!.enemy = e;
     saveAll();
     renderBattle({
       enemy: e,

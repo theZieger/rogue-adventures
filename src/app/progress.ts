@@ -1,4 +1,4 @@
-import { MODES } from '../curriculum.ts';
+import { type Attack, MODES } from '../curriculum.ts';
 import { type Known, MK } from '../knowledge.ts';
 import { MQ, type Task } from '../logic.ts';
 import { MONART } from '../monsters.ts';
@@ -15,7 +15,7 @@ const shade = MONART.shade;
 
 /* ---------- Helpers ---------- */
 export const heroName = () => heroSpec().names[state.run.hero.evo];
-export const heroSpec = () => CFG().starters.find((s) => s.id === state.run.hero.id);
+export const heroSpec = () => CFG().starters.find((s) => s.id === state.run.hero.id)!;
 export const STATS = () => state.meta.stats[state.mode];
 export const tutKey = (k: string) => state.mode + ':' + k;
 export const typeChip = (t: string) =>
@@ -324,7 +324,7 @@ export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; ze
       t = MQ.BAU.generate(mod, tier);
       sig = t.sig;
     } else if (CFG().numGen) {
-      t = CFG().numGen(mod, tier, opts);
+      t = CFG().numGen!(mod, tier, opts);
       t.kind = t.kind || 'num';
       t.group = mod + ':' + t.tier;
       sig = t.text;
@@ -338,17 +338,14 @@ export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; ze
       });
       sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|');
     }
-    if (!rec.includes(sig)) break;
+    if (!rec.includes(sig!)) break;
   }
-  rec.push(sig);
+  rec.push(sig!);
   if (rec.length > 8) rec.shift();
-  return t;
+  return t!;
 }
 // switched-off task types are replaced by enabled ones the hero doesn't have yet
-export interface Attack {
-  name: string;
-  mod: string;
-}
+export type { Attack };
 export function heroAttacks(): Attack[] {
   const on = enabledMods();
   const used = state.run.hero.attacks.map((a: Attack) => a.mod).filter((k: string) => on.includes(k));

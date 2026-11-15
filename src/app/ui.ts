@@ -1,3 +1,4 @@
+import type { Note } from '../curriculum.ts';
 import { MQ, type Task, type Tutorial } from '../logic.ts';
 import { READ_MOD, READ_TUT } from './battle.ts';
 import { $, CFG, MODULES_OF, app } from './core.ts';
@@ -325,20 +326,14 @@ function tutFor(group: string): Tutorial & { icon: string } {
   const [mod, tier] = group.split(':');
   const nt = CFG().numTut;
   if (nt) return Object.assign({ icon: MODULES_OF()[mod].icon }, nt[mod][+tier] || nt[mod][1]);
-  const t = CFG().tut && CFG().tut[group];
+  const t = CFG().tut && CFG().tut![group];
   if (!t) return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]);
   const M = MODULES_OF()[mod];
   return Object.assign({ icon: M ? M.icon : '📖' }, t);
 }
-// a page of the child's notes (the unit's `notes`), shown under the tutorial and as a tip
-export interface Note {
-  title: string;
-  lines: string[];
-  fig?: string;
-}
 export function showTutorial(group: string, note?: string | null, onClose?: (() => void) | null, auto?: boolean) {
   const t = tutFor(group);
-  const n: Note | null = note && CFG().notes ? CFG().notes[note] : null;
+  const n: Note | null = note && CFG().notes ? CFG().notes![note] : null;
   const ov = modal(
     html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
     {

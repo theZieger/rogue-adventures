@@ -1,11 +1,12 @@
 import { MK } from '../knowledge.ts';
+import type { Note } from '../curriculum.ts';
 import { MQ, type Task } from '../logic.ts';
 import { MS } from '../sachkunde.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
 import { READ_MOD } from './battle.ts';
 import { $, CFG, MODULES_OF, app, arrow, esc, euro, reducedMotion } from './core.ts';
 import { state } from './state.ts';
-import { type Note, SFX, on, showTutorial } from './ui.ts';
+import { SFX, on, showTutorial } from './ui.ts';
 
 /* ---------- Task UI ---------- */
 const PLACES = ['Einer', 'Zehner', 'Hunderter', 'Tausender'];
@@ -419,7 +420,7 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
   // with two options crossing one out gives the answer away, so show the notes instead
   const strikeWrongOption = () => {
     if (task.options.length <= 2) {
-      const n: Note | null = task.note && CFG().notes ? CFG().notes[task.note] : null;
+      const n: Note | null = task.note && CFG().notes ? CFG().notes![task.note] : null;
       $('#fb', container).insertAdjacentHTML(
         'beforebegin',
         (task.tip

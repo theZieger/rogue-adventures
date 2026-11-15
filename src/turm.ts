@@ -105,6 +105,7 @@ export const TW = (() => {
     unit?: string;
     shields?: number[];
     part?: number;
+    fresh?: boolean; // set by src/app/turm.ts for the turn the monster arrives: new in the Monsterbuch
   }
 
   interface Lane {
@@ -121,6 +122,13 @@ export const TW = (() => {
     id: number;
     lane: number;
     again?: Again;
+    task?: Again['task']; // kept by src/app/turm.ts: the question as asked, so a reload asks the same one
+  }
+  // a unit's tasks in this run: its world, the level per task type, the last tasks per task type
+  interface Box {
+    world: number;
+    tiers: Record<string, number>;
+    recent: Record<string, string[]>;
   }
   type Phase = 'build' | 'choose' | 'task' | 'step' | 'reward' | 'won' | 'fallen';
   interface Turm {
@@ -128,7 +136,7 @@ export const TW = (() => {
     turn: number;
     phase: Phase;
     lanes: Lane[];
-    at: Record<string, unknown>; // per unit, kept by src/app/turm.ts
+    at: Record<string, Box>; // per unit, kept by src/app/turm.ts
     used: Record<string, number>; // questions asked per source (keyOf)
     monsters: Monster[];
     queue: Monster[];

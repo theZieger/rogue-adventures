@@ -68,7 +68,7 @@ export const turmSources = (subject: string, grade: number) => {
   for (const k of enabledMods(m)) if (seen.length < 2 && !seen.some((s) => s.m === m && s.k === k)) seen.push({ m, k });
   return seen;
 };
-export const turmHero = (h = state.run.hero) => MODES[h.m].starters.find((s) => s.id === h.id);
+export const turmHero = (h: HeroId = state.run.hero) => MODES[h.m].starters.find((s) => s.id === h.id)!;
 const laneAcc = (lane: Lane) => {
   let c = 0,
     t = 0;
@@ -126,7 +126,7 @@ export function startTurm(subjects: string[], hero: HeroId) {
 export function turmAsk(id?: number | null) {
   const t = state.run.turm;
   if (t.phase !== 'task' && !TW.ask(state.run, id!)) return null;
-  const a = t.asking;
+  const a = t.asking!;
   state.mode = a.m;
   turmBox(a.m);
   if (!a.task) {

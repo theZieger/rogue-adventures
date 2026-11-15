@@ -3,7 +3,7 @@ import { KEY_META, KEY_RUN_FOR, RENAMES, type TOP, clear, isObj, load, normMeta,
 import { ITEMS, esc } from './core.ts';
 import { NODE_INFO } from './map.ts';
 import { STATS } from './progress.ts';
-import { state } from './state.ts';
+import { type Adventure, state } from './state.ts';
 
 /* ---------- Storage ---------- */
 export type TopSlot = keyof typeof TOP;
@@ -89,7 +89,7 @@ export function endRun() {
   }
   save(KEY_META, state.meta);
 }
-export function loadRun(m: string) {
+export function loadRun(m: string): Adventure | null {
   const r = load(KEY_RUN_FOR(m), null);
   const ok =
     isObj(r) &&
@@ -143,5 +143,5 @@ export function loadRun(m: string) {
   if (isObj(r.node) && isObj(r.node.enemy) && RENAMES[r.node.enemy.name])
     r.node.enemy.name = RENAMES[r.node.enemy.name];
   r.mode = m;
-  return r;
+  return r as Adventure;
 }

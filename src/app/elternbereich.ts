@@ -1,7 +1,7 @@
 import { CURRICULUM, MODES, MODE_KEYS, SUBJECTS, type Subject } from '../curriculum.ts';
 import { ELTERN } from '../eltern.ts';
 import { MK } from '../knowledge.ts';
-import { MQ } from '../logic.ts';
+import { MQ, type Tutorial } from '../logic.ts';
 import { QR } from '../qr.ts';
 import { KEY_RUN_FOR, clear, defaultMeta } from '../save.ts';
 import { TW } from '../turm.ts';
@@ -248,7 +248,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
         .filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7)
         .map(([id, k]) => {
           const q = Object.values(MK.MODES)
-            .flatMap((c) => c.pool)
+            .flatMap((c) => c.pool!)
             .find((p) => p.id === id.replace('_find', ''));
           return q ? stat(q.q, `${k.c} von ${k.t}`) : '';
         })
@@ -578,7 +578,10 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
         const m = pAt.mode || curGrade().subjects[pAt.subj].modes[0];
         const k = b.dataset.info!;
         const M = MODES[m].modules[k];
-        const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
+        const tiers = Array.from({ length: M.maxTier }, (_, i): [number, Tutorial] => [
+          i + 1,
+          tutOf(m, k, i + 1),
+        ]).filter((x) => x[1]);
         const ov = modal(
           html`<h2>${M.icon} ${M.name}</h2><p>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => html`${tiers.length > 1 ? html`<h4>Stufe ${t}: ${x.title}</h4>` : ''}<ol>${x.steps.map((s: string) => html`<li>${s}</li>`)}</ol>`)}<button class="btn" id="ok" data-action="ok">Schließen</button>`,
           { ok: () => ov.remove() },
