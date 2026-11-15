@@ -22,7 +22,7 @@ export const K12E = (() => {
     WHITE = '#FFFFFF',
     PAPER = '#FFFDF5';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by pic and optPic)
-  const USED = new Set();
+  const USED = new Set<string>();
   const fl = (c) =>
     /^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c;
   const ln = (d, w?, c?) =>
@@ -255,14 +255,16 @@ export const K12E = (() => {
         sh('M50 27 L78 62 H22 Z', '#3DB36A') +
         sh('M50 13 L69 44 H31 Z', GREEN) +
         ln('M27 72 Q50 80 73 70 M33 54 Q50 60 66 52', 2, GOLD) +
-        [
-          [32, 76, RED],
-          [62, 74, BLUE],
-          [50, 57, GOLD],
-          [38, 50, BLUE],
-          [61, 38, RED],
-          [44, 34, GOLD],
-        ]
+        (
+          [
+            [32, 76, RED],
+            [62, 74, BLUE],
+            [50, 57, GOLD],
+            [38, 50, BLUE],
+            [61, 38, RED],
+            [44, 34, GOLD],
+          ] as [x: number, y: number, color: string][]
+        )
           .map(
             ([x, y, c]) =>
               circ(x, y, 4.5, c, 1.5) +
@@ -3545,7 +3547,7 @@ export const K12E = (() => {
     },
   ];
   const moodFits = (a, b) => a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
-  const BODY = [
+  const BODY: { id: string; noun: string; svg: string; word?: string }[] = [
     {
       id: 'klatschen',
       noun: 'Klatschen',
@@ -3643,8 +3645,8 @@ export const K12E = (() => {
       .join(''),
   }));
   const patWords = (id) => [...id].map((c, i) => (c === 'L' ? (i ? 'lang' : 'Lang') : i ? 'kurz' : 'Kurz')).join(', ');
-  const ORFF = ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel'].map((id) =>
-    INSTR.find((i) => i.id === id),
+  const ORFF = ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel'].map(
+    (id) => INSTR.find((i) => i.id === id)!,
   );
   const SPIEL1 = ORFF.concat(INSTR.filter((i) => i.id === 'gitarre'));
   // a way of playing is only offered as wrong if it is neither the instrument's own nor also possible (notHow)
@@ -3995,7 +3997,7 @@ export const K12E = (() => {
     }
     if (mod === 'gegen') {
       const x = pick(OPP),
-        y = OPP.find((o) => o.dim === x.dim && o !== x);
+        y = OPP.find((o) => o.dim === x.dim && o !== x)!;
       if (r < 0.5)
         return choice('gegen', 'gegensatz', x.tap, opt(x), [opt(y)], 'k1mgt_' + x.id, {
           svgOpts: true,
@@ -4056,7 +4058,7 @@ export const K12E = (() => {
     }
     if (mod === 'zeichen') {
       const s = pick(SIGNS),
-        y = SIGNS.find((o) => o.dim === s.dim && o !== s);
+        y = SIGNS.find((o) => o.dim === s.dim && o !== s)!;
       if (r < 0.35)
         return choice('zeichen', 'zeichen', s.tap, opt(s), [opt(y)], 'k1mzt_' + s.id, {
           svgOpts: true,

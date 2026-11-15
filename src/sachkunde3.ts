@@ -233,9 +233,9 @@ export const MS3 = (() => {
       .map(
         (a) =>
           `<path d="M${x} ${y} Q${x - r * 0.95} ${y - r * 0.5} ${x - r * 0.62} ${y - r * 1.05} Q${x} ${y - r * 1.4} ${x + r * 0.62} ${y - r * 1.05} Q${x + r * 0.95} ${y - r * 0.5} ${x} ${y} Z" fill="url(#flYe)" stroke="${OUT}" stroke-width=".8" transform="rotate(${a} ${x} ${y})"/>${shine(
-            ...pt(x, y, ((a - 105) * Math.PI) / 180, r * 0.82)
+            ...(pt(x, y, ((a - 105) * Math.PI) / 180, r * 0.82)
               .split(' ')
-              .map(Number),
+              .map(Number) as [x: number, y: number]),
             r * 0.22,
             r * 0.12,
             a,
@@ -499,7 +499,7 @@ export const MS3 = (() => {
     tap: 'die Stelle im Bild',
     ask: () => 'Wie heißt das leuchtende Stockwerk der Wiese?',
     find: (p) => `Tippe auf das Stockwerk: ${p.name}`,
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   const hit = (y, h) => `<rect class="hitarea" x="0" y="${y}" width="300" height="${h}" fill="transparent"/>`;
   // texture strokes sit in style="" so a glowing layer keeps them (the glow rule recolours stroke attributes only)
   const tex = (d, c, w, o?, dash?) =>
@@ -1269,7 +1269,7 @@ export const MS3 = (() => {
         if (tier >= 2 && Math.random() < 0.7) {
           const t = pick(TRAITS);
           const id = pick(t.has);
-          const ans = FLORA.find((p) => p.id === id);
+          const ans = FLORA.find((p) => p.id === id)!;
           const wrong = shuffle(FLORA.filter((p) => !t.has.includes(p.id) && !(t.skip || []).includes(p.id)))
             .slice(0, 2)
             .map((p) => p.name);

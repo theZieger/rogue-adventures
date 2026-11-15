@@ -19,7 +19,8 @@ export interface Backup {
 const b64 = (bin: string) => btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const viaStream = (bytes: BufferSource, stream: CompressionStream | DecompressionStream) =>
   new Response(new Response(bytes).body!.pipeThrough(stream));
-const canZip = (S: unknown) => typeof S === 'function' && typeof Response === 'function' && typeof TextEncoder === 'function';
+const canZip = (S: unknown) =>
+  typeof S === 'function' && typeof Response === 'function' && typeof TextEncoder === 'function';
 // a won adventure (and later a purchase) since the last export, which was more than 30 days ago
 export const backupDue = () =>
   !!state.meta.progressAt &&

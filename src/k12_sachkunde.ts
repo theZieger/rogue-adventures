@@ -1,6 +1,7 @@
 // Sachkunde Klasse 1 und 2 (Lehrplan Sachsen 2019, Sachunterricht Kl. 1/2): Mein Körper, Durch das Jahr (Klasse 1),
 // Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (Klasse 2). Units register in MK.MODES like sachkunde3.ts;
 // hero and opponents come from the shared set K12.SETS.sachkunde, the tap-a-part pictures go into MS.PLANTS.
+import type { Unit } from './curriculum.ts';
 import { MK as K } from './knowledge.ts';
 import { K12 as S12 } from './klasse12.ts';
 import { MS as S, type PartsPicture } from './sachkunde.ts';
@@ -28,7 +29,7 @@ export const MSK12 = (() => {
       attacks,
       Object.assign(o, {
         subject: 'Sachkunde',
-        extra: Object.fromEntries(Object.entries(o.modules).map(([k, m]) => [k, m.atk])),
+        extra: Object.fromEntries(Object.entries(o.modules as Unit['modules']).map(([k, m]) => [k, m.atk])),
       }),
     );
   const mod = (name, icon, atk, dmg, maxTier?) => ({
@@ -243,7 +244,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Körperteil?',
     tap: 'den Körperteil',
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   BODY.svg = (opts) =>
     partsSVG(
       BODY,
@@ -327,7 +328,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil des Gesichts?',
     tap: 'den Teil im Gesicht',
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   FACE.svg = (opts) =>
     partsSVG(
       FACE,
@@ -1532,7 +1533,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil des Baumes?',
     tap: 'den Teil des Baumes',
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   const BLOBS = [
     [130, 92, 62],
     [82, 104, 40],
@@ -1622,7 +1623,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil der Pflanze?',
     tap: 'den Teil der Pflanze',
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   const trio = (x, y, rot, s) =>
     at(
       x,
@@ -3391,7 +3392,7 @@ export const MSK12 = (() => {
         if (tier >= 2 && r < 0.6) {
           const t = pick(BIRD_TRAITS),
             id = pick(t.has),
-            ans = BIRDS.find((b) => b.id === id);
+            ans = BIRDS.find((b) => b.id === id)!;
           return choice(
             m,
             'vogel',

@@ -3,7 +3,17 @@
 // Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
 // grade: 1 or 2 marks a short text with two questions for Klasse 1 (8–30 words) or 2 (20–60 words); without it, Klasse 3.
 // Klasse-1 texts mark Sprechsilben with · (Son·ne) for the two-colour syllable display; text itself stays plain.
-export const TEXTE = [
+interface ReadingText {
+  id: string;
+  kind: string;
+  title: string;
+  by?: string;
+  grade?: number;
+  text: string;
+  syl?: string; // the text with its · marks, set below
+  qs: { q: string; o: string[]; a: number }[];
+}
+export const TEXTE: ReadingText[] = [
   {
     id: 'rabe',
     kind: 'Fabel',

@@ -20,7 +20,7 @@ const K3 = /ck|tz/i;
 // task.say replaces the question, task.quiet leaves out the options
 const SPOKEN = fs
   .readFileSync(path.join(import.meta.dirname, '../src/app/tasks.ts'), 'utf8')
-  .match(/function readAloud[\s\S]*?querySelectorAll\('([^']+)'\)/)[1];
+  .match(/function readAloud[\s\S]*?querySelectorAll(?:<\w+>)?\('([^']+)'\)/)[1];
 const dom = new JSDOM('').window.document;
 const spoken = (cfg, q) => {
   const box = dom.createElement('div');

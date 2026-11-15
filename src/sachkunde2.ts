@@ -67,7 +67,7 @@ export const MS2 = (() => {
     ],
     ask: () => 'Wie heißt der leuchtende Teil des Auges?',
     find: (p) => `Tippe auf: ${p.name}`,
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   // points on the edges of the eye opening: quadratic curves from 60|110 over 150|cy to 240|110 (cy 44 above, 170 below)
   const lidAt = (t, cy) => [
     (1 - t) ** 2 * 60 + 2 * t * (1 - t) * 150 + t * t * 240,
@@ -206,7 +206,7 @@ export const MS2 = (() => {
     ],
     ask: () => 'Wie heißt der leuchtende Teil des Ohrs?',
     find: (p) => `Tippe auf: ${p.name}`,
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   // the cochlea: two turns spiralling in from the oval window (left) to its tip
   const COCHLEA = Array.from({ length: 49 }, (_, i) => {
     const a = Math.PI + (i * Math.PI) / 12,
@@ -1361,7 +1361,7 @@ export const MS2 = (() => {
   const BIKE = (c, w?) =>
     `<g ${LINE(c, w || 4.5)}><circle cx="30" cy="61" r="13"/><circle cx="70" cy="61" r="13"/><path d="M30 61 L47 61 L41 41 M30 61 L42.2 45 L64.4 45 M47 61 L64 45 M70 61 L62 38 L58 33 M62 38 L69 36 M36 39 L47 39"/></g>`;
   const SANS = 'style="font-family:\'Arial Narrow\',Arial,Helvetica,sans-serif"';
-  const SIGN_ART = {
+  const SIGN_ART: Record<string, string> = {
     stopp: sign(
       OCT(48),
       OCT(43.5),
@@ -1436,7 +1436,7 @@ export const MS2 = (() => {
     ),
   };
   // traffic light; the lit lamp glows, the others stay dark
-  const LAMPS = [
+  const LAMPS: [key: string, color: string, y: number][] = [
     ['rot', '#FF5A4E', 20],
     ['gelb', '#FFD23A', 50],
     ['gruen', '#3FD27A', 80],
@@ -1729,7 +1729,7 @@ export const MS2 = (() => {
     ],
     ask: () => 'Wie heißt der leuchtende Teil am Fahrrad?',
     find: (p) => `Tippe auf: ${p.name}`,
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   BIKEP.svg = (opts) =>
     partsSVG(
       BIKEP,

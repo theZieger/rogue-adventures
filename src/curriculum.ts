@@ -2,7 +2,7 @@
 // their subjects and units.
 import { UNITS } from './units.ts';
 
-// biome-ignore lint/suspicious/noExplicitAny: the unit files are not typed yet; each field gets its type with them
+// the unit files are not typed yet; each field gets its type with them
 type Untyped = any;
 export interface TaskType {
   name: string;

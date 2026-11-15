@@ -33,7 +33,7 @@ export const K12D = (() => {
   const O = '#1C2541';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
   const { tone } = S;
-  const USED = new Set();
+  const USED = new Set<string>();
   const fl = (c) => {
     const h = c.length === 4 ? '#' + [...c.slice(1)].map((x) => x + x).join('') : c;
     if (!/^#[0-9A-F]{6}$/i.test(h) || h === O) return c;
@@ -571,7 +571,7 @@ export const K12D = (() => {
   // wrong pictures for a word: preferably the same first letter or a similar length, so the whole word must be read
   const lookalikes = (id) =>
     PIC_IDS.filter((x) => x !== id)
-      .map((x) => [
+      .map((x): [id: string, likeness: number] => [
         x,
         (first(x) === first(id) ? 2 : 0) +
           (Math.abs(PICS[x].w.length - PICS[id].w.length) <= 1 ? 1 : 0) +
@@ -756,7 +756,7 @@ export const K12D = (() => {
         pair.map((id) => ({
           id: 'l1rb_' + id,
           make: (qid) => {
-            const partner = pair.find((x) => x !== id);
+            const partner = pair.find((x) => x !== id)!;
             const wrong = others(
               PIC_IDS,
               PIC_REIME.find((x) => x.includes(id)),
@@ -1475,7 +1475,7 @@ export const K12D = (() => {
     }),
   );
   GROSS.forEach(([s, k]) => {
-    const word = s.match(/\[(.+?)\]/)[1];
+    const word = s.match(/\[(.+?)\]/)![1];
     const ok = s.replace(`[${word}]`, word);
     S2_POOL.push({
       id: 's2gs_' + ok,
@@ -1932,7 +1932,7 @@ export const K12D = (() => {
   const art = (w) => w.split(' ')[0],
     noun = (w) => w.split(' ')[1];
   // [Wortstamm, Wort, Familie (3+), ähnlich aussehende Wörter aus anderen Familien]
-  const FAMILIEN = [
+  const FAMILIEN: [stem: string, word: string, family: string[], others: string[]][] = [
     ['fahr', 'fahren', ['das Fahrrad', 'der Fahrer', 'abfahren'], ['die Farbe', 'fallen']],
     ['spiel', 'spielen', ['der Spieler', 'das Spielzeug', 'mitspielen'], ['die Spinne', 'der Spiegel']],
     ['mal', 'malen', ['der Maler', 'der Malstift', 'bemalen'], ['der Mantel', 'die Maus']],

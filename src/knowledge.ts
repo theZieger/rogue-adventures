@@ -1,6 +1,27 @@
 import { MW as W } from './woerter.ts';
 import { ENG as E } from './english.ts';
 import type { Unit } from './curriculum.ts';
+
+// one entry of a unit's pool: g = topic, a = true/false, the index of the right option in o, or the answer itself
+export interface Question {
+  id: string;
+  mod: string;
+  g: string;
+  q: string;
+  o?: string[];
+  a: boolean | number | string;
+  why?: string;
+  w?: number; // world, missing = 1
+  t?: number; // 2 = a harder question of its module
+  rf?: boolean;
+  part?: string;
+  plant?: string;
+  tip?: string;
+  more?: string;
+  inline?: boolean;
+  en?: string[];
+  english?: string[];
+}
 export const MK = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -64,25 +85,6 @@ export const MK = (() => {
     },
     { id: 'o8', text: 'Die Kirche spaltet sich in katholisch und evangelisch' },
   ];
-  // one entry of a unit's pool: g = topic, a = true/false, the index of the right option in o, or the answer itself
-  interface Question {
-    id: string;
-    mod: string;
-    g: string;
-    q: string;
-    o?: string[];
-    a: boolean | number | string;
-    why?: string;
-    w?: number; // world, missing = 1
-    t?: number; // 2 = a harder question of its module
-    rf?: boolean;
-    part?: string;
-    tip?: string;
-    more?: string;
-    inline?: boolean;
-    en?: string[];
-    english?: string[];
-  }
   // mod: rf = Richtig/Falsch, mc = Wähle aus, lt = Lückentext, def = Begriffe, ord = Reihenfolge
   const L_POOL: Question[] = [
     // Richtig / Falsch

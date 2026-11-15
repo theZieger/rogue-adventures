@@ -6,5 +6,6 @@ parameter without a type is still allowed, because the content and screen files 
 and annotating thousands of parameters by hand would have added noise before it added safety. What is fully typed
 today is the save (`Meta` in `src/save.ts`), the curriculum, the save code, the QR code and the shape of the
 shared state. Known gaps, each named where it lives: the running adventure (`Run` in `src/app/state.ts`) and the
-unit files' fields (`Untyped` in `src/curriculum.ts`) are `any`, and `$()` promises an element that a screen has just
+unit files' fields (`Untyped` in `src/curriculum.ts`) are `any`, about sixty lists and records that start empty are
+`any[]` or `Record<string, any>`, and `$()` promises an element that a screen has just
 rendered. The next step is to switch `noImplicitAny` on, file by file.

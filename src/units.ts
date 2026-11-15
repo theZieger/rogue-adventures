@@ -16,4 +16,6 @@ import { MK } from './knowledge.ts';
 import { MQ } from './logic.ts';
 import type { Unit } from './curriculum.ts';
 
-export const UNITS = { math: MQ.MODE, bau: (MQ.BAU as typeof MQ.BAU & { MODE: Unit }).MODE, jahrmarkt: MJ.MODE, ...MK.MODES };
+// logic.ts adds MODE to BAU after the literal
+type Bau = typeof MQ.BAU & { MODE: Unit };
+export const UNITS = { math: MQ.MODE, bau: (MQ.BAU as Bau).MODE, jahrmarkt: MJ.MODE, ...MK.MODES };

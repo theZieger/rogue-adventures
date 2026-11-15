@@ -390,7 +390,7 @@ export const MU = (() => {
     { id: 'tango', name: 'Tango', land: 'Argentinien' },
     { id: 'sirtaki', name: 'Sirtaki', land: 'Griechenland' },
   ];
-  const LANDS = WORLD.concat(DANCES).map((x) => x.land);
+  const LANDS = (WORLD as { land: string }[]).concat(DANCES).map((x) => x.land);
 
   /* ---------- Notizkarten ---------- */
   // fig: a drawing under the lines (generated markup)
@@ -426,7 +426,7 @@ export const MU = (() => {
     'Notensystem mit den Tönen c, d, e, f, g, a, h, c',
     360,
   );
-  const NOTES = {
+  const NOTES: Record<string, { title: string; fig?: string; lines: string[] }> = {
     notenwerte: {
       title: 'Notenwerte',
       fig: tableFig,

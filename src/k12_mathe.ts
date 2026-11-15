@@ -838,28 +838,31 @@ import { MQ as Q } from './logic.ts';
     );
   const SOLIDS = { wuerfel: ['Würfel', 'den'], quader: ['Quader', 'den'], kugel: ['Kugel', 'die'] };
   // isometric view like Die Baustelle (src/logic.ts): x to the right, y to the front, z up; faces top, front, right
+  type Corner = [x: number, y: number, z: number];
   const iso = (x, y, z, k) => `${((x - y) * 12 * k).toFixed(1)} ${((x + y) * 7 * k - z * 14 * k).toFixed(1)}`;
   const box = (x, y, z, dx, dy, dz, k, fills, cls?) =>
-    [
+    (
       [
-        [x, y, z + dz],
-        [x + dx, y, z + dz],
-        [x + dx, y + dy, z + dz],
-        [x, y + dy, z + dz],
-      ],
-      [
-        [x, y + dy, z],
-        [x + dx, y + dy, z],
-        [x + dx, y + dy, z + dz],
-        [x, y + dy, z + dz],
-      ],
-      [
-        [x + dx, y, z],
-        [x + dx, y + dy, z],
-        [x + dx, y + dy, z + dz],
-        [x + dx, y, z + dz],
-      ],
-    ]
+        [
+          [x, y, z + dz],
+          [x + dx, y, z + dz],
+          [x + dx, y + dy, z + dz],
+          [x, y + dy, z + dz],
+        ],
+        [
+          [x, y + dy, z],
+          [x + dx, y + dy, z],
+          [x + dx, y + dy, z + dz],
+          [x, y + dy, z + dz],
+        ],
+        [
+          [x + dx, y, z],
+          [x + dx, y + dy, z],
+          [x + dx, y + dy, z + dz],
+          [x + dx, y, z + dz],
+        ],
+      ] as Corner[][]
+    )
       .map(
         (f, i) =>
           `<polygon${i === 1 && cls ? ` class="${cls}"` : ''} points="${f.map((p) => iso(...p, k)).join(' ')}" fill="${fl(fills[i])}" stroke="${OUT}" stroke-width="${k > 1 ? 2 : 1.5}" stroke-linejoin="round"/>`,
@@ -3005,19 +3008,19 @@ import { MQ as Q } from './logic.ts';
   function solidMarkSVG(quader, mark?) {
     const [dx, dy, dz, k] = quader ? [2, 1, 1.2, 2.2] : [1, 1, 1, 3],
       P = (x, y, z) => iso(x * dx, y * dy, z * dz, k);
-    const top = [
+    const top: Corner[] = [
         [0, 0, 1],
         [1, 0, 1],
         [1, 1, 1],
         [0, 1, 1],
       ],
-      front = [
+      front: Corner[] = [
         [0, 1, 0],
         [1, 1, 0],
         [1, 1, 1],
         [0, 1, 1],
       ],
-      right = [
+      right: Corner[] = [
         [1, 0, 0],
         [1, 1, 0],
         [1, 1, 1],
@@ -3026,7 +3029,7 @@ import { MQ as Q } from './logic.ts';
     let m = '';
     if (mark === 'Ecke') {
       const [x, y] = P(
-        ...pick([
+        ...(pick([
           [0, 0, 1],
           [1, 0, 1],
           [0, 1, 1],
@@ -3034,12 +3037,12 @@ import { MQ as Q } from './logic.ts';
           [0, 1, 0],
           [1, 1, 0],
           [1, 0, 0],
-        ]),
+        ]) as Corner),
       ).split(' ');
       m = `<circle class="mark" cx="${x}" cy="${y}" r="6" fill="${RED}" stroke="${OUT}" stroke-width="1.5"/>`;
     }
     if (mark === 'Kante') {
-      const [p, q] = pick([
+      const [p, q]: Corner[] = pick([
         [
           [0, 0, 1],
           [1, 0, 1],
@@ -3081,7 +3084,7 @@ import { MQ as Q } from './logic.ts';
     }
     if (mark === 'Fläche')
       m = `<polygon class="mark" points="${pick([top, front, right])
-        .map((p) => P(...p))
+        .map((p: Corner) => P(...p))
         .join(' ')}" fill="${RED}" stroke="${OUT}" stroke-width="2" stroke-linejoin="round"/>`;
     const w = (dx + dy) * 12 * k,
       hgt = ((dx + dy) * 7 + dz * 14) * k;

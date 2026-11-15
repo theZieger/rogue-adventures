@@ -3,8 +3,7 @@
 import { KEY_META, load, type Meta, normMeta } from '../save.ts';
 
 // The running adventure or Turmwacht. Screens that belong to one rely on it being there; it is null on the title.
-// Its shape is still only written down in the code that builds it (startRun, startTurm).
-// biome-ignore lint/suspicious/noExplicitAny: typed when the adventure's rules leave the screens
+// Its shape is still only written down in the code that builds it (startRun, startTurm), so it is not typed yet.
 export type Run = any;
 
 interface State {

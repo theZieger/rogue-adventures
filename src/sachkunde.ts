@@ -1,7 +1,7 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
 // Registers its units in MK.MODES; src/units.ts picks them up from there.
 import type { Unit } from './curriculum.ts';
-import { MK as K } from './knowledge.ts';
+import { MK as K, type Question } from './knowledge.ts';
 
 // a picture whose parts the child names or taps (MS.PLANTS)
 export interface PartsPicture {
@@ -16,7 +16,7 @@ export interface PartsPicture {
   tap?: string;
   ask: (part?) => string;
   find: (part) => string;
-  svg: (opts?) => string; // added after the literal, because it draws from the picture itself
+  svg: (opts?) => string; // set after the literal (hence the Omit there): it draws from the picture itself
 }
 export const MS = (() => {
   const { shuffle, pick, rnd, weightedPick } = K;
@@ -126,7 +126,7 @@ export const MS = (() => {
     ask: () => 'Wie heißt der leuchtende Teil?',
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil der Getreidepflanze?',
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   const grainSpike = (g) => {
     let k = '',
       a = '';
@@ -209,7 +209,7 @@ export const MS = (() => {
     find: (p) => `Tippe auf die Stelle: ${p.name}`,
     poolQ: 'Was passiert an dieser Stelle im Wasserkreislauf?',
     tap: 'die Stelle im Bild',
-  } as PartsPicture;
+  } as Omit<PartsPicture, 'svg'> as PartsPicture;
   CYCLE.svg = (opts) =>
     partsSVG(
       CYCLE,
@@ -239,7 +239,7 @@ export const MS = (() => {
     const e = weightedPick(cands, know, seq);
     plantKey = e.plant || plantKey;
     const P = PLANTS[plantKey];
-    const part = P.parts.find((p) => p.id === e.part);
+    const part = P.parts.find((p) => p.id === e.part)!;
     if (tier >= 2)
       return {
         kind: 'parts-find',
@@ -273,14 +273,14 @@ export const MS = (() => {
       qid: e.id,
     };
   }
-  const partPool = (plantKey, mod, g, prefix) =>
+  const partPool = (plantKey, mod, g, prefix): Question[] =>
     PLANTS[plantKey].parts.map((p) => ({
       id: prefix + p.id,
       mod,
       g,
       part: p.id,
       plant: plantKey,
-      q: PLANTS[plantKey].poolQ,
+      q: PLANTS[plantKey].poolQ!,
       a: p.name,
     }));
   // the topic filter (events) asks the pool; generated pictures only without a topic
@@ -2163,7 +2163,7 @@ export const MS = (() => {
     SIDE = ['NO', 'SO', 'SW', 'NW'],
     CLOCK = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
   const SIZE = 5;
-  const inGrid = ([r, c]) => r >= 0 && r < SIZE && c >= 0 && c < SIZE;
+  const inGrid = ([r, c]: number[]) => r >= 0 && r < SIZE && c >= 0 && c < SIZE;
   function karteTarget(start, steps) {
     let [r, c] = start;
     for (const s of steps) {
