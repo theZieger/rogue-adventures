@@ -25,13 +25,13 @@
   grid-template-columns: 48px 1fr 48px 1fr;
   grid-template-rows: auto;
   grid-template-areas: "hsprite hplate esprite eplate";
-  gap: 6px;
-  padding: 4px 14px 2px;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-14) var(--space-2);
   align-items: center;
 }
 .screen.tasking .plate {
-  padding: 3px 8px;
-  gap: 1px;
+  padding: var(--space-3) var(--space-8);
+  gap: var(--space-1);
   border-width: 2px;
   box-shadow: none;
 }
@@ -39,7 +39,7 @@
   align-self: center;
 }
 .screen.tasking .plate .name {
-  font-size: 15px;
+  font-size: var(--text-15);
 }
 .screen.tasking .plate .hptext,
 .screen.tasking .plateline,
@@ -60,13 +60,13 @@
 @media (max-height: 720px) {
   .atk {
     min-height: 76px;
-    padding: 6px 10px;
+    padding: var(--space-6) var(--space-10);
   }
   .atk .n {
-    font-size: 20px;
+    font-size: var(--text-20);
   }
   .atk .m {
-    font-size: 13px;
+    font-size: var(--text-13);
   }
   .atk .tags {
     min-height: 0;
@@ -81,47 +81,47 @@
   }
   .log {
     min-height: 40px;
-    font-size: 20px;
-    padding: 6px 12px;
-    margin: 4px 14px 6px;
+    font-size: var(--text-20);
+    padding: var(--space-6) var(--space-12);
+    margin: var(--space-4) var(--space-14) var(--space-6);
   }
   .numpad {
-    gap: 6px;
+    gap: var(--space-6);
   }
   .numpad button {
     min-height: 48px;
-    font-size: 24px;
+    font-size: var(--text-24);
   }
   .task {
-    padding: 10px 14px;
+    padding: var(--space-10) var(--space-14);
   }
   .task .expr {
-    font-size: 34px;
-    margin: 4px 0 2px;
+    font-size: var(--text-34);
+    margin: var(--space-4) 0 var(--space-2);
   }
   .task .seq {
-    font-size: 28px;
-    margin: 4px 0 2px;
+    font-size: var(--text-28);
+    margin: var(--space-4) 0 var(--space-2);
   }
   .inp {
     height: 54px;
-    font-size: 30px;
+    font-size: var(--text-30);
   }
   .inputs {
-    margin: 6px 0 2px;
+    margin: var(--space-6) 0 var(--space-2);
   }
   .taskwrap {
-    padding: 6px 12px;
+    padding: var(--space-6) var(--space-12);
   }
 }
 @media (max-height: 600px) {
   .numpad button {
     min-height: 42px;
-    font-size: 22px;
+    font-size: var(--text-22);
   }
   .bottom {
-    padding: 6px 10px;
-    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+    padding: var(--space-6) var(--space-10);
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   }
   .sprite.hero .mon {
     width: 96px;
@@ -133,12 +133,12 @@
   }
   .atk {
     min-height: 70px;
-    padding: 6px 10px;
+    padding: var(--space-6) var(--space-10);
   }
   .log {
     min-height: 36px;
-    font-size: 19px;
-    padding: 5px 10px;
+    font-size: var(--text-19);
+    padding: var(--space-5) var(--space-10);
   }
 }
 /* Phone held sideways: arena as one row, task and keypad side by side */
@@ -148,8 +148,8 @@
     grid-template-columns: 48px 1fr 48px 1fr;
     grid-template-rows: auto;
     grid-template-areas: "hsprite hplate esprite eplate";
-    gap: 8px;
-    padding: 4px 14px 0;
+    gap: var(--space-8);
+    padding: var(--space-4) var(--space-14) 0;
     align-items: center;
   }
   .sprite .mon {
@@ -160,11 +160,11 @@
     display: none;
   }
   .plate {
-    padding: 3px 8px;
-    gap: 1px;
+    padding: var(--space-3) var(--space-8);
+    gap: var(--space-1);
   }
   .plate .name {
-    font-size: 16px;
+    font-size: var(--text-16);
   }
   .plateline,
   .plate .xpbar {
@@ -174,39 +174,39 @@
     height: 10px;
   }
   .plate .hptext {
-    font-size: 12px;
+    font-size: var(--text-12);
   }
   .log {
     min-height: 32px;
-    font-size: 18px;
-    padding: 4px 10px;
-    margin: 4px 14px;
+    font-size: var(--text-18);
+    padding: var(--space-4) var(--space-10);
+    margin: var(--space-4) var(--space-14);
   }
   .attacks {
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: var(--space-8);
   }
   .atk {
     min-height: 54px;
-    padding: 4px 8px;
+    padding: var(--space-4) var(--space-8);
   }
   .atk .n {
-    font-size: 18px;
+    font-size: var(--text-18);
   }
   .atk .m {
-    font-size: 12px;
+    font-size: var(--text-12);
   }
   .atk .tags {
     min-height: 0;
   }
   .bottom {
-    padding-top: 6px;
+    padding-top: var(--space-6);
   }
   .bottom .row .muted {
     display: none;
   }
   .bottom .row {
-    margin-top: 6px !important;
+    margin-top: var(--space-6) !important;
   }
   .screen.tasking {
     display: grid;

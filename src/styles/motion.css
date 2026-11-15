@@ -36,7 +36,7 @@
   position: fixed;
   transform: translateX(-50%);
   font-family: var(--hand);
-  font-size: 36px;
+  font-size: var(--text-36);
   color: var(--white);
   text-shadow:
     0 2px 0 var(--ink),
@@ -47,7 +47,7 @@
 }
 .floatnum.crit {
   color: var(--gold);
-  font-size: 32px;
+  font-size: var(--text-32);
 }
 @keyframes floatUp {
   0% {
@@ -113,7 +113,7 @@
   left: var(--x);
   width: 9px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: var(--radius-3);
   background: var(--c);
   opacity: 0;
   animation: fall 2.6s ease-in var(--d) 1 forwards;
@@ -165,28 +165,28 @@
 }
 
 .advantage {
-  font-size: 13px;
+  font-size: var(--text-13);
   font-weight: 700;
   background: var(--green-130);
   color: var(--green-760);
-  border-radius: 999px;
-  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-8);
   line-height: 20px;
 }
 @media (max-height: 720px) {
   .grid {
     grid-template-columns: repeat(3, 52px);
-    gap: 5px;
-    margin: 6px 0;
+    gap: var(--space-5);
+    margin: var(--space-6) 0;
   }
   .grid div {
     width: 52px;
     height: 52px;
-    font-size: 20px;
+    font-size: var(--text-20);
   }
   .legend {
-    font-size: 13px;
-    gap: 6px;
+    font-size: var(--text-13);
+    gap: var(--space-6);
   }
 }
 @media (max-height: 720px) and (min-width: 500px) {
@@ -201,7 +201,7 @@
 
 .fbmsg {
   min-height: 1em;
-  margin: 6px 0 0;
+  margin: var(--space-6) 0 0;
   font-weight: 700;
   color: var(--ink);
 }

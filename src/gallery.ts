@@ -12,11 +12,15 @@ interface Token {
 
 function tokens(): Token[] {
   const found: Token[] = [];
-  for (const sheet of document.styleSheets)
-    for (const rule of sheet.cssRules)
-      if (rule instanceof CSSStyleRule && rule.selectorText === ':root')
+  const collect = (rules: CSSRuleList) => {
+    for (const rule of rules) {
+      if (rule instanceof CSSLayerBlockRule) collect(rule.cssRules);
+      else if (rule instanceof CSSStyleRule && rule.selectorText === ':root')
         for (const name of rule.style)
           if (name.startsWith('--')) found.push({ name, value: rule.style.getPropertyValue(name).trim() });
+    }
+  };
+  for (const sheet of document.styleSheets) collect(sheet.cssRules);
   return found;
 }
 
@@ -30,6 +34,20 @@ const all = tokens();
 const palette = all.filter((token) => token.value.startsWith('#'));
 const purposes = all.filter((token) => isColour(token) && !token.value.startsWith('#'));
 
+const sizes = (kind: string) => all.filter((token) => token.name.startsWith(`--${kind}-`));
+const TEXT_SIZES = sizes('text')
+  .map(({ name, value }) => `<li style="font-size:var(${name})">Aa <code>${name}</code> <small>${value}</small></li>`)
+  .join('');
+const RADII = sizes('radius')
+  .map(
+    ({ name, value }) =>
+      `<li><i style="border-radius:var(${name})"></i><code>${name}</code><small>${value}</small></li>`,
+  )
+  .join('');
+const SPACES = sizes('space')
+  .map(({ name, value }) => `<li><i style="width:var(${name})"></i><code>${name}</code><small>${value}</small></li>`)
+  .join('');
+
 const BUTTONS = ['btn', 'btn secondary', 'btn ghost', 'btn small', 'btn small secondary', 'btn small danger']
   .map((cls) => `<button class="${cls}">${cls.replace('btn', '').trim() || 'primary'}</button>`)
   .join('');
@@ -38,6 +56,9 @@ app.innerHTML = `<div class="gallery">
 ${topbar('Lernquest Design', '<span class="muted">Welt 1 · Etage 1</span>')}
 ${section('Farben: Palette', `<ul class="swatches">${palette.map(swatch).join('')}</ul>`)}
 ${section('Farben: Wofür', `<ul class="swatches">${purposes.map(swatch).join('')}</ul>`)}
+${section('Größen: Schrift', `<ul class="sizes">${TEXT_SIZES}</ul>`)}
+${section('Größen: Ecken', `<ul class="swatches corners">${RADII}</ul>`)}
+${section('Größen: Abstände', `<ul class="swatches spaces">${SPACES}</ul>`)}
 ${section(
   'Schrift',
   onCard(

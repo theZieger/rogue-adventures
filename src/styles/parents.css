@@ -10,15 +10,15 @@
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-6);
   min-height: 46px;
-  padding: 0 14px;
-  border-radius: 999px;
+  padding: 0 var(--space-14);
+  border-radius: var(--radius-pill);
   border: 2px solid rgba(255, 255, 255, 0.45);
   background: rgba(255, 255, 255, 0.08);
   color: var(--paper-ink);
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-17);
   cursor: pointer;
 }
 .parentbtn .gear {
@@ -26,17 +26,17 @@
   height: 20px;
 }
 .setup .hero h1 {
-  font-size: 40px;
+  font-size: var(--text-40);
 }
 .setup .card p {
-  margin: 6px 0;
+  margin: var(--space-6) 0;
 }
 .ptag {
   font: 700 12px / 1 var(--font-body, inherit);
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 3px 8px;
-  border-radius: 999px;
+  padding: var(--space-3) var(--space-8);
+  border-radius: var(--radius-pill);
   background: var(--gold);
   color: var(--navy-800);
   vertical-align: middle;
@@ -44,20 +44,20 @@
 }
 .hintsmall,
 .pnote {
-  font-size: 15px;
+  font-size: var(--text-15);
   color: var(--ink-soft);
-  margin: 4px 0 8px;
+  margin: var(--space-4) 0 var(--space-8);
 }
 .hintsmall {
-  margin-top: 12px;
+  margin-top: var(--space-12);
 }
 .warncard {
   position: relative;
   border: 3px solid var(--gold);
 }
 .warncard p {
-  margin: 0 34px 10px 0;
-  font-size: 17px;
+  margin: 0 var(--space-34) var(--space-10) 0;
+  font-size: var(--text-17);
 }
 .warnx {
   position: absolute;
@@ -69,26 +69,26 @@
   border-radius: 50%;
   background: transparent;
   color: var(--ink);
-  font-size: 20px;
+  font-size: var(--text-20);
   cursor: pointer;
 }
 .codecard {
   text-align: center;
 }
 .codecard p {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-10);
   font-weight: 700;
 }
 .codetask {
-  font-size: 38px;
+  font-size: var(--text-38);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  margin: 4px 0 10px;
+  margin: var(--space-4) 0 var(--space-10);
 }
 .codeval {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: var(--space-14);
   min-height: 64px;
   align-items: center;
 }
@@ -105,9 +105,9 @@
   margin: 0 auto;
   width: 140px;
   border: 4px solid var(--blue);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
   background: var(--white);
-  font-size: 34px;
+  font-size: var(--text-34);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -123,9 +123,9 @@
   background: none;
   color: var(--ink);
   text-decoration: underline;
-  font-size: 17px;
+  font-size: var(--text-17);
   min-height: 44px;
-  padding: 0 8px;
+  padding: 0 var(--space-8);
   cursor: pointer;
 }
 .numpad button:disabled {
@@ -166,15 +166,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-2);
   min-height: 62px;
-  padding: 8px 4px 4px;
+  padding: var(--space-8) var(--space-4) var(--space-4);
   border: 0;
   border-bottom: 4px solid transparent;
   background: none;
   color: rgba(255, 255, 255, 0.75);
   font: inherit;
-  font-size: 15px;
+  font-size: var(--text-15);
   font-weight: 700;
   cursor: pointer;
 }
@@ -184,21 +184,21 @@
 }
 .psubtabs {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 16px;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-16);
   background: rgba(255, 255, 255, 0.1);
 }
 .psubtabs button {
   flex: 1;
   min-height: 44px;
-  padding: 4px 6px;
+  padding: var(--space-4) var(--space-6);
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   background: none;
   color: var(--paper-ink);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--text-16);
   font-weight: 700;
   cursor: pointer;
 }
@@ -208,22 +208,22 @@
 }
 .pchips {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   overflow-x: auto;
   margin: 0 -16px;
-  padding: 2px 16px 6px;
+  padding: var(--space-2) var(--space-16) var(--space-6);
   flex: none;
 }
 .pchips button {
   flex: none;
   min-height: 44px;
-  padding: 4px 14px;
-  border-radius: 999px;
+  padding: var(--space-4) var(--space-14);
+  border-radius: var(--radius-pill);
   border: 2px solid rgba(255, 255, 255, 0.4);
   background: none;
   color: var(--paper-ink);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--text-16);
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -239,22 +239,22 @@
 .pback {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
   align-self: flex-start;
   min-height: 44px;
   margin: -4px 0;
-  padding: 0 12px 0 0;
+  padding: 0 var(--space-12) 0 0;
   border: 0;
   background: none;
   color: var(--paper-ink);
   font: inherit;
-  font-size: 17px;
+  font-size: var(--text-17);
   font-weight: 700;
   cursor: pointer;
 }
 .pcard h3 {
-  margin: 0 0 8px;
-  font-size: 20px;
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-20);
   line-height: 1.25;
 }
 .pcard h3 + .prow,
@@ -264,36 +264,36 @@
   padding-top: 0;
 }
 .pcard > p {
-  margin: 0 0 8px;
-  font-size: 17px;
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-17);
 }
 .pcard > :last-child {
   margin-bottom: 0;
   padding-bottom: 0;
 }
 .pcard .plead {
-  font-size: 19px;
+  font-size: var(--text-19);
   font-weight: 700;
 }
 .pcard .pplan {
-  font-size: 15px;
+  font-size: var(--text-15);
   color: var(--ink-soft);
 }
 .plist {
-  margin: 0 0 8px;
-  padding-left: 22px;
-  font-size: 17px;
+  margin: 0 0 var(--space-8);
+  padding-left: var(--space-22);
+  font-size: var(--text-17);
 }
 .plist li {
-  margin: 4px 0;
+  margin: var(--space-4) 0;
 }
 .prow,
 .srow,
 .pnav {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
+  gap: var(--space-12);
+  padding: var(--space-10) 0;
   border-top: 2px solid var(--card2);
 }
 .pnav {
@@ -313,20 +313,20 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: var(--space-2);
   text-align: left;
 }
 .ptext b {
-  font-size: 17px;
+  font-size: var(--text-17);
 }
 .ptext span {
-  font-size: 15px;
+  font-size: var(--text-15);
   color: var(--ink-soft);
 }
 .ptext .linkbtn {
   min-height: 36px;
   padding: 0;
-  font-size: 15px;
+  font-size: var(--text-15);
 }
 .pcard > .linkbtn {
   padding: 0;
@@ -341,33 +341,33 @@
   white-space: nowrap;
 }
 .pset {
-  padding: 10px 0;
+  padding: var(--space-10) 0;
   border-top: 2px solid var(--card2);
 }
 .pset > b {
   display: block;
-  margin-bottom: 6px;
-  font-size: 17px;
+  margin-bottom: var(--space-6);
+  font-size: var(--text-17);
 }
 .pvrow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 4px 0;
+  gap: var(--space-10);
+  padding: var(--space-4) 0;
 }
 .pvoice {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
   min-height: 44px;
   padding: 0;
   border: 0;
   background: none;
   color: var(--ink);
   font: inherit;
-  font-size: 17px;
+  font-size: var(--text-17);
   text-align: left;
   cursor: pointer;
 }
@@ -389,7 +389,7 @@
 }
 .pset > label > b {
   display: block;
-  font-size: 17px;
+  font-size: var(--text-17);
 }
 .prate {
   display: block;
@@ -402,18 +402,18 @@
 .prange {
   display: flex;
   justify-content: space-between;
-  font-size: 15px;
+  font-size: var(--text-15);
   color: var(--ink-soft);
 }
 .pguide {
   border-top: 2px solid var(--card2);
-  padding-top: 4px;
+  padding-top: var(--space-4);
 }
 .pguide summary {
   display: flex;
   align-items: center;
   min-height: 44px;
-  font-size: 17px;
+  font-size: var(--text-17);
   font-weight: 700;
   cursor: pointer;
 }
@@ -428,11 +428,11 @@
   display: none;
 }
 .pguide ol {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-6);
   padding-left: 1.4em;
 }
 .pguide li {
-  margin: 4px 0;
+  margin: var(--space-4) 0;
 }
 .switch {
   flex: none;
@@ -450,7 +450,7 @@
   width: 56px;
   height: 32px;
   border: 3px solid var(--ink);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--blue-150);
 }
 .switch i::after {
@@ -472,9 +472,9 @@
 }
 .lvl {
   flex: none;
-  border-radius: 999px;
-  padding: 2px 10px;
-  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-10);
+  font-size: var(--text-14);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -494,27 +494,27 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
 }
 .pwarn p {
   flex: 1 1 200px;
   margin: 0;
 }
 .modal h3 {
-  margin: 14px 0 4px;
-  font-size: 19px;
+  margin: var(--space-14) 0 var(--space-4);
+  font-size: var(--text-19);
 }
 .modal h4 {
-  margin: 12px 0 0;
-  font-size: 17px;
+  margin: var(--space-12) 0 0;
+  font-size: var(--text-17);
 }
 .modal ol {
-  margin: 6px 0;
+  margin: var(--space-6) 0;
 }
 .tmsg {
   color: var(--red-600);
-  font-size: 15px;
-  margin: 4px 0 0;
+  font-size: var(--text-15);
+  margin: var(--space-4) 0 0;
   min-height: 0;
 }
 .tmsg:empty {
@@ -526,7 +526,7 @@
 }
 .pcard .grades {
   justify-content: flex-start;
-  margin-top: 6px;
+  margin-top: var(--space-6);
 }
 .pcard .gradechip,
 .card .gradechip {
@@ -534,7 +534,7 @@
   border-color: var(--ink-soft);
 }
 .card .grades {
-  margin-top: 6px;
+  margin-top: var(--space-6);
 }
 .parentbtn .dot {
   width: 12px;
@@ -547,8 +547,8 @@
   display: block;
   width: 100%;
   border: 3px solid var(--ink-soft);
-  border-radius: 14px;
-  padding: 8px 10px;
+  border-radius: var(--radius-14);
+  padding: var(--space-8) var(--space-10);
   font:
     14px / 1.35 ui-monospace,
     Menlo,
@@ -558,7 +558,7 @@
   background: var(--white);
   word-break: break-all;
   resize: vertical;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-8);
 }
 .codebox:focus {
   outline: none;
@@ -566,17 +566,17 @@
   box-shadow: 0 0 0 4px rgba(63, 160, 255, 0.3);
 }
 .sumlist {
-  margin: 10px 0;
-  padding-left: 22px;
-  font-size: 17px;
+  margin: var(--space-10) 0;
+  padding-left: var(--space-22);
+  font-size: var(--text-17);
 }
 .qrbox {
-  margin: 12px auto 6px;
+  margin: var(--space-12) auto var(--space-6);
   max-width: 320px;
 }
 .qr {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 8px;
+  border-radius: var(--radius-8);
 }

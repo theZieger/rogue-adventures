@@ -2,14 +2,14 @@
 .atk .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-4);
   min-height: 22px;
 }
 .atk .tag {
-  font-size: 13px;
+  font-size: var(--text-13);
   font-weight: 700;
-  border-radius: 999px;
-  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-8);
   line-height: 20px;
 }
 .atk .tag.tired {
@@ -34,13 +34,13 @@
   background: var(--card2);
 }
 .hintline {
-  margin: 6px 0;
-  padding: 4px 10px;
-  border-radius: 12px;
+  margin: var(--space-6) 0;
+  padding: var(--space-4) var(--space-10);
+  border-radius: var(--radius-12);
   background: var(--cream-120);
   color: var(--gold-800);
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-16);
   text-align: center;
 }
 .opt.struck {
@@ -61,14 +61,14 @@
   display: inline-block;
   background: var(--gold);
   color: var(--ink);
-  border-radius: 999px;
-  padding: 0 8px;
-  margin-left: 4px;
-  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-8);
+  margin-left: var(--space-4);
+  font-size: var(--text-14);
 }
 .item small {
   font-weight: 600;
-  font-size: 14px;
+  font-size: var(--text-14);
   color: var(--ink-soft);
 }
 
@@ -77,33 +77,33 @@
   display: inline-block;
   background: var(--orange);
   color: var(--ink);
-  border-radius: 999px;
-  padding: 0 8px;
-  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-8);
+  font-size: var(--text-14);
   font-weight: 700;
   line-height: 22px;
   vertical-align: middle;
 }
 .card.news h3 {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-4);
 }
 .card.news h4 {
-  margin: 10px 0 2px;
+  margin: var(--space-10) 0 var(--space-2);
   font-family: var(--hand);
   font-weight: 400;
-  font-size: 21px;
+  font-size: var(--text-21);
 }
 .card.news ul {
   margin: 0;
-  padding-left: 22px;
+  padding-left: var(--space-22);
 }
 .card.news li {
-  margin: 3px 0;
+  margin: var(--space-3) 0;
   line-height: 1.35;
 }
 .ohelp {
-  margin: 6px 0 0;
-  font-size: 15px;
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-15);
   color: var(--ink-soft);
   text-align: center;
 }
@@ -118,13 +118,13 @@
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.25);
   background: rgba(255, 255, 255, 0.08);
-  font-size: 21px;
+  font-size: var(--text-21);
   cursor: pointer;
   z-index: 2;
 }
 .grades {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   flex-wrap: wrap;
   justify-content: center;
 }
@@ -132,10 +132,10 @@
   border: 3px solid rgba(255, 255, 255, 0.35);
   background: transparent;
   color: var(--paper-ink);
-  border-radius: 999px;
-  padding: 4px 16px;
+  border-radius: var(--radius-pill);
+  padding: var(--space-4) var(--space-16);
   font: inherit;
-  font-size: 17px;
+  font-size: var(--text-17);
   font-weight: 700;
   min-height: 44px;
   cursor: pointer;
@@ -148,38 +148,38 @@
 .subjects {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-12);
 }
 .subjtile {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--space-2);
   border: 0;
   font: inherit;
   cursor: pointer;
   min-height: 140px;
 }
 .subjicon {
-  font-size: 44px;
+  font-size: var(--text-44);
   line-height: 1.1;
 }
 .subjname {
   font-family: var(--hand);
-  font-size: 26px;
+  font-size: var(--text-26);
 }
 .subjtile .desc {
-  font-size: 15px;
+  font-size: var(--text-15);
   color: var(--ink-soft);
 }
 .eyebrow {
-  font-size: 13px;
+  font-size: var(--text-13);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-2);
 }
 .screen {
   position: relative;
@@ -193,11 +193,11 @@
   display: inline-block;
   background: var(--cream-120);
   color: var(--gold-810);
-  border-radius: 999px;
-  padding: 0 10px;
-  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-10);
+  font-size: var(--text-14);
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-4);
 }
 .choice.swap {
   border-style: dashed;
@@ -207,7 +207,7 @@
   width: 34px;
   height: 34px;
   flex: none;
-  border-radius: 10px;
+  border-radius: var(--radius-10);
   border: 3px solid var(--ink);
   display: flex;
   align-items: center;
@@ -221,17 +221,17 @@
 .toggles {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-8);
 }
 .toggle {
   border: 3px solid var(--ink-soft);
   background: var(--white);
   color: var(--ink-soft);
-  border-radius: 14px;
-  padding: 6px 12px;
+  border-radius: var(--radius-14);
+  padding: var(--space-6) var(--space-12);
   min-height: 44px;
   font: inherit;
-  font-size: 16px;
+  font-size: var(--text-16);
   font-weight: 700;
   cursor: pointer;
 }
@@ -242,12 +242,12 @@
 }
 textarea#fbtext {
   width: 100%;
-  margin-top: 10px;
+  margin-top: var(--space-10);
   border: 3px solid var(--ink-soft);
-  border-radius: 14px;
-  padding: 10px 12px;
+  border-radius: var(--radius-14);
+  padding: var(--space-10) var(--space-12);
   font: inherit;
-  font-size: 18px;
+  font-size: var(--text-18);
   color: var(--ink);
   background: var(--white);
   resize: vertical;

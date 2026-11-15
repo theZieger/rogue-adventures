@@ -3,7 +3,7 @@
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 8px 14px;
+  padding: var(--space-8) var(--space-14);
   display: flex;
   flex-direction: column;
 }
@@ -17,16 +17,16 @@
   background-size: 22px 22px;
   background-position: 11px 11px;
   color: var(--ink);
-  border-radius: 22px;
-  padding: 14px 16px;
+  border-radius: var(--radius-22);
+  padding: var(--space-14) var(--space-16);
   box-shadow: var(--shadow);
   position: relative;
 }
 .task .head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 16px;
+  gap: var(--space-8);
+  font-size: var(--text-16);
   color: var(--ink-soft);
   font-weight: 700;
 }
@@ -35,16 +35,16 @@
   margin: 0 0 0 auto;
   min-height: 40px;
   min-width: 40px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 3px solid var(--ink);
   background: var(--white);
   color: var(--ink);
   font-weight: 700;
-  font-size: 16px;
-  padding: 0 12px;
+  font-size: var(--text-16);
+  padding: 0 var(--space-12);
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-6);
   cursor: pointer;
 }
 .task .head .speak + .tut {
@@ -52,14 +52,14 @@
 }
 .speak {
   float: right;
-  margin: 0 0 6px 10px;
+  margin: 0 0 var(--space-6) var(--space-10);
   min-height: 44px;
   min-width: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 3px solid var(--ink);
   background: var(--white);
   color: var(--ink);
-  font-size: 18px;
+  font-size: var(--text-18);
   cursor: pointer;
 }
 @media (max-width: 480px) {
@@ -68,17 +68,17 @@
   }
 }
 .task .expr {
-  font-size: 42px;
+  font-size: var(--text-42);
   font-weight: 700;
   text-align: center;
-  margin: 10px 0 4px;
+  margin: var(--space-10) 0 var(--space-4);
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
 }
 .task .clues {
-  font-size: 21px;
+  font-size: var(--text-21);
   font-weight: 700;
-  margin: 10px 0;
+  margin: var(--space-10) 0;
   line-height: 1.4;
 }
 .task .clues div::before {
@@ -86,38 +86,38 @@
   color: var(--orange);
 }
 .task .seq {
-  font-size: 34px;
+  font-size: var(--text-34);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  margin: 10px 0 4px;
+  margin: var(--space-10) 0 var(--space-4);
 }
 .task .prompt {
   text-align: center;
   color: var(--ink-soft);
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-17);
 }
 .inputs {
   display: flex;
-  gap: 10px;
+  gap: var(--space-10);
   justify-content: center;
-  margin: 10px 0 4px;
+  margin: var(--space-10) 0 var(--space-4);
   flex-wrap: wrap;
   align-items: center;
 }
 .inp {
   min-width: 92px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: var(--radius-16);
   border: 4px solid var(--ink-soft);
   background: var(--white);
-  font-size: 34px;
+  font-size: var(--text-34);
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 12px;
+  padding: 0 var(--space-12);
   color: var(--ink);
   cursor: pointer;
   font-variant-numeric: tabular-nums;
@@ -141,39 +141,39 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  font-size: 15px;
+  gap: var(--space-4);
+  font-size: var(--text-15);
   font-weight: 700;
   color: var(--ink-soft);
 }
 .nbline {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
   justify-content: center;
 }
 .nbline .mid {
-  font-size: 40px;
+  font-size: var(--text-40);
   font-weight: 700;
 }
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 64px);
-  gap: 6px;
+  gap: var(--space-6);
   justify-content: center;
-  margin: 10px 0;
+  margin: var(--space-10) 0;
 }
 .grid div {
   width: 64px;
   height: 64px;
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   background: var(--card2);
   border: 3px solid var(--gold-250);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 24px;
+  font-size: var(--text-24);
 }
 .grid div.start {
   background: var(--white);
@@ -188,19 +188,19 @@
 .legend {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  font-size: 15px;
+  gap: var(--space-10);
+  font-size: var(--text-15);
   font-weight: 700;
   color: var(--ink-soft);
   flex-wrap: wrap;
 }
 .legend span {
   background: var(--card2);
-  border-radius: 10px;
-  padding: 2px 8px;
+  border-radius: var(--radius-10);
+  padding: var(--space-2) var(--space-8);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-4);
 }
 .legend .arr {
   width: 16px;
@@ -221,15 +221,15 @@
 .numpad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-8);
 }
 .numpad button {
   min-height: 58px;
   border: 3px solid var(--ink);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   background: var(--key);
   color: var(--key-ink);
-  font-size: 28px;
+  font-size: var(--text-28);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
@@ -245,12 +245,12 @@
 }
 .numpad button.del {
   background: var(--violet-650);
-  font-size: 24px;
+  font-size: var(--text-24);
 }
 .numpad button.cancel {
   background: transparent;
   border: 3px solid rgba(255, 255, 255, 0.6);
-  font-size: 18px;
+  font-size: var(--text-18);
 }
 
 /* Overlay / modal */
@@ -262,14 +262,14 @@
   align-items: flex-end;
   justify-content: center;
   z-index: 20;
-  padding: 12px;
-  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-12);
+  padding-bottom: calc(var(--space-12) + env(safe-area-inset-bottom, 0px));
 }
 .modal {
   background: var(--card);
   color: var(--ink);
-  border-radius: 24px;
-  padding: 18px;
+  border-radius: var(--radius-24);
+  padding: var(--space-18);
   width: 100%;
   max-width: 560px;
   max-height: 88%;
@@ -278,32 +278,32 @@
 }
 .modal h2 {
   color: var(--ink);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-8);
 }
 .modal ol {
-  padding-left: 24px;
-  margin: 8px 0 14px;
-  font-size: 19px;
+  padding-left: var(--space-24);
+  margin: var(--space-8) 0 var(--space-14);
+  font-size: var(--text-19);
 }
 .modal ol li {
-  margin: 8px 0;
+  margin: var(--space-8) 0;
 }
 .modal .ex {
   background: var(--card2);
-  border-radius: 14px;
-  padding: 10px 12px;
+  border-radius: var(--radius-14);
+  padding: var(--space-10) var(--space-12);
   font-weight: 700;
 }
 
 /* Feedback */
 .feedback {
   text-align: center;
-  padding: 8px 10px;
-  border-radius: 18px;
+  padding: var(--space-8) var(--space-10);
+  border-radius: var(--radius-18);
   font-family: var(--hand);
-  font-size: 28px;
+  font-size: var(--text-28);
   line-height: 1.1;
-  margin-top: 10px;
+  margin-top: var(--space-10);
 }
 .feedback.good {
   background: var(--green-50);
@@ -316,27 +316,27 @@
 .feedback small {
   display: block;
   font-family: var(--text);
-  font-size: 16px;
+  font-size: var(--text-16);
   font-weight: 700;
-  margin-top: 2px;
+  margin-top: var(--space-2);
 }
 
 .items {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   flex-wrap: wrap;
-  margin-top: 10px;
+  margin-top: var(--space-10);
 }
 .item {
   background: var(--card);
   color: var(--ink);
   border: 3px solid var(--ink);
-  border-radius: 14px;
-  padding: 6px 12px;
+  border-radius: var(--radius-14);
+  padding: var(--space-6) var(--space-12);
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-16);
   display: flex;
-  gap: 6px;
+  gap: var(--space-6);
   align-items: center;
   box-shadow: var(--shadow);
   cursor: pointer;
@@ -346,10 +346,10 @@
 .statrow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
+  gap: var(--space-10);
+  padding: var(--space-8) 0;
   border-bottom: 2px solid var(--card2);
-  font-size: 17px;
+  font-size: var(--text-17);
 }
 .statrow .n {
   flex: 1;
@@ -358,7 +358,7 @@
 .bar {
   width: 110px;
   height: 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--card2);
   overflow: hidden;
 }
@@ -428,7 +428,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-6);
 }
 .evo-row .mon {
   width: 104px;
@@ -441,13 +441,13 @@
   opacity: 0.75;
 }
 .evo-row span {
-  font-size: 28px;
+  font-size: var(--text-28);
   color: var(--ink-soft);
 }
 .xpbar {
   height: 10px;
   background: rgba(0, 0, 0, 0.35);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   overflow: hidden;
   width: 100%;
 }
@@ -461,14 +461,14 @@
 }
 .muted {
   opacity: 0.85;
-  font-size: 16px;
+  font-size: var(--text-16);
 }
 .levelbadge {
   background: var(--gold);
   color: var(--ink);
-  border-radius: 999px;
-  padding: 0 8px;
-  font-size: 14px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-8);
+  font-size: var(--text-14);
   font-weight: 700;
 }
 .hidden {
@@ -476,7 +476,7 @@
 }
 @media (min-width: 500px) {
   body {
-    font-size: 21px;
+    font-size: var(--text-21);
   }
   .sprite.hero .mon {
     width: 160px;
@@ -487,7 +487,7 @@
     height: 130px;
   }
   .task .expr {
-    font-size: 48px;
+    font-size: var(--text-48);
   }
   .grid {
     grid-template-columns: repeat(3, 76px);
@@ -495,27 +495,27 @@
   .grid div {
     width: 76px;
     height: 76px;
-    font-size: 28px;
+    font-size: var(--text-28);
   }
 }
 
 /* Knowledge tasks */
 .task .question {
-  font-size: 22px;
+  font-size: var(--text-22);
   font-weight: 700;
-  margin: 10px 0 6px;
+  margin: var(--space-10) 0 var(--space-6);
   line-height: 1.35;
 }
 .task .question .blank {
   display: inline-block;
   border-bottom: 4px solid var(--blue);
-  padding: 0 6px;
+  padding: 0 var(--space-6);
   color: var(--blue);
 }
 .options {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
+  gap: var(--space-8);
 }
 .options.two {
   grid-template-columns: 1fr 1fr;
@@ -525,19 +525,19 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--space-8);
   font-weight: 700;
-  font-size: 22px;
+  font-size: var(--text-22);
 }
 .opt {
   min-height: 56px;
   border: 3px solid var(--ink);
-  border-radius: 16px;
+  border-radius: var(--radius-16);
   background: var(--card);
   color: var(--ink);
   font-weight: 700;
-  font-size: 19px;
-  padding: 8px 14px;
+  font-size: var(--text-19);
+  padding: var(--space-8) var(--space-14);
   box-shadow: var(--shadow);
   cursor: pointer;
   text-align: center;
@@ -558,21 +558,21 @@
 .orderlist {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin: 8px 0;
+  gap: var(--space-8);
+  margin: var(--space-8) 0;
 }
 .oitem {
   display: flex;
-  gap: 10px;
+  gap: var(--space-10);
   align-items: center;
   text-align: left;
   border: 3px solid var(--ink);
   background: var(--white);
   color: var(--ink);
-  border-radius: 14px;
-  padding: 8px 10px;
+  border-radius: var(--radius-14);
+  padding: var(--space-8) var(--space-10);
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-17);
   cursor: pointer;
   min-height: 52px;
 }
@@ -585,7 +585,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--hand);
-  font-size: 20px;
+  font-size: var(--text-20);
   flex: none;
 }
 .oitem.picked {
@@ -609,7 +609,7 @@
   max-width: 320px;
   height: auto;
   display: block;
-  margin: 6px auto;
+  margin: var(--space-6) auto;
 }
 .plant .part {
   transition: filter 0.2s;
@@ -642,7 +642,7 @@
   filter: drop-shadow(0 0 8px var(--red-300));
 }
 .plant .plabel {
-  font-size: 12px;
+  font-size: var(--text-12);
   font-weight: 700;
   font-family: var(--text);
   fill: var(--ink);
@@ -651,7 +651,7 @@
   stroke-width: 3px;
 }
 .modecard .desc {
-  font-size: 15px;
+  font-size: var(--text-15);
   color: var(--ink-soft);
 }
 .modecard .btn.small {

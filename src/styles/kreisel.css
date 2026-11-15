@@ -285,7 +285,7 @@
   top: 52%;
   width: 75%;
   height: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-4);
   background: var(--white);
   box-shadow:
     0 -12px 0 -1px var(--white),
@@ -372,7 +372,7 @@
   top: -5px;
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--radius-3);
   background: var(--gold);
   border: 2px solid var(--ink);
   opacity: 0;
@@ -735,38 +735,38 @@
 }
 .topgrid {
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-8);
 }
 .topgrid .kkitem {
-  padding: 8px 4px;
-  border-radius: 18px;
+  padding: var(--space-8) var(--space-4);
+  border-radius: var(--radius-18);
 }
 .topgrid .kkitem .mon {
   width: 72px;
   height: 72px;
 }
 .topgrid .name {
-  font-size: 19px;
+  font-size: var(--text-19);
 }
 .topgrid .btn.small {
-  padding-left: 6px;
-  padding-right: 6px;
-  font-size: 15px;
+  padding-left: var(--space-6);
+  padding-right: var(--space-6);
+  font-size: var(--text-15);
 }
 .partval {
   font-weight: 800;
-  font-size: 15px;
+  font-size: var(--text-15);
 }
 .topvals {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 6px 14px;
+  gap: var(--space-6) var(--space-14);
   font-weight: 800;
 }
 .toprule {
-  margin: 8px 0 0;
-  font-size: 14px;
+  margin: var(--space-8) 0 0;
+  font-size: var(--text-14);
   text-align: center;
 }
 .wmap .node.arena small {
@@ -778,8 +778,8 @@
   animation: none;
 }
 .toptext {
-  margin: 2px 0 10px;
-  font-size: 16px;
+  margin: var(--space-2) 0 var(--space-10);
+  font-size: var(--text-16);
 }
 .card > .mon.top {
   display: block;
@@ -788,21 +788,21 @@
   margin: 0 auto;
 }
 .task .story {
-  font-size: 21px;
+  font-size: var(--text-21);
   font-weight: 700;
   line-height: 1.4;
-  margin: 10px 0;
+  margin: var(--space-10) 0;
 }
 .hutroom {
   width: 100%;
   height: auto;
   display: block;
   border: 3px solid var(--ink);
-  border-radius: 18px;
+  border-radius: var(--radius-18);
   background: var(--orange-200);
 }
 .rwprev.furn {
   background: var(--orange-200);
-  padding: 6px;
+  padding: var(--space-6);
   box-sizing: border-box;
 }

@@ -8,7 +8,7 @@
 #turm > span:first-child {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-6);
   white-space: nowrap;
 }
 #turm > span:first-child .emo {
@@ -21,8 +21,8 @@
   flex-basis: 100%;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  font-size: 14px;
+  gap: var(--space-2);
+  font-size: var(--text-14);
   font-weight: 700;
   opacity: 0.9;
 }
@@ -36,17 +36,17 @@
 .tw-subjs {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
 }
 .tw-subj {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
   width: 100%;
   min-height: 52px;
-  padding: 6px 12px;
+  padding: var(--space-6) var(--space-12);
   border: 3px solid var(--ink-soft);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   background: var(--white);
   color: var(--ink);
   font: inherit;
@@ -55,7 +55,7 @@
   cursor: pointer;
 }
 .tw-subj .ic {
-  font-size: 26px;
+  font-size: var(--text-26);
   line-height: 1;
 }
 .tw-subj .nm {
@@ -64,14 +64,14 @@
   flex-direction: column;
 }
 .tw-subj small {
-  font-size: 14px;
+  font-size: var(--text-14);
   font-weight: 700;
   color: var(--gold-750);
 }
 .tw-subj .tick {
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: var(--radius-9);
   border: 3px solid var(--ink-soft);
   display: flex;
   align-items: center;
@@ -93,21 +93,21 @@
 .tw-heroes {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
-  gap: 8px;
-  margin-top: 8px;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
 }
 .tw-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 6px 2px;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-2);
   border: 3px solid var(--ink-soft);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   background: var(--white);
   color: var(--ink);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-13);
   font-weight: 700;
   line-height: 1.15;
   cursor: pointer;
@@ -129,8 +129,8 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
 }
 .tw-stages .mon {
   width: 64px;
@@ -148,7 +148,7 @@
 .tw-end > .mon {
   width: 120px;
   height: 120px;
-  margin: 4px auto;
+  margin: var(--space-4) auto;
 }
 
 /* Turmwacht board: a W × H scene in board units (1 tower drawing unit = 1 board unit); --x/--y place things, --u keeps sizes in step with the board */
@@ -161,7 +161,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 6px 0 0;
+  padding: var(--space-6) 0 0;
 }
 .tw-board {
   --u: calc(100cqw / var(--W));
@@ -170,7 +170,7 @@
   width: min(100cqw - 16px, (100cqh - 4px) * var(--W) / var(--H));
   aspect-ratio: var(--W) / var(--H);
   border: 3px solid var(--ink);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   overflow: hidden;
   background: var(--green-720);
   box-shadow: var(--shadow);
@@ -307,7 +307,7 @@
   gap: calc(2 * var(--u));
   padding: calc(1 * var(--u)) calc(3 * var(--u));
   border: calc(1.5 * var(--u)) solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--cream-50);
 }
 .tw-feet {
@@ -322,7 +322,7 @@
   display: block;
   width: calc(38 * var(--u));
   height: calc(7 * var(--u));
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--blue-160);
   overflow: hidden;
 }
@@ -343,7 +343,7 @@
   right: -16%;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: var(--space-1);
 }
 .tw-tags i {
   display: flex;
@@ -403,19 +403,19 @@
   height: calc(11 * var(--u));
   width: auto;
   padding: calc(1 * var(--u)) calc(3 * var(--u));
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--ink);
   box-sizing: content-box;
 }
 button.tw-spot {
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: var(--radius-12);
 }
 .tw-lanehead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px 3px;
+  gap: var(--space-2) var(--space-3);
   max-width: calc(210 * var(--u));
   z-index: 1;
   font-weight: 700;
@@ -436,7 +436,7 @@ button.tw-spot {
 } /* bottom path: its far field is right of the chips */
 .tw-lanehead > span {
   padding: calc(2 * var(--u)) calc(8 * var(--u));
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--ink);
   color: var(--white);
   white-space: nowrap;
@@ -484,7 +484,7 @@ button.tw-spot {
 .tw-hpbox .hpbar {
   display: block;
   height: calc(11 * var(--u));
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--navy-660);
   overflow: hidden;
 }
@@ -500,9 +500,9 @@ button.tw-spot {
   background: var(--red);
 }
 .tw-log {
-  margin: 6px 12px;
+  margin: var(--space-6) var(--space-12);
   min-height: 0;
-  font-size: 20px;
+  font-size: var(--text-20);
 }
 .tw-log.hurt {
   border-color: var(--red);
@@ -510,7 +510,7 @@ button.tw-spot {
 }
 .tw-hurtline {
   font-family: "Andika", system-ui, sans-serif;
-  font-size: 18px;
+  font-size: var(--text-18);
   font-weight: 700;
   color: var(--red-600);
 }
@@ -520,7 +520,7 @@ button.tw-spot {
 .tw-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-8);
   flex: 0 1 auto;
   margin-top: auto;
   min-height: 0;
@@ -560,8 +560,8 @@ button.tw-spot {
 .tw-hint {
   flex: 1 1 0;
   min-width: 0;
-  margin: 0 0 0 4px;
-  font-size: 17px;
+  margin: 0 0 0 var(--space-4);
+  font-size: var(--text-17);
   line-height: 1.2;
   align-self: center;
 }
@@ -570,17 +570,17 @@ button.tw-spot {
   color: var(--red-150);
 }
 .tw-card {
-  padding: 8px 12px;
+  padding: var(--space-8) var(--space-12);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-6);
 }
 .tw-cardinfo {
   flex: 1;
   min-width: 0;
 }
 .tw-from {
-  font-size: 15px;
+  font-size: var(--text-15);
   font-weight: 700;
   color: var(--ink-soft);
 }
@@ -588,11 +588,11 @@ button.tw-spot {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-8);
 }
 .tw-cardhp {
   flex: none;
-  font-size: 19px;
+  font-size: var(--text-19);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -604,12 +604,12 @@ button.tw-spot {
   margin: 0;
 }
 .tw-card h3 {
-  font-size: 24px;
+  font-size: var(--text-24);
 }
 .tw-cardhead {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-10);
 }
 .tw-cardhead .mon {
   width: 54px;
@@ -619,23 +619,23 @@ button.tw-spot {
 }
 .tw-cardinfo .name {
   font-family: var(--hand);
-  font-size: 26px;
+  font-size: var(--text-26);
   line-height: 1.05;
 }
 .tw-cardinfo .speak {
   vertical-align: middle;
-  margin-left: 6px;
+  margin-left: var(--space-6);
 }
 .tw-card .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-4);
 }
 .tw-card .tag {
-  font-size: 16px;
+  font-size: var(--text-16);
   font-weight: 700;
-  border-radius: 999px;
-  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-10);
   line-height: 26px;
   background: var(--green-50);
   color: var(--green-760);
@@ -667,8 +667,8 @@ button.tw-spot {
   width: 100%;
 }
 .tw-item {
-  padding: 6px 12px;
-  gap: 10px;
+  padding: var(--space-6) var(--space-12);
+  gap: var(--space-10);
   box-shadow: none;
 }
 .tw-item .meta {
@@ -676,14 +676,14 @@ button.tw-spot {
   flex-direction: column;
 }
 .tw-item .meta .name {
-  font-size: 24px;
+  font-size: var(--text-24);
 }
 .tw-item .meta .desc {
-  font-size: 15px;
+  font-size: var(--text-15);
   line-height: 1.25;
 }
 .tw-itemic {
-  font-size: 30px;
+  font-size: var(--text-30);
   line-height: 1;
 }
 .tw-screen.tasking .tw-main,
@@ -692,7 +692,7 @@ button.tw-spot {
 }
 .tw-res {
   display: flex;
-  gap: 10px;
+  gap: var(--space-10);
   font-weight: 700;
 }
 .tw-mon.guide::before {
@@ -718,13 +718,13 @@ button.tw-spot {
 }
 .tw-shieldnow {
   display: flex;
-  gap: 8px;
+  gap: var(--space-8);
   align-items: flex-start;
   font-weight: 700;
 }
 .tw-card .tw-shieldnow,
 .tw-shieldnow {
-  font-size: 16px;
+  font-size: var(--text-16);
   line-height: 1.3;
 }
 i.dot {
@@ -732,22 +732,22 @@ i.dot {
   display: inline-block;
   width: 16px;
   height: 16px;
-  margin-top: 2px;
+  margin-top: var(--space-2);
   border-radius: 50%;
   border: 2.5px solid var(--ink);
 }
 .tw-shieldlist {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  margin: 4px 0 14px;
-  font-size: 18px;
+  gap: var(--space-6) var(--space-14);
+  margin: var(--space-4) 0 var(--space-14);
+  font-size: var(--text-18);
   font-weight: 700;
 }
 .tw-shieldlist span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-6);
 }
 .tw-card .tag.boss {
   background: var(--cream-110);
@@ -772,27 +772,27 @@ i.dot {
   transform: scaleX(-1);
 }
 .tw-banner h2 {
-  margin: 4px 0 6px;
+  margin: var(--space-4) 0 var(--space-6);
 }
 .tw-bannerov .modal > p {
-  font-size: 19px;
-  margin: 0 0 12px;
+  font-size: var(--text-19);
+  margin: 0 0 var(--space-12);
 }
 .tw-earned,
 .tw-score {
   list-style: none;
   padding: 0;
-  margin: 8px 0;
+  margin: var(--space-8) 0;
   text-align: left;
 }
 .tw-earned li,
 .tw-score li {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
-  padding: 5px 2px;
+  gap: var(--space-10);
+  padding: var(--space-5) var(--space-2);
   border-bottom: 2px dashed rgba(28, 37, 65, 0.15);
-  font-size: 18px;
+  font-size: var(--text-18);
 }
 .tw-earned li:last-child,
 .tw-score li:last-child {
@@ -804,11 +804,11 @@ i.dot {
 }
 .tw-cleared h2,
 .tw-end h2 {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-4);
 }
 .tw-cleared p,
 .tw-end p {
-  margin: 6px 0;
+  margin: var(--space-6) 0;
 }
 .tw-evo .evo-row .mon {
   width: 96px;
@@ -818,18 +818,18 @@ i.dot {
   --u: 0.82px;
   display: flex;
   justify-content: center;
-  padding-top: 8px;
+  padding-top: var(--space-8);
 }
 .tw-endtower .tw-tower {
   position: relative;
   translate: none;
 }
 .tw-result {
-  font-size: 20px;
+  font-size: var(--text-20);
   font-weight: 700;
 }
 .tw-endbtns .pnote {
-  margin: -4px 0 2px;
+  margin: -4px 0 var(--space-2);
   color: var(--blue-160);
 }
 /* Bauzeit: cards in a strip under the board, so the board with the guard spots stays in view */
@@ -841,28 +841,28 @@ i.dot {
 .tw-bau {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-6);
   min-height: 0;
 }
 .tw-bauhead {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0 10px;
+  gap: 0 var(--space-10);
 }
 .tw-bauhead h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--text-22);
 }
 .tw-bauhead p {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-16);
   font-weight: 700;
 }
 .tw-cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--space-8);
 }
 .tw-cards > div {
   display: flex;
@@ -872,11 +872,11 @@ i.dot {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--space-3);
   align-items: center;
-  padding: 5px 4px 6px;
+  padding: var(--space-5) var(--space-4) var(--space-6);
   border: 3px solid var(--ink);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   background: var(--card);
   color: var(--ink);
   font: inherit;
@@ -892,24 +892,24 @@ i.dot {
   display: block;
   width: 100%;
   height: 46px;
-  border-radius: 9px;
+  border-radius: var(--radius-9);
   background: var(--green-140);
 }
 .tw-buy b {
   flex: 1;
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: var(--text-14);
   line-height: 1.1;
   hyphens: auto;
   overflow-wrap: anywhere;
 }
 .tw-price {
-  padding: 0 8px;
-  border-radius: 99px;
+  padding: 0 var(--space-8);
+  border-radius: var(--radius-99);
   background: var(--ink);
   color: var(--white);
-  font-size: 15px;
+  font-size: var(--text-15);
   font-weight: 700;
   line-height: 24px;
   white-space: nowrap;
@@ -941,22 +941,22 @@ i.dot {
 .tw-sheet .tw-pic {
   width: min(100%, 220px);
   height: 90px;
-  border-radius: 12px;
+  border-radius: var(--radius-12);
   background: var(--green-140);
 }
 .tw-sheet h2 {
-  margin: 8px 0 4px;
+  margin: var(--space-8) 0 var(--space-4);
 }
 .tw-sheet p {
-  margin: 0 0 10px;
-  font-size: 19px;
+  margin: 0 0 var(--space-10);
+  font-size: var(--text-19);
 }
 .tw-sheet .tw-bmsg {
   color: var(--orange-710);
 }
 .tw-bmsg {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--text-17);
   font-weight: 700;
   color: var(--gold);
 }
@@ -980,18 +980,18 @@ i.dot {
 .tw-baurow #atk {
   flex: 1 1 auto;
   min-height: 52px;
-  padding-inline: 10px;
+  padding-inline: var(--space-10);
 }
 @media (max-width: 374px) {
   .tw-baurow .btn.small {
-    padding-inline: 10px;
+    padding-inline: var(--space-10);
   }
   .tw-baurow #nextwave {
-    font-size: 19px;
+    font-size: var(--text-19);
   }
 }
 .tw-pickhint p {
-  font-size: 18px;
+  font-size: var(--text-18);
   font-weight: 700;
 }
 button.tw-spot.pick::after {
@@ -1016,17 +1016,17 @@ button.tw-spot.pick.on::after {
 .tw-looks {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 8px;
+  gap: var(--space-8);
   max-height: min(56vh, calc(100vh - 230px));
   overflow-y: auto;
-  padding: 2px;
-  margin: 8px 0 12px;
+  padding: var(--space-2);
+  margin: var(--space-8) 0 var(--space-12);
 }
 .tw-look {
   flex-direction: column;
   align-items: center;
-  padding: 8px 4px;
-  gap: 2px;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-2);
   box-shadow: none;
   text-align: center;
 }
@@ -1036,17 +1036,17 @@ button.tw-spot.pick.on::after {
 }
 .tw-look .name {
   font-family: var(--hand);
-  font-size: 20px;
+  font-size: var(--text-20);
   line-height: 1.05;
   overflow-wrap: anywhere;
 }
 .tw-look .meta .name {
-  font-size: 24px;
+  font-size: var(--text-24);
 }
 .tw-pause {
-  font-size: 21px;
+  font-size: var(--text-21);
   font-weight: 700;
-  margin: 4px 0 16px;
+  margin: var(--space-4) 0 var(--space-16);
 }
 #twt .tw-fl.new {
   animation: tw-drop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both;
@@ -1064,13 +1064,13 @@ button.tw-spot.pick.on::after {
   }
 }
 .psubhead {
-  margin: 14px 0 0;
+  margin: var(--space-14) 0 0;
 }
 @media (max-height: 760px) {
   .tw-log {
-    font-size: 18px;
-    padding: 5px 10px;
-    margin: 4px 12px;
+    font-size: var(--text-18);
+    padding: var(--space-5) var(--space-10);
+    margin: var(--space-4) var(--space-12);
   }
   /* small phones: the card gets compact so the board keeps its size (the tapped monster is marked on the board) */
   .tw-main {
@@ -1080,24 +1080,24 @@ button.tw-spot.pick.on::after {
     display: none;
   }
   .tw-card {
-    padding: 7px 10px;
-    gap: 4px;
+    padding: var(--space-7) var(--space-10);
+    gap: var(--space-4);
   }
   .tw-cardinfo {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 2px 8px;
+    gap: var(--space-2) var(--space-8);
   }
   .tw-cardinfo .name {
-    font-size: 23px;
+    font-size: var(--text-23);
   }
   .tw-card .btn {
     min-height: 46px;
   }
   .tw-card .pnote,
   .tw-card .tw-shieldnow {
-    font-size: 15px;
+    font-size: var(--text-15);
   }
 }
 @media (max-height: 500px) and (orientation: landscape) {
@@ -1110,14 +1110,14 @@ button.tw-spot.pick.on::after {
   .tw-screen:not(.tasking) > .topbar {
     grid-column: 2;
     grid-row: 1;
-    padding: 6px 12px;
+    padding: var(--space-6) var(--space-12);
   }
   .tw-screen:not(.tasking) .tw-main {
     grid-column: 1;
     grid-row: 1 / 4;
     max-height: none;
     min-height: 0;
-    padding: 5px 0;
+    padding: var(--space-5) 0;
     margin-top: 0;
   }
   .tw-screen:not(.tasking) .tw-log {
@@ -1140,10 +1140,10 @@ button.tw-spot.pick.on::after {
     border-left: 3px solid rgba(255, 255, 255, 0.08);
   }
   .tw-card p {
-    font-size: 16px;
+    font-size: var(--text-16);
   }
   .tw-card h3 {
-    font-size: 21px;
+    font-size: var(--text-21);
   }
   .tw-endbtns {
     flex-direction: row;
@@ -1164,7 +1164,7 @@ button.tw-spot.pick.on::after {
     bottom: -10px;
     flex-wrap: wrap;
     margin: 0 -12px -10px;
-    padding: 8px 12px 10px;
+    padding: var(--space-8) var(--space-12) var(--space-10);
     background: var(--bg2);
   }
   .tw-baurow .btn.small {
@@ -1241,10 +1241,10 @@ button.tw-spot.pick.on::after {
 .tw-num.hurt {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 12px;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-12);
   border: 3px solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--red);
   color: var(--white);
   font-size: max(30px, calc(44 * var(--u)));
@@ -1256,9 +1256,9 @@ button.tw-spot.pick.on::after {
   height: 0.8em;
 }
 .floatnum.hurt {
-  padding: 0 12px;
+  padding: 0 var(--space-12);
   border: 3px solid var(--ink);
-  border-radius: 99px;
+  border-radius: var(--radius-99);
   background: var(--red);
   text-shadow: none;
 }
@@ -1353,7 +1353,7 @@ button.tw-spot.pick.on::after {
   width: calc(15 * var(--u));
   height: calc(7 * var(--u));
   border: 2px solid var(--ink);
-  border-radius: 3px 8px 3px 8px;
+  border-radius: var(--radius-3) var(--radius-8) var(--radius-3) var(--radius-8);
   animation: tw-shard 0.7s cubic-bezier(0.2, 0.8, 0.4, 1) both;
 }
 @keyframes tw-shard {
@@ -1369,9 +1369,9 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-say {
-  padding: 1px 7px;
+  padding: var(--space-1) var(--space-7);
   border: 2px solid var(--ink);
-  border-radius: 10px 10px 10px 2px;
+  border-radius: var(--radius-10) var(--radius-10) var(--radius-10) var(--radius-2);
   background: var(--cream-60);
   color: var(--ink);
   font-weight: 700;
@@ -1380,7 +1380,7 @@ button.tw-spot.pick.on::after {
   animation: tw-say 0.8s ease-out both;
 }
 .tw-say.r {
-  border-radius: 10px 10px 2px 10px;
+  border-radius: var(--radius-10) var(--radius-10) var(--radius-2) var(--radius-10);
 }
 @keyframes tw-say {
   0% {
@@ -1514,7 +1514,7 @@ button.tw-spot.pick.on::after {
 .tw-wavebanner {
   padding: calc(6 * var(--u)) calc(16 * var(--u));
   border: 3px solid var(--ink);
-  border-radius: 14px;
+  border-radius: var(--radius-14);
   background: var(--gold);
   color: var(--ink);
   font-family: var(--hand);

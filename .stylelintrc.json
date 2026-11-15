@@ -1,4 +1,15 @@
 {
-  "rules": { "color-no-hex": true },
-  "overrides": [{ "files": ["src/styles/tokens.css"], "rules": { "color-no-hex": null } }]
+  "rules": {
+    "color-no-hex": true,
+    "declaration-property-value-disallowed-list": {
+      "font-size": ["/^[0-9.]+px$/"],
+      "/^border(-.*)?-radius$/": ["/[0-9]px/"]
+    }
+  },
+  "overrides": [
+    {
+      "files": ["src/styles/tokens.css"],
+      "rules": { "color-no-hex": null, "declaration-property-value-disallowed-list": null }
+    }
+  ]
 }

@@ -107,6 +107,74 @@
   --violet-650: #5a3e6b;
   --white: #ffffff;
 }
+/* Sizes in use: text, corners and the space in and between things. A rule takes one of these; a new size is
+   added here. The lists are long because they record what the screens had; shortening them changes what a child
+   sees and is decided with before-and-after pictures. */
+:root {
+  --text-9-5: 9.5px;
+  --text-10-5: 10.5px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-19: 19px;
+  --text-20: 20px;
+  --text-21: 21px;
+  --text-22: 22px;
+  --text-23: 23px;
+  --text-24: 24px;
+  --text-25: 25px;
+  --text-26: 26px;
+  --text-28: 28px;
+  --text-29: 29px;
+  --text-30: 30px;
+  --text-32: 32px;
+  --text-34: 34px;
+  --text-36: 36px;
+  --text-38: 38px;
+  --text-40: 40px;
+  --text-42: 42px;
+  --text-44: 44px;
+  --text-48: 48px;
+  --text-50: 50px;
+  --text-72: 72px;
+  --radius-2: 2px;
+  --radius-3: 3px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-9: 9px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-22: 22px;
+  --radius-24: 24px;
+  --radius-99: 99px;
+  --radius-pill: 999px;
+  --space-1: 1px;
+  --space-2: 2px;
+  --space-3: 3px;
+  --space-4: 4px;
+  --space-5: 5px;
+  --space-6: 6px;
+  --space-7: 7px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-22: 22px;
+  --space-24: 24px;
+  --space-30: 30px;
+  --space-34: 34px;
+}
 /* What the colours are for. Rules use these where one fits. */
 :root {
   box-sizing: border-box;

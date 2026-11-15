@@ -10,7 +10,8 @@ const ROOT = path.join(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const DOCS = path.join(ROOT, 'docs');
 
-// Later files win over earlier ones where two rules are equally specific, so the order is part of the design.
+// tokens first; among the others a later file wins where two rules are equally specific, so the order is part of
+// the design.
 const STYLES = [
   'tokens',
   'base',
@@ -193,7 +194,10 @@ function write(name, text) {
   return `docs/${name}`;
 }
 
-const styles = STYLES.map((name) => read(SRC, 'styles', `${name}.css`)).join('');
+// Two cascade layers: the tokens, and above them everything that uses them. Inside the app layer the order of
+// STYLES decides as before; a sheet outside the layers (the gallery's) wins over both without fighting specificity.
+const [tokens, ...sheets] = STYLES.map((name) => read(SRC, 'styles', `${name}.css`));
+const styles = `@layer tokens, app;\n@layer tokens {\n${tokens}}\n@layer app {\n${sheets.join('')}}\n`;
 
 // The design system page: the game's styles and modules, but the gallery instead of the game.
 function gallery() {
