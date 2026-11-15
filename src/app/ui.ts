@@ -10,7 +10,7 @@ import type { Markup } from '../ui/html.ts';
 /* ---------- Rendering primitives ---------- */
 // physical keyboard while a number task is open
 // quiet: re-render without fade-in (battle turns)
-export function render(html, quiet?) {
+export function render(html: string, quiet?: boolean) {
   state.keyHandler = null;
   state.backTo = null;
   actions = {};
@@ -24,16 +24,25 @@ export function render(html, quiet?) {
 }
 
 // A screen names what a tap does: data-action="send" on an element calls actions.send. One listener serves every
-// screen, so nothing is bound again after a render. Screens written before this still set onclick themselves.
+// screen and dialog, so nothing is bound again after a render. A dialog has its own actions; taps inside it never
+// reach the screen behind.
 type Action = (element: HTMLElement, event: Event) => void;
-let actions: Record<string, Action> = {};
-export function screen(markup: Markup, handlers: Record<string, Action>) {
-  render(markup.text);
+type Actions = Record<string, Action>;
+let actions: Actions = {};
+const dialogActions = new WeakMap<Element, Actions>();
+export function screen(markup: Markup, handlers: Actions, quiet?: boolean) {
+  render(markup.text, quiet);
   actions = handlers;
+}
+// actions for what a screen adds after it is shown (the attacks under a fight, the keypad under a task)
+export function on(handlers: Actions) {
+  Object.assign(actions, handlers);
 }
 app.addEventListener('click', (event) => {
   const element = (event.target as Element).closest<HTMLElement>('[data-action]');
-  if (element) actions[element.dataset.action!]?.(element, event);
+  if (!element) return;
+  const dialog = element.closest('.overlay');
+  (dialog ? dialogActions.get(dialog) : actions)?.[element.dataset.action!]?.(element, event);
 });
 
 /* ---------- Back button ---------- */
@@ -282,7 +291,7 @@ export function topbar(title, extra?) {
   return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${state.run && state.run.floor ? `<div class="world">${CFG().worlds > 1 ? `Welt ${state.run.world} · ` : ''}Etage ${state.run.floor}</div>` : ''}</div>`;
 }
 let modals = 0;
-export function modal(html) {
+export function modal(html: string | Markup, handlers?: Actions) {
   const ov = document.createElement('div');
   ov.className = 'overlay';
   ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
@@ -295,6 +304,7 @@ export function modal(html) {
   behind.forEach((el) => {
     el.inert = true;
   });
+  if (handlers) dialogActions.set(ov, handlers);
   app.appendChild(ov);
   const rm = ov.remove.bind(ov);
   ov.remove = () => {
