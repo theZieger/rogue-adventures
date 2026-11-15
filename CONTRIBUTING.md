@@ -14,7 +14,7 @@ npm run e2e          # browser tests: offline start, accessibility (once before:
 npm run format       # Biome formats JS, CSS and JSON
 ```
 
-You need Node 20 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
+You need Node 22.18 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
 and e2e; CI checks all five.
 
 ## Find your way
