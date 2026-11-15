@@ -123,7 +123,7 @@ await tick();
 }
 
 // 5./6. Answers count when they are checked – reloading before "Weiter" changes nothing
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const { sleep } = page;
 function answer(p, right, atk) {
   if (p.$('#tutok')) p.click('#tutok');
   p.click(atk || '.atk[data-i="0"]');
@@ -4234,13 +4234,18 @@ async function levelCases() {
 
 // Back button (Android, browser): steps back inside the app; the parents' area locks in the background
 async function backCases() {
-  // our own history steps settle first, as they do between real taps
+  // our own history steps settle first, as they do between real taps; jsdom walks its history in real time,
+  // so these waits are real and the page's own timers get their turn after each
+  const settle = async (ms) => {
+    await new Promise((r) => setTimeout(r, ms));
+    await sleep(ms);
+  };
   const back = async (p) => {
-    await sleep(100);
+    await settle(100);
     const popped = new Promise((r) => p.w.addEventListener('popstate', r, { once: true }));
     p.w.history.back();
     await popped;
-    await sleep(30);
+    await settle(30);
   };
   const q = (p, s) => p.d.querySelector(s);
   const pin = (p, s) => {

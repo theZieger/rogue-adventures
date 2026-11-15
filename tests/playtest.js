@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { install, sleep } from './clock.js';
 import { MQ } from '../src/logic.ts';
 import path from 'path';
 import { JSDOM } from 'jsdom';
@@ -46,38 +47,6 @@ function prng(seed) {
 Math.random = prng(SEED + 1);
 // a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
 const NOW = Date.parse(process.env.NOW || '2026-12-23T10:00:00');
-// Virtual time: the page's timers do not run by the wall clock but in the order they are due, while the bot waits.
-// So a run takes no real waiting, and the same SEED gives the same run every time, however busy the machine is.
-const timers = [];
-let clock = 0;
-let lastTimer = 0;
-function later(fn, ms, args, every) {
-  timers.push({ id: ++lastTimer, due: clock + (ms || 0), fn, args, every });
-  return lastTimer;
-}
-function cancel(id) {
-  const i = timers.findIndex((timer) => timer.id === id);
-  if (i >= 0) timers.splice(i, 1);
-}
-const breath = () => new Promise((resolve) => setImmediate(resolve));
-async function sleep(ms) {
-  const until = clock + ms;
-  for (;;) {
-    await breath();
-    const next = timers.filter((timer) => timer.due <= until).sort((a, b) => a.due - b.due || a.id - b.id)[0];
-    if (!next) break;
-    clock = Math.max(clock, next.due);
-    if (next.every) next.due = clock + next.every;
-    else cancel(next.id);
-    try {
-      next.fn(...next.args);
-    } catch (e) {
-      errors.push(e.message);
-    }
-  }
-  clock = until;
-  await breath();
-}
 const errors = [];
 const dom = new JSDOM(html, {
   runScripts: 'dangerously',
@@ -85,11 +54,7 @@ const dom = new JSDOM(html, {
   url: 'https://example.com/',
   beforeParse(win) {
     win.Math.random = prng(SEED);
-    win.setTimeout = (fn, ms, ...args) => later(fn, ms, args);
-    win.setInterval = (fn, ms, ...args) => later(fn, ms, args, ms || 1);
-    win.clearTimeout = win.clearInterval = win.cancelAnimationFrame = cancel;
-    win.requestAnimationFrame = (fn) => later(() => fn(clock), 16, []);
-    win.performance.now = () => clock;
+    install(win, (message) => errors.push(message));
     const D = win.Date;
     win.Date = class extends D {
       constructor(...a) {

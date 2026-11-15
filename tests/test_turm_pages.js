@@ -419,7 +419,7 @@ const turn = (p, ok) => {
   uiAnswer(u, true);
   const played = !!u.$('.tw-screen.playing'),
     saved1 = u.saved();
-  await new Promise((r) => setTimeout(r, 300));
+  await page.sleep(300);
   const R1 = u.w.__mq.run;
   check(
     played &&

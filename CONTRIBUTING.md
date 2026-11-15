@@ -8,7 +8,7 @@ everything a child or parent reads is German. Fixes to learning content are as w
 ```bash
 npm install
 npm run build        # src/* -> docs/index.html (one file, open it in a browser)
-npm test             # about two minutes; needs the build
+npm test             # half a minute; needs the build
 npm run playtest     # a bot plays every unit
 npm run e2e          # browser tests: offline start, accessibility (once before: npx playwright install chromium)
 npm run typecheck    # tsc, strict, over every .ts file
