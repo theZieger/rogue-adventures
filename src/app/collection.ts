@@ -7,6 +7,7 @@ import { benchHtml, screenCraft, screenTop, screenWardrobe } from './huette.ts';
 import { screenStarter } from './map.ts';
 import {
   REWARDS,
+  type Reward,
   canBuy,
   giveStamps,
   heroName,
@@ -25,7 +26,7 @@ import { screenTitle } from './title.ts';
 import { SFX, modal, screen, topbar } from './ui.ts';
 
 /* ---------- End screens ---------- */
-export function screenGameOver(b: { enemy: any; log?: any; logCls?: any; phase?: any; taken?: any; stamps: any }) {
+export function screenGameOver(b: { enemy: { name: string }; stamps: number }) {
   const world = state.run.world;
   const name = heroName();
   const multi = CFG().worlds > 1;
@@ -60,9 +61,17 @@ export function screenVictory() {
     { again: () => screenStarter(), home: screenTitle },
   );
 }
+// an opponent as the unit files list it
+interface Foe {
+  name: string;
+  type: string;
+  shape: string;
+  elite?: boolean;
+  boss?: boolean;
+}
 export function screenDex() {
   state.depth = 1;
-  const all: any[] = [];
+  const all: Foe[] = [];
   for (const m of MODE_KEYS) {
     const EN = MODES[m].enemies;
     for (const w of Object.keys(EN)) {
@@ -80,7 +89,7 @@ export function screenDex() {
     { back: screenTitle },
   );
 }
-export function screenStamps(jump?: boolean | undefined) {
+export function screenStamps(jump?: boolean) {
   state.depth = 1;
   const now = MQ.isoWeek(new Date());
   const weeks = MQ.schoolWeeks(new Date());
@@ -89,16 +98,7 @@ export function screenStamps(jump?: boolean | undefined) {
     const v = state.meta.stampCard[k];
     return html`<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', geübt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`;
   });
-  const row = (r: {
-    icon: unknown;
-    bg: unknown;
-    hero: string;
-    name: unknown;
-    desc: unknown;
-    price: unknown;
-    id: unknown;
-    stein: any;
-  }) => {
+  const row = (r: Reward) => {
     const prev = r.icon
       ? html`<div class="rwprev" aria-hidden="true">${r.icon}</div>`
       : r.bg
@@ -123,7 +123,7 @@ export function screenStamps(jump?: boolean | undefined) {
       craft: (button) => screenCraft(button.dataset.craft),
       buy: (button) => {
         // only rewards with a price have a button
-        const r = REWARDS.find((x) => x.id === button.dataset.buy) as (typeof REWARDS)[number] & { price: number };
+        const r = REWARDS.find((x) => x.id === button.dataset.buy) as Reward & { price: number };
         const ov = modal(
           html`<h2>${r.name} holen?</h2><p>Das kostet ${r.price} Stempel${r.stein ? ` und ${r.stein} Stein` : ''}. Danach hast du noch ${state.meta.stamps - r.price} Stempel.</p><div class="stack"><button class="btn" id="yes" data-action="yes">Holen</button><button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
           {

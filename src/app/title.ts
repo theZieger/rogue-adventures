@@ -9,7 +9,7 @@ import { screenFeedback } from './feedback.ts';
 import { gardenCard, screenGarden } from './garten.ts';
 import { screenHut } from './huette.ts';
 import { resumeRun, screenStarter } from './map.ts';
-import { goalDone, goalText, heroAttacks, showWeeklyNews, weekly, weeklyGoals } from './progress.ts';
+import { type WeeklyGoal, goalDone, goalText, heroAttacks, showWeeklyNews, weekly, weeklyGoals } from './progress.ts';
 import { state } from './state.ts';
 import { curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.ts';
 import { screenTurm } from './turm_screens.ts';
@@ -121,29 +121,27 @@ export function screenTitle() {
   });
   showWeeklyNews();
 }
+type SubjectTile = ReturnType<typeof visSubjects>[number];
 export const subjectOf = (m: string) =>
   visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
 export const openGoals = (m: string) =>
   extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : [];
 export const practised = (m: string) => Object.values(state.meta.stats[m]).some((x) => x.t > 0);
 // no locks: a ranked subject marks its easiest theme and points from a harder one to the easiest one not practised yet
-export function screenSubject(
-  sub:
-    | { subject: 'Mathe' | 'Deutsch' | 'Ethik' | 'Sachkunde' | 'Musik' | 'Englisch'; icon: string; modes: string[] }
-    | undefined,
-) {
+// undefined is not expected: the callers ask for the subject of a unit of this grade
+export function screenSubject(sub: SubjectTile | undefined) {
   state.depth = 1;
-  const ranked = sub.modes.some((m: string | number) => MODES[m].rank);
-  const path = (m: any, i: any) => {
-    const e = ranked && sub.modes.slice(0, i).find((x: any) => !practised(x));
+  const ranked = sub!.modes.some((m) => MODES[m].rank);
+  const path = (m: string, i: number) => {
+    const e = ranked && sub!.modes.slice(0, i).find((x) => !practised(x));
     return [
       ranked && !i ? html`<span class="startbadge">Hier anfangen</span>` : '',
       e ? html`<p class="pathhint">Leichter geht es mit „${MODES[e].title}“ los.</p>` : '',
     ];
   };
   screen(
-    html`<div class="screen">${raw(topbar(esc(sub.subject)))}<div class="scroll"><div class="stack">${sub.modes.map(
-      (m: unknown, i: any) => {
+    html`<div class="screen">${raw(topbar(esc(sub!.subject)))}<div class="scroll"><div class="stack">${sub!.modes.map(
+      (m, i) => {
         const r = loadRun(m);
         const c = MODES[m];
         return html`<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(
@@ -180,7 +178,7 @@ export function screenSubject(
     },
   );
 }
-export const goalCount = (g) => Math.min(g.n, weekly().progress[g.i] || 0);
+export const goalCount = (g: WeeklyGoal) => Math.min(g.n, weekly().progress[g.i] || 0);
 function weeklyCard() {
   const goals = weeklyGoals();
   const n = goals.filter(goalDone).length;
@@ -200,16 +198,16 @@ export function screenWeekly() {
       })}
       <p class="center">Nichts geht verloren, wenn du eine Woche aussetzt. Neue Aufgaben gibt es am Montag.</p>
       </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
-    { back: screenTitle, goal: (b) => playGoal(goals.find((g) => g.i === +b.dataset.goal!)) },
+    { back: screenTitle, goal: (b) => playGoal(goals.find((g) => g.i === +b.dataset.goal!)!) },
   );
 }
 // straight into the game of a goal; an adventure whose hero lacks the goal's task type asks first
-function playGoal(g: { kind: string; mod: any } | undefined) {
+function playGoal(g: WeeklyGoal) {
   state.mode = g.m;
   state.run = loadRun(state.mode);
   if (!state.run) return screenStarter(g);
-  if (g.kind !== 'right' || heroAttacks().some((a: { mod: any }) => a.mod === g.mod)) return resumeRun();
-  const M = MODES[state.mode].modules[g.mod];
+  if (g.kind !== 'right' || heroAttacks().some((a) => a.mod === g.mod)) return resumeRun();
+  const M = MODES[state.mode].modules[g.mod!];
   const ov = modal(
     html`<h2>${M.icon} ${M.name}</h2><p>Dein Held in „${MODES[state.mode].title}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes" data-action="yes">Neues Abenteuer</button><button class="btn secondary" id="cont" data-action="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
     {
@@ -227,7 +225,7 @@ function playGoal(g: { kind: string; mod: any } | undefined) {
 }
 
 /* ---------- First start, PIN, parental gate ---------- */
-export const setupDone = (how: string) => {
+export const setupDone = (how: 'done' | 'skipped') => {
   state.meta.setup[how] = true;
   state.meta.setup.at = state.meta.setup.at || new Date().toISOString();
   saveAll();
@@ -266,25 +264,27 @@ const pinHash = (p: string) => {
 let pinFails = 0,
   pinLockUntil = 0;
 // one numpad screen for entering the PIN, choosing one and the parental gate
-function screenCode(o: {
-  title: any;
-  text: any;
-  lock?: any;
-  relock?: any;
-  back: any;
-  forgot?: any;
-  onCode: any;
-  msg?: any;
-  task?: any;
-  len?: any;
-}) {
+// lock: the PIN itself is asked, three misses lock it; relock: see askPin; task: a sum instead of hidden digits
+interface CodeOpts {
+  title: string;
+  text: string;
+  msg?: string;
+  task?: string;
+  len?: number;
+  lock?: boolean;
+  relock?: boolean;
+  back: () => void;
+  forgot?: () => void;
+  onCode: (code: string, fail: (msg: string) => void) => void;
+}
+function screenCode(o: CodeOpts) {
   let val = '';
   const len = o.len || 4;
   if (!o.relock) state.depth++;
   screen(
     html`<div class="screen">${raw(topbar(o.title))}<div class="scroll"><div class="card codecard"><p>${o.text}</p>${o.task ? html`<div class="codetask">${o.task}</div>` : ''}<div class="codeval ${o.task ? 'plain' : ''}" id="cval" role="img"></div><p id="cmsg" class="cmsg" role="status">${o.msg || ''}</p>${o.forgot ? html`<button class="linkbtn" id="forgot" data-action="forgot">PIN vergessen?</button>` : ''}</div></div>
       <div class="bottom"><div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => html`<button data-k="${d}" data-action="key">${d}</button>`)}<button class="del" data-k="del" data-action="key" aria-label="Löschen">⌫</button><button data-k="0" data-action="key">0</button><button class="ok" data-k="ok" data-action="key" aria-label="Bestätigen">✓</button><button class="cancel" id="back" data-action="back" style="grid-column:1/-1">Zurück</button></div></div></div>`,
-    { key: (b) => press(b.dataset.k), back: () => o.back(), forgot: () => o.forgot() },
+    { key: (b) => press(b.dataset.k), back: () => o.back(), forgot: () => o.forgot!() },
   );
   const paint = () => {
     const el = $('#cval');
@@ -294,7 +294,7 @@ function screenCode(o: {
     el.setAttribute('aria-label', o.task ? val || 'leer' : `${val.length} von ${len} Ziffern`);
   };
   const keys = [...app.querySelectorAll<HTMLButtonElement>('.numpad [data-k]')];
-  const fail = (msg: string | null) => {
+  const fail = (msg: string) => {
     val = '';
     paint();
     $('#cmsg').textContent = msg;
@@ -347,17 +347,7 @@ function screenCode(o: {
   }
 }
 // relock: the parents' area locked itself; a wrong PIN goes to the title screen
-export function askPin(
-  then: {
-    (jump: string | null, back?: { (): void; (): void } | undefined, quiet?: boolean | undefined): void;
-    (jump: string | null, back?: { (): void; (): void } | undefined, quiet?: boolean | undefined): void;
-    (): void;
-    (): void;
-    (): void;
-    (): any;
-  },
-  relock?: boolean | undefined,
-) {
+export function askPin(then: () => void, relock?: boolean) {
   if (!state.meta.pin) return then();
   screenCode({
     title: 'Elternbereich',
@@ -366,7 +356,7 @@ export function askPin(
     relock,
     back: screenTitle,
     forgot: () => screenGate(then),
-    onCode: (v: any, fail: (arg0: string) => void) => {
+    onCode: (v, fail) => {
       if (pinHash(v) === state.meta.pin) {
         pinFails = 0;
         return then();
@@ -392,19 +382,19 @@ document.addEventListener('visibilitychange', () => {
     $('.scroll').scrollTop = y;
   }, true);
 });
-export function setPin(done: { (): void; (): void; (): void }, back: { (): void; (): void; (): void }) {
-  const first = (msg?: string | undefined) =>
+export function setPin(done: () => void, back: () => void) {
+  const first = (msg?: string) =>
     screenCode({
       title: 'PIN festlegen',
       text: 'Vier Ziffern für den Elternbereich wählen.',
       msg,
       back,
-      onCode: (a: any) =>
+      onCode: (a) =>
         screenCode({
           title: 'PIN festlegen',
           text: 'Zur Kontrolle dieselbe PIN noch einmal eingeben.',
           back: () => first(),
-          onCode: (b: any) => {
+          onCode: (b) => {
             if (a !== b) return first('Die beiden Eingaben waren verschieden. Bitte neu wählen.');
             state.meta.pin = pinHash(a);
             setupDone('done');
@@ -414,7 +404,7 @@ export function setPin(done: { (): void; (): void; (): void }, back: { (): void;
     });
   first();
 }
-function screenGate(then: any, msg?: string | undefined) {
+function screenGate(then: () => void, msg?: string) {
   const a = rnd(13, 29),
     b = rnd(13, 29);
   screenCode({
@@ -423,12 +413,20 @@ function screenGate(then: any, msg?: string | undefined) {
     task: `${a} · ${b} = ?`,
     msg,
     back: screenTitle,
-    onCode: (v: string | number) =>
+    onCode: (v) =>
       +v === a * b ? setPin(then, screenTitle) : screenGate(then, 'Das stimmt nicht. Hier ist eine neue Aufgabe.'),
   });
 }
 
 /* ---------- Changelog (CHANGELOG.md via tools/build.js) ---------- */
+// one day of the changelog, as tools/build.js puts it into the page
+interface NewsDay {
+  date: string;
+  groups: { title: string; items: string[] }[];
+}
+declare global {
+  var CHANGELOG: NewsDay[] | undefined;
+}
 const NEWS = Array.isArray(globalThis.CHANGELOG) ? globalThis.CHANGELOG : [];
 const hasNews = () => NEWS.length > 0 && NEWS[0].date > (state.meta.seenNews || '');
 export const MONTHS = [
@@ -445,18 +443,16 @@ export const MONTHS = [
   'November',
   'Dezember',
 ];
-const deDate = (iso: {
-  split: (arg0: string) => { (): any; new (): any; map: { (arg0: NumberConstructor): [any, any, any]; new (): any } };
-}) => {
+const deDate = (iso: string) => {
   const [y, m, d] = iso.split('-').map(Number);
   return `${d}. ${MONTHS[m - 1]} ${y}`;
 };
-const GROUP_ICON = { Neu: '✨', Verbessert: '🔧', Behoben: '🐞' };
+const GROUP_ICON: Record<string, string> = { Neu: '✨', Verbessert: '🔧', Behoben: '🐞' };
 function screenNews() {
   state.depth = 1;
   const unseen = state.meta.seenNews || '';
   screen(
-    html`<div class="screen">${raw(topbar('Was ist neu?'))}<div class="scroll"><div class="stack">${NEWS.length ? NEWS.map((e: { date: number; groups: any[] }) => html`<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? html` <span class="newbadge">Neu!</span>` : ''}</h3>${e.groups.map((g: { title: unknown; items: any[] }) => html`<h4>${GROUP_ICON[g.title] || '📌'} ${g.title}</h4><ul>${g.items.map((it: unknown) => html`<li>${it}</li>`)}</ul>`)}</div>`) : html`<p>Noch keine Einträge.</p>`}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
+    html`<div class="screen">${raw(topbar('Was ist neu?'))}<div class="scroll"><div class="stack">${NEWS.length ? NEWS.map((e) => html`<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? html` <span class="newbadge">Neu!</span>` : ''}</h3>${e.groups.map((g) => html`<h4>${GROUP_ICON[g.title] || '📌'} ${g.title}</h4><ul>${g.items.map((it) => html`<li>${it}</li>`)}</ul>`)}</div>`) : html`<p>Noch keine Einträge.</p>`}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     { back: screenTitle },
   );
   if (NEWS.length) {

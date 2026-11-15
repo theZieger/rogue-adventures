@@ -1,7 +1,7 @@
 import { MODES } from '../curriculum.ts';
 import { html, raw } from '../ui/html.ts';
 import { $, MODULES_OF, TYPES, app, esc } from './core.ts';
-import { goalDone, heroLocked, heroSVG, makeTask, weekly, weeklyGoals } from './progress.ts';
+import { type Attack, goalDone, heroLocked, heroSVG, makeTask, weekly, weeklyGoals } from './progress.ts';
 import { state } from './state.ts';
 import { enabledMods, extraOn, heroShown, loadRun, visSubjects } from './storage.ts';
 import { runTask } from './tasks.ts';
@@ -13,17 +13,17 @@ import { SFX, announce, fx, on, screen, topbar } from './ui.ts';
 // the device statistics belong to one child and a duel would mix in the other child's answers.
 const DUEL_HP = 60,
   DUEL_HIT = 12;
-const duelSpec = (p: { mode: string | number; hero: any }) => MODES[p.mode].starters.find((s) => s.id === p.hero);
+const duelSpec = (p: Duellist) => MODES[p.mode].starters.find((s) => s.id === p.hero);
 // each child plays at the level of the running adventure in that unit, otherwise level 1
-const duelTiers = (m: string | null) => {
+const duelTiers = (m: string) => {
   const r = loadRun(m);
   return Object.fromEntries(
     Object.entries(MODES[m].modules).map(([k, M]) => [k, Math.max(1, Math.min(M.maxTier, (r && r.tiers[k]) || 1))]),
   );
 };
-const duelAttacks = (p: { mode: string | number | undefined }) => {
+const duelAttacks = (p: Duellist): Attack[] => {
   const on = enabledMods(p.mode);
-  const a = duelSpec(p).attacks.filter((x: { mod: string }) => on.includes(x.mod));
+  const a = duelSpec(p).attacks.filter((x: Attack) => on.includes(x.mod));
   return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k }));
 };
 // a child choosing its unit and hero; startDuel adds hp and tiers
@@ -31,6 +31,14 @@ interface DuelPlayer {
   name: string;
   mode: string | null;
   hero: string | null;
+}
+// both in the running duel
+interface Duellist {
+  name: string;
+  mode: string;
+  hero: string;
+  hp: number;
+  tiers: Record<string, number>;
 }
 export function screenDuel(players: DuelPlayer[]) {
   const i = players.length;
@@ -47,7 +55,7 @@ export function screenDuel(players: DuelPlayer[]) {
     $('#dheroes').innerHTML = p.mode
       ? html`<h3>Dein Held</h3><div class="stack">${heroes().map(
           (s) =>
-            html`<button class="choice ${p.hero === s.id ? 'selected' : ''}" data-hero="${s.id}" data-action="hero" aria-pressed="${String(p.hero === s.id)}">${raw(heroSVG(s, 0))}<div class="meta"><div class="name">${s.names[0]}</div><div class="desc">Attacken: ${[...new Set(s.attacks.map((a: { mod: string | number }) => MODES[p.mode!].modules[a.mod].name))].join(', ')}</div></div></button>`,
+            html`<button class="choice ${p.hero === s.id ? 'selected' : ''}" data-hero="${s.id}" data-action="hero" aria-pressed="${String(p.hero === s.id)}">${raw(heroSVG(s, 0))}<div class="meta"><div class="name">${s.names[0]}</div><div class="desc">Attacken: ${[...new Set(s.attacks.map((a: Attack) => MODES[p.mode!].modules[a.mod].name))].join(', ')}</div></div></button>`,
         )}</div>`.text
       : '';
     $<HTMLButtonElement>('#go').disabled = !p.hero;
@@ -82,16 +90,16 @@ export function screenDuel(players: DuelPlayer[]) {
 }
 function startDuel(players: DuelPlayer[], first: number) {
   state.run = null;
-  state.duel = { p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode) })), turn: first };
+  state.duel = { p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode!) })), turn: first };
   duelTurn(`${esc(state.duel.p[first].name)} fängt an.`, '');
 }
 // child 1 stands at the bottom like the hero in a fight, child 2 at the top
-function renderDuel(log: string, cls: unknown) {
-  const plate = (p: { hp: unknown; name: unknown; mode: string | number }, side: unknown) => {
+function renderDuel(log: string, cls: string) {
+  const plate = (p: Duellist, side: string) => {
     const pct = (p.hp / DUEL_HP) * 100;
     return html`<div class="plate ${side}"><div class="name">${p.name}${state.duel.p[state.duel.turn] === p ? html` <span class="levelbadge">am Zug</span>` : ''}</div><div class="plateline"><span class="chip" style="background:${TYPES[duelSpec(p).type].color};color:#1C2541">${MODES[p.mode].icon} ${duelSpec(p).names[0]}</span></div><div class="hpbar"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">❤️ ${p.hp} / ${DUEL_HP}</div></div>`;
   };
-  const sprite = (p: any, side: unknown, id: unknown) =>
+  const sprite = (p: Duellist, side: string, id: string) =>
     html`<div class="sprite ${side}" id="${id}">${raw(heroSVG(duelSpec(p), 0, side === 'enemy' ? 'enemy' : undefined))}<i class="ground"></i></div>`;
   const [a, b] = state.duel.p;
   screen(
@@ -108,10 +116,10 @@ function duelTurn(log: string, cls: string) {
   const M = MODULES_OF();
   renderDuel(log, cls);
   $('#bottom').innerHTML =
-    html`<div class="attacks">${atks.map((a: { name: unknown; mod: string | number }, i: unknown) => html`<button class="atk" data-i="${i}" data-action="attack" aria-label="${a.name}: ${M[a.mod].name}, ${DUEL_HIT} Schaden"><span class="n">${a.name}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">💥 ${DUEL_HIT}</span></span></button>`)}</div>`.text;
+    html`<div class="attacks">${atks.map((a, i) => html`<button class="atk" data-i="${i}" data-action="attack" aria-label="${a.name}: ${M[a.mod].name}, ${DUEL_HIT} Schaden"><span class="n">${a.name}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">💥 ${DUEL_HIT}</span></span></button>`)}</div>`.text;
   on({ attack: (btn) => duelAttack(atks[+btn.dataset.i!]) });
 }
-function duelAttack(atk: { mod: string; name: string | undefined }) {
+function duelAttack(atk: Attack) {
   const p = state.duel.p[state.duel.turn],
     o = state.duel.p[1 - state.duel.turn];
   const t = makeTask(atk.mod, p.tiers[atk.mod] || 1);
@@ -153,9 +161,9 @@ function duelAttack(atk: { mod: string; name: string | undefined }) {
     },
   );
 }
-function screenDuelEnd(w: { name: unknown; hp: unknown }) {
+function screenDuelEnd(w: Duellist) {
   const players = state.duel.p;
-  const l = players.find((x: any) => x !== w);
+  const l = players.find((x: Duellist) => x !== w);
   state.duel = null;
   setTimeout(SFX.win, 150);
   screen(

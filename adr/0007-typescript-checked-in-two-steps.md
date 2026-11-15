@@ -1,11 +1,10 @@
-# TypeScript everywhere, strictness in two steps
+# TypeScript everywhere, strict
 
 Every file of `src/` except the service worker is TypeScript. Node runs the files as they are (it strips the
-types), esbuild bundles them, and `tsc` only checks. `tsc` runs strict with one exception, `noImplicitAny`: a
-parameter without a type is still allowed, because the content and screen files were typed from working JavaScript
-and annotating thousands of parameters by hand would have added noise before it added safety. What is fully typed
-today is the save (`Meta` in `src/save.ts`), the curriculum, the save code, the QR code and the shape of the
-shared state. Known gaps, each named where it lives: the running adventure (`Run` in `src/app/state.ts`) and the
-unit files' fields (`Untyped` in `src/curriculum.ts`) are `any`, about sixty lists and records that start empty are
-`any[]` or `Record<string, any>`, and `$()` promises an element that a screen has just
-rendered. The next step is to switch `noImplicitAny` on, file by file.
+types), esbuild bundles them, and `tsc` only checks: strict, with nothing switched off. The types went in on top of
+working JavaScript and were proven not to touch it: with the types erased, every file is byte for byte the
+JavaScript it was before.
+
+A handful of `any` remain, each named and explained where it lives: data that has just been read from storage and
+not yet repaired (`Unchecked` in `src/save.ts`, `fixTurm` in `src/app/turm.ts`), and the generated task inside a
+Turmwacht monster. New code does not add to them.

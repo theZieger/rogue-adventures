@@ -1,4 +1,4 @@
-import { CURRICULUM, MODES, MODE_KEYS, SUBJECTS } from '../curriculum.ts';
+import { CURRICULUM, MODES, MODE_KEYS, SUBJECTS, type Subject } from '../curriculum.ts';
 import { ELTERN } from '../eltern.ts';
 import { MK } from '../knowledge.ts';
 import { MQ } from '../logic.ts';
@@ -10,7 +10,7 @@ import { SITE, applySave, backupDue, packSave, qrCode, saveData, summaryHtml, un
 import { $, app } from './core.ts';
 import { weekReport } from './duell.ts';
 import { screenFeedback } from './feedback.ts';
-import { REWARDS, goalText } from './progress.ts';
+import { type Attack, REWARDS, goalText } from './progress.ts';
 import { state } from './state.ts';
 import {
   EXTRAS,
@@ -40,14 +40,29 @@ const ICO = {
   warn: '<path d="M12 3l10 18H2zM12 10v5M12 18v.5"/>',
 };
 const ico = (n: keyof typeof ICO) => raw(`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICO[n]}</svg>`);
-const P_TABS = {
+// each tab: title, icon and its sub-tabs
+const P_TABS: Record<string, [title: string, icon: keyof typeof ICO, subs: Record<string, string>]> = {
   overview: ['Überblick', 'chart', { week: 'Diese Woche', all: 'Insgesamt' }],
   practice: ['Inhalte', 'book', { subjects: 'Fächer', how: 'So lernt Ihr Kind' }],
   settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', show: 'Anzeigen', reset: 'Löschen' }],
 };
-const P_JUMPS = { load: ['settings', 'save'], save: ['settings', 'save'], appsec: ['settings', 'app'] };
-export let pAt: { tab: any; sub: any; back?: any; subj: any; mode: any };
-const tutOf = (m: string | number, k: string, tier: string | number) => {
+const P_JUMPS: Record<string, [tab: string, sub: string]> = {
+  load: ['settings', 'save'],
+  save: ['settings', 'save'],
+  appsec: ['settings', 'app'],
+};
+// where the parents are: the tab, the open sub-tab of each tab, the open subject (-1: the list) and its unit
+interface ParentPlace {
+  tab: string;
+  sub: Record<string, string>;
+  subj: number;
+  mode: string;
+  back?: () => void;
+}
+export let pAt: ParentPlace;
+// ELTERN.INFO and ELTERN.PLAN are looked up by the unit and task type on screen
+type Texts<T> = Record<string, T>;
+const tutOf = (m: string, k: string, tier: number) => {
   const c = MODES[m];
   return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier];
 };
@@ -66,23 +81,19 @@ export function confirmBox(title: string, body: string | Markup, yes: string, fn
   $('#no', ov).focus({ preventScroll: true });
 }
 // quiet: redrawn in place after a switch or a tab, without the screen animation
-export function screenParent(
-  jump: string | null,
-  back?: { (): void; (): void } | undefined,
-  quiet?: boolean | undefined,
-) {
+export function screenParent(jump?: string | null, back?: () => void, quiet?: boolean) {
   back = typeof back === 'function' ? back : screenTitle;
   if (!quiet) pAt = { tab: 'overview', sub: {}, subj: -1, mode: '' };
-  if (P_JUMPS[jump]) {
-    pAt.tab = P_JUMPS[jump][0];
-    pAt.sub[pAt.tab] = P_JUMPS[jump][1];
+  if (P_JUMPS[jump!]) {
+    pAt.tab = P_JUMPS[jump!][0];
+    pAt.sub[pAt.tab] = P_JUMPS[jump!][1];
   }
   pAt.back = back;
   const tab = pAt.tab;
   const subs = P_TABS[tab][2];
   const sub = subs[pAt.sub[tab]] ? pAt.sub[tab] : Object.keys(subs)[0];
   state.depth = sub === 'subjects' && curGrade().subjects[pAt.subj] ? 2 : 1;
-  const redraw = (focus?: string | undefined) => {
+  const redraw = (focus?: string) => {
     screenParent(null, back, true);
     const el = focus && $(focus);
     if (el) el.focus({ preventScroll: true });
@@ -95,9 +106,9 @@ export function screenParent(
     $('.scroll').scrollTop = y;
     if (i >= 0 && switches()[i]) switches()[i].focus({ preventScroll: true });
   };
-  const card = (h: unknown, body: unknown, cls?: string) =>
+  const card = (h: string | Markup, body: unknown, cls?: string) =>
     html`<div class="card pcard${cls ? ' ' + cls : ''}">${h ? html`<h3>${h}</h3>` : ''}${body}</div>`;
-  const note = (t: unknown) => html`<p class="pnote">${t}</p>`;
+  const note = (t: string | Markup) => html`<p class="pnote">${t}</p>`;
   const msg = raw('<p class="tmsg" role="status"></p>');
   const speakSettings = () => {
     const vs = voices(),
@@ -126,9 +137,9 @@ export function screenParent(
     ];
   };
   // attr: the switch's own attributes, its action among them
-  const sw = (on: unknown, attr: Markup, title: unknown, desc?: unknown) =>
+  const sw = (on: boolean, attr: Markup, title: string | Markup, desc?: Markup) =>
     html`<div class="prow"><div class="ptext"><b>${title}</b>${desc}</div><button class="switch" role="switch" aria-checked="${String(!!on)}" aria-label="${raw(html`${title}`.text.replace(/<[^>]+>/g, ''))}" ${attr}><i></i></button></div>`;
-  const stat = (n: unknown, v: unknown) =>
+  const stat = (n: string, v: string | number) =>
     html`<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
   const level = (c: number, t: number) =>
     c / t >= 0.8
@@ -142,12 +153,12 @@ export function screenParent(
     html`<b>sicher:</b> mindestens 8 von 10 richtig · <b>fast sicher:</b> mindestens die Hälfte · <b>übt noch:</b> weniger als die Hälfte`,
   );
   const report = weekReport();
-  const gameState = (m: string | null) => {
+  const gameState = (m: string) => {
     if (!shown(m)) return 'ausgeblendet';
     const all = Object.keys(MODES[m].modules);
     const n = all.filter((k) => !offList(m).includes(k)).length;
     const S = MODES[m].starters;
-    return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x: { id: any }) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`;
+    return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x: { id: string }) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`;
   };
 
   const turmSubjCard = () => {
@@ -175,7 +186,7 @@ export function screenParent(
   const pages: Record<string, () => unknown> = {
     week() {
       const r = report;
-      const sum = (f: string) => r.rows.reduce((a, x) => a + x[f], 0);
+      const sum = (f: 'c' | 't') => r.rows.reduce((a, x) => a + x[f], 0);
       const weak = r.rows
         .filter((x) => x.t >= 3 && x.c / x.t < 0.8)
         .sort((a, b) => a.c / a.t - b.c / b.t)
@@ -253,7 +264,7 @@ export function screenParent(
                 Object.values(state.meta.turm.last).some((v) => v.t)
                   ? html`<p class="plead">Letzte Turmwacht</p>${Object.entries(state.meta.turm.last)
                       .filter(([, v]) => v.t)
-                      .map(([s, v]) => srow(SUBJECTS[s], s, v.c, v.t))}`
+                      .map(([s, v]) => srow(SUBJECTS[s as Subject], s, v.c, v.t))}`
                   : ''
               }${note(ELTERN.TURM.counts)}`,
             )
@@ -296,7 +307,7 @@ export function screenParent(
       const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0];
       const c = MODES[m];
       const keys = Object.keys(c.modules);
-      const plan = ELTERN.PLAN[m];
+      const plan = (ELTERN.PLAN as Texts<string>)[m];
       return [
         html`<button class="pback" id="pback" data-action="subjects">${ico('back')}Alle Fächer</button>`,
         s.modes.length > 1
@@ -338,12 +349,12 @@ export function screenParent(
         c.starters.length > 1
           ? card(
               'Helden',
-              html`${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), html`data-hide="hero:${m}:${x.id}" data-action="hide"`, x.names[0], html`<span>${[...new Set(x.attacks.map((a: { mod: string | number }) => c.modules[a.mod].name))].join(', ')}</span>`))}${msg}`,
+              html`${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), html`data-hide="hero:${m}:${x.id}" data-action="hide"`, x.names[0], html`<span>${[...new Set(x.attacks.map((a: Attack) => c.modules[a.mod].name))].join(', ')}</span>`))}${msg}`,
             )
           : '',
         card(
           'Aufgabenarten',
-          html`${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), html`data-m="${m}" data-k="${k}" data-action="module"`, html`${c.modules[k].icon} ${c.modules[k].name}`, html`<span>${ELTERN.INFO[m][k]}</span><button class="linkbtn" data-info="${k}" data-action="info">Beispiel ansehen</button>`))}${msg}`,
+          html`${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), html`data-m="${m}" data-k="${k}" data-action="module"`, html`${c.modules[k].icon} ${c.modules[k].name}`, html`<span>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</span><button class="linkbtn" data-info="${k}" data-action="info">Beispiel ansehen</button>`))}${msg}`,
         ),
       ];
     },
@@ -488,7 +499,7 @@ export function screenParent(
       navigator.clipboard.writeText(text).then(() => tell('Kopiert.'), mark);
     else mark();
   };
-  const readCode = async (how: string) => {
+  const readCode = async (how: 'merge' | 'replace') => {
     let s;
     try {
       s = await unpackSave($<HTMLTextAreaElement>('#pcodein').value);
@@ -513,17 +524,17 @@ export function screenParent(
         true,
       );
   };
-  const setHidden = (keys: string | ConcatArray<string>, hide: boolean) => {
+  const setHidden = (keys: string[], hide: boolean) => {
     state.meta.hidden = state.meta.hidden.filter((x) => !keys.includes(x)).concat(hide ? keys : []);
   };
-  const noGameLeft = (keys: string | string[]) =>
+  const noGameLeft = (keys: string[]) =>
     !curGrade().subjects.some((s) => s.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
   screen(
     html`<div class="screen">${raw(topbar('Elternbereich'))}<nav class="ptabs" role="tablist" aria-label="Bereiche">${Object.entries(
       P_TABS,
     ).map(
       ([id, [t, ic]]) =>
-        html`<button role="tab" data-pt="${id}" data-action="tab" aria-selected="${String(id === tab)}">${ico(ic as keyof typeof ICO)}<span>${t}</span></button>`,
+        html`<button role="tab" data-pt="${id}" data-action="tab" aria-selected="${String(id === tab)}">${ico(ic)}<span>${t}</span></button>`,
     )}</nav><div class="scroll"><div class="stack" id="p-${sub}">
       ${state.meta.pin || tab !== 'overview' ? '' : html`<div class="card warncard pwarn">${ico('warn')}<p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew" data-action="pin">PIN festlegen</button></div>`}
       ${
@@ -539,11 +550,11 @@ export function screenParent(
     {
       back: () => back(),
       tab: (b) => {
-        pAt.tab = b.dataset.pt;
+        pAt.tab = b.dataset.pt!;
         redraw('.ptabs [aria-selected=true]');
       },
       subtab: (b) => {
-        pAt.sub[tab] = b.dataset.ps;
+        pAt.sub[tab] = b.dataset.ps!;
         redraw('.psubtabs [aria-selected=true]');
       },
       subject: (b) => {
@@ -558,7 +569,7 @@ export function screenParent(
       },
       mode: (b) => {
         const x = $('.pchips').scrollLeft;
-        pAt.mode = b.dataset.pm;
+        pAt.mode = b.dataset.pm!;
         redraw('.pchips [aria-selected=true]');
         $('.pchips').scrollLeft = x;
       },
@@ -568,7 +579,7 @@ export function screenParent(
         const M = MODES[m].modules[k];
         const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
         const ov = modal(
-          html`<h2>${M.icon} ${M.name}</h2><p>${ELTERN.INFO[m][k]}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => html`${tiers.length > 1 ? html`<h4>Stufe ${t}: ${x.title}</h4>` : ''}<ol>${x.steps.map((s: unknown) => html`<li>${s}</li>`)}</ol>`)}<button class="btn" id="ok" data-action="ok">Schließen</button>`,
+          html`<h2>${M.icon} ${M.name}</h2><p>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => html`${tiers.length > 1 ? html`<h4>Stufe ${t}: ${x.title}</h4>` : ''}<ol>${x.steps.map((s: string) => html`<li>${s}</li>`)}</ol>`)}<button class="btn" id="ok" data-action="ok">Schließen</button>`,
           { ok: () => ov.remove() },
         );
         $('#ok', ov).focus({ preventScroll: true });
@@ -754,11 +765,11 @@ export function screenParent(
         again();
       },
       turmSubject: (b) => {
-        const [g, s] = b.dataset.tsub!.split(':'),
-          all = Object.assign({}, state.meta.turm.subjects),
+        const [g, s] = b.dataset.tsub!.split(':') as [string, Subject],
+          all: Record<string, Subject[]> = Object.assign({}, state.meta.turm.subjects),
           cur = all[g] || [];
         if (!cur.includes(s) && cur.length >= 3) return say(b, 'Höchstens drei Fächer.');
-        all[g] = cur.includes(s) ? cur.filter((x: string) => x !== s) : cur.concat(s);
+        all[g] = cur.includes(s) ? cur.filter((x) => x !== s) : cur.concat(s);
         if (!all[g].length) delete all[g];
         state.meta.turm.subjects = Object.keys(all).length ? all : null;
         saveAll();

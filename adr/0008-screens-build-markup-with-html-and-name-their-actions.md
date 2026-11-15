@@ -6,7 +6,11 @@ element calls `actions.send`. One listener on the page serves every screen. Befo
 to remember `esc()` at each value, and after every render looked its buttons up by id to set `onclick` again; the
 back button knew a list of ids by heart.
 
-The feedback screen is written this way and is the example to copy. The other screens still use `render()` with
-strings and `onclick`, which keeps working beside it. A screen moves over when it is changed anyway, in the same
-pull request, with its screenshots unchanged; a rewrite of all screens at once would risk the save and the tests
-for no change a child can see. Ids stay on elements the tests and the back button look for.
+Every screen and dialog is written this way; `src/app/feedback.ts` is the shortest example. They were moved over
+in one step, and the proof that nothing changed is a recording: a bot plays all units on a virtual clock and writes
+down the page at every step (`TRACE_DIR` in `tests/playtests.js`), and the 5,734 pages were identical before and
+after, apart from the new `data-action` attributes. `render()` with a string still exists for the few places that
+update a part of a screen in place. Ids stay on elements the tests and the back button look for.
+
+`html` adds nothing for `null`, `undefined` and `false`, so `${shown && html`…`}` works; an attribute that must say
+"false" takes `String(flag)`.

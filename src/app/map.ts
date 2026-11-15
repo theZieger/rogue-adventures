@@ -3,9 +3,20 @@ import { MQ } from '../logic.ts';
 import { PANTRY_MAX, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
-import { battleWon, enemyTurn, readEnd, renderBattle, screenRead, startBattle, topEnd } from './battle.ts';
+import {
+  type Attack,
+  type Battle,
+  type Enemy,
+  battleWon,
+  enemyTurn,
+  readEnd,
+  renderBattle,
+  screenRead,
+  startBattle,
+  topEnd,
+} from './battle.ts';
 import { screenVictory } from './collection.ts';
-import { $, CFG, ITEMS, MODKEYS, MODULES_OF, app, makeMap, pick } from './core.ts';
+import { $, CFG, ITEMS, type Item, MODKEYS, MODULES_OF, app, makeMap, pick } from './core.ts';
 import {
   screenEvent,
   screenKarte,
@@ -30,6 +41,7 @@ import {
   monsterSVG,
   seededOrder,
   showWeeklyNews,
+  type WeeklyGoal,
   typeChip,
   weekly,
   xpNeeded,
@@ -39,37 +51,45 @@ import { enabledMods, extraOn, heroShown, marketOn, offList, practice, saveAll }
 import { screenSubject, screenTitle, screenWeekly, subjectOf } from './title.ts';
 import { modal, screen, topbar } from './ui.ts';
 
+// a monster to start with, as the unit lists it
+interface Starter {
+  id: string;
+  type: string;
+  shape: string;
+  names: string[];
+  hp: number;
+  desc: string;
+  attacks: Attack[];
+}
 // goal: the weekly goal this adventure was started for; its task type is offered as an attack
-export function screenStarter(goal?: { kind: string; mod: any } | undefined) {
+export function screenStarter(goal?: WeeklyGoal) {
   state.depth = 2;
-  const vis = CFG().starters.filter((s) => heroShown(state.mode, s));
+  const vis: Starter[] = CFG().starters.filter((s) => heroShown(state.mode, s));
   const S = vis.filter((s) => !heroLocked(s));
   const last = state.meta.lastStarter[state.mode];
   let sel = S.length === 1 ? S[0].id : null;
   const want = goal && goal.kind === 'right' ? goal.mod : null;
   // Klasse 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
-  const kit = (s: { attacks: string | any[] }) => {
+  const kit = (s: Starter) => {
     if (CFG().grade !== 1) return s.attacks;
     const a = s.attacks.slice(),
-      i = a.findIndex((x: { mod: any }) => x.mod === want);
+      i = a.findIndex((x) => x.mod === want);
     if (i > 0) a.unshift(a.splice(i, 1)[0]);
     return a.slice(0, 2 + (state.meta.started[state.mode] || 0));
   };
   // recommend the monster whose attacks were practised least (and not the one played last time); for a goal one that has its task type
-  const score = (s: { attacks: any[]; id: string }) =>
-    s.attacks.reduce((n: number, a: { mod: any }) => n + practice(a.mod), 0) +
+  const score = (s: Starter) =>
+    s.attacks.reduce((n, a) => n + practice(a.mod), 0) +
     (s.id === last ? 1e6 : 0) -
-    (want && s.attacks.some((a: { mod: any }) => a.mod === want) ? 1e9 : 0);
+    (want && s.attacks.some((a) => a.mod === want) ? 1e9 : 0);
   const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
   // offer to swap the most practised attack for the goal's task type or one that was hardly practised yet
   let swap: { from: string; to: string; goal?: boolean } | null = null,
     swapOn = true;
-  const swapFor = (s: any) => {
+  const swapFor = (s: Starter | undefined) => {
     if (!s) return null;
-    const have = kit(s).map((a: { mod: any }) => a.mod);
-    const most = have
-      .filter((k: string) => enabledMods().includes(k))
-      .sort((a: any, b: any) => practice(b) - practice(a))[0];
+    const have = kit(s).map((a) => a.mod);
+    const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
     if (want) return have.includes(want) || !most ? null : { from: most, to: want, goal: true };
     const cand = enabledMods()
       .filter((k) => !have.includes(k))
@@ -88,7 +108,7 @@ export function screenStarter(goal?: { kind: string; mod: any } | undefined) {
       : '';
   };
   const choose = (b: HTMLElement) => {
-    sel = b.dataset.id;
+    sel = b.dataset.id!;
     app.querySelectorAll<HTMLElement>('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b));
     $<HTMLButtonElement>('#go').disabled = false;
     paintSwap();
@@ -108,7 +128,7 @@ export function screenStarter(goal?: { kind: string; mod: any } | undefined) {
         xp: 0,
         hp: s.hp,
         maxHp: s.hp,
-        attacks: kit(s).map((a: { name: any; mod: any }) => ({ name: a.name, mod: a.mod })),
+        attacks: kit(s).map((a) => ({ name: a.name, mod: a.mod })),
       },
       items: ['trank'].concat(state.meta.pantry.slice(0, PANTRY_MAX)),
       tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(state.mode)[k] || 1) - 1)])),
@@ -117,7 +137,7 @@ export function screenStarter(goal?: { kind: string; mod: any } | undefined) {
     };
     state.run.map = makeMapFor(1);
     if (swap && swapOn) {
-      const a = state.run.hero.attacks.find((x: { mod: string }) => x.mod === swap!.from);
+      const a = state.run.hero.attacks.find((x: Attack) => x.mod === swap!.from);
       if (a) {
         a.mod = swap.to;
         a.name = CFG().extra[swap.to];
@@ -136,7 +156,7 @@ export function screenStarter(goal?: { kind: string; mod: any } | undefined) {
   screen(
     html`<div class="screen">${raw(topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster'))}<div class="scroll"><div class="stack">
       ${goal ? html`<p class="center goalbadge">⭐ Wochenziel: ${goalText(goal)}</p>` : ''}
-      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a: { mod: string | number }) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
+      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
       ${vis
         .filter(heroLocked)
         .map(
@@ -159,7 +179,7 @@ export function screenStarter(goal?: { kind: string; mod: any } | undefined) {
   paintSwap();
 }
 // shorter adventures for the younger grades; enemies stay as strong (see startBattle)
-const FLOORS_BY_GRADE = { 1: 6, 2: 7, 3: 8 };
+const FLOORS_BY_GRADE: Record<number, number> = { 1: 6, 2: 7, 3: 8 };
 // floors are counted on an 8-floor map; m.slice(a, -2) ends before the camp and the boss
 function makeMapFor(world: number) {
   const m = makeMap(FLOORS_BY_GRADE[CFG().grade] || 8);
@@ -225,7 +245,7 @@ function makeMapFor(world: number) {
 export const textsFor = (m: string) => TEXTE.map((t, i) => i).filter((i) => (TEXTE[i].grade || 3) === MODES[m].grade);
 const readsIn = (m: string) => ['Deutsch', 'Ethik'].includes(MODES[m].subject) && textsFor(m).length > 0;
 // same enemy, weak spot and HP on every device in this week
-function weekBossSpec(world: string) {
+function weekBossSpec(world: number) {
   const r = MQ.seeded(weekly().week + ':' + state.mode + ':' + world);
   const pool = CFG().enemies[world].normal;
   const e = pool[Math.floor(r() * pool.length)];
@@ -238,6 +258,12 @@ function weekBossSpec(world: string) {
   });
 }
 
+// a place on the map: its type, its lane and the nodes of the next floor it leads to
+interface MapNode {
+  t: keyof typeof NODE_INFO;
+  c: number;
+  n: number[];
+}
 export const NODE_INFO = {
   fight: ['⚔️', 'Kampf'],
   elite: ['💀', 'Elite'],
@@ -259,18 +285,18 @@ export function screenMap() {
   state.depth = 2;
   const h = state.run.hero;
   const open = openNodes();
-  const live = state.run.map.map(() => new Set());
-  open.forEach((i: any) => live[state.run.floor - 1].add(i));
+  const live: Set<number>[] = state.run.map.map(() => new Set());
+  open.forEach((i) => live[state.run.floor - 1].add(i));
   for (let f = state.run.floor - 1; f < state.run.map.length - 1; f++)
-    live[f].forEach((i: string | number) => state.run.map[f][i].n.forEach((j: any) => live[f + 1].add(j)));
+    live[f].forEach((i) => state.run.map[f][i].n.forEach((j: number) => live[f + 1].add(j)));
   const ROW = 86,
     H = state.run.map.length * ROW;
   const X = (c: number) => (c + 0.5) * 25;
   const Y = (f: number) => H - (f + 0.5) * ROW;
   const lines: Markup[] = [];
-  state.run.map.forEach((fl: any[], f: number) =>
-    fl.forEach((nd: { n: any[]; c: any }, i: any) =>
-      nd.n.forEach((j: string | number) => {
+  state.run.map.forEach((fl: MapNode[], f: number) =>
+    fl.forEach((nd, i) =>
+      nd.n.forEach((j) => {
         if (!state.run.map[f + 1] || !state.run.map[f + 1][j]) return;
         const walked = state.run.path[f] === i && state.run.path[f + 1] === j && f + 1 < state.run.floor - 1;
         const next = f === state.run.floor - 2 && state.run.path[f] === i && open.includes(j);
@@ -281,8 +307,8 @@ export function screenMap() {
       }),
     ),
   );
-  const nodes = state.run.map.map((fl: any[], f: number) =>
-    fl.map((nd: { t: unknown; c: any }, i: unknown) => {
+  const nodes = state.run.map.map((fl: MapNode[], f: number) =>
+    fl.map((nd, i) => {
       const isOpen = f === state.run.floor - 1 && open.includes(i);
       const taken = state.run.path[f] === i && f < state.run.floor - 1;
       const cls = isOpen
@@ -335,33 +361,26 @@ export function screenMap() {
 }
 // nodes the hero can step on now: all of floor 1, later only those the last node leads to
 function openNodes() {
-  const fl = state.run.map[state.run.floor - 1];
-  const all = fl.map((_: any, i: any) => i);
+  const fl: MapNode[] = state.run.map[state.run.floor - 1];
+  const all = fl.map((_, i) => i);
   if (state.run.floor === 1) return all;
-  const prev = state.run.map[state.run.floor - 2][state.run.path[state.run.floor - 2]];
-  const n = prev ? prev.n.filter((i: string | number) => fl[i]) : [];
+  const prev: MapNode | undefined = state.run.map[state.run.floor - 2][state.run.path[state.run.floor - 2]];
+  const n = prev ? prev.n.filter((i) => fl[i]) : [];
   return n.length ? n : all;
 }
 // ctx (Turmwacht) may override the texts: { full, later, desc: { [item id]: text } } and the screen after using an item outside a fight (done)
-export function showBag(
-  inBattle: {
-    (it: any): void;
-    (it: any, lv: any): void;
-    (it: any, lv: any): void;
-    (arg0: any, arg1: any[]): void;
-  } | null,
-  ctx?:
-    | ({ done: (it: any) => void } & {
-        full: string;
-        later: string;
-        desc: { trank: string; grosstrank: string; schild: string; keks: string; lupe: string };
-      })
-    | undefined,
-) {
-  const T = ctx || {};
-  const desc = (id: string | number) => (T.desc && T.desc[id]) || ITEMS[id].desc;
-  const stacks: any[] = [];
-  state.run.items.forEach((it: any, i: any) => {
+interface BagTexts {
+  full?: string;
+  later?: string;
+  desc?: Record<string, string>;
+  done?: (it: Item) => void;
+}
+// lv: what the item's XP brought (the level-up lines)
+export function showBag(inBattle: ((it: Item, lv: string[]) => void) | null, ctx?: BagTexts) {
+  const T: BagTexts = ctx || {};
+  const desc = (id: string) => (T.desc && T.desc[id]) || ITEMS[id].desc;
+  const stacks: { id: string; i: number; n: number }[] = [];
+  state.run.items.forEach((it: string, i: number) => {
     const st = stacks.find((x) => x.id === it);
     if (st) st.n++;
     else stacks.push({ id: it, i, n: 1 });
@@ -420,7 +439,7 @@ export function resumeRun() {
   if (n.done) return advance();
   if (n.reward) return screenTreasure('elite'); // elite beaten, reward not picked yet
   if (isObj(n.enemy)) {
-    const b = { enemy: n.enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
+    const b: Battle = { enemy: n.enemy as Enemy, log: 'Der Kampf geht weiter!', logCls: '', phase: 'choose' };
     if (isObj(n.enemy.top) && (n.enemy.hp <= 0 || n.enemy.top.spin <= 0)) return topEnd(b);
     if (n.enemy.hp <= 0) return n.enemy.read ? readEnd(b) : battleWon(b); // defeated just before the app closed: hand out the reward
     if (n.enemy.pending) {
@@ -477,7 +496,7 @@ export function advance() {
     state.run.path = [];
     state.meta.bestWorld = Math.max(state.meta.bestWorld, state.run.world);
     if (CFG().worldAttacks && CFG().worldAttacks[state.run.world]) {
-      state.run.hero.attacks = CFG().worldAttacks[state.run.world].map((x: { name: any; mod: any }) => ({
+      state.run.hero.attacks = CFG().worldAttacks[state.run.world].map((x: Attack) => ({
         name: x.name,
         mod: x.mod,
       }));

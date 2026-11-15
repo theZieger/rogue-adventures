@@ -101,11 +101,13 @@ export async function unpackSave(text: string): Promise<Backup> {
   if (!isObj(d) || d.v !== 1 || !isObj(d.meta)) throw bad;
   return { at: typeof d.at === 'string' ? d.at : '', meta: normMeta(d.meta), runs: isObj(d.runs) ? d.runs : {} };
 }
+// the save for the loops that take its fields by name
+type Fields = Meta & Record<string, any>;
 const okKnow = (q: unknown) => isObj(q) && Number.isFinite(q.c) && Number.isFinite(q.t);
 // dev = this device, inc = from the code (both normalised): nothing that was reached on either device gets lost
-export function mergeMeta(dev: Meta, inc: Meta) {
-  const m: Meta = JSON.parse(JSON.stringify(dev));
-  for (const k of ['runs', 'wins', 'bestWorld', 'knowSeq', 'stamps', 'stampsTotal'])
+export function mergeMeta(dev: Meta, inc: Fields): Meta {
+  const m: Fields = JSON.parse(JSON.stringify(dev));
+  for (const k of ['runs', 'wins', 'bestWorld', 'knowSeq', 'stamps', 'stampsTotal'] as const)
     if (Number.isFinite(inc[k])) m[k] = Math.max(Number.isFinite(m[k]) ? m[k] : 0, inc[k]);
   for (const k of ['dex', 'owned', 'seenTut', 'evoUnlocked', 'stampCard', 'worn'])
     if (isObj(inc[k])) {
@@ -156,7 +158,7 @@ export function mergeMeta(dev: Meta, inc: Meta) {
   // a device without PIN was not set up yet, so it takes the settings from the code
   const dt = m.turm,
     it = inc.turm;
-  for (const k of ['runs', 'wins', 'best']) dt[k] = Math.max(dt[k], it[k]);
+  for (const k of ['runs', 'wins', 'best'] as const) dt[k] = Math.max(dt[k], it[k]);
   if (!Object.keys(dt.last).length) dt.last = it.last;
   if (!dev.pin && inc.pin) {
     for (const k of ['off', 'hidden', 'sound', 'speak', 'grade', 'pin', 'setup']) m[k] = inc[k];

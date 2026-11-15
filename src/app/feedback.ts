@@ -15,7 +15,7 @@ const thanks = () =>
 
 const KINDS = ['💡 Idee', '🐞 Fehler', '❤️ Lob'];
 
-export function screenFeedback(back: { (): void; (): void }) {
+export function screenFeedback(back: () => void) {
   state.depth++;
   back = typeof back === 'function' ? back : screenTitle;
   let kind = KINDS[0];

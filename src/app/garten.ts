@@ -1,4 +1,5 @@
 import { MK } from '../knowledge.ts';
+import type { Meta } from '../save.ts';
 import { html, raw } from '../ui/html.ts';
 import { $ } from './core.ts';
 import { giveStamps, markWeek, stampLine } from './progress.ts';
@@ -10,10 +11,12 @@ import { SFX, modal, screen, topbar } from './ui.ts';
 
 /* ---------- Schulgarten ---------- */
 const DAY = 864e5;
+type Bed = Meta['garden']['beds'][number];
+export type Crop = keyof typeof MK.CROPS;
 // tests set window.__mq.now; a clock set back or forward only changes what grows, nothing is lost
 const clock = () => (Number.isFinite(window.__mq && window.__mq.now) ? window.__mq.now! : Date.now());
-const bedDays = (b: { plantedAt: number }) => Math.max(0, Math.floor((clock() - b.plantedAt) / DAY));
-const bedPhase = (b: { crop: string | null; plantedAt: number }) => {
+const bedDays = (b: Bed) => Math.max(0, Math.floor((clock() - b.plantedAt) / DAY));
+const bedPhase = (b: Bed) => {
   const d = bedDays(b);
   return d >= 7 ? 3 : d >= 5 ? 2 : d >= 2 ? 1 : 0;
 };
@@ -24,31 +27,31 @@ export function gardenCard() {
   const r = ripeBeds();
   if (!r.length) return '';
   const crops = [...new Set(r.map((b) => b.crop!))];
-  return `<div class="card gardencard"><p>${crops.length === 1 ? MK.CROPS[crops[0]].ripe : 'Im Schulgarten ist etwas reif.'}</p><button class="btn small" id="harvest">Ernten</button></div>`;
+  return `<div class="card gardencard"><p>${crops.length === 1 ? MK.CROPS[crops[0] as Crop].ripe : 'Im Schulgarten ist etwas reif.'}</p><button class="btn small" id="harvest">Ernten</button></div>`;
 }
 const PG_DEFS = `<defs>${lg('pg-soil', '#9A6640', '#6B4226')}${lg('pg-bd', '#C68B55', '#8A5530')}${lg('pg-lv', '#8DD16A', '#3E9640')}${lg('pg-dry', '#E6CE70', '#A8892E')}${rg('pg-tb', '#F3D48E', '#B88843')}</defs>`;
 const gLeaf = (x: number, y: number, rx: number, ry: number, a: number, f: string) =>
   `<g transform="translate(${x} ${y}) rotate(${a})"><path d="M0 0Q${rx * 0.4} ${-ry * 1.5} ${rx * 2} 0Q${rx * 0.4} ${ry * 1.5} 0 0Z" fill="${f}" ${ln(1.1)}/><path d="M1 0H${rx * 1.6}" stroke="${INK}" stroke-width=".6" opacity=".45"/></g>`;
 const gTuber = (x: number, y: number) =>
   `<ellipse cx="${x}" cy="${y}" rx="6" ry="4.2" fill="url(#pg-tb)" ${ln(1.5)}/><circle cx="${x + 2}" cy="${y + 1}" r=".8" fill="#8A6030"/><ellipse cx="${x - 2}" cy="${y - 1.6}" rx="2" ry="1" fill="#FFF7E0" opacity=".6"/>`;
-const gStalk = (x: number, top: any, c: string) =>
+const gStalk = (x: number, top: number, c: string) =>
   `<path d="M${x} 61V${top}" ${ln(3)}/><path d="M${x} 61V${top}" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/>`;
-const CROP_EAR = {
-  weizen: (x: number, t: number, c: any) =>
+const CROP_EAR: Record<string, (x: number, t: number, c: string) => string> = {
+  weizen: (x, t, c) =>
     [5, 4, 3, 2, 1, 0]
       .map((j) => {
         const y = t + 3 + j * 2.4;
         return `<ellipse cx="${x - 1.7}" cy="${y}" rx="1.9" ry="2.6" transform="rotate(-20 ${x - 1.7} ${y})" fill="${c}"/><ellipse cx="${x + 1.7}" cy="${y}" rx="1.9" ry="2.6" transform="rotate(20 ${x + 1.7} ${y})" fill="${c}"/>`;
       })
       .join('') + `<ellipse cx="${x}" cy="${t + 1.5}" rx="1.6" ry="2.4" fill="${c}"/>`,
-  roggen: (x: number, t: number, c: any) =>
+  roggen: (x, t, c) =>
     [6, 5, 4, 3, 2, 1, 0]
       .map((j) => {
         const y = t + 3 + j * 2.1;
         return `<path d="M${x - 1.2} ${y - 1}L${x - 3.5} ${y - 10}M${x + 1.2} ${y - 1}L${x + 3.5} ${y - 10}" stroke="#8A6A2A" stroke-width=".7" stroke-linecap="round"/><ellipse cx="${x - 1.2}" cy="${y}" rx="1.3" ry="2.1" fill="${c}"/><ellipse cx="${x + 1.2}" cy="${y}" rx="1.3" ry="2.1" fill="${c}"/>`;
       })
       .join(''),
-  hafer: (x: number, t: number, c: any) =>
+  hafer: (x, t, c) =>
     `<path d="M${x} ${t + 18}V${t}" stroke="${INK}" stroke-width="1" stroke-linecap="round"/>` +
     [0, 1, 2, 3]
       .map((j) => {
@@ -59,7 +62,11 @@ const CROP_EAR = {
       .join('') +
     `<ellipse cx="${x + 1}" cy="${t + 3}" rx="1.5" ry="2.8" fill="${c}"/>`,
 };
-const CROP_TOPS = { weizen: [24, 20, 17, 21, 25], roggen: [18, 14, 12, 15, 19], hafer: [22, 18, 15, 19, 23] };
+const CROP_TOPS: Record<string, number[]> = {
+  weizen: [24, 20, 17, 21, 25],
+  roggen: [18, 14, 12, 15, 19],
+  hafer: [22, 18, 15, 19, 23],
+};
 function plantSVG(crop: string | null, ph: number) {
   const ripe = ph === 3;
   const lf = ripe ? 'url(#pg-dry)' : 'url(#pg-lv)';
@@ -116,7 +123,7 @@ function plantSVG(crop: string | null, ph: number) {
           .join('');
   } else
     p = CROP_TOPS[crop]
-      .map((t: number, i: number) => {
+      .map((t, i) => {
         const x = 16 + i * 12,
           s = i % 2 ? 1 : -1;
         return `${gStalk(x, t + 6, stalk)}<path d="M${x} 50q${s * 5} -4 ${s * 10} -1q${s * -5} -1 ${s * -10} 4z" fill="${lf}" ${ln(0.9)}/><g stroke="${INK}" stroke-width=".75">${CROP_EAR[crop](x, t, ear)}</g>`;
@@ -127,17 +134,17 @@ function plantSVG(crop: string | null, ph: number) {
 }
 export function screenGarden() {
   state.depth = 1;
-  const bed = (b: { crop: string | number }, i: unknown) => {
+  const bed = (b: Bed, i: number) => {
     if (!bedOpen(i))
       return html`<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
     if (!b.crop)
       return html`<div class="bed">${raw(plantSVG(null, 0))}<div class="bedname">Beet ${i + 1}</div><div class="beddesc">Noch leer.</div><button class="btn small" data-action="plant" data-plant="${i}">Pflanzen</button></div>`;
-    const c = MK.CROPS[b.crop];
+    const c = MK.CROPS[b.crop as Crop];
     const ph = bedPhase(b);
     const d = bedDays(b);
     return html`<div class="bed${ph === 3 ? ' ripe' : ''}">${raw(plantSVG(b.crop, ph))}<div class="bedname">${c.name}</div><div class="beddesc">${ph === 3 ? 'Reif' : d ? html`${[c.put, 'Keimling', c.top][ph]}<br>Tag ${d} von 7` : `Heute ${c.put.toLowerCase()}`}</div>${ph === 3 ? html`<button class="btn small" data-action="harvest" data-harvest="${i}">Ernten</button>` : ''}</div>`;
   };
-  const got = Object.keys(MK.CROPS)
+  const got = (Object.keys(MK.CROPS) as Crop[])
     .filter((k) => state.meta.materials[k])
     .map((k) => `${MK.CROPS[k].name} ${state.meta.materials[k]}`);
   screen(
@@ -172,7 +179,7 @@ function plantDialog(i: number) {
 function harvest(i: number) {
   const b = state.meta.garden.beds[i];
   if (!b.crop || bedPhase(b) !== 3 || !bedOpen(i)) return screenGarden();
-  const c = MK.CROPS[b.crop];
+  const c = MK.CROPS[b.crop as Crop];
   const t = MK.gardenQuestion(b.crop);
   const ov = modal(
     html`<h2>${c.name} ernten</h2><p>Erst eine Frage zur Pflanze:</p><div class="question">${t.q}</div><div class="options" style="margin-top:12px">${t.options.map((o, k) => html`<button class="opt" data-action="answer" data-i="${k}">${o}</button>`)}</div><div id="hfb" role="status" aria-live="polite"></div>`,

@@ -1,6 +1,6 @@
 import { MODES } from '../curriculum.ts';
-import { MK } from '../knowledge.ts';
-import { MQ } from '../logic.ts';
+import { type Known, MK } from '../knowledge.ts';
+import { MQ, type Task } from '../logic.ts';
 import { MONART } from '../monsters.ts';
 import { isObj } from '../save.ts';
 import { html, raw } from '../ui/html.ts';
@@ -23,7 +23,7 @@ export const typeChip = (t: string) =>
 export const xpNeeded = (lvl: number) => 20 + lvl * 15;
 // a Turm run keeps world, tiers and the repeat guard per unit: task-type keys repeat across units
 const taskBox = () => (state.run && state.run.mode === 'turm' ? state.run.turm.at[state.mode] : state.run);
-const worldCapFor = (mod: string | number) => {
+const worldCapFor = (mod: string) => {
   const M = MODULES_OF()[mod];
   return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(taskBox().world, M.worldCap.length) - 1]);
 };
@@ -42,21 +42,8 @@ export const struggling = () => state.run.answered >= 8 && state.run.solved / st
 export function recordAnswer(
   mod: string,
   ok: boolean,
-  task?:
-    | {
-        kind?: string;
-        mod?: string;
-        tier?: number;
-        group?: string;
-        note?: any;
-        q?: string;
-        part?: any;
-        options?: any[];
-        answer?: any;
-        qid: any;
-        plant?: any;
-      }
-    | undefined,
+  // only the id under which the answer is remembered is needed
+  task?: Pick<Task, 'qid'>,
 ) {
   const M = MODULES_OF()[mod];
   const s = STATS()[mod];
@@ -79,7 +66,7 @@ export function recordAnswer(
   }
   if (task && task.qid) {
     state.meta.knowSeq++;
-    MK.record(state.meta.know, task.qid, ok, state.meta.knowSeq);
+    MK.record(state.meta.know as Record<string, Required<Known>>, task.qid, ok, state.meta.knowSeq);
   }
   const right = (n: number) => s.hist.slice(-n).reduce((a, b) => a + b, 0);
   if (!state.run) return;
@@ -117,7 +104,21 @@ export const markWeek = () => {
   const k = MQ.isoWeek(new Date());
   if (!(state.meta.stampCard[k] >= 1)) state.meta.stampCard[k] = 1;
 };
-export const REWARDS = [
+// has/get: owned and handed over in its own way instead of owned[id]
+export interface Reward {
+  id: string;
+  name: string;
+  desc: string;
+  price?: number;
+  stein?: number;
+  world?: number;
+  bg?: string;
+  hero?: string;
+  icon?: string;
+  has?: () => boolean;
+  get?: () => void;
+}
+export const REWARDS: Reward[] = [
   {
     id: 'map-w1-winter',
     name: 'Winterkarte',
@@ -168,95 +169,22 @@ export const REWARDS = [
     icon: '☀️',
   },
 ];
-export const owns = (
-  r:
-    | ({
-        id: string;
-        name: string;
-        desc: string;
-        price: number;
-        world: number;
-        bg: string;
-        hero?: undefined;
-        stein?: undefined;
-        icon?: undefined;
-        has?: undefined;
-        get?: undefined;
-      } & { price: number })
-    | ({
-        id: string;
-        name: string;
-        desc: string;
-        price: number;
-        hero: string;
-        world?: undefined;
-        bg?: undefined;
-        stein?: undefined;
-        icon?: undefined;
-        has?: undefined;
-        get?: undefined;
-      } & { price: number })
-    | ({
-        id: string;
-        name: string;
-        desc: string;
-        price: number;
-        stein: number;
-        icon: string;
-        has: () => boolean;
-        get: () => void;
-        world?: undefined;
-        bg?: undefined;
-        hero?: undefined;
-      } & { price: number }),
-) => (r.has ? r.has() : !!state.meta.owned[r.id]);
-export const canBuy = (
-  r:
-    | ({
-        id: string;
-        name: string;
-        desc: string;
-        price: number;
-        world: number;
-        bg: string;
-        hero?: undefined;
-        stein?: undefined;
-        icon?: undefined;
-        has?: undefined;
-        get?: undefined;
-      } & { price: number })
-    | ({
-        id: string;
-        name: string;
-        desc: string;
-        price: number;
-        hero: string;
-        world?: undefined;
-        bg?: undefined;
-        stein?: undefined;
-        icon?: undefined;
-        has?: undefined;
-        get?: undefined;
-      } & { price: number })
-    | ({
-        id: string;
-        name: string;
-        desc: string;
-        price: number;
-        stein: number;
-        icon: string;
-        has: () => boolean;
-        get: () => void;
-        world?: undefined;
-        bg?: undefined;
-        hero?: undefined;
-      } & { price: number }),
-) => state.meta.stamps >= r.price && (state.meta.materials.stein || 0) >= (r.stein || 0);
-export const heroLocked = (s: { id: string | undefined }) =>
-  REWARDS.some((r) => r.hero === s.id && !state.meta.owned[r.id]);
+export const owns = (r: Reward) => (r.has ? r.has() : !!state.meta.owned[r.id]);
+// only asked for rewards with a price
+export const canBuy = (r: Reward) =>
+  state.meta.stamps >= r.price! && (state.meta.materials.stein || 0) >= (r.stein || 0);
+export const heroLocked = (s: { id: string }) => REWARDS.some((r) => r.hero === s.id && !state.meta.owned[r.id]);
 /* ---------- Kleiderkammer ---------- */
 // bought pieces live in owned['outfit-<id>']; the others are earned and checked live, so old saves get them too
-export const OUTFITS = [
+// bought (price) or earned (need says how, got checks it)
+export interface Outfit {
+  id: string;
+  name: string;
+  price?: number;
+  need?: () => string;
+  got?: () => boolean;
+}
+export const OUTFITS: Outfit[] = [
   { id: 'strohhut', name: 'Strohhut', price: 15 },
   { id: 'schal', name: 'Schal', price: 10 },
   { id: 'brille', name: 'Brille', price: 12 },
@@ -272,17 +200,12 @@ export const OUTFITS = [
   { id: 'aehrenkranz', name: 'Ährenkranz', need: () => 'Ernte zum ersten Mal im Schulgarten.' },
 ];
 const goldWeeks = () => Object.values(state.meta.stampCard).filter((v) => v === 2).length;
-export const hasOutfit = (
-  o:
-    | { id: string; name: string; price: number; need?: undefined; got?: undefined }
-    | { id: string; name: string; need: () => string; got: () => boolean; price?: undefined }
-    | { id: string; name: string; need: () => string; price?: undefined; got?: undefined },
-) => !!state.meta.owned['outfit-' + o.id] || !!(o.got && o.got());
-export const wornBy = (heroId: string | number) => {
+export const hasOutfit = (o: Outfit) => !!state.meta.owned['outfit-' + o.id] || !!(o.got && o.got());
+export const wornBy = (heroId: string) => {
   const o = OUTFITS.find((x) => x.id === state.meta.worn[heroId]);
   return o && hasOutfit(o) ? o.id : null;
 };
-export const heroSVG = (s: { shape: string; type: string | number; id: any }, evo: number, cls?: string | undefined) =>
+export const heroSVG = (s: { shape: string; type: string; id: string }, evo: number, cls?: string) =>
   monsterSVG(s.shape, TYPES[s.type].color, evo, cls, { outfit: wornBy(s.id) });
 /* ---------- Weekly goals ---------- */
 // a new week starts fresh; finished weeks stay on the stamp card, nothing is taken away
@@ -291,7 +214,7 @@ export const weekly = () => {
   if (state.meta.weekly.week !== k) state.meta.weekly = { week: k, progress: [], done: false, beaten: [], tally: {} };
   return state.meta.weekly;
 };
-interface WeeklyGoal {
+export interface WeeklyGoal {
   m: string;
   kind: string;
   // undefined if every task type of the unit is switched off
@@ -305,11 +228,11 @@ interface WeeklyGoal {
 // replaced from its own seed, so the other subjects keep their goals. i is the goal's slot in weekly.progress.
 export function weeklyGoals() {
   const r = MQ.seeded(weekly().week);
-  const goal = (r: { (): number; (): number; (): number }, m: string) => {
+  const goal = (r: () => number, m: string) => {
     const on = enabledMods(m);
     const kinds = ['right', 'elite', 'boss'].concat(MODES[m].worlds <= 2 ? ['win'] : []); // three worlds are too long for one week
     const kind = kinds[Math.floor(r() * kinds.length)];
-    const mod = seededOrder(r, Object.keys(MODES[m].modules)).find((k: string) => on.includes(k));
+    const mod = seededOrder(r, Object.keys(MODES[m].modules)).find((k) => on.includes(k));
     const n = kind === 'right' ? 15 + Math.floor(r() * 11) : kind === 'elite' ? 2 + Math.floor(r() * 2) : (r(), 1);
     return { m, kind, mod, n };
   };
@@ -326,7 +249,7 @@ export function weeklyGoals() {
     })
     .filter(Boolean) as WeeklyGoal[];
 }
-export const seededOrder = (r: { (): number; (): number }, arr: string | any[]) => {
+export const seededOrder = <T>(r: () => number, arr: readonly T[]) => {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(r() * (i + 1));
@@ -337,7 +260,7 @@ export const seededOrder = (r: { (): number; (): number }, arr: string | any[]) 
 export const goalText = (g: WeeklyGoal) => {
   const t = `„${MODES[g.m].title}“`;
   return g.kind === 'right'
-    ? `Löse ${g.n} Aufgaben ${MODES[g.m].modules[g.mod].icon} ${MODES[g.m].modules[g.mod].name} richtig.`
+    ? `Löse ${g.n} Aufgaben ${MODES[g.m].modules[g.mod!].icon} ${MODES[g.m].modules[g.mod!].name} richtig.`
     : g.kind === 'win'
       ? `Gewinne ein Abenteuer in ${t}.`
       : g.kind === 'elite'
@@ -346,7 +269,7 @@ export const goalText = (g: WeeklyGoal) => {
 };
 export const goalDone = (g: WeeklyGoal) => (weekly().progress[g.i] || 0) >= g.n;
 let weeklyNews = false; // the card waits for the next calm screen (map or title)
-export function weeklyStep(kind: string, mod?: string | undefined) {
+export function weeklyStep(kind: string, mod?: string) {
   const w = weekly();
   if (w.done || !extraOn('wochenziele')) return;
   const goals = weeklyGoals();
@@ -386,7 +309,7 @@ export function weakestModule() {
   return best!; // at least one task type is always on
 }
 // a running duel lives only in memory
-export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; zero?: boolean } | undefined) {
+export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; zero?: boolean; g?: string }) {
   const box = taskBox() || state.duel;
   box.recent = box.recent || {};
   const rec = (box.recent[mod] = box.recent[mod] || []);
@@ -422,12 +345,16 @@ export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; ze
   return t;
 }
 // switched-off task types are replaced by enabled ones the hero doesn't have yet
-export function heroAttacks() {
+export interface Attack {
+  name: string;
+  mod: string;
+}
+export function heroAttacks(): Attack[] {
   const on = enabledMods();
-  const used = state.run.hero.attacks.map((a: { mod: any }) => a.mod).filter((k: string) => on.includes(k));
+  const used = state.run.hero.attacks.map((a: Attack) => a.mod).filter((k: string) => on.includes(k));
   const spare = on.filter((k) => !used.includes(k));
   let i = 0;
-  return state.run.hero.attacks.map((a: { mod: string }) => {
+  return state.run.hero.attacks.map((a: Attack) => {
     if (on.includes(a.mod)) return Object.assign({}, a);
     const k = spare.length ? spare.shift()! : on[i++ % on.length];
     return { name: CFG().extra[k], mod: k };
@@ -435,7 +362,7 @@ export function heroAttacks() {
 }
 export function gainXp(n: number) {
   state.run.hero.xp += n;
-  let msgs: any[] = [];
+  let msgs: string[] = [];
   while (state.run.hero.xp >= xpNeeded(state.run.hero.level)) {
     state.run.hero.xp -= xpNeeded(state.run.hero.level);
     state.run.hero.level++;

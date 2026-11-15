@@ -3,7 +3,30 @@ import { ICONS } from '../icons.ts';
 import { MQ } from '../logic.ts';
 import { state } from './state.ts';
 
-export const { rnd, pick, shuffle, TYPES, BEATS, ITEMS, makeMap, euro } = MQ;
+export interface MonsterType {
+  name: string;
+  icon: string;
+  color: string;
+}
+// what an item does when used: each item has one of the effects
+export interface Item {
+  name: string;
+  icon: string;
+  desc: string;
+  heal?: number;
+  xp?: number;
+  shield?: boolean;
+  power?: boolean;
+  hint?: boolean;
+  revive?: boolean;
+}
+// the keys come from saves and unit files, so these three are looked up by any string
+interface Lookups {
+  TYPES: Record<string, MonsterType>;
+  BEATS: Record<string, string>;
+  ITEMS: Record<string, Item>;
+}
+export const { rnd, pick, shuffle, TYPES, BEATS, ITEMS, makeMap, euro }: Omit<typeof MQ, keyof Lookups> & Lookups = MQ;
 
 export const CFG = () => MODES[state.mode];
 export const MODULES_OF = () => CFG().modules;
@@ -25,7 +48,7 @@ export const esc = (s: string | undefined) =>
 /* ---------- Icons ---------- */
 // Emojis look different on every device and some are missing on older ones. Wherever one appears as text inside
 // #app, the drawn icon from icons.ts takes its place. Attributes (aria-label, data-*) keep the emoji.
-const emoId = (k: string) => 'i-' + [...k].map((c) => c.codePointAt(0).toString(16)).join('-');
+const emoId = (k: string) => 'i-' + [...k].map((c) => c.codePointAt(0)!.toString(16)).join('-');
 // not display:none, or Safari and Firefox lose the gradients inside <use>
 document.body.insertAdjacentHTML(
   'beforeend',

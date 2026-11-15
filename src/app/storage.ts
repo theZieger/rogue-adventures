@@ -1,12 +1,14 @@
 import { CURRICULUM, MODES } from '../curriculum.ts';
-import { KEY_META, KEY_RUN_FOR, RENAMES, clear, isObj, load, normMeta, ownsPart, save } from '../save.ts';
+import { KEY_META, KEY_RUN_FOR, RENAMES, type TOP, clear, isObj, load, normMeta, ownsPart, save } from '../save.ts';
 import { ITEMS, esc } from './core.ts';
 import { NODE_INFO } from './map.ts';
 import { STATS } from './progress.ts';
 import { state } from './state.ts';
 
 /* ---------- Storage ---------- */
-export const hasPart = (slot: unknown, id: unknown) => ownsPart(state.meta, slot, id);
+export type TopSlot = keyof typeof TOP;
+type NodeType = keyof typeof NODE_INFO;
+export const hasPart = (slot: TopSlot, id: string) => ownsPart(state.meta, slot, id);
 (function migrate() {
   const old = load('mathquest_meta_v1', null);
   if (old && !load(KEY_META, null)) {
@@ -48,19 +50,19 @@ export const EXTRAS = {
 };
 export const extraOn = (k: string) => !state.meta.hidden.includes('extra:' + k);
 export const enOff = () => state.meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
-export const heroShown = (m: string | null, s: { id: any }) => !state.meta.hidden.includes(`hero:${m}:${s.id}`);
+export const heroShown = (m: string | null, s: { id: string }) => !state.meta.hidden.includes(`hero:${m}:${s.id}`);
 export const visSubjects = () =>
   curGrade()
     .subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) }))
     .filter((sub) => sub.modes.length);
 export const fightMods = (m: string) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
 // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
-const inWorld = (m: string | number, k: string) => {
+const inWorld = (m: string, k: string) => {
   const c = MODES[m].modules[k].worldCap;
   const b = state.run && (state.run.mode === m ? state.run : state.run.mode === 'turm' && state.run.turm.at[m]);
   return c[Math.min(b ? b.world : 1, c.length) - 1] > 0;
 };
-export const enabledMods = (m?: string | undefined) => {
+export const enabledMods = (m?: string) => {
   m = m || state.mode;
   const all = fightMods(m).filter((k) => inWorld(m, k));
   const on = all.filter((k) => !offList(m).includes(k));
@@ -103,7 +105,7 @@ export function loadRun(m: string) {
     if (r) clear(KEY_RUN_FOR(m));
     return null;
   }
-  r.map = r.map.map((fl: any[], f: number, all: string | any[]) =>
+  r.map = r.map.map((fl: unknown, f: number, all: unknown[][]) =>
     Array.isArray(fl)
       ? fl.map((n, i) =>
           isObj(n)
@@ -111,24 +113,24 @@ export function loadRun(m: string) {
             : {
                 t: n,
                 c: 1.5 + (i - (fl.length - 1) / 2) * 1.1,
-                n: f < all.length - 1 && Array.isArray(all[f + 1]) ? all[f + 1].map((_: any, j: any) => j) : [],
+                n: f < all.length - 1 && Array.isArray(all[f + 1]) ? all[f + 1].map((_, j) => j) : [],
               },
         )
       : fl,
   );
   if (
     !r.map.every(
-      (fl: any[]) =>
+      (fl: unknown) =>
         Array.isArray(fl) &&
         fl.length &&
-        fl.every((n) => isObj(n) && NODE_INFO[n.t] && Array.isArray(n.n) && Number.isFinite(n.c)),
+        fl.every((n) => isObj(n) && NODE_INFO[n.t as NodeType] && Array.isArray(n.n) && Number.isFinite(n.c)),
     )
   ) {
     clear(KEY_RUN_FOR(m));
     return null;
   }
-  if (isObj(r.node) && !NODE_INFO[r.node.type]) r.node = null;
-  r.items = r.items.filter((it: string | number) => ITEMS[it]);
+  if (isObj(r.node) && !NODE_INFO[r.node.type as NodeType]) r.node = null;
+  r.items = r.items.filter((it: string) => ITEMS[it]);
   r.hero.attacks.forEach((a: { name: string }) => {
     if (RENAMES[a.name]) a.name = RENAMES[a.name];
   });

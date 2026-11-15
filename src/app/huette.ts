@@ -6,10 +6,10 @@ import { html, raw } from '../ui/html.ts';
 import { TOP_KNOCK, topVal } from './battle.ts';
 import { screenStamps } from './collection.ts';
 import { $, CFG, ITEMS, TYPES, esc, rnd } from './core.ts';
-import { screenGarden } from './garten.ts';
-import { OUTFITS, hasOutfit, heroLocked, heroSVG, markWeek, monsterSVG, wornBy } from './progress.ts';
+import { type Crop, screenGarden } from './garten.ts';
+import { OUTFITS, type Outfit, hasOutfit, heroLocked, heroSVG, markWeek, monsterSVG, wornBy } from './progress.ts';
 import { state } from './state.ts';
-import { extraOn, hasPart, saveAll } from './storage.ts';
+import { type TopSlot, extraOn, hasPart, saveAll } from './storage.ts';
 import { INK, lg, ln, rg, runTask, shadow } from './tasks.ts';
 import { screenTitle } from './title.ts';
 import { modal, screen, topbar } from './ui.ts';
@@ -94,8 +94,9 @@ export const RECIPES: Recipe[] = [
   },
 ];
 const MATS = ['holz', 'stein', 'erz'].concat(Object.keys(MK.CROPS));
-const matName = (k: string) => (MK.CROPS[k] ? MK.CROPS[k].name : { holz: 'Holz', stein: 'Stein', erz: 'Erz' }[k]);
-const andList = (a: any[]) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1] : a[0] || '');
+const matName = (k: string) =>
+  MK.CROPS[k as Crop] ? MK.CROPS[k as Crop].name : { holz: 'Holz', stein: 'Stein', erz: 'Erz' }[k];
+const andList = (a: string[]) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1] : a[0] || '');
 const isFurn = (r: Recipe) => r.id.startsWith('hut-');
 const rName = (r: Recipe) => r.name || ITEMS[r.id].name;
 const missing = (r: Recipe) =>
@@ -176,9 +177,15 @@ export function screenCraft(id: string | undefined) {
 
 /* ---------- Meine Hütte ---------- */
 // furniture is drawn in room coordinates (viewBox 0 0 360 290); box = its place, also used to crop the preview
-const plaque = (y: number, v: any) =>
+const plaque = (y: number, v: number) =>
   `<rect x="296" y="${y}" width="36" height="24" rx="6" fill="#FFF3D6" ${ln(2)}/><text x="314" y="${y + 18}" text-anchor="middle" font-size="18" font-weight="700" fill="${INK}">${v}</text>`;
-const FURN = {
+// what the shelf shows: how many monsters, Kreisel parts and note cards there are
+interface ShelfNums {
+  dex: number;
+  tops: number;
+  notes: number;
+}
+const FURN: Record<string, { box: number[]; art: (n: ShelfNums) => string }> = {
   'hut-fenster': {
     box: [32, 82, 98, 78],
     art: () => `<defs>${lg('hf-w', '#C98F55', '#8E5A30')}${lg('hf-sky', '#8FCDF2', '#E2F3EC')}${lg('hf-st', '#CDD2D8', '#8C939C')}${lg('hf-cu', '#E66A55', '#B23A31', 1)}</defs>
@@ -194,18 +201,16 @@ const FURN = {
   },
   'hut-haken': {
     box: [148, 82, 56, 74],
-    art: (n: { tops: any }) => `<defs>${lg('hh-m', '#C4CAD3', '#5E646E')}</defs>
+    art: (n) => `<defs>${lg('hh-m', '#C4CAD3', '#5E646E')}</defs>
       <rect x="168" y="91" width="22" height="11" rx="3" fill="#5A3A1E" opacity=".22"/><rect x="165" y="87" width="22" height="11" rx="3" fill="url(#hh-m)" ${ln(2.2)}/><circle cx="170" cy="92.5" r="1.7" fill="#E6E9EE" ${ln(0.8)}/><circle cx="182" cy="92.5" r="1.7" fill="#E6E9EE" ${ln(0.8)}/>
       <path d="M180 98v10q0 7-5 7q-6 0-6-6" fill="none" ${ln(7)}/><path d="M180 98v10q0 7-5 7q-6 0-6-6" fill="none" stroke="#8C939C" stroke-width="3.6" stroke-linecap="round"/><path d="M181.2 100v7" stroke="#EEF1F5" stroke-width="1.2" stroke-linecap="round"/>
       ${n.tops ? `<path d="M175 114q-4 4 1 8" fill="none" stroke="#C8473B" stroke-width="2" stroke-linecap="round"/>${MONART.topSVG(TYPES.feuer.color, state.meta.top).replace('<svg ', '<svg x="152" y="104" width="48" height="48" ')}` : ''}`,
   },
   'hut-regal': {
     box: [234, 68, 112, 168],
-    art: (n: {
-      dex: any;
-      tops: any;
-      notes: any;
-    }) => `<defs>${lg('hr-w', '#C68B55', '#8A5530', 1)}${lg('hr-b', '#5E3A1E', '#8E5E36')}${lg('hr-y', '#FFE27A', '#E0A82E')}</defs>
+    art: (
+      n,
+    ) => `<defs>${lg('hr-w', '#C68B55', '#8A5530', 1)}${lg('hr-b', '#5E3A1E', '#8E5E36')}${lg('hr-y', '#FFE27A', '#E0A82E')}</defs>
       ${shadow(289, 233, 58, 5)}<rect x="240" y="74" width="98" height="158" rx="3" fill="url(#hr-w)" ${ln(3)}/><rect x="248" y="80" width="82" height="146" fill="url(#hr-b)" ${ln(2)}/>
       <path d="M243 90v40M244 170v40M335 100v50M334 190v28" stroke="#6E4526" stroke-width="1.2" opacity=".5"/>
       ${[114, 156, 198].map((y) => `<rect x="248" y="${y + 7}" width="82" height="6" fill="${INK}" opacity=".2"/><rect x="246" y="${y}" width="86" height="7" rx="2" fill="#B98048" ${ln(2)}/><path d="M249 ${y + 2}h80" stroke="#E2B07A" stroke-width="1.2" stroke-linecap="round"/>`).join('')}
@@ -246,7 +251,7 @@ const HUT_DEFS = `<defs>${lg('hu-log', '#EDD6A6', '#CDAA70')}${lg('hu-gab', '#8E
     <linearGradient id="hu-sb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C2541" stop-opacity=".25"/><stop offset="1" stop-color="#1C2541" stop-opacity="0"/></linearGradient>
     <pattern id="hu-logs" width="180" height="52" patternUnits="userSpaceOnUse" y="48"><rect width="180" height="52" fill="url(#hu-log)"/><rect y="26" width="180" height="26" fill="#E6CB94"/><rect y="39" width="180" height="13" fill="#CDAA70" opacity=".5"/>
       <path d="M0 25h180M0 51h180" stroke="#9C7444" stroke-width="2"/><path d="M0 2h180M0 28h180" stroke="#F8E8C4" stroke-width="1.4"/><path d="M14 10q30-3 60 1M100 16q30 2 64-1M30 36q40 3 80-1M130 44q20-2 44 0" stroke="#C49B63" stroke-width="1.1" fill="none"/><ellipse cx="88" cy="13" rx="4" ry="2" fill="none" stroke="#B48A55" stroke-width="1.1"/><ellipse cx="152" cy="38" rx="3" ry="1.6" fill="none" stroke="#B48A55" stroke-width="1.1"/></pattern></defs>`;
-const shelfNums = () => ({
+const shelfNums = (): ShelfNums => ({
   dex: Object.keys(state.meta.dex).length,
   tops: Object.keys(state.meta.owned).filter((k) => k.startsWith('top-')).length,
   notes: Object.keys(state.meta.know).length,
@@ -308,7 +313,7 @@ export function screenHut() {
     },
   );
 }
-export function screenWardrobe(heroId?: string | undefined) {
+export function screenWardrobe(heroId?: string) {
   state.depth = 2;
   const heroes = MODE_KEYS.flatMap((m) => MODES[m].starters).filter(
     (s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i,
@@ -316,7 +321,7 @@ export function screenWardrobe(heroId?: string | undefined) {
   const hero =
     heroes.find((s) => s.id === heroId) || heroes.find((s) => s.id === state.meta.lastStarter[state.mode]) || heroes[0];
   const worn = wornBy(hero.id);
-  const tile = (o: { id: unknown; price: unknown; need: () => unknown; name: unknown }) => {
+  const tile = (o: Outfit) => {
     const has = hasOutfit(o);
     const act =
       o.id === worn
@@ -325,7 +330,7 @@ export function screenWardrobe(heroId?: string | undefined) {
           ? html`<button class="btn small" data-action="wear" data-wear="${o.id}">Anziehen</button>`
           : o.price
             ? html`<button class="btn small" data-action="buy" data-buy="${o.id}" ${state.meta.stamps < o.price ? 'disabled' : ''}>Holen · ${o.price} 🏷️</button>`
-            : html`<div class="desc">${o.need()}</div>`;
+            : html`<div class="desc">${o.need!()}</div>`;
     return html`<div class="kkitem${o.id === worn ? ' on' : ''}${has ? '' : ' locked'}">${raw(monsterSVG(hero.shape, TYPES[hero.type].color, 0, '', { outfit: o.id }))}<div class="name">${o.name}</div>${act}</div>`;
   };
   const wear = (id: string | null | undefined) => {
@@ -347,7 +352,7 @@ export function screenWardrobe(heroId?: string | undefined) {
       off: () => wear(null),
       buy: (button) => {
         // only pieces with a price have a button
-        const o = OUTFITS.find((x) => x.id === button.dataset.buy) as (typeof OUTFITS)[number] & { price: number };
+        const o = OUTFITS.find((x) => x.id === button.dataset.buy) as Outfit & { price: number };
         const ov = modal(
           html`<h2>${o.name} holen?</h2><p>Das kostet ${o.price} Stempel. Danach hast du noch ${state.meta.stamps - o.price}.</p><div class="stack"><button class="btn" id="yes" data-action="yes">Holen und anziehen</button><button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
           {
@@ -368,12 +373,21 @@ export function screenWardrobe(heroId?: string | undefined) {
     },
   );
 }
-export const partOf = (key: { split: (arg0: string) => [any, any, any] }) => {
-  const [, slot, id] = key.split('-');
-  const p = TOP[slot] && TOP[slot].find((x: { id: any }) => x.id === id);
+// a Kreisel part and how it is got: bought, from a chest of that world, or from the first ore
+export interface TopPart {
+  id: string;
+  name: string;
+  val: number;
+  price?: number;
+  chest?: number;
+  mine?: boolean;
+}
+export const partOf = (key: string) => {
+  const [, slot, id] = key.split('-') as [string, TopSlot, string];
+  const p = TOP[slot] && TOP[slot].find((x) => x.id === id);
   return p ? Object.assign({ slot }, p) : null;
 };
-const TOP_ROWS = [
+const TOP_ROWS: [TopSlot, string, string, string][] = [
   ['tip', 'Spitze', 'Wucht', 'So viel Schwung verliert der andere Kreisel bei jeder richtigen Antwort.'],
   ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`],
   ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.'],
@@ -382,11 +396,11 @@ export function screenTop() {
   state.depth = 2;
   const s = CFG().starters.find((x) => x.id === state.meta.lastStarter[state.mode]) || CFG().starters[0];
   const color = TYPES[s.type].color;
-  const need = (p: { chest: number }) =>
+  const need = (p: TopPart) =>
     p.chest
       ? `Liegt in einer Truhe in Welt ${p.chest}${p.chest > 2 ? ' von Zahlenquest' : ''}.`
       : 'Finde Erz im Bergwerk in Zahlenquest oder auf der Baustelle.';
-  const tile = (slot: unknown, label: unknown, p: { id: unknown; price: unknown; name: unknown; val: unknown }) => {
+  const tile = (slot: TopSlot, label: string, p: TopPart) => {
     const on = state.meta.top[slot] === p.id,
       has = hasPart(slot, p.id);
     const act = on
@@ -406,19 +420,20 @@ export function screenTop() {
   screen(
     html`<div class="screen">${raw(topbar('Kreisel bauen'))}<div class="scroll"><div class="stack">
       <div class="card center kkcard">${raw(MONART.topSVG(color, state.meta.top, 'live'))}<p class="topvals"><span>💥 Wucht ${topVal('tip')}</span><span>🛡️ Panzer ${topVal('ring')}</span><span>🌀 Schwung ${topVal('disc')}</span></p><p>🏷️ ${state.meta.stamps} Stempel</p><p class="pnote">Mit diesem Kreisel trittst du in der Kreisel-Arena an. Er hat den Typ deines Helden.</p></div>
-      ${TOP_ROWS.map(([slot, title, label, text]) => html`<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p: any) => tile(slot, label, p))}</div></div>`)}
+      ${TOP_ROWS.map(([slot, title, label, text]) => html`<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p) => tile(slot, label, p))}</div></div>`)}
       </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     {
-      back: screenStamps,
+      back: screenStamps as () => void, // the button it is handed counts as jump
       fit: (button) => {
-        const [slot, id] = button.dataset.fit!.split(':');
+        const [slot, id] = button.dataset.fit!.split(':') as [TopSlot, string];
         state.meta.top[slot] = id;
         saveAll();
         again();
       },
       buy: (button) => {
-        const [slot, id] = button.dataset.buy!.split(':');
-        const p = TOP[slot].find((x: { id: string }) => x.id === id);
+        const [slot, id] = button.dataset.buy!.split(':') as [TopSlot, string];
+        // only parts with a price have a button
+        const p = TOP[slot].find((x) => x.id === id) as TopPart & { price: number };
         const ov = modal(
           html`<h2>${p.name} holen?</h2><p>Das kostet ${p.price} Stempel. Danach hast du noch ${state.meta.stamps - p.price}.</p><div class="stack"><button class="btn" id="yes" data-action="yes">Holen und einbauen</button><button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
           {

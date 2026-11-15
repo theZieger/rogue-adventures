@@ -1,21 +1,21 @@
 import { MK } from '../knowledge.ts';
-import { MQ } from '../logic.ts';
+import { MQ, type Task } from '../logic.ts';
 import { MS } from '../sachkunde.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
 import { READ_MOD } from './battle.ts';
 import { $, CFG, MODULES_OF, app, arrow, esc, euro, reducedMotion } from './core.ts';
 import { state } from './state.ts';
-import { SFX, on, showTutorial } from './ui.ts';
+import { type Note, SFX, on, showTutorial } from './ui.ts';
 
 /* ---------- Task UI ---------- */
 const PLACES = ['Einer', 'Zehner', 'Hunderter', 'Tausender'];
-function colHtml(c: { w: unknown; op: unknown; rows: string | any[] }, text: string) {
+function colHtml(c: NonNullable<Task['col']>, text: string) {
   const place = (i: number) => PLACES[c.w - 1 - i];
   const cells = (f: (i: number) => Markup) => Array.from({ length: c.w }, (_, i) => f(i));
   // multiplication is written in one line (213 · 3) with the result under the first factor
   const mul = c.op === '·';
   const end = mul ? html`<span></span>` : '';
-  const rows = (mul ? c.rows.slice(0, 1) : c.rows).map((n: any, r: any) => {
+  const rows = (mul ? c.rows.slice(0, 1) : c.rows).map((n, r) => {
     const s = String(n).padStart(c.w, ' ');
     return html`<span class="op">${r ? c.op : ''}</span>${cells((i) => html`<span>${s[i].trim()}</span>`)}${mul ? html`<span class="op">· ${c.rows[1]}</span>` : ''}`;
   });
@@ -23,8 +23,19 @@ function colHtml(c: { w: unknown; op: unknown; rows: string | any[] }, text: str
 }
 declare global {
   interface Window {
-    __task: unknown; // the task on screen, read by the tests
+    __task: ScreenTask; // the task on screen, read by the tests
   }
+}
+// a task as its screen reads it: some generators add fields only their own screen knows
+export interface ScreenTask extends Task {
+  story?: string;
+  say?: string; // the question as spoken, without the letter it shows
+  quiet?: boolean; // the options are letters and stay unread
+  plant?: string; // key of the labelled picture, missing: the potato plant
+  target?: number[]; // the treasure's field on the map
+  start?: number[];
+  neben?: boolean;
+  scale?: boolean;
 }
 // where a task is drawn and what the screen around it wants from it
 interface TaskOpts {
@@ -37,15 +48,15 @@ interface TaskOpts {
 }
 // null: the task was cancelled
 type TaskDone = (ok: boolean | null) => void;
-export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
+export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
   opts = opts || ({} as TaskOpts);
   window.__task = task;
-  if (task.kind !== 'num') return runChoiceTask(task, opts, done);
-  const mod = task.mod;
+  if (task.kind !== 'num') return runChoiceTask(task as ChoiceTask, opts, done);
+  const mod = task.mod!;
   const M = MODULES_OF()[mod] || MQ.MODULES[mod];
   const C = task.col;
   // written methods: one field per result digit (0 … w−1), then the carry fields (w + column)
-  const nAns = C ? 2 * C.w - 1 : task.answers.length;
+  const nAns = C ? 2 * C.w - 1 : task.answers!.length;
   const values: string[] = Array(nAns).fill('');
   let active = C ? C.w - 1 : 0;
   let locked = false;
@@ -61,9 +72,9 @@ export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
     if (task.fig)
       body = raw(task.fig); // ready-made question with drawing (Jahrmarkt)
     else if (task.riddle)
-      body = html`<div class="clues">${task.text
-        .split('\n')
-        .map((c: unknown) => html`<div>${c}</div>`)}</div><div class="prompt">Welche Zahl bin ich?</div>`;
+      body = html`<div class="clues">${task
+        .text!.split('\n')
+        .map((c) => html`<div>${c}</div>`)}</div><div class="prompt">Welche Zahl bin ich?</div>`;
     else if (task.seq)
       body = html`<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
     else if (task.nb) body = html`<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
@@ -79,7 +90,7 @@ export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
           );
         }
       body = html`<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${raw(arrow('r'))} +${g.stepR}</span><span>${raw(arrow('l'))} −${g.stepR}</span><span>${raw(arrow('d'))} +${g.stepD}</span><span>${raw(arrow('u'))} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`;
-    } else if (C) body = colHtml(C, task.text);
+    } else if (C) body = colHtml(C, task.text!);
     else if (task.word)
       body = html`<div class="prompt">Schreibe die Zahl:</div><div class="numword">${raw(esc(task.text).replace(/hundert|tausend/g, '$&<wbr>'))}</div>`;
     else if (task.svg) body = html`<div class="figure">${raw(task.svg)}</div><div class="prompt">${task.ask}</div>`;
@@ -92,13 +103,13 @@ export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
     else if (task.nb)
       inputs = html`<div class="nbline"><div class="inpgroup"><div class="inp" data-action="taskField" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-action="taskField" data-i="1"></div><span>danach</span></div></div>`;
     else if (task.labels)
-      inputs = html`<div class="nbline">${task.labels.map((l: unknown, i: unknown) => html`<div class="inpgroup"><div class="inp" data-action="taskField" data-i="${i}"></div><span>${l}</span></div>`)}</div>`;
+      inputs = html`<div class="nbline">${task.labels.map((l, i) => html`<div class="inpgroup"><div class="inp" data-action="taskField" data-i="${i}"></div><span>${l}</span></div>`)}</div>`;
     else
-      inputs = html`<div class="inputs">${task.answers.map((_: any, i: unknown) => html`<div class="inp" data-action="taskField" data-i="${i}"></div>`)}</div>`;
-    const a0 = task.answers[0];
+      inputs = html`<div class="inputs">${task.answers!.map((_, i) => html`<div class="inp" data-action="taskField" data-i="${i}"></div>`)}</div>`;
+    const a0 = task.answers![0];
     const lo = Math.max(0, a0 - 1 - Math.floor(Math.random() * 3));
     const hint = opts.hint
-      ? html`<div class="hintline">🌉 Tipp: ${task.answers.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>`
+      ? html`<div class="hintline">🌉 Tipp: ${task.answers!.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>`
       : '';
     return html`<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${opts.subtitle}` : ''}<button class="tut" type="button" data-action="taskTutorial" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
   }
@@ -124,7 +135,7 @@ export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
         paint();
       }
     },
-    taskTutorial: () => showTutorial(task.group, task.note),
+    taskTutorial: () => showTutorial(task.group!, task.note),
     taskKey(key) {
       if (!locked) press(key.dataset.k!);
     },
@@ -194,18 +205,18 @@ export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
   function submit() {
     locked = true;
     state.keyHandler = null;
-    const want = C ? String(task.answers[0]).padStart(C.w, ' ') : '';
+    const want = C ? String(task.answers![0]).padStart(C.w, ' ') : '';
     const fieldOk = (v: string, i: number) =>
       !C
-        ? parseInt(v, 10) === task.answers[i]
+        ? parseInt(v, 10) === task.answers![i]
         : i < C.w
           ? v === want[i] || (want[i] === ' ' && (v === '' || v === '0'))
           : v === ''
             ? null
             : +v === C.carry[i - C.w];
     const ok = C
-      ? parseInt(values.slice(0, C.w).join(''), 10) === task.answers[0]
-      : values.every((v, i) => parseInt(v, 10) === task.answers[i]);
+      ? parseInt(values.slice(0, C.w).join(''), 10) === task.answers![0]
+      : values.every((v, i) => parseInt(v, 10) === task.answers![i]);
     if (opts.onResult) opts.onResult(ok); // game state changes now, so a reload can't undo the answer
     inps.forEach((el, i) => {
       el.classList.remove('active');
@@ -222,8 +233,8 @@ export function runTask(task: unknown, opts: TaskOpts, done: TaskDone) {
       const corr =
         task.show ||
         (task.money
-          ? euro(task.answers[0] * 100 + task.answers[1])
-          : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '));
+          ? euro(task.answers![0] * 100 + task.answers![1])
+          : task.answers!.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '));
       fb.innerHTML =
         html`<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`.text;
       sayResult(fb, false, 'Richtig wäre: ' + corr);
@@ -305,34 +316,12 @@ export function speak(text: string, v = voice(), en: string[] = [], ve = enVoice
 // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button).
 // grade: Turmwacht passes its run's grade, the global mode there is just the unit that asked last
 export function speakBtn(
-  anchor: { insertAdjacentElement: (arg0: any, arg1: HTMLButtonElement) => void },
-  where: string,
-  text: {
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-    (): string;
-  },
-  first = text,
+  anchor: Element | false | null,
+  where: InsertPosition,
+  text: () => string,
+  first: (() => string) | false | null = text,
   en: string[] = [],
-  grade?: undefined,
+  grade?: number,
 ) {
   if (!voice()) return;
   if (anchor) {
@@ -359,8 +348,8 @@ export const plain = (html: string) => {
   d.querySelectorAll<HTMLElement>('svg').forEach((s) => s.remove());
   return d.textContent;
 };
-let onScreen: Record<string, any> = {}; // the task on screen, for its feedback
-const sayResult = (fb: ParentNode | null | undefined, ok: boolean, why?: string | undefined) =>
+let onScreen: ScreenTask = {}; // the task on screen, for its feedback
+const sayResult = (fb: HTMLElement, ok: boolean, why?: string) =>
   speakBtn(
     !ok && $('.feedback', fb),
     'afterbegin',
@@ -400,7 +389,7 @@ export function voiceGuide(open: boolean) {
   return `<details class="pguide"${open ? ' open' : ''}><summary>So klappt das Vorlesen</summary>${steps ? `<ol>${steps.map((x) => `<li>${x}</li>`).join('')}</ol>` : '<p>In den Systemeinstellungen unter Sprachausgabe eine deutsche Stimme hinzufügen, für Englisch auch eine englische.</p>'}${hint ? `<p class="pnote">${hint}</p>` : ''}</details>`;
 }
 // task.say: the question as spoken, without the letter it shows; task.quiet: its options are letters and stay unread
-function readAloud(container: HTMLElement, bottom: HTMLElement, task: Record<string, any>) {
+function readAloud(container: HTMLElement, bottom: HTMLElement, task: ScreenTask) {
   onScreen = task;
   const asked = [...container.querySelectorAll<HTMLElement>('.question, .prompt, .expr, .story, .clues, .numword')].map(
     (e) => e.textContent.trim(),
@@ -419,37 +408,9 @@ function readAloud(container: HTMLElement, bottom: HTMLElement, task: Record<str
 }
 
 /* ---------- Choice / order / parts tasks ---------- */
-function runChoiceTask(
-  task: {
-    mod: string | number;
-    options: any[];
-    note: string | number;
-    tip: unknown;
-    answer: unknown;
-    more: unknown;
-    kind: string;
-    fig: any;
-    q: unknown;
-    pic: any;
-    svgOpts: any;
-    tall: any;
-    inline: any;
-    cols: number;
-    why: unknown;
-    plant: string | number;
-    part: string | undefined;
-    target: any[];
-    start: any;
-    neben: any;
-    scale: any;
-    order: any[];
-    display: any[];
-    items: { map: (arg0: (x: any) => any[]) => Iterable<readonly [PropertyKey, any]> };
-    group: any;
-  },
-  opts: TaskOpts,
-  done: TaskDone,
-) {
+// what every task of these kinds has; order, display, items and target come with their kind
+type ChoiceTask = ScreenTask & Required<Pick<Task, 'mod' | 'group' | 'options' | 'answer'>>;
+function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
   const container = opts.container,
     bottom = opts.bottom;
   const M = MODULES_OF()[task.mod] || READ_MOD;
@@ -458,13 +419,13 @@ function runChoiceTask(
   // with two options crossing one out gives the answer away, so show the notes instead
   const strikeWrongOption = () => {
     if (task.options.length <= 2) {
-      const n = task.note && CFG().notes ? CFG().notes[task.note] : null;
+      const n: Note | null = task.note && CFG().notes ? CFG().notes[task.note] : null;
       $('#fb', container).insertAdjacentHTML(
         'beforebegin',
         (task.tip
           ? html`<div class="hintline">🌉 Tipp: ${task.tip}</div>`
           : n
-            ? html`<div class="hintline">🌉 Tipp aus deinen Notizen „${n.title}“:${n.lines.map((l: unknown) => html`<br>${l}`)}</div>`
+            ? html`<div class="hintline">🌉 Tipp aus deinen Notizen „${n.title}“:${n.lines.map((l) => html`<br>${l}`)}</div>`
             : html`<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>`
         ).text,
       );
@@ -506,7 +467,7 @@ function runChoiceTask(
     container.innerHTML =
       html`<div class="task">${head}${raw(task.fig || '')}<div class="question">${raw(esc(task.q).replace('___', '<span class="blank">____</span>'))}</div>${raw(task.pic || '')}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     bottom.innerHTML =
-      html`<div class="options ${task.svgOpts ? 'pics' + (task.tall ? ' tall' : '') : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o: unknown, i: unknown) => (task.svgOpts ? html`<button class="opt" data-action="taskOption" data-i="${i}" aria-label="Bild ${i + 1}">${raw(o)}</button>` : html`<button class="opt" data-action="taskOption" data-i="${i}">${o}</button>`))}${task.inline ? html`<span aria-hidden="true">.</span>` : ''}</div>`.text;
+      html`<div class="options ${task.svgOpts ? 'pics' + (task.tall ? ' tall' : '') : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => (task.svgOpts ? html`<button class="opt" data-action="taskOption" data-i="${i}" aria-label="Bild ${i + 1}">${raw(o)}</button>` : html`<button class="opt" data-action="taskOption" data-i="${i}">${o}</button>`))}${task.inline ? html`<span aria-hidden="true">.</span>` : ''}</div>`.text;
     on({
       taskOption(b) {
         if (locked) return;
@@ -524,7 +485,7 @@ function runChoiceTask(
     container.innerHTML =
       html`<div class="task">${head}<div class="question">${task.q}</div>${raw(plantOf(task.plant).svg({ highlight: task.part }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     bottom.innerHTML =
-      html`<div class="options two">${task.options.map((o: unknown, i: unknown) => html`<button class="opt" data-action="taskOption" data-i="${i}">${o}</button>`)}</div>`.text;
+      html`<div class="options two">${task.options.map((o, i) => html`<button class="opt" data-action="taskOption" data-i="${i}">${o}</button>`)}</div>`.text;
     on({
       taskOption(b) {
         if (locked) return;
@@ -541,9 +502,9 @@ function runChoiceTask(
   } else if (task.kind === 'parts-find') {
     container.innerHTML =
       html`<div class="task">${head}<div class="question">${task.q}</div>${raw(plantOf(task.plant).svg({ clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
-    const pp = plantOf(task.plant).parts.find((p: { id: any }) => p.id === task.part);
+    const pp = (plantOf(task.plant).parts as PlantPart[]).find((p) => p.id === task.part);
     bottom.innerHTML =
-      html`<p class="center muted" style="margin:6px 0">Tippe auf ${(MS.PLANTS[task.plant] && MS.PLANTS[task.plant].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? html`<p class="center hintline">🌉 Tipp: ${pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`}</p>` : ''}`.text;
+      html`<p class="center muted" style="margin:6px 0">Tippe auf ${(MS.PLANTS[task.plant!] && MS.PLANTS[task.plant!].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? html`<p class="center hintline">🌉 Tipp: ${pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`}</p>` : ''}`.text;
     container.querySelectorAll<HTMLElement>('[data-part]').forEach((g) => {
       g.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -563,9 +524,9 @@ function runChoiceTask(
       };
     });
   } else if (task.kind === 'karte') {
-    const goal = task.target.join('-');
+    const goal = task.target!.join('-');
     container.innerHTML =
-      html`<div class="task">${head}<div class="question">${task.q}</div>${raw(MS.mapSVG({ start: task.start, neben: task.neben, scale: task.scale, clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
+      html`<div class="task">${head}<div class="question">${task.q}</div>${raw(MS.mapSVG({ start: task.start!, neben: task.neben, scale: task.scale, clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     bottom.innerHTML =
       html`<p class="center muted" style="margin:6px 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? html`<p class="center hintline">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>` : ''}`.text;
     container.querySelectorAll<HTMLElement>('[data-cell]').forEach((c) => {
@@ -584,16 +545,16 @@ function runChoiceTask(
       };
     });
   } else if (task.kind === 'order') {
-    const chosen = opts.hint ? [task.order[0]] : [];
+    const chosen = opts.hint ? [task.order![0]] : [];
     const fixed = chosen.length;
     container.innerHTML =
       html`<div class="task">${head}<div class="question">${task.q}</div><div class="orderlist" id="olist"></div><p class="ohelp">Tippe der Reihe nach. Nochmal tippen nimmt es wieder heraus.</p><div id="fb" role="status" aria-live="polite"></div></div>`.text;
     const paint = () => {
-      $('#olist', container).innerHTML = html`${task.display.map((it: { id: unknown; text: unknown }) => {
+      $('#olist', container).innerHTML = html`${task.display!.map((it) => {
         const pos = chosen.indexOf(it.id);
         return html`<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-action="taskPick" data-id="${it.id}" aria-pressed="${String(pos >= 0)}" aria-label="${it.text}${pos >= 0 ? ', Platz ' + (pos + 1) : ''}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${it.text}</span></button>`;
       })}`.text;
-      $<HTMLButtonElement>('#ocheck').disabled = chosen.length !== task.order.length;
+      $<HTMLButtonElement>('#ocheck').disabled = chosen.length !== task.order!.length;
       $<HTMLButtonElement>('#oundo').disabled = chosen.length <= fixed;
     };
     bottom.innerHTML =
@@ -607,9 +568,9 @@ function runChoiceTask(
       // tap again = take it out, the ones after it move up
       taskPick(b) {
         if (locked) return;
-        const pos = chosen.indexOf(b.dataset.id);
+        const pos = chosen.indexOf(b.dataset.id!);
         if (pos >= fixed) chosen.splice(pos, 1);
-        else if (pos < 0) chosen.push(b.dataset.id);
+        else if (pos < 0) chosen.push(b.dataset.id!);
         paint();
       },
       taskUndo() {
@@ -619,17 +580,14 @@ function runChoiceTask(
         }
       },
       taskCheck() {
-        if (locked || chosen.length !== task.order.length) return;
-        const ok = chosen.every((id, i) => id === task.order[i]);
-        const byId = Object.fromEntries(task.items.map((x: { id: any; text: any }) => [x.id, x.text]));
+        if (locked || chosen.length !== task.order!.length) return;
+        const ok = chosen.every((id, i) => id === task.order![i]);
+        const byId = Object.fromEntries(task.items!.map((x) => [x.id, x.text]));
         container.querySelectorAll<HTMLElement>('.oitem').forEach((b) => {
-          const i = chosen.indexOf(b.dataset.id);
-          b.classList.add(task.order[i] === b.dataset.id ? 'right' : 'wrong');
+          const i = chosen.indexOf(b.dataset.id!);
+          b.classList.add(task.order![i] === b.dataset.id ? 'right' : 'wrong');
         });
-        finish(
-          ok,
-          html`Richtige Reihenfolge:${task.order.map((id: string | number, i: number) => html`<br>${i + 1}. ${byId[id]}`)}`,
-        );
+        finish(ok, html`Richtige Reihenfolge:${task.order!.map((id, i) => html`<br>${i + 1}. ${byId[id]}`)}`);
       },
     });
     paint();
@@ -642,7 +600,7 @@ function runChoiceTask(
 // shared by the hut, garden, market and mine pictures: ink outline, soft gradients lit from the top left
 export const INK = '#1C2541';
 export const ln = (w: number) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
-export const lg = (id: string, a: string, b: string, h?: number | undefined) =>
+export const lg = (id: string, a: string, b: string, h?: number) =>
   `<linearGradient id="${id}" x1="0" y1="0" x2="${h ? 1 : 0}" y2="${h ? 0 : 1}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
 export const rg = (id: string, a: string, b: string) =>
   `<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient>`;
@@ -670,15 +628,15 @@ const ptTuber = (x: number, y: number, rx: number, ry: number, a: number) =>
 const PT_DEFS = `<defs>${lg('pt-soil', '#BE9064', '#8A5F3B')}${lg('pt-lf', '#86CF63', '#3E9640')}${lg('pt-st', '#7CC35B', '#3E8E41', 1)}${rg('pt-fl', '#FFFFFF', '#B79BEE')}${rg('pt-tk', '#F6D995', '#BC8B42')}${rg('pt-mk', '#A98256', '#5E4026')}${rg('pt-be', '#C6E89A', '#5E9A2E')}
     <pattern id="pt-cr" width="40" height="34" patternUnits="userSpaceOnUse"><circle cx="6" cy="8" r="1.6" fill="#6E4A2C" opacity=".5"/><circle cx="25" cy="4" r="1.2" fill="#F2D9B0" opacity=".45"/><circle cx="33" cy="20" r="2" fill="#6E4A2C" opacity=".4"/><circle cx="14" cy="26" r="1.3" fill="#F2D9B0" opacity=".4"/><ellipse cx="22" cy="16" rx="2.6" ry="1.8" fill="#A8A29A" stroke="#6E4A2C" stroke-width=".8" opacity=".7"/></pattern></defs>`;
 // opts: highlight (part id), clickable, labels (bool), step (1-6 for drawing school)
-function potatoSVG(opts: { step?: any; highlight?: any; clickable?: any; labels?: any }) {
+function potatoSVG(opts: { step?: number; highlight?: string; clickable?: boolean; labels?: boolean }) {
   opts = opts || {};
   const step = opts.step || 6;
-  const hl = (id: any) => (opts.highlight === id ? ' glow' : '');
-  const g = (id: string, inner: string, cls?: undefined) =>
+  const hl = (id: string) => (opts.highlight === id ? ' glow' : '');
+  const g = (id: string, inner: string, cls?: string) =>
     step >= PART_STEP[id]
       ? `<g data-part="${id}" class="part${hl(id)} ${cls || ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="Pflanzenteil ${Object.keys(PART_STEP).indexOf(id) + 1}"` : ''}>${inner}</g>`
       : '';
-  const label = (id: string, x: number, y: number, anchor?: undefined) =>
+  const label = (id: string, x: number, y: number, anchor?: string) =>
     opts.labels && step >= PART_STEP[id]
       ? `<text class="plabel" x="${x}" y="${y}" text-anchor="${anchor || 'start'}">${MK.PARTS.find((p) => p.id === id)!.name.replace(' (Frucht)', '')}</text>`
       : '';
@@ -714,7 +672,7 @@ function potatoSVG(opts: { step?: any; highlight?: any; clickable?: any; labels?
       ${label('bluete', 168, 30)}${label('beere', 6, 76)}${label('blaetter', 4, 112)}${label('staengel', 140, 146)}${label('mutterknolle', 162, 178)}${label('wurzeln', 160, 290)}${label('auslaeufer', 6, 204)}${label('tochterknollen', 6, 276)}
     </svg>`);
 }
-const PART_STEP = {
+const PART_STEP: Record<string, number> = {
   mutterknolle: 1,
   wurzeln: 2,
   auslaeufer: 3,
@@ -732,6 +690,14 @@ const DRAW_STEPS = [
   'Zeichne die Blätter an die Triebe.',
   'Zeichne oben die Blüten und eine kleine Beere.',
 ];
+// a part of a labelled picture; the potato says where it grows (ground), the others bring their own tip
+interface PlantPart {
+  id: string;
+  name: string;
+  desc: string;
+  ground?: string;
+  tip?: string;
+}
 // labelled pictures: the potato here, cereal plant and water cycle in sachkunde.ts
 export const POTATO = { svg: potatoSVG, parts: MK.PARTS, steps: DRAW_STEPS, qid: 'p_', note: 'teile' };
-export const plantOf = (k: string | number) => (k && MS.PLANTS[k]) || POTATO;
+export const plantOf = (k: string | undefined) => (k && MS.PLANTS[k]) || POTATO;

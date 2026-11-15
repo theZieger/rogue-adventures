@@ -1,9 +1,9 @@
 import { MONART } from '../monsters.ts';
-import { TOP, isObj } from '../save.ts';
+import { type Meta, TOP, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
 import { screenGameOver } from './collection.ts';
-import { $, BEATS, CFG, ITEMS, MODULES_OF, TYPES, esc, pick, reducedMotion, shuffle } from './core.ts';
+import { $, BEATS, CFG, ITEMS, type Item, MODULES_OF, TYPES, esc, pick, reducedMotion, shuffle } from './core.ts';
 import { advance, nodeDone, showBag, textsFor } from './map.ts';
 import { screenTreasure } from './nodes.ts';
 import {
@@ -34,22 +34,65 @@ import { openGoals } from './title.ts';
 import { SFX, announce, ensureTutorial, fx, modal, on, screen, topbar } from './ui.ts';
 
 /* ---------- Battle ---------- */
+// one attack of the hero: its name and the task type it asks
+export interface Attack {
+  name: string;
+  mod: string;
+}
+// what an enemy is made from: an entry of the unit's `enemies` or the week's boss
+interface EnemySpec {
+  name: string;
+  base?: string; // the Monsterbuch entry, if the name differs
+  type: string;
+  shape: string;
+  hp: number;
+  atk: number;
+  boss?: boolean;
+  weekboss?: boolean;
+  weakOrder?: string[];
+}
+// the hero's top in the Kreisel-Arena
+interface Top {
+  start: number; // wind-up tasks done
+  spin: number;
+  max: number;
+  wucht: number;
+  panzer: number;
+  parts: Meta['top'];
+}
+// saved in the node, so a fight goes on after a reload
+export interface Enemy {
+  name: string;
+  type: string;
+  shape: string;
+  maxHp: number;
+  hp: number;
+  atk: number;
+  fresh?: boolean; // new in the Monsterbuch
+  boss?: boolean;
+  elite?: boolean;
+  weekboss?: boolean;
+  weak?: string; // task type of the weak spot
+  lastMod?: string;
+  reps?: number; // hits in a row with lastMod
+  pending?: number; // the enemy still has its turn, with this strength
+  top?: Top;
+  read?: { q: number; right: number };
+}
+// a fight on screen: its enemy and what the last turn left to show
+export interface Battle {
+  enemy: Enemy;
+  log: string;
+  logCls: string;
+  phase: string;
+  shown?: boolean;
+  clash?: string;
+  boost?: boolean;
+  taken?: number;
+  stamps?: number;
+}
 // arena: a spinning-top duel against the owner of the other top, which isn't a Monsterbuch entry
-export function startBattle(
-  spec: {
-    boss: any;
-    base: any;
-    name: any;
-    weakOrder: any[];
-    type: any;
-    shape: any;
-    hp: number;
-    atk: number;
-    weekboss: any;
-  },
-  hard: boolean,
-  arena?: boolean | undefined,
-) {
+export function startBattle(spec: EnemySpec, hard: boolean, arena?: boolean) {
   // extra HP offsets weak-spot damage, so fights stay about as long
   // enemies grow along the way as on an 8-floor map, so a shorter map's boss is just as strong
   const step = ((state.run.floor - 1) * 7) / Math.max(1, state.run.map.length - 1);
@@ -58,9 +101,9 @@ export function startBattle(
   const dexName = spec.base || spec.name;
   const fresh = !arena && !state.meta.dex[dexName];
   if (fresh) giveStamps(2);
-  const mods = heroAttacks().map((a: { mod: any }) => a.mod);
-  const weak = spec.weakOrder ? spec.weakOrder.find((k: any) => mods.includes(k)) : pickWeak();
-  const enemy = {
+  const mods = heroAttacks().map((a: Attack) => a.mod);
+  const weak = spec.weakOrder ? spec.weakOrder.find((k) => mods.includes(k)) : pickWeak();
+  const enemy: Enemy = {
     fresh,
     name: spec.name,
     type: spec.type,
@@ -83,54 +126,15 @@ export function startBattle(
     enemy,
     log: arena
       ? `${esc(enemy.name)} tritt mit einem Kreisel an. Hol zuerst Schwung: Jede richtige Aufgabe gibt +4.`
-      : `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak))}.`,
+      : `${enemy.name} taucht auf! 🎯 Schwachstelle: ${esc(weakName(enemy.weak!))}.`,
     logCls: '',
     phase: 'choose',
   };
   renderBattle(b);
 }
 // some callers pass a second argument from an earlier version; it is ignored
-export function renderBattle(
-  b: {
-    enemy:
-      | {
-          fresh: false;
-          name: any;
-          type: any;
-          shape: any;
-          maxHp: number;
-          hp: number;
-          atk: number;
-          boss: boolean;
-          elite: any;
-          weekboss: boolean;
-          weak: any;
-        }
-      | Record<string, any>
-      | {
-          name: string;
-          type: string;
-          shape: string;
-          maxHp: number;
-          hp: number;
-          atk: number;
-          read: { q: number; right: number };
-        };
-    log: string;
-    logCls: string;
-    phase: string;
-  },
-  again?: boolean,
-): void;
-export function renderBattle(b: {
-  enemy: any;
-  log: any;
-  logCls: any;
-  phase: any;
-  shown?: any;
-  clash?: any;
-  boost?: any;
-}) {
+export function renderBattle(b: Battle, again?: boolean): void;
+export function renderBattle(b: Battle) {
   const h = state.run.hero,
     e = b.enemy;
   const pct = (a: number, m: number) => Math.max(0, (a / m) * 100);
@@ -191,14 +195,7 @@ const SPIRAL = (() => {
   }
   return `<svg class="emblem" viewBox="-50 -50 100 100" aria-hidden="true"><path d="${d}" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>`;
 })();
-function topSprite(
-  who: unknown,
-  spin: number,
-  max: number,
-  color: string,
-  parts: { tip: string; ring: string; disc: string },
-  state: unknown,
-) {
+function topSprite(who: string, spin: number, max: number, color: string, parts: Meta['top'], state: string) {
   const live = spin > 0;
   const speed = (0.45 + 0.65 * (1 - spin / max)).toFixed(2);
   return html`<div class="sprite ${who} ${live ? 'live' : 'fallen'} ${live && spin / max < 0.3 ? 'low' : ''} ${state}" id="${who === 'hero' ? 'fh' : 'fe'}" style="--spin:${speed}s"><i class="streaks"></i>${raw(MONART.topSVG(color, parts, live ? 'live' : 'fallen'))}<i class="wave"></i><span class="sparks">${raw(SPARKS)}</span>${raw(BANG)}</div>`;
@@ -208,18 +205,18 @@ function topSprite(
 const TIRED = [1, 0.6, 0.35],
   WEAK = 1.5,
   ENEMY_HP = 1.4;
-function pickWeak(except?: string | undefined) {
+function pickWeak(except?: string) {
   state.run.used = isObj(state.run.used) ? state.run.used : {};
-  const mods = [...new Set<string>(heroAttacks().map((a: { mod: any }) => a.mod))];
+  const mods = [...new Set<string>(heroAttacks().map((a: Attack) => a.mod))];
   const pool = mods.length > 1 ? mods.filter((m) => m !== except) : mods;
   const least = Math.min(...pool.map((m) => state.run.used[m] || 0));
   return pick(pool.filter((m) => (state.run.used[m] || 0) === least));
 }
-function weakName(mod: string | number) {
-  const a = heroAttacks().find((x: { mod: any }) => x.mod === mod);
+function weakName(mod: string) {
+  const a = heroAttacks().find((x: Attack) => x.mod === mod);
   return a ? a.name : MODULES_OF()[mod].name;
 }
-function attackInfo(b: { enemy: { type: any; weak: any; lastMod: any; reps: any } }, atk: { mod: string | number }) {
+function attackInfo(b: Battle, atk: Attack) {
   const strong = BEATS[heroSpec().type] === b.enemy.type;
   const weak = b.enemy.weak === atk.mod;
   const tired = b.enemy.lastMod === atk.mod ? Math.min(b.enemy.reps || 1, TIRED.length - 1) : 0;
@@ -228,7 +225,7 @@ function attackInfo(b: { enemy: { type: any; weak: any; lastMod: any; reps: any 
   if (state.run.power) dmg *= 2;
   return { dmg: Math.max(1, Math.round(dmg)), strong, tired, weak };
 }
-function noteAttackUsed(b: { enemy: { lastMod: any; reps: number } }, atk: { mod: any }) {
+function noteAttackUsed(b: Battle, atk: Attack) {
   if (b.enemy.lastMod === atk.mod) b.enemy.reps = (b.enemy.reps || 1) + 1;
   else {
     b.enemy.lastMod = atk.mod;
@@ -237,12 +234,7 @@ function noteAttackUsed(b: { enemy: { lastMod: any; reps: number } }, atk: { mod
 }
 // The name must hold what the button shows, in that order, so someone who speaks to their device can say it:
 // the tags follow the number, and the word „Schaden“ comes after them.
-function attackLabel(
-  attack: { name: any },
-  info: { dmg: any; strong: any; tired: any; weak: any },
-  moduleName: string,
-  isGoal: boolean,
-) {
+function attackLabel(attack: Attack, info: ReturnType<typeof attackInfo>, moduleName: string, isGoal: boolean) {
   const tags = [
     isGoal && 'Wochenziel',
     info.weak && 'Schwachstelle',
@@ -253,26 +245,24 @@ function attackLabel(
   const start = `${attack.name}: ${moduleName}, ${info.dmg}`;
   return tags.length ? `${start}, ${tags.join(', ')} – Schaden ${info.dmg}` : `${start} Schaden`;
 }
-function renderAttackChoice(b: { enemy: { read: any; top: any; weak: string } }) {
+function renderAttackChoice(b: Battle) {
   if (b.enemy.read) return readChoice(b);
   if (b.enemy.top) return topChoice(b);
-  const atks = heroAttacks();
+  const atks: Attack[] = heroAttacks();
   const MODULES = MODULES_OF();
-  if (!atks.some((a: { mod: any }) => a.mod === b.enemy.weak)) {
+  if (!atks.some((a) => a.mod === b.enemy.weak)) {
     b.enemy.weak = pickWeak();
     saveAll();
   } // older save or task types switched in the parent area
   const goalMods = openGoals(state.mode)
     .filter((g) => g.kind === 'right')
     .map((g) => g.mod);
-  $('#bottom').innerHTML = html`<div class="attacks">${atks.map(
-    (a: { mod: string | number | undefined; name: unknown }, i: unknown) => {
-      const inf = attackInfo(b, a);
-      return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod))}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? html`<span class="tag goal">⭐ Wochenziel</span>` : ''}${inf.weak ? html`<span class="tag weak">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="tag power">🌶️ doppelt</span>` : ''}</span></button>`;
-    },
-  )}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`.text;
+  $('#bottom').innerHTML = html`<div class="attacks">${atks.map((a, i) => {
+    const inf = attackInfo(b, a);
+    return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod))}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? html`<span class="tag goal">⭐ Wochenziel</span>` : ''}${inf.weak ? html`<span class="tag weak">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="tag power">🌶️ doppelt</span>` : ''}</span></button>`;
+  })}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`.text;
   on({
-    bag: () => showBag((it: any, lv: any) => useItemInBattle(b, it, lv)),
+    bag: () => showBag((it, lv) => useItemInBattle(b, it, lv)),
     attack: (button) => chooseAttack(b, atks[+button.dataset.i!]),
   });
   if (!state.meta.seenTut['battle:intro2']) showBattleIntro();
@@ -291,11 +281,7 @@ function showBattleIntro() {
   $('#tutok', ov).focus({ preventScroll: true });
 }
 // potions take your turn; shield, cookie, magnifier and stars don't
-function useItemInBattle(
-  b: { logCls: string; log: string; phase: string },
-  it: { xp: any; icon: any; shield: any; power: any; name: any; hint: any },
-  lv: any[],
-) {
+function useItemInBattle(b: Battle, it: Item, lv: string[]) {
   b.logCls = 'hit';
   if (it.xp) {
     b.log = `${it.icon} +${it.xp} XP!${lv && lv.length ? ' ' + lv.join(' ') : ''}`;
@@ -324,15 +310,7 @@ function useItemInBattle(
   b.log = `${it.icon} ${it.name} benutzt!`;
   enemyTurn(b, 1);
 }
-function chooseAttack(
-  b: {
-    enemy: { elite: any; boss: any; hp: number; weekboss: any; weak: string; pending: number; name: any };
-    phase: string;
-    log: string;
-    logCls: string;
-  },
-  atk: { mod: string | number; name: any },
-) {
+function chooseAttack(b: Battle, atk: Attack) {
   const tier = taskTier(atk.mod);
   let t = makeTask(atk.mod, tier, { elite: b.enemy.elite || b.enemy.boss });
   b.phase = 'task';
@@ -342,7 +320,7 @@ function chooseAttack(
   state.run.hint = false;
   let hit: { dmg: number; crit: boolean } | null = null;
   // the answer counts the moment it is checked: damage, stats and the enemy's turn are saved right away
-  const onResult = (ok: any) => {
+  const onResult = (ok: boolean) => {
     recordAnswer(atk.mod, ok, t);
     const inf = attackInfo(b, atk);
     if (ok) {
@@ -392,10 +370,7 @@ function chooseAttack(
     });
   });
 }
-export function enemyTurn(
-  b: { enemy: any; log: any; logCls: any; phase: any; taken?: any; stamps?: any },
-  mult: number,
-) {
+export function enemyTurn(b: Battle, mult: number) {
   const h = state.run.hero;
   const move = pick(CFG().moves);
   b.taken = 0;
@@ -435,7 +410,7 @@ export function enemyTurn(
     fx('#fh', '🛡️', 'shield');
     SFX.block();
   }
-  if (h.hp <= 0) setTimeout(() => screenGameOver(b), 1600);
+  if (h.hp <= 0) setTimeout(() => screenGameOver(b as Battle & { stamps: number }), 1600);
 }
 export const LOOT = {
   normal: ['beere', 'beere', 'trank', 'keks', 'lupe', 'stern'],
@@ -443,12 +418,12 @@ export const LOOT = {
   chest: ['trank', 'schild', 'keks', 'lupe', 'engel', 'stern'],
   rare: ['engel', 'grosstrank', 'schild'],
 };
-export function battleWon(b: { enemy: any; log?: string; logCls?: string; phase?: string }) {
+export function battleWon(b: Battle) {
   const e = b.enemy;
   const xp = e.boss ? 60 : e.elite ? 35 : 18;
   const msgs = gainXp(xp);
   // ~1/3 of normal fights drop one item, bosses two; elites pick a reward on the next screen
-  const drops: any[] = [];
+  const drops: string[] = [];
   if (e.boss) drops.push('grosstrank', pick(LOOT.boss));
   else if (!e.elite && Math.random() < 0.3) drops.push(pick(LOOT.normal));
   state.run.items.push(...drops);
@@ -472,7 +447,7 @@ export function battleWon(b: { enemy: any; log?: string; logCls?: string; phase?
     heal(20);
     state.meta.evoUnlocked[state.run.hero.id + state.run.hero.evo] = true;
     const wa = CFG().worldAttacks && CFG().worldAttacks[state.run.world + 1];
-    evoMsg = html`<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${raw(heroSVG(heroSpec(), state.run.hero.evo - 1, 'before'))}<span aria-hidden="true">➜</span>${raw(heroSVG(heroSpec(), state.run.hero.evo, 'after'))}</div><p>Dein Monster ist jetzt <b>${heroName()}</b>!</p>${wa ? html`<p>Neue Attacken für die nächste Welt: ${wa.map((x: { name: any }) => x.name).join(', ')}</p>` : ''}</div>`;
+    evoMsg = html`<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${raw(heroSVG(heroSpec(), state.run.hero.evo - 1, 'before'))}<span aria-hidden="true">➜</span>${raw(heroSVG(heroSpec(), state.run.hero.evo, 'after'))}</div><p>Dein Monster ist jetzt <b>${heroName()}</b>!</p>${wa ? html`<p>Neue Attacken für die nächste Welt: ${wa.map((x: Attack) => x.name).join(', ')}</p>` : ''}</div>`;
   }
   saveAll();
   screen(
@@ -489,26 +464,14 @@ export const TOP_START = 3,
   TOP_WIND = 4,
   TOP_KNOCK = 6;
 const TOP_FOE = () => 16 + 8 * state.run.world;
-export const topVal = (slot: string) => TOP[slot].find((p: { id: any }) => p.id === state.meta.top[slot]).val;
+export const topVal = (slot: keyof typeof TOP) => TOP[slot].find((p) => p.id === state.meta.top[slot])!.val;
 // the other top gets better parts in later worlds (only its look; its Schwung comes from TOP_FOE)
 const foeParts = () => {
   const i = Math.min(state.run.world, 3) - 1;
   return { tip: TOP.tip[i].id, ring: TOP.ring[i].id, disc: TOP.disc[i].id };
 };
 // parts and values are fixed when the duel starts, so changing parts during a running duel changes nothing
-const topStart = (enemy: {
-  fresh?: false;
-  name?: any;
-  type: any;
-  shape?: any;
-  maxHp?: number;
-  hp?: number;
-  atk?: number;
-  boss?: boolean;
-  elite?: any;
-  weekboss?: boolean;
-  weak?: any;
-}) => ({
+const topStart = (enemy: Enemy): Top => ({
   start: 0,
   spin: topVal('disc'),
   max: topVal('disc') + TOP_START * TOP_WIND,
@@ -516,19 +479,19 @@ const topStart = (enemy: {
   panzer: topVal('ring'),
   parts: Object.assign({}, state.meta.top),
 });
-function topChoice(b: { enemy: any }) {
+function topChoice(b: Battle) {
   const e = b.enemy,
-    T = e.top;
+    T = e.top!;
   if (e.hp <= 0 || T.spin <= 0) {
     $('#bottom').innerHTML = '<button class="btn" id="next" data-action="next">Weiter</button>';
     on({ next: () => topEnd(b) });
     return;
   }
-  const atks = heroAttacks();
+  const atks: Attack[] = heroAttacks();
   const M = MODULES_OF();
   const wind = T.start < TOP_START;
   $('#bottom').innerHTML =
-    html`<div class="attacks">${atks.map((a: { name: unknown; mod: string | number }, i: unknown) => html`<button class="atk" data-action="attack" data-i="${i}" aria-label="${a.name}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${a.name}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`)}</div>
+    html`<div class="attacks">${atks.map((a, i) => html`<button class="atk" data-action="attack" data-i="${i}" aria-label="${a.name}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${a.name}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`)}</div>
       <p class="muted toprule">${wind ? `Schwung holen: Aufgabe ${T.start + 1} von ${TOP_START}` : `Wucht ${T.wucht} · Panzer ${T.panzer}. Eine falsche Antwort kostet dich ${TOP_KNOCK - T.panzer} Schwung.`}</p>`.text;
   on({ attack: (button) => topAttack(b, atks[+button.dataset.i!]) });
   if (!state.meta.seenTut['arena:intro']) {
@@ -545,12 +508,9 @@ function topChoice(b: { enemy: any }) {
     $('#tutok', ov).focus({ preventScroll: true });
   }
 }
-function topAttack(
-  b: { enemy: any; phase: string; log: string; logCls: string; boost: boolean; clash: string },
-  atk: { mod: any; name: string | undefined },
-) {
+function topAttack(b: Battle, atk: Attack) {
   const e = b.enemy,
-    T = e.top;
+    T = e.top!;
   const t = makeTask(atk.mod, taskTier(atk.mod));
   const wind = T.start < TOP_START;
   b.phase = 'task';
@@ -558,7 +518,7 @@ function topAttack(
   $('#bottom').innerHTML = '';
   $('#dish').classList.remove('clash');
   let fxOn: [sel: string, text: string, cls?: string] | null = null;
-  const onResult = (ok: any) => {
+  const onResult = (ok: boolean) => {
     recordAnswer(atk.mod, ok, t);
     if (wind) {
       T.start++;
@@ -611,9 +571,9 @@ function topAttack(
   );
 }
 // like a fight: the answers pay their stamps either way, the win adds XP and 1 stamp
-export function topEnd(b: { enemy: any; log?: string; logCls?: string; phase?: string }) {
+export function topEnd(b: Battle) {
   const e = b.enemy,
-    T = e.top,
+    T = e.top!,
     won = e.hp <= 0;
   const xp = won ? 18 : 0;
   const msgs = won ? gainXp(xp) : [];
@@ -646,10 +606,8 @@ const readText = () => TEXTE[state.run.node.text];
 const sylHtml = (s: string) =>
   s
     .split(/([A-Za-zÄÖÜäöüß·]+)/)
-    .map((w: string, i: number) =>
-      i % 2 ? w.split('·').map((x: unknown, k: number) => html`<span class="sy${k % 2}">${x}</span>`) : w,
-    );
-const readCard = (t) =>
+    .map((w, i) => (i % 2 ? w.split('·').map((x, k) => html`<span class="sy${k % 2}">${x}</span>`) : w));
+const readCard = (t: (typeof TEXTE)[number]) =>
   html`<div class="card readcard"><div class="eyebrow">${t.kind}</div><h2>${t.title}</h2><p${t.syl ? raw(' class="syl"') : ''}>${t.syl ? sylHtml(t.syl) : t.text}</p>${t.by ? html`<p class="by">${t.by}</p>` : ''}</div>`;
 export function screenRead() {
   if (!Number.isInteger(state.run.node.text) || !TEXTE[state.run.node.text]) {
@@ -680,8 +638,8 @@ export function screenRead() {
     { next: ask },
   );
 }
-function readChoice(b: { enemy: { read: any; maxHp: number; hp: number } }) {
-  const r = b.enemy.read;
+function readChoice(b: Battle) {
+  const r = b.enemy.read!;
   const n = readText().qs.length;
   const dmg = Math.ceil(b.enemy.maxHp / n);
   if (r.q >= n || b.enemy.hp <= 0) {
@@ -699,15 +657,12 @@ function readChoice(b: { enemy: { read: any; maxHp: number; hp: number } }) {
       );
       $('#tutok', ov).focus({ preventScroll: true });
     },
-    bag: () => showBag((it: any, lv: any) => useItemInBattle(b, it, lv)),
+    bag: () => showBag((it, lv) => useItemInBattle(b, it, lv)),
     ask: () => readAsk(b, dmg),
   });
 }
-function readAsk(
-  b: { enemy: { read: any; hp: number; name: any; pending: number }; phase: string; log: string; logCls: string },
-  dmg: number,
-) {
-  const r = b.enemy.read;
+function readAsk(b: Battle, dmg: number) {
+  const r = b.enemy.read!;
   const tx = readText();
   const q = tx.qs[r.q];
   const t = {
@@ -727,7 +682,7 @@ function readAsk(
   const hint = !!state.run.hint;
   state.run.hint = false;
   let hit = 0;
-  const onResult = (ok: any) => {
+  const onResult = (ok: boolean) => {
     r.q++;
     if (ok) {
       r.right++;
@@ -768,8 +723,8 @@ function readAsk(
     ),
   );
 }
-export function readEnd(b: { enemy: any; log?: string; logCls?: string; phase?: string }) {
-  const r = b.enemy.read;
+export function readEnd(b: Battle) {
+  const r = b.enemy.read!;
   const beaten = b.enemy.hp <= 0;
   const xp = 6 * r.right;
   const msgs = gainXp(xp);
