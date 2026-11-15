@@ -165,7 +165,7 @@ export function screenCraft(id: string | undefined) {
       screen(
         html`<div class="screen">${raw(topbar('Werkbank'))}<div class="scroll"><div class="card center">${
           made
-            ? html`<h2>Gebaut: ${rName(r)}</h2>${isFurn(r) ? html`${raw(furnPreview(r.id))}<p>Das steht jetzt in deiner Hütte.</p>` : html`<p style="font-size:48px;margin:0" aria-hidden="true">${ITEMS[r.id].icon}</p><p>Das liegt jetzt im Vorrat und kommt ins nächste Abenteuer mit.</p>`}`
+            ? html`<h2>Gebaut: ${rName(r)}</h2>${isFurn(r) ? html`${raw(furnPreview(r.id))}<p>Das steht jetzt in deiner Hütte.</p>` : html`<p style="font-size:var(--text-48);margin:0" aria-hidden="true">${ITEMS[r.id].icon}</p><p>Das liegt jetzt im Vorrat und kommt ins nächste Abenteuer mit.</p>`}`
             : html`<h2>Nicht gebaut</h2><p>Die Rechnung hat nicht gestimmt. Deine Zutaten bleiben im Lager. Du kannst es mit neuen Zahlen wieder versuchen.</p>`
         }</div></div>
         <div class="bottom"><div class="row"><button class="btn${made && isFurn(r) ? ' secondary' : ''}" id="next" data-action="bench">Zur Werkbank</button>${made && isFurn(r) ? html`<button class="btn" id="hut" data-action="hut">Zur Hütte</button>` : ''}</div></div></div>`,

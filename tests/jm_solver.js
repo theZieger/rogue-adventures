@@ -42,7 +42,7 @@ const secs = (s) =>
   [...s.matchAll(/(\d+) (Minuten?|Sekunden?)\b/g)].reduce((v, m) => v + (m[2].startsWith('M') ? 60 : 1) * m[1], 0);
 
 function solve(html, options, REF) {
-  html = html.replace(/<div class="hintline">[\s\S]*?<\/div>/g, ''); // an Eselsbrücke hint is not part of the question
+  html = html.replace(/<div class="callout center">[\s\S]*?<\/div>/g, ''); // an Eselsbrücke hint is not part of the question
   const t = (html.match(/data-t="([^"]+)"/) || [])[1];
   const q = textOf(html);
   const counts = {};

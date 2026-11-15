@@ -110,7 +110,7 @@ export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
     const a0 = task.answers![0];
     const lo = Math.max(0, a0 - 1 - Math.floor(Math.random() * 3));
     const hint = opts.hint
-      ? html`<div class="hintline">🌉 Tipp: ${task.answers!.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>`
+      ? html`<div class="callout center">🌉 Tipp: ${task.answers!.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>`
       : '';
     return html`<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${opts.subtitle}` : ''}<button class="tut" type="button" data-action="taskTutorial" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
   }
@@ -424,10 +424,10 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
       $('#fb', container).insertAdjacentHTML(
         'beforebegin',
         (task.tip
-          ? html`<div class="hintline">🌉 Tipp: ${task.tip}</div>`
+          ? html`<div class="callout center">🌉 Tipp: ${task.tip}</div>`
           : n
-            ? html`<div class="hintline">🌉 Tipp aus deinen Notizen „${n.title}“:${n.lines.map((l) => html`<br>${l}`)}</div>`
-            : html`<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>`
+            ? html`<div class="callout center">🌉 Tipp aus deinen Notizen „${n.title}“:${n.lines.map((l) => html`<br>${l}`)}</div>`
+            : html`<div class="callout center">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>`
         ).text,
       );
       return;
@@ -442,7 +442,7 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
     }
     $('#fb', container).insertAdjacentHTML(
       'beforebegin',
-      html`<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>`.text,
+      html`<div class="callout center">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>`.text,
     );
   };
   const finish = (ok: boolean, why: Markup) => {
@@ -505,7 +505,7 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
       html`<div class="task">${head}<div class="question">${task.q}</div>${raw(plantOf(task.plant).svg({ clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     const pp = (plantOf(task.plant).parts as PlantPart[]).find((p) => p.id === task.part);
     bottom.innerHTML =
-      html`<p class="center muted" style="margin:6px 0">Tippe auf ${(MS.PLANTS[task.plant!] && MS.PLANTS[task.plant!].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? html`<p class="center hintline">🌉 Tipp: ${pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`}</p>` : ''}`.text;
+      html`<p class="center muted" style="margin:var(--space-6) 0">Tippe auf ${(MS.PLANTS[task.plant!] && MS.PLANTS[task.plant!].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? html`<p class="callout center">🌉 Tipp: ${pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`}</p>` : ''}`.text;
     const tapPart = (g: HTMLElement) => {
       if (locked) return;
       const ok = g.dataset.part === task.part;
@@ -530,7 +530,7 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
     container.innerHTML =
       html`<div class="task">${head}<div class="question">${task.q}</div>${raw(MS.mapSVG({ start: task.start!, neben: task.neben, scale: task.scale, clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     bottom.innerHTML =
-      html`<p class="center muted" style="margin:6px 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? html`<p class="center hintline">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>` : ''}`.text;
+      html`<p class="center muted" style="margin:var(--space-6) 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? html`<p class="callout center">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>` : ''}`.text;
     const tapCell = (c: HTMLElement) => {
       if (locked) return;
       const ok = c.dataset.cell === goal;
@@ -565,7 +565,7 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
     if (fixed)
       $('#olist', container).insertAdjacentHTML(
         'afterend',
-        html`<div class="hintline">🌉 Tipp: Das Erste steht schon richtig.</div>`.text,
+        html`<div class="callout center">🌉 Tipp: Das Erste steht schon richtig.</div>`.text,
       );
     on({
       // tap again = take it out, the ones after it move up

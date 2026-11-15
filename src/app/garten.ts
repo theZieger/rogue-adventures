@@ -182,7 +182,7 @@ function harvest(i: number) {
   const c = MK.CROPS[b.crop as Crop];
   const t = MK.gardenQuestion(b.crop);
   const ov = modal(
-    html`<h2>${c.name} ernten</h2><p>Erst eine Frage zur Pflanze:</p><div class="question">${t.q}</div><div class="options" style="margin-top:12px">${t.options.map((o, k) => html`<button class="opt" data-action="answer" data-i="${k}">${o}</button>`)}</div><div id="hfb" role="status" aria-live="polite"></div>`,
+    html`<h2>${c.name} ernten</h2><p>Erst eine Frage zur Pflanze:</p><div class="question">${t.q}</div><div class="options" style="margin-top:var(--space-12)">${t.options.map((o, k) => html`<button class="opt" data-action="answer" data-i="${k}">${o}</button>`)}</div><div id="hfb" role="status" aria-live="polite"></div>`,
     {
       answer: (chosen) => {
         const ok = t.options[+chosen.dataset.i!] === t.answer;

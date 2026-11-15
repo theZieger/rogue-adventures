@@ -269,7 +269,7 @@ function turmBoardHtml(outro?: boolean) {
   return html`<div class="tw-board">${raw(TWART.scene(t.lanes))}
       <div class="tw-tower" id="twt" style="--x:${G.gate[0]};--y:${G.gate[1] + 8};--th:${tw.h};--feet:${tw.feet}" data-floors="${t.floors.length}">${raw(tw.back)}<div class="tw-heroslot">${raw(heroSVG(turmHero(), h.evo))}</div>${raw(tw.front)}</div>
       ${lanes}
-      <div class="tw-hpbox ${G.hp[2]}${turmLost ? ' hurt' : ''}" style="${at(G.hp)}"><span class="hptext" aria-label="Turm: ${h.hp} von ${h.maxHp} Lebenspunkten">Turm ❤️ <b>${h.hp}</b>${state.run.shield ? ' 🛡️' : ''}${turmLost ? html`<em class="tw-lost">−${turmLost}</em>` : ''}</span><span class="hpbar" aria-hidden="true"><i class="${turmBar(pct)}" style="width:${pct}%"></i></span></div>
+      <div class="tw-hpbox ${G.hp[2]}${turmLost ? ' hurt' : ''}" style="${at(G.hp)}"><span class="hptext" aria-label="Turm: ${h.hp} von ${h.maxHp} Lebenspunkten">Turm ❤️ <b>${h.hp}</b>${state.run.shield ? ' 🛡️' : ''}${turmLost ? html`<em class="tw-lost">−${turmLost}</em>` : ''}</span><span class="bar hp" aria-hidden="true"><i class="${turmBar(pct)}" style="width:${pct}%"></i></span></div>
       <div class="tw-fx" aria-hidden="true"><svg viewBox="0 0 ${G.w} ${G.h}" preserveAspectRatio="none"></svg></div></div>`;
 }
 const turmBar = (pct: number) => (pct < 30 ? 'low' : pct < 60 ? 'mid' : '');
@@ -381,13 +381,13 @@ function turmPanel(say: boolean) {
     const gate = TW.threats(state.run).includes(x.id) && turmGateLine(x);
     // only what changes the child's choice: the warning, the double Ziegel, a question from before, how a special monster behaves
     const tags = [
-      gate && html`<span class="tag gate">⚠️ ${gate}</span>`,
-      c.weak && html`<span class="tag weak">🎯 Doppelte Ziegel</span>`,
-      c.again && html`<span class="tag again">🔁 Aufgabe von vorhin</span>`,
-      state.run.power && html`<span class="tag power">🌶️ Doppelter Schaden</span>`,
-      x.boss && html`<span class="tag boss">👑 Boss: langsam, aber stark</span>`,
-      x.elite && html`<span class="tag elite">🛡️ schützt die Monster hinter sich</span>`,
-      x.steps > 1 && html`<span class="tag boss">👣 Schnell: 2 Felder auf einmal</span>`,
+      gate && html`<span class="pill bad">⚠️ ${gate}</span>`,
+      c.weak && html`<span class="pill">🎯 Doppelte Ziegel</span>`,
+      c.again && html`<span class="pill info">🔁 Aufgabe von vorhin</span>`,
+      state.run.power && html`<span class="pill warn">🌶️ Doppelter Schaden</span>`,
+      x.boss && html`<span class="pill hot">👑 Boss: langsam, aber stark</span>`,
+      x.elite && html`<span class="pill info">🛡️ schützt die Monster hinter sich</span>`,
+      x.steps > 1 && html`<span class="pill hot">👣 Schnell: 2 Felder auf einmal</span>`,
     ].filter(Boolean);
     // the final boss: which subject the question comes from now, and how many shields are left
     const sh = x.final && x.shields![0],
@@ -684,7 +684,7 @@ function turmBauTut() {
     `Bist du fertig, tippe auf „Welle ${state.run.turm.wave + 1} starten“.`,
   ];
   const ov = modal(
-    html`<h2>🧱 Bauzeit</h2><ol>${steps.map((s) => html`<li>${s}</li>`)}</ol><button class="btn" id="tutok" style="margin-top:12px" data-action="close">Verstanden</button>`,
+    html`<h2>🧱 Bauzeit</h2><ol>${steps.map((s) => html`<li>${s}</li>`)}</ol><button class="btn" id="tutok" style="margin-top:var(--space-12)" data-action="close">Verstanden</button>`,
     {
       close: () => {
         ov.remove();
@@ -1515,7 +1515,7 @@ function turmIntro() {
     'Kommt ein Monster am Turm an, verliert der Turm ❤️. Pass auf bei ⚠️!',
   ];
   const ov = modal(
-    html`<h2>🏰 Turmwacht</h2><ol>${steps.map((s) => html`<li>${s}</li>`)}</ol><button class="btn" id="tutok" style="margin-top:12px" data-action="close">Verstanden</button>`,
+    html`<h2>🏰 Turmwacht</h2><ol>${steps.map((s) => html`<li>${s}</li>`)}</ol><button class="btn" id="tutok" style="margin-top:var(--space-12)" data-action="close">Verstanden</button>`,
     {
       close: () => {
         ov.remove();

@@ -48,7 +48,7 @@ export function screenTitle() {
   };
   screen(
     html`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" data-action="sound" aria-label="${state.meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${String(!!state.meta.sound)}">${state.meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" data-action="stamps" aria-label="Stempelheft, ${state.meta.stamps} Stempel">🏷️ ${state.meta.stamps}</button><button class="parentbtn" id="parents" data-action="parents">${GEAR} Eltern${backupDue() ? html`<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>` : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo" data-action="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
-      <div class="stack" style="margin-top:16px">
+      <div class="stack" style="margin-top:var(--space-16)">
         ${showWarn() ? html`<div class="card warncard"><button class="warnx" id="warnx" data-action="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp" data-action="warnp">Zum Elternbereich</button></div>` : ''}
         ${extraOn('wochenziele') ? weeklyCard() : ''}
         ${raw(gradeTabs())}${extraOn('garten') ? raw(gardenCard()) : ''}<div class="subjects">${visSubjects().map(
@@ -64,8 +64,8 @@ export function screenTitle() {
           extraOn('garten') && html`<button class="btn ghost" id="garden" data-action="garden">Schulgarten</button>`,
           extraOn('duell') && html`<button class="btn ghost" id="duel" data-action="duel">Duell zu zweit</button>`,
           turmOn() &&
-            html`<button class="btn ghost" id="turm" data-action="turm"><span>🏰 Turmwacht</span>${loadTurm() ? html`<span class="twrun">${raw(TW_FLAG)}läuft</span>` : ''}</button>`,
-          html`<button class="btn ghost" id="news" data-action="news">Was ist neu?${hasNews() ? html`<span class="newbadge">Neu!</span>` : ''}</button>`,
+            html`<button class="btn ghost" id="turm" data-action="turm"><span>🏰 Turmwacht</span>${loadTurm() ? html`<span class="pill">${raw(TW_FLAG)}läuft</span>` : ''}</button>`,
+          html`<button class="btn ghost" id="news" data-action="news">Was ist neu?${hasNews() ? html`<span class="pill new">Neu!</span>` : ''}</button>`,
           html`<button class="btn ghost" id="feedback" data-action="feedback">Idee senden</button>`,
         ]
           .filter(Boolean)
@@ -126,7 +126,7 @@ export function screenSubject(sub: SubjectTile | undefined) {
   const path = (m: string, i: number) => {
     const e = ranked && sub!.modes.slice(0, i).find((x) => !practised(x));
     return [
-      ranked && !i ? html`<span class="startbadge">Hier anfangen</span>` : '',
+      ranked && !i ? html`<span class="pill good">Hier anfangen</span>` : '',
       e ? html`<p class="pathhint">Leichter geht es mit „${MODES[e].title}“ los.</p>` : '',
     ];
   };
@@ -135,11 +135,11 @@ export function screenSubject(sub: SubjectTile | undefined) {
       (m, i) => {
         const r = loadRun(m);
         const c = MODES[m];
-        return html`<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(
+        return html`<div class="card modecard"><div class="row" style="align-items:center;gap:var(--space-12)"><div style="font-size:var(--text-36)" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(
           m,
         ).map(
-          (g) => html`<p class="goalbadge">⭐ Wochenziel: ${goalText(g)}</p>`,
-        )}<div class="row" style="margin-top:10px">${r ? html`<button class="btn small" data-cont="${m}" data-action="resume">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}" data-action="start">${r ? 'Neu' : 'Starten'}</button></div></div>`;
+          (g) => html`<p class="callout">⭐ Wochenziel: ${goalText(g)}</p>`,
+        )}<div class="row" style="margin-top:var(--space-12)">${r ? html`<button class="btn small" data-cont="${m}" data-action="resume">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}" data-action="start">${r ? 'Neu' : 'Starten'}</button></div></div>`;
       },
     )}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     {
@@ -226,9 +226,9 @@ function screenSetup() {
   screen(
     html`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
-      <div class="stack" style="margin-top:14px"><button class="btn" id="setpin" data-action="setpin">PIN festlegen</button><button class="btn secondary" id="setload" data-action="setload">Spielstand laden</button><button class="btn secondary" id="later" data-action="later">Später</button></div>
+      <div class="stack" style="margin-top:var(--space-16)"><button class="btn" id="setpin" data-action="setpin">PIN festlegen</button><button class="btn secondary" id="setload" data-action="setload">Spielstand laden</button><button class="btn secondary" id="later" data-action="later">Später</button></div>
       <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div>
-      <div class="card" style="margin-top:12px"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${raw(gradeTabs())}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`,
+      <div class="card" style="margin-top:var(--space-12)"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${raw(gradeTabs())}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`,
     {
       setpin: () => setPin(screenTitle, screenSetup),
       setload: () => screenParent('load', screenSetup),
@@ -437,7 +437,7 @@ function screenNews() {
   state.depth = 1;
   const unseen = state.meta.seenNews || '';
   screen(
-    html`<div class="screen">${raw(topbar('Was ist neu?'))}<div class="scroll"><div class="stack">${NEWS.length ? NEWS.map((e) => html`<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? html` <span class="newbadge">Neu!</span>` : ''}</h3>${e.groups.map((g) => html`<h4>${GROUP_ICON[g.title] || '📌'} ${g.title}</h4><ul>${g.items.map((it) => html`<li>${it}</li>`)}</ul>`)}</div>`) : html`<p>Noch keine Einträge.</p>`}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
+    html`<div class="screen">${raw(topbar('Was ist neu?'))}<div class="scroll"><div class="stack">${NEWS.length ? NEWS.map((e) => html`<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? html` <span class="pill new">Neu!</span>` : ''}</h3>${e.groups.map((g) => html`<h4>${GROUP_ICON[g.title] || '📌'} ${g.title}</h4><ul>${g.items.map((it) => html`<li>${it}</li>`)}</ul>`)}</div>`) : html`<p>Noch keine Einträge.</p>`}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     { back: screenTitle },
   );
   if (NEWS.length) {

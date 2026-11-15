@@ -136,14 +136,14 @@ export function renderBattle(b: Battle) {
   screen(
     html`<div class="screen">${raw(topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf'))}
       <div class="arena ${T ? 'kreisel' : ''}">
-        <div class="plate enemy"><div class="name">${e.name}</div><div class="plateline">${raw(typeChip(e.type))}${BEATS[heroSpec().type] === e.type ? html`<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
+        <div class="plate enemy"><div class="name">${e.name}</div><div class="plateline">${raw(typeChip(e.type))}${BEATS[heroSpec().type] === e.type ? html`<span class="pill good">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="bar hp"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
         ${
           T
             ? html`<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${raw(SPIRAL)}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>`
             : html`<div class="sprite enemy" id="fe">${raw(monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss }))}<i class="ground"></i></div>
         <div class="sprite hero" id="fh">${raw(heroSVG(heroSpec(), h.evo))}<i class="ground"></i></div>`
         }
-        <div class="plate hero"><div class="name">${heroName()} <span class="levelbadge">Lv ${h.level}</span></div>${T ? html`<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : html`<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${state.run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" role="progressbar" aria-label="Erfahrung" aria-valuenow="${Math.round(Math.min(100, (h.xp / xpNeeded(h.level)) * 100))}"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
+        <div class="plate hero"><div class="name">${heroName()} <span class="pill">Lv ${h.level}</span></div>${T ? html`<div class="bar hp"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : html`<div class="bar hp"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${state.run.shield ? '🛡️' : ''}</div>`}<div class="bar xp" role="progressbar" aria-label="Erfahrung" aria-valuenow="${Math.round(Math.min(100, (h.xp / xpNeeded(h.level)) * 100))}"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
       <div class="log ${b.logCls}">${raw(b.log)}</div>
       <div class="taskwrap" id="taskwrap"></div>
@@ -250,8 +250,8 @@ function renderAttackChoice(b: Battle) {
     .map((g) => g.mod);
   $('#bottom').innerHTML = html`<div class="attacks">${atks.map((a, i) => {
     const inf = attackInfo(b, a);
-    return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod))}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? html`<span class="tag goal">⭐ Wochenziel</span>` : ''}${inf.weak ? html`<span class="tag weak">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="tag power">🌶️ doppelt</span>` : ''}</span></button>`;
-  })}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`.text;
+    return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod))}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? html`<span class="pill warn">⭐ Wochenziel</span>` : ''}${inf.weak ? html`<span class="pill">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="pill hot">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="pill warn">🌶️ doppelt</span>` : ''}</span></button>`;
+  })}</div><div class="row" style="margin-top:var(--space-8)"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:var(--text-14)">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`.text;
   on({
     bag: () => showBag((it, lv) => useItemInBattle(b, it, lv)),
     attack: (button) => chooseAttack(b, atks[+button.dataset.i!]),
@@ -260,7 +260,7 @@ function renderAttackChoice(b: Battle) {
 }
 function showBattleIntro() {
   const ov = modal(
-    html`<h2>So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>🎯 <b>Schwachstelle</b>: Mit dieser Attacke triffst du besonders stark. Nach dem Treffer wandert sie zu einer anderen Attacke.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Alles klar</button>`,
+    html`<h2>So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>🎯 <b>Schwachstelle</b>: Mit dieser Attacke triffst du besonders stark. Nach dem Treffer wandert sie zu einer anderen Attacke.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Alles klar</button>`,
     {
       understood() {
         ov.remove();
@@ -438,11 +438,11 @@ export function battleWon(b: Battle) {
     heal(20);
     state.meta.evoUnlocked[state.run.hero.id + state.run.hero.evo] = true;
     const wa = CFG().worldAttacks && CFG().worldAttacks![state.run.world + 1];
-    evoMsg = html`<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${raw(heroSVG(heroSpec(), state.run.hero.evo - 1, 'before'))}<span aria-hidden="true">➜</span>${raw(heroSVG(heroSpec(), state.run.hero.evo, 'after'))}</div><p>Dein Monster ist jetzt <b>${heroName()}</b>!</p>${wa ? html`<p>Neue Attacken für die nächste Welt: ${wa.map((x: Attack) => x.name).join(', ')}</p>` : ''}</div>`;
+    evoMsg = html`<div class="card center" style="margin-top:var(--space-12)"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${raw(heroSVG(heroSpec(), state.run.hero.evo - 1, 'before'))}<span aria-hidden="true">➜</span>${raw(heroSVG(heroSpec(), state.run.hero.evo, 'after'))}</div><p>Dein Monster ist jetzt <b>${heroName()}</b>!</p>${wa ? html`<p>Neue Attacken für die nächste Welt: ${wa.map((x: Attack) => x.name).join(', ')}</p>` : ''}</div>`;
   }
   saveAll();
   screen(
-    html`<div class="screen">${raw(topbar('Gewonnen!'))}<div class="scroll"><div class="card center"><h2>${e.name} besiegt!</h2><p>+${xp} XP</p>${wood ? html`<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${raw(stampLine(stamps))}${drops.map((d) => html`<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${ITEMS[d].desc}</small></p>`)}${e.elite ? html`<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>` : ''}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:800">${m}</p>`)}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next" data-action="next">${e.elite ? 'Beute aussuchen' : e.boss ? (state.run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`,
+    html`<div class="screen">${raw(topbar('Gewonnen!'))}<div class="scroll"><div class="card center"><h2>${e.name} besiegt!</h2><p>+${xp} XP</p>${wood ? html`<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${raw(stampLine(stamps))}${drops.map((d) => html`<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${ITEMS[d].desc}</small></p>`)}${e.elite ? html`<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>` : ''}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:700">${m}</p>`)}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next" data-action="next">${e.elite ? 'Beute aussuchen' : e.boss ? (state.run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`,
     { next: e.elite ? () => screenTreasure('elite') : advance },
   );
   sayCard();
@@ -487,7 +487,7 @@ function topChoice(b: Battle) {
   on({ attack: (button) => topAttack(b, atks[+button.dataset.i!]) });
   if (!state.meta.seenTut['arena:intro']) {
     const ov = modal(
-      html`<h2>🌀 Kreisel-Arena</h2><ol><li>Erst holst du Schwung: ${TOP_START} Aufgaben, jede richtige gibt deinem Kreisel ${TOP_WIND} Schwung.</li><li>Dann stoßen die Kreisel zusammen. Richtig gelöst: Der andere Kreisel verliert so viel Schwung, wie deine Wucht zeigt.</li><li>Falsch gelöst: Dein Kreisel verliert ${TOP_KNOCK} Schwung, weniger, je mehr Panzer er hat.</li><li>Ein Kreisel ohne Schwung kippt um. Verlierst du, geht dein Abenteuer einfach weiter.</li><li>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</li></ol><button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
+      html`<h2>🌀 Kreisel-Arena</h2><ol><li>Erst holst du Schwung: ${TOP_START} Aufgaben, jede richtige gibt deinem Kreisel ${TOP_WIND} Schwung.</li><li>Dann stoßen die Kreisel zusammen. Richtig gelöst: Der andere Kreisel verliert so viel Schwung, wie deine Wucht zeigt.</li><li>Falsch gelöst: Dein Kreisel verliert ${TOP_KNOCK} Schwung, weniger, je mehr Panzer er hat.</li><li>Ein Kreisel ohne Schwung kippt um. Verlierst du, geht dein Abenteuer einfach weiter.</li><li>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</li></ol><button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Verstanden</button>`,
       {
         understood() {
           ov.remove();
@@ -574,7 +574,7 @@ export function topEnd(b: Battle) {
   if (won) setTimeout(SFX.win, 150);
   screen(
     html`<div class="screen">${raw(topbar('🌀 Kreisel-Arena'))}<div class="scroll"><div class="card center topend" id="topend"><h2>${won ? 'Der andere Kreisel kippt um.' : 'Dein Kreisel kippt um.'}</h2>${raw(MONART.topSVG(TYPES[heroSpec().type].color, T.parts, won ? 'live' : 'fallen'))}
-      <p>${won ? `Dein Kreisel dreht sich noch mit ${T.spin} Schwung.` : `${e.name} gewinnt diesmal. Das kostet dich nichts, dein Abenteuer geht weiter.`}</p>${xp ? html`<p>+${xp} XP</p>` : ''}${raw(stampLine(stamps))}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:800">${m}</p>`)}
+      <p>${won ? `Dein Kreisel dreht sich noch mit ${T.spin} Schwung.` : `${e.name} gewinnt diesmal. Das kostet dich nichts, dein Abenteuer geht weiter.`}</p>${xp ? html`<p>+${xp} XP</p>` : ''}${raw(stampLine(stamps))}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:700">${m}</p>`)}
       ${won ? '' : html`<p>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</p>`}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
     { next: advance },
   );
@@ -639,11 +639,11 @@ function readChoice(b: Battle) {
     return;
   }
   $('#bottom').innerHTML =
-    html`<div class="attacks" style="grid-template-columns:1fr"><button class="atk" id="rq" data-action="ask" aria-label="Frage ${r.q + 1} von ${n}, ${dmg} Schaden"><span class="n">Frage ${r.q + 1} von ${n}</span><span class="m">${READ_MOD.icon} ${READ_MOD.name}<span class="dmg">💥 ${dmg}${state.run.power ? ' · 🌶️ doppelt' : ''}</span></span></button></div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="rtext" data-action="text">📄 Text ansehen</button><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button></div>`.text;
+    html`<div class="attacks" style="grid-template-columns:1fr"><button class="atk" id="rq" data-action="ask" aria-label="Frage ${r.q + 1} von ${n}, ${dmg} Schaden"><span class="n">Frage ${r.q + 1} von ${n}</span><span class="m">${READ_MOD.icon} ${READ_MOD.name}<span class="dmg">💥 ${dmg}${state.run.power ? ' · 🌶️ doppelt' : ''}</span></span></button></div><div class="row" style="margin-top:var(--space-8)"><button class="btn secondary small" id="rtext" data-action="text">📄 Text ansehen</button><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button></div>`.text;
   on({
     text() {
       const ov = modal(
-        html`${readCard(readText())}<button class="btn" id="tutok" data-action="back" style="margin-top:12px">Zurück zur Frage</button>`,
+        html`${readCard(readText())}<button class="btn" id="tutok" data-action="back" style="margin-top:var(--space-12)">Zurück zur Frage</button>`,
         { back: () => ov.remove() },
       );
       $('#tutok', ov).focus({ preventScroll: true });
@@ -723,7 +723,7 @@ export function readEnd(b: Battle) {
   saveAll();
   if (r.right) setTimeout(SFX.win, 150);
   screen(
-    html`<div class="screen">${raw(topbar('📖 Lesestube'))}<div class="scroll"><div class="card center"><h2>${b.enemy.name} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? html`<p>+${xp} XP</p>` : ''}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:800">${m}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+    html`<div class="screen">${raw(topbar('📖 Lesestube'))}<div class="scroll"><div class="card center"><h2>${b.enemy.name} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? html`<p>+${xp} XP</p>` : ''}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:700">${m}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
     { next: advance },
   );
   sayCard();

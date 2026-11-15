@@ -19,7 +19,7 @@ export function render(html: string, quiet?: boolean) {
   app.innerHTML = html;
   // a list with nothing to tab to must take the keyboard itself, or it cannot be scrolled without touch
   for (const list of app.querySelectorAll<HTMLElement>('.scroll'))
-    if (!$('button, a, input, [tabindex]', list)) list.tabIndex = 0;
+    if (!$('button:not(:disabled), a, input, [tabindex]', list)) list.tabIndex = 0;
   if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter');
   syncHistory();
 }
@@ -335,7 +335,7 @@ export function showTutorial(group: string, note?: string | null, onClose?: (() 
   const t = tutFor(group);
   const n: Note | null = note && CFG().notes ? CFG().notes![note] : null;
   const ov = modal(
-    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
+    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:var(--soft)">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:var(--text-16);color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Verstanden</button>`,
     {
       understood() {
         ov.remove();

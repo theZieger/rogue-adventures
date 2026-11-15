@@ -91,7 +91,7 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 ## Projektstruktur
 
 ```
-src/styles/        Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast): tokens.css mit allen Farben, dann eine Datei
+src/styles/        Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast): tokens.css mit allen Farben, Größen und Abständen, dann eine Datei
                    je Bereich; die Reihenfolge steht in `STYLES` (tools/build.js)
 src/logic.ts       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
 src/jahrmarkt.ts   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
@@ -135,7 +135,7 @@ tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildsc
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); page.js lädt die gebaute Seite für die Seitentests; Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
 docs/index.html    gebaute Spieldatei (nicht eingecheckt, die CI baut und veröffentlicht sie)
-docs/gallery.html  das Design auf einer Seite: Farben und alle Bausteine (gebaut aus src/gallery.ts, nicht eingecheckt)
+docs/gallery.html  das Design-System auf einer Seite: alle Tokens, Bausteine und ihre Regeln (gebaut aus src/gallery.ts, nicht eingecheckt)
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
 docs/screenshots/  Bilder für den Installieren-Dialog (Android/Desktop)
@@ -154,7 +154,7 @@ npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/play
 npm run e2e          # Browser-Tests (Playwright): Start ohne Internet, Barrierefreiheit jedes Bildschirms
 npm run screenshots vorher   # Bildschirmfotos aller Bildschirme aus tools/screens.js; mit zwei Ordnern: Vergleich
 npm run typecheck    # tsc prüft alle TypeScript-Dateien
-npm run lint         # Biome (nicht deklarierte Namen) und Stylelint (Farben nur aus src/styles/tokens.css)
+npm run lint         # Biome (nicht deklarierte Namen) und Stylelint (Farben, Größen und Abstände nur aus src/styles/tokens.css)
 npm run format       # formatiert JS, TS, CSS und JSON mit Biome (die CI prüft das)
 MODE=turm GRADE=3 SUBJECTS=Mathe,Deutsch ACC=0.9 RUNS=1 node tests/playtest.js   # nur die Turmwacht (SEED=n, NAIVE=1 tippt wie ein Kind beliebige Monster an)
 ```

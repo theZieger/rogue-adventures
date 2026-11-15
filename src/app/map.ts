@@ -146,7 +146,7 @@ export function screenStarter(goal?: WeeklyGoal) {
   screen(
     html`<div class="screen">${raw(topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster'))}<div class="scroll"><div class="stack">
       ${goal ? html`<p class="center goalbadge">⭐ Wochenziel: ${goalText(goal)}</p>` : ''}
-      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
+      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="pill warn">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
       ${vis
         .filter(heroLocked)
         .map(
@@ -315,8 +315,8 @@ export function screenMap() {
   );
   const look = state.mode === 'math' && REWARDS.find((r) => r.world === state.run.world && state.meta.owned[r.id]);
   screen(
-    html`<div class="screen"${look ? html` style="background:${look.bg}"` : ''}>${raw(topbar(html`${raw(heroSVG(heroSpec(), h.evo, 'tbhero'))}${heroName()} <span class="levelbadge">Lv ${h.level}</span>`.text))}
-      <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < 0.3 ? 'low' : h.hp / h.maxHp < 0.6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
+    html`<div class="screen"${look ? html` style="background:${look.bg}"` : ''}>${raw(topbar(html`${raw(heroSVG(heroSpec(), h.evo, 'tbhero'))}${heroName()} <span class="pill">Lv ${h.level}</span>`.text))}
+      <div style="padding:var(--space-8) var(--space-16) 0"><div class="bar hp"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < 0.3 ? 'low' : h.hp / h.maxHp < 0.6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:var(--text-16);font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><button class="btn ghost small" id="home" data-action="home">Titel</button></div></div></div>`,
     {
@@ -408,7 +408,7 @@ export function showBag(inBattle: ((it: Item, lv: string[]) => void) | null, ctx
       screenMap();
       if (it.xp) {
         const m = modal(
-          html`<h2>${it.icon} +${it.xp} XP</h2>${lv.length ? lv.map((x) => html`<p style="font-weight:800;color:var(--orange)">${x}</p>`) : html`<p>Dein Monster lernt dazu.</p>`}<button class="btn" id="tutok" data-action="next">Weiter</button>`,
+          html`<h2>${it.icon} +${it.xp} XP</h2>${lv.length ? lv.map((x) => html`<p style="font-weight:700;color:var(--orange)">${x}</p>`) : html`<p>Dein Monster lernt dazu.</p>`}<button class="btn" id="tutok" data-action="next">Weiter</button>`,
           { next: () => m.remove() },
         );
         $('#tutok', m).focus({ preventScroll: true });
@@ -416,7 +416,7 @@ export function showBag(inBattle: ((it: Item, lv: string[]) => void) | null, ctx
     }
   };
   const ov = modal(
-    html`<h2>🎒 Beutel</h2>${state.run.items.length ? html`<div class="items">${stacks.map((st) => html`<button class="item" data-action="use" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${desc(st.id)}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? html` <b class="count">×${st.n}</b>` : ''}</span><small>${desc(st.id)}</small></button>`)}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : html`<p>Dein Beutel ist leer.</p>`}<button class="btn secondary" id="close" data-action="close" style="margin-top:10px">Schließen</button>`,
+    html`<h2>🎒 Beutel</h2>${state.run.items.length ? html`<div class="items">${stacks.map((st) => html`<button class="item" data-action="use" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${desc(st.id)}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? html` <b class="pill">×${st.n}</b>` : ''}</span><small>${desc(st.id)}</small></button>`)}</div><p class="muted" style="opacity:var(--soft);margin-top:var(--space-12)" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : html`<p>Dein Beutel ist leer.</p>`}<button class="btn secondary" id="close" data-action="close" style="margin-top:var(--space-12)">Schließen</button>`,
     { close: () => ov.remove(), use },
   );
 }

@@ -1,6 +1,6 @@
 /* ---------- Motion ---------- */
 .enter {
-  animation: screenIn 0.22s ease-out both;
+  animation: screenIn var(--t-quick) ease-out both;
 }
 @keyframes screenIn {
   from {
@@ -13,15 +13,15 @@
   }
 }
 .sprite .mon {
-  animation: bob 3.2s ease-in-out infinite;
+  animation: bob var(--t-idle) ease-in-out infinite;
 }
 .sprite#fe .mon:not(.top) {
-  animation-delay: -1.6s;
+  animation-delay: calc(var(--t-idle) / -2);
 }
 .hero .logo,
 .card.center > .mon,
 .choice.selected .mon {
-  animation: bob 3.6s ease-in-out infinite;
+  animation: bob var(--t-idle) ease-in-out infinite;
 }
 @keyframes bob {
   0%,
@@ -35,19 +35,19 @@
 .floatnum {
   position: fixed;
   transform: translateX(-50%);
-  font-family: var(--hand);
+  font-family: var(--font-hand);
   font-size: var(--text-36);
   color: var(--white);
   text-shadow:
     0 2px 0 var(--ink),
-    0 0 6px rgba(0, 0, 0, 0.4);
+    0 0 6px var(--shade);
   pointer-events: none;
-  animation: floatUp 2s ease-out forwards;
+  animation: floatUp var(--t-show) ease-out forwards;
   z-index: 3;
 }
 .floatnum.crit {
   color: var(--gold);
-  font-size: var(--text-32);
+  font-size: var(--text-30);
 }
 @keyframes floatUp {
   0% {
@@ -66,23 +66,21 @@
   }
 }
 .node.open {
-  animation: glow 2.4s ease-in-out infinite;
+  animation: glow var(--t-show) ease-in-out infinite;
 }
 @keyframes glow {
   0%,
   100% {
-    box-shadow:
-      0 0 0 3px var(--gold),
-      var(--shadow);
+    box-shadow: var(--ring), var(--shadow);
   }
   50% {
     box-shadow:
-      0 0 0 6px rgba(255, 201, 60, 0.55),
+      0 0 0 6px var(--gold-glow),
       var(--shadow);
   }
 }
 .overlay .modal {
-  animation: modalIn 0.2s ease-out both;
+  animation: modalIn var(--t-quick) ease-out both;
 }
 @keyframes modalIn {
   from {
@@ -95,10 +93,7 @@
   }
 }
 .feedback.good {
-  animation: pop 0.45s;
-}
-.atk.tired .tag.tired {
-  animation: none;
+  animation: pop var(--t-move);
 }
 .confetti {
   position: absolute;
@@ -113,10 +108,10 @@
   left: var(--x);
   width: 9px;
   height: 14px;
-  border-radius: var(--radius-3);
+  border-radius: var(--radius-4);
   background: var(--c);
   opacity: 0;
-  animation: fall 2.6s ease-in var(--d) 1 forwards;
+  animation: fall var(--t-show) ease-in var(--d) 1 forwards;
 }
 @keyframes fall {
   0% {
@@ -157,26 +152,15 @@
   .oitem,
   .node,
   .item,
-  .toggle,
-  .gradechip,
+  .chip,
   .subjtile {
     transition: none;
   }
 }
-
-.advantage {
-  font-size: var(--text-13);
-  font-weight: 700;
-  background: var(--green-130);
-  color: var(--green-760);
-  border-radius: var(--radius-pill);
-  padding: 0 var(--space-8);
-  line-height: 20px;
-}
 @media (max-height: 720px) {
   .grid {
     grid-template-columns: repeat(3, 52px);
-    gap: var(--space-5);
+    gap: var(--space-6);
     margin: var(--space-6) 0;
   }
   .grid div {
@@ -185,7 +169,7 @@
     font-size: var(--text-20);
   }
   .legend {
-    font-size: var(--text-13);
+    font-size: var(--text-14);
     gap: var(--space-6);
   }
 }

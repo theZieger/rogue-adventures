@@ -780,7 +780,7 @@ async function turmBot() {
     return true;
   } // off by default: parents switch it on
   if ($('#turm')) {
-    const g = process.env.GRADE && $(`.gradechip[data-grade="${process.env.GRADE}"]`);
+    const g = process.env.GRADE && $(`.chip[data-grade="${process.env.GRADE}"]`);
     if (g && !g.classList.contains('on')) {
       click(g);
       return true;
@@ -854,7 +854,7 @@ async function step() {
   if ($('[data-sub]') && !$('.wmap')) {
     const sub = w.__mq.subjectOf(process.env.MODE || 'math');
     if (!sub) {
-      const g = $$('.gradechip');
+      const g = $$('.chip');
       click(g[gradeTry++ % g.length]);
       return;
     }
