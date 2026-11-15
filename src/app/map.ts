@@ -2,9 +2,10 @@ import { MODES } from '../curriculum.ts';
 import { MQ } from '../logic.ts';
 import { PANTRY_MAX, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
+import { type Markup, html, raw } from '../ui/html.ts';
 import { battleWon, enemyTurn, readEnd, renderBattle, screenRead, startBattle, topEnd } from './battle.ts';
 import { screenVictory } from './collection.ts';
-import { $, CFG, ITEMS, MODKEYS, MODULES_OF, app, esc, makeMap, pick } from './core.ts';
+import { $, CFG, ITEMS, MODKEYS, MODULES_OF, app, makeMap, pick } from './core.ts';
 import {
   screenEvent,
   screenKarte,
@@ -36,7 +37,7 @@ import {
 import { state } from './state.ts';
 import { enabledMods, extraOn, heroShown, marketOn, offList, practice, saveAll } from './storage.ts';
 import { screenSubject, screenTitle, screenWeekly, subjectOf } from './title.ts';
-import { modal, render, topbar } from './ui.ts';
+import { modal, screen, topbar } from './ui.ts';
 
 // goal: the weekly goal this adventure was started for; its task type is offered as an attack
 export function screenStarter(goal?) {
@@ -80,38 +81,17 @@ export function screenStarter(goal?) {
     if (!box) return;
     const M = MODULES_OF();
     box.innerHTML = swap
-      ? `<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" aria-pressed="${swapOn}"><div class="meta"><div class="name">${swap.goal ? '⭐ Für dein Wochenziel' : '🎯 Neues üben'}: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name}${swap.goal ? '' : ' (schon oft geübt)'} bekommst du die Attacke „${esc(CFG().extra[swap.to])}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>`
+      ? html`<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" data-action="swap" aria-pressed="${String(swapOn)}"><div class="meta"><div class="name">${swap.goal ? '⭐ Für dein Wochenziel' : '🎯 Neues üben'}: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name}${swap.goal ? '' : ' (schon oft geübt)'} bekommst du die Attacke „${CFG().extra[swap.to]}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>`
+          .text
       : '';
-    if (swap)
-      $('#swap').onclick = () => {
-        swapOn = !swapOn;
-        paintSwap();
-      };
   };
-  render(`<div class="screen">${topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster')}<div class="scroll"><div class="stack">
-      ${goal ? `<p class="center goalbadge">⭐ Wochenziel: ${esc(goalText(goal))}</p>` : ''}
-      ${S.map((s) => `<button class="choice ${S.length === 1 ? 'selected' : ''}" data-id="${s.id}">${heroSVG(s, 0)}<div class="meta">${rec === s.id ? `<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${typeChip(s.type)}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`).join('')}
-      ${vis
-        .filter(heroLocked)
-        .map(
-          (s) =>
-            `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
-        )
-        .join('')}
-      <div id="swapbox"></div>
-      ${state.meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${state.meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
-      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
-  $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(state.mode)));
-  app.querySelectorAll<HTMLElement>('.choice[data-id]').forEach((b) => {
-    b.onclick = () => {
-      sel = b.dataset.id;
-      app.querySelectorAll<HTMLElement>('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b));
-      $<HTMLButtonElement>('#go').disabled = false;
-      paintSwap();
-    };
-  });
-  paintSwap();
-  $('#go').onclick = () => {
+  const choose = (b: HTMLElement) => {
+    sel = b.dataset.id;
+    app.querySelectorAll<HTMLElement>('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b));
+    $<HTMLButtonElement>('#go').disabled = false;
+    paintSwap();
+  };
+  const go = () => {
     if (!sel) return;
     const s = CFG().starters.find((x) => x.id === sel);
     state.run = {
@@ -151,6 +131,30 @@ export function screenStarter(goal?) {
     saveAll();
     screenMap();
   };
+  screen(
+    html`<div class="screen">${raw(topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster'))}<div class="scroll"><div class="stack">
+      ${goal ? html`<p class="center goalbadge">⭐ Wochenziel: ${goalText(goal)}</p>` : ''}
+      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="recbadge">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
+      ${vis
+        .filter(heroLocked)
+        .map(
+          (s) =>
+            html`<div class="choice locked">${raw(monsterSVG(s.shape, '#8A8FA3', 0))}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
+        )}
+      <div id="swapbox"></div>
+      ${state.meta.pantry.length ? html`<p class="center">Aus deinem Vorrat kommt mit: ${state.meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
+      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back" data-action="back">Zurück</button><button class="btn" id="go" data-action="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`,
+    {
+      back: () => (goal ? screenWeekly() : screenSubject(subjectOf(state.mode))),
+      choose,
+      swap() {
+        swapOn = !swapOn;
+        paintSwap();
+      },
+      go,
+    },
+  );
+  paintSwap();
 }
 // shorter adventures for the younger grades; enemies stay as strong (see startBattle)
 const FLOORS_BY_GRADE = { 1: 6, 2: 7, 3: 8 };
@@ -261,7 +265,7 @@ export function screenMap() {
     H = state.run.map.length * ROW;
   const X = (c) => (c + 0.5) * 25;
   const Y = (f) => H - (f + 0.5) * ROW;
-  let lines = '';
+  const lines: Markup[] = [];
   state.run.map.forEach((fl, f) =>
     fl.forEach((nd, i) =>
       nd.n.forEach((j) => {
@@ -269,52 +273,52 @@ export function screenMap() {
         const walked = state.run.path[f] === i && state.run.path[f + 1] === j && f + 1 < state.run.floor - 1;
         const next = f === state.run.floor - 2 && state.run.path[f] === i && open.includes(j);
         const dead = !walked && !next && !(live[f].has(i) && live[f + 1].has(j));
-        lines += `<line class="${walked ? 'walked' : next ? 'next' : dead ? 'dead' : ''}" x1="${X(nd.c)}" y1="${Y(f)}" x2="${X(state.run.map[f + 1][j].c)}" y2="${Y(f + 1)}"/>`;
+        lines.push(
+          html`<line class="${walked ? 'walked' : next ? 'next' : dead ? 'dead' : ''}" x1="${X(nd.c)}" y1="${Y(f)}" x2="${X(state.run.map[f + 1][j].c)}" y2="${Y(f + 1)}"/>`,
+        );
       }),
     ),
   );
-  const nodes = state.run.map
-    .map((fl, f) =>
-      fl
-        .map((nd, i) => {
-          const isOpen = f === state.run.floor - 1 && open.includes(i);
-          const taken = state.run.path[f] === i && f < state.run.floor - 1;
-          const cls = isOpen
-            ? 'open'
-            : taken
-              ? 'taken'
-              : f < state.run.floor - 1
-                ? 'past'
-                : live[f].has(i)
-                  ? 'future'
-                  : 'dead';
-          return `<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}" ${isOpen ? '' : 'tabindex="-1" disabled'} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`;
-        })
-        .join(''),
-    )
-    .join('');
+  const nodes = state.run.map.map((fl, f) =>
+    fl.map((nd, i) => {
+      const isOpen = f === state.run.floor - 1 && open.includes(i);
+      const taken = state.run.path[f] === i && f < state.run.floor - 1;
+      const cls = isOpen
+        ? 'open'
+        : taken
+          ? 'taken'
+          : f < state.run.floor - 1
+            ? 'past'
+            : live[f].has(i)
+              ? 'future'
+              : 'dead';
+      return html`<button class="node ${cls} ${nd.t}" style="left:${X(nd.c)}%;top:${Y(f)}px" data-n="${i}"${isOpen ? raw(' data-action="enter" ') : raw(' tabindex="-1" disabled')} aria-label="${NODE_INFO[nd.t][1]}">${NODE_INFO[nd.t][0]}<small>${NODE_INFO[nd.t][1]}</small></button>`;
+    }),
+  );
   const look = state.mode === 'math' && REWARDS.find((r) => r.world === state.run.world && state.meta.owned[r.id]);
-  render(`<div class="screen"${look ? ` style="background:${look.bg}"` : ''}>${topbar(`${heroSVG(heroSpec(), h.evo, 'tbhero')}${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
+  screen(
+    html`<div class="screen"${look ? html` style="background:${look.bg}"` : ''}>${raw(topbar(html`${raw(heroSVG(heroSpec(), h.evo, 'tbhero'))}${heroName()} <span class="levelbadge">Lv ${h.level}</span>`.text))}
       <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < 0.3 ? 'low' : h.hp / h.maxHp < 0.6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
-      <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${state.run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
-  app.querySelectorAll<HTMLElement>('.node.open').forEach((b) => {
-    b.onclick = () => {
-      const ni = +b.dataset.n!;
-      state.run.path[state.run.floor - 1] = ni;
-      const type = state.run.map[state.run.floor - 1][ni].t;
-      state.run.node = { type };
-      saveAll();
-      enterNode(type);
-    };
-  });
-  $('#home').onclick = screenTitle;
+      <div class="bottom"><div class="row"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><button class="btn ghost small" id="home" data-action="home">Titel</button></div></div></div>`,
+    {
+      enter(node) {
+        const ni = +node.dataset.n!;
+        state.run.path[state.run.floor - 1] = ni;
+        const type = state.run.map[state.run.floor - 1][ni].t;
+        state.run.node = { type };
+        saveAll();
+        enterNode(type);
+      },
+      home: screenTitle,
+      bag: () => showBag(null),
+    },
+  );
   state.backTo = () => {
     const s = subjectOf(state.mode);
     if (s) screenSubject(s);
     else screenTitle();
   };
-  $('#bag').onclick = () => showBag(null);
   showWeeklyNews();
   const scroller = $('.scroll');
   const cur = $('.node.open');
@@ -346,52 +350,50 @@ export function showBag(inBattle, ctx?) {
     if (st) st.n++;
     else stacks.push({ id: it, i, n: 1 });
   });
+  const use = (b: HTMLElement) => {
+    const id = state.run.items[+b.dataset.i!];
+    const it = ITEMS[id];
+    if (it.heal && state.run.hero.hp >= state.run.hero.maxHp) {
+      $('#bagdesc', ov).textContent = T.full || 'Du hast schon volle Lebenspunkte.';
+      return;
+    }
+    if ((it.shield || it.power || it.hint) && !inBattle) {
+      $('#bagdesc', ov).textContent = `${it.name}: ${T.later || 'Das kannst du nur im Kampf benutzen.'}`;
+      return;
+    }
+    if (it.revive) {
+      $('#bagdesc', ov).textContent = `${it.name}: ${desc(id)}`;
+      return;
+    }
+    if ((it.shield && state.run.shield) || (it.power && state.run.power) || (it.hint && state.run.hint)) {
+      $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`;
+      return;
+    }
+    state.run.items.splice(+b.dataset.i!, 1);
+    if (it.heal) heal(it.heal);
+    if (it.shield) state.run.shield = true;
+    if (it.power) state.run.power = true;
+    if (it.hint) state.run.hint = true;
+    const lv = it.xp ? gainXp(it.xp) : [];
+    saveAll();
+    ov.remove();
+    if (inBattle) inBattle(it, lv);
+    else if (T.done) T.done(it);
+    else {
+      screenMap();
+      if (it.xp) {
+        const m = modal(
+          html`<h2>${it.icon} +${it.xp} XP</h2>${lv.length ? lv.map((x) => html`<p style="font-weight:800;color:var(--orange)">${x}</p>`) : html`<p>Dein Monster lernt dazu.</p>`}<button class="btn" id="tutok" data-action="next">Weiter</button>`,
+          { next: () => m.remove() },
+        );
+        $('#tutok', m).focus({ preventScroll: true });
+      }
+    }
+  };
   const ov = modal(
-    `<h2>🎒 Beutel</h2>${state.run.items.length ? `<div class="items">${stacks.map((st) => `<button class="item" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${esc(desc(st.id))}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? ` <b class="count">×${st.n}</b>` : ''}</span><small>${esc(desc(st.id))}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`,
+    html`<h2>🎒 Beutel</h2>${state.run.items.length ? html`<div class="items">${stacks.map((st) => html`<button class="item" data-action="use" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${desc(st.id)}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? html` <b class="count">×${st.n}</b>` : ''}</span><small>${desc(st.id)}</small></button>`)}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : html`<p>Dein Beutel ist leer.</p>`}<button class="btn secondary" id="close" data-action="close" style="margin-top:10px">Schließen</button>`,
+    { close: () => ov.remove(), use },
   );
-  $('#close', ov).onclick = () => ov.remove();
-  ov.querySelectorAll<HTMLElement>('.item').forEach((b) => {
-    b.onclick = () => {
-      const id = state.run.items[+b.dataset.i!];
-      const it = ITEMS[id];
-      if (it.heal && state.run.hero.hp >= state.run.hero.maxHp) {
-        $('#bagdesc', ov).textContent = T.full || 'Du hast schon volle Lebenspunkte.';
-        return;
-      }
-      if ((it.shield || it.power || it.hint) && !inBattle) {
-        $('#bagdesc', ov).textContent = `${it.name}: ${T.later || 'Das kannst du nur im Kampf benutzen.'}`;
-        return;
-      }
-      if (it.revive) {
-        $('#bagdesc', ov).textContent = `${it.name}: ${desc(id)}`;
-        return;
-      }
-      if ((it.shield && state.run.shield) || (it.power && state.run.power) || (it.hint && state.run.hint)) {
-        $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`;
-        return;
-      }
-      state.run.items.splice(+b.dataset.i!, 1);
-      if (it.heal) heal(it.heal);
-      if (it.shield) state.run.shield = true;
-      if (it.power) state.run.power = true;
-      if (it.hint) state.run.hint = true;
-      const lv = it.xp ? gainXp(it.xp) : [];
-      saveAll();
-      ov.remove();
-      if (inBattle) inBattle(it, lv);
-      else if (T.done) T.done(it);
-      else {
-        screenMap();
-        if (it.xp) {
-          const m = modal(
-            `<h2>${it.icon} +${it.xp} XP</h2>${lv.map((x) => `<p style="font-weight:800;color:var(--orange)">${esc(x)}</p>`).join('') || '<p>Dein Monster lernt dazu.</p>'}<button class="btn" id="tutok">Weiter</button>`,
-          );
-          $('#tutok', m).focus({ preventScroll: true });
-          $('#tutok', m).onclick = () => m.remove();
-        }
-      }
-    };
-  });
 }
 
 // resume exactly where it stopped, so closing the app never swaps a node or resets a fight
