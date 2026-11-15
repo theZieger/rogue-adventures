@@ -74,6 +74,8 @@ export function startBattle(spec, hard, arena?) {
   };
   renderBattle(b);
 }
+// some callers pass a second argument from an earlier version; it is ignored
+export function renderBattle(b, again?: boolean): void;
 export function renderBattle(b) {
   const h = state.run.hero,
     e = b.enemy;
@@ -146,7 +148,7 @@ const TIRED = [1, 0.6, 0.35],
   ENEMY_HP = 1.4;
 function pickWeak(except?) {
   state.run.used = isObj(state.run.used) ? state.run.used : {};
-  const mods = [...new Set(heroAttacks().map((a) => a.mod))];
+  const mods = [...new Set<string>(heroAttacks().map((a) => a.mod))];
   const pool = mods.length > 1 ? mods.filter((m) => m !== except) : mods;
   const least = Math.min(...pool.map((m) => state.run.used[m] || 0));
   return pick(pool.filter((m) => (state.run.used[m] || 0) === least));
@@ -206,7 +208,7 @@ function renderAttackChoice(b) {
     )}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
   $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
   app.querySelectorAll<HTMLElement>('.atk').forEach((btn) => {
-    btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i]);
+    btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i!]);
   });
   if (!state.meta.seenTut['battle:intro2']) showBattleIntro();
 }
@@ -259,7 +261,7 @@ function chooseAttack(b, atk) {
   $('#bottom').innerHTML = ''; // no second attack while the task opens
   const hint = !!state.run.hint;
   state.run.hint = false;
-  let hit = null;
+  let hit: { dmg: number; crit: boolean } | null = null;
   // the answer counts the moment it is checked: damage, stats and the enemy's turn are saved right away
   const onResult = (ok) => {
     recordAnswer(atk.mod, ok, t);
@@ -435,7 +437,7 @@ function topChoice(b) {
     `<div class="attacks">${atks.map((a, i) => `<button class="atk" data-i="${i}" aria-label="${esc(a.name)}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${esc(a.name)}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`).join('')}</div>
       <p class="muted toprule">${wind ? `Schwung holen: Aufgabe ${T.start + 1} von ${TOP_START}` : `Wucht ${T.wucht} · Panzer ${T.panzer}. Eine falsche Antwort kostet dich ${TOP_KNOCK - T.panzer} Schwung.`}</p>`;
   app.querySelectorAll<HTMLElement>('.atk').forEach((btn) => {
-    btn.onclick = () => topAttack(b, atks[+btn.dataset.i]);
+    btn.onclick = () => topAttack(b, atks[+btn.dataset.i!]);
   });
   if (!state.meta.seenTut['arena:intro']) {
     const ov = modal(
@@ -458,7 +460,7 @@ function topAttack(b, atk) {
   $('.screen').classList.add('tasking');
   $('#bottom').innerHTML = '';
   $('#dish').classList.remove('clash');
-  let fxOn = null;
+  let fxOn: [sel: string, text: string, cls?: string] | null = null;
   const onResult = (ok) => {
     recordAnswer(atk.mod, ok, t);
     if (wind) {
@@ -500,9 +502,9 @@ function topAttack(b, atk) {
         else
           setTimeout(
             () => {
-              if (!state.run || !$(fxOn[0])) return;
-              fx(fxOn[0], fxOn[1]);
-              if (fxOn[0] === '#fe') SFX.hit();
+              if (!state.run || !$(fxOn![0])) return;
+              fx(fxOn![0], fxOn![1]);
+              if (fxOn![0] === '#fe') SFX.hit();
               else SFX.hurt();
             },
             reducedMotion ? 0 : 560,

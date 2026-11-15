@@ -1,7 +1,8 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen, LB 3 „Lebensraum Wiese“ und LB 1 „Zusammen leben und lernen“): Die Wiese, Früher und heute.
 // Registers its units in MK.MODES like sachkunde.ts; the Stockwerke picture goes into MS.PLANTS for the parts tasks.
 import { MK as K } from './knowledge.ts';
-import { MS as S } from './sachkunde.ts';
+import type { Unit } from './curriculum.ts';
+import { MS as S, type PartsPicture } from './sachkunde.ts';
 export const MS3 = (() => {
   const { shuffle, pick, rnd } = K;
   const { choice, orderTask, wantsPool, partsSVG } = S;
@@ -498,7 +499,7 @@ export const MS3 = (() => {
     tap: 'die Stelle im Bild',
     ask: () => 'Wie heißt das leuchtende Stockwerk der Wiese?',
     find: (p) => `Tippe auf das Stockwerk: ${p.name}`,
-  };
+  } as PartsPicture;
   const hit = (y, h) => `<rect class="hitarea" x="0" y="${y}" width="300" height="${h}" fill="transparent"/>`;
   // texture strokes sit in style="" so a glowing layer keeps them (the glow rule recolours stroke attributes only)
   const tex = (d, c, w, o?, dash?) =>
@@ -1363,7 +1364,7 @@ export const MS3 = (() => {
       return null;
     };
   }
-  const WI = {
+  const WI: Unit = {
     modules: WI_MODULES,
     tut: WI_TUT,
     notes: WI_NOTES,
@@ -2315,7 +2316,7 @@ export const MS3 = (() => {
     };
   }
   // Dilemma-Karten wie bei Gute Freunde: jede Wahl bekommt dieselbe Belohnung
-  const FR = {
+  const FR: Unit = {
     modules: FR_MODULES,
     tut: FR_TUT,
     notes: FR_NOTES,

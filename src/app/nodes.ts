@@ -83,7 +83,7 @@ export function screenEvent(resumeOpt?) {
     joined(ev.title, ev.text, ev.dilemma && 'Was würdest du tun?', ...ev.opts.map((o) => o.label)),
   );
   app.querySelectorAll<HTMLElement>('.bottom .btn').forEach((btn) => {
-    btn.onclick = () => runOpt(+btn.dataset.i);
+    btn.onclick = () => runOpt(+btn.dataset.i!);
   });
 }
 function applyEffect(eff) {
@@ -212,6 +212,13 @@ export function screenTreasure(kind?) {
     pick(LOOT.chest),
     free.length ? pick(free) : null,
   ];
+  interface Loot {
+    k: string;
+    label: string;
+    desc: string;
+    item?: string;
+    mod?: string;
+  }
   const itemOpt = (id) => ({ k: 'item', item: id, label: `${ITEMS[id].icon} ${ITEMS[id].name}`, desc: ITEMS[id].desc });
   const maxhp = { k: 'maxhp', label: '💪 +10 maximale LP', desc: 'Dein Monster wird zäher.' };
   const atkOpt =
@@ -223,13 +230,15 @@ export function screenTreasure(kind?) {
           desc: `${MODULES[freeMod].name} – ersetzt eine deiner Attacken.`,
         }
       : null;
-  const opts = elite ? [itemOpt(i1), itemOpt(i2), atkOpt || maxhp] : [itemOpt(i1), maxhp, atkOpt || itemOpt(i2)];
+  const opts: Loot[] = elite
+    ? [itemOpt(i1), itemOpt(i2), atkOpt || maxhp]
+    : [itemOpt(i1), maxhp, atkOpt || itemOpt(i2)];
   render(
     `<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? `${state.run.node && state.run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${found ? `<div class="card center">${MONART.topSVG(TYPES[heroSpec().type].color, Object.assign({}, state.meta.top, { [found.slot]: found.id }))}<p>In der Truhe liegt noch etwas für deinen Kreisel: <b>${found.name}</b>. Einbauen kannst du es im Stempelheft.</p></div>` : ''}${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`,
   );
   app.querySelectorAll<HTMLElement>('.choice').forEach((b) => {
     b.onclick = () => {
-      const o = opts[+b.dataset.i];
+      const o = opts[+b.dataset.i!];
       if (o.k === 'item') state.run.items.push(o.item);
       if (o.k === 'maxhp') {
         state.run.hero.maxHp += 10;
@@ -259,7 +268,7 @@ function chooseSlot(mod) {
   );
   app.querySelectorAll<HTMLElement>('.choice').forEach((b) => {
     b.onclick = () => {
-      state.run.hero.attacks[+b.dataset.i] = { name: EXTRA_ATTACKS[mod], mod };
+      state.run.hero.attacks[+b.dataset.i!] = { name: EXTRA_ATTACKS[mod], mod };
       saveAll();
       advance();
     };
@@ -314,7 +323,7 @@ export function screenMine() {
       const t = MQ.generate('rest', state.mode === 'math' ? tierFor('rest') : Math.min(2, state.run.world), { zero });
       t.kind = 'num';
       t.group = 'rest:' + t.tier;
-      mn.task = { i: +b.dataset.i, t };
+      mn.task = { i: +b.dataset.i!, t };
       saveAll();
       mineTask(mn);
     };
@@ -424,7 +433,7 @@ export function screenMarket(msg?) {
     $('#mtut').onclick = () => showTutorial('geld:' + tier);
     app.querySelectorAll<HTMLElement>('.offer').forEach((b) => {
       b.onclick = () => {
-        state.run.items.push(n.gifts[+b.dataset.i]);
+        state.run.items.push(n.gifts[+b.dataset.i!]);
         nodeDone();
         saveAll();
         advance();
@@ -449,12 +458,12 @@ export function screenMarket(msg?) {
     $('#counter').innerHTML = counter.length
       ? counter.map((v, j) => coinBtn(v, `data-j="${j}"`)).join('')
       : '<span class="muted">Tippe auf Münzen, um sie hinzulegen.</span>';
-    $('#pay').disabled = !counter.length;
+    $<HTMLButtonElement>('#pay').disabled = !counter.length;
     $('#counter')
       .querySelectorAll<HTMLElement>('.coin')
       .forEach((b) => {
         b.onclick = () => {
-          counter.splice(+b.dataset.j, 1);
+          counter.splice(+b.dataset.j!, 1);
           paint();
         };
       });
@@ -462,7 +471,7 @@ export function screenMarket(msg?) {
   paint();
   app.querySelectorAll<HTMLElement>('.coins .coin').forEach((b) => {
     b.onclick = () => {
-      counter.push(+b.dataset.v);
+      counter.push(+b.dataset.v!);
       paint();
     };
   });
@@ -599,7 +608,7 @@ export function screenLabor() {
   }
   app.querySelectorAll<HTMLElement>('.opt.guess').forEach((b) => {
     b.onclick = () => {
-      L.guess = +b.dataset.i;
+      L.guess = +b.dataset.i!;
       if (L.guess === ex.a) {
         L.right++;
         SFX.right();

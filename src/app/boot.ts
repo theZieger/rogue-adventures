@@ -41,6 +41,12 @@ if (navigator.storage && navigator.storage.persist && !state.meta.storage.persis
     .catch(() => {});
 screenTitle();
 importFromLink();
+declare global {
+  interface Window {
+    // now: the page tests move the garden's clock with it
+    __mq: { now?: number; [hook: string]: unknown };
+  }
+}
 // turm: the rules without the screens, for the page tests; modules: what the tests look up by name in the page
 window.__mq = {
   modules: { MQ, MK, MJ, TEXTE, UNITS },

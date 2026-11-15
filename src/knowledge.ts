@@ -1,5 +1,6 @@
 import { MW as W } from './woerter.ts';
 import { ENG as E } from './english.ts';
+import type { Unit } from './curriculum.ts';
 export const MK = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -63,8 +64,27 @@ export const MK = (() => {
     },
     { id: 'o8', text: 'Die Kirche spaltet sich in katholisch und evangelisch' },
   ];
+  // one entry of a unit's pool: g = topic, a = true/false, the index of the right option in o, or the answer itself
+  interface Question {
+    id: string;
+    mod: string;
+    g: string;
+    q: string;
+    o?: string[];
+    a: boolean | number | string;
+    why?: string;
+    w?: number; // world, missing = 1
+    t?: number; // 2 = a harder question of its module
+    rf?: boolean;
+    part?: string;
+    tip?: string;
+    more?: string;
+    inline?: boolean;
+    en?: string[];
+    english?: string[];
+  }
   // mod: rf = Richtig/Falsch, mc = Wähle aus, lt = Lückentext, def = Begriffe, ord = Reihenfolge
-  const L_POOL = [
+  const L_POOL: Question[] = [
     // Richtig / Falsch
     { id: 'rf1', mod: 'rf', g: 'leben', q: 'Martin Luther wurde 1483 geboren.', a: true },
     {
@@ -861,7 +881,7 @@ export const MK = (() => {
       ],
     },
   };
-  const K_POOL: any[] = [];
+  const K_POOL: Question[] = [];
   PARTS.forEach((p) => {
     K_POOL.push({
       id: 'p_' + p.id,
@@ -1768,7 +1788,7 @@ export const MK = (() => {
   ];
   const INNER = 'Ein innerer Konflikt',
     OUTER = 'Ein äußerer Konflikt';
-  const KJ_POOL = [
+  const KJ_POOL: Question[] = [
     // Richtig / Falsch
     { id: 'kjrf1', mod: 'rf', g: 'busstag', q: 'Der Buß- und Bettag ist in Sachsen ein Feiertag.', a: true },
     {
@@ -3537,7 +3557,7 @@ export const MK = (() => {
     { id: 's6', text: 'Sich die Hand geben und sich daran halten.' },
   ];
   const GOLD = 'Behandle andere so, wie du selbst behandelt werden möchtest.';
-  const F_POOL = [
+  const F_POOL: Question[] = [
     // Freundschaft
     {
       id: 'gfrf1',
@@ -4401,7 +4421,7 @@ export const MK = (() => {
   const noun = (w) => w.slice(w.indexOf(' ') + 1);
   const ARTS = ['der', 'die', 'das'];
   // a task's ids come from its words, so adding words to woerter.ts keeps the learning history of the others
-  const W_POOL: any[] = [];
+  const W_POOL: Question[] = [];
   W.doppel.forEach(([r, f]) =>
     W_POOL.push({
       id: 'dk_' + r,
@@ -4552,7 +4572,7 @@ export const MK = (() => {
     });
   });
   W.aberdenn.forEach((x) => {
-    const c = x.match(/, (aber|denn) /)[1];
+    const c = x.match(/, (aber|denn) /)![1];
     const none = x.replace(',', '');
     const wrong = [none, none.replace(` ${c} `, ` ${c}, `), x.replace(` ${c} `, ` ${c}, `)];
     W_POOL.push({
@@ -4578,7 +4598,7 @@ export const MK = (() => {
     });
   });
   W.grosssaetze.forEach((x) => {
-    const word = x.match(/\[(.+?)\]/)[1];
+    const word = x.match(/\[(.+?)\]/)![1];
     const shown = x.replace(`[${word}]`, word.toLowerCase());
     const small = shown
       .split(' ')
@@ -5019,7 +5039,7 @@ export const MK = (() => {
     },
   ];
 
-  const S_POOL: any[] = [];
+  const S_POOL: Question[] = [];
   const KLASSEN = ['Nomen', 'Verb', 'Adjektiv', 'Pronomen', 'Artikel'];
   const wortart = (id, q, k) =>
     S_POOL.push({
@@ -5738,7 +5758,7 @@ export const MK = (() => {
 
   /* ---------- ENGLISCH: Die Teestube und Der Doppeldecker (Wörter und Sätze in english.ts) ---------- */
   // every theme as [[English, German], …]; numbers, colours, days and months count as themes for „Was passt nicht?“
-  const EN_THEMES = Object.assign({}, E.woerter, {
+  const EN_THEMES: Record<string, [en: string, de: string, ...more: unknown[]][]> = Object.assign({}, E.woerter, {
     Farben: E.farben,
     Zahlen: E.zahlen.filter((z) => z[2] <= 20),
     Wochentage: E.tage,
@@ -5758,7 +5778,7 @@ export const MK = (() => {
   // parents switch topics off (opts.enOff); a task type with nothing left keeps all topics
   const enOff = (opts) => (opts && opts.enOff) || [];
   // a sentence belongs to every topic whose words it uses (also with plural -s); without one it is „Allgemein“ and always on
-  const EN_WORDS = Object.entries(EN_THEMES).flatMap(([t, list]) =>
+  const EN_WORDS: [topic: string, word: RegExp][] = Object.entries(EN_THEMES).flatMap(([t, list]) =>
     list.map(([en]) => [t, new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(e?s)?\\b`, 'i')]),
   );
   const enTopics = (...texts) => {
@@ -5766,7 +5786,7 @@ export const MK = (() => {
     return [...new Set(EN_WORDS.filter(([, re]) => re.test(s)).map(([t]) => t))];
   };
   // english: the English words and sentences of a task, for the English read-aloud voice
-  const T_POOL: any[] = [];
+  const T_POOL: Question[] = [];
   // numbers have their own task, so the translation tasks leave them out
   Object.entries(EN_THEMES)
     .filter(([t]) => t !== 'Zahlen')
@@ -6107,7 +6127,7 @@ export const MK = (() => {
     },
   ];
 
-  const D_POOL: any[] = [];
+  const D_POOL: Question[] = [];
   E.luecken.forEach(([s, r, f1, f2]) =>
     D_POOL.push({
       id: 'enl_' + s,
@@ -6408,7 +6428,7 @@ export const MK = (() => {
     if (onTopic.length) cands = onTopic;
     const e = weightedPick(cands, know, seqNow);
     if (mod === 'parts') {
-      const part = PARTS.find((p) => p.id === e.part);
+      const part = PARTS.find((p) => p.id === e.part)!;
       if (tier >= 2)
         return {
           kind: 'parts-find',
@@ -6616,7 +6636,7 @@ export const MK = (() => {
     return { q: e.q, options: shuffle(e.o.slice()), answer: e.o[e.a], qid: e.id };
   }
 
-  const MODES = {
+  const MODES: Record<string, Unit> = {
     ethik: {
       modules: L_MODULES,
       starters: L_STARTERS,

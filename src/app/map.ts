@@ -61,7 +61,7 @@ export function screenStarter(goal?) {
     (want && s.attacks.some((a) => a.mod === want) ? 1e9 : 0);
   const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
   // offer to swap the most practised attack for the goal's task type or one that was hardly practised yet
-  let swap = null,
+  let swap: { from: string; to: string; goal?: boolean } | null = null,
     swapOn = true;
   const swapFor = (s) => {
     if (!s) return null;
@@ -95,7 +95,7 @@ export function screenStarter(goal?) {
         .filter(heroLocked)
         .map(
           (s) =>
-            `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id).price} 🏷️ zu holen.</div></div></div>`,
+            `<div class="choice locked">${monsterSVG(s.shape, '#8A8FA3', 0)}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
         )
         .join('')}
       <div id="swapbox"></div>
@@ -106,7 +106,7 @@ export function screenStarter(goal?) {
     b.onclick = () => {
       sel = b.dataset.id;
       app.querySelectorAll<HTMLElement>('.choice[data-id]').forEach((x) => x.classList.toggle('selected', x === b));
-      $('#go').disabled = false;
+      $<HTMLButtonElement>('#go').disabled = false;
       paintSwap();
     };
   });
@@ -135,7 +135,7 @@ export function screenStarter(goal?) {
     };
     state.run.map = makeMapFor(1);
     if (swap && swapOn) {
-      const a = state.run.hero.attacks.find((x) => x.mod === swap.from);
+      const a = state.run.hero.attacks.find((x) => x.mod === swap!.from);
       if (a) {
         a.mod = swap.to;
         a.name = CFG().extra[swap.to];
@@ -300,7 +300,7 @@ export function screenMap() {
       <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${state.run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
   app.querySelectorAll<HTMLElement>('.node.open').forEach((b) => {
     b.onclick = () => {
-      const ni = +b.dataset.n;
+      const ni = +b.dataset.n!;
       state.run.path[state.run.floor - 1] = ni;
       const type = state.run.map[state.run.floor - 1][ni].t;
       state.run.node = { type };
@@ -352,7 +352,7 @@ export function showBag(inBattle, ctx?) {
   $('#close', ov).onclick = () => ov.remove();
   ov.querySelectorAll<HTMLElement>('.item').forEach((b) => {
     b.onclick = () => {
-      const id = state.run.items[+b.dataset.i];
+      const id = state.run.items[+b.dataset.i!];
       const it = ITEMS[id];
       if (it.heal && state.run.hero.hp >= state.run.hero.maxHp) {
         $('#bagdesc', ov).textContent = T.full || 'Du hast schon volle Lebenspunkte.';
@@ -370,7 +370,7 @@ export function showBag(inBattle, ctx?) {
         $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`;
         return;
       }
-      state.run.items.splice(+b.dataset.i, 1);
+      state.run.items.splice(+b.dataset.i!, 1);
       if (it.heal) heal(it.heal);
       if (it.shield) state.run.shield = true;
       if (it.power) state.run.power = true;

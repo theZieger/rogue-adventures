@@ -99,7 +99,7 @@ export function screenStamps(jump?) {
       ? `<div class="rwprev" aria-hidden="true">${r.icon}</div>`
       : r.bg
         ? `<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>`
-        : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero).shape, TYPES.normal.color, 0);
+        : monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero)!.shape, TYPES.normal.color, 0);
     return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(r.name)}</div><div class="desc">${esc(r.desc)}</div>${owns(r) ? '<div class="rwhave">✔ Schon geholt</div>' : r.price ? `<button class="btn small" data-buy="${r.id}" ${canBuy(r) ? '' : 'disabled'}>Holen · ${r.price} 🏷️${r.stein ? ` + ${r.stein} Stein` : ''}</button>` : ''}</div></div>`;
   };
   render(`<div class="screen">${topbar('Stempelheft')}<div class="scroll"><div class="stack">
@@ -122,7 +122,8 @@ export function screenStamps(jump?) {
   if (jump && $('#werkbank') && $('#werkbank').scrollIntoView) $('#werkbank').scrollIntoView();
   app.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
     b.onclick = () => {
-      const r = REWARDS.find((x) => x.id === b.dataset.buy);
+      // only rewards with a price have a button
+      const r = REWARDS.find((x) => x.id === b.dataset.buy) as (typeof REWARDS)[number] & { price: number };
       const ov = modal(
         `<h2>${esc(r.name)} holen?</h2><p>Das kostet ${r.price} Stempel${r.stein ? ` und ${r.stein} Stein` : ''}. Danach hast du noch ${state.meta.stamps - r.price} Stempel.</p><div class="stack"><button class="btn" id="yes">Holen</button><button class="btn secondary" id="no">Zurück</button></div>`,
       );

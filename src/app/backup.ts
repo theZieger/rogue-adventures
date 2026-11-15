@@ -1,8 +1,8 @@
 import { MODES, MODE_KEYS } from '../curriculum.ts';
-import { KEY_RUN_FOR, clear, isObj, load, normMeta, save } from '../save.ts';
+import { KEY_RUN_FOR, type Meta, clear, isObj, load, normMeta, save } from '../save.ts';
 import { SAVECODE } from '../savecode.ts';
 import { $, esc } from './core.ts';
-import { state } from './state.ts';
+import { type Run, state } from './state.ts';
 import { loadRun, saveAll } from './storage.ts';
 import { MONTHS, askPin, screenTitle, setupDone } from './title.ts';
 import { loadTurm } from './turm.ts';
@@ -10,18 +10,25 @@ import { modal } from './ui.ts';
 
 /* ---------- Save code: export, import, merge ---------- */
 export const SITE = 'https://thezieger.github.io/rogue-adventures/';
-const b64 = (bin) => btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-const viaStream = (bytes, stream) => new Response(new Response(bytes).body.pipeThrough(stream));
-const canZip = (S) => typeof S === 'function' && typeof Response === 'function' && typeof TextEncoder === 'function';
+// what a save code holds: the save and the running adventures by unit
+export interface Backup {
+  at: string;
+  meta: Meta;
+  runs: Record<string, Run>;
+}
+const b64 = (bin: string) => btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const viaStream = (bytes: BufferSource, stream: CompressionStream | DecompressionStream) =>
+  new Response(new Response(bytes).body!.pipeThrough(stream));
+const canZip = (S: unknown) => typeof S === 'function' && typeof Response === 'function' && typeof TextEncoder === 'function';
 // a won adventure (and later a purchase) since the last export, which was more than 30 days ago
 export const backupDue = () =>
   !!state.meta.progressAt &&
   state.meta.progressAt > state.meta.backupAt &&
   !(Date.now() - Date.parse(state.meta.backupAt) < 30 * 864e5);
 // short: for the QR code, without answer history and running adventures
-export function saveData(short) {
-  const m = JSON.parse(JSON.stringify(state.meta));
-  const runs = {};
+export function saveData(short: boolean) {
+  const m: Meta = JSON.parse(JSON.stringify(state.meta));
+  const runs: Backup['runs'] = {};
   // unpractised task types are left out: loading fills them in again with empty stats
   for (const g of Object.values(m.stats))
     for (const [k, st] of Object.entries(g)) {
@@ -29,7 +36,7 @@ export function saveData(short) {
       else if (short) st.hist = [];
     }
   if (short)
-    delete m.weekly; // only this week's progress, the QR has no room for it
+    delete (m as Partial<Meta>).weekly; // only this week's progress, the QR has no room for it
   else
     for (const g of MODE_KEYS.concat('turm')) {
       const r = load(KEY_RUN_FOR(g), null);
@@ -39,12 +46,14 @@ export function saveData(short) {
 }
 // LQ0: JSON, for browsers without compression; LQ1: deflated JSON from older versions; LQ2: deflated SAVECODE.shrink(data).
 // Codes stay out there for years, so every one of them must keep loading.
-export async function packSave(data) {
+// a save is plain JSON, which its interfaces (no index signature) cannot show
+type Json = Parameters<typeof SAVECODE.shrink>[0];
+export async function packSave(data: Backup) {
   if (canZip(window.CompressionStream))
     try {
       const buf = new Uint8Array(
         await viaStream(
-          new TextEncoder().encode(JSON.stringify(SAVECODE.shrink(data))),
+          new TextEncoder().encode(JSON.stringify(SAVECODE.shrink(data as unknown as Json))),
           new CompressionStream('deflate-raw'),
         ).arrayBuffer(),
       );
@@ -56,14 +65,14 @@ export async function packSave(data) {
     }
   return 'LQ0.' + b64(unescape(encodeURIComponent(JSON.stringify(data))));
 }
-const unb64 = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+const unb64 = (s: string) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
 // the same code for the QR code: „LQ2:“ and base 42, which the QR code packs tighter than base64
-export const qrCode = (code) =>
+export const qrCode = (code: string) =>
   code.startsWith('LQ2.')
     ? 'LQ2:' + SAVECODE.to42(Uint8Array.from(unb64(code.slice(4)), (c) => c.charCodeAt(0)))
     : code;
 // accepts the code or the whole link; rejects with a message for parents
-export async function unpackSave(text) {
+export async function unpackSave(text: string): Promise<Backup> {
   const bad = new Error('Das ist kein vollständiger Lernquest-Code. Bitte den ganzen Code kopieren und einfügen.');
   const m = /^LQ([012])([.:])([\w$*./:-]+)$/.exec(
     String(text)
@@ -93,8 +102,8 @@ export async function unpackSave(text) {
 }
 const okKnow = (q) => isObj(q) && Number.isFinite(q.c) && Number.isFinite(q.t);
 // dev = this device, inc = from the code (both normalised): nothing that was reached on either device gets lost
-export function mergeMeta(dev, inc) {
-  const m = JSON.parse(JSON.stringify(dev));
+export function mergeMeta(dev: Meta, inc: Meta) {
+  const m: Meta = JSON.parse(JSON.stringify(dev));
   for (const k of ['runs', 'wins', 'bestWorld', 'knowSeq', 'stamps', 'stampsTotal'])
     if (Number.isFinite(inc[k])) m[k] = Math.max(Number.isFinite(m[k]) ? m[k] : 0, inc[k]);
   for (const k of ['dex', 'owned', 'seenTut', 'evoUnlocked', 'stampCard', 'worn'])
@@ -155,7 +164,7 @@ export function mergeMeta(dev, inc) {
   }
   return m;
 }
-export function applySave(s, how) {
+export function applySave(s: Backup, how: 'merge' | 'replace') {
   state.meta = how === 'replace' ? s.meta : mergeMeta(state.meta, s.meta);
   for (const g of MODE_KEYS.concat('turm')) {
     const r = s.runs[g];
@@ -169,7 +178,7 @@ export function applySave(s, how) {
   if (!state.meta.setup.done && !state.meta.setup.skipped) setupDone('skipped'); // loading a save replaces the setup dialog
   screenTitle();
 }
-export function summaryHtml(s) {
+export function summaryHtml(s: Backup) {
   const open = MODE_KEYS.filter((g) => isObj(s.runs[g]))
     .map((g) => MODES[g].title)
     .concat(isObj(s.runs.turm) ? ['Turmwacht'] : []);
@@ -179,17 +188,17 @@ export function summaryHtml(s) {
     `${s.meta.wins} ${s.meta.wins === 1 ? 'Sieg' : 'Siege'}`,
     `${Object.keys(s.meta.dex).length} im Monsterbuch`,
     open.length ? `Laufende Abenteuer: ${open.join(', ')}` : 'Kein laufendes Abenteuer',
-    isNaN(d) ? '' : `Gesichert am ${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
+    isNaN(d as unknown as number) ? '' : `Gesichert am ${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
   ]
     .filter(Boolean)
     .map((t) => `<li>${esc(t)}</li>`)
     .join('')}</ul>`;
 }
-function askImport(s) {
+function askImport(s: Backup) {
   const ov = modal(
     `<h2>Spielstand gefunden</h2>${summaryHtml(s)}<p>Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.</p><div class="stack"><button class="btn" id="imerge">Zusammenlegen</button><button class="btn secondary" id="ireplace">Ersetzen</button><button class="btn secondary" id="ino">Nicht laden</button></div>`,
   );
-  const go = (how) => () => {
+  const go = (how: 'merge' | 'replace') => () => {
     ov.remove();
     askPin(() => applySave(s, how));
   };

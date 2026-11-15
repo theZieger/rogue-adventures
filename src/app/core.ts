@@ -17,7 +17,10 @@ export const reducedMotion = window.matchMedia && window.matchMedia('(prefers-re
 export const arrow = (dir) =>
   `<svg class="arr arr-${dir}" viewBox="0 0 20 20" aria-label="${{ r: 'rechts', l: 'links', d: 'unten', u: 'oben' }[dir]}"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 export const esc = (s) =>
-  String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  String(s).replace(
+    /[&<>"]/g,
+    (c) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }) as Record<string, string>)[c],
+  );
 
 /* ---------- Icons ---------- */
 // Emojis look different on every device and some are missing on older ones. Wherever one appears as text inside
@@ -41,11 +44,11 @@ const EMO = new RegExp(
 );
 function drawIcons(root) {
   const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const hits: any[] = [];
+  const hits: Text[] = [];
   while (walk.nextNode()) {
-    const n = walk.currentNode;
+    const n = walk.currentNode as Text;
     EMO.lastIndex = 0;
-    if (EMO.test(n.data) && !n.parentElement.closest<HTMLElement>('textarea, svg, script, style')) hits.push(n);
+    if (EMO.test(n.data) && !n.parentElement!.closest<HTMLElement>('textarea, svg, script, style')) hits.push(n);
   }
   for (const n of hits) {
     const box = document.createElement('span');

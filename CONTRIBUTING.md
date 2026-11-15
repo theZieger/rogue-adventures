@@ -23,6 +23,8 @@ and e2e; CI checks all five.
 - `README.md` lists every file and what it holds.
 - `GLOSSARY.md` has the project's words (Einheit, Abenteuer, Aufgabenart …) and their names in the code. Use them.
 - `adr/` records the architecture decisions and why they were made.
+- `docs/gallery.html` (after a build) shows the design system: every colour and building block. A colour is a
+  token in `src/styles/tokens.css`, never a hex value in a rule.
 - `src/units.ts` is the one list of units; `README.md` → „Neue Einheit“ explains how to add one.
 
 ## Rules that are not negotiable

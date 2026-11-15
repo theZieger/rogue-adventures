@@ -14,5 +14,6 @@ import './k12_ethik.ts';
 import { MJ } from './jahrmarkt.ts';
 import { MK } from './knowledge.ts';
 import { MQ } from './logic.ts';
+import type { Unit } from './curriculum.ts';
 
-export const UNITS = { math: MQ.MODE, bau: MQ.BAU.MODE, jahrmarkt: MJ.MODE, ...MK.MODES };
+export const UNITS = { math: MQ.MODE, bau: (MQ.BAU as typeof MQ.BAU & { MODE: Unit }).MODE, jahrmarkt: MJ.MODE, ...MK.MODES };

@@ -82,7 +82,7 @@ export function screenParent(jump, back?, quiet?) {
   const switches = () => [...app.querySelectorAll<HTMLElement>('[role=switch]')];
   const again = () => {
     const y = $('.scroll').scrollTop;
-    const i = switches().indexOf(document.activeElement);
+    const i = switches().indexOf(document.activeElement as HTMLElement);
     redraw();
     $('.scroll').scrollTop = y;
     if (i >= 0 && switches()[i]) switches()[i].focus({ preventScroll: true });
@@ -422,7 +422,7 @@ export function screenParent(jump, back?, quiet?) {
         'Idee oder Fehler',
         `${note('Schicken Sie uns Wünsche, Fehler oder Lob.')}<button class="btn small secondary" id="pfeedback">Idee oder Fehler melden</button>`,
       ) +
-      `<p class="center muted">Lernquest, Version ${esc((document.querySelector<HTMLElement>('meta[name=app-version]') || {}).content || '?')}</p>`,
+      `<p class="center muted">Lernquest, Version ${esc((document.querySelector<HTMLMetaElement>('meta[name=app-version]') || ({} as { content?: string })).content || '?')}</p>`,
     show: () =>
       card(
         'Klassen',
@@ -477,12 +477,12 @@ export function screenParent(jump, back?, quiet?) {
       </div></div><div class="bottom"><button class="btn" id="back">Zurück zu Lernquest</button></div></div>`,
     quiet,
   );
-  const on = (sel, fn) =>
+  const on = (sel: string, fn: (el: HTMLElement) => unknown) =>
     app.querySelectorAll<HTMLElement>(sel).forEach((el) => {
       el.onclick = () => fn(el);
     });
-  const say = (b, t) => {
-    b.closest<HTMLElement>('.card').querySelector<HTMLElement>('.tmsg').textContent = t;
+  const say = (b: HTMLElement, t: string) => {
+    b.closest<HTMLElement>('.card')!.querySelector<HTMLElement>('.tmsg')!.textContent = t;
   };
   $('#back').onclick = () => back();
   on('[data-pt]', (b) => {
@@ -494,7 +494,7 @@ export function screenParent(jump, back?, quiet?) {
     redraw('.psubtabs [aria-selected=true]');
   });
   on('[data-pf]', (b) => {
-    pAt.subj = +b.dataset.pf;
+    pAt.subj = +b.dataset.pf!;
     pAt.mode = '';
     redraw('#pback');
   });
@@ -511,7 +511,7 @@ export function screenParent(jump, back?, quiet?) {
   });
   on('[data-info]', (b) => {
     const m = pAt.mode || curGrade().subjects[pAt.subj].modes[0];
-    const k = b.dataset.info;
+    const k = b.dataset.info!;
     const M = MODES[m].modules[k];
     const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
     const ov = modal(
@@ -546,9 +546,9 @@ export function screenParent(jump, back?, quiet?) {
   });
   const sample = (v) => speak('Hallo! So klingt diese Stimme.', v);
   const sampleEn = 'Hello! This is how I sound.';
-  on('[data-try]', (b) => sample(voices()[+b.dataset.try]));
+  on('[data-try]', (b) => sample(voices()[+b.dataset.try!]));
   on('[data-voice]', (b) => {
-    const v = voices()[+b.dataset.voice];
+    const v = voices()[+b.dataset.voice!];
     if (!v) return;
     state.meta.voiceName = v.name;
     saveAll();
@@ -556,18 +556,18 @@ export function screenParent(jump, back?, quiet?) {
     sample(v);
   });
   on('[data-try-en]', (b) => {
-    const v = enVoices()[+b.dataset.tryEn];
+    const v = enVoices()[+b.dataset.tryEn!];
     speak(sampleEn, voice(), [sampleEn], v);
   });
   on('[data-voice-en]', (b) => {
-    const v = enVoices()[+b.dataset.voiceEn];
+    const v = enVoices()[+b.dataset.voiceEn!];
     if (!v) return;
     state.meta.voiceEn = v.name;
     saveAll();
     again();
     speak(sampleEn, voice(), [sampleEn], v);
   });
-  const rate = $('#prate');
+  const rate = $<HTMLInputElement>('#prate');
   if (rate)
     rate.onchange = () => {
       state.meta.speakRate = +rate.value;
@@ -628,13 +628,13 @@ export function screenParent(jump, back?, quiet?) {
       true,
     ),
   );
-  const copy = (text, box, out) => {
-    const tell = (t) => {
+  const copy = (text: string, box: string, out: string) => {
+    const tell = (t: string) => {
       $(out).textContent = t;
     };
     const mark = () => {
       $(box).focus();
-      $(box).select();
+      $<HTMLTextAreaElement>(box).select();
       tell('Der Text ist markiert. Bitte jetzt kopieren.');
     };
     if (navigator.clipboard && navigator.clipboard.writeText)
@@ -656,7 +656,7 @@ export function screenParent(jump, back?, quiet?) {
       short = !!qr;
     }
     $('#pout').innerHTML =
-      `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pfile">Als Datei sichern</button><button class="btn small secondary" id="pcopy">Kopieren</button>${navigator.share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
+      `${summaryHtml(full)}<label for="pcode" class="pnote">Code</label><textarea id="pcode" class="codebox" rows="4" readonly>${esc(code)}</textarea><div class="row"><button class="btn small" id="pfile">Als Datei sichern</button><button class="btn small secondary" id="pcopy">Kopieren</button>${(navigator as Partial<Navigator>).share ? '<button class="btn small secondary" id="pshare">Teilen</button>' : ''}</div><p id="pcmsg" role="status" class="pnote"></p>
         ${qr ? `<div class="qrbox">${qr}</div>${note((short ? 'Der QR-Code enthält eine Kurzfassung ohne laufende Abenteuer. Den ganzen Spielstand gibt es als Datei oder Code. ' : '') + 'Mit der Kamera des anderen Geräts den QR-Code öffnen, dann fragt Lernquest nach. Ist Lernquest dort als App installiert, den Code lieber in der App einfügen.')}` : note('Für einen QR-Code ist der Spielstand zu groß. Bitte die Datei oder den Code benutzen.')}`;
     $('#pcopy').onclick = () => copy(code, '#pcode', '#pcmsg');
     // .txt: Android shares only known file types, the iPhone file picker greys out unknown ones; the link line is what unpackSave reads
@@ -692,10 +692,10 @@ export function screenParent(jump, back?, quiet?) {
   const readCode = async (how) => {
     let s;
     try {
-      s = await unpackSave($('#pcodein').value);
+      s = await unpackSave($<HTMLTextAreaElement>('#pcodein').value);
     } catch (e) {
       $('#pimsg').classList.remove('ok');
-      $('#pimsg').textContent = e.message;
+      $('#pimsg').textContent = (e as Error).message;
       return;
     }
     if (how === 'merge')
@@ -716,7 +716,7 @@ export function screenParent(jump, back?, quiet?) {
   };
   if ($('#pfilein'))
     $('#pfilein').onchange = async (e) => {
-      const f = e.target.files[0];
+      const f = (e.target as HTMLInputElement).files![0];
       if (!f) return;
       const msg = $('#pimsg');
       msg.classList.remove('ok');
@@ -724,13 +724,13 @@ export function screenParent(jump, back?, quiet?) {
         if (f.size > 5e6) throw 0;
         const text = await f.text();
         await unpackSave(text);
-        $('#pcodein').value = text;
+        $<HTMLTextAreaElement>('#pcodein').value = text;
         msg.textContent = 'Datei gelesen. Jetzt „Zusammenlegen“ oder „Ersetzen“ wählen.';
         msg.classList.add('ok');
       } catch (err) {
         msg.textContent = 'Das ist keine Lernquest-Datei. Bitte die Datei „Lernquest-Spielstand-….txt“ wählen.';
       }
-      e.target.value = '';
+      (e.target as HTMLInputElement).value = '';
     };
   on('#pmerge', () => readCode('merge'));
   on('#preplace', () => readCode('replace'));
@@ -741,13 +741,13 @@ export function screenParent(jump, back?, quiet?) {
     $('#pcodein').focus({ preventScroll: true });
   }
   on('[data-grade]', (b) => {
-    state.meta.grade = +b.dataset.grade;
+    state.meta.grade = +b.dataset.grade!;
     saveAll();
     again();
   });
   on('.switch[data-k]', (b) => {
-    const m = b.dataset.m,
-      k = b.dataset.k;
+    const m = b.dataset.m!,
+      k = b.dataset.k!;
     const off = offList(m).slice();
     const i = off.indexOf(k);
     if (i >= 0) off.splice(i, 1);
@@ -766,7 +766,7 @@ export function screenParent(jump, back?, quiet?) {
   const noGameLeft = (keys) =>
     !curGrade().subjects.some((s) => s.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
   on('[data-hide]', (b) => {
-    const key = b.dataset.hide;
+    const key = b.dataset.hide!;
     const hide = !state.meta.hidden.includes(key);
     const [kind, m, id] = key.split(':');
     if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
@@ -792,7 +792,7 @@ export function screenParent(jump, back?, quiet?) {
     again();
   });
   on('[data-tsub]', (b) => {
-    const [g, s] = b.dataset.tsub.split(':'),
+    const [g, s] = b.dataset.tsub!.split(':'),
       all = Object.assign({}, state.meta.turm.subjects),
       cur = all[g] || [];
     if (!cur.includes(s) && cur.length >= 3) return say(b, 'Höchstens drei Fächer.');
@@ -803,7 +803,7 @@ export function screenParent(jump, back?, quiet?) {
     again();
   });
   on('[data-hidesub]', (b) => {
-    const keys = curGrade().subjects[+b.dataset.hidesub].modes.map((m) => 'mode:' + m);
+    const keys = curGrade().subjects[+b.dataset.hidesub!].modes.map((m) => 'mode:' + m);
     const hide = keys.some((k) => !state.meta.hidden.includes(k));
     if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
     setHidden(keys, hide);

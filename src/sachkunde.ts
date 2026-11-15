@@ -1,6 +1,23 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
 // Registers its units in MK.MODES; src/units.ts picks them up from there.
+import type { Unit } from './curriculum.ts';
 import { MK as K } from './knowledge.ts';
+
+// a picture whose parts the child names or taps (MS.PLANTS)
+export interface PartsPicture {
+  label: string;
+  box: string;
+  parts: { id: string; name: string; desc: string; tip: string }[];
+  stepOf: Record<string, number>;
+  steps?: string[];
+  qid?: string;
+  note?: string;
+  poolQ?: string;
+  tap?: string;
+  ask: (part?) => string;
+  find: (part) => string;
+  svg: (opts?) => string; // added after the literal, because it draws from the picture itself
+}
 export const MS = (() => {
   const { shuffle, pick, rnd, weightedPick } = K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
@@ -109,7 +126,7 @@ export const MS = (() => {
     ask: () => 'Wie heißt der leuchtende Teil?',
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil der Getreidepflanze?',
-  };
+  } as PartsPicture;
   const grainSpike = (g) => {
     let k = '',
       a = '';
@@ -192,7 +209,7 @@ export const MS = (() => {
     find: (p) => `Tippe auf die Stelle: ${p.name}`,
     poolQ: 'Was passiert an dieser Stelle im Wasserkreislauf?',
     tap: 'die Stelle im Bild',
-  };
+  } as PartsPicture;
   CYCLE.svg = (opts) =>
     partsSVG(
       CYCLE,
@@ -214,7 +231,7 @@ export const MS = (() => {
         ['fluss', 296, 210, 'end'],
       ],
     );
-  const PLANTS = { getreide: GRAIN, kreislauf: CYCLE };
+  const PLANTS: Record<string, PartsPicture> = { getreide: GRAIN, kreislauf: CYCLE };
 
   function plantTask(cfg, plantKey, mod, tier, know, seq, opts?) {
     let cands = cfg.pool.filter((x) => x.mod === mod);
@@ -959,7 +976,7 @@ export const MS = (() => {
       return null;
     };
   }
-  const KO = {
+  const KO: Unit = {
     modules: KO_MODULES,
     tut: KO_TUT,
     notes: KO_NOTES,
@@ -2027,7 +2044,7 @@ export const MS = (() => {
     return shuffle(fl.concat(st, [urnExperiment()]));
   }
 
-  const WE = {
+  const WE: Unit = {
     modules: WE_MODULES,
     tut: WE_TUT,
     notes: WE_NOTES,
@@ -3008,7 +3025,7 @@ export const MS = (() => {
       return null;
     };
   }
-  const KK = {
+  const KK: Unit = {
     modules: KK_MODULES,
     tut: KK_TUT,
     notes: KK_NOTES,

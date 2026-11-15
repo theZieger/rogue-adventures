@@ -28,7 +28,19 @@
   (auch in der Mehrzahl). Ist eines davon ausgeschaltet, kommt der Satz nicht dran. Sätze ohne Themenwort sind
   „Allgemein“ und immer an.
 */
-export const ENG = {
+type Word = [en: string, de: string];
+type Choice = [text: string, right: string, wrong1: string, wrong2: string];
+interface English {
+  woerter: Record<string, Word[]>;
+  farben: [en: string, de: string, hex: string][];
+  zahlen: [en: string, de: string, n: number][];
+  tage: Word[];
+  monate: Word[];
+  luecken: Choice[];
+  saetze: Word[];
+  fragen: Choice[];
+}
+export const ENG: English = {
   woerter: {
     Schule: [
       ['pencil', 'der Bleistift'],

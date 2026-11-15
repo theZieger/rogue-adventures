@@ -8,6 +8,3 @@ could no longer be read or reviewed, while giving each screen a real interface w
 through hundreds of calls with nothing varying across the seam. A part earns a real interface only when it can live
 without that state, as the Turmwacht rules (`src/turm.ts`) and the save code (`src/savecode.ts`) already do; until
 then a part is a place to find things, and the order in `APP` matters only for values computed while the page loads.
-
-What has left the function since: the save (`src/save.ts`) and the curriculum (`src/curriculum.ts`). The build hands
-every export of a module in `src/` to the parts by name, so a piece can move out without touching its callers.

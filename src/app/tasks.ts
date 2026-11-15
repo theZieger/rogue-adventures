@@ -22,8 +22,24 @@ function colHtml(c, text) {
     .join('');
   return `<div class="colcalc${mul ? ' mul' : ''}" style="--w:${c.w}" role="group" aria-label="${esc(text.replace(' = ?', ''))}">${rows}<span class="op"></span>${cells((i) => (i < c.w - 1 ? `<div class="inp carry" data-i="${c.w + i}" aria-label="Übertrag ${place(i)}"></div>` : '<span></span>'))}${end}<i class="colline"></i><span class="op"></span>${cells((i) => `<div class="inp dig" data-i="${i}" aria-label="${place(i)}"></div>`)}${end}</div><div class="prompt">Rechne von rechts nach links. Den Übertrag schreibst du in das kleine Feld.</div>`;
 }
-export function runTask(task, opts, done) {
-  opts = opts || {};
+declare global {
+  interface Window {
+    __task: unknown; // the task on screen, read by the tests
+  }
+}
+// where a task is drawn and what the screen around it wants from it
+interface TaskOpts {
+  container: HTMLElement;
+  bottom: HTMLElement;
+  subtitle?: string;
+  hint?: boolean;
+  cancel?: boolean;
+  onResult?: (ok: boolean) => void;
+}
+// null: the task was cancelled
+type TaskDone = (ok: boolean | null) => void;
+export function runTask(task, opts: TaskOpts, done: TaskDone) {
+  opts = opts || ({} as TaskOpts);
   window.__task = task;
   if (task.kind !== 'num') return runChoiceTask(task, opts, done);
   const mod = task.mod;
@@ -31,7 +47,7 @@ export function runTask(task, opts, done) {
   const C = task.col;
   // written methods: one field per result digit (0 … w−1), then the carry fields (w + column)
   const nAns = C ? 2 * C.w - 1 : task.answers.length;
-  const values = Array(nAns).fill('');
+  const values: string[] = Array(nAns).fill('');
   let active = C ? C.w - 1 : 0;
   let locked = false;
   // entry follows the written method: Einer, carry into the Zehner, Zehner, carry into the Hunderter, …
@@ -88,9 +104,9 @@ export function runTask(task, opts, done) {
   }
   container.innerHTML = cardHtml();
   bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
-  const inps: any[] = [];
+  const inps: HTMLElement[] = [];
   container.querySelectorAll<HTMLElement>('.inp').forEach((el) => {
-    inps[+el.dataset.i] = el;
+    inps[+el.dataset.i!] = el;
   });
   function paint() {
     inps.forEach((el, i) => {
@@ -103,7 +119,7 @@ export function runTask(task, opts, done) {
   inps.forEach((el) => {
     el.onclick = () => {
       if (!locked) {
-        active = +el.dataset.i;
+        active = +el.dataset.i!;
         paint();
       }
     };
@@ -112,20 +128,20 @@ export function runTask(task, opts, done) {
   readAloud(container, opts.bottom, task);
   paint();
   bottom.onclick = (e) => {
-    const b = e.target.closest<HTMLElement>('button');
+    const b = (e.target as HTMLElement).closest<HTMLElement>('button');
     if (!b || locked || !bottom.contains(b) || !b.dataset.k) return;
     press(b.dataset.k);
   };
   state.keyHandler = (e) => {
     if (locked) return;
-    let k = null;
+    let k: string | null = null;
     if (/^[0-9]$/.test(e.key)) k = e.key;
     else if (e.key === 'Backspace' || e.key === 'Delete') k = 'del';
     else if (e.key === 'Enter') k = 'ok';
     else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && C) {
       e.preventDefault();
-      const p = order.indexOf(active);
-      active = order[(p + (e.key === 'ArrowLeft' ? 1 : nAns - 1)) % nAns];
+      const p = order!.indexOf(active);
+      active = order![(p + (e.key === 'ArrowLeft' ? 1 : nAns - 1)) % nAns];
       paint();
       return;
     } else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && nAns > 1) {
@@ -138,7 +154,7 @@ export function runTask(task, opts, done) {
     e.preventDefault();
     press(k);
   };
-  function press(k) {
+  function press(k: string) {
     if (k === 'cancel') {
       done(null);
       return;
@@ -159,8 +175,8 @@ export function runTask(task, opts, done) {
       return;
     } else if (C) {
       values[active] = k;
-      const p = order.indexOf(active);
-      if (p < nAns - 1) active = order[p + 1];
+      const p = order!.indexOf(active);
+      if (p < nAns - 1) active = order![p + 1];
     } else if (k === 'ok') {
       if (values.some((v) => v === '')) {
         const idx = values.findIndex((v) => v === '');
@@ -252,15 +268,15 @@ const spoken = (t) =>
     .replace(/\?(?=\s*[=+−·:])/g, ' wie viel ')
     .replace(/\p{Extended_Pictographic}\uFE0F?/gu, '');
 // the task's English words and sentences (en) become pieces of their own: [text, true]; a gap is ___ in data, ____ on screen
-const gap = (t) => t.replace(/_{2,}/g, '___');
-function pieces(text, en) {
+const gap = (t: string) => t.replace(/_{2,}/g, '___');
+function pieces(text: string, en: string[]) {
   const list = [...new Set(en.map(gap))]
     .sort((a, b) => b.length - a.length)
     .map((x) => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
   const re = new RegExp(`(?<![\\p{L}'’-])(${list.join('|')})(?![\\p{L}'’-])`, 'u'),
     words = en.map(gap),
-    out: any[] = [];
-  const add = (t, isEn) => {
+    out: [text: string, isEn: boolean][] = [];
+  const add = (t: string, isEn: boolean) => {
     const last = out[out.length - 1];
     if (last && last[1] === isEn) last[0] += t;
     else out.push([t, isEn]);
@@ -275,7 +291,7 @@ function pieces(text, en) {
   return out.filter(([t]) => /[\p{L}\p{N}]/u.test(t));
 }
 // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
-export function speak(text, v = voice(), en = [], ve = enVoice()) {
+export function speak(text: string, v = voice(), en: string[] = [], ve = enVoice()) {
   if (!v) return;
   TTS.cancel();
   for (const [t, isEn] of pieces(text, en)) {
@@ -288,7 +304,7 @@ export function speak(text, v = voice(), en = [], ve = enVoice()) {
 }
 // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button).
 // grade: Turmwacht passes its run's grade, the global mode there is just the unit that asked last
-export function speakBtn(anchor, where, text, first = text, en = [], grade?) {
+export function speakBtn(anchor, where, text, first = text, en: string[] = [], grade?) {
   if (!voice()) return;
   if (anchor) {
     const b = document.createElement('button');
@@ -355,7 +371,7 @@ export function voiceGuide(open) {
   return `<details class="pguide"${open ? ' open' : ''}><summary>So klappt das Vorlesen</summary>${steps ? `<ol>${steps.map((x) => `<li>${x}</li>`).join('')}</ol>` : '<p>In den Systemeinstellungen unter Sprachausgabe eine deutsche Stimme hinzufügen, für Englisch auch eine englische.</p>'}${hint ? `<p class="pnote">${hint}</p>` : ''}</details>`;
 }
 // task.say: the question as spoken, without the letter it shows; task.quiet: its options are letters and stay unread
-function readAloud(container, bottom, task) {
+function readAloud(container: HTMLElement, bottom: HTMLElement, task) {
   onScreen = task;
   const asked = [...container.querySelectorAll<HTMLElement>('.question, .prompt, .expr, .story, .clues, .numword')].map(
     (e) => e.textContent.trim(),
@@ -374,7 +390,7 @@ function readAloud(container, bottom, task) {
 }
 
 /* ---------- Choice / order / parts tasks ---------- */
-function runChoiceTask(task, opts, done) {
+function runChoiceTask(task, opts: TaskOpts, done: TaskDone) {
   const container = opts.container,
     bottom = opts.bottom;
   const M = MODULES_OF()[task.mod] || READ_MOD;
@@ -394,8 +410,8 @@ function runChoiceTask(task, opts, done) {
       );
       return;
     }
-    const wrong = [...bottom.querySelectorAll<HTMLElement>('.opt')].filter(
-      (b) => task.options[+b.dataset.i] !== task.answer,
+    const wrong = [...bottom.querySelectorAll<HTMLButtonElement>('.opt')].filter(
+      (b) => task.options[+b.dataset.i!] !== task.answer,
     );
     const w = wrong[Math.floor(Math.random() * wrong.length)];
     if (w) {
@@ -430,7 +446,7 @@ function runChoiceTask(task, opts, done) {
     bottom.querySelectorAll<HTMLElement>('.opt').forEach((b) => {
       b.onclick = () => {
         if (locked) return;
-        const ok = task.options[+b.dataset.i] === task.answer;
+        const ok = task.options[+b.dataset.i!] === task.answer;
         b.classList.add(ok ? 'right' : 'wrong');
         if (task.svgOpts) {
           finish(ok, `${esc(task.why)}<span class="fbpic">${task.answer}</span>`);
@@ -446,7 +462,7 @@ function runChoiceTask(task, opts, done) {
     bottom.querySelectorAll<HTMLElement>('.opt').forEach((b) => {
       b.onclick = () => {
         if (locked) return;
-        const ok = task.options[+b.dataset.i] === task.answer;
+        const ok = task.options[+b.dataset.i!] === task.answer;
         b.classList.add(ok ? 'right' : 'wrong');
         if (!ok) {
           const el = container.querySelector<HTMLElement>('[data-part="' + task.part + '"]');
@@ -464,7 +480,7 @@ function runChoiceTask(task, opts, done) {
       g.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          g.onclick();
+          (g.onclick as () => void)();
         }
       };
       g.onclick = () => {
@@ -486,14 +502,14 @@ function runChoiceTask(task, opts, done) {
       c.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          c.onclick();
+          (c.onclick as () => void)();
         }
       };
       c.onclick = () => {
         if (locked) return;
         const ok = c.dataset.cell === goal;
         c.classList.add(ok ? 'hit' : 'miss');
-        if (!ok) container.querySelector<HTMLElement>(`[data-cell="${goal}"]`).classList.add('reveal');
+        if (!ok) container.querySelector<HTMLElement>(`[data-cell="${goal}"]`)!.classList.add('reveal');
         finish(ok, 'Der Schatz liegt auf dem gelben Feld.');
       };
     });
@@ -517,8 +533,8 @@ function runChoiceTask(task, opts, done) {
           paint();
         };
       }); /* tap again = take it out, the ones after it move up */
-      $('#ocheck').disabled = chosen.length !== task.order.length;
-      $('#oundo').disabled = chosen.length <= fixed;
+      $<HTMLButtonElement>('#ocheck').disabled = chosen.length !== task.order.length;
+      $<HTMLButtonElement>('#oundo').disabled = chosen.length <= fixed;
     };
     bottom.innerHTML = `<div class="row"><button class="btn secondary" id="oundo">↶ Rückgängig</button><button class="btn" id="ocheck">✓ Prüfen</button></div>`;
     $('#oundo').onclick = () => {
@@ -562,7 +578,7 @@ export const shadow = (cx, cy, rx, ry) =>
 // the glow style recolours every stroke inside a part, so inner colours and widths are set inline
 const st = (c, w) => `fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round" stroke-linejoin="round"`;
 const twin = (d, c, w) => `<path d="${d}" ${st(INK, w + 3)}/><path d="${d}" ${st(c, w)}/>`;
-const ptLeaf = (x, y, rx, ry, a) =>
+const ptLeaf = (x: number, y: number, rx: number, ry: number, a: number) =>
   `<g transform="translate(${x} ${y}) rotate(${x < 130 ? a + 180 : a}) scale(1.15)" fill="url(#pt-lf)" ${ln(2)}><path d="M${-rx} 0Q${-rx * 0.1} ${-ry * 1.5} ${rx} 0Q${-rx * 0.1} ${ry * 1.5} ${-rx} 0Z"/><path d="M${2 - rx} 0Q0 -1 ${rx - 3} 0M${-rx * 0.3} -0.5l${rx * 0.35} ${-ry * 0.55}M${-rx * 0.3} 0.5l${rx * 0.35} ${ry * 0.55}M${rx * 0.2} -0.3l${rx * 0.3} ${-ry * 0.4}M${rx * 0.2} 0.3l${rx * 0.3} ${ry * 0.4}" ${st('#2F7A32', 1.1)}/></g>`;
 const ptFlower = (x, y, r) =>
   `<g transform="translate(${x} ${y})" fill="url(#pt-fl)" ${ln(1.8)}>${[0, 72, 144, 216, 288].map((a) => `<ellipse cy="${-r * 0.55}" rx="${r * 0.5}" ry="${r * 0.62}" transform="rotate(${a})"/>`).join('')}<path d="M0 ${-r * 0.42}L${r * 0.16} -2L${r * 0.4} ${-r * 0.1}L${r * 0.2} ${r * 0.18}L${r * 0.25} ${r * 0.42}L0 ${r * 0.3}L${-r * 0.25} ${r * 0.42}L${-r * 0.2} ${r * 0.18}L${-r * 0.4} ${-r * 0.1}L${-r * 0.16} -2Z" fill="#F5C93F" ${ln(1.2)}/></g>`;
@@ -589,7 +605,7 @@ function potatoSVG(opts) {
       : '';
   const label = (id, x, y, anchor?) =>
     opts.labels && step >= PART_STEP[id]
-      ? `<text class="plabel" x="${x}" y="${y}" text-anchor="${anchor || 'start'}">${MK.PARTS.find((p) => p.id === id).name.replace(' (Frucht)', '')}</text>`
+      ? `<text class="plabel" x="${x}" y="${y}" text-anchor="${anchor || 'start'}">${MK.PARTS.find((p) => p.id === id)!.name.replace(' (Frucht)', '')}</text>`
       : '';
   return r1(`<svg class="plant ${opts.clickable ? 'clickable' : ''}" viewBox="0 0 260 300" aria-label="Kartoffelpflanze">${PT_DEFS}
       <path d="M0 152Q40 147 80 151T160 150T260 151V300H0Z" fill="url(#pt-soil)"/><path d="M0 152Q40 147 80 151T160 150T260 151V300H0Z" fill="url(#pt-cr)"/><path d="M0 152Q40 147 80 151T160 150T260 151" fill="none" ${ln(2.5)}/>
@@ -601,18 +617,20 @@ function potatoSVG(opts) {
       ${g('staengel', `${twin('M130 170Q128 120 130 60', 'url(#pt-st)', 5)}${twin('M130 120Q110 100 92 92M130 95Q152 80 168 72M130 140Q156 128 176 126M130 125Q104 118 84 120', 'url(#pt-st)', 3.6)}<path d="M128 160Q126.5 120 128.5 66" ${st('#B4E39A', 1.3)}/>`)}
       ${g(
         'blaetter',
-        `<path d="M92 92Q78 88 62 100M168 72Q184 70 196 80M176 126Q194 126 208 138M84 120Q66 120 52 134M130 66Q122 56 118 48M130 104Q138 102 146 100" ${st('#3E8E41', 2.4)}/>${[
-          [80, 88, 16, 9, -25],
-          [62, 100, 13, 8, -10],
-          [178, 66, 16, 9, 20],
-          [196, 80, 13, 8, 10],
-          [190, 124, 16, 9, 15],
-          [208, 138, 12, 7, 0],
-          [70, 122, 16, 9, -15],
-          [52, 134, 12, 7, 0],
-          [118, 48, 12, 8, -40],
-          [146, 100, 12, 7, 35],
-        ]
+        `<path d="M92 92Q78 88 62 100M168 72Q184 70 196 80M176 126Q194 126 208 138M84 120Q66 120 52 134M130 66Q122 56 118 48M130 104Q138 102 146 100" ${st('#3E8E41', 2.4)}/>${(
+          [
+            [80, 88, 16, 9, -25],
+            [62, 100, 13, 8, -10],
+            [178, 66, 16, 9, 20],
+            [196, 80, 13, 8, 10],
+            [190, 124, 16, 9, 15],
+            [208, 138, 12, 7, 0],
+            [70, 122, 16, 9, -15],
+            [52, 134, 12, 7, 0],
+            [118, 48, 12, 8, -40],
+            [146, 100, 12, 7, 35],
+          ] as Parameters<typeof ptLeaf>[]
+        )
           .map((l) => ptLeaf(...l))
           .join('')}`,
       )}

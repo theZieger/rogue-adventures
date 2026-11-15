@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert';
 import { AxeBuilder } from '@axe-core/playwright';
 import { withApp } from '../tools/browser.js';
-import { SCREENS, visit } from '../tools/screens.js';
+import { open, SCREENS, visit } from '../tools/screens.js';
 
 test('starts and runs a fight offline, and never asks another server', () =>
   withApp(async (newPage, url) => {
@@ -24,9 +24,8 @@ test('starts and runs a fight offline, and never asks another server', () =>
 test('no screen has a serious accessibility problem', () =>
   withApp(async (newPage) => {
     const problems = [];
-    for (const [name, taps] of Object.entries(SCREENS)) {
-      const page = await newPage();
-      await visit(page, taps);
+    for (const name of Object.keys(SCREENS)) {
+      const page = await open(newPage, name);
       const { violations } = await new AxeBuilder({ page }).analyze();
       for (const { id, impact, nodes } of violations) {
         if (impact !== 'serious' && impact !== 'critical') continue;

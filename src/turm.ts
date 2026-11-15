@@ -61,15 +61,50 @@ export const TW = (() => {
   // what really happened stays when the checkpoint is used: answers, practice counts, tiers, the record
   const KEEP = ['cp', 'cpUsed', 'best', 'score', 'used', 'at'];
 
+  // one kind of question: unit m, task type k
+  interface Source {
+    m: string;
+    k: string;
+  }
+  // a question answered wrong that comes back as a 🔁 monster
+  interface Again extends Source {
+    lane: number;
+    tier: number;
+    task?: any;
+  }
+  interface Monster extends Source {
+    id: number;
+    lane: number;
+    cell: number;
+    name: string;
+    shape: string;
+    type: string;
+    world: number;
+    steps: number;
+    slow: number;
+    stun: number;
+    hp: number;
+    maxHp: number;
+    acc?: string;
+    elite?: boolean;
+    boss?: boolean;
+    again?: Again;
+    // the final boss: its unit, the paths of its shields still up, HP per shield
+    final?: boolean;
+    unit?: string;
+    shields?: number[];
+    part?: number;
+  }
+
   const pick = (ctx, a) => a[Math.floor(ctx.rnd() * a.length)];
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const keyOf = (s) => s.m + ':' + s.k;
   const at = (t, lane, cell) => t.monsters.find((x) => x.lane === lane && x.cell === cell);
-  const front = (t, lane, ok = () => true) =>
+  const front = (t, lane, ok: (x: Monster) => boolean = () => true) =>
     t.monsters.filter((x) => x.lane === lane && ok(x)).sort((a, b) => a.cell - b.cell)[0];
   const usedOf = (t, i) => t.lanes[i].src.reduce((a, s) => a + (t.used[keyOf(s)] || 0), 0);
   const accOf = (t, i, ctx) => (ctx.acc ? ctx.acc(t.lanes[i]) : 0.6);
-  const order = (t, a, b) => t.lanes.map((_, i) => i).sort((x, y) => a(x) - a(y) || b(x) - b(y) || x - y);
+  const order = (t, a, b): number[] => t.lanes.map((_, i) => i).sort((x, y) => a(x) - a(y) || b(x) - b(y) || x - y);
   const weakest = (t, ctx) =>
     order(
       t,
@@ -93,7 +128,7 @@ export const TW = (() => {
     ev.push({ t: 'ziegel', n, why, total: t.ziegel });
   };
   const catchUp = (t) => {
-    const s = Object.values(t.score),
+    const s = Object.values<{ c: number; t: number }>(t.score),
       c = s.reduce((a, x) => a + x.c, 0),
       n = s.reduce((a, x) => a + x.t, 0);
     return n < CATCHUP_AFTER
@@ -101,7 +136,7 @@ export const TW = (() => {
       : Math.min(1, Math.max(0.5, 0.5 + (0.5 * (c / n - CATCHUP_HALF)) / (CATCHUP_FULL - CATCHUP_HALF)));
   };
   // the final boss only takes damage from questions of its current shield's path
-  const hittable = (lane) => (x) => !x.final || x.shields[0] === lane;
+  const hittable = (lane) => (x: Monster) => !x.final || x.shields![0] === lane;
   const protector = (t, x) =>
     t.monsters.filter((e) => e.elite && e.lane === x.lane && e.cell < x.cell).sort((a, b) => b.cell - a.cell)[0] ||
     null;
@@ -120,7 +155,7 @@ export const TW = (() => {
     const { subject, src } = subs[0],
       units = [...new Set(src.map((s) => s.m))];
     const n = Math.min(3, src.length),
-      lanes = Array.from({ length: n }, () => ({ subject, src: [] }));
+      lanes = Array.from({ length: n }, () => ({ subject, src: [] as Source[] }));
     src.forEach((s, i) => lanes[(units.length >= 3 ? units.indexOf(s.m) : i) % n].src.push(s));
     return lanes;
   }
@@ -165,7 +200,7 @@ export const TW = (() => {
       steps: 1,
       slow: 0,
       stun: 0,
-    };
+    } as Monster;
     if (sp.acc) x.acc = sp.acc;
     let hp = base * (kind === 'normal' ? sp.hp / avg : kind === 'elite' ? ELITE_HP : BOSS_HP);
     if (kind === 'elite') x.elite = true;
@@ -402,7 +437,7 @@ export const TW = (() => {
 
   function noteWrong(t, { m, k, lane, tier, task }) {
     if (t.again.length >= AGAIN_MAX || t.again.some((e) => e.m === m && e.k === k)) return false;
-    const e = { m, k, lane, tier };
+    const e: Again = { m, k, lane, tier };
     // number tasks come back with new numbers: their solution was just shown
     if (task && task.kind !== 'num' && JSON.stringify(task).length <= AGAIN_TASK_MAX) e.task = task;
     t.again.push(e);
@@ -410,7 +445,7 @@ export const TW = (() => {
   }
 
   // info: { task, tier } of the question just answered (for 🔁)
-  function answer(run, ok, ctx, info = {}) {
+  function answer(run, ok, ctx, info: { task?: any; tier?: number } = {}) {
     const t = run.turm,
       a = t.asking;
     if (t.phase !== 'task' || !a) return [];

@@ -25,9 +25,15 @@ const duelAttacks = (p) => {
   const a = duelSpec(p).attacks.filter((x) => on.includes(x.mod));
   return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k }));
 };
-export function screenDuel(players) {
+// a child choosing its unit and hero; startDuel adds hp and tiers
+interface DuelPlayer {
+  name: string;
+  mode: string | null;
+  hero: string | null;
+}
+export function screenDuel(players: DuelPlayer[]) {
   const i = players.length;
-  const p = { name: '', mode: null, hero: null };
+  const p: DuelPlayer = { name: '', mode: null, hero: null };
   state.depth = i ? 2 : 1;
   const units = visSubjects().flatMap((s) => s.modes);
   const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s) && heroShown(p.mode, s)) : []);
@@ -41,27 +47,27 @@ export function screenDuel(players) {
     app.querySelectorAll<HTMLElement>('[data-unit]').forEach((b) => {
       const on = b.dataset.unit === p.mode;
       b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', on);
+      b.setAttribute('aria-pressed', on as unknown as string); // written as "true" or "false"
     });
     $('#dheroes').innerHTML = p.mode
       ? `<h3>Dein Held</h3><div class="stack">${heroes()
           .map(
             (s) =>
-              `<button class="choice ${p.hero === s.id ? 'selected' : ''}" data-hero="${s.id}" aria-pressed="${p.hero === s.id}">${heroSVG(s, 0)}<div class="meta"><div class="name">${s.names[0]}</div><div class="desc">Attacken: ${[...new Set(s.attacks.map((a) => MODES[p.mode].modules[a.mod].name))].join(', ')}</div></div></button>`,
+              `<button class="choice ${p.hero === s.id ? 'selected' : ''}" data-hero="${s.id}" aria-pressed="${p.hero === s.id}">${heroSVG(s, 0)}<div class="meta"><div class="name">${s.names[0]}</div><div class="desc">Attacken: ${[...new Set(s.attacks.map((a) => MODES[p.mode!].modules[a.mod].name))].join(', ')}</div></div></button>`,
           )
           .join('')}</div>`
       : '';
     app.querySelectorAll<HTMLElement>('[data-hero]').forEach((b) => {
       b.onclick = () => {
-        p.hero = b.dataset.hero;
+        p.hero = b.dataset.hero!;
         paint();
       };
     });
-    $('#go').disabled = !p.hero;
+    $<HTMLButtonElement>('#go').disabled = !p.hero;
   };
   app.querySelectorAll<HTMLElement>('[data-unit]').forEach((b) => {
     b.onclick = () => {
-      p.mode = b.dataset.unit;
+      p.mode = b.dataset.unit!;
       const h = heroes();
       p.hero = h.length === 1 ? h[0].id : null;
       paint();
@@ -70,12 +76,12 @@ export function screenDuel(players) {
   $('#back').onclick = () => (i ? screenDuel([]) : screenTitle());
   $('#go').onclick = () => {
     if (!p.hero) return;
-    p.name = $('#dname').value.trim().slice(0, 12) || `Kind ${i + 1}`;
+    p.name = $<HTMLInputElement>('#dname').value.trim().slice(0, 12) || `Kind ${i + 1}`;
     if (i === 0) screenDuel([p]);
     else startDuel([players[0], p], 0);
   };
 }
-function startDuel(players, first) {
+function startDuel(players: DuelPlayer[], first: number) {
   state.run = null;
   state.duel = { p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode) })), turn: first };
   duelTurn(`${esc(state.duel.p[first].name)} fängt an.`, '');
@@ -104,7 +110,7 @@ function duelTurn(log, cls) {
   $('#bottom').innerHTML =
     `<div class="attacks">${atks.map((a, i) => `<button class="atk" data-i="${i}" aria-label="${esc(a.name)}: ${M[a.mod].name}, ${DUEL_HIT} Schaden"><span class="n">${esc(a.name)}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">💥 ${DUEL_HIT}</span></span></button>`).join('')}</div>`;
   app.querySelectorAll<HTMLElement>('.atk').forEach((btn) => {
-    btn.onclick = () => duelAttack(atks[+btn.dataset.i]);
+    btn.onclick = () => duelAttack(atks[+btn.dataset.i!]);
   });
 }
 function duelAttack(atk) {
@@ -161,19 +167,28 @@ function screenDuelEnd(w) {
   $('#home').onclick = screenTitle;
 }
 
+// one task type practised this week: unit, right and total
+interface WeekRow {
+  m: string;
+  name: string;
+  icon: string;
+  c: number;
+  t: number;
+}
 // this week for parents: practised task types, the weakest one, the goals; the text has no names in it
 export function weekReport() {
   const w = weekly();
   const goals = weeklyGoals();
   const wk = +w.week.slice(6);
-  const all = Object.entries(w.tally)
-    .map(([k, v]) => {
-      const [m, mod] = k.split(':');
-      const M = MODES[m] && MODES[m].modules[mod];
-      return M && v.t ? { m, name: M.name, icon: M.icon, c: v.c, t: v.t } : null;
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.t - a.t);
+  const all = (
+    Object.entries(w.tally)
+      .map(([k, v]) => {
+        const [m, mod] = k.split(':');
+        const M = MODES[m] && MODES[m].modules[mod];
+        return M && v.t ? { m, name: M.name, icon: M.icon, c: v.c, t: v.t } : null;
+      })
+      .filter(Boolean) as WeekRow[]
+  ).sort((a, b) => b.t - a.t);
   // Luther and Kirchenjahr share task type names
   const rows = all.map((r) =>
     Object.assign(r, {

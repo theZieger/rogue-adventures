@@ -3,7 +3,7 @@
 // hero and opponents come from the shared set K12.SETS.sachkunde, the tap-a-part pictures go into MS.PLANTS.
 import { MK as K } from './knowledge.ts';
 import { K12 as S12 } from './klasse12.ts';
-import { MS as S } from './sachkunde.ts';
+import { MS as S, type PartsPicture } from './sachkunde.ts';
 import { MJ as J } from './jahrmarkt.ts';
 export const MSK12 = (() => {
   const { shuffle, pick, rnd } = K;
@@ -243,7 +243,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Körperteil?',
     tap: 'den Körperteil',
-  };
+  } as PartsPicture;
   BODY.svg = (opts) =>
     partsSVG(
       BODY,
@@ -327,7 +327,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil des Gesichts?',
     tap: 'den Teil im Gesicht',
-  };
+  } as PartsPicture;
   FACE.svg = (opts) =>
     partsSVG(
       FACE,
@@ -1532,7 +1532,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil des Baumes?',
     tap: 'den Teil des Baumes',
-  };
+  } as PartsPicture;
   const BLOBS = [
     [130, 92, 62],
     [82, 104, 40],
@@ -1622,7 +1622,7 @@ export const MSK12 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil der Pflanze?',
     tap: 'den Teil der Pflanze',
-  };
+  } as PartsPicture;
   const trio = (x, y, rot, s) =>
     at(
       x,

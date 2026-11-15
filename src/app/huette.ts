@@ -15,7 +15,16 @@ import { modal, render, topbar } from './ui.ts';
 
 /* ---------- Werkbank ---------- */
 // the question is about the thing being built (a · b); the cost stays small and fixed, because a bed gives one crop a week
-export const RECIPES = [
+interface Recipe {
+  id: string;
+  need: Record<string, number>;
+  q: (a: number, b: number) => string;
+  // furniture only; a potion or shield takes name and text from ITEMS
+  place?: string;
+  name?: string;
+  desc?: string;
+}
+export const RECIPES: Recipe[] = [
   {
     id: 'trank',
     need: { hafer: 1, holz: 1 },
@@ -86,15 +95,15 @@ export const RECIPES = [
 const MATS = ['holz', 'stein', 'erz'].concat(Object.keys(MK.CROPS));
 const matName = (k) => (MK.CROPS[k] ? MK.CROPS[k].name : { holz: 'Holz', stein: 'Stein', erz: 'Erz' }[k]);
 const andList = (a) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' und ' + a[a.length - 1] : a[0] || '');
-const isFurn = (r) => r.id.startsWith('hut-');
-const rName = (r) => r.name || ITEMS[r.id].name;
-const missing = (r) =>
+const isFurn = (r: Recipe) => r.id.startsWith('hut-');
+const rName = (r: Recipe) => r.name || ITEMS[r.id].name;
+const missing = (r: Recipe) =>
   Object.entries(r.need)
     .filter(([k, n]) => (state.meta.materials[k] || 0) < n)
     .map(([k, n]) => `${n - (state.meta.materials[k] || 0)} ${matName(k)}`);
-const craftable = (r) =>
+const craftable = (r: Recipe) =>
   !missing(r).length && (isFurn(r) ? !state.meta.owned[r.id] : state.meta.pantry.length < PANTRY_MAX);
-export function craft(r) {
+export function craft(r: Recipe) {
   if (!craftable(r)) return false;
   for (const [k, n] of Object.entries(r.need)) state.meta.materials[k] -= n;
   if (isFurn(r)) state.meta.owned[r.id] = true;
@@ -104,7 +113,7 @@ export function craft(r) {
 }
 export function benchHtml() {
   const stock = MATS.filter((k) => state.meta.materials[k]).map((k) => `${state.meta.materials[k]} ${matName(k)}`);
-  const row = (r) => {
+  const row = (r: Recipe) => {
     const miss = missing(r);
     const prev = isFurn(r) ? furnPreview(r.id) : `<div class="rwprev" aria-hidden="true">${ITEMS[r.id].icon}</div>`;
     const action =
@@ -249,7 +258,7 @@ function hutSVG(room) {
   );
   const gaps = room === 1 ? Object.keys(FURN).filter((id) => !state.meta.owned[id]) : [];
   const label = here.length
-    ? 'Im Zimmer: ' + here.map((id) => RECIPES.find((r) => r.id === id).name).join(', ')
+    ? 'Im Zimmer: ' + here.map((id) => RECIPES.find((r) => r.id === id)!.name).join(', ')
     : 'Das Zimmer ist leer';
   return `<svg class="hutroom" viewBox="0 0 360 290" role="img" aria-label="${esc(label)}">${HUT_DEFS}
       <rect y="48" width="360" height="182" fill="url(#hu-logs)"/><rect width="360" height="48" fill="url(#hu-gab)"/>${[30, 75, 120, 240, 285, 330].map((x) => `<path d="M${x} 0V48" stroke="#4E3018" stroke-width="1.6"/>`).join('')}<path d="M180 6V48" stroke="#4E3018" stroke-width="5"/><path d="M0 48L180 4L360 48" fill="none" stroke="#4E3018" stroke-width="9" stroke-linejoin="round"/><path d="M0 44L180 1L360 44" fill="none" stroke="#B07A45" stroke-width="2"/>
@@ -262,7 +271,7 @@ function hutSVG(room) {
       ${room === 1 && state.meta.owned['hut-dachfenster'] ? ROOF : ''}${gaps
         .map((id) => {
           const [x, y, w, h] = FURN[id].box;
-          return `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="10" fill="#FFF7E6" fill-opacity=".55" stroke="#8A6A30" stroke-width="2.5" stroke-dasharray="7 6"/><text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" font-size="15" font-weight="700" fill="#6B4A22">${RECIPES.find((r) => r.id === id).place}</text>`;
+          return `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="10" fill="#FFF7E6" fill-opacity=".55" stroke="#8A6A30" stroke-width="2.5" stroke-dasharray="7 6"/><text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" font-size="15" font-weight="700" fill="#6B4A22">${RECIPES.find((r) => r.id === id)!.place}</text>`;
         })
         .join('')}${here.map((id) => FURN[id].art(n)).join('')}</svg>`;
 }
@@ -271,7 +280,7 @@ export function screenHut() {
   const two = state.meta.hut.rooms >= 2;
   const n = shelfNums();
   const built = Object.keys(FURN).filter((id) => state.meta.owned[id]);
-  const name = (id) => RECIPES.find((r) => r.id === id).name;
+  const name = (id) => RECIPES.find((r) => r.id === id)!.name;
   render(`<div class="screen">${topbar('Meine Hütte')}<div class="scroll"><div class="stack">
       ${two ? '<h3>Erstes Zimmer</h3>' : ''}${hutSVG(1)}${two ? `<h3>Zweites Zimmer</h3>${hutSVG(2)}` : ''}
       <div class="card">${built.length ? '' : '<p>Noch ist deine Hütte leer. Möbel baust du an der Werkbank im Stempelheft.</p>'}${state.meta.owned['hut-regal'] ? `<p>Im Regal: ${n.dex} im Monsterbuch, ${n.tops} Kreiselteile, ${n.notes} Notizkarten.</p>` : ''}
@@ -284,7 +293,7 @@ export function screenHut() {
   if ($('#garden')) $('#garden').onclick = screenGarden;
   app.querySelectorAll<HTMLElement>('[data-move]').forEach((b) => {
     b.onclick = () => {
-      const id = b.dataset.move;
+      const id = b.dataset.move!;
       const h = state.meta.hut;
       h.items = h.items.includes(id) ? h.items.filter((x) => x !== id) : h.items.concat(id);
       saveAll();
@@ -335,7 +344,8 @@ export function screenWardrobe(heroId?) {
   });
   app.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
     b.onclick = () => {
-      const o = OUTFITS.find((x) => x.id === b.dataset.buy);
+      // only pieces with a price have a button
+      const o = OUTFITS.find((x) => x.id === b.dataset.buy) as (typeof OUTFITS)[number] & { price: number };
       const ov = modal(
         `<h2>${o.name} holen?</h2><p>Das kostet ${o.price} Stempel. Danach hast du noch ${state.meta.stamps - o.price}.</p><div class="stack"><button class="btn" id="yes">Holen und anziehen</button><button class="btn secondary" id="no">Zurück</button></div>`,
       );
@@ -395,7 +405,7 @@ export function screenTop() {
   $('#back').onclick = screenStamps;
   app.querySelectorAll<HTMLElement>('[data-fit]').forEach((b) => {
     b.onclick = () => {
-      const [slot, id] = b.dataset.fit.split(':');
+      const [slot, id] = b.dataset.fit!.split(':');
       state.meta.top[slot] = id;
       saveAll();
       again();
@@ -403,7 +413,7 @@ export function screenTop() {
   });
   app.querySelectorAll<HTMLElement>('[data-buy]').forEach((b) => {
     b.onclick = () => {
-      const [slot, id] = b.dataset.buy.split(':');
+      const [slot, id] = b.dataset.buy!.split(':');
       const p = TOP[slot].find((x) => x.id === id);
       const ov = modal(
         `<h2>${p.name} holen?</h2><p>Das kostet ${p.price} Stempel. Danach hast du noch ${state.meta.stamps - p.price}.</p><div class="stack"><button class="btn" id="yes">Holen und einbauen</button><button class="btn secondary" id="no">Zurück</button></div>`,

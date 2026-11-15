@@ -279,7 +279,7 @@ export const MW = {
     ['trink', 'trinken', ['trinkbar', 'austrinken', 'das Trinkglas'], ['tanken', 'die Tinte']],
     ['ess', 'essen', ['essbar', 'der Esstisch', 'das Essen'], ['der Esel', 'das Ende']],
     ['mal', 'malen', ['der Maler', 'das Malbuch', 'bemalen'], ['das Mehl', 'der Mann']],
-  ],
+  ] as [stem: string, word: string, family: string[], others: string[]][],
   nachsilben: [
     ['fröhlich', 'die Fröhlichkeit', 'die Fröhlichheit', 'die Fröhlichnis'],
     ['krank', 'die Krankheit', 'die Krankkeit', 'die Kranknis'],

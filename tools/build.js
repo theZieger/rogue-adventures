@@ -10,6 +10,21 @@ const ROOT = path.join(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const DOCS = path.join(ROOT, 'docs');
 
+// Later files win over earlier ones where two rules are equally specific, so the order is part of the design.
+const STYLES = [
+  'tokens',
+  'base',
+  'title-map',
+  'battle',
+  'task',
+  'small-screens',
+  'title-extras',
+  'motion',
+  'parents',
+  'units',
+  'kreisel',
+  'turmwacht',
+];
 const GROUPS = ['Neu', 'Verbessert', 'Behoben'];
 
 const read = (...parts) => fs.readFileSync(path.join(...parts), 'utf8');
@@ -29,9 +44,9 @@ function bakedMonsters() {
   return baked;
 }
 
-function bundle() {
+function bundle(entry) {
   const { outputFiles } = esbuild.buildSync({
-    entryPoints: [path.join(SRC, 'main.ts')],
+    entryPoints: [path.join(SRC, entry)],
     bundle: true,
     format: 'iife',
     minifyWhitespace: true,
@@ -141,7 +156,7 @@ ${splashTags()}
 <link rel="preload" href="fonts/andika-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/patrickhand-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-${read(SRC, 'style.css')}
+${styles}
 </style>
 </head>
 <body>
@@ -151,7 +166,7 @@ globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
 globalThis.CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
 </script>
 <script>
-${bundle()}</script>
+${bundle('main.ts')}</script>
 <script>
 ${REGISTER_SERVICE_WORKER}
 </script>
@@ -178,6 +193,32 @@ function write(name, text) {
   return `docs/${name}`;
 }
 
+const styles = STYLES.map((name) => read(SRC, 'styles', `${name}.css`)).join('');
+
+// The design system page: the game's styles and modules, but the gallery instead of the game.
+function gallery() {
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lernquest Design</title>
+<style>
+${styles}${read(SRC, 'styles', 'gallery.css')}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
+</script>
+<script>
+${bundle('gallery.ts')}</script>
+</body>
+</html>
+`;
+}
+
 const html = page();
 const manifest = read(SRC, 'manifest.webmanifest');
 const serviceWorker = read(SRC, 'sw.js');
@@ -187,4 +228,5 @@ console.log(
   `built ${write('index.html', html.replaceAll('__BUILD__', id))} (${Buffer.byteLength(html).toLocaleString('en')} bytes)`,
 );
 write('manifest.webmanifest', manifest);
+write('gallery.html', gallery());
 console.log(`built ${write('sw.js', serviceWorker.replaceAll('__VERSION__', id))} (version ${id})`);

@@ -1,0 +1,302 @@
+/* Attack tags */
+.atk .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 22px;
+}
+.atk .tag {
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0 8px;
+  line-height: 20px;
+}
+.atk .tag.tired {
+  background: var(--cream-110);
+  color: var(--orange-700);
+}
+.atk .tag.power {
+  background: var(--cream-120);
+  color: var(--gold-810);
+}
+.atk.weak {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 3px var(--gold),
+    var(--shadow);
+}
+.atk .tag.weak {
+  background: var(--gold);
+  color: var(--ink);
+}
+.atk.tired {
+  background: var(--card2);
+}
+.hintline {
+  margin: 6px 0;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--cream-120);
+  color: var(--gold-800);
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+}
+.opt.struck {
+  text-decoration: line-through;
+  opacity: 0.45;
+}
+.items {
+  flex-direction: column;
+}
+.item {
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  gap: 0;
+}
+.item .count {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0 8px;
+  margin-left: 4px;
+  font-size: 14px;
+}
+.item small {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+/* "Was ist neu?" */
+.newbadge {
+  display: inline-block;
+  background: var(--orange);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 22px;
+  vertical-align: middle;
+}
+.card.news h3 {
+  margin-bottom: 4px;
+}
+.card.news h4 {
+  margin: 10px 0 2px;
+  font-family: var(--hand);
+  font-weight: 400;
+  font-size: 21px;
+}
+.card.news ul {
+  margin: 0;
+  padding-left: 22px;
+}
+.card.news li {
+  margin: 3px 0;
+  line-height: 1.35;
+}
+.ohelp {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* ---------- Title: grade & subject, sound toggle ---------- */
+.soundbtn {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  right: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 21px;
+  cursor: pointer;
+  z-index: 2;
+}
+.grades {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.gradechip {
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: var(--paper-ink);
+  border-radius: 999px;
+  padding: 4px 16px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  min-height: 44px;
+  cursor: pointer;
+}
+.gradechip.on {
+  background: var(--gold);
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.subjects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.subjtile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  min-height: 140px;
+}
+.subjicon {
+  font-size: 44px;
+  line-height: 1.1;
+}
+.subjname {
+  font-family: var(--hand);
+  font-size: 26px;
+}
+.subjtile .desc {
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+.eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 2px;
+}
+.screen {
+  position: relative;
+}
+.modecard .row .btn.small {
+  min-width: 0;
+}
+
+/* ---------- Starter: recommendation and practice swap ---------- */
+.recbadge {
+  display: inline-block;
+  background: var(--cream-120);
+  color: var(--gold-810);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.choice.swap {
+  border-style: dashed;
+}
+.choice.swap .tick {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  border: 3px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--green);
+  background: var(--white);
+}
+
+/* ---------- Toggles (Elternbereich, Feedback) ---------- */
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.toggle {
+  border: 3px solid var(--ink-soft);
+  background: var(--white);
+  color: var(--ink-soft);
+  border-radius: 14px;
+  padding: 6px 12px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.toggle.on {
+  border-color: var(--green);
+  background: var(--green-50);
+  color: var(--green-760);
+}
+textarea#fbtext {
+  width: 100%;
+  margin-top: 10px;
+  border: 3px solid var(--ink-soft);
+  border-radius: 14px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--ink);
+  background: var(--white);
+  resize: vertical;
+}
+textarea#fbtext:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(63, 160, 255, 0.3);
+}
+
+/* ---------- Look ---------- */
+body {
+  background-image:
+    radial-gradient(900px 520px at 50% -12%, rgba(63, 160, 255, 0.14), transparent 65%),
+    radial-gradient(700px 480px at 110% 110%, rgba(255, 201, 60, 0.07), transparent 60%);
+  background-attachment: fixed;
+}
+.btn,
+.choice,
+.atk,
+.opt,
+.oitem,
+.node,
+.item,
+.toggle,
+.gradechip,
+.subjtile {
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.15s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+@media (hover: hover) {
+  .btn:not(:disabled):hover,
+  .choice:hover,
+  .atk:hover,
+  .opt:not(:disabled):hover,
+  .oitem:hover,
+  .item:hover,
+  .toggle:hover,
+  .gradechip:hover,
+  .subjtile:hover {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+  }
+}
+:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}

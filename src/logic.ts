@@ -1,3 +1,4 @@
+import type { Unit } from './curriculum.ts';
 export const MQ = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -140,6 +141,11 @@ export const MQ = (() => {
   function digits(n) {
     return { h: Math.floor(n / 100) % 10, z: Math.floor(n / 10) % 10, e: n % 10 };
   }
+  type Digits = ReturnType<typeof digits>;
+  interface Clue {
+    text: string;
+    test: (x: Digits) => boolean;
+  }
   const CLUE_TYPES_2 = [
     (d) =>
       d.z > 0 && d.e % d.z === 0 && d.e / d.z >= 2
@@ -225,7 +231,7 @@ export const MQ = (() => {
     for (let attempt = 0; attempt < 300; attempt++) {
       const n = rnd(lo, hi);
       const d = digits(n);
-      let clues = types.map((f) => f(d)).filter(Boolean);
+      let clues = types.map((f) => f(d)).filter(Boolean) as Clue[];
       if (t === 1) clues = clues.filter((c) => !c.text.startsWith('Ich bin'));
       clues = shuffle(clues);
       let rel = clues.filter(isRel);
@@ -718,7 +724,7 @@ export const MQ = (() => {
       });
     }
     // four numbers with the same digits or the same hundreds, so every place has to be compared
-    const nums = new Set();
+    const nums = new Set<number>();
     const h = Math.floor(n / 100);
     while (nums.size < 4) nums.add(Math.random() < 0.5 ? +shuffle(String(n).split('')).join('') : h * 100 + rnd(0, 99));
     const list = [...nums].filter((x) => x >= 100);
@@ -1737,7 +1743,8 @@ export const MQ = (() => {
     const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     const y = d.getUTCFullYear();
-    const w = Math.ceil(((d - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
+    // a Date in a subtraction is its timestamp
+    const w = Math.ceil((((d as unknown as number) - Date.UTC(y, 0, 1)) / 864e5 + 1) / 7);
     return y + '-W' + String(w).padStart(2, '0');
   }
   // school year on the stamp card: ISO week 36 to week 30 of the next year; in the summer gap the year that just ended
@@ -1774,8 +1781,8 @@ export const MQ = (() => {
   const LANES = 4,
     FLOORS = 8;
   function makeMap(F = FLOORS) {
-    const used = Array.from({ length: F - 1 }, () => new Set());
-    const edges = Array.from({ length: F - 1 }, () => Array.from({ length: LANES }, () => new Set()));
+    const used = Array.from({ length: F - 1 }, () => new Set<number>());
+    const edges = Array.from({ length: F - 1 }, () => Array.from({ length: LANES }, () => new Set<number>()));
     const crosses = (f, c, n) => {
       for (let c2 = 0; c2 < LANES; c2++) {
         if (c2 === c) continue;
@@ -1800,7 +1807,7 @@ export const MQ = (() => {
       }
     }
     const lanes = used.map((s) => [...s].sort((a, b) => a - b));
-    const type = lanes.map(() => ({}));
+    const type = lanes.map((): Record<number, string> => ({}));
     const parents = (f, c) => (f === 0 ? [] : lanes[f - 1].filter((p) => edges[f - 1][p].has(c)));
     const children = (f, c) => (f >= F - 2 ? [] : [...edges[f][c]]);
     for (const c of lanes[0]) type[0][c] = 'fight';
@@ -1878,26 +1885,28 @@ export const MQ = (() => {
     const X = x + dx,
       Y = y + dy,
       Z = z + dz;
-    return [
+    return (
       [
-        [x, y, Z],
-        [X, y, Z],
-        [X, Y, Z],
-        [x, Y, Z],
-      ],
-      [
-        [x, Y, z],
-        [X, Y, z],
-        [X, Y, Z],
-        [x, Y, Z],
-      ],
-      [
-        [X, y, z],
-        [X, Y, z],
-        [X, Y, Z],
-        [X, y, Z],
-      ],
-    ]
+        [
+          [x, y, Z],
+          [X, y, Z],
+          [X, Y, Z],
+          [x, Y, Z],
+        ],
+        [
+          [x, Y, z],
+          [X, Y, z],
+          [X, Y, Z],
+          [x, Y, Z],
+        ],
+        [
+          [X, y, z],
+          [X, Y, z],
+          [X, Y, Z],
+          [X, y, Z],
+        ],
+      ] as [x: number, y: number, z: number][][]
+    )
       .map(
         (f, i) =>
           `<polygon points="${f.map((p) => iso(...p)).join(' ')}" fill="${fills ? fills[i] : 'none'}" ${attrs || LINE}/>`,
@@ -2154,13 +2163,18 @@ export const MQ = (() => {
   // Fold the squares around the first one like rolling a die: n is where the square ends up on the cube,
   // u and v are the grid's right and down directions on it. A net uses each of the 6 sides exactly once.
   // fn(cell, frame, parent cell) is called in the order the squares are reached
+  interface Frame {
+    n: number[];
+    u: number[];
+    v: number[];
+  }
   function fold(cells, fn?) {
-    const key = ([r, c]) => r + ',' + c,
+    const key = ([r, c]: number[]) => r + ',' + c,
       has = new Set(cells.map(key)),
       neg = (a) => a.map((x) => -x);
     const frames = new Map([[key(cells[0]), { n: [0, 0, -1], u: [1, 0, 0], v: [0, 1, 0] }]]);
     const queue = [cells[0]];
-    const roll = [
+    const roll: [dr: number, dc: number, turn: (f: Frame) => Frame][] = [
       [0, 1, (f) => ({ n: f.u, u: neg(f.n), v: f.v })],
       [0, -1, (f) => ({ n: neg(f.u), u: f.n, v: f.v })],
       [1, 0, (f) => ({ n: f.v, u: f.u, v: neg(f.n) })],
@@ -2174,7 +2188,7 @@ export const MQ = (() => {
         const p = [r + dr, c + dc],
           k = key(p);
         if (has.has(k) && !frames.has(k)) {
-          frames.set(k, g(f));
+          frames.set(k, g(f!));
           queue.push(p);
           if (fn) fn(p, frames.get(k), [r, c]);
         }
@@ -2188,7 +2202,7 @@ export const MQ = (() => {
     return frames.size === 6 && new Set([...frames.values()].map((f) => f.n.join())).size === 6;
   }
   const connected = (cells) => {
-    const key = ([r, c]) => r + ',' + c,
+    const key = ([r, c]: number[]) => r + ',' + c,
       at = new Set(cells.map(key)),
       seen = new Set([key(cells[0])]),
       q = [cells[0]];
@@ -2517,7 +2531,7 @@ export const MQ = (() => {
     const a = pick([0, 30, 45, 60, 90, 120, 135, 150]);
     const b = a + (kind === 'parallel' ? 0 : kind === 'senkrecht' ? 90 : pick([30, 45, 60, 120, 135, 150]));
     const dir = (deg) => [Math.cos((deg * Math.PI) / 180), -Math.sin((deg * Math.PI) / 180)];
-    const seg = ([cx, cy], deg, col) => {
+    const seg = ([cx, cy]: number[], deg, col) => {
       const [dx, dy] = dir(deg);
       const f = (v) => Math.round(v * 10) / 10;
       return `<line x1="${f(cx - dx * 30)}" y1="${f(cy - dy * 30)}" x2="${f(cx + dx * 30)}" y2="${f(cy + dy * 30)}" stroke="${col}" stroke-width="4" stroke-linecap="round"/>`;
@@ -2573,7 +2587,7 @@ export const MQ = (() => {
     const seen = new Set(['-1,-1']);
     const q = [[-1, -1]];
     while (q.length) {
-      const [r, c] = q.pop();
+      const [r, c] = q.pop()!;
       for (const p of [
         [r + 1, c],
         [r - 1, c],
@@ -2854,7 +2868,7 @@ export const MQ = (() => {
   ];
   // names that are true for a shape (a square is also a rectangle and a parallelogram)
   const TRUE_FOR = { Quadrat: ['Quadrat', 'Rechteck', 'Parallelogramm'], Rechteck: ['Rechteck', 'Parallelogramm'] };
-  const cross = ([ax, ay], [bx, by]) => ax * by - ay * bx,
+  const cross = ([ax, ay]: number[], [bx, by]: number[]) => ax * by - ay * bx,
     vec = (p, q) => [q[0] - p[0], q[1] - p[1]];
   const sides = (pts) => pts.map((p, i) => vec(p, pts[(i + 1) % pts.length]));
   const convexOk = (pts) => {
@@ -2913,7 +2927,11 @@ export const MQ = (() => {
           [5, rnd(2, 4)],
           [0, rnd(3, 4)],
         ];
-      while (!convexOk(pts) || rightAngles(pts) || Math.abs(cross(...sides(pts).slice(0, 2))) < 8);
+      while (
+        !convexOk(pts) ||
+        rightAngles(pts) ||
+        Math.abs(cross(...(sides(pts).slice(0, 2) as [number[], number[]]))) < 8
+      );
     else
       do
         pts = [
@@ -3342,7 +3360,8 @@ export const MQ = (() => {
     ],
   };
 
-  BAU.MODE = {
+  // the unit is built from the parts above, so it joins BAU afterwards
+  (BAU as typeof BAU & { MODE: Unit }).MODE = {
     modules: BAU.MODULES,
     starters: BAU.STARTERS,
     extra: BAU.EXTRA,

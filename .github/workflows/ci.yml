@@ -13,6 +13,7 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npx biome ci .
+      - run: npx stylelint "src/styles/*.css"
       - run: npm run typecheck
       - run: npm run build
       # svgo runs only on monsters whose hash in art/monsters/manifest.json changed, so art/ is committed.

@@ -1,0 +1,237 @@
+/* Screen-reader-only text */
+.sr-only:focus-visible + label {
+  outline: 4px solid var(--focus);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.choice[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Task open in battle: arena collapses to one row so the task stays above the keypad */
+.screen.tasking .arena {
+  flex: none;
+  grid-template-columns: 48px 1fr 48px 1fr;
+  grid-template-rows: auto;
+  grid-template-areas: "hsprite hplate esprite eplate";
+  gap: 6px;
+  padding: 4px 14px 2px;
+  align-items: center;
+}
+.screen.tasking .plate {
+  padding: 3px 8px;
+  gap: 1px;
+  border-width: 2px;
+  box-shadow: none;
+}
+.screen.tasking .plate.enemy {
+  align-self: center;
+}
+.screen.tasking .plate .name {
+  font-size: 15px;
+}
+.screen.tasking .plate .hptext,
+.screen.tasking .plateline,
+.screen.tasking .plate .xpbar,
+.screen.tasking .log,
+.screen.tasking .sprite .ground {
+  display: none;
+}
+.screen.tasking .plate .hpbar {
+  height: 10px;
+}
+.screen.tasking .sprite .mon {
+  width: 48px;
+  height: 48px;
+}
+
+/* Short screens (small phones, phones held sideways): tighter keypad and task card */
+@media (max-height: 720px) {
+  .atk {
+    min-height: 76px;
+    padding: 6px 10px;
+  }
+  .atk .n {
+    font-size: 20px;
+  }
+  .atk .m {
+    font-size: 13px;
+  }
+  .atk .tags {
+    min-height: 0;
+  }
+  .sprite.hero .mon {
+    width: 104px;
+    height: 104px;
+  }
+  .sprite.enemy .mon {
+    width: 88px;
+    height: 88px;
+  }
+  .log {
+    min-height: 40px;
+    font-size: 20px;
+    padding: 6px 12px;
+    margin: 4px 14px 6px;
+  }
+  .numpad {
+    gap: 6px;
+  }
+  .numpad button {
+    min-height: 48px;
+    font-size: 24px;
+  }
+  .task {
+    padding: 10px 14px;
+  }
+  .task .expr {
+    font-size: 34px;
+    margin: 4px 0 2px;
+  }
+  .task .seq {
+    font-size: 28px;
+    margin: 4px 0 2px;
+  }
+  .inp {
+    height: 54px;
+    font-size: 30px;
+  }
+  .inputs {
+    margin: 6px 0 2px;
+  }
+  .taskwrap {
+    padding: 6px 12px;
+  }
+}
+@media (max-height: 600px) {
+  .numpad button {
+    min-height: 42px;
+    font-size: 22px;
+  }
+  .bottom {
+    padding: 6px 10px;
+    padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .sprite.hero .mon {
+    width: 96px;
+    height: 96px;
+  }
+  .sprite.enemy .mon {
+    width: 84px;
+    height: 84px;
+  }
+  .atk {
+    min-height: 70px;
+    padding: 6px 10px;
+  }
+  .log {
+    min-height: 36px;
+    font-size: 19px;
+    padding: 5px 10px;
+  }
+}
+/* Phone held sideways: arena as one row, task and keypad side by side */
+@media (max-height: 500px) and (orientation: landscape) {
+  .screen > .arena {
+    flex: none;
+    grid-template-columns: 48px 1fr 48px 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: "hsprite hplate esprite eplate";
+    gap: 8px;
+    padding: 4px 14px 0;
+    align-items: center;
+  }
+  .sprite .mon {
+    width: 48px;
+    height: 48px;
+  }
+  .sprite .ground {
+    display: none;
+  }
+  .plate {
+    padding: 3px 8px;
+    gap: 1px;
+  }
+  .plate .name {
+    font-size: 16px;
+  }
+  .plateline,
+  .plate .xpbar {
+    display: none;
+  }
+  .plate .hpbar {
+    height: 10px;
+  }
+  .plate .hptext {
+    font-size: 12px;
+  }
+  .log {
+    min-height: 32px;
+    font-size: 18px;
+    padding: 4px 10px;
+    margin: 4px 14px;
+  }
+  .attacks {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .atk {
+    min-height: 54px;
+    padding: 4px 8px;
+  }
+  .atk .n {
+    font-size: 18px;
+  }
+  .atk .m {
+    font-size: 12px;
+  }
+  .atk .tags {
+    min-height: 0;
+  }
+  .bottom {
+    padding-top: 6px;
+  }
+  .bottom .row .muted {
+    display: none;
+  }
+  .bottom .row {
+    margin-top: 6px !important;
+  }
+  .screen.tasking {
+    display: grid;
+    grid-template-columns: 1fr minmax(240px, 38%);
+    grid-template-rows: auto auto 1fr;
+  }
+  .screen.tasking > .topbar,
+  .screen.tasking .arena {
+    grid-column: 1 / -1;
+  }
+  .screen.tasking .taskwrap {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  .screen.tasking .bottom {
+    grid-column: 2;
+    grid-row: 3;
+    border-top: 0;
+    border-left: 3px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+  }
+  .screen.tasking .numpad button {
+    min-height: 40px;
+  }
+}

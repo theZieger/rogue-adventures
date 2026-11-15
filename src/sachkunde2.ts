@@ -1,7 +1,8 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen LB 2 und LB 5): Die fünf Sinne, Sicher im Verkehr.
 // Uses the picture and task helpers of sachkunde.ts and registers its units in MK.MODES.
 import { MK as K } from './knowledge.ts';
-import { MS as S } from './sachkunde.ts';
+import type { Unit } from './curriculum.ts';
+import { MS as S, type PartsPicture } from './sachkunde.ts';
 export const MS2 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, PLANTS } = S;
@@ -66,7 +67,7 @@ export const MS2 = (() => {
     ],
     ask: () => 'Wie heißt der leuchtende Teil des Auges?',
     find: (p) => `Tippe auf: ${p.name}`,
-  };
+  } as PartsPicture;
   // points on the edges of the eye opening: quadratic curves from 60|110 over 150|cy to 240|110 (cy 44 above, 170 below)
   const lidAt = (t, cy) => [
     (1 - t) ** 2 * 60 + 2 * t * (1 - t) * 150 + t * t * 240,
@@ -205,7 +206,7 @@ export const MS2 = (() => {
     ],
     ask: () => 'Wie heißt der leuchtende Teil des Ohrs?',
     find: (p) => `Tippe auf: ${p.name}`,
-  };
+  } as PartsPicture;
   // the cochlea: two turns spiralling in from the oval window (left) to its tip
   const COCHLEA = Array.from({ length: 49 }, (_, i) => {
     const a = Math.PI + (i * Math.PI) / 12,
@@ -1061,7 +1062,7 @@ export const MS2 = (() => {
   }
   // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung; nie eine Wahl, bei der das Kind eine Droge nimmt
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
-  const SI = {
+  const SI: Unit = {
     modules: SI_MODULES,
     tut: SI_TUT,
     notes: SI_NOTES,
@@ -1728,7 +1729,7 @@ export const MS2 = (() => {
     ],
     ask: () => 'Wie heißt der leuchtende Teil am Fahrrad?',
     find: (p) => `Tippe auf: ${p.name}`,
-  };
+  } as PartsPicture;
   BIKEP.svg = (opts) =>
     partsSVG(
       BIKEP,
@@ -2439,7 +2440,7 @@ export const MS2 = (() => {
       return null;
     };
   }
-  const VE = {
+  const VE: Unit = {
     modules: VE_MODULES,
     tut: VE_TUT,
     notes: VE_NOTES,

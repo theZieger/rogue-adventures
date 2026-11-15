@@ -21,16 +21,16 @@ export function screenFeedback(back) {
   let sending = false;
   app.querySelectorAll<HTMLElement>('[data-kind]').forEach((b) => {
     b.onclick = () => {
-      kind = b.dataset.kind;
+      kind = b.dataset.kind!;
       app.querySelectorAll<HTMLElement>('[data-kind]').forEach((x) => {
         x.classList.toggle('on', x === b);
-        x.setAttribute('aria-pressed', x === b);
+        x.setAttribute('aria-pressed', (x === b) as unknown as string); // the attribute becomes "true" or "false"
       });
     };
   });
-  const text = () => $('#fbtext').value.trim();
+  const text = () => $<HTMLTextAreaElement>('#fbtext').value.trim();
   const body = () =>
-    `${kind}: ${text()}\n\n(Lernquest, Version ${(document.querySelector<HTMLElement>('meta[name=app-version]') || {}).content || '?'})`;
+    `${kind}: ${text()}\n\n(Lernquest, Version ${(document.querySelector<HTMLMetaElement>('meta[name=app-version]') || ({} as Partial<HTMLMetaElement>)).content || '?'})`;
   const formLink = () => `${FEEDBACK.form}/viewform?usp=pp_url&${FEEDBACK.entry}=${encodeURIComponent(body())}`;
   $('#back').onclick = () => back();
   $('#fbsend').onclick = async () => {
@@ -41,7 +41,7 @@ export function screenFeedback(back) {
       return;
     }
     sending = true;
-    $('#fbsend').disabled = true;
+    $<HTMLButtonElement>('#fbsend').disabled = true;
     $('#fbsend').textContent = 'Wird gesendet …';
     try {
       if (navigator.onLine === false) throw new Error('offline');
@@ -57,7 +57,7 @@ export function screenFeedback(back) {
       $('#back').onclick = () => back();
     } catch (e) {
       sending = false;
-      $('#fbsend').disabled = false;
+      $<HTMLButtonElement>('#fbsend').disabled = false;
       $('#fbsend').textContent = 'Nochmal versuchen';
       $('#fbmsg').innerHTML =
         `Das hat nicht geklappt – bist du mit dem Internet verbunden? Dein Text bleibt hier stehen. <a href="${esc(formLink())}" target="_blank" rel="noopener">Oder im Formular senden ↗</a>`;

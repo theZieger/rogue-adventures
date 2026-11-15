@@ -2,6 +2,7 @@
 // (fewer drawings; the owner's choice). A shared opponent counts once in the Monsterbuch. A unit gives the hero its own
 // four attacks: K12.unit(<fach>, attacks, { everything else of the unit }).
 // Hero ids and opponent names are stored in saves: never rename them once released.
+import type { Unit } from './curriculum.ts';
 export const K12 = (() => {
   const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
   const SETS = {
@@ -146,7 +147,7 @@ export const K12 = (() => {
       ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß'],
     ),
   };
-  const unit = (fach, attacks, o) =>
+  const unit = (fach, attacks, o): Unit =>
     Object.assign(
       {
         worlds: 1,

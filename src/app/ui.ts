@@ -61,7 +61,7 @@ function goBack() {
     return b ? b.click() : ov.remove();
   }
   if (state.backTo) return state.backTo();
-  const b = $('#pback') || $('#back');
+  const b = $<HTMLButtonElement>('#pback') || $<HTMLButtonElement>('#back');
   if (b && !b.disabled) b.click();
 }
 try {
@@ -86,6 +86,12 @@ window.addEventListener('popstate', () => {
 
 /* ---------- Sounds ---------- */
 // phones stay silent until a user gesture, so the first tap unlocks the context
+declare global {
+  interface Window {
+    webkitAudioContext?: typeof AudioContext; // Safari before 14.1
+    __sfx: typeof SFX; // for the tests
+  }
+}
 export const SFX = (() => {
   const FILES = {
     tap: 0.45,
@@ -101,16 +107,16 @@ export const SFX = (() => {
     lose: 0.9,
   };
   const AC = window.AudioContext || window.webkitAudioContext;
-  let ctx = null,
+  let ctx: AudioContext | null = null,
     loading = false;
-  const buffers = {};
+  const buffers: Record<string, AudioBuffer> = {};
   function load() {
     loading = true;
     if (typeof fetch !== 'function') return;
     for (const k of Object.keys(FILES))
       fetch('sounds/' + k + '.mp3')
         .then((r) => r.arrayBuffer())
-        .then((ab) => ctx.decodeAudioData(ab))
+        .then((ab) => ctx!.decodeAudioData(ab))
         .then((buf) => {
           buffers[k] = buf;
         })
@@ -140,7 +146,7 @@ export const SFX = (() => {
       src.start();
     } catch (e) {}
   }
-  const api: { unlock: typeof ensure; loaded: () => number; [sound: string]: () => unknown } = {
+  const api: { unlock: typeof ensure; loaded: () => number; [sound: string]: (arg?: number) => unknown } = {
     unlock: ensure,
     loaded: () => Object.keys(buffers).length,
   };
@@ -224,7 +230,7 @@ export const SFX = (() => {
 document.addEventListener(
   'click',
   (e) => {
-    if (e.target.closest && e.target.closest<HTMLElement>('button')) SFX.tap();
+    if ((e.target as Element).closest && (e.target as Element).closest<HTMLElement>('button')) SFX.tap();
   },
   true,
 );
@@ -268,9 +274,9 @@ export function modal(html) {
   const heading = $('h2, h3', ov);
   if (heading) {
     heading.id = `modal-title-${++modals}`;
-    ov.firstElementChild.setAttribute('aria-labelledby', heading.id);
-  } else ov.firstElementChild.setAttribute('aria-label', 'Hinweis');
-  const behind = [...app.children];
+    ov.firstElementChild!.setAttribute('aria-labelledby', heading.id);
+  } else ov.firstElementChild!.setAttribute('aria-label', 'Hinweis');
+  const behind = [...app.children] as HTMLElement[];
   behind.forEach((el) => {
     el.inert = true;
   });

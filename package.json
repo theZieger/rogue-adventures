@@ -12,7 +12,7 @@
     "screenshots": "node tools/screenshots.js",
     "svg": "node tools/svg.js",
     "format": "biome format --write .",
-    "lint": "biome lint .",
+    "lint": "biome lint . && stylelint \"src/styles/*.css\"",
     "typecheck": "tsc"
   },
   "engines": {
@@ -24,6 +24,7 @@
     "esbuild": "0.28.2",
     "jsdom": "^26.0.0",
     "playwright": "1.63.0",
+    "stylelint": "18.0.0",
     "svgo": "^4.1.0",
     "typescript": "7.0.2"
   },

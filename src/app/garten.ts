@@ -10,7 +10,7 @@ import { SFX, modal, render, topbar } from './ui.ts';
 /* ---------- Schulgarten ---------- */
 const DAY = 864e5;
 // tests set window.__mq.now; a clock set back or forward only changes what grows, nothing is lost
-const clock = () => (Number.isFinite(window.__mq && window.__mq.now) ? window.__mq.now : Date.now());
+const clock = () => (Number.isFinite(window.__mq && window.__mq.now) ? window.__mq.now! : Date.now());
 const bedDays = (b) => Math.max(0, Math.floor((clock() - b.plantedAt) / DAY));
 const bedPhase = (b) => {
   const d = bedDays(b);
@@ -22,7 +22,7 @@ const ripeBeds = () => state.meta.garden.beds.filter((b, i) => b.crop && bedOpen
 export function gardenCard() {
   const r = ripeBeds();
   if (!r.length) return '';
-  const crops = [...new Set(r.map((b) => b.crop))];
+  const crops = [...new Set(r.map((b) => b.crop!))];
   return `<div class="card gardencard"><p>${crops.length === 1 ? MK.CROPS[crops[0]].ripe : 'Im Schulgarten ist etwas reif.'}</p><button class="btn small" id="harvest">Ernten</button></div>`;
 }
 const PG_DEFS = `<defs>${lg('pg-soil', '#9A6640', '#6B4226')}${lg('pg-bd', '#C68B55', '#8A5530')}${lg('pg-lv', '#8DD16A', '#3E9640')}${lg('pg-dry', '#E6CE70', '#A8892E')}${rg('pg-tb', '#F3D48E', '#B88843')}</defs>`;
@@ -145,10 +145,10 @@ export function screenGarden() {
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
   $('#back').onclick = screenTitle;
   app.querySelectorAll<HTMLElement>('[data-plant]').forEach((el) => {
-    el.onclick = () => plantDialog(+el.dataset.plant);
+    el.onclick = () => plantDialog(+el.dataset.plant!);
   });
   app.querySelectorAll<HTMLElement>('[data-harvest]').forEach((el) => {
-    el.onclick = () => harvest(+el.dataset.harvest);
+    el.onclick = () => harvest(+el.dataset.harvest!);
   });
 }
 function plantDialog(i) {
@@ -163,7 +163,7 @@ function plantDialog(i) {
   $('#no', ov).onclick = () => ov.remove();
   ov.querySelectorAll<HTMLElement>('[data-crop]').forEach((el) => {
     el.onclick = () => {
-      state.meta.garden.beds[i] = { crop: el.dataset.crop, plantedAt: clock() };
+      state.meta.garden.beds[i] = { crop: el.dataset.crop!, plantedAt: clock() };
       markWeek();
       saveAll();
       screenGarden();
@@ -180,11 +180,11 @@ function harvest(i) {
   );
   ov.querySelectorAll<HTMLElement>('.opt').forEach((el) => {
     el.onclick = () => {
-      const ok = t.options[+el.dataset.i] === t.answer;
+      const ok = t.options[+el.dataset.i!] === t.answer;
       const first = !state.meta.owned['outfit-aehrenkranz'];
       // the harvest pays either way: the question is for learning, not a gate
       state.meta.garden.beds[i] = { crop: null, plantedAt: 0 };
-      state.meta.materials[b.crop] = (state.meta.materials[b.crop] || 0) + 1;
+      state.meta.materials[b.crop!] = (state.meta.materials[b.crop!] || 0) + 1;
       giveStamps(4);
       state.meta.owned['outfit-aehrenkranz'] = true;
       state.meta.progressAt = new Date().toISOString();
@@ -192,9 +192,9 @@ function harvest(i) {
       saveAll();
       if (ok) SFX.right();
       else SFX.wrong();
-      ov.querySelectorAll<HTMLElement>('.opt').forEach((o) => {
+      ov.querySelectorAll<HTMLButtonElement>('.opt').forEach((o) => {
         o.disabled = true;
-        if (t.options[+o.dataset.i] === t.answer) o.classList.add('right');
+        if (t.options[+o.dataset.i!] === t.answer) o.classList.add('right');
         else if (o === el) o.classList.add('wrong');
       });
       $('#hfb', ov).innerHTML =

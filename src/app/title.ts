@@ -19,6 +19,11 @@ import { SFX, modal, render, topbar } from './ui.ts';
 const GEAR =
   '<svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.4 3.35"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="3.2"/></svg>';
 // Safari (and every browser on iOS) deletes site data after 7 days without a visit, unless the app is on the home screen
+declare global {
+  interface Navigator {
+    standalone?: boolean; // iOS only: opened from the home screen
+  }
+}
 const evictable = () => {
   const ua = navigator.userAgent;
   return (
@@ -83,7 +88,7 @@ export function screenTitle() {
     };
   }
   app.querySelectorAll<HTMLElement>('[data-sub]').forEach((b) => {
-    b.onclick = () => screenSubject(visSubjects()[+b.dataset.sub]);
+    b.onclick = () => screenSubject(visSubjects()[+b.dataset.sub!]);
   });
   $('#dex').onclick = screenDex;
   $('#stamps').onclick = $('#stampsTop').onclick = () => screenStamps();
@@ -109,7 +114,7 @@ export function screenTitle() {
   };
   app.querySelectorAll<HTMLElement>('[data-grade]').forEach((b) => {
     b.onclick = () => {
-      state.meta.grade = +b.dataset.grade;
+      state.meta.grade = +b.dataset.grade!;
       saveAll();
       screenTitle();
     };
@@ -149,7 +154,7 @@ export function screenSubject(sub) {
   );
   app.querySelectorAll<HTMLElement>('[data-cont]').forEach((b) => {
     b.onclick = () => {
-      state.mode = b.dataset.cont;
+      state.mode = b.dataset.cont!;
       state.run = loadRun(state.mode);
       if (state.run) resumeRun();
       else screenSubject(sub);
@@ -157,7 +162,7 @@ export function screenSubject(sub) {
   });
   app.querySelectorAll<HTMLElement>('[data-new]').forEach((b) => {
     b.onclick = () => {
-      state.mode = b.dataset.new;
+      state.mode = b.dataset.new!;
       const r = loadRun(state.mode);
       if (r) {
         const ov = modal(
@@ -196,7 +201,7 @@ export function screenWeekly() {
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
   $('#back').onclick = screenTitle;
   app.querySelectorAll<HTMLElement>('[data-goal]').forEach((b) => {
-    b.onclick = () => playGoal(goals.find((g) => g.i === +b.dataset.goal));
+    b.onclick = () => playGoal(goals.find((g) => g.i === +b.dataset.goal!));
   });
 }
 // straight into the game of a goal; an adventure whose hero lacks the goal's task type asks first
@@ -235,7 +240,7 @@ function screenSetup() {
       <div class="card" style="margin-top:12px"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${gradeTabs()}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`);
   app.querySelectorAll<HTMLElement>('[data-grade]').forEach((b) => {
     b.onclick = () => {
-      state.meta.grade = +b.dataset.grade;
+      state.meta.grade = +b.dataset.grade!;
       saveAll();
       screenSetup();
     };
@@ -269,7 +274,7 @@ function screenCode(o) {
       : Array.from({ length: len }, (_, i) => `<i class="${i < val.length ? 'on' : ''}"></i>`).join('');
     el.setAttribute('aria-label', o.task ? val || 'leer' : `${val.length} von ${len} Ziffern`);
   };
-  const keys = [...app.querySelectorAll<HTMLElement>('.numpad [data-k]')];
+  const keys = [...app.querySelectorAll<HTMLButtonElement>('.numpad [data-k]')];
   const fail = (msg) => {
     val = '';
     paint();
@@ -294,7 +299,7 @@ function screenCode(o) {
     }
   }
   $('.numpad').onclick = (e) => {
-    const b = e.target.closest<HTMLElement>('[data-k]');
+    const b = (e.target as Element).closest<HTMLElement>('[data-k]');
     if (b) press(b.dataset.k);
   };
   state.keyHandler = (e) => {

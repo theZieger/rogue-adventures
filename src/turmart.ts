@@ -625,7 +625,7 @@ export const TWART = (() => {
     `<svg class="tw-bigshield" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 3 L36 9 V22 C36 33 28 40 20 43 C12 40 4 33 4 22 V9 Z" fill="#7CC2FF" ${S(2.6)}/><path d="M20 8 L31 12 V22 C31 30 26 35 20 38 Z" fill="#2478D6" opacity=".5"/><path d="M9 13 Q9 10 13 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 
   /* ---------- Bauzeit card pictures (viewBox 0 0 80 56) ---------- */
-  const mini = (shape, color, x, y, s, o = {}) =>
+  const mini = (shape, color, x, y, s, o: { mirror?: boolean } = {}) =>
     MONART.monsterSVG(shape, color, 0, o.mirror ? 'enemy' : '', o).replace(
       '<svg',
       `<svg x="${x}" y="${y}" width="${s}" height="${s}"`,
@@ -633,7 +633,7 @@ export const TWART = (() => {
   const bolt = (x0, y0, x1, y1, c?) =>
     `<path d="M${x0} ${y0} Q${(x0 + x1) / 2} ${Math.min(y0, y1) - 10} ${x1} ${y1}" fill="none" stroke="${c || '#FFE066'}" stroke-width="2.4" stroke-dasharray="1 4.5" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="3.6" fill="${c || '#FFE066'}" ${S(1.4)}/>`;
   const PEDESTAL = (D, x, y) => pedestal(D, x, y, '#FFC93C');
-  const ENEMY = ['schotterhaufen', '#9AA0B4'];
+  const ENEMY = ['schotterhaufen', '#9AA0B4'] as const;
   const plus = (x, y, c?) =>
     `<path d="M${x - 5} ${y} h10 M${x} ${y - 5} v10" stroke="${INK}" stroke-width="5.5" stroke-linecap="round"/><path d="M${x - 5} ${y} h10 M${x} ${y - 5} v10" stroke="${c || '#4FC96A'}" stroke-width="2.8" stroke-linecap="round"/>`;
   const towerMini = (D, x, y, k) =>

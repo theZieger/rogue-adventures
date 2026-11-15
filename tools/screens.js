@@ -8,6 +8,8 @@ const KLASSE_1 = [...TITLE, '.gradechip[data-grade="1"]'];
 const PARENTS = [...TITLE, '#parents'];
 
 const SCREENS = {
+  // the design system page, docs/gallery.html
+  gallery: [],
   setup: [],
   title: TITLE,
   subject: [...TITLE, '[data-sub="0"]'],
@@ -59,4 +61,11 @@ async function visit(page, taps) {
   await page.evaluate(() => document.fonts.ready);
 }
 
-export { SCREENS, visit };
+// a fresh page on the screen of that name
+async function open(newPage, name) {
+  const page = await newPage(name === 'gallery' ? 'gallery.html' : '');
+  await visit(page, SCREENS[name]);
+  return page;
+}
+
+export { SCREENS, open, visit };

@@ -19,7 +19,24 @@ export const MONART = (() => {
   const f1 = (v) => Math.round(v * 10) / 10;
 
   // eye: look 'n' | 'happy' | 'closed' | 'dizzy' | 'glow'; o: side (-1 left, 1 right), dir [dx,dy], iris, slit, pupil, brow, lid, lidRot, lidY, browColor, bw
-  function eye(x, y, r, o = {}) {
+  interface EyeOptions {
+    look?: 'n' | 'happy' | 'closed' | 'dizzy' | 'glow';
+    side?: number;
+    tall?: number;
+    dir?: number[];
+    glow?: string;
+    white?: string;
+    iris?: string;
+    slit?: boolean;
+    pupil?: number;
+    lid?: string;
+    lidRot?: number;
+    lidY?: number;
+    brow?: 'angry' | 'worried' | 'flat' | 'up' | null;
+    bw?: number;
+    browColor?: string;
+  }
+  function eye(x, y, r, o: EyeOptions = {}) {
     const look = o.look || 'n',
       side = o.side || 0,
       ry = r * (o.tall || 1.1);
@@ -5596,7 +5613,13 @@ export const MONART = (() => {
   // where clothes sit on each hero (drawing coordinates before the stage scaling): head top [x, y, scale],
   // eyes [cx, cy, gap, r] (gap 0 = one eye seen from the side), neck [x, y, width], school bag [x, y]
   const OWN_HAT = ['beaver', 'wetterwart', 'schaustellerin', 'imkerin', 'verkehrspolizistin'];
-  const FIT = {
+  interface Fit {
+    top: number[];
+    eyes: number[];
+    neck: number[];
+    pack?: number[]; // the second of the friends carries no bag
+  }
+  const FIT: Record<string, Fit | Fit[]> = {
     fox: { top: [60, 42, 1.2], eyes: [60, 62, 15, 7.5], neck: [60, 101, 50], pack: [20, 66] },
     toad: { top: [60, 44, 1.3], eyes: [60, 54, 22, 9], neck: [60, 98, 66], pack: [20, 72] },
     bear: { top: [60, 35, 1.2], eyes: [60, 54, 14, 6.5], neck: [60, 95, 62], pack: [20, 64] },
@@ -5760,7 +5783,7 @@ export const MONART = (() => {
     const o = FIT[shape] && OUTFIT[outfit];
     if (!o) return svg;
     // the friends both wear the piece; only the first carries the school bag
-    const fits = [].concat(FIT[shape]).slice(0, o.back ? 1 : undefined);
+    const fits = ([] as Fit[]).concat(FIT[shape]).slice(0, o.back ? 1 : undefined);
     const k = [0.8, 0.9, 1][Math.max(0, Math.min(2, evo || 0))];
     const g = (f) =>
       `<g transform="translate(${f1(60 * (1 - k))} ${f1(116 * (1 - k))}) scale(${k})">${fits.map(f).join('')}</g>`;
@@ -6267,18 +6290,21 @@ export const MONART = (() => {
 
   function wackelturm(P, o, C) {
     // plugged-together counting cubes, the tower leaning further with each one
-    const cube = ([x, y, w, r, c]) => {
+    type Cube = [x: number, y: number, width: number, rot: number, color: string];
+    const cube = ([x, y, w, r, c]: Cube) => {
       const h = w / 2;
       return `<g transform="translate(${x} ${y}) rotate(${r})"><rect x="${-h * 0.32}" y="${f1(-h - 4)}" width="${f1(h * 0.64)}" height="6" rx="1.5" ${F(shade(c, -0.1), 2)}/><rect x="${-h}" y="${-h}" width="${w}" height="${w}" rx="3" ${F(C.grad(c))}/><rect x="${f1(-h + 4)}" y="${f1(-h + 4)}" width="${w - 8}" height="${w - 8}" rx="2" fill="none" stroke="${shade(c, -0.28)}" stroke-width="1.4" opacity=".7"/></g>`;
     };
     let s = `<ellipse cx="54" cy="113" rx="30" ry="4" fill="${OUT}" opacity=".16"/>`;
     s += cube([98, 106, 16, 38, '#4FB04F']);
-    s += [
-      [52, 94, 36, 0, '#3B7DD8'],
-      [58, 63, 28, 7, '#E0453B'],
-      [66, 39, 24, 15, '#F2C23C'],
-      [76, 19, 20, 25, '#4FB04F'],
-    ]
+    s += (
+      [
+        [52, 94, 36, 0, '#3B7DD8'],
+        [58, 63, 28, 7, '#E0453B'],
+        [66, 39, 24, 15, '#F2C23C'],
+        [76, 19, 20, 25, '#4FB04F'],
+      ] as Cube[]
+    )
       .map(cube)
       .join('');
     s += `<path d="M96 30 q8 4 6 14 M104 22 q10 6 8 20" fill="none" stroke="#9AA3C2" stroke-width="2.4" stroke-linecap="round"/>`;
@@ -6395,7 +6421,7 @@ export const MONART = (() => {
       a = (14 * Math.PI) / 180,
       L = [f1(60 - 40 * Math.cos(a)), f1(44 - 40 * Math.sin(a))],
       R = [f1(60 + 40 * Math.cos(a)), f1(44 + 40 * Math.sin(a))];
-    const pan = ([x, y], dy) =>
+    const pan = ([x, y]: number[], dy) =>
       `<path d="M${x} ${y} L${f1(x - 14)} ${f1(y + dy)} M${x} ${y} L${f1(x + 14)} ${f1(y + dy)}" stroke="${OUT}" stroke-width="1.6"/><path d="M${f1(x - 16)} ${f1(y + dy)} Q${x} ${f1(y + dy + 13)} ${f1(x + 16)} ${f1(y + dy)} Z" ${F(brass)}/>`;
     let s = `<ellipse cx="60" cy="114" rx="38" ry="4" fill="${OUT}" opacity=".18"/>`;
     s += `<rect x="56" y="42" width="8" height="34" ${F(brass)}/><path d="M34 112 L44 74 L76 74 L86 112 Z" ${F(brass)}/><rect x="28" y="108" width="64" height="7" rx="2" ${F(C.grad('#B5851A'))}/>`;
@@ -6662,11 +6688,13 @@ export const MONART = (() => {
     s += pair(42, 62, 10, 6.5, { brow: 'angry', bw: 3.4, dir: [0.35, 0.1] });
     s += M.grin(42, 80, 10);
     // leaves blown out of the tube
-    s += [
-      [110, 72, -30, '#E8A23A'],
-      [114, 110, 40, '#C8402E'],
-      [96, 112, -60, '#9A6A40'],
-    ]
+    s += (
+      [
+        [110, 72, -30, '#E8A23A'],
+        [114, 110, 40, '#C8402E'],
+        [96, 112, -60, '#9A6A40'],
+      ] as [x: number, y: number, rot: number, color: string][]
+    )
       .map(
         ([x, y, r, c]) =>
           `<g transform="rotate(${r} ${x} ${y})"><path d="M${x - 9} ${y} Q${x} ${y - 8} ${x + 9} ${y} Q${x} ${y + 8} ${x - 9} ${y} Z" ${F(c, 1.8)}/><path d="M${x - 7} ${y} L${x + 7} ${y}" stroke="${shade(c, -0.35)}" stroke-width="1.2"/></g>`,

@@ -196,7 +196,7 @@ function fixTurm(r) {
   for (const k of ['shield', 'power', 'hint']) r[k] = r[k] === true;
   for (const k of ['right', 'answered', 'solved']) r[k] = nat(r[k]);
   const okAgain = (e) => okSrc(e) && lane(e.lane) && int(e.tier, 1, 99) && (e.task === undefined || isObj(e.task));
-  const ids = new Set(),
+  const ids = new Set<number>(),
     cells = new Set();
   const okMon = (board) => (x) => {
     if (

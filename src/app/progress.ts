@@ -183,6 +183,15 @@ export const weekly = () => {
   if (state.meta.weekly.week !== k) state.meta.weekly = { week: k, progress: [], done: false, beaten: [], tally: {} };
   return state.meta.weekly;
 };
+interface WeeklyGoal {
+  m: string;
+  kind: string;
+  // undefined if every task type of the unit is switched off
+  mod: string | undefined;
+  n: number;
+  subject: string;
+  i: number;
+}
 // one goal per shown subject of the grade, from the week key and the enabled task types only.
 // Every branch draws the same numbers, so switching a task type off changes no other goal. A hidden game is
 // replaced from its own seed, so the other subjects keep their goals. i is the goal's slot in weekly.progress.
@@ -207,7 +216,7 @@ export function weeklyGoals() {
       }
       return Object.assign(g, { subject: sub.subject, i });
     })
-    .filter(Boolean);
+    .filter(Boolean) as WeeklyGoal[];
 }
 export const seededOrder = (r, arr) => {
   const a = arr.slice();
@@ -256,7 +265,7 @@ export function showWeeklyNews() {
 }
 export const stampLine = (n) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
 export function weakestModule() {
-  let best = null,
+  let best: string | null = null,
     bestAcc = 2;
   for (const k of enabledMods()) {
     const s = STATS()[k];
@@ -266,7 +275,7 @@ export function weakestModule() {
       best = k;
     }
   }
-  return best;
+  return best!; // at least one task type is always on
 }
 // a running duel lives only in memory
 export function makeTask(mod, tier, opts?) {
@@ -312,7 +321,7 @@ export function heroAttacks() {
   let i = 0;
   return state.run.hero.attacks.map((a) => {
     if (on.includes(a.mod)) return Object.assign({}, a);
-    const k = spare.length ? spare.shift() : on[i++ % on.length];
+    const k = spare.length ? spare.shift()! : on[i++ % on.length];
     return { name: CFG().extra[k], mod: k };
   });
 }
