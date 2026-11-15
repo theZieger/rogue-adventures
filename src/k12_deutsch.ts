@@ -1,5 +1,5 @@
-// Klasse 1 und 2, Deutsch: Laute und Buchstaben (Kl. 1), Richtig schreiben und Wörter und Sätze (Kl. 2).
-// Content follows the Sächsischer Rechtschreibrahmen 2025 for Kl. 1/2: no ck, tz, silbentrennendes h, Komma or
+// Grades 1 and 2, German: Laute und Buchstaben (grade 1), Richtig schreiben and Wörter und Sätze (grade 2).
+// Content follows the Sächsischer Rechtschreibrahmen 2025 for grades 1/2: no ck, tz, silbentrennendes h, Komma or
 // wörtliche Rede; no rule like „Verben schreibt man klein“ (the Rahmen asks to avoid it).
 // Task ids come from the words, so adding words keeps the learning history of the others.
 import { MK as K, type Know, type Question } from './knowledge.ts';
@@ -51,7 +51,7 @@ export const K12D = (() => {
     return it.make(it.id);
   };
 
-  /* ---------- Bilder für Klasse 1: ein Ding je Bild, eindeutig benannt ---------- */
+  /* ---------- pictures for grade 1: one thing per picture, named unambiguously ---------- */
   const O = '#1C2541';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
   const { tone } = S;
@@ -469,7 +469,7 @@ export const K12D = (() => {
   const PIC_IDS = Object.keys(PICS);
   const first = (id: string) => PICS[id].w[0];
 
-  /* ================= KLASSE 1: Laute und Buchstaben ================= */
+  /* ================= GRADE 1: Laute und Buchstaben ================= */
   const ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const VOW = ['A', 'E', 'I', 'O', 'U'],
     UML: Record<string, string> = { Ä: 'A', Ö: 'O', Ü: 'U' };
@@ -1120,8 +1120,8 @@ export const K12D = (() => {
     return items ? ask(items, know, seq) : null;
   };
 
-  /* ================= KLASSE 2: Richtig schreiben ================= */
-  // [richtig, falsch, Merkmal]
+  /* ================= GRADE 2: Richtig schreiben ================= */
+  // [right, wrong, feature]
   const BESONDERS = [
     ['Stuhl', 'Schtuhl', 'st'],
     ['Stein', 'Schtein', 'st'],
@@ -1174,7 +1174,7 @@ export const K12D = (() => {
     ie: 'Das i klingt lang. Dann schreibst du meist ie.',
     i: 'Das i klingt kurz. Dann schreibst du nur i.',
   };
-  // Merkwörter aus dem Rechtschreibrahmen Kl. 1/2: [richtig, falsch, Merkmal]; no silbentrennendes h (Kuh, Schuh: Kl. 3/4),
+  // Merkwörter from the Rechtschreibrahmen for grades 1/2: [right, wrong, feature]; no silbentrennendes h (Kuh, Schuh: grades 3/4),
   // no wrong form that is a real word (Bot, fiel, Ur)
   const MERK = [
     ['Vogel', 'Fogel', 'v'],
@@ -1220,7 +1220,7 @@ export const K12D = (() => {
     ai: 'Du hörst ei, aber du schreibst ai. Das Wort merkst du dir.',
     chs: 'Du hörst ks, aber du schreibst chs. Das Wort merkst du dir.',
   };
-  // [richtig, falsch, Erklärung]
+  // [right, wrong, explanation]
   const DOPPEL = [
     ['Affe', 'Afe', 'Af-fe'],
     ['Tasse', 'Tase', 'Tas-se'],
@@ -1256,7 +1256,7 @@ export const K12D = (() => {
       : /(.)\1/.test(r)
         ? `Sprich in Silben: ${s}. Der Selbstlaut ist kurz, der Mitlaut steht doppelt.`
         : `Sprich in Silben: ${s}. Der Selbstlaut ist lang, der Mitlaut steht nur einmal.`;
-  // [Wort, Verlängerung]
+  // [word, lengthened form]
   const VERL = [
     ['Hund', 'die Hun-de'],
     ['Wald', 'die Wäl-der'],
@@ -1286,7 +1286,7 @@ export const K12D = (() => {
     ['Licht', 'die Lich-ter'],
   ];
   const PAIR: Record<string, string> = { d: 't', t: 'd', g: 'k', k: 'g', b: 'p', p: 'b' };
-  // [richtig, falsch, verwandtes Wort mit a/au]
+  // [right, wrong, related word with a/au]
   const ABLEIT = [
     ['Bäume', 'Beume', 'der Baum'],
     ['Häuser', 'Heuser', 'das Haus'],
@@ -1355,7 +1355,7 @@ export const K12D = (() => {
     '?': 'Der Satz fragt etwas. Am Ende steht ein Fragezeichen.',
     '!': 'Das ist ein Ausruf. Am Ende steht ein Ausrufezeichen.',
   };
-  // Wörterbuch: in each group the second letters differ, no umlaut in the first two letters
+  // dictionary order: in each group the second letters differ, no umlaut in the first two letters
   const ABC_WORDS: Record<string, string[]> = {
     A: ['Affe', 'Ameise', 'Apfel', 'Arm', 'Auto'],
     B: ['Ball', 'Bett', 'Biene', 'Boot', 'Brot', 'Buch'],
@@ -1414,7 +1414,7 @@ export const K12D = (() => {
       { why: `${a[0]} kommt im Abc zuerst.` },
     );
   }
-  // häufige kleine Wörter (Funktionswörter aus dem Rechtschreibrahmen): [Satz mit ___, richtig, falsch]
+  // frequent small words (function words from the Rechtschreibrahmen): [sentence with ___, right, wrong]
   const KLEIN = [
     ['Tim ___ Lea malen ein Bild.', 'und', 'unt'],
     ['Ich gehe ___ Mama einkaufen.', 'mit', 'mitt'],
@@ -1799,7 +1799,7 @@ export const K12D = (() => {
           ? abcFirst()
           : abcOrder(tier);
 
-  /* ================= KLASSE 2: Wörter und Sätze ================= */
+  /* ================= GRADE 2: Wörter und Sätze ================= */
   const NOMEN = [
     'der Ball',
     'der Hund',
@@ -1883,7 +1883,7 @@ export const K12D = (() => {
     'neu',
   ];
   const WORTARTEN = ['Nomen', 'Verb', 'Adjektiv', 'Artikel'];
-  // [Grundform, er/sie/es, du]
+  // [infinitive, er/sie/es, du]
   const VERBFORMEN = [
     ['laufen', 'läuft', 'läufst'],
     ['fahren', 'fährt', 'fährst'],
@@ -1903,7 +1903,7 @@ export const K12D = (() => {
     ['bauen', 'baut', 'baust'],
     ['werfen', 'wirft', 'wirfst'],
   ];
-  // [Einzahl, Mehrzahl, falsch, falsch]
+  // [singular, plural, wrong, wrong]
   const MEHRZAHL = [
     ['der Baum', 'die Bäume', 'die Baume', 'die Baums'],
     ['das Haus', 'die Häuser', 'die Hause', 'die Hauser'],
@@ -1926,7 +1926,7 @@ export const K12D = (() => {
     ['das Bild', 'die Bilder', 'die Bilde', 'die Bilds'],
     ['der Zahn', 'die Zähne', 'die Zahne', 'die Zahns'],
   ];
-  // zusammengesetzte Nomen ohne Fugenelement: [erstes, zweites, Zusammensetzung]
+  // compound nouns without a linking element: [first, second, compound]
   const ZUSAMMEN = [
     ['das Haus', 'die Tür', 'die Haustür'],
     ['die Hand', 'der Schuh', 'der Handschuh'],
@@ -1953,7 +1953,7 @@ export const K12D = (() => {
   const ARTS = ['der', 'die', 'das'];
   const art = (w: string) => w.split(' ')[0],
     noun = (w: string) => w.split(' ')[1];
-  // [Wortstamm, Wort, Familie (3+), ähnlich aussehende Wörter aus anderen Familien]
+  // [word stem, word, family (3+), similar-looking words from other families]
   const FAMILIEN: [stem: string, word: string, family: string[], others: string[]][] = [
     ['fahr', 'fahren', ['das Fahrrad', 'der Fahrer', 'abfahren'], ['die Farbe', 'fallen']],
     ['spiel', 'spielen', ['der Spieler', 'das Spielzeug', 'mitspielen'], ['die Spinne', 'der Spiegel']],

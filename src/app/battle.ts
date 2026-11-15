@@ -153,7 +153,7 @@ export function renderBattle(b: Battle) {
   );
   announce(b.log.replace(/<[^>]+>/g, ''));
   const log = () => plain(b.log);
-  speakBtn($('.log'), 'afterbegin', log, !quiet && log); // Klasse 1 and 2 hear only how a fight starts
+  speakBtn($('.log'), 'afterbegin', log, !quiet && log); // grade 1 and 2 hear only how a fight starts
   delete b.clash;
   delete b.boost; // the clash plays once, on this render
   if (b.phase === 'choose') renderAttackChoice(b);

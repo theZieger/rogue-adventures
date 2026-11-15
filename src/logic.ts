@@ -670,7 +670,7 @@ export const MQ = (() => {
         : n * 10 * rnd(3, Math.floor(99 / n));
     return task(`${g} von ${whole} = ?`, [(whole / n) * z], { ask: `Wie viel ist ${word} (${g}) von ${whole}?` });
   }
-  // Punkt vor Strich, no brackets (not part of Klasse 3 in Saxony)
+  // Punkt vor Strich, no brackets (not part of grade 3 in Saxony)
   function genVorrang(t: number) {
     const k = t === 1 ? 1 : 10;
     const hi = t === 1 ? 99 : 999;
@@ -778,7 +778,7 @@ export const MQ = (() => {
       } while (b % 10 < 2 || a * b > 999 || a * b < 60);
     return Math.random() < 0.5 ? task(`${a} · ${b} = ?`, [a * b]) : task(`${b} · ${a} = ?`, [a * b]);
   }
-  // Überschlag: wrong options keep the Zehner and Einer, so only rounding to hundreds tells them apart.
+  // estimating: wrong options keep the tens and ones, so only rounding to hundreds tells them apart.
   // Numbers whose rest is 40–60 are left out: rounding them is a close call.
   function genUeber() {
     const ok = (n: number) => n % 100 < 40 || n % 100 > 60;
@@ -2783,7 +2783,7 @@ export const MQ = (() => {
     });
   }
 
-  // Flächeninhalt: whole squares only
+  // area: whole squares only
   function genFlaeche(t: number) {
     if (t === 1) {
       const area = normCells(blob(rnd(5, 12), 4, 6));
@@ -2934,7 +2934,7 @@ export const MQ = (() => {
     };
   }
 
-  // gespiegelt, gedreht oder verschoben: the shape has no symmetry, so the three cases never look alike
+  // mirrored, rotated or shifted: the shape has no symmetry, so the three cases never look alike
   const TRANSFORMS: Record<string, ((p: Cell) => Cell)[]> = {
     verschoben: [SYM[0]],
     gedreht: [SYM[1], SYM[2], SYM[3]],
@@ -2982,7 +2982,7 @@ export const MQ = (() => {
     };
   }
 
-  // Dreiecke und Vierecke: corners on the grid points, x to the right, y down
+  // triangles and quadrilaterals: corners on the grid points, x to the right, y down
   const SHAPES = [
     'Quadrat',
     'Rechteck',

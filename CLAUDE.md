@@ -1,6 +1,7 @@
 # Lernquest – notes for Claude
 
-German educational roguelike for primary-school children (about 3rd grade). Read README.md first.
+German educational roguelike for primary-school children (grades 1 to 3). Read CONTRIBUTING.md first (structure, commands);
+README.md is the general German page for parents.
 
 ## Always keep the changelog up to date
 
@@ -37,7 +38,7 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   (`npm run screenshots <dir>` shoots the screens listed in `tools/screens.js`, `npm run screenshots <before> <after>`
   lists the ones that changed; add a new screen to that list), publish them side by side as an artifact page, and wait for the go-ahead. Never push visual or copy changes
   to `main` unapproved; a branch is fine for work in progress.
-- New units: see README „Neue Einheit“. Never add a second list of units anywhere – everything reads `UNITS`
+- New units: see CONTRIBUTING.md „Adding a unit“. Never add a second list of units anywhere – everything reads `UNITS`
   (`src/units.ts`) and takes `grade` and `subject` from the unit itself.
 - The game engine is `src/app/*.ts`: ES modules that import what they use; `src/main.ts` lists them in the order they
   start. What several of them change (`meta`, `run`, `mode` …) lives in `src/app/state.ts` as `state.meta` etc.
@@ -97,6 +98,10 @@ shared building block in each state, and the rule for using it. Look there befor
 
 ## Conventions
 
+- **English for everything developers read:** code, comments, commit messages, pull requests, ADRs, `CONTRIBUTING.md`.
+  German only for what a child or parent reads (app text, learning content, `CHANGELOG.md`, `README.md`, issue
+  templates), for the curriculum notes in `lehrplan/`, and for the product's own names from `GLOSSARY.md`.
+  `README.md` stays general: no file names, commands or code – those go into `CONTRIBUTING.md`.
 - All player-facing text is German, child-friendly, with German typography („…“, –).
   Check new names and messages against `tools/unslop-text.md` (patterns to avoid).
 - Lernquest is about learning, not gaming: player- and parent-facing copy talks about learning, practising and

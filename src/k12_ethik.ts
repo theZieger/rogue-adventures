@@ -1,6 +1,6 @@
-// Klasse 1 und 2, Ethik (Lehrplan Sachsen 2019): „Ich und die anderen“ (Klasse 1, LB 1 und 2) und „Feste und die Welt“
-// (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen) und Klasse 1 „Die Klangkiste“
-// (LB 2 bis 4: Orff-Instrumente, Gegensätze, Stimmungen, Körperinstrumente, eigene Zeichen), nur Bilder, keine Töne.
+// Grades 1 and 2, Ethik (Saxon curriculum 2019): „Ich und die anderen“ (grade 1, LB 1 and 2) and „Feste und die Welt“
+// (grade 2, LB 3 and 4). Also Musik grade 2 „Der Musikraum“ (LB 4: instruments and voices) and grade 1 „Die Klangkiste“
+// (LB 2 to 4: Orff instruments, opposites, moods, body percussion, own signs), pictures only, no sounds.
 // Registers the units in MK.MODES with the shared hero and opponents of K12.SETS. Mode keys are save keys: never rename.
 import { MK as K, type GenOpts, type Know, type Question } from './knowledge.ts';
 import type { TaskExtra } from './sachkunde.ts';
@@ -8,7 +8,7 @@ import { K12 as S } from './klasse12.ts';
 export const K12E = (() => {
   const { shuffle, pick } = K;
 
-  /* ---------- Zeichnungen ---------- */
+  /* ---------- drawings ---------- */
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const INK = '#1C2541',
     WOOD = '#E9A15B',
@@ -60,11 +60,11 @@ export const K12E = (() => {
     `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}">${defs()}<rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
   const optPic = (inner: string, label: string) =>
     `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${defs()}${inner}</svg>`;
-  // smaller copy standing on the same ground line (hoch und tief)
+  // smaller copy standing on the same ground line (high and low)
   const scaled = (inner: string, s: number) =>
     `<g transform="translate(${50 - 50 * s} ${100 - 100 * s}) scale(${s})">${inner}</g>`;
 
-  /* Gesichter */
+  /* faces */
   const SKIN = '#FFD9A8';
   const HAIR =
     sh('M14 46 Q18 10 50 11 Q82 10 86 46 Q76 27 50 27 Q24 27 14 46 Z', DARK) + lit('M30 20 Q40 15 52 15', 2.5);
@@ -124,14 +124,14 @@ export const K12E = (() => {
   };
   const FACE_IDS = Object.keys(FACES);
 
-  /* Zeichen der Feste */
+  /* signs of the festivals */
   const FESTE = ['Geburtstag', 'Erntedank', 'St. Martin', 'Advent', 'Nikolaus', 'Weihnachten', 'Silvester', 'Ostern'];
   const candle = (x: number, y: number, h: number, c: string) =>
     rect(x - 4, y - h, 8, h, c, 1.5, 2) +
     lit(`M${x - 1.5} ${y - h + 3} V${y - 3}`, 1.5) +
     ln(`M${x} ${y - h} v-3`, 1.5) +
     flame(x, y - h - 2);
-  // Ähre: stalk and two rows of grains, tip at (x, y)
+  // ear of grain: stalk and two rows of grains, tip at (x, y)
   const ear = (x: number, y: number, rot: number) =>
     `<g transform="rotate(${rot} ${x} ${y})">${ln(`M${x} ${y} V${y + 40}`, 2, '#B8862E')}${[0, 6, 12, 18].map((d) => oval(x - 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, -25) + oval(x + 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, 25)).join('')}${oval(x, y + 1, 2.4, 4, '#F2C14E', 1.2)}</g>`;
   const heart =
@@ -318,7 +318,7 @@ export const K12E = (() => {
   const symFits = (a: { fest: string; not?: string[] }, b: { fest: string; not?: string[] }) =>
     a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
 
-  /* Instrumente */
+  /* instruments */
   // Handtrommel: flat wooden frame with a skin, played with the hand or a soft beater
   const drum =
     sh('M8 46 V58 A42 16 0 0 0 92 58 V46 Z', WOOD) +
@@ -645,7 +645,7 @@ export const K12E = (() => {
     tasten: 'Tasteninstrument',
   };
   const HOWS = ['zupfen', 'streichen', 'blasen', 'schlagen', 'schütteln', 'Tasten drücken'];
-  // hoch und tief: the same drawing small and big; the long bar of the Glockenspiel sounds lower; Geige against Kontrabass
+  // high and low: the same drawing small and big; the long bar of the Glockenspiel sounds lower; Geige against Kontrabass
   const bar = (w: number) =>
     rect(50 - w / 2, 42, w, 16, BLUE, 3) +
     lit(`M${50 - w / 2 + 4} 46 H${50 + w / 2 - 4}`, 1.5) +
@@ -663,7 +663,7 @@ export const K12E = (() => {
     { id: 'platte', q: 'Welche Platte', small: bar(36), big: bar(84) },
   ];
 
-  /* ---------- gemeinsame Bausteine ---------- */
+  /* ---------- shared building blocks ---------- */
   const choice = (
     mod: string,
     note: string,
@@ -737,10 +737,10 @@ export const K12E = (() => {
       { label: 'Weitergehen', effect: {} },
     ],
   });
-  // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung
+  // dilemma cards: no right or wrong, every choice gets the same reward
   const { unit, rest, dilemma, tone } = S;
 
-  /* ======================= Klasse 1: Ich und die anderen ======================= */
+  /* ======================= Grade 1: Ich und die anderen ======================= */
   const NOTES1 = {
     einmalig: {
       title: 'Ich bin einmalig',
@@ -808,7 +808,7 @@ export const K12E = (() => {
       ],
     },
   };
-  // mod: gefuehl, hoeflich, familie, mc = Was passt?, rf = Richtig oder falsch, ord = Reihenfolge
+  // mod: gefuehl, hoeflich, familie, mc = what fits, rf = true or false, ord = order
   const POOL1 = [
     {
       id: 'k1eg1',
@@ -1557,7 +1557,7 @@ export const K12E = (() => {
     },
   );
 
-  /* ======================= Klasse 2: Feste und die Welt ======================= */
+  /* ======================= Grade 2: Feste und die Welt ======================= */
   const NOTES2 = {
     geburtstag: {
       title: 'Geburtstag',
@@ -2236,7 +2236,7 @@ export const K12E = (() => {
     { id: 'k2fr11', mod: 'rf', g: 'silvester', q: 'Silvester ist der letzte Tag im Jahr.', a: true },
     { id: 'k2fr12', mod: 'rf', g: 'geburtstag', q: 'Die Geburtstagskerze ist ein Zeichen für das Leben.', a: true },
   ];
-  // m: Monat.Tag, nur für die Reihenfolge (der 1. Advent liegt immer zwischen dem 27. November und dem 3. Dezember)
+  // m: month.day, only for the order (the first Sunday of Advent always falls between 27 November and 3 December)
   const JAHR = (
     [
       ['Neujahr', 1.01],
@@ -2700,7 +2700,7 @@ export const K12E = (() => {
     },
   );
 
-  /* ======================= Klasse 2 Musik: Der Musikraum ======================= */
+  /* ======================= Grade 2 Musik: Der Musikraum ======================= */
   const NOTES3 = {
     instrumente: {
       title: 'Instrumente aus dem Musikraum',
@@ -3154,7 +3154,7 @@ export const K12E = (() => {
     }
     return null;
   }
-  // Wiederholung und Gegensatz: each part of a piece is a pattern of three shapes; A comes back, B is the contrast
+  // repetition and contrast: each part of a piece is a pattern of three shapes; A comes back, B is the contrast
   const SHAPES: Record<string, (x: number) => string> = {
     k: (x: number) => circ(x, 50, 11, BLUE, 2),
     q: (x: number) => rect(x - 10, 40, 20, 20, RED, 3, 2),
@@ -3355,7 +3355,7 @@ export const K12E = (() => {
     },
   );
 
-  /* ======================= Klasse 1 Musik: Die Klangkiste ======================= */
+  /* ======================= Grade 1 Musik: Die Klangkiste ======================= */
   const SKIN1 = '#FFD9A8',
     BEAR = '#A8683A',
     MOUSE = '#B8BFD0',
@@ -3382,7 +3382,7 @@ export const K12E = (() => {
   const at = (x: number, y: number, rot: number, s: number, inner: string) =>
     `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})">${inner}</g>`;
   const left = `<g transform="scale(-1 1)">${hand}</g>`;
-  // Gegensätze: two pictures per pair, the answer is always one of the two
+  // opposites: two pictures per pair, the answer is always one of the two
   const OPP = [
     {
       id: 'gewitter',
@@ -3490,7 +3490,7 @@ export const K12E = (() => {
     tempo: 'Ist dieses Tier schnell oder langsam?',
     hoch: 'Hat dieses Tier eine hohe oder tiefe Stimme?',
   };
-  // Musik und Gefühle: calm and sad, cheerful and wild never stand side by side, so exactly one picture fits
+  // music and feelings: calm and sad, cheerful and wild never stand side by side, so exactly one picture fits
   const MOODS = [
     {
       id: 'sonne',

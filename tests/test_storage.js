@@ -1923,7 +1923,7 @@ await tick();
   p5.click('[data-cont="kompass"]');
   check(p5.errors.length === 0 && p5.text().includes('Truhe'), 'a found treasure opens the chest after reopening');
 }
-// 19. Die fünf Sinne und Sicher im Verkehr: an old save gains their stats; reopening in the Sinnestäuschung keeps the
+// 19. Die fünf Sinne and Sicher im Verkehr: an old save gains their stats; reopening in the Sinnestäuschung keeps the
 // experiment; the Zeichenschule draws the eye on floor 2 and the ear on floor 5
 await tick();
 {
@@ -3641,7 +3641,7 @@ await tick();
     'without a German voice on the device the card says how to add one, with the guide open',
   );
 }
-// Vorlesen in Klasse 1: tutorials, feedback, events and how a fight starts are read out; the Lesestube text is not
+// Vorlesen in grade 1: tutorials, feedback, events and how a fight starts are read out; the Lesestube text is not
 await tick();
 {
   const V = { voice: { localService: true, lang: 'de-DE' } };
@@ -3891,7 +3891,7 @@ await tick();
   );
 }
 
-// Shorter adventures for Klasse 1 and 2: 6 and 7 floors; an old 8-floor run keeps going to its own end
+// Shorter adventures for grade 1 and 2: 6 and 7 floors; an old 8-floor run keeps going to its own end
 await tick();
 {
   const fresh = (m, grade) => {
@@ -4014,7 +4014,7 @@ await tick();
   );
 }
 
-// Klasse 1 starts with fewer attacks (2, then 3, then 4 per theme) and never has a Kreisel-Arena
+// grade 1 starts with fewer attacks (2, then 3, then 4 per theme) and never has a Kreisel-Arena
 await tick();
 {
   const old = open({ [META]: JSON.stringify(Object.assign({ runs: 3 }, SKIPPED)) });
@@ -4109,7 +4109,7 @@ await tick();
     big.w.__mq.run.hero.attacks.length === 4 && big.w.__mq.run.map.flat().some((n) => n.t === 'arena'),
     'a first Klasse-3 adventure has all 4 attacks and a Kreisel-Arena',
   );
-  // a Klasse-1 weekly goal: its attack is among the first two
+  // a grade-1 weekly goal: its attack is among the first two
   let g, q;
   for (let w = 0; w < 8 && !g; w++) {
     q = open(

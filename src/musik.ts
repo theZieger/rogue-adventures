@@ -1,4 +1,4 @@
-// Musik Klasse 3 (Lehrplan Sachsen Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
+// Musik grade 3 (Saxon curriculum Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
 // Registers its unit in MK.MODES; src/units.ts picks it up from there.
 import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 
@@ -39,12 +39,12 @@ export const MU = (() => {
     );
   const others = <T>(list: T[], x: T, n: number) => shuffle(list.filter((y) => y !== x)).slice(0, n);
 
-  /* ---------- Notenbilder ---------- */
-  // Notensystem: unterste Linie y = 62, Abstand 10. Tonstufe s: 0 = c' (Hilfslinie) … 7 = c''
+  /* ---------- note pictures ---------- */
+  // staff: bottom line y = 62, spacing 10. Pitch step s: 0 = c' (ledger line) … 7 = c''
   const Y = (s: number) => 72 - 5 * s;
   const LINES = (x0: number, x1: number) =>
     [22, 32, 42, 52, 62].map((y) => `<path d="M${x0} ${y} H${x1}" stroke="${INK}" stroke-width="1.4"/>`).join('');
-  // Violinschlüssel: die Schnecke dreht sich um die g-Linie (y = 52)
+  // treble clef: the curl turns around the g line (y = 52)
   const CLEF = `<g fill="none" stroke="${INK}" stroke-linecap="round" stroke-linejoin="round"><path d="M17 78 Q22 78 21.5 72 L18.5 12 Q18.6 5 22.6 8 Q28 14 23 24 Q18 32 11 41 Q4 51 9 60 Q14 67 22 64 Q29 60 27 53 Q24 47 18 49 Q13 52 16 57" stroke-width="2.6"/></g><circle cx="15.5" cy="76" r="3.4" fill="${INK}"/>`;
   const box = (w: number, h: number, inner: string, label: string, maxW: number) =>
     `<svg ${NS} class="pic" viewBox="0 0 ${w} ${h}" style="max-width:${maxW || w * 2.4}px" role="img" aria-label="${label}"><rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="8" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
@@ -76,8 +76,8 @@ export const MU = (() => {
     return o;
   }
   function restSVG(x: number, v: number) {
-    if (v === 8) return `<rect x="${x - 6}" y="32" width="12" height="5" fill="${INK}"/>`; // hängt unter der vierten Linie
-    if (v === 4) return `<rect x="${x - 6}" y="37" width="12" height="5" fill="${INK}"/>`; // sitzt auf der Mittellinie
+    if (v === 8) return `<rect x="${x - 6}" y="32" width="12" height="5" fill="${INK}"/>`; // hangs below the fourth line
+    if (v === 4) return `<rect x="${x - 6}" y="37" width="12" height="5" fill="${INK}"/>`; // sits on the middle line
     if (v === 2)
       return `<path d="M${x - 3} 24 L${x + 4} 32 Q${x - 3} 37 ${x + 1} 43 L${x + 4} 47 Q${x - 5} 44 ${x - 1} 55" fill="none" stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
     return `<circle cx="${x - 3}" cy="35" r="3" fill="${INK}"/><path d="M${x - 3} 37 Q${x + 2} 39 ${x + 5} 32 L${x - 1} 53" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
@@ -85,7 +85,7 @@ export const MU = (() => {
   const timeSig = (x: number, top: number) =>
     `<g font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" fill="${INK}" text-anchor="middle"><text x="${x}" y="41">${top}</text><text x="${x}" y="61">4</text></g>`;
 
-  // Notenwerte und Pausen: id, Wert in Achteln, Name
+  // note values and rests: id, value in eighths, name
   const VALUES = [
     { id: 'ganze', v: 8, name: 'Ganze Note', acc: 'die ganze Note' },
     { id: 'halbe', v: 4, name: 'Halbe Note', acc: 'die halbe Note' },
@@ -101,7 +101,7 @@ export const MU = (() => {
   const valuePic = (it: Sign) => staff(96, itemSVG(64, it), 'Notensystem mit einem Zeichen', true, 230);
   const valueOpt = (it: Sign) => optStaff(44, itemSVG(22, it));
 
-  // Takt: Wert in Achteln je Taktart (2/4 = 4 Achtel, 3/4 = 6, 4/4 = 8)
+  // bar: value in eighths per time signature (2/4 = 4 eighths, 3/4 = 6, 4/4 = 8)
   const W: Record<number, number> = { 1: 24, 2: 30, 4: 40 };
   function barSVG(top: number, items: Sign[], gap: Sign) {
     let x = 62,
@@ -141,14 +141,14 @@ export const MU = (() => {
     return { top, items, gap };
   }
 
-  // Tonhöhen c' bis c''
+  // pitches c' to c''
   const TONES = ['c', 'd', 'e', 'f', 'g', 'a', 'h', 'c'];
   const tonePic = (s: number, small?: boolean | undefined) =>
     small
       ? optStaff(70, noteSVG(52, s, 2), true)
       : staff(96, noteSVG(64, s, 2), 'Notensystem mit einer Note', true, 230);
 
-  // Gestaltungsmittel: Zeichen als Bild
+  // dynamics: the signs as pictures
   const sign = (inner: string, label: string) => box(110, 56, inner, label, 220);
   const dyn = (s: string) =>
     sign(
@@ -169,7 +169,7 @@ export const MU = (() => {
     { t: 'decrescendo', m: 'allmählich leiser werden', pic: () => hairpin(false) },
   ];
 
-  /* ---------- Instrumente ---------- */
+  /* ---------- instruments ---------- */
   const FAM: Record<string, string> = {
     streich: 'Streichinstrumente',
     zupf: 'Zupfinstrumente',
@@ -195,7 +195,7 @@ export const MU = (() => {
     schlag: [],
     tasten: ['holz', 'blech'],
   };
-  // not: families that would also be a bit right (Klavier has strings, the Querflöte is metal, a clarinet has keys …)
+  // not: families that would also be a bit right (a piano has strings, the flute is metal, a clarinet has keys …)
   const INSTR = [
     {
       id: 'geige',
@@ -378,8 +378,8 @@ export const MU = (() => {
     return choice('instr', 'familien', `Welches Instrument ist das? ${i.desc}`, i.name, wrong, 'mwer_' + i.id);
   }
 
-  /* ---------- Komponisten ---------- */
-  // Reihenfolge nach Geburtsjahr
+  /* ---------- composers ---------- */
+  // ordered by year of birth
   const KOMP = [
     { id: 'bach', text: 'Johann Sebastian Bach', year: 1685 },
     { id: 'mozart', text: 'Wolfgang Amadeus Mozart', year: 1756 },
@@ -389,7 +389,7 @@ export const MU = (() => {
     { id: 'cschumann', text: 'Clara Schumann', year: 1819 },
   ];
 
-  /* ---------- Musik anderer Länder ---------- */
+  /* ---------- music of other countries ---------- */
   const WORLD = [
     { id: 'didgeridoo', name: 'das Didgeridoo', land: 'Australien', group: 'Blasinstrument' },
     { id: 'balalaika', name: 'die Balalaika', land: 'Russland', group: 'Zupfinstrument' },
@@ -523,9 +523,9 @@ export const MU = (() => {
     },
   };
 
-  /* ---------- Fragen ---------- */
+  /* ---------- questions ---------- */
   const POOL = [
-    // Notenwerte
+    // note values
     {
       id: 'mnw1',
       mod: 'noten',
@@ -611,7 +611,7 @@ export const MU = (() => {
       rf: true,
       a: true,
     },
-    // Takt
+    // bar
     {
       id: 'mtk1',
       mod: 'takt',
@@ -663,7 +663,7 @@ export const MU = (() => {
       a: false,
       why: 'Eine ganze Note dauert 4 Viertel, ein 2/4-Takt hat nur 2.',
     },
-    // Violinschlüssel
+    // treble clef
     {
       id: 'mvs1',
       mod: 'ton',
@@ -721,7 +721,7 @@ export const MU = (() => {
       o: ['Auf der mittleren Linie', 'Auf der untersten Linie', 'Auf der obersten Linie'],
       a: 0,
     },
-    // Instrumente
+    // instruments
     {
       id: 'min1',
       mod: 'instr',
@@ -852,7 +852,7 @@ export const MU = (() => {
       rf: true,
       a: true,
     },
-    // Fachbegriffe, Tempo, Tonhöhe
+    // terms, tempo, pitch
     {
       id: 'mfb1',
       mod: 'begriffe',
@@ -928,7 +928,7 @@ export const MU = (() => {
       a: false,
       why: 'Bei einem Crescendo wird die Musik allmählich lauter.',
     },
-    // Komponisten
+    // composers
     {
       id: 'mko1',
       mod: 'komp',
@@ -1115,7 +1115,7 @@ export const MU = (() => {
       a: false,
       why: 'Bach wurde 1685 geboren, Robert Schumann erst 1810.',
     },
-    // Musik anderer Länder
+    // music of other countries
     {
       id: 'mml1',
       mod: 'laender',
@@ -1183,7 +1183,7 @@ export const MU = (() => {
       o: ['Zwei kleine Trommeln', 'Eine Flöte aus Holz', 'Ein Instrument mit drei Saiten'],
       a: 0,
     },
-    // Lückentext
+    // gap text
     {
       id: 'mlt1',
       mod: 'lt',
@@ -1403,7 +1403,7 @@ export const MU = (() => {
     },
   };
 
-  /* ---------- Aufgaben ---------- */
+  /* ---------- tasks ---------- */
   // number task: picture and question in `fig`; beats (in eighths) and unit let tests and the bot recount it
   const num = (mod: string, q: string, svg: string, beats: number[], unit: number, qid: string, show: string) => ({
     kind: 'num',

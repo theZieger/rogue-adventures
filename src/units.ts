@@ -1,5 +1,5 @@
 // Every unit of Lernquest by id, in the order the units register. The game, the tests, the bot and the monster art
-// (tools/svg.js) all read this one list. A unit adds itself to MK.MODES in its own file (README „Neue Einheit“);
+// (tools/svg.js) all read this one list. A unit adds itself to MK.MODES in its own file (CONTRIBUTING.md „Adding a unit“);
 // Zahlenquest, Baustelle and Jahrmarkt come from the two files that are loaded before MK exists.
 // The imports below are the order of the units on screen.
 import './sachkunde.ts';

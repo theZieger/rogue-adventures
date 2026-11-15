@@ -1,5 +1,5 @@
-// Ethik Klasse 3 (Lehrplan Sachsen, Lernbereiche 1 und 4): „Ich, wir und die Welt“, Welt 1 „Ich im Wir“, Welt 2 „Wir in der Welt“.
-// Registers its unit in MK.MODES; src/units.ts picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
+// Ethik grade 3 (Saxon curriculum, Lernbereiche 1 and 4): „Ich, wir und die Welt“, world 1 „Ich im Wir“, world 2 „Wir in der Welt“.
+// Registers its unit in MK.MODES; src/units.ts picks it up from there. Questions and orders with w: 2 only come up in world 2.
 import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 export const ME = (() => {
   const { weightedPick } = K;
@@ -147,7 +147,7 @@ export const ME = (() => {
     { id: 'p5', text: 'Aus dem neuen Papier werden Hefte gemacht.' },
   ];
 
-  // Drei Welten sortieren: die drei Knöpfe stehen immer in dieser Reihenfolge
+  // sorting into Drei Welten: the three buttons always stand in this order
   const WELTEN = ['Natürliche Welt', 'Vom Menschen geschaffene Welt', 'Gedankenwelt'];
   const DINGE: [id: string, text: string, welt: number, why?: string][] = [
     ['baum', 'der Baum', 0],
@@ -180,9 +180,9 @@ export const ME = (() => {
     ['hoffnung', 'die Hoffnung', 2],
   ];
 
-  // mod: rf = Richtig/Falsch, mc = Wähle aus, lt = Lückentext, def = Begriffe, ord = Reihenfolge, welten = Drei Welten
+  // mod: rf = true/false, mc = multiple choice, lt = gap text, def = terms, ord = order, welten = Drei Welten
   const POOL = [
-    // Stärken und Schwächen, Erfolg und Misserfolg
+    // strengths and weaknesses, success and failure
     { id: 'iwrf1', mod: 'rf', g: 'staerken', q: 'Jeder Mensch hat Stärken und Schwächen.', a: true },
     {
       id: 'iwrf2',
@@ -334,7 +334,7 @@ export const ME = (() => {
       o: ['Man vergisst oft Dinge, zum Beispiel die Hausaufgaben', 'Man merkt sich alles', 'Man ist immer pünktlich'],
       a: 0,
     },
-    // Mut und Angst
+    // courage and fear
     { id: 'iwrf6', mod: 'rf', g: 'mut', q: 'Auch Erwachsene haben manchmal Angst.', a: true },
     {
       id: 'iwrf7',
@@ -441,7 +441,7 @@ export const ME = (() => {
       ],
       a: 0,
     },
-    // Kind und Erwachsener
+    // child and adult
     { id: 'iwrf10', mod: 'rf', g: 'erwachsen', q: 'Kinder haben ein Recht auf Spielen.', a: true },
     {
       id: 'iwrf11',
@@ -546,7 +546,7 @@ export const ME = (() => {
       ],
       a: 0,
     },
-    // Gemeinsamkeiten und Unterschiede
+    // what we share and where we differ
     { id: 'iwrf14', mod: 'rf', g: 'verschieden', q: '„Jungen weinen nicht“ ist ein Vorurteil.', a: true },
     {
       id: 'iwrf15',
@@ -648,7 +648,7 @@ export const ME = (() => {
       o: ['Etwas wertvoller und vielfältiger machen', 'Etwas kaputt machen', 'Etwas wegnehmen'],
       a: 0,
     },
-    // Gut und Böse im eigenen Handeln
+    // good and evil in what I do
     {
       id: 'iwrf18',
       mod: 'rf',
@@ -757,7 +757,7 @@ export const ME = (() => {
       a: 0,
     },
 
-    // Welt 2: Zeichen und Symbol (kurz, die Symbole selbst kommen im Kirchenjahr dran)
+    // world 2: sign and symbol (short, the symbols themselves come up in Das Kirchenjahr)
     {
       id: 'iw2rf1',
       w: 2,
@@ -853,7 +853,7 @@ export const ME = (() => {
       a,
       why,
     })),
-    // Natur als Lebensgrundlage, Naturgewalten, Arche Noah
+    // nature as the basis of life, forces of nature, Noah's ark
     { id: 'iw2rf4', w: 2, mod: 'rf', g: 'natur', q: 'Die Natur gibt uns Luft, Wasser und Nahrung.', a: true },
     {
       id: 'iw2rf5',
@@ -989,7 +989,7 @@ export const ME = (() => {
       o: ['Das, was man zum Leben unbedingt braucht', 'Der Boden in einem Keller', 'Ein Spiel auf dem Schulhof'],
       a: 0,
     },
-    // Unsere Welt bewahren, Klimawandel
+    // looking after our world, climate change
     { id: 'iw2rf9', w: 2, mod: 'rf', g: 'bewahren', q: 'Altes Papier gehört in die blaue Tonne.', a: true },
     {
       id: 'iw2rf10',
@@ -1157,7 +1157,7 @@ export const ME = (() => {
       ],
       a: 0,
     },
-    // Die vier Elemente, Redewendungen
+    // the four elements, sayings
     {
       id: 'iw2rf14',
       w: 2,
@@ -1435,7 +1435,7 @@ export const ME = (() => {
     'Hitzewelle',
   ];
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
-  // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung (reward)
+  // dilemma cards: no right or wrong, every choice gets the same reward
   const EVENTS = [
     {
       w: 1,

@@ -142,7 +142,7 @@ TEXTE.forEach((t) => {
 TEXTE.map((t) => t.id)
   .filter((x, i, a) => a.indexOf(x) !== i)
   .forEach((x) => fail('Lesestube: duplicate id ' + x));
-// Klasse 1 shows Sprechsilben: every word with more than one vowel sound is split, one vowel sound per syllable
+// grade 1 shows Sprechsilben: every word with more than one vowel sound is split, one vowel sound per syllable
 const VOWEL = /ei|ai|au|eu|äu|ie|aa|ee|oo|[aeiouäöüy]/gi;
 TEXTE.forEach((t) => {
   if (!!t.syl !== (t.grade === 1)) fail(`Lesestube ${t.id}: only and all grade-1 texts mark syllables`);
@@ -158,7 +158,7 @@ TEXTE.forEach((t) => {
 });
 
 // the monster book and saved runs identify enemies by name, heroes by id
-// a name or id may appear in several units only for the same opponent or hero (Klasse 1/2 share one set per subject;
+// a name or id may appear in several units only for the same opponent or hero (grade 1/2 share one set per subject;
 // each unit gives the shared hero its own attacks)
 const seen = new Map();
 const same = (what, key, sig) => {

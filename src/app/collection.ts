@@ -72,7 +72,7 @@ export function screenDex() {
       all.push(EN[w].boss);
     }
   }
-  for (let i = all.length - 1; i >= 0; i--) if (all.findIndex((e) => e.name === all[i].name) < i) all.splice(i, 1); // Klasse 1/2 units share their opponents
+  for (let i = all.length - 1; i >= 0; i--) if (all.findIndex((e) => e.name === all[i].name) < i) all.splice(i, 1); // grade 1/2 units share their opponents
   screen(
     html`<div class="screen">${raw(topbar('Monsterbuch'))}<div class="scroll"><div class="stack">${all.map((e) => {
       const seen = state.meta.dex[e.name];

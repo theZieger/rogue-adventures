@@ -5061,7 +5061,7 @@ export const MONART = (() => {
     return s;
   }
 
-  // Klasse 1/2 Sachkunde: Lotte and her opponents
+  // grade 1/2 Sachkunde: Lotte and her opponents
   const k12_petals = (x: number, y: number, r: number, len: number, n: number, col: string) =>
     Array.from(
       { length: n },
@@ -5276,7 +5276,7 @@ export const MONART = (() => {
     return s;
   }
 
-  // Klasse 1/2 Ethik: Mats and his opponents
+  // grade 1/2 Ethik: Mats and his opponents
   function mats(P: Palette, o: DrawOpts, C: Defs) {
     const e = o.evo;
     const jumper = C.grad('#3B7DD8'),
@@ -6209,7 +6209,7 @@ export const MONART = (() => {
   HEROES.push('dirigentin');
   FIT.dirigentin = { top: [60, 30, 1.1], eyes: [60, 58, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] };
 
-  /* ---------- Klasse 1 und 2: Mathe, Deutsch, Musik (klasse12.ts) ---------- */
+  /* ---------- Grades 1 and 2: Mathe, Deutsch, Musik (klasse12.ts) ---------- */
   const k12_head = (skin: string) =>
     `<ellipse cx="60" cy="56" rx="25" ry="26" ${F(skin)}/><ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
   const k12_face = (iris: string, brow: string) =>

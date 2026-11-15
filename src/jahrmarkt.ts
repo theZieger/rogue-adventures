@@ -26,7 +26,7 @@ interface Chart {
 export const MJ = (() => {
   const { rnd, pick, shuffle } = Q;
 
-  // Lehrplan Mathematik Klasse 3: Größen und Messen, Daten und Zufall
+  // maths curriculum grade 3: quantities and measuring, data and chance
   const MODULES: Record<string, TaskType> = {
     uhr: { name: 'Uhrturm', icon: '🕰️', maxTier: 5, worldCap: [2, 5], dmg: 12 },
     laenge: { name: 'Messlatte', icon: '📏', maxTier: 3, worldCap: [2, 3], dmg: 12 },
@@ -192,7 +192,7 @@ export const MJ = (() => {
       .join('');
     return `<svg class="jm-fig jm-wide" viewBox="0 0 320 ${y1 + 20}" role="img" aria-label="Balkendiagramm: ${title}"><text x="${x0}" y="11" font-size="12" font-weight="700" fill="${OUT}">${title}</text>${grid}${rects}</svg>`;
   }
-  // Fahrplan: one row per stop, one column per train; times without „Uhr“ like on a real timetable
+  // timetable: one row per stop, one column per train; times without „Uhr“ like on a real timetable
   function planTable(stops: string[], times: number[][]) {
     const head = `<tr><th>Haltestelle</th>${times.map((_, b) => `<th>Bahn ${b + 1}</th>`).join('')}</tr>`;
     return `<table class="jm-plan"><caption>Fahrplan der Jahrmarktbahn</caption>${head}${stops.map((st, i) => `<tr><th>${st}</th>${times.map((col) => `<td>${tm(col[i]).replace('\u00a0Uhr', '')}</td>`).join('')}</tr>`).join('')}</table>`;

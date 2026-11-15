@@ -24,7 +24,7 @@ export const TW = (() => {
     { n: 5, hp: 48, start: 3, enter: 2, elite: 2 },
     { n: 3, hp: 54, start: 3, enter: 2, final: 1 },
   ];
-  // Klasse 2: fewer monsters, each a little sturdier, so a run still has about as many questions
+  // grade 2: fewer monsters, each a little sturdier, so a run still has about as many questions
   const K2_COUNT = 0.8,
     K2_MIN = 2,
     K2_HP = 1.2;
