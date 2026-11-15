@@ -1,4 +1,4 @@
-// Klasse 1/2 ethik (and the Musik units of Klasse 1 and 2): checks beyond the generic ones in test_knowledge.js and test_data.js
+// grade 1/2 ethik (and the Musik units of grade 1 and 2): checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
 const fail = (m) => fails.push(m);
 import { MK } from '../src/knowledge.ts';
@@ -122,7 +122,7 @@ for (const t of samples.instrumente2) {
     if (t.options.some((o) => byPic(E.INSTR, o).length !== 1) || byPic(E.INSTR, t.answer)[0].acc !== t.q.slice(10, -1))
       fail('instrument tap: ' + t.qid);
   }
-  // Wiederholung und Gegensatz: the beginning comes back exactly once among the options, the form fits the parts
+  // repetition and contrast: the beginning comes back exactly once among the options, the form fits the parts
   if (t.mod === 'form') {
     const [a, b, v] = t.parts;
     const kinds = (c) => [...c].every((x) => E.SHAPES[x]) && c.length === 3;
@@ -147,7 +147,7 @@ for (const t of samples.instrumente2) {
 }
 if (!samples.instrumente2.some((t) => t.form) || !samples.instrumente2.some((t) => t.mod === 'form' && !t.form))
   fail('form: both task kinds');
-// Miteinander in Klasse 2: Ausgrenzung and anders sein
+// Miteinander in grade 2: Ausgrenzung and anders sein
 if (
   !['Die Mannschaftswahl', 'Das fremde Pausenbrot', 'Der Geheimclub'].every((n) =>
     MK.MODES.feste2.events.some((e) => e.dilemma && e.title === n),
@@ -163,7 +163,7 @@ for (const i of E.INSTR) {
     fail('no wrong family for ' + i.id);
 }
 
-// Klasse 1 Musik: unique drawings, every picture task has exactly one fitting answer
+// grade 1 Musik: unique drawings, every picture task has exactly one fitting answer
 {
   const lists = { instr: E.ORFF, opp: E.OPP, mood: E.MOODS, body: E.BODY, sign: E.SIGNS, pat: E.PATS };
   const pics = Object.values(lists)

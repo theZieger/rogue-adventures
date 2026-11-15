@@ -1,4 +1,4 @@
-// Sachkunde Klasse 3 (Lehrplan Sachsen LB 2 und LB 5): Die fünf Sinne, Sicher im Verkehr.
+// Sachkunde grade 3 (Saxon curriculum, LB 2 and LB 5): Die fünf Sinne, Sicher im Verkehr.
 // Uses the picture and task helpers of sachkunde.ts and registers its units in MK.MODES.
 import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 import type { Unit } from './curriculum.ts';
@@ -9,7 +9,7 @@ export const MS2 = (() => {
   const HIT = (d: string) => `<path class="hitarea" d="${d}" fill="transparent"/>`;
 
   /* ================= DIE FÜNF SINNE (LB 2) ================= */
-  // Teile von Auge und Ohr (für Lehrkräfte anpassbar): id, name, desc (Notizkarte), tip (Hinweis beim Suchen)
+  // parts of eye and ear (teachers can adapt them): id, name, desc (Notizkarte), tip (hint while searching)
   const EYE_PARTS = [
     {
       id: 'braue',
@@ -370,7 +370,7 @@ export const MS2 = (() => {
     },
   };
   const SI_POOL = partPool('auge', 'parts', 'auge', 'sa_').concat(partPool('ohr', 'parts', 'ohr', 'so_'), [
-    // Die fünf Sinne
+    // the five senses
     {
       id: 'sise1',
       mod: 'sinne',
@@ -461,7 +461,7 @@ export const MS2 = (() => {
       rf: true,
       a: true,
     },
-    // Sinne schützen
+    // protecting the senses
     {
       id: 'sisch1',
       mod: 'schutz',
@@ -574,7 +574,7 @@ export const MS2 = (() => {
       ],
       a: 0,
     },
-    // Menschen mit Behinderung, Hilfen
+    // people with disabilities, aids
     {
       id: 'sihi1',
       mod: 'hilfe',
@@ -684,7 +684,7 @@ export const MS2 = (() => {
       o: ['Für blinde Menschen', 'Für Autofahrer', 'Für Vögel'],
       a: 0,
     },
-    // Drogen
+    // drugs
     {
       id: 'sidr1',
       mod: 'drogen',
@@ -792,7 +792,7 @@ export const MS2 = (() => {
       rf: true,
       a: true,
     },
-    // Lückentext
+    // gap text
     { id: 'silt1', mod: 'lt', g: 'sinne', q: 'Mit der ___ riechen wir.', o: ['Nase', 'Zunge', 'Haut'], a: 0 },
     { id: 'silt2', mod: 'lt', g: 'sinne', q: 'Mit der ___ schmecken wir.', o: ['Zunge', 'Nase', 'Hand'], a: 0 },
     {
@@ -927,7 +927,7 @@ export const MS2 = (() => {
     },
   };
 
-  /* ---------- Sinnestäuschungen: erst vermuten, dann Ergebnis (wie das Forscherlabor) ---------- */
+  /* ---------- Sinnestäuschung: guess first, then the result (like the Forscherlabor) ---------- */
   const pic = (inner: string, label: string, box?: string) =>
     `<svg ${NS} class="pic" viewBox="${box || '0 0 240 150'}" aria-label="${label}"><rect width="${(box || '0 0 240 150').split(' ')[2]}" height="${(box || '0 0 240 150').split(' ')[3]}" rx="10" fill="#fff"/>${inner}</svg>`;
   const guide = (x: number, y1: number, y2: number) =>
@@ -1060,7 +1060,7 @@ export const MS2 = (() => {
       return null;
     };
   }
-  // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung; nie eine Wahl, bei der das Kind eine Droge nimmt
+  // dilemma cards: no right or wrong, every choice gets the same reward; never a choice in which the child takes a drug
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
   const SI: Unit = {
     modules: SI_MODULES,
@@ -1324,7 +1324,7 @@ export const MS2 = (() => {
   SI.gen = siGen(SI);
 
   /* ================= SICHER IM VERKEHR (LB 5) ================= */
-  // Verkehrszeichen nach StVO im Kasten 0–100: weißer Rand, Tusche-Umriss, Emailglanz von links oben
+  // traffic signs after the StVO in a 0–100 box: white rim, ink outline, enamel shine from the top left
   const disc = (r: number) => `M${50 - r} 50 A${r} ${r} 0 1 0 ${50 + r} 50 A${r} ${r} 0 1 0 ${50 - r} 50 Z`;
   const box = (x: number, y: number, w: number, h: number, r: number) =>
     `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + h - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`;
@@ -1514,7 +1514,7 @@ export const MS2 = (() => {
     );
   }
 
-  // Kreuzung von oben, Norden oben; alle fahren geradeaus. rightOf = von wo der Verkehr von rechts kommt (aus Sicht des Fahrers)
+  // crossing from above, north up; everyone drives straight on. rightOf = where the traffic from the right comes from (as the driver sees it)
   const ARMS = {
     S: { x: 132, y: 196, rot: 0 },
     N: { x: 108, y: 44, rot: 180 },
@@ -1621,7 +1621,7 @@ export const MS2 = (() => {
     );
   }
 
-  // Das verkehrssichere Fahrrad (StVZO): Teile zum Beschriften und für „Was fehlt?“
+  // the roadworthy bicycle (StVZO): parts to label and for „Was fehlt?“
   const BIKE_PARTS = [
     {
       id: 'klingel',
@@ -1901,7 +1901,7 @@ export const MS2 = (() => {
     },
   };
   const VE_POOL = partPool('fahrrad', 'parts', 'fahrrad', 'vr_').concat([
-    // Verkehrszeichen
+    // traffic signs
     {
       id: 'vezei1',
       mod: 'zeichen',
@@ -1993,7 +1993,7 @@ export const MS2 = (() => {
       a: false,
       why: 'Man darf nur in Pfeilrichtung fahren. Steht darunter „Radfahrer frei“, dürfen Radfahrer auch andersherum fahren.',
     },
-    // Vorfahrt
+    // right of way
     {
       id: 'vevo1',
       mod: 'vorfahrt',
@@ -2051,7 +2051,7 @@ export const MS2 = (() => {
       o: ['Ich warte und lasse es zuerst fahren', 'Ich fahre zuerst', 'Ich klingle und fahre los'],
       a: 0,
     },
-    // Sicher unterwegs: zu Fuß, Helm, Sichtbarkeit, Rad fahren auf Gehweg und Radweg
+    // getting about safely: on foot, helmet, being seen, cycling on pavement and cycle path
     {
       id: 'vewe1',
       mod: 'weg',
@@ -2251,7 +2251,7 @@ export const MS2 = (() => {
       a: 0,
     },
     { id: 'vewe28', mod: 'weg', g: 'fahrrad', q: 'Eine Klingel gehört an jedes Fahrrad.', rf: true, a: true },
-    // Lückentext
+    // gap text
     {
       id: 'velt1',
       mod: 'lt',

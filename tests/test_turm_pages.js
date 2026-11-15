@@ -452,7 +452,7 @@ const turn = (p, ok) => {
   );
   check(u.errors.length === 0, 'no page errors ' + u.errors.join(' '));
 
-  // reload during a question: the same question through the screens; Klasse 1 and hidden extras have no entry
+  // reload during a question: the same question through the screens; grade 1 and hidden extras have no entry
   const v = open(snapUi, 6);
   v.click('#turm');
   v.click('#cont');

@@ -1,63 +1,63 @@
 /*
-  Wörter und Sätze für das Fach Deutsch (Wörterwerkstatt und Satzbaustelle).
-  Eltern können hier die Lernwörter der Klasse ergänzen: eine Zeile kopieren, ändern, speichern,
-  dann `npm run build`. `npm test` prüft, ob jede Zeile die Felder hat, die ihre Aufgabe braucht.
+  Words and sentences for the subject Deutsch (Wörterwerkstatt and Satzbaustelle).
+  Parents can add their class's practice words here: copy a line, change it, save,
+  then `npm run build`. `npm test` checks that every line has the fields its task needs.
 
-  Regeln für alle Listen:
-  - Nomen immer mit Artikel schreiben: 'der Hund'.
-  - Texte in einfachen Anführungszeichen; ein Apostroph im Text ginge kaputt, also keinen verwenden.
-  - Nur echte deutsche Wörter, keine Markennamen.
+  Rules for all lists:
+  - Nouns always with their article: 'der Hund'.
+  - Texts in single quotes; an apostrophe in a text would break them, so use none.
+  - Only real German words, no brand names.
 
-  WÖRTERWERKSTATT (Richtig schreiben)
-  doppel       [richtig, falsch]                 doppelter Mitlaut, ck oder tz nach kurzem Selbstlaut
-  verlaengern  [Wort, verlängert mit Silbenstrich] das Wort endet auf d/t, g/k oder b/p; gefragt wird der letzte Buchstabe
-  dehnungsh    [richtig, falsch, in Silben]      silbentrennendes h
-  zusammen     [Teil 1, Teil 2, zusammengesetzt] alle drei mit Artikel; der Artikel kommt vom letzten Teil
-  abc          'Wort'                            für die Wörterbuch-Reihenfolge; die ersten drei Buchstaben ohne ä, ö, ü, ß
-  rede         [Begleitsatz mit Doppelpunkt, Rede mit Satzzeichen] – auch für den Doppelpunkt in „Komma und Doppelpunkt“
-  familien     [Wortstamm klein, Stammwort, [mindestens drei Wörter der Familie], [mindestens zwei ähnliche Wörter, die
-               nicht dazugehören]]; jedes Familienwort enthält den Stamm (ä, ö, ü, äu zählen wie a, o, u, au)
-  nachsilben   [Grundwort, Ableitung, falsch, falsch]: Nomen mit Artikel (-ung, -heit, -keit), sonst Adjektiv (-lich, -ig, -bar)
-  vorsilben    [Satz mit ___, richtiges Wort, falsch, falsch] – ver-, be-, ent-, vor-; nur ein Wort darf in den Satz passen
-  trennung     [richtig getrennt, falsch, falsch] – je ein Trennstrich; die falschen Stellen dürfen nirgends erlaubt sein
-               (also nur Wörter, die man an genau einer Stelle trennen kann)
-  aufzaehlung  'Satz mit Aufzählung': Kommas nur zwischen den Gliedern, vor dem letzten steht „und“ ohne Komma
-  aberdenn     'Satz, aber/denn …' mit genau einem Komma direkt vor „aber“ oder „denn“
-  grosssaetze  'Satz mit [Nomen]': das Nomen ist ein Gefühl, eine Farbe oder ein Verb oder Adjektiv als Nomen
-               (die Freude, das Rot, das Lachen) und das einzige Wort im Satz, das man großschreiben muss –
-               außer dem Satzanfang und Nomen, die schon groß dastehen
-  grundform    [Wortform, Grundform, falsch, falsch]: Verbform → Grundform (er lief → laufen) oder Nomen in der
-               Mehrzahl → Einzahl mit Artikel (die Bäume → der Baum); die falschen sind keine Grundform dieses Worts
-  doppelvokal  [richtig, falsch] – Merkwort mit aa, ee oder oo; falsch = mit nur einem Selbstlaut
-  saechsisch   [sächsisches Wort, Bedeutung, falsch, falsch, Erklärung]: nur Wörter, die in Sachsen wirklich so
-               gesagt werden
+  WÖRTERWERKSTATT (spelling)
+  doppel       [right, wrong]                    double consonant, ck or tz after a short vowel
+  verlaengern  [word, lengthened with a syllable dot] the word ends in d/t, g/k or b/p; the last letter is asked
+  dehnungsh    [right, wrong, in syllables]      silbentrennendes h
+  zusammen     [part 1, part 2, compound]        all three with article; the article comes from the last part
+  abc          'word'                            for dictionary order; the first three letters without ä, ö, ü, ß
+  rede         [introducing clause with colon, speech with punctuation] – also for the colon in „Komma und Doppelpunkt“
+  familien     [word stem in lower case, base word, [at least three words of the family], [at least two similar words
+               that do not belong]]; every family word contains the stem (ä, ö, ü, äu count as a, o, u, au)
+  nachsilben   [base word, derivation, wrong, wrong]: noun with article (-ung, -heit, -keit), otherwise adjective (-lich, -ig, -bar)
+  vorsilben    [sentence with ___, right word, wrong, wrong] – ver-, be-, ent-, vor-; only one word may fit the sentence
+  trennung     [split correctly, wrong, wrong] – one hyphen each; the wrong places must not be allowed anywhere
+               (so only words that can be split at exactly one place)
+  aufzaehlung  'sentence with a list': commas only between the items, before the last one stands „und“ without a comma
+  aberdenn     'sentence, aber/denn …' with exactly one comma right before „aber“ or „denn“
+  grosssaetze  'sentence with [noun]': the noun is a feeling, a colour, or a verb or adjective used as a noun
+               (die Freude, das Rot, das Lachen) and the only word in the sentence that must be capitalised –
+               apart from the start of the sentence and nouns that already stand capitalised
+  grundform    [word form, base form, wrong, wrong]: verb form → infinitive (er lief → laufen) or plural noun
+               → singular with article (die Bäume → der Baum); the wrong ones are not a base form of this word
+  doppelvokal  [right, wrong] – a Merkwort with aa, ee or oo; wrong = with only one vowel
+  saechsisch   [Saxon word, meaning, wrong, wrong, explanation]: only words that people in Saxony really
+               say this way
 
-  SATZBAUSTELLE (Sprache untersuchen)
-  nomen, verben, adjektive, pronomen   Wortarten; die Nomen werden auch für „Groß oder klein“ und „Artikel“ benutzt
-  zeitformen   [Präsens, Präteritum, falsche Form, die Kinder oft schreiben]
-  steigerung   [Grundstufe, Mehrstufe, Meiststufe]
-  vergleiche   [Satz mit ___ als Lücke, 'als' oder 'wie']
-  saetze       'Teil | Teil | Teil': Satzglieder durch | getrennt, so geschrieben, wie sie mitten im Satz stehen
-               (klein, außer Nomen und Namen). Das Subjekt steht in [eckigen Klammern], das Prädikat ist immer
-               der zweite Teil. Sätze mit drei Teilen beginnen mit dem Subjekt und enden mit einer Orts- oder
-               Zeitangabe – aus ihnen kommt auch die Umstellprobe.
-  oberbegriffe { Oberbegriff: [mindestens drei Wörter] } – jedes Wort darf nur zu einem Oberbegriff passen
-  teekessel    [Wort mit Artikel, Bedeutung 1, Bedeutung 2]
-  ersatz       [Nominalgruppe am Satzanfang, Rest des Satzes, Pronomen]: er, sie, es, wir, ihr oder 'sie (Mehrzahl)';
-               der Rest passt nur zu dieser Nominalgruppe (Verb in Einzahl oder Mehrzahl)
-  weglassen    'Teil | Teil | …' wie bei saetze; genau ein Teil steht in [eckigen Klammern]: das Wort oder Satzglied,
-               das man weglassen kann (Adjektiv, Orts- oder Zeitangabe). Alles andere muss bleiben, deshalb
-               nur Verben, die ein Objekt brauchen (tragen, brauchen, besuchen, mögen …)
-  personen     regelmäßige Verben für die Personalpronomen: du …st, er …t (Stamm endet nicht auf s, ß, z, t oder d)
-  redensarten  [Redensart oder Sprichwort, Bedeutung, falsch, falsch, Herkunft oder '' wenn unbekannt]
-  trennbar     ['Satz mit [Verb] und [Verbteil] in Klammern.', Grundform]: das Prädikat hat zwei Teile (räumt … auf);
-               zwischen den Teilen steht mindestens ein Wort
-  zeitwoerter  ['Zeitwort ___ Rest.', Präsens, Präteritum]: der Satz beginnt mit Gestern, Damals, Früher oder Vorhin
-               (dann Präteritum) oder mit Jetzt oder Morgen (dann Präsens)
-  anrede       [Brief an …, Satz mit ___, richtig, falsch, falsch]: Sie, Ihnen, Ihr an Erwachsene, die man siezt;
-               du, dich, dir, dein an Kinder und die Familie. Die falschen Wörter passen nicht zur Person.
-  begleiter    [Satz mit ___, richtiges Artikelwort, falsch, falsch]: mein, dein, unser, dieser, jeder, kein;
-               die falschen Formen passen nicht zum Nomen
+  SATZBAUSTELLE (examining language)
+  nomen, verben, adjektive, pronomen   parts of speech; the nouns are also used for „Groß oder klein“ and „Artikel“
+  zeitformen   [Präsens, Präteritum, wrong form that children often write]
+  steigerung   [positive, comparative, superlative]
+  vergleiche   [sentence with ___ as the gap, 'als' or 'wie']
+  saetze       'part | part | part': the parts of the sentence separated by |, written as they stand in the middle
+               of a sentence (lower case, except nouns and names). The subject is in [square brackets], the predicate
+               is always the second part. Sentences with three parts start with the subject and end with a place or
+               time – the Umstellprobe comes from them too.
+  oberbegriffe { generic term: [at least three words] } – every word may fit only one generic term
+  teekessel    [word with article, meaning 1, meaning 2]
+  ersatz       [noun phrase at the start of the sentence, rest of the sentence, pronoun]: er, sie, es, wir, ihr or
+               'sie (Mehrzahl)'; the rest fits only this noun phrase (verb in singular or plural)
+  weglassen    'part | part | …' as in saetze; exactly one part is in [square brackets]: the word or part of the
+               sentence that can be left out (adjective, place or time). Everything else must stay, so
+               only verbs that need an object (tragen, brauchen, besuchen, mögen …)
+  personen     regular verbs for the personal pronouns: du …st, er …t (the stem does not end in s, ß, z, t or d)
+  redensarten  [saying or proverb, meaning, wrong, wrong, origin or '' if unknown]
+  trennbar     ['Sentence with [verb] and [verb part] in brackets.', infinitive]: the predicate has two parts
+               (räumt … auf); at least one word stands between the parts
+  zeitwoerter  ['Time word ___ rest.', Präsens, Präteritum]: the sentence starts with Gestern, Damals, Früher or Vorhin
+               (then Präteritum) or with Jetzt or Morgen (then Präsens)
+  anrede       [letter to …, sentence with ___, right, wrong, wrong]: Sie, Ihnen, Ihr to adults one says „Sie“ to;
+               du, dich, dir, dein to children and the family. The wrong words do not fit the person.
+  begleiter    [sentence with ___, right article word, wrong, wrong]: mein, dein, unser, dieser, jeder, kein;
+               the wrong forms do not fit the noun
 */
 export const MW = {
   doppel: [

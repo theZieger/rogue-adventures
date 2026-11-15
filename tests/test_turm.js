@@ -177,7 +177,7 @@ const cellsOk = (run) => {
     all.every((x) => Number.isInteger(x.hp) && x.hp >= 1 && x.hp === x.maxHp),
     'whole-number monster HP',
   );
-  // wave 4 has fast monsters in Klasse 3, none in Klasse 2; Klasse 2 has × 0.8 monsters, at least 2
+  // wave 4 has fast monsters in grade 3, none in grade 2; grade 2 has × 0.8 monsters, at least 2
   const r3 = board(start(undefined, 3, makeCtx(4)), 3, makeCtx(4));
   r3.turm.phase = 'build';
   r3.turm.wave = 3;

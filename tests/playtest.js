@@ -249,7 +249,7 @@ async function solveTask(forceWrong) {
       ),
     ];
   } else if (T && T.k12)
-    answers = T.answers; // Klasse 1/2 Mathe: tests/test_k12_mathe.js recomputes these from the pictures
+    answers = T.answers; // grade 1/2 Mathe: tests/test_k12_mathe.js recomputes these from the pictures
   else if ($('.story')) {
     const n = $('.story').textContent.match(/\d+/g).map(Number);
     answers = [n[0] * n[1]];

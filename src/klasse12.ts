@@ -1,4 +1,4 @@
-// Klasse 1 und 2: one hero and one set of opponents per subject, shared by all units of that subject in both grades
+// Grades 1 and 2: one hero and one set of opponents per subject, shared by all units of that subject in both grades
 // (fewer drawings; the owner's choice). A shared opponent counts once in the Monsterbuch. A unit gives the hero its own
 // four attacks: K12.unit(<fach>, attacks, { everything else of the unit }).
 // Hero ids and opponent names are stored in saves: never rename them once released.
@@ -164,7 +164,7 @@ export const K12 = (() => {
       },
       o,
     ) as Unit;
-  // events every Klasse-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
+  // events every grade-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
   const rest = (title: string, text: string) => ({
     title,
     text,

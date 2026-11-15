@@ -1,5 +1,5 @@
-// Sachkunde Klasse 1 und 2 (Lehrplan Sachsen 2019, Sachunterricht Kl. 1/2): Mein Körper, Durch das Jahr (Klasse 1),
-// Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (Klasse 2). Units register in MK.MODES like sachkunde3.ts;
+// Sachkunde grades 1 and 2 (Saxon curriculum 2019, Sachunterricht grades 1/2): Mein Körper, Durch das Jahr (grade 1),
+// Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (grade 2). Units register in MK.MODES like sachkunde3.ts;
 // hero and opponents come from the shared set K12.SETS.sachkunde, the tap-a-part pictures go into MS.PLANTS.
 import type { Unit } from './curriculum.ts';
 import { MK as K, type GenOpts, type Know, type Question } from './knowledge.ts';
@@ -79,7 +79,7 @@ export const MSK12 = (() => {
   const SOIL = (y: number, w: number) =>
     `<path d="M0 ${y} Q${w / 2} ${y - 4} ${w} ${y} L${w} ${y + 40} L0 ${y + 40} Z" fill="#B88A5E"/><path d="M0 ${y} Q${w / 2} ${y - 4} ${w} ${y}" fill="none" ${ln(2)}/>`;
 
-  // Wetterzeichen wie an der Wetterwand der Klasse
+  // weather signs like on the class's weather board
   const WX: Record<string, { name: string; art: string }> = {
     sonnig: { name: 'Sonnig', art: sun(50, 40, 16) },
     bewoelkt: { name: 'Bewölkt', art: cloud(62, 32, 0.9, '#C9D1DD') + cloud(44, 46, 1.1) },
@@ -112,7 +112,7 @@ export const MSK12 = (() => {
   };
   const wxSVG = (k: string) => pic('0 0 100 80', WX[k].art, 'Wetterzeichen', 160);
 
-  // ein Baum in den vier Jahreszeiten
+  // one tree in the four seasons
   const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
   function seasonSVG(i: number) {
     const crown = (a: string, b: string) =>
@@ -141,7 +141,7 @@ export const MSK12 = (() => {
     return pic('0 0 120 130', art, 'Ein Baum in einer Jahreszeit', 170);
   }
 
-  // Tageszeiten: Morgen und Abend sehen ähnlich aus und kommen nie zusammen als Antwort vor
+  // times of day: morning and evening look alike and never come up together as answers
   const DAYTIMES = [
     { name: 'Morgens', sky: '#D6E9FF', glow: '#FFF3C4', art: sun(22, 58, 11), lit: false, not: 'Abends' },
     { name: 'Mittags', sky: '#9FD4FF', art: sun(60, 16, 11), lit: false, not: '' },
@@ -169,7 +169,7 @@ export const MSK12 = (() => {
       200,
     );
 
-  // Fußgängerampel: das leuchtende Männchen ist farbig, das andere grau
+  // pedestrian light: the lit figure is coloured, the other one grey
   const AMPEL: Record<string, { col: string; mean: string }> = {
     rot: { col: '#E8344A', mean: 'Du musst warten' },
     gruen: { col: '#3DBE5A', mean: 'Du darfst gehen' },
@@ -185,7 +185,7 @@ export const MSK12 = (() => {
     );
   }
 
-  // Essen zum Antippen: gesund (Frühstück, Brotdose) und süß
+  // food to tap: healthy (breakfast, lunch box) and sweet
   const FOOD: Record<string, string> = {
     apfel: `<path d="M30 20 Q12 12 10 32 Q10 52 30 52 Q50 52 50 32 Q48 12 30 20 Z" fill="#E8344A" ${ln(2)}/><path d="M30 20 Q30 12 34 8" fill="none" ${ln(2)}/><path d="M34 12 Q42 6 46 12 Q40 16 34 12 Z" fill="#7CC35B" ${ln(1.4)}/><ellipse cx="20" cy="30" rx="4" ry="6" fill="#fff" opacity=".6"/>`,
     moehre: `<path d="M24 18 L40 18 L31 56 Z" fill="#F28C28" ${ln(2)}/><path d="M27 26 h6 M28 34 h5 M29 42 h3" stroke="#C0601A" stroke-width="1.4"/><path d="M28 18 Q22 8 18 6 M32 18 Q32 8 32 4 M36 18 Q40 8 46 6" fill="none" stroke="#4E9A32" stroke-width="3" stroke-linecap="round"/>`,
@@ -210,7 +210,7 @@ export const MSK12 = (() => {
   const HEALTHY = ['apfel', 'moehre', 'brot'],
     SWEET = ['lolli', 'schoko', 'limo'];
 
-  /* ================= MEIN KÖRPER (Klasse 1, LB 2) ================= */
+  /* ================= MEIN KÖRPER (grade 1, LB 2) ================= */
   const SKIN = '#F6C9A0';
   const BODY_PARTS = [
     { id: 'kopf', name: 'Kopf', desc: 'Oben auf dem Hals. Im Kopf denkst du.', tip: 'Der Teil ist ganz oben.' },
@@ -388,7 +388,7 @@ export const MSK12 = (() => {
     { id: 'n3', text: 'Sagen, was passiert ist' },
     { id: 'n4', text: 'Auf Fragen warten' },
   ];
-  // Kleidung zum Wetter: jede Antwort passt nur zu ihrem Wetter
+  // clothes for the weather: every answer fits only its weather
   const WEAR = [
     ['regen', 'Regenjacke und Gummistiefel'],
     ['schnee', 'Mütze, Schal und Handschuhe'],
@@ -917,7 +917,7 @@ export const MSK12 = (() => {
   });
   KO.gen = koGen(KO);
 
-  /* ================= DURCH DAS JAHR (Klasse 1, LB 5 mit Jahreszeiten aus LB 3 und Wetter aus LB 4) ================= */
+  /* ================= DURCH DAS JAHR (grade 1, LB 5 with the seasons from LB 3 and the weather from LB 4) ================= */
   const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
   const MONTHS = [
     'Januar',
@@ -933,7 +933,7 @@ export const MSK12 = (() => {
     'November',
     'Dezember',
   ];
-  // Monate je Jahreszeit, wie im Sachunterricht üblich: Frühling März bis Mai
+  // months per season, as usual in Sachunterricht: spring is March to May
   const seasonOf = (m: number) => Math.floor(((m + 10) % 12) / 3);
   const TAG = [
     'Aufstehen',
@@ -1501,7 +1501,7 @@ export const MSK12 = (() => {
   });
   JA.gen = jaGen(JA);
 
-  /* ================= BÄUME UND BLUMEN (Klasse 2, LB 3) ================= */
+  /* ================= BÄUME UND BLUMEN (grade 2, LB 3) ================= */
   const LEAF = '#7CC35B',
     LEAF_D = '#4E9A32',
     BARK = '#8A5A34';
@@ -1708,7 +1708,7 @@ export const MSK12 = (() => {
     );
   S.PLANTS.bohne12 = BEAN;
 
-  // Blätter, Nadelzweige und Früchte mit den Merkmalen aus dem Bestimmungsbuch (Blattform, Nadeln, Zapfen, Frucht)
+  // leaves, needle twigs and fruits with the traits from the field guide (leaf shape, needles, cones, fruit)
   const fx = (v: number) => +v.toFixed(1);
   // closed smooth outline through the points (Catmull-Rom as cubic Béziers)
   const smooth = (pts: number[][]) =>
@@ -2212,7 +2212,7 @@ export const MSK12 = (() => {
       `<path d="M114 30 l3 -1 M70 6 l2 -2" ${ln(2.6)}/>`
     );
   }
-  // Lärche: soft light-green needles in rosettes on short knobs, small upright rose-like cones
+  // larch: soft light-green needles in rosettes on short knobs, small upright rose-like cones
   function laerche() {
     const tw = [8, 100, 54, 70, 112, 20],
       back: string[] = [],
@@ -2444,7 +2444,7 @@ export const MSK12 = (() => {
   const flowerSVG = (id: string) =>
     pic('0 0 100 130', `${FLOWERS[id]}${SOIL(120, 100)}`, 'Bild einer Frühlingsblume', 150);
 
-  // Obstarten: k = Kernobst, s = Steinobst, b = Beerenobst
+  // kinds of fruit: k = Kernobst, s = Steinobst, b = Beerenobst
   const OBST = [
     ['Apfel', 'k'],
     ['Birne', 'k'],
@@ -2907,7 +2907,7 @@ export const MSK12 = (() => {
   });
   BA.gen = baGen(BA);
 
-  /* ================= TIERE BEI UNS (Klasse 2, LB 3) ================= */
+  /* ================= TIERE BEI UNS (grade 2, LB 3) ================= */
   const BIRD_SIL = smooth([
     [94, 38],
     [91, 29],
@@ -2938,7 +2938,7 @@ export const MSK12 = (() => {
     n: 'M70 38 Q54 40 40 58 L33 67 Q48 68 62 62 Q74 54 70 38 Z',
     long: 'M72 40 Q50 44 8 74 Q32 70 52 64 Q70 58 72 40 Z',
   };
-  // Singvögel aus einer Form; die Gefiederzeichnung liegt beschnitten auf dem Körper
+  // songbirds from one shape; the plumage pattern lies clipped on the body
   const SONG: Record<string, Songbird> = {
     amsel: {
       body: '#2A2A30',
@@ -3038,7 +3038,7 @@ export const MSK12 = (() => {
     { id: 'storch', name: 'Storch' },
     { id: 'schwalbe', name: 'Schwalbe' },
   ];
-  // has: Vögel mit diesem Merkmal; skip: ähnlich genug, um als falsche Antwort zu verwirren
+  // has: birds with this trait; skip: similar enough to confuse as a wrong answer
   const BIRD_TRAITS = [
     { q: 'Welcher Vogel hat eine orange-rote Brust?', has: ['rotkehlchen'] },
     { q: 'Welcher Vogel hat einen gelben Bauch und weiße Wangen?', has: ['meise'] },
@@ -3051,7 +3051,7 @@ export const MSK12 = (() => {
     { q: 'Welcher Vogel fliegt im Herbst nach Afrika?', has: ['storch', 'schwalbe'], skip: ['rotkehlchen'] },
     { q: 'Welcher kleine braune Vogel badet gern im Staub?', has: ['spatz'], skip: ['amsel'] },
   ];
-  // Regenwurm: a body that tapers to both ends, ring segments and the thicker, lighter saddle (Gürtel) nearer the head
+  // earthworm: a body that tapers to both ends, ring segments and the thicker, lighter saddle (Gürtel) nearer the head
   function worm() {
     const c = samp(
       [
@@ -3567,13 +3567,13 @@ export const MSK12 = (() => {
   });
   TI.gen = tiGen(TI);
 
-  /* ================= LICHT, LUFT UND WASSER (Klasse 2, LB 4) ================= */
+  /* ================= LICHT, LUFT UND WASSER (grade 2, LB 4) ================= */
   const OBJ: Record<string, string> = {
     baum: `<rect x="76" y="46" width="8" height="28" fill="${BARK}" ${ln(1.6)}/><circle cx="80" cy="38" r="16" fill="${LEAF}" ${ln(2)}/>`,
     kind: `<circle cx="80" cy="38" r="7" fill="${SKIN}" ${ln(1.6)}/><rect x="74" y="46" width="12" height="16" rx="3" fill="#3B82F6" ${ln(1.6)}/><path d="M77 62 V74 M83 62 V74" ${ln(3)}/>`,
     haus: `<rect x="66" y="50" width="28" height="24" fill="#E3DED0" ${ln(1.8)}/><path d="M62 52 L80 36 L98 52 Z" fill="#E8603A" ${ln(1.8)}/><rect x="76" y="60" width="8" height="14" fill="${BARK}"/>`,
   };
-  // side: wo die Sonne steht ('l' oder 'r'); der Schatten fällt auf die andere Seite
+  // side: where the sun stands ('l' or 'r'); the shadow falls on the other side
   const shadowSVG = (obj: string, side: string, showSun: boolean) =>
     pic(
       '0 0 160 90',
@@ -3641,7 +3641,7 @@ export const MSK12 = (() => {
       'Warnzeichen',
       120,
     );
-  // Forscherlabor: erst vermuten, dann zeigt das Bild das Ergebnis
+  // Forscherlabor: guess first, then the picture shows the result
   const glass = (label: string, state: string) =>
     pic(
       '0 0 200 150',
@@ -4014,7 +4014,7 @@ export const MSK12 = (() => {
       ],
     },
   };
-  // Plan lesen: the plan and legend of Kompass und Karte (Klasse 3) without the compass; four places on the 3 × 3 blocks
+  // reading a plan: the plan and legend of Kompass und Karte (grade 3) without the compass; four places on the 3 × 3 blocks
   const dat = (p: { vom: string }) => p.vom.replace(/^vom /, 'dem ').replace(/^von /, '');
   const akk = (p: { name: string }) => p.name.replace(/^der /, 'den ');
   const big = (p: { name: string }) => p.name[0].toUpperCase() + p.name.slice(1);
