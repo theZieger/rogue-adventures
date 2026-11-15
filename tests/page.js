@@ -32,7 +32,7 @@ function open(storage, opts) {
   // a closed page may still flush one pending screen update; only open pages report errors
   let snap = null;
   const virtualConsole = new VirtualConsole();
-  virtualConsole.sendTo(console, { omitJSDOMErrors: true });
+  virtualConsole.forwardTo(console, { jsdomErrors: 'none' });
   virtualConsole.on('jsdomError', (e) => {
     if (!snap) console.error(e);
   });
