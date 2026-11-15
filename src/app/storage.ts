@@ -32,7 +32,7 @@ export const gradeTabs = () =>
     : `<div class="grades" role="group" aria-label="Klasse">${grades()
         .map(
           (g) =>
-            `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-action="grade" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`,
+            `<button class="chip ${g === curGrade() ? 'on' : ''}" data-action="grade" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`,
         )
         .join('')}</div>`;
 // a tap on a grade chip: the grade is saved and the screen that showed the chips is drawn again

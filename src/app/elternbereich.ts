@@ -144,10 +144,10 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
     html`<div class="statrow"><span class="n">${n}</span><span>${v}</span></div>`;
   const level = (c: number, t: number) =>
     c / t >= 0.8
-      ? html`<span class="lvl good">sicher</span>`
+      ? html`<span class="pill good">sicher</span>`
       : c / t >= 0.5
-        ? html`<span class="lvl mid">fast sicher</span>`
-        : html`<span class="lvl low">übt noch</span>`;
+        ? html`<span class="pill warn">fast sicher</span>`
+        : html`<span class="pill bad">übt noch</span>`;
   const srow = (icon: string, name: string, c: number, t: number, more?: string) =>
     html`<div class="srow"><div class="ptext"><b>${icon} ${name}</b><span>${c} von ${t} richtig${more}</span></div>${level(c, t)}</div>`;
   const LEGEND = note(
@@ -340,7 +340,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
                     )}${msg}`,
                   )
                 : '',
-              html`<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => html`<button role="tab" data-pm="${x}" data-action="mode" aria-selected="${String(x === m)}" class="${shown(x) ? '' : 'off'}">${MODES[x].icon} ${MODES[x].title}</button>`)}</div>`,
+              html`<div class="pchips" role="tablist" aria-label="Themen">${s.modes.map((x) => html`<button role="tab" data-pm="${x}" data-action="mode" aria-selected="${String(x === m)}" class="chip${shown(x) ? '' : ' off'}">${MODES[x].icon} ${MODES[x].title}</button>`)}</div>`,
             ]
           : '',
         card(
@@ -451,7 +451,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
           sw(extraOn(k), html`data-hide="extra:${k}" data-action="hide"`, t, html`<span>${d}</span>`),
         )}`,
       ),
-      card(html`🏰 Turmwacht <span class="ptag">zum Ausprobieren</span>`, [
+      card(html`🏰 Turmwacht <span class="pill">zum Ausprobieren</span>`, [
         sw(
           state.meta.turm.on,
           html`data-turmon data-action="turm"`,

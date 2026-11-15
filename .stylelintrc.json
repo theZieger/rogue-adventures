@@ -1,15 +1,30 @@
 {
   "rules": {
     "color-no-hex": true,
+    "color-named": "never",
+    "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla", "cubic-bezier"],
     "declaration-property-value-disallowed-list": {
-      "font-size": ["/^[0-9.]+px$/"],
-      "/^border(-.*)?-radius$/": ["/[0-9]px/"]
+      "/^font(-size)?$/": ["/[0-9]px/"],
+      "/^border(-.*)?-radius$/": ["/[0-9]px/"],
+      "/^(border(-(top|right|bottom|left))?(-width)?|outline(-width)?)$/": ["/[0-9]px/"],
+      "/^(gap|row-gap|column-gap|padding(-.*)?)$/": ["/[1-9][0-9.]*px/"],
+      "/^transition(-duration)?$/": ["/[0-9]m?s\\b/"],
+      "font-family": ["/^(?!var\\(--font-)/"],
+      "z-index": ["/^[0-9]{2,}$/"]
+    },
+    "declaration-property-value-allowed-list": {
+      "font-weight": ["400", "700"],
+      "line-height": ["/^var\\(--leading-/"]
     }
   },
   "overrides": [
     {
       "files": ["src/styles/tokens.css"],
-      "rules": { "color-no-hex": null, "declaration-property-value-disallowed-list": null }
+      "rules": {
+        "color-no-hex": null,
+        "function-disallowed-list": null,
+        "declaration-property-value-disallowed-list": null
+      }
     }
   ]
 }

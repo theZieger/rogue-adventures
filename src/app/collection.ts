@@ -57,7 +57,7 @@ export function screenVictory() {
   state.run = null;
   setTimeout(SFX.finale, 300);
   screen(
-    html`<div class="screen">${raw(topbar('Sieg!'))}${raw(CONFETTI)}<div class="scroll"><div class="card center"><h1 style="font-size:36px">${bs.name} ist besiegt!</h1>${raw(heroSVG(spec, evo))}<p><b>${name}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${raw(stampLine(10))}${roof && extraOn('huette') ? html`<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>` : ''}<p>Gewonnene Abenteuer: ${state.meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again" data-action="again">Noch ein Abenteuer</button><button class="btn ghost" id="home" data-action="home">Zum Titel</button></div></div></div>`,
+    html`<div class="screen">${raw(topbar('Sieg!'))}${raw(CONFETTI)}<div class="scroll"><div class="card center"><h1 style="font-size:var(--text-36)">${bs.name} ist besiegt!</h1>${raw(heroSVG(spec, evo))}<p><b>${name}</b> ${CFG().worlds > 1 ? `hat ${CFG().worlds === 2 ? 'beide Welten' : 'alle drei Welten'} durchquert.` : 'ist am Ziel.'}</p>${raw(stampLine(10))}${roof && extraOn('huette') ? html`<p>Für deine Hütte gibt es jetzt ein Dachfenster.</p>` : ''}<p>Gewonnene Abenteuer: ${state.meta.wins}</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again" data-action="again">Noch ein Abenteuer</button><button class="btn ghost" id="home" data-action="home">Zum Titel</button></div></div></div>`,
     { again: () => screenStarter(), home: screenTitle },
   );
 }
@@ -76,7 +76,7 @@ export function screenDex() {
   screen(
     html`<div class="screen">${raw(topbar('Monsterbuch'))}<div class="scroll"><div class="stack">${all.map((e) => {
       const seen = state.meta.dex[e.name];
-      return html`<div class="choice" style="cursor:default">${seen ? raw(monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss })) : html`<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:48px">❔</div>`}<div class="meta"><div class="name">${seen ? e.name : '???'}</div>${seen ? raw(typeChip(e.type)) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`;
+      return html`<div class="choice" style="cursor:default">${seen ? raw(monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss })) : html`<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:var(--text-48)">❔</div>`}<div class="meta"><div class="name">${seen ? e.name : '???'}</div>${seen ? raw(typeChip(e.type)) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`;
     })}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     { back: screenTitle },
   );

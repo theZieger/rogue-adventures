@@ -70,7 +70,7 @@ export function screenDuel(players: DuelPlayer[]) {
     html`<div class="screen">${raw(topbar(`Duell · Kind ${i + 1} von 2`))}<div class="scroll"><div class="stack">
       ${i ? html`<p class="center">${players[0].name} ist bereit. Jetzt wählt das zweite Kind.</p>` : html`<p class="center">Zwei Kinder, ein Gerät. Ihr löst abwechselnd Aufgaben. Jede richtige Antwort trifft den Helden des anderen Kindes.</p>`}
       <div class="card"><h3><label for="dname">Dein Name</label></h3><input id="dname" class="nameinput" maxlength="12" autocomplete="off" placeholder="Kind ${i + 1}"><p class="pnote">Der Name wird nicht gespeichert.</p></div>
-      <div class="card"><h3>Einheit</h3><div class="toggles" role="group" aria-label="Einheit">${units.map((m) => html`<button class="toggle" data-unit="${m}" data-action="unit" aria-pressed="false">${MODES[m].icon} ${MODES[m].title}</button>`)}</div></div>
+      <div class="card"><h3>Einheit</h3><div class="toggles" role="group" aria-label="Einheit">${units.map((m) => html`<button class="chip" data-unit="${m}" data-action="unit" aria-pressed="false">${MODES[m].icon} ${MODES[m].title}</button>`)}</div></div>
       <div id="dheroes"></div>
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back" data-action="back">Zurück</button><button class="btn" id="go" data-action="go" disabled>${i ? 'Duell starten' : 'Weiter'}</button></div></div></div>`,
     {
@@ -106,7 +106,7 @@ function startDuel(players: DuelPlayer[], first: number) {
 function renderDuel(log: string, cls: string) {
   const plate = (p: Duellist, side: string) => {
     const pct = (p.hp / DUEL_HP) * 100;
-    return html`<div class="plate ${side}"><div class="name">${p.name}${state.duel.p[state.duel.turn] === p ? html` <span class="levelbadge">am Zug</span>` : ''}</div><div class="plateline"><span class="chip" style="background:${TYPES[duelSpec(p).type].color};color:#1C2541">${MODES[p.mode].icon} ${duelSpec(p).names[0]}</span></div><div class="hpbar"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">❤️ ${p.hp} / ${DUEL_HP}</div></div>`;
+    return html`<div class="plate ${side}"><div class="name">${p.name}${state.duel.p[state.duel.turn] === p ? html` <span class="pill">am Zug</span>` : ''}</div><div class="plateline"><span class="pill lg" style="background:${TYPES[duelSpec(p).type].color}">${MODES[p.mode].icon} ${duelSpec(p).names[0]}</span></div><div class="bar hp"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">❤️ ${p.hp} / ${DUEL_HP}</div></div>`;
   };
   const sprite = (p: Duellist, side: string, id: string) =>
     html`<div class="sprite ${side}" id="${id}">${raw(heroSVG(duelSpec(p), 0, side === 'enemy' ? 'enemy' : undefined))}<i class="ground"></i></div>`;

@@ -3449,7 +3449,7 @@ await tick();
   p.click('[data-goal="0"]');
   const lacks = p.w.eval('MQ.STARTERS').find((x) => x.id !== 'kauz' && !x.attacks.some((a) => a.mod === g.mod));
   check(
-    p.text().includes('Wochenziel') && !!p.$('.recbadge'),
+    p.text().includes('Wochenziel') && !!p.$('.pill.warn'),
     'the goal leads to the hero choice of its game, with the goal on top',
   );
   if (lacks) {
@@ -3472,7 +3472,8 @@ await tick();
     if (ok) ok.click();
   }
   check(
-    !fight || [...p.d.querySelectorAll('.atk')].some((b) => b.querySelector('.tag.goal')),
+    !fight ||
+      [...p.d.querySelectorAll('.atk')].some((b) => b.querySelector('.pill.warn')?.textContent.includes('Wochenziel')),
     'in the fight the attack for the goal is marked',
   );
   // a running adventure without the attack: the child is asked, and can keep playing it
@@ -4373,8 +4374,8 @@ await tick();
   const cards = [...p0.d.querySelectorAll('.modecard')];
   check(
     cards[0].textContent.includes('Die Teestube') &&
-      !!cards[0].querySelector('.startbadge') &&
-      !cards[1].querySelector('.startbadge'),
+      !!cards[0].querySelector('.pill.good') &&
+      !cards[1].querySelector('.pill.good'),
     'the first English theme is the Teestube and has the start badge',
   );
   check(

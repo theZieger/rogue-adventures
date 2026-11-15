@@ -48,16 +48,14 @@ const META = 'mathquest_meta_v2';
     'child 1 at the bottom, child 2 at the top',
   );
   check(
-    p.text().includes('Mia fängt an') &&
-      p.$('.plate.hero .levelbadge') &&
-      p.$('.plate.hero .levelbadge').textContent === 'am Zug',
+    p.text().includes('Mia fängt an') && p.$('.plate.hero .pill') && p.$('.plate.hero .pill').textContent === 'am Zug',
     'child 1 starts',
   );
 
   const turns = [];
   // Mia answers wrong once (nothing happens), then everybody answers right until someone has 0 LP
   for (let n = 0; n < 40 && p.$('.atk'); n++) {
-    const who = p.$('.levelbadge').closest('.plate').classList.contains('hero') ? 'Mia' : 'Ben';
+    const who = p.$('.plate .name .pill').closest('.plate').classList.contains('hero') ? 'Mia' : 'Ben';
     p.click('.atk');
     turns.push({ who, mode: p.w.__mq.mode, kind: p.w.__task.kind });
     const hp = [...p.d.querySelectorAll('.hptext')].map((x) => x.textContent);

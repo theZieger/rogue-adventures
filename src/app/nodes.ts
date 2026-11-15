@@ -43,7 +43,7 @@ export function screenEvent(resumeOpt?: number): void {
   }
   const ev = state.run.node ? EV[state.run.node.ev!] : EV[pick(ids)];
   screen(
-    html`<div class="screen">${raw(topbar('❓ Ereignis'))}<div class="scroll"><div class="card"><h2>${ev.title}</h2><p style="font-size:20px">${ev.text}</p>${ev.dilemma ? html`<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>` : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => html`<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-action="choose" data-i="${i}">${o.label}</button>`)}</div></div></div>`,
+    html`<div class="screen">${raw(topbar('❓ Ereignis'))}<div class="scroll"><div class="card"><h2>${ev.title}</h2><p style="font-size:var(--text-20)">${ev.text}</p>${ev.dilemma ? html`<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>` : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => html`<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-action="choose" data-i="${i}">${o.label}</button>`)}</div></div></div>`,
     { choose: (button) => runOpt(+button.dataset.i!) },
   );
   const runOpt = (i: number): void => {
@@ -158,7 +158,7 @@ function training(mod: string, total: number, done: number) {
     nodeDone();
     saveAll();
     screen(
-      html`<div class="screen">${raw(topbar('🔥 Training'))}<div class="scroll"><div class="card center"><h2>Training beendet</h2><p>⭐ +15 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:800">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+      html`<div class="screen">${raw(topbar('🔥 Training'))}<div class="scroll"><div class="card center"><h2>Training beendet</h2><p>⭐ +15 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:700">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
       { next: advance },
     );
     return;
@@ -335,7 +335,7 @@ export function screenMine() {
       <div class="mine">${mn.cells.map((k, i) => html`<button class="mblock ${k ? 'open' : 'covered'}" data-i="${i}" ${k || !left ? 'disabled' : raw('data-action="dig"')} aria-label="${k ? MINE_LABEL[k] : 'Block ' + (i + 1)}">${raw(blockSVG(k))}${k ? html`<small>${MINE_LABEL[k]}</small>` : ''}</button>`)}</div>
       <p class="center">${left ? `Noch ${left} ${left === 1 ? 'Block' : 'Blöcke'}.` : `Ausbeute: ${haul('erz')} Erz, ${haul('stein')} Stein.`}</p>${!left && mn.disc ? html`<p class="center"><b>Aus deinem ersten Erz wird eine Eisenscheibe für den Kreisel.</b></p>` : ''}
       <p class="center muted" style="color:var(--ink-soft)">Im Lager: ${state.meta.materials.erz || 0} Erz, ${state.meta.materials.stein || 0} Stein</p></div></div>
-      <div class="bottom">${left ? html`<p class="center muted" style="margin:6px 0">Tippe auf einen Block.</p>` : html`<button class="btn" id="next" data-action="next">Weiter</button>`}</div></div>`,
+      <div class="bottom">${left ? html`<p class="center muted" style="margin:var(--space-6) 0">Tippe auf einen Block.</p>` : html`<button class="btn" id="next" data-action="next">Weiter</button>`}</div></div>`,
     {
       dig: (block) => {
         const zero = Math.random() < 0.4;
@@ -559,7 +559,7 @@ function schoolCheck(ids: string[], i: number) {
     nodeDone();
     saveAll();
     screen(
-      html`<div class="screen">${raw(topbar('✏️ Zeichenschule'))}<div class="scroll"><div class="card center"><h2>Merk-Check bestanden</h2><p>⭐ +20 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:800">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+      html`<div class="screen">${raw(topbar('✏️ Zeichenschule'))}<div class="scroll"><div class="card center"><h2>Merk-Check bestanden</h2><p>⭐ +20 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:700">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
       { next: advance },
     );
     return;
@@ -656,7 +656,7 @@ function laborEnd() {
   nodeDone();
   saveAll();
   screen(
-    html`<div class="screen">${raw(topbar(title))}<div class="scroll"><div class="card"><h2>Deine Notizkarte</h2><p>${L.right} von ${L.list.length} Vermutungen ${L.right === 1 ? 'hat' : 'haben'} gestimmt.</p><div class="notecard">${L.list.map((x) => html`<div>• ${x.note}</div>`)}</div><p>⭐ +20 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:800">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+    html`<div class="screen">${raw(topbar(title))}<div class="scroll"><div class="card"><h2>Deine Notizkarte</h2><p>${L.right} von ${L.list.length} Vermutungen ${L.right === 1 ? 'hat' : 'haben'} gestimmt.</p><div class="notecard">${L.list.map((x) => html`<div>• ${x.note}</div>`)}</div><p>⭐ +20 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:700">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
     { next: advance },
   );
 }

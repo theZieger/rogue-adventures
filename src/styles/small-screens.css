@@ -1,6 +1,6 @@
 /* Screen-reader-only text */
 .sr-only:focus-visible + label {
-  outline: 4px solid var(--focus);
+  outline: var(--line-thick) solid var(--focus);
   outline-offset: 2px;
 }
 .sr-only {
@@ -15,7 +15,7 @@
   border: 0;
 }
 .choice[disabled] {
-  opacity: 0.5;
+  opacity: var(--dim);
   cursor: not-allowed;
 }
 
@@ -26,29 +26,29 @@
   grid-template-rows: auto;
   grid-template-areas: "hsprite hplate esprite eplate";
   gap: var(--space-6);
-  padding: var(--space-4) var(--space-14) var(--space-2);
+  padding: var(--space-4) var(--space-12) var(--space-2);
   align-items: center;
 }
 .screen.tasking .plate {
-  padding: var(--space-3) var(--space-8);
-  gap: var(--space-1);
-  border-width: 2px;
+  padding: var(--space-4) var(--space-8);
+  gap: var(--space-2);
+  border-width: var(--line-thin);
   box-shadow: none;
 }
 .screen.tasking .plate.enemy {
   align-self: center;
 }
 .screen.tasking .plate .name {
-  font-size: var(--text-15);
+  font-size: var(--text-16);
 }
 .screen.tasking .plate .hptext,
 .screen.tasking .plateline,
-.screen.tasking .plate .xpbar,
+.screen.tasking .plate .bar.xp,
 .screen.tasking .log,
 .screen.tasking .sprite .ground {
   display: none;
 }
-.screen.tasking .plate .hpbar {
+.screen.tasking .plate .bar.hp {
   height: 10px;
 }
 .screen.tasking .sprite .mon {
@@ -60,13 +60,13 @@
 @media (max-height: 720px) {
   .atk {
     min-height: 76px;
-    padding: var(--space-6) var(--space-10);
+    padding: var(--space-6) var(--space-12);
   }
   .atk .n {
     font-size: var(--text-20);
   }
   .atk .m {
-    font-size: var(--text-13);
+    font-size: var(--text-14);
   }
   .atk .tags {
     min-height: 0;
@@ -80,10 +80,10 @@
     height: 88px;
   }
   .log {
-    min-height: 40px;
+    min-height: var(--tap);
     font-size: var(--text-20);
     padding: var(--space-6) var(--space-12);
-    margin: var(--space-4) var(--space-14) var(--space-6);
+    margin: var(--space-4) var(--space-12) var(--space-6);
   }
   .numpad {
     gap: var(--space-6);
@@ -93,14 +93,14 @@
     font-size: var(--text-24);
   }
   .task {
-    padding: var(--space-10) var(--space-14);
+    padding: var(--space-12) var(--space-12);
   }
   .task .expr {
-    font-size: var(--text-34);
+    font-size: var(--text-36);
     margin: var(--space-4) 0 var(--space-2);
   }
   .task .seq {
-    font-size: var(--text-28);
+    font-size: var(--text-30);
     margin: var(--space-4) 0 var(--space-2);
   }
   .inp {
@@ -117,10 +117,10 @@
 @media (max-height: 600px) {
   .numpad button {
     min-height: 42px;
-    font-size: var(--text-22);
+    font-size: var(--text-24);
   }
   .bottom {
-    padding: var(--space-6) var(--space-10);
+    padding: var(--space-6) var(--space-12);
     padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   }
   .sprite.hero .mon {
@@ -133,12 +133,12 @@
   }
   .atk {
     min-height: 70px;
-    padding: var(--space-6) var(--space-10);
+    padding: var(--space-6) var(--space-12);
   }
   .log {
     min-height: 36px;
-    font-size: var(--text-19);
-    padding: var(--space-5) var(--space-10);
+    font-size: var(--text-20);
+    padding: var(--space-6) var(--space-12);
   }
 }
 /* Phone held sideways: arena as one row, task and keypad side by side */
@@ -149,7 +149,7 @@
     grid-template-rows: auto;
     grid-template-areas: "hsprite hplate esprite eplate";
     gap: var(--space-8);
-    padding: var(--space-4) var(--space-14) 0;
+    padding: var(--space-4) var(--space-12) 0;
     align-items: center;
   }
   .sprite .mon {
@@ -160,17 +160,17 @@
     display: none;
   }
   .plate {
-    padding: var(--space-3) var(--space-8);
-    gap: var(--space-1);
+    padding: var(--space-4) var(--space-8);
+    gap: var(--space-2);
   }
   .plate .name {
     font-size: var(--text-16);
   }
   .plateline,
-  .plate .xpbar {
+  .plate .bar.xp {
     display: none;
   }
-  .plate .hpbar {
+  .plate .bar.hp {
     height: 10px;
   }
   .plate .hptext {
@@ -179,8 +179,8 @@
   .log {
     min-height: 32px;
     font-size: var(--text-18);
-    padding: var(--space-4) var(--space-10);
-    margin: var(--space-4) var(--space-14);
+    padding: var(--space-4) var(--space-12);
+    margin: var(--space-4) var(--space-12);
   }
   .attacks {
     grid-template-columns: repeat(4, 1fr);
@@ -225,13 +225,13 @@
     grid-column: 2;
     grid-row: 3;
     border-top: 0;
-    border-left: 3px solid rgba(255, 255, 255, 0.08);
+    border-left: var(--line) solid var(--glass);
     display: flex;
     flex-direction: column;
     justify-content: center;
     overflow-y: auto;
   }
   .screen.tasking .numpad button {
-    min-height: 40px;
+    min-height: var(--tap);
   }
 }

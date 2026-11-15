@@ -19,7 +19,7 @@ export const heroSpec = () => CFG().starters.find((s) => s.id === state.run.hero
 export const STATS = () => state.meta.stats[state.mode];
 export const tutKey = (k: string) => state.mode + ':' + k;
 export const typeChip = (t: string) =>
-  `<span class="chip" style="background:${TYPES[t].color};color:var(--ink)">${TYPES[t].icon} ${TYPES[t].name}</span>`;
+  `<span class="pill lg" style="background:${TYPES[t].color}">${TYPES[t].icon} ${TYPES[t].name}</span>`;
 export const xpNeeded = (lvl: number) => 20 + lvl * 15;
 // a Turm run keeps world, tiers and the repeat guard per unit: task-type keys repeat across units
 const taskBox = () => (state.run && state.run.mode === 'turm' ? state.run.turm.at[state.mode] : state.run);

@@ -8,9 +8,9 @@ body {
   overscroll-behavior: none;
   background: var(--bg);
   color: var(--paper-ink);
-  font-family: var(--text);
-  font-size: var(--text-19);
-  line-height: 1.35;
+  font-family: var(--font-body);
+  font-size: var(--text-20);
+  line-height: var(--leading-normal);
   -webkit-text-size-adjust: 100%;
   overflow: hidden;
 }
@@ -23,7 +23,7 @@ button {
 }
 button:focus-visible,
 [tabindex]:focus-visible {
-  outline: 4px solid var(--focus);
+  outline: var(--line-thick) solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -44,43 +44,43 @@ button:focus-visible,
 .scroll {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-14) var(--space-16) var(--space-24);
+  padding: var(--space-12) var(--space-16) var(--space-24);
   min-height: 0;
 }
 .topbar {
   display: flex;
   align-items: center;
-  gap: var(--space-10);
-  padding: var(--space-10) var(--space-16);
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16);
   background: var(--bg2);
-  border-bottom: 3px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--line) solid var(--glass);
 }
 .topbar .title {
-  font-family: var(--hand);
+  font-family: var(--font-hand);
   font-size: var(--text-24);
   flex: 1;
 }
 .topbar .world {
   font-size: var(--text-16);
-  opacity: 0.85;
+  opacity: var(--soft);
 }
 
 h1,
 h2,
 h3 {
   margin: 0;
-  line-height: 1.12;
-  font-family: var(--hand);
+  line-height: var(--leading-tight);
+  font-family: var(--font-hand);
   font-weight: 400;
 }
 h1 {
-  font-size: var(--text-50);
+  font-size: var(--text-48);
 }
 h2 {
-  font-size: var(--text-32);
+  font-size: var(--text-30);
 }
 h3 {
-  font-size: var(--text-25);
+  font-size: var(--text-24);
 }
 p {
   margin: var(--space-8) 0;
@@ -91,14 +91,14 @@ p {
   align-items: center;
   justify-content: center;
   gap: var(--space-8);
-  min-height: 56px;
-  padding: var(--space-10) var(--space-20);
-  border: 3px solid var(--ink);
-  border-radius: var(--radius-18);
+  min-height: var(--tap-lg);
+  padding: var(--space-12) var(--space-24);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-22);
   background: var(--gold);
   color: var(--ink);
   font-weight: 700;
-  font-size: var(--text-21);
+  font-size: var(--text-20);
   box-shadow: var(--shadow);
   cursor: pointer;
   width: 100%;
@@ -106,42 +106,44 @@ p {
 }
 .btn:active {
   transform: translateY(4px);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-pressed);
 }
 .btn.secondary {
   background: var(--white);
-  border: 3px solid var(--ink);
-  box-shadow: 0 6px 0 rgba(28, 37, 65, 0.35);
-}
-.card .btn.secondary,
-.modal .btn.secondary {
-  background: var(--white);
-  border: 3px solid var(--ink);
-}
-.card .btn.small,
-.modal .btn.small {
-  box-shadow: 0 4px 0 rgba(28, 37, 65, 0.35);
 }
 .btn.ghost {
   background: transparent;
   color: var(--paper-ink);
   box-shadow: none;
-  border: 3px solid rgba(255, 255, 255, 0.6);
+  border: var(--line) solid var(--glass-line);
 }
 .btn.small {
-  min-height: 44px;
-  font-size: var(--text-17);
-  padding: var(--space-6) var(--space-14);
+  min-height: var(--tap);
+  font-size: var(--text-18);
+  padding: var(--space-6) var(--space-12);
   width: auto;
   border-radius: var(--radius-14);
+  box-shadow: var(--shadow-sm);
 }
+.btn.danger {
+  background: var(--red);
+}
+/* a button that cannot be tapped lies flat and grey; it never just fades */
 .btn:disabled {
-  opacity: 0.45;
+  background: var(--card2);
+  border-color: var(--ink-soft);
+  color: var(--ink-soft);
+  box-shadow: none;
   cursor: default;
+}
+.btn.ghost:disabled {
+  background: transparent;
+  border-color: var(--glass-edge);
+  color: var(--glass-line);
 }
 .row {
   display: flex;
-  gap: var(--space-10);
+  gap: var(--space-8);
   flex-wrap: wrap;
 }
 .row > .btn {
@@ -157,7 +159,7 @@ p {
 .trow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-10);
+  gap: var(--space-8);
 }
 .trow > .btn:only-child {
   grid-column: 1 / -1;
@@ -165,23 +167,177 @@ p {
 .trow > .btn {
   position: relative;
   min-width: 0;
-  padding: var(--space-10) var(--space-6);
+  padding: var(--space-12) var(--space-6);
   white-space: nowrap;
-  font-size: clamp(14px, 4vw, 21px);
+  font-size: clamp(var(--text-14), 4vw, var(--text-20));
 }
-.trow > .btn .newbadge,
-.trow > .btn .twrun {
+.trow > .btn .pill {
   position: absolute;
   top: -10px;
   right: -6px;
-  flex-basis: auto;
+}
+
+/* Pill: one short label that marks a state. The tone says which state; a pill is never tapped. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
   padding: 0 var(--space-8);
   border-radius: var(--radius-pill);
-  font-size: var(--text-13);
-  line-height: 20px;
-  opacity: 1;
-}
-.trow > .btn .twrun {
   background: var(--gold);
-  color: var(--navy-800);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-14);
+  font-weight: 700;
+  line-height: var(--leading-loose);
+  vertical-align: middle;
+}
+.pill.lg {
+  padding: var(--space-2) var(--space-12);
+  font-size: var(--text-16);
+}
+.pill.new {
+  background: var(--orange);
+}
+.pill.good {
+  background: var(--good-tint);
+  color: var(--good-ink);
+}
+.pill.warn {
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+}
+.pill.bad {
+  background: var(--bad-tint);
+  color: var(--bad-ink);
+}
+.pill.hot {
+  background: var(--hot-tint);
+  color: var(--hot-ink);
+}
+.pill.info {
+  background: var(--info-tint);
+  color: var(--info-ink);
+}
+/* Chip: one choice among a few; the chosen one is gold. */
+.chip {
+  flex: none;
+  min-height: var(--tap);
+  padding: var(--space-4) var(--space-16);
+  border: var(--line) solid var(--glass-edge);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--paper-ink);
+  font: inherit;
+  font-size: var(--text-18);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+/* on a card the outline is ink and several fit in a row */
+.card .chip {
+  padding: var(--space-4) var(--space-12);
+  border-color: var(--ink-soft);
+  color: var(--ink);
+  font-size: var(--text-16);
+}
+.chip.on,
+.chip[aria-selected="true"] {
+  background: var(--gold);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.card .chip.on {
+  border-color: var(--ink);
+}
+/* Callout: one line of advice inside a card. */
+.callout {
+  margin: var(--space-8) 0;
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-14);
+  background: var(--warn-tint);
+  color: var(--warn-ink);
+  font-size: var(--text-16);
+  font-weight: 700;
+}
+/* Bar: how much of something there is. .hp is life (gold when it runs low, then red), .xp is experience. */
+.bar {
+  display: block;
+  width: 100%;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  background: var(--card2);
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--green);
+  transition: width var(--t-quick);
+}
+.bar.hp {
+  height: 18px;
+  border: var(--line-thin) solid var(--glass-edge);
+  background: var(--shade);
+}
+.bar.hp i.mid {
+  background: var(--gold);
+}
+.bar.hp i.low {
+  background: var(--red);
+}
+.bar.xp {
+  height: 10px;
+  background: var(--shade);
+}
+.bar.xp i {
+  background: var(--blue);
+}
+/* where a pill sits next to other things */
+.item .pill {
+  margin-left: var(--space-4);
+}
+.modecard .pill {
+  margin-top: var(--space-8);
+}
+/* Round button: a small helper on a card (read aloud, explain). */
+.tut,
+.speak {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--space-12);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  color: var(--ink);
+  font-size: var(--text-18);
+  font-weight: 700;
+  cursor: pointer;
+}
+/* Glass button: the quiet buttons in the corners of the title screen. */
+.soundbtn,
+.stampbtn,
+.parentbtn {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--space-12);
+  border: var(--line-thin) solid var(--glass-line);
+  border-radius: var(--radius-pill);
+  background: var(--glass);
+  color: var(--paper-ink);
+  font-size: var(--text-18);
+  font-weight: 700;
+  cursor: pointer;
 }

@@ -17,4 +17,6 @@ The stylesheets sit in two cascade layers, `tokens` and above it `app` (`tools/b
 `STYLES` still decides between equally specific rules, exactly as before; finer layers would change which rule
 wins in places no test looks at. A sheet outside the layers, like the gallery's own, wins without a specificity fight.
 
+The long lists were cut to real scales in `adr/0009`.
+
 Still open: colours written inside drawings and inline styles in `src/app/`.

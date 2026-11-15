@@ -48,14 +48,39 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   what a screen puts in later. No `onclick` after rendering. `src/app/feedback.ts` is the shortest example (`adr/0008`).
 - A change that must not alter what a child sees is proven with the bot's recording: `TRACE_DIR=before npm run
   playtest` on the old state, the same with another folder on the new one, and the files must be identical.
-- Colours, font sizes, radii and spacing are tokens in `src/styles/tokens.css`, never a hex or pixel value in a rule
-  (Stylelint fails a hex colour, a pixel font size and a pixel radius). A new building
-  block gets a specimen in `src/gallery.ts` (`docs/gallery.html` after a build).
+- Anything a screen looks like follows „Design system“ below.
 - Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.ts` (key = the emoji) when shown.
   A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.
 - Icons and iOS launch screens (`docs/icons/`, `docs/splash/`) come from `node tools/make_icons.js`
   (needs Playwright); only rerun it when the artwork changes.
 - GitHub Pages is deployed by CI from `main`: https://thezieger.github.io/rogue-adventures/
+
+## Design system
+
+`docs/gallery.html` (built from `src/gallery.ts`) is the design system: every token with how often it is used, every
+shared building block in each state, and the rule for using it. Look there before styling anything. Why: `adr/0009`.
+
+- **Tokens only.** Every colour, size, space, line width, shadow, duration and font comes from
+  `src/styles/tokens.css`, in stylesheets and in inline `style="…"` alike. Stylelint fails the rest.
+- **Roles, not palette.** A rule takes a role (`--ink`, `--card`, `--gold` …) or a tone pair (`--good-tint` with
+  `--good-ink`; also `bad`, `warn`, `hot`, `info`). A palette step (`--navy-600`) is only for drawings (coins, maps,
+  the Turmwacht board). A see-through colour is a token (`--glass`, `--shade` …) or `color-mix()` of a role.
+- **The scales are closed:** 10 text sizes, 4 line heights, 5 radii, 8 spaces, 3 line widths, 2 tap sizes
+  (`--tap` 44 px is the smallest thing a child taps), 7 durations, 35 palette colours. Need a value between two
+  steps? Take the nearer step. A new step or colour changes `tests/test_design.js` and needs the owner's yes.
+- **One building block per job.** Before writing a class, find the job in the gallery:
+  `btn` (+ `secondary`, `ghost`, `danger`, `small`; one gold button per screen), `pill` (a label that marks a state,
+  tones `new good warn hot bad info`, size `lg`; never tapped), `chip` (one choice among a few, chosen is gold),
+  `switch` (on/off, parents only), `callout` (one line of advice), `bar` (+ `hp`, `xp`), `card`, `choice`, `modal`,
+  `tut`/`speak` (round helpers). A new look for an existing job is a variant of that block, not a new class.
+- **A new block** gets a specimen with its rule in `src/gallery.ts` and its name in `BLOCKS` in
+  `tests/test_design.js`. A new state of a block gets a specimen too.
+- A disabled control is designed (flat and grey), never just faded. Selection is the gold ring (`--ring`), the field
+  being typed in is blue (`--ring-focus`); green and red appear only after an answer.
+- Exceptions, on purpose: inside the Turmwacht board lengths are board units (`--u`); the fight choreography of
+  Turmwacht and Kreisel keeps its own animation times (tuned to the sounds). Transitions always use `--t-*`.
+- Patrick Hand (`--font-hand`) for headings, names and feedback, Andika (`--font-body`) for everything read or
+  calculated, weights 400 and 700 only. What not to drift back into: `tools/unslop-visual.md`.
 
 ## Code style
 

@@ -11,6 +11,10 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Verbessert
 - Kleine Schrift auf roten und orangen Flächen ist dunkler und besser zu lesen.
 - Mit Tastatur oder Vorlese-Hilfe lässt sich Lernquest leichter bedienen.
+- Schrift, Farben und Abstände sind überall einheitlich; gesperrte Knöpfe sind grau statt blass.
+
+### Behoben
+- Die Schadenszahl einer Attacke rutscht nicht mehr in die nächste Zeile.
 
 ## 2026-11-14
 

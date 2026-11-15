@@ -3,7 +3,7 @@
 #turm {
   flex-wrap: wrap;
   row-gap: 0;
-  border-color: rgba(255, 201, 60, 0.55);
+  border-color: var(--gold-glow);
 }
 #turm > span:first-child {
   display: inline-flex;
@@ -15,16 +15,6 @@
   width: 30px;
   height: 30px;
   flex: none;
-}
-.twrun {
-  display: flex;
-  flex-basis: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  font-size: var(--text-14);
-  font-weight: 700;
-  opacity: 0.9;
 }
 .twflag {
   width: 18px;
@@ -41,11 +31,11 @@
 .tw-subj {
   display: flex;
   align-items: center;
-  gap: var(--space-10);
+  gap: var(--space-8);
   width: 100%;
-  min-height: 52px;
+  min-height: var(--tap-lg);
   padding: var(--space-6) var(--space-12);
-  border: 3px solid var(--ink-soft);
+  border: var(--line) solid var(--ink-soft);
   border-radius: var(--radius-14);
   background: var(--white);
   color: var(--ink);
@@ -55,8 +45,8 @@
   cursor: pointer;
 }
 .tw-subj .ic {
-  font-size: var(--text-26);
-  line-height: 1;
+  font-size: var(--text-24);
+  line-height: var(--leading-none);
 }
 .tw-subj .nm {
   flex: 1;
@@ -66,13 +56,13 @@
 .tw-subj small {
   font-size: var(--text-14);
   font-weight: 700;
-  color: var(--gold-750);
+  color: var(--warn-ink);
 }
 .tw-subj .tick {
   width: 30px;
   height: 30px;
-  border-radius: var(--radius-9);
-  border: 3px solid var(--ink-soft);
+  border-radius: var(--radius-10);
+  border: var(--line) solid var(--ink-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -80,11 +70,11 @@
 }
 .tw-subj.on {
   border-color: var(--green);
-  background: var(--green-50);
+  background: var(--good-tint);
 }
 .tw-subj.on .tick {
   border-color: var(--green);
-  color: var(--green-760);
+  color: var(--good-ink);
   background: var(--white);
 }
 .tw-subj.fixed {
@@ -102,14 +92,14 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-6) var(--space-2);
-  border: 3px solid var(--ink-soft);
+  border: var(--line) solid var(--ink-soft);
   border-radius: var(--radius-14);
   background: var(--white);
   color: var(--ink);
   font: inherit;
-  font-size: var(--text-13);
+  font-size: var(--text-14);
   font-weight: 700;
-  line-height: 1.15;
+  line-height: var(--leading-tight);
   cursor: pointer;
   min-width: 0;
 }
@@ -123,7 +113,7 @@
 }
 .tw-hero.on {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px var(--gold);
+  box-shadow: var(--ring);
 }
 .tw-stages {
   display: flex;
@@ -169,10 +159,10 @@
   container-type: inline-size;
   width: min(100cqw - 16px, (100cqh - 4px) * var(--W) / var(--H));
   aspect-ratio: var(--W) / var(--H);
-  border: 3px solid var(--ink);
+  border: var(--line) solid var(--ink);
   border-radius: var(--radius-14);
   overflow: hidden;
-  background: var(--green-720);
+  background: var(--moss-600);
   box-shadow: var(--shadow);
 }
 .tw-scene {
@@ -263,8 +253,8 @@
   bottom: -20%;
   height: 44%;
   border: calc(3 * var(--u)) solid var(--gold);
-  background: rgba(255, 201, 60, 0.45);
-  box-shadow: 0 0 calc(8 * var(--u)) rgba(255, 224, 102, 0.9);
+  background: color-mix(in srgb, var(--gold) 45%, transparent);
+  box-shadow: 0 0 calc(8 * var(--u)) color-mix(in srgb, var(--gold-300) 90%, transparent);
 }
 .tw-mon.sel::after {
   content: "";
@@ -307,8 +297,8 @@
   gap: calc(2 * var(--u));
   padding: calc(1 * var(--u)) calc(3 * var(--u));
   border: calc(1.5 * var(--u)) solid var(--ink);
-  border-radius: var(--radius-99);
-  background: var(--cream-50);
+  border-radius: var(--radius-pill);
+  background: var(--card);
 }
 .tw-feet {
   display: block;
@@ -316,14 +306,14 @@
   height: calc(10 * var(--u));
 }
 .tw-feet.rest {
-  opacity: 0.4;
+  opacity: var(--dim);
 }
 .tw-hp {
   display: block;
   width: calc(38 * var(--u));
   height: calc(7 * var(--u));
-  border-radius: var(--radius-99);
-  background: var(--blue-160);
+  border-radius: var(--radius-pill);
+  background: var(--navy-100);
   overflow: hidden;
 }
 .tw-hp b {
@@ -343,17 +333,17 @@
   right: -16%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 .tw-tags i {
   display: flex;
   color: var(--ink);
   padding: calc(1.5 * var(--u));
   border-radius: 50%;
-  background: var(--cream-50);
+  background: var(--card);
   border: calc(1.5 * var(--u)) solid var(--ink);
   font-style: normal;
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 .tw-tags .emo {
   width: calc(20 * var(--u));
@@ -366,12 +356,12 @@
   bottom: -20%;
   height: 44%;
   border: calc(3 * var(--u)) solid var(--red);
-  background: rgba(232, 52, 74, 0.35);
+  background: color-mix(in srgb, var(--red) 35%, transparent);
   animation: tw-threat 1s ease-in-out infinite;
 }
 @keyframes tw-threat {
   50% {
-    box-shadow: 0 0 calc(10 * var(--u)) calc(2 * var(--u)) rgba(255, 90, 90, 0.9);
+    box-shadow: 0 0 calc(10 * var(--u)) calc(2 * var(--u)) color-mix(in srgb, var(--red) 90%, transparent);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -403,24 +393,24 @@
   height: calc(11 * var(--u));
   width: auto;
   padding: calc(1 * var(--u)) calc(3 * var(--u));
-  border-radius: var(--radius-99);
+  border-radius: var(--radius-pill);
   background: var(--ink);
   box-sizing: content-box;
 }
 button.tw-spot {
   cursor: pointer;
-  border-radius: var(--radius-12);
+  border-radius: var(--radius-14);
 }
 .tw-lanehead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2) var(--space-4);
   max-width: calc(210 * var(--u));
   z-index: 1;
   font-weight: 700;
-  font-size: max(10px, calc(14 * var(--u)));
-  line-height: 1.15;
+  font-size: max(var(--text-12), calc(14 * var(--u)));
+  line-height: var(--leading-tight);
 }
 .tw-lanehead.r {
   flex-direction: row-reverse;
@@ -436,18 +426,18 @@ button.tw-spot {
 } /* bottom path: its far field is right of the chips */
 .tw-lanehead > span {
   padding: calc(2 * var(--u)) calc(8 * var(--u));
-  border-radius: var(--radius-99);
+  border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--white);
   white-space: nowrap;
 }
 .tw-lanehead .nm {
-  border: 2px solid var(--c);
+  border: var(--line-thin) solid var(--c);
   box-shadow: inset 0 -3px 0 var(--c);
 }
 .tw-lanehead .tw-queue {
   font-size: 0.86em;
-  background: rgba(28, 37, 65, 0.92);
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
 }
 .tw-hpbox {
   display: flex;
@@ -465,39 +455,33 @@ button.tw-spot {
   translate: -50% 0;
 }
 .tw-hpbox .hptext {
-  font-size: max(13px, calc(18 * var(--u)));
+  font-size: max(var(--text-14), calc(18 * var(--u)));
   font-weight: 700;
   white-space: nowrap;
 }
 .tw-hpbox.hurt {
-  background: var(--red-650);
-  box-shadow: 0 0 0 calc(2 * var(--u)) var(--red-260);
+  background: var(--bad-ink);
+  box-shadow: 0 0 0 calc(2 * var(--u)) var(--red-200);
 }
 .tw-lost {
   margin-left: calc(6 * var(--u));
   font-style: normal;
-  color: var(--red-150);
+  color: var(--red-200);
 }
 .tw-lost[hidden] {
   display: none;
 }
-.tw-hpbox .hpbar {
+.tw-hpbox .bar.hp {
   display: block;
   height: calc(11 * var(--u));
-  border-radius: var(--radius-99);
-  background: var(--navy-660);
+  border-radius: var(--radius-pill);
+  background: var(--key);
   overflow: hidden;
 }
-.tw-hpbox .hpbar i {
+.tw-hpbox .bar.hp i {
   display: block;
   height: 100%;
   background: var(--green);
-}
-.tw-hpbox .hpbar i.mid {
-  background: var(--gold);
-}
-.tw-hpbox .hpbar i.low {
-  background: var(--red);
 }
 .tw-log {
   margin: var(--space-6) var(--space-12);
@@ -506,13 +490,13 @@ button.tw-spot {
 }
 .tw-log.hurt {
   border-color: var(--red);
-  background: var(--red-80);
+  background: var(--bad-tint);
 }
 .tw-hurtline {
-  font-family: "Andika", system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: var(--text-18);
   font-weight: 700;
-  color: var(--red-600);
+  color: var(--bad-ink);
 }
 .tw-log p {
   margin: 0;
@@ -561,13 +545,13 @@ button.tw-spot {
   flex: 1 1 0;
   min-width: 0;
   margin: 0 0 0 var(--space-4);
-  font-size: var(--text-17);
-  line-height: 1.2;
+  font-size: var(--text-18);
+  line-height: var(--leading-tight);
   align-self: center;
 }
 .tw-hint.warn {
   font-weight: 700;
-  color: var(--red-150);
+  color: var(--red-200);
 }
 .tw-card {
   padding: var(--space-8) var(--space-12);
@@ -580,7 +564,7 @@ button.tw-spot {
   min-width: 0;
 }
 .tw-from {
-  font-size: var(--text-15);
+  font-size: var(--text-16);
   font-weight: 700;
   color: var(--ink-soft);
 }
@@ -592,13 +576,9 @@ button.tw-spot {
 }
 .tw-cardhp {
   flex: none;
-  font-size: var(--text-19);
+  font-size: var(--text-20);
   font-weight: 700;
   white-space: nowrap;
-}
-.tw-card .tag.gate {
-  background: var(--red-60);
-  color: var(--red-600);
 }
 .tw-card p {
   margin: 0;
@@ -609,7 +589,7 @@ button.tw-spot {
 .tw-cardhead {
   display: flex;
   align-items: center;
-  gap: var(--space-10);
+  gap: var(--space-8);
 }
 .tw-cardhead .mon {
   width: 54px;
@@ -618,9 +598,9 @@ button.tw-spot {
   transform: scaleX(-1);
 }
 .tw-cardinfo .name {
-  font-family: var(--hand);
-  font-size: var(--text-26);
-  line-height: 1.05;
+  font-family: var(--font-hand);
+  font-size: var(--text-24);
+  line-height: var(--leading-tight);
 }
 .tw-cardinfo .speak {
   vertical-align: middle;
@@ -631,34 +611,13 @@ button.tw-spot {
   flex-wrap: wrap;
   gap: var(--space-4);
 }
-.tw-card .tag {
-  font-size: var(--text-16);
-  font-weight: 700;
-  border-radius: var(--radius-pill);
-  padding: 0 var(--space-10);
-  line-height: 26px;
-  background: var(--green-50);
-  color: var(--green-760);
-}
-.tw-card .tag.weak {
-  background: var(--gold);
-  color: var(--ink);
-}
-.tw-card .tag.power {
-  background: var(--cream-120);
-  color: var(--gold-810);
-}
-.tw-card .tag.again {
-  background: var(--blue-60);
-  color: var(--navy-650);
-}
 .tw-guard {
   font-weight: 700;
-  color: var(--red-600);
+  color: var(--bad-ink);
 }
 .tw-gate {
   font-weight: 700;
-  color: var(--orange-720);
+  color: var(--hot-ink);
 }
 .tw-card .btn {
   min-height: 50px;
@@ -668,7 +627,7 @@ button.tw-spot {
 }
 .tw-item {
   padding: var(--space-6) var(--space-12);
-  gap: var(--space-10);
+  gap: var(--space-8);
   box-shadow: none;
 }
 .tw-item .meta {
@@ -679,12 +638,12 @@ button.tw-spot {
   font-size: var(--text-24);
 }
 .tw-item .meta .desc {
-  font-size: var(--text-15);
-  line-height: 1.25;
+  font-size: var(--text-16);
+  line-height: var(--leading-normal);
 }
 .tw-itemic {
   font-size: var(--text-30);
-  line-height: 1;
+  line-height: var(--leading-none);
 }
 .tw-screen.tasking .tw-main,
 .tw-screen.tasking .tw-log {
@@ -692,7 +651,7 @@ button.tw-spot {
 }
 .tw-res {
   display: flex;
-  gap: var(--space-10);
+  gap: var(--space-8);
   font-weight: 700;
 }
 .tw-mon.guide::before {
@@ -703,7 +662,7 @@ button.tw-spot {
   border: calc(3 * var(--u)) dashed var(--gold);
 }
 .tw-bubble.flash {
-  animation: tw-flash 0.5s ease-in-out 3;
+  animation: tw-flash var(--t-move) ease-in-out 3;
 }
 @keyframes tw-flash {
   50% {
@@ -725,7 +684,7 @@ button.tw-spot {
 .tw-card .tw-shieldnow,
 .tw-shieldnow {
   font-size: var(--text-16);
-  line-height: 1.3;
+  line-height: var(--leading-normal);
 }
 i.dot {
   flex: none;
@@ -734,13 +693,13 @@ i.dot {
   height: 16px;
   margin-top: var(--space-2);
   border-radius: 50%;
-  border: 2.5px solid var(--ink);
+  border: var(--line) solid var(--ink);
 }
 .tw-shieldlist {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-6) var(--space-14);
-  margin: var(--space-4) 0 var(--space-14);
+  gap: var(--space-6) var(--space-12);
+  margin: var(--space-4) 0 var(--space-12);
   font-size: var(--text-18);
   font-weight: 700;
 }
@@ -748,14 +707,6 @@ i.dot {
   display: inline-flex;
   align-items: center;
   gap: var(--space-6);
-}
-.tw-card .tag.boss {
-  background: var(--cream-110);
-  color: var(--orange-710);
-}
-.tw-card .tag.elite {
-  background: var(--blue-50);
-  color: var(--navy-650);
 }
 .tw-bannerov {
   align-items: center;
@@ -775,7 +726,7 @@ i.dot {
   margin: var(--space-4) 0 var(--space-6);
 }
 .tw-bannerov .modal > p {
-  font-size: var(--text-19);
+  font-size: var(--text-20);
   margin: 0 0 var(--space-12);
 }
 .tw-earned,
@@ -789,9 +740,9 @@ i.dot {
 .tw-score li {
   display: flex;
   justify-content: space-between;
-  gap: var(--space-10);
-  padding: var(--space-5) var(--space-2);
-  border-bottom: 2px dashed rgba(28, 37, 65, 0.15);
+  gap: var(--space-8);
+  padding: var(--space-6) var(--space-2);
+  border-bottom: var(--line-thin) dashed color-mix(in srgb, var(--ink) 15%, transparent);
   font-size: var(--text-18);
 }
 .tw-earned li:last-child,
@@ -830,13 +781,13 @@ i.dot {
 }
 .tw-endbtns .pnote {
   margin: -4px 0 var(--space-2);
-  color: var(--blue-160);
+  color: var(--navy-100);
 }
 /* Bauzeit: cards in a strip under the board, so the board with the guard spots stays in view */
 .tw-lanehead .tw-coming {
   background: var(--gold);
   color: var(--ink);
-  border: 2px solid var(--ink);
+  border: var(--line-thin) solid var(--ink);
 }
 .tw-bau {
   display: flex;
@@ -848,11 +799,11 @@ i.dot {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0 var(--space-10);
+  gap: 0 var(--space-8);
 }
 .tw-bauhead h3 {
   margin: 0;
-  font-size: var(--text-22);
+  font-size: var(--text-24);
 }
 .tw-bauhead p {
   margin: 0;
@@ -872,17 +823,17 @@ i.dot {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
   align-items: center;
-  padding: var(--space-5) var(--space-4) var(--space-6);
-  border: 3px solid var(--ink);
+  padding: var(--space-6) var(--space-4) var(--space-6);
+  border: var(--line) solid var(--ink);
   border-radius: var(--radius-14);
   background: var(--card);
   color: var(--ink);
   font: inherit;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-sm);
 }
 .tw-buy:active {
   transform: translateY(3px);
@@ -891,27 +842,27 @@ i.dot {
 .tw-buy .tw-pic {
   display: block;
   width: 100%;
-  height: 46px;
-  border-radius: var(--radius-9);
-  background: var(--green-140);
+  height: var(--tap);
+  border-radius: var(--radius-10);
+  background: var(--card2);
 }
 .tw-buy b {
   flex: 1;
   display: flex;
   align-items: center;
   font-size: var(--text-14);
-  line-height: 1.1;
+  line-height: var(--leading-tight);
   hyphens: auto;
   overflow-wrap: anywhere;
 }
 .tw-price {
   padding: 0 var(--space-8);
-  border-radius: var(--radius-99);
+  border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--white);
-  font-size: var(--text-15);
+  font-size: var(--text-16);
   font-weight: 700;
-  line-height: 24px;
+  line-height: var(--leading-loose);
   white-space: nowrap;
 }
 .tw-price:empty {
@@ -919,18 +870,18 @@ i.dot {
 }
 .tw-buy.short .tw-price {
   background: none;
-  color: var(--orange-710);
+  color: var(--hot-ink);
   padding: 0;
 }
 .tw-buy.short,
 .tw-buy.off {
-  background: var(--blue-110);
+  background: var(--navy-100);
   box-shadow: none;
 }
 .tw-buy.short .tw-pic,
 .tw-buy.off .tw-pic {
   filter: grayscale(0.9);
-  opacity: 0.65;
+  opacity: var(--soft);
 }
 .tw-sheet {
   display: flex;
@@ -941,22 +892,22 @@ i.dot {
 .tw-sheet .tw-pic {
   width: min(100%, 220px);
   height: 90px;
-  border-radius: var(--radius-12);
-  background: var(--green-140);
+  border-radius: var(--radius-14);
+  background: var(--card2);
 }
 .tw-sheet h2 {
   margin: var(--space-8) 0 var(--space-4);
 }
 .tw-sheet p {
-  margin: 0 0 var(--space-10);
-  font-size: var(--text-19);
+  margin: 0 0 var(--space-8);
+  font-size: var(--text-20);
 }
 .tw-sheet .tw-bmsg {
-  color: var(--orange-710);
+  color: var(--hot-ink);
 }
 .tw-bmsg {
   margin: 0;
-  font-size: var(--text-17);
+  font-size: var(--text-18);
   font-weight: 700;
   color: var(--gold);
 }
@@ -964,14 +915,14 @@ i.dot {
   display: none;
 }
 .tw-pickhint .tw-bmsg {
-  color: var(--orange-710);
+  color: var(--hot-ink);
 }
 .tw-baurow {
   flex-wrap: nowrap;
 }
 .tw-baurow .btn.small {
   flex: none;
-  min-height: 52px;
+  min-height: var(--tap-lg);
 }
 .tw-baurow .btn {
   white-space: nowrap;
@@ -979,15 +930,15 @@ i.dot {
 .tw-baurow #nextwave,
 .tw-baurow #atk {
   flex: 1 1 auto;
-  min-height: 52px;
-  padding-inline: var(--space-10);
+  min-height: var(--tap-lg);
+  padding-inline: var(--space-12);
 }
 @media (max-width: 374px) {
   .tw-baurow .btn.small {
-    padding-inline: var(--space-10);
+    padding-inline: var(--space-12);
   }
   .tw-baurow #nextwave {
-    font-size: var(--text-19);
+    font-size: var(--text-20);
   }
 }
 .tw-pickhint p {
@@ -1003,7 +954,7 @@ button.tw-spot.pick::after {
   height: calc(24 * var(--u));
   border: calc(2.5 * var(--u)) dashed var(--gold);
   border-radius: 50%;
-  animation: tw-ring 1.2s ease-in-out infinite;
+  animation: tw-ring var(--t-long) ease-in-out infinite;
 }
 button.tw-spot.pick.on::after {
   bottom: calc(-30 * var(--u));
@@ -1035,21 +986,21 @@ button.tw-spot.pick.on::after {
   height: 76px;
 }
 .tw-look .name {
-  font-family: var(--hand);
+  font-family: var(--font-hand);
   font-size: var(--text-20);
-  line-height: 1.05;
+  line-height: var(--leading-tight);
   overflow-wrap: anywhere;
 }
 .tw-look .meta .name {
   font-size: var(--text-24);
 }
 .tw-pause {
-  font-size: var(--text-21);
+  font-size: var(--text-20);
   font-weight: 700;
   margin: var(--space-4) 0 var(--space-16);
 }
 #twt .tw-fl.new {
-  animation: tw-drop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  animation: tw-drop 0.6s var(--ease-bounce) both;
 }
 @keyframes tw-drop {
   from {
@@ -1064,12 +1015,12 @@ button.tw-spot.pick.on::after {
   }
 }
 .psubhead {
-  margin: var(--space-14) 0 0;
+  margin: var(--space-12) 0 0;
 }
 @media (max-height: 760px) {
   .tw-log {
     font-size: var(--text-18);
-    padding: var(--space-5) var(--space-10);
+    padding: var(--space-6) var(--space-12);
     margin: var(--space-4) var(--space-12);
   }
   /* small phones: the card gets compact so the board keeps its size (the tapped monster is marked on the board) */
@@ -1080,7 +1031,7 @@ button.tw-spot.pick.on::after {
     display: none;
   }
   .tw-card {
-    padding: var(--space-7) var(--space-10);
+    padding: var(--space-8) var(--space-12);
     gap: var(--space-4);
   }
   .tw-cardinfo {
@@ -1090,14 +1041,14 @@ button.tw-spot.pick.on::after {
     gap: var(--space-2) var(--space-8);
   }
   .tw-cardinfo .name {
-    font-size: var(--text-23);
+    font-size: var(--text-24);
   }
   .tw-card .btn {
-    min-height: 46px;
+    min-height: var(--tap);
   }
   .tw-card .pnote,
   .tw-card .tw-shieldnow {
-    font-size: var(--text-15);
+    font-size: var(--text-16);
   }
 }
 @media (max-height: 500px) and (orientation: landscape) {
@@ -1117,7 +1068,7 @@ button.tw-spot.pick.on::after {
     grid-row: 1 / 4;
     max-height: none;
     min-height: 0;
-    padding: var(--space-5) 0;
+    padding: var(--space-6) 0;
     margin-top: 0;
   }
   .tw-screen:not(.tasking) .tw-log {
@@ -1137,13 +1088,13 @@ button.tw-spot.pick.on::after {
     max-height: 100%;
     overflow-y: auto;
     border-top: 0;
-    border-left: 3px solid rgba(255, 255, 255, 0.08);
+    border-left: var(--line) solid var(--glass);
   }
   .tw-card p {
     font-size: var(--text-16);
   }
   .tw-card h3 {
-    font-size: var(--text-21);
+    font-size: var(--text-20);
   }
   .tw-endbtns {
     flex-direction: row;
@@ -1164,7 +1115,7 @@ button.tw-spot.pick.on::after {
     bottom: -10px;
     flex-wrap: wrap;
     margin: 0 -12px -10px;
-    padding: var(--space-8) var(--space-12) var(--space-10);
+    padding: var(--space-8) var(--space-12) var(--space-12);
     background: var(--bg2);
   }
   .tw-baurow .btn.small {
@@ -1224,30 +1175,30 @@ button.tw-spot.pick.on::after {
   filter: drop-shadow(0 0 calc(6 * var(--u)) var(--gold-300));
 }
 .tw-num {
-  font-family: var(--hand);
-  font-size: max(20px, calc(30 * var(--u)));
-  line-height: 1;
+  font-family: var(--font-hand);
+  font-size: max(var(--text-20), calc(30 * var(--u)));
+  line-height: var(--leading-none);
   color: var(--white);
   white-space: nowrap;
   text-shadow:
     0 2px 0 var(--ink),
-    0 0 5px rgba(0, 0, 0, 0.5);
+    0 0 5px var(--shade);
   animation: tw-num 1s ease-out both;
 }
 .tw-num.crit {
   color: var(--gold);
-  font-size: max(26px, calc(40 * var(--u)));
+  font-size: max(var(--text-24), calc(40 * var(--u)));
 }
 .tw-num.hurt {
   display: inline-flex;
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-2) var(--space-12);
-  border: 3px solid var(--ink);
-  border-radius: var(--radius-99);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-pill);
   background: var(--red);
   color: var(--white);
-  font-size: max(30px, calc(44 * var(--u)));
+  font-size: max(var(--text-30), calc(44 * var(--u)));
   text-shadow: none;
   animation-duration: 1.6s;
 }
@@ -1257,13 +1208,13 @@ button.tw-spot.pick.on::after {
 }
 .floatnum.hurt {
   padding: 0 var(--space-12);
-  border: 3px solid var(--ink);
-  border-radius: var(--radius-99);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--radius-pill);
   background: var(--red);
   text-shadow: none;
 }
 .tw-num.heal {
-  color: var(--green-250);
+  color: var(--green-300);
 }
 @keyframes tw-num {
   0% {
@@ -1291,7 +1242,7 @@ button.tw-spot.pick.on::after {
   border-radius: 50%;
   border: calc(5 * var(--u)) solid var(--gold);
   box-shadow: 0 0 calc(10 * var(--u)) var(--gold-300);
-  animation: tw-burst 0.55s ease-out both;
+  animation: tw-burst var(--t-move) ease-out both;
 }
 @keyframes tw-burst {
   from {
@@ -1352,9 +1303,9 @@ button.tw-spot.pick.on::after {
 .tw-shard {
   width: calc(15 * var(--u));
   height: calc(7 * var(--u));
-  border: 2px solid var(--ink);
-  border-radius: var(--radius-3) var(--radius-8) var(--radius-3) var(--radius-8);
-  animation: tw-shard 0.7s cubic-bezier(0.2, 0.8, 0.4, 1) both;
+  border: var(--line-thin) solid var(--ink);
+  border-radius: var(--radius-4) var(--radius-10) var(--radius-4) var(--radius-10);
+  animation: tw-shard 0.7s ease-out both;
 }
 @keyframes tw-shard {
   from {
@@ -1369,18 +1320,18 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-say {
-  padding: var(--space-1) var(--space-7);
-  border: 2px solid var(--ink);
-  border-radius: var(--radius-10) var(--radius-10) var(--radius-10) var(--radius-2);
-  background: var(--cream-60);
+  padding: var(--space-2) var(--space-8);
+  border: var(--line-thin) solid var(--ink);
+  border-radius: var(--radius-10) var(--radius-10) var(--radius-10) var(--radius-4);
+  background: var(--card);
   color: var(--ink);
   font-weight: 700;
-  font-size: max(12px, calc(15 * var(--u)));
+  font-size: max(var(--text-12), calc(15 * var(--u)));
   white-space: nowrap;
-  animation: tw-say 0.8s ease-out both;
+  animation: tw-say var(--t-slow) ease-out both;
 }
 .tw-say.r {
-  border-radius: var(--radius-10) var(--radius-10) var(--radius-2) var(--radius-10);
+  border-radius: var(--radius-10) var(--radius-10) var(--radius-4) var(--radius-10);
 }
 @keyframes tw-say {
   0% {
@@ -1405,7 +1356,7 @@ button.tw-spot.pick.on::after {
 .tw-leaf {
   width: calc(18 * var(--u));
   height: calc(23 * var(--u));
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 1px 0 var(--shade));
 }
 #twt .tw-fl.tw-glow {
   animation: tw-room 0.6s ease-out;
@@ -1449,11 +1400,11 @@ button.tw-spot.pick.on::after {
 }
 .tw-rings circle {
   fill: none;
-  stroke: var(--red-100);
+  stroke: var(--bad-fill);
   stroke-width: 4.5;
   transform-box: fill-box;
   transform-origin: center;
-  animation: tw-ring-out 0.75s ease-out both;
+  animation: tw-ring-out var(--t-slow) ease-out both;
 }
 @keyframes tw-ring-out {
   from {
@@ -1466,7 +1417,7 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-zap {
-  animation: tw-zap 0.5s ease-out both;
+  animation: tw-zap var(--t-move) ease-out both;
 }
 @keyframes tw-zap {
   0% {
@@ -1484,7 +1435,7 @@ button.tw-spot.pick.on::after {
   width: calc(50 * var(--u));
   height: calc(18 * var(--u));
   border-radius: 50%;
-  background: rgba(230, 220, 190, 0.85);
+  background: color-mix(in srgb, var(--card2) 85%, transparent);
   animation: tw-burst 0.6s ease-out both;
 }
 .tw-bigshield {
@@ -1513,15 +1464,15 @@ button.tw-spot.pick.on::after {
 }
 .tw-wavebanner {
   padding: calc(6 * var(--u)) calc(16 * var(--u));
-  border: 3px solid var(--ink);
+  border: var(--line) solid var(--ink);
   border-radius: var(--radius-14);
   background: var(--gold);
   color: var(--ink);
-  font-family: var(--hand);
-  font-size: max(20px, calc(30 * var(--u)));
+  font-family: var(--font-hand);
+  font-size: max(var(--text-20), calc(30 * var(--u)));
   white-space: nowrap;
   box-shadow: var(--shadow);
-  animation: tw-banner 1.4s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+  animation: tw-banner 1.4s var(--ease-bounce) both;
 }
 @keyframes tw-banner {
   0% {
@@ -1578,8 +1529,8 @@ button.tw-spot.pick.on::after {
   scale: 0;
   opacity: 0;
   transition:
-    scale 0.25s ease-in,
-    opacity 0.25s ease-in !important;
+    scale var(--t-quick) ease-in,
+    opacity var(--t-quick) ease-in !important;
 }
 .tw-mon.tw-dizzy > .mon {
   animation: tw-dizzy 0.6s ease-in-out;
@@ -1596,9 +1547,9 @@ button.tw-spot.pick.on::after {
   scale: 0.25;
   opacity: 0;
   transition:
-    translate 0.3s ease-in,
-    scale 0.3s ease-in 0.1s,
-    opacity 0.2s ease-in 0.25s !important;
+    translate var(--t-quick) ease-in,
+    scale var(--t-quick) ease-in var(--t-instant),
+    opacity var(--t-quick) ease-in var(--t-quick) !important;
 }
 .tw-say.win {
   background: var(--gold);
@@ -1630,7 +1581,7 @@ button.tw-spot.pick.on::after {
   pointer-events: none;
 }
 .tw-mon .tw-hp b {
-  transition: width 0.35s ease-out;
+  transition: width var(--t-quick) ease-out;
 }
 .tw-spot.tw-fire > .mon {
   animation: tw-fire 0.3s ease-out;
@@ -1642,7 +1593,7 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-spot.tw-arrive > .mon {
-  animation: tw-arrive 0.6s cubic-bezier(0.3, 1.2, 0.5, 1) both;
+  animation: tw-arrive 0.6s var(--ease-bounce) both;
   transform-origin: 50% 100%;
 }
 @keyframes tw-arrive {
@@ -1663,7 +1614,7 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-spot.tw-upnow .tw-pips {
-  animation: tw-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  animation: tw-pop 0.6s var(--ease-bounce) both;
 }
 @keyframes tw-pop {
   0% {
@@ -1688,7 +1639,7 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-heroslot.tw-evolve .mon {
-  animation: tw-evolve 0.8s ease-in-out;
+  animation: tw-evolve var(--t-slow) ease-in-out;
   transform-origin: 50% 100%;
 }
 @keyframes tw-evolve {
@@ -1710,7 +1661,7 @@ button.tw-spot.pick.on::after {
 }
 /* the tower */
 #twt.tw-shake > * {
-  animation: tw-shake 0.45s ease-out;
+  animation: tw-shake var(--t-move) ease-out;
 }
 @keyframes tw-shake {
   0%,
@@ -1732,7 +1683,7 @@ button.tw-spot.pick.on::after {
 }
 @keyframes tw-healglow {
   40% {
-    filter: drop-shadow(0 0 8px var(--green-250)) brightness(1.15);
+    filter: drop-shadow(0 0 8px var(--green-300)) brightness(1.15);
   }
 }
 #twt.tw-fall > * {
@@ -1760,7 +1711,7 @@ button.tw-spot.pick.on::after {
 .tw-board.tw-won .tw-flag {
   transform-box: fill-box;
   transform-origin: 0 50%;
-  animation: tw-flag 0.5s ease-in-out 3;
+  animation: tw-flag var(--t-move) ease-in-out 3;
 }
 @keyframes tw-flag {
   50% {
@@ -1780,11 +1731,11 @@ button.tw-spot.pick.on::after {
   z-index: 2;
 }
 .tw-board.tw-dim::after {
-  animation: tw-dim 1.2s ease-in-out both;
+  animation: tw-dim var(--t-long) ease-in-out both;
 }
 .tw-board.tw-alarm::after {
   background: none;
-  box-shadow: inset 0 0 calc(46 * var(--u)) calc(10 * var(--u)) rgba(232, 52, 74, 0.85);
+  box-shadow: inset 0 0 calc(46 * var(--u)) calc(10 * var(--u)) color-mix(in srgb, var(--red) 85%, transparent);
   animation: tw-alarm 0.9s ease-out both;
 }
 @keyframes tw-alarm {
@@ -1816,7 +1767,7 @@ button.tw-spot.pick.on::after {
 }
 /* Bauzeit: a new floor lifts what is above it, drops in and puffs; a mended wall loses its cracks */
 #twt .tw-fl.new {
-  animation: tw-drop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) 0.32s both;
+  animation: tw-drop var(--t-move) var(--ease-bounce) 0.32s both;
 }
 @keyframes tw-drop {
   from {
@@ -1860,9 +1811,9 @@ button.tw-spot.pick.on::after {
   width: 34%;
   height: 100%;
   border-radius: 50%;
-  background: rgba(240, 232, 210, 0.9);
-  border: 2px solid rgba(28, 37, 65, 0.5);
-  animation: tw-dust 0.55s ease-out 0.78s both;
+  background: color-mix(in srgb, var(--card2) 90%, transparent);
+  border: var(--line-thin) solid color-mix(in srgb, var(--ink) 50%, transparent);
+  animation: tw-dust var(--t-move) ease-out var(--t-slow) both;
 }
 .tw-dustpuff::before {
   left: 0;
@@ -1885,7 +1836,7 @@ button.tw-spot.pick.on::after {
   }
 }
 #twt .tw-oldart {
-  animation: tw-fadeout 0.7s ease-in 0.25s both;
+  animation: tw-fadeout 0.7s ease-in var(--t-quick) both;
 }
 @keyframes tw-fadeout {
   to {
@@ -1895,15 +1846,15 @@ button.tw-spot.pick.on::after {
 #twt.tw-mend .tw-towerart:not(.tw-oldart) {
   animation: tw-healglow 0.9s ease-out 0.2s;
 }
-.tw-hpbox .hpbar i {
-  transition: width 0.4s ease-out;
+.tw-hpbox .bar.hp i {
+  transition: width var(--t-move) ease-out;
 }
 .topbar .tw-tick .emo {
   animation: tw-pop 0.35s ease-out;
 }
 .tw-fly {
   position: absolute;
-  z-index: 20;
+  z-index: var(--z-overlay);
   translate: -50% -50%;
   pointer-events: none;
 }
@@ -1911,13 +1862,13 @@ button.tw-spot.pick.on::after {
   display: block;
   width: 30px;
   height: 17px;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 2px 0 var(--shade));
 }
 .tw-bannerov.slide {
   animation: tw-dimin 0.4s ease-out both;
 }
 .tw-bannerov.slide .modal {
-  animation: tw-slidein 0.55s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+  animation: tw-slidein var(--t-move) var(--ease-bounce) both;
 }
 @keyframes tw-dimin {
   from {
@@ -1930,7 +1881,7 @@ button.tw-spot.pick.on::after {
   }
 }
 .tw-endtower.rise .tw-tower {
-  animation: tw-drop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  animation: tw-drop 0.7s var(--ease-bounce) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .tw-fx,
