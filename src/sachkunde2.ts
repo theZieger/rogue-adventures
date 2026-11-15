@@ -75,7 +75,7 @@ export const MS2 = (() => {
   ];
   const f1 = (v: number) => Math.round(v * 10) / 10;
   // texture strokes sit in style="" so a glowing part keeps them (the glow rule recolours stroke attributes only)
-  const tex = (d: string, c: string, w: number, o?: number | undefined) =>
+  const tex = (d: string, c: string, w: number, o?: number) =>
     `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round"${o ? ` opacity="${o}"` : ''}/>`;
   const lashes = (cy: number, ts: any[], len: number) =>
     ts
@@ -1360,7 +1360,7 @@ export const MS2 = (() => {
   const LINE = (c: string, w: number) =>
     `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
   // facing right like on the signs 237 and 254
-  const BIKE = (c: string, w?: number | undefined) =>
+  const BIKE = (c: string, w?: number) =>
     `<g ${LINE(c, w || 4.5)}><circle cx="30" cy="61" r="13"/><circle cx="70" cy="61" r="13"/><path d="M30 61 L47 61 L41 41 M30 61 L42.2 45 L64.4 45 M47 61 L64 45 M70 61 L62 38 L58 33 M62 38 L69 36 M36 39 L47 39"/></g>`;
   const SANS = 'style="font-family:\'Arial Narrow\',Arial,Helvetica,sans-serif"';
   const SIGN_ART: Record<string, string> = {
@@ -1481,7 +1481,7 @@ export const MS2 = (() => {
   ];
   // these two both mean „let the others go first“, so neither is a wrong option for the other
   const ALIKE = ['stopp', 'vorfahrtgewaehren'];
-  const signSVG = (id: string | number, opt?: boolean | undefined) =>
+  const signSVG = (id: string | number, opt?: boolean) =>
     `<svg ${NS} class="${opt ? '' : 'pic'}" viewBox="0 0 100 100" ${opt ? '' : 'style="max-width:140px"'} aria-label="Verkehrszeichen">${SIGN_ART[id]}</svg>`;
   function signTask(mod: string, tier: number) {
     const s = pick(SIGNS);
@@ -1554,7 +1554,7 @@ export const MS2 = (() => {
     const [x, y] = SIGN_AT[arm];
     return `<path d="M${x} ${y + 10} L${x} ${y + 24}" stroke="#555" stroke-width="2"/><g transform="translate(${x - 11} ${y - 12}) scale(.22)">${art}</g>`;
   };
-  function crossingSVG(cars: any[], extras?: string | undefined) {
+  function crossingSVG(cars: any[], extras?: string) {
     const road =
       '<rect x="90" width="60" height="240" fill="#8A8F98"/><rect y="90" width="240" height="60" fill="#8A8F98"/><path d="M120 0 L120 88 M120 152 L120 240 M0 120 L88 120 M152 120 L240 120" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 8"/>';
     return `<svg ${NS} class="pic" viewBox="0 0 240 240" style="max-width:280px" aria-label="Kreuzung von oben"><rect width="240" height="240" rx="12" fill="#9CCC65"/>${road}${extras || ''}${cars.map((c: { arm: any; v: any }) => vehicleAt(c.arm, c.v)).join('')}<g transform="translate(222 22)"><path d="M0 -12 L6 4 L0 0 L-6 4 Z" fill="${STROKE}"/>${txt(0, 18, 'N', { size: 11 })}</g></svg>`;

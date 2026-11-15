@@ -50,13 +50,13 @@ export const K12D = (() => {
     USED.add(h.toUpperCase());
     return `url(#kd${h.slice(1).toUpperCase()})`;
   };
-  const p = (d: string, fill: string, w?: number | undefined) =>
+  const p = (d: string, fill: string, w?: number) =>
     `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
   const ci = (x: number, y: number, r: number, fill: string) =>
     `<circle cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
   const el = (x: number, y: number, rx: number, ry: number, fill: string) =>
     `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
-  const rect = (x: number, y: number, w: number, h: number, fill: string, r?: number | undefined) =>
+  const rect = (x: number, y: number, w: number, h: number, fill: string, r?: number) =>
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r || 0}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
   const line = (d: string, c: string, w: number) =>
     `<path d="${d}" fill="none" stroke="${c || O}" stroke-width="${w || 2}"/>`;

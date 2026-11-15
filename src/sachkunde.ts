@@ -2,6 +2,47 @@
 // Registers its units in MK.MODES; src/units.ts picks them up from there.
 import type { Unit } from './curriculum.ts';
 import { MK as K, type Question } from './knowledge.ts';
+import type { Meta } from './save.ts';
+
+export type Know = Meta['know'];
+// MK's helpers by the type of the elements (MK itself still has them as `string | any[]`)
+export interface Rand {
+  shuffle<T>(arr: readonly T[]): T[];
+  pick<T>(arr: readonly T[]): T;
+  weightedPick<T extends { id: string }>(items: T[], know: Know, seq: number): T;
+}
+// a generated task as src/app/tasks.ts shows it; every kind adds fields of its own
+export interface Task {
+  kind: string;
+  mod: string;
+  tier: number;
+  group: string;
+  note: string;
+  q: string;
+  qid: string;
+  options?: string[];
+  answer?: string;
+  cols?: number;
+  pic?: string;
+  [more: string]: unknown;
+}
+// generate()'s options: g = only questions of this topic
+export interface GenOpts {
+  g?: string;
+  world?: number;
+}
+type Part = PartsPicture['parts'][number];
+// wraps the drawing of one part, so partsSVG can hide, light up or make it tappable
+type PartGroup = (id: string, inner: string) => string;
+// [part id, x, y, text-anchor, point a leader line runs to]
+type PartLabel = [id: string, x: number, y: number, anchor?: string, to?: [number, number]];
+interface PartsOpts {
+  step?: number;
+  omit?: string;
+  highlight?: string;
+  clickable?: boolean;
+  labels?: boolean;
+}
 
 // a picture whose parts the child names or taps (MS.PLANTS)
 export interface PartsPicture {
@@ -14,15 +55,15 @@ export interface PartsPicture {
   note?: string;
   poolQ?: string;
   tap?: string;
-  ask: (part?: any) => string;
-  find: (part: any) => string;
-  svg: (opts?: any) => string; // set after the literal (hence the Omit there): it draws from the picture itself
+  ask: (part?: Part) => string;
+  find: (part: Part) => string;
+  svg: (opts?: PartsOpts) => string; // set after the literal (hence the Omit there): it draws from the picture itself
 }
 export const MS = (() => {
-  const { shuffle, pick, rnd, weightedPick } = K;
+  const { shuffle, pick, rnd, weightedPick } = K as Rand & typeof K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const STROKE = '#1C2541';
-  const txt = (x: number, y: number, s: string, o?: { size: any; fill?: any; anchor?: any } | undefined) =>
+  const txt = (x: number, y: number, s: string, o?: { size?: number; fill?: string; anchor?: string }) =>
     `<text x="${x}" y="${y}" font-size="${(o && o.size) || 12}" font-weight="700" text-anchor="${(o && o.anchor) || 'middle'}" fill="${(o && o.fill) || STROKE}">${s}</text>`;
   const minus = (n: number) => (n < 0 ? '−' + Math.abs(n) : String(n));
   const choice = (
@@ -30,9 +71,9 @@ export const MS = (() => {
     note: string,
     q: string,
     answer: string,
-    wrongs: string | any[],
+    wrongs: string[],
     qid: string,
-    extra?: { pic: string } | undefined,
+    extra?: Partial<Task>,
   ) =>
     Object.assign(
       {
@@ -53,15 +94,15 @@ export const MS = (() => {
   /* ---------- Pflanzen-Bilder (gleiche Schnittstelle wie potatoSVG: highlight, clickable, labels, step) ---------- */
   function partsSVG(
     P: PartsPicture,
-    opts: { step?: any; omit?: any; highlight?: any; clickable?: any; labels?: any },
-    body: { (g: any): string; (g: any): string; (arg0: (id: any, inner: any) => string): any },
-    labels: any[],
+    opts: PartsOpts | undefined,
+    body: (g: PartGroup) => string,
+    labels: PartLabel[],
   ) {
     opts = opts || {};
     const step = opts.step || 99;
-    const g = (id: string | number, inner: any) =>
+    const g: PartGroup = (id, inner) =>
       step >= (P.stepOf[id] || 1) && opts.omit !== id
-        ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p: { id: any }) => p.id === id) + 1}"` : ''}>${inner}</g>`
+        ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p) => p.id === id) + 1}"` : ''}>${inner}</g>`
         : '';
     // optional fifth entry: the point a thin leader line runs to
     const lab = opts.labels
@@ -69,7 +110,7 @@ export const MS = (() => {
           .filter(([id]) => step >= (P.stepOf[id] || 1))
           .map(
             ([id, x, y, a, to]) =>
-              `${to ? `<path d="M${x} ${y - 4} L${to[0]} ${to[1]}" stroke="${STROKE}" stroke-width="1" opacity=".6"/>` : ''}<text class="plabel" x="${x}" y="${y}" text-anchor="${a || 'start'}">${P.parts.find((p: { id: any }) => p.id === id).name}</text>`,
+              `${to ? `<path d="M${x} ${y - 4} L${to[0]} ${to[1]}" stroke="${STROKE}" stroke-width="1" opacity=".6"/>` : ''}<text class="plabel" x="${x}" y="${y}" text-anchor="${a || 'start'}">${P.parts.find((p) => p.id === id).name}</text>`,
           )
           .join('')
       : '';
@@ -140,7 +181,7 @@ export const MS = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil der Getreidepflanze?',
   } as Omit<PartsPicture, 'svg'> as PartsPicture;
-  const grainSpike = (g: (arg0: string, arg1: string) => any) => {
+  const grainSpike = (g) => {
     let k = '',
       a = '';
     for (let i = 0; i < 6; i++) {
@@ -157,7 +198,7 @@ export const MS = (() => {
     partsSVG(
       GRAIN,
       opts,
-      (g: (arg0: string, arg1: string) => any) => `
+      (g) => `
     <rect x="0" y="230" width="260" height="70" fill="#8B5E3C" opacity=".35"/><line x1="0" y1="230" x2="260" y2="230" stroke="#6B4423" stroke-width="3" stroke-dasharray="6 4"/>
     ${g('wurzeln', `<path d="M120 230 Q104 252 92 280 M120 230 Q112 258 108 290 M120 232 Q128 260 126 292 M120 230 Q138 254 150 282 M120 232 Q100 244 84 252 M120 232 Q142 244 158 250" stroke="#C7A27A" stroke-width="2.5" fill="none" stroke-linecap="round"/><path class="hitarea" d="M80 232 L162 232 L162 295 L80 295 Z" fill="transparent"/>`)}
     ${g('halm', `<path d="M120 230 Q118 150 121 80" stroke="#B5C95A" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M120 230 Q118 150 121 80" stroke="#7E9A2F" stroke-width="1.5" fill="none"/>`)}
@@ -211,7 +252,7 @@ export const MS = (() => {
   ];
   const num = (n: number, x: number, y: number) =>
     `<circle cx="${x}" cy="${y}" r="11" fill="#fff" stroke="${STROKE}" stroke-width="2"/>${txt(x, y + 5, n, { size: 14 })}`;
-  const cloud = (x: number, y: number, s: number, fill?: string | undefined) =>
+  const cloud = (x: number, y: number, s: number, fill?: string) =>
     `<g transform="translate(${x} ${y}) scale(${s})" fill="${fill || '#fff'}" stroke="#7A8AA8" stroke-width="2"><path d="M-26 8 Q-34 -4 -20 -8 Q-18 -22 -2 -18 Q8 -28 20 -14 Q34 -14 30 2 Q36 10 24 12 L-22 12 Q-32 12 -26 8 Z"/></g>`;
   const CYCLE = {
     label: 'Wasserkreislauf',
@@ -227,7 +268,7 @@ export const MS = (() => {
     partsSVG(
       CYCLE,
       opts,
-      (g: (arg0: string, arg1: string) => any) => `
+      (g) => `
     <rect width="300" height="220" fill="#E3F2FD"/><circle cx="34" cy="32" r="18" fill="#FFD54F" stroke="#F0A800" stroke-width="2"/>
     <path d="M180 220 L230 70 L262 120 L300 90 L300 220 Z" fill="#8D9E6B" stroke="#5E6E44" stroke-width="2"/><path d="M222 94 L230 70 L240 86 Z" fill="#fff"/>
     <path d="M0 176 Q40 170 80 176 T150 178 L170 220 L0 220 Z" fill="#3F8FD8" stroke="#2A6CB0" stroke-width="2"/>
@@ -247,17 +288,16 @@ export const MS = (() => {
   const PLANTS: Record<string, PartsPicture> = { getreide: GRAIN, kreislauf: CYCLE };
 
   function plantTask(
-    cfg: { pool: any[] },
+    cfg: Unit,
     plantKey: string,
     mod: string,
     tier: number,
-    know: { [x: string]: any },
+    know: Know,
     seq: number,
-    opts?: { g: any } | undefined,
+    opts?: GenOpts,
   ) {
-    let cands = cfg.pool.filter((x: { mod: any }) => x.mod === mod);
-    if (opts && opts.g && cands.some((x: { g: any }) => x.g === opts.g))
-      cands = cands.filter((x: { g: any }) => x.g === opts.g);
+    let cands = (cfg.pool as Question[]).filter((x) => x.mod === mod);
+    if (opts && opts.g && cands.some((x) => x.g === opts.g)) cands = cands.filter((x) => x.g === opts.g);
     const e = weightedPick(cands, know, seq);
     plantKey = e.plant || plantKey;
     const P = PLANTS[plantKey];
@@ -306,21 +346,21 @@ export const MS = (() => {
       a: p.name,
     }));
   // the topic filter (events) asks the pool; generated pictures only without a topic
-  const wantsPool = (cfg: { pool: any[] }, mod: any, opts: { g: any }) =>
-    !!(opts && opts.g && cfg.pool.some((p: { mod: any; g: any }) => p.mod === mod && p.g === opts.g));
-  const orderTask = (
-    mod: any,
+  const wantsPool = (cfg: Unit, mod: string, opts?: GenOpts) =>
+    !!(opts && opts.g && (cfg.pool as Question[]).some((p) => p.mod === mod && p.g === opts.g));
+  const orderTask = <T extends { id: string }>(
+    mod: string,
     group: string,
     note: string,
     q: string,
-    src: any[],
+    src: T[],
     qid: string,
-    n?: number | undefined,
+    n?: number,
   ) => {
-    const idx = shuffle(src.map((_: any, i: any) => i))
+    const idx = shuffle(src.map((_, i) => i))
       .slice(0, n || 4)
-      .sort((a: number, b: number) => a - b);
-    const items = idx.map((i: string | number) => src[i]);
+      .sort((a, b) => a - b);
+    const items = idx.map((i) => src[i]);
     return {
       kind: 'order',
       mod,
@@ -968,7 +1008,7 @@ export const MS = (() => {
     },
   };
   function koGen(cfg: Unit) {
-    return (mod: string, tier: any, know: any, seq: any, opts: any) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (mod === 'parts') return plantTask(cfg, 'getreide', mod, tier, know, seq);
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'arten' && Math.random() < 0.5) {
@@ -1850,7 +1890,7 @@ export const MS = (() => {
     },
   };
   function weGen(cfg: Unit) {
-    return (mod: string, tier: any, know: any, seq: any, opts: any) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (mod === 'kreislauf') return plantTask(cfg, 'kreislauf', mod, tier, know, seq);
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'zustand' && Math.random() < 0.6) {
@@ -2353,7 +2393,7 @@ export const MS = (() => {
   }
 
   // Plan mit Legende: fünf Orte auf einem 3 × 3-Plan; icons fit x ±20, y −30…+16 around their spot
-  const I = (d: string, fill: string, w?: number | undefined) =>
+  const I = (d: string, fill: string, w?: number) =>
     `<path d="${d}" fill="${fill}" stroke="${STROKE}" stroke-width="${w || 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
   const PLACES = [
     {
@@ -3056,7 +3096,7 @@ export const MS = (() => {
     },
   };
   function kkGen(cfg: Unit) {
-    return (mod: string, tier: any, know: any, seq: any, opts: any) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (mod === 'karte') return makeKarte(tier);
       if (mod === 'rose') return roseTask(mod);
       if (wantsPool(cfg, mod, opts)) return null;

@@ -1,3 +1,7 @@
+declare global {
+  var MONBAKED: Record<string, string> | undefined;
+}
+
 export const MONART = (() => {
   const OUT = '#1C2541';
   let uid = 0;
@@ -97,14 +101,14 @@ export const MONART = (() => {
       `<path d="M${x - w} ${y} Q${f1(x - w / 2)} ${f1(y + w * 0.6)} ${x} ${y} Q${f1(x + w / 2)} ${f1(y + w * 0.6)} ${x + w} ${y}" ${N(2.6)}/>`,
     grin: (x: number, y: number, w: number) =>
       `<path d="M${x - w} ${y} Q${x} ${f1(y + w * 1.3)} ${x + w} ${y} Z" ${F('#E8516F')}/><path d="M${f1(x - w * 0.75)} ${f1(y + 0.8)} L${f1(x + w * 0.75)} ${f1(y + 0.8)} L${f1(x + w * 0.6)} ${f1(y + w * 0.3)} L${f1(x - w * 0.6)} ${f1(y + w * 0.3)} Z" fill="#fff"/><path d="M${x - w} ${y} L${x + w} ${y}" ${N(2.5)}/>`,
-    open: (x: any, y: number, w: number) =>
+    open: (x: number, y: number, w: number) =>
       `<ellipse cx="${x}" cy="${f1(y + w * 0.35)}" rx="${f1(w * 0.6)}" ry="${f1(w * 0.75)}" ${F('#7A2340')}/><ellipse cx="${x}" cy="${f1(y + w * 0.75)}" rx="${f1(w * 0.38)}" ry="${f1(w * 0.25)}" fill="#E8516F"/>`,
-    o: (x: any, y: any, w: number) =>
+    o: (x: number, y: number, w: number) =>
       `<ellipse cx="${x}" cy="${y}" rx="${f1(w * 0.45)}" ry="${f1(w * 0.55)}" ${F('#7A2340', 2.4)}/>`,
-    flat: (x: number, y: any, w: number) => `<path d="M${x - w} ${y} L${x + w} ${y}" ${N(3)}/>`,
+    flat: (x: number, y: number, w: number) => `<path d="M${x - w} ${y} L${x + w} ${y}" ${N(3)}/>`,
     frown: (x: number, y: number, w: number) =>
       `<path d="M${x - w} ${f1(y + w * 0.45)} Q${x} ${f1(y - w * 0.35)} ${x + w} ${f1(y + w * 0.45)}" ${N(3)}/>`,
-    wavy: (x: number, y: any, w: number) =>
+    wavy: (x: number, y: number, w: number) =>
       `<path d="M${x - w} ${y} q${f1(w / 2)} ${f1(-w / 3)} ${w} 0 t${w} 0" ${N(2.8)}/>`,
     smirk: (x: number, y: number, w: number) =>
       `<path d="M${x - w} ${f1(y + w * 0.05)} Q${f1(x + w * 0.1)} ${f1(y + w * 0.65)} ${x + w} ${f1(y - w * 0.45)}" ${N(3)}/>`,
@@ -150,18 +154,7 @@ export const MONART = (() => {
     p1: number[],
     p2: number[],
     n: number,
-    fn: {
-      (x: any, y: any, i: any): string;
-      (x: any, y: any, i: any): string;
-      (x: any, y: any, i: any): string;
-      (x: any, y: any): string;
-      (x: any, y: any): string;
-      (x: any, y: any): string;
-      (x: any, y: any): string;
-      (x: any, y: any): string;
-      (x: any, y: any, i: any): string;
-      (arg0: number, arg1: number, arg2: number, arg3: number): string;
-    },
+    fn: (x: number, y: number, i: number, t: number) => string,
   ) {
     let s = '';
     for (let i = 0; i < n; i++) {
@@ -177,12 +170,25 @@ export const MONART = (() => {
     return s;
   }
   // gradient with free stops [[offset, color, opacity?]]; attrs e.g. 'x2="0" y2="1"' or 'cx=".4" cy=".3" r=".7"'
-  const gr = (
-    C: { def: (arg0: string, arg1: any, arg2: any) => any },
-    kind: string,
-    attrs: string,
-    stops: (string | number)[][] | [any, any, any][],
-  ) =>
+  interface Palette {
+    c: string;
+  }
+  interface DrawOpts {
+    evo: number;
+    elite: boolean;
+    boss: boolean;
+    bare: boolean;
+  }
+  // paint servers of one drawing: each call adds a <defs> entry and returns its url(#…) (def: the bare id)
+  interface Defs {
+    grad(c: string): string;
+    def(tag: string, attrs: string, inner: string): string;
+    lin(a: string, b: string): string;
+    glyph(x: number, svg: string): string;
+  }
+  type Draw = (P: Palette, o: DrawOpts, C: Defs) => string;
+  type Stop = [offset: number, color: string, opacity?: number];
+  const gr = (C: Defs, kind: string, attrs: string, stops: Stop[]) =>
     `url(#${C.def(kind + 'Gradient', attrs, stops.map(([t, c, a]) => `<stop offset="${t}" stop-color="${c}"${a == null ? '' : ` stop-opacity="${a}"`}/>`).join(''))})`;
   const polar = (cx: number, cy: number, r: number, a: number) =>
     `${f1(cx + r * Math.cos(a))} ${f1(cy + r * Math.sin(a))}`;
@@ -1108,7 +1114,7 @@ export const MONART = (() => {
     return `<path d="${d} Z" ${F(fill, 2)}/>`;
   }
   // serrated nettle leaf, base at (x, y), pointing up before rotation
-  function bau_leaf(x: number, y: number, l: number, w: number, rot: number, fill: any) {
+  function bau_leaf(x: number, y: number, l: number, w: number, rot: number, fill: string) {
     const n = 5;
     let R = '',
       L = '';
@@ -1123,7 +1129,7 @@ export const MONART = (() => {
     return `<g transform="translate(${x} ${y}) rotate(${rot})"><path d="M0 0${R} L0 ${-l}${L} Z" ${F(fill, 2)}/><path d="M0 -2 L0 ${f1(-l * 0.8)}" fill="none" stroke="#C9F0A8" stroke-width="1.4" stroke-linecap="round" opacity=".8"/></g>`;
   }
   // small three-lobed ivy leaf, base at (x, y)
-  function bau_ivy(x: number, y: number, k: number, rot: number, fill: any) {
+  function bau_ivy(x: number, y: number, k: number, rot: number, fill: string) {
     return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${k})"><path d="M0 0 Q-6 -2 -10 -4 Q-14 -10 -8 -12 Q-6 -18 0 -20 Q6 -18 8 -12 Q14 -10 10 -4 Q6 -2 0 0 Z" ${F(fill, 2 / k)}/><path d="M0 -1 L0 -14 M0 -4 L-6 -9 M0 -4 L6 -9" fill="none" stroke="#B9E8A0" stroke-width="${f1(1.2 / k)}" stroke-linecap="round"/></g>`;
   }
 
@@ -1234,14 +1240,14 @@ export const MONART = (() => {
         [92, 88],
         [104, 80],
         5,
-        (x: any, y: any) => `<path d="M${f1(x)} ${f1(y)} l-1.5 -2.2" stroke="${OUT}" stroke-width="1.2"/>`,
+        (x, y) => `<path d="M${f1(x)} ${f1(y)} l-1.5 -2.2" stroke="${OUT}" stroke-width="1.2"/>`,
       ) +
       along(
         [92, 64],
         [102, 57],
         [112, 50],
         4,
-        (x: any, y: any) => `<path d="M${f1(x)} ${f1(y)} l-1.5 -2.2" stroke="${OUT}" stroke-width="1.2"/>`,
+        (x, y) => `<path d="M${f1(x)} ${f1(y)} l-1.5 -2.2" stroke="${OUT}" stroke-width="1.2"/>`,
       );
     s += `<circle cx="104" cy="80" r="1.6" fill="#B8C0CC"/><circle cx="92" cy="64" r="1.6" fill="#B8C0CC"/>`;
     s += `<ellipse cx="80" cy="96" rx="6" ry="5" ${F(body, 2.2)}/>`;
@@ -2163,12 +2169,14 @@ export const MONART = (() => {
     if (e === 2)
       s +=
         `<path d="${arc(43)}" fill="none" stroke="${OUT}" stroke-width="26"/>` +
-        [
+        (
+          [
           ['#FF8A7A', 52],
           ['#FFC93C', 46],
           ['#7BD88F', 40],
           ['#6FB6F2', 34],
-        ]
+        ] as [string, number][]
+        )
           .map(
             ([c, r]) =>
               `<path d="${arc(r)}" fill="none" stroke="${c}" stroke-width="${r === 52 || r === 34 ? 5 : 6.2}"/>`,
@@ -2642,11 +2650,13 @@ export const MONART = (() => {
     if (e >= 1) {
       // sash with badges
       s += `<path d="M44 80 L88 116 L76 116 L38 84 Z" ${F('#2E6B8A', 2)}/>`;
-      s += [
+      s += (
+        [
         [50, 90, '#FFC93C'],
         [62, 100, '#E8553A'],
         [74, 110, '#9BD77A'],
-      ]
+      ] as [number, number, string][]
+      )
         .slice(0, e + 1)
         .map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="3.6" ${F(c, 1.6)}/>`)
         .join('');
@@ -2932,7 +2942,7 @@ export const MONART = (() => {
   }
 
   // stroke letters on a 6×10 grid (top at 0); the i-dot is drawn as a circle
-  const DE_GL = {
+  const DE_GL: Record<string, string> = {
     H: 'M0 0 L0 10 M6 0 L6 10 M0 5 L6 5',
     R: 'M0 10 L0 0 L3 0 Q6 0 6 2.75 Q6 5.5 3 5.5 L0 5.5 M3 5.5 L6 10',
     S: 'M6 1.5 Q5 0 3 0 Q0 0 0 2.6 Q0 5 3 5 Q6 5 6 7.5 Q6 10 3 10 Q1 10 0 8.5',
@@ -2950,8 +2960,8 @@ export const MONART = (() => {
   };
   // a word centred on cx (top at y, letter height h); always counter-mirrored so it reads right in battle
   function de_txt(
-    C: { glyph: (arg0: any, arg1: string) => any },
-    str: string | any[],
+    C: Defs,
+    str: string,
     cx: number,
     y: number,
     h: number,
@@ -3536,8 +3546,8 @@ export const MONART = (() => {
       ]),
       grain = C.grad('#EBC45C');
     // jointed leg: thick upper part, thin lower part, knee knob, little foot
-    const leg = (pts: [any, any][] | number[][], col: string, k: number) => {
-      const d = 'M' + pts.map((p: any[]) => p.join(' ')).join(' L');
+    const leg = (pts: number[][], col: string, k: number) => {
+      const d = 'M' + pts.map((p) => p.join(' ')).join(' L');
       return (
         `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${f1(6.5 * k)}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${f1(3 * k)}" stroke-linecap="round" stroke-linejoin="round"/>` +
         pts
@@ -3586,7 +3596,7 @@ export const MONART = (() => {
           [40, 66 + dy * 1.3],
           [68, 68 + dy * 0.9],
           8,
-          (x: any, y: any) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="1.1" fill="#2A1006" opacity=".6"/>`,
+          (x, y) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="1.1" fill="#2A1006" opacity=".6"/>`,
         ),
       )
       .join('');
@@ -3691,7 +3701,7 @@ export const MONART = (() => {
         [48, 20],
         [36, 14],
         5,
-        (x: any, y: any) =>
+        (x, y) =>
           `<path d="M${f1(x)} ${f1(y)} l-3 -3 M${f1(x)} ${f1(y)} l3 -3" stroke="${OUT}" stroke-width="1.4" stroke-linecap="round"/>`,
       ) +
       along(
@@ -3699,7 +3709,7 @@ export const MONART = (() => {
         [72, 20],
         [84, 14],
         5,
-        (x: any, y: any) =>
+        (x, y) =>
           `<path d="M${f1(x)} ${f1(y)} l-3 -3 M${f1(x)} ${f1(y)} l3 -3" stroke="${OUT}" stroke-width="1.4" stroke-linecap="round"/>`,
       );
     s += `<circle cx="60" cy="46" r="15" ${F(body)}/><path d="M46 40 Q50 32 56 34 Q60 30 64 34 Q70 32 74 40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
@@ -4582,11 +4592,13 @@ export const MONART = (() => {
     s += `<path d="M50 75 Q60 83 71 73" ${N(3)}/><path d="M66 77.4 L69 79.6 L70.4 76" fill="#fff" ${S(1.6)}/>`;
     s += blush(60, 72, 19, 4);
     // lens-flare ghosts along the glare axis
-    s += [
+    s += (
+      [
       [88, 86, 6, '#7FD8FF', 0.4],
       [100, 98, 3.5, '#FF9EC4', 0.45],
       [30, 28, 4, '#B9F2A0', 0.35],
-    ]
+    ] as [number, number, number, string, number][]
+    )
       .map(
         ([x, y, r, c, a]) =>
           `<path d="${Array.from({ length: 6 }, (_, k) => (k ? 'L' : 'M') + polar(x, y, r, (k * Math.PI) / 3)).join(' ')} Z" fill="${c}" opacity="${a}"/>`,
@@ -4619,7 +4631,7 @@ export const MONART = (() => {
     const a = C.grad('#7A6A9A'),
       b = C.grad('#5E4E80'),
       c = C.grad('#8E7CB0');
-    const head = (x: number, y: number, r: number, fill: any, look: number[]) =>
+    const head = (x: number, y: number, r: number, fill: string, look: number[]) =>
       `<path d="M${x - r} ${y + r * 1.6} Q${x - r * 1.1} ${y - r * 0.2} ${x} ${y - r} Q${x + r * 1.1} ${y - r * 0.2} ${x + r} ${y + r * 1.6} Z" ${F(fill)}/>` +
       eye(x - r * 0.36, y, r * 0.22, { brow: 'angry', bw: 2.6, dir: look }) +
       eye(x + r * 0.36, y, r * 0.22, { brow: 'angry', bw: 2.6, dir: look });
@@ -5417,7 +5429,7 @@ export const MONART = (() => {
     return s;
   }
 
-  const SHAPES = {
+  const SHAPES: Record<string, Draw> = {
     fox,
     toad,
     bear,
@@ -5451,14 +5463,14 @@ export const MONART = (() => {
     drahtwurm,
     wuehlmaus,
     faeulewolke,
-    kaeferlarve: (P: Palette, o: DrawOpts, C: Defs) => larve(P, o, C, false),
-    kartoffelkaefer: (P: Palette, o: DrawOpts, C: Defs) => kaefer(P, o, C, false),
+    kaeferlarve: (P, o, C) => larve(P, o, C, false),
+    kartoffelkaefer: (P, o, C) => kaefer(P, o, C, false),
     blattfresser,
     hagelwolke,
     ackerteufel,
     eierhaufen,
-    riesenlarve: (P: Palette, o: DrawOpts, C: Defs) => larve(P, o, C, true),
-    kaeferkoenigin: (P: Palette, o: DrawOpts, C: Defs) => kaefer(P, o, C, true),
+    riesenlarve: (P, o, C) => larve(P, o, C, true),
+    kaeferkoenigin: (P, o, C) => kaefer(P, o, C, true),
     owl,
     beaver,
     moertelbatzen,
@@ -5603,7 +5615,7 @@ export const MONART = (() => {
     grosserstreit,
   };
   // old shape names (saved games from before the redraw)
-  const ALIAS = {
+  const ALIAS: Record<string, string> = {
     blob: 'sumpfbrocken',
     drop: 'regenwicht',
     flame: 'streichholzkopf',
@@ -5689,13 +5701,18 @@ export const MONART = (() => {
     lotte: { top: [60, 30, 1.1], eyes: [60, 59, 10, 6], neck: [60, 81, 44], pack: [24, 84] },
     mats: { top: [60, 30, 1.1], eyes: [60, 58, 10, 6], neck: [60, 81, 46], pack: [24, 84] },
   };
-  const at = (p: any[], body: string) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
+  const at = (p: number[], body: string) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
   const STRAW = '#E8C25A';
   // drawn around (0, 0) = top of the head, about 60 wide
-  const OUTFIT = {
+  interface Outfit {
+    head?: boolean;
+    back?: (f: Fit) => string;
+    front: (f: Fit) => string;
+  }
+  const OUTFIT: Record<string, Outfit> = {
     strohhut: {
       head: true,
-      front: (f: { top: any }) =>
+      front: (f) =>
         at(
           f.top,
           `<path d="M-18 -2 Q-19 -24 0 -24 Q19 -24 18 -2 Z" fill="${STRAW}" ${S(2.2)}/><path d="M-18.5 -8 L18.5 -8 L18 -2 L-18 -2 Z" fill="#D9453B"/><ellipse cx="0" cy="-1" rx="38" ry="8" fill="${STRAW}" ${S(2.2)}/><path d="M-30 -1 Q0 6 30 -1" fill="none" stroke="#C99A2E" stroke-width="2"/>`,
@@ -5703,7 +5720,7 @@ export const MONART = (() => {
     },
     krone: {
       head: true,
-      front: (f: { top: any }) =>
+      front: (f) =>
         at(
           f.top,
           `<path d="M-20 0 L-23 -20 L-11 -9 L0 -26 L11 -9 L23 -20 L20 0 Z" fill="#FFC93C" ${S(2.2)}/><circle cx="0" cy="-8" r="3.5" fill="#3FA0FF"/><circle cx="-12" cy="-4" r="2.5" fill="#FF6E8E"/><circle cx="12" cy="-4" r="2.5" fill="#FF6E8E"/>`,
@@ -5711,7 +5728,7 @@ export const MONART = (() => {
     },
     aehrenkranz: {
       head: true,
-      front: (f: { top: any }) =>
+      front: (f) =>
         at(
           f.top,
           `<path d="M-32 4 Q0 -18 32 4" fill="none" stroke="#7A9A3A" stroke-width="4" stroke-linecap="round"/>${[
@@ -5725,7 +5742,7 @@ export const MONART = (() => {
         ),
     },
     brille: {
-      front: (f: { eyes: [any, any, any, any] }) => {
+      front: (f) => {
         const [cx, cy, gap, r] = f.eyes;
         const lens = (x: number) =>
           `<circle cx="${x}" cy="${cy}" r="${r * 1.5}" fill="#BFE3FF" fill-opacity=".25" ${S(3)}/>`;
@@ -5735,37 +5752,40 @@ export const MONART = (() => {
       },
     },
     schal: {
-      front: (f: { neck: [any, any, any] }) => {
+      front: (f) => {
         const [x, y, w] = f.neck,
           h = w / 2;
         return `<path d="M${x + h * 0.3} ${y} l4 24 l12 -3 l-6 -21 Z" fill="#D9453B" ${S(2)}/><path d="M${x - h} ${y - 5} Q${x} ${y + 5} ${x + h} ${y - 5} L${x + h} ${y + 3} Q${x} ${y + 13} ${x - h} ${y + 3} Z" fill="#D9453B" ${S(2)}/><path d="M${x - h * 0.6} ${y + 1} Q${x} ${y + 8} ${x + h * 0.6} ${y + 1}" fill="none" stroke="#FFF3C4" stroke-width="2.5" stroke-linecap="round"/>`;
       },
     },
     ranzen: {
-      back: (f: { pack: [any, any] }) => {
-        const [x, y] = f.pack;
+      back: (f) => {
+        const [x, y] = f.pack!;
         return `<rect x="${x - 17}" y="${y - 20}" width="30" height="38" rx="7" fill="#3B7DD8" ${S(2.2)}/><path d="M${x - 17} ${y - 8} Q${x - 2} ${y} ${x + 13} ${y - 8}" fill="none" ${S(2)}/><rect x="${x - 6}" y="${y - 4}" width="8" height="7" rx="2" fill="#FFC93C" ${S(1.5)}/>`;
       },
-      front: (f: { pack: [any, any] }) => {
-        const [x, y] = f.pack;
+      front: (f) => {
+        const [x, y] = f.pack!;
         return `<path d="M${x + 4} ${y - 18} Q${x + 14} ${y} ${x + 8} ${y + 18}" fill="none" stroke="#2A5DAA" stroke-width="6" stroke-linecap="round"/><path d="M${x + 4} ${y - 18} Q${x + 14} ${y} ${x + 8} ${y + 18}" fill="none" stroke="#1C2541" stroke-width="1.5" stroke-dasharray="3 3"/>`;
       },
     },
   };
-  function render(
-    shape: string,
-    color: any,
-    evo: number,
-    cls: any,
-    opts: { id?: any; elite?: any; boss?: any; bare?: any; plain?: any },
-  ) {
+  // { elite, boss } for enemies, { outfit } for heroes
+  interface MonsterOpts {
+    id?: string;
+    elite?: boolean;
+    boss?: boolean;
+    bare?: boolean;
+    plain?: boolean;
+    outfit?: string;
+  }
+  function render(shape: string, color: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
     shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
     const id = opts.id || 'mg' + uid++;
-    const defs: any[] = [];
+    const defs: string[] = [];
     let n = 0;
-    const C = {
-      grad(c: any) {
+    const C: Defs = {
+      grad(c) {
         const k = `${id}_${n++}`;
         defs.push(
           `<radialGradient id="${k}" cx="36%" cy="30%" r="80%">${CLASSIC ? `<stop offset="0" stop-color="${shade(c, 0.38)}"/><stop offset=".55" stop-color="${c}"/><stop offset="1" stop-color="${shade(c, -0.32)}"/>` : `<stop offset="0" stop-color="${shade(c, 0.42)}"/><stop offset=".5" stop-color="${c}"/><stop offset=".86" stop-color="${shade(c, -0.3)}"/><stop offset="1" stop-color="${shade(c, -0.14)}"/>`}</radialGradient>`,
@@ -5773,12 +5793,12 @@ export const MONART = (() => {
         return `url(#${k})`;
       },
       // any other paint server or clip path: returns its id
-      def(tag: any, attrs: any, inner: any) {
+      def(tag, attrs, inner) {
         const k = `${id}_${n++}`;
         defs.push(`<${tag} id="${k}" ${attrs}>${inner}</${tag}>`);
         return k;
       },
-      lin(a: any, b: any) {
+      lin(a, b) {
         const k = `${id}_${n++}`;
         defs.push(
           `<linearGradient id="${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`,
@@ -5786,7 +5806,7 @@ export const MONART = (() => {
         return `url(#${k})`;
       },
       // counter-mirror glyphs on mirrored (enemy) sprites so „?“ stays readable
-      glyph(x: number, svg: any) {
+      glyph(x, svg) {
         return /\benemy\b/.test(cls || '') ? `<g transform="translate(${2 * x} 0) scale(-1 1)">${svg}</g>` : svg;
       },
     };
@@ -5818,7 +5838,7 @@ export const MONART = (() => {
   /* Baked art: tools/build.js inlines the svgo-optimised files from art/monsters/svg/ as MONBAKED.
      Keys: hero "<shape>-<stage>", enemy "<shape>[-elite|-boss]", plus "-enemy" when the mirrored battle sprite differs. */
   const BAKED = globalThis.MONBAKED ?? null;
-  function bakedKey(shape: string, evo: number, cls: any, opts: { boss?: any; elite?: any }) {
+  function bakedKey(shape: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
     shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
     if (HEROES.includes(shape)) return `${shape}-${Math.max(0, Math.min(2, evo || 0))}`;
@@ -5826,21 +5846,21 @@ export const MONART = (() => {
     return shape + (opts.elite ? '-elite' : boss ? '-boss' : '');
   }
   // clothes go on top of the drawing (baked or live), scaled like the hero's stage
-  function dress(svg: string, shape: string | number, evo: any, outfit: string | number) {
-    const o = FIT[shape] && OUTFIT[outfit];
+  function dress(svg: string, shape: string, evo: number, outfit?: string) {
+    const o = FIT[shape] && OUTFIT[outfit!];
     if (!o) return svg;
     // the friends both wear the piece; only the first carries the school bag
     const fits = ([] as Fit[]).concat(FIT[shape]).slice(0, o.back ? 1 : undefined);
     const k = [0.8, 0.9, 1][Math.max(0, Math.min(2, evo || 0))];
-    const g = (f) =>
+    const g = (f: (f: Fit) => string) =>
       `<g transform="translate(${f1(60 * (1 - k))} ${f1(116 * (1 - k))}) scale(${k})">${fits.map(f).join('')}</g>`;
     if (o.back) svg = svg.replace(/^(<svg[^>]*>)/, `$1${g(o.back)}`);
     return svg.replace(/<\/svg>$/, `${g(o.front)}</svg>`);
   }
   // opts: { elite, boss } for enemies, { outfit } for heroes
-  function monsterSVG(shape: string, color: any, evo: any, cls?: any, opts?: { outfit?: any }) {
+  function monsterSVG(shape: string, color: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
-    const bare = !!(OUTFIT[opts.outfit] && OUTFIT[opts.outfit].head && OWN_HAT.includes(shape));
+    const bare = !!(OUTFIT[opts.outfit!] && OUTFIT[opts.outfit!].head && OWN_HAT.includes(shape));
     if (BAKED && !bare) {
       const k = bakedKey(shape, evo, cls, opts),
         mirrored = /\benemy\b/.test(cls || '') && BAKED[k + '-enemy'] ? k + '-enemy' : k,
@@ -5862,43 +5882,33 @@ export const MONART = (() => {
   // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
   // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS.
   // Light and outline stay outside the spin group so the gloss does not turn with the disc.
-  const DISC = {
+  const DISC: Record<string, [face: string[], grain: string | null, th: number]> = {
     // face light/mid/dark, grain colour, side thickness
     leicht: [['#F6DDB0', '#E2B878', '#B0803F'], '#C08A4C', 5],
     schwer: [['#C48E62', '#8A5A36', '#4E301A'], '#5E3A1E', 10],
     eisen: [['#F4F7FB', '#B4BCC8', '#69727F'], null, 8],
   };
-  const around = (
-    n: number,
-    f: {
-      (a: any): string;
-      (a: any): string;
-      (a: any): string;
-      (a: any): string;
-      (a: any): string;
-      (a: any): string;
-      (arg0: number): any;
-    },
-  ) => Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
+  const around = (n: number, f: (a: number) => string) => Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
   const pt = (r: number, a: number) => `${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}`;
-  const steel = (g: (arg0: string, arg1: string, arg2: (string | number)[][]) => any) =>
+  type Grad = (kind: string, attrs: string, stops: Stop[]) => string;
+  const steel = (g: Grad) =>
     g('linear', '', [
       [0, '#7A8494'],
       [0.28, '#F4F7FB'],
       [0.55, '#AEB7C4'],
       [1, '#5E6878'],
     ]);
-  const TIP = {
-    stahl: (g: any) =>
+  const TIP: Record<string, (g: Grad) => string> = {
+    stahl: (g) =>
       `<path d="M50 70 L70 70 L60 102 Z" fill="${steel(g)}" ${S(3)}/><path d="M55 74 L59.5 96" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>`,
-    gummi: (g: (arg0: string, arg1: string, arg2: (string | number)[][]) => any) =>
+    gummi: (g) =>
       `<path d="M50 70 L70 70 L66 94 Q60 103 54 94 Z" fill="${g('linear', '', [
         [0, '#2A2D38'],
         [0.3, '#6A6F80'],
         [1, '#22252E'],
       ])}" ${S(3)}/>` +
       `<path d="M51.5 78 Q60 81 68.5 78 M52.5 85 Q60 88 67.5 85 M53.5 92 Q60 95 66.5 92" fill="none" stroke="#14161D" stroke-width="1.6" stroke-linecap="round"/><path d="M55 74 L56 95" stroke="#9AA0B4" stroke-width="2" stroke-linecap="round" opacity=".5"/>`,
-    kugel: (g: (arg0: string, arg1: string, arg2: (string | number)[][]) => any) =>
+    kugel: (g) =>
       `<path d="M52 70 L68 70 L63 88 L57 88 Z" fill="${steel(g)}" ${S(3)}/>` +
       `<circle cx="60" cy="95" r="7.5" fill="${g('radial', 'cx=".35" cy=".3" r=".75"', [
         [0, '#FFFFFF'],
@@ -5907,8 +5917,8 @@ export const MONART = (() => {
         [1, '#9AA3B2'],
       ])}" ${S(3)}/><circle cx="57.5" cy="92.5" r="2" fill="#fff"/><path d="M55 98 Q60 101.5 65 98" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".6"/>`,
   };
-  const RING = {
-    zahn: (g: (arg0: string, arg1: string, arg2: (string | number)[][]) => any) =>
+  const RING: Record<string, (g: Grad) => string> = {
+    zahn: (g) =>
       `<path d="M${around(16, (a: number) => `${pt(30, a - 0.1)} L${pt(36, a - 0.06)} L${pt(36, a + 0.06)} L${pt(30, a + 0.1)} L`).slice(0, -2)}Z M23 0 A23 23 0 1 0 -23 0 A23 23 0 1 0 23 0 Z" fill="${g(
         'radial',
         'cx="0" cy="0" r="36" gradientUnits="userSpaceOnUse"',
@@ -5918,7 +5928,7 @@ export const MONART = (() => {
           [1, '#7A8494'],
         ],
       )}" fill-rule="evenodd" stroke="#1C2541" stroke-width="3"/>`,
-    welle: (g: (arg0: string, arg1: string, arg2: (string | number)[][]) => any) => {
+    welle: (g) => {
       const wave = (r: number, k: number) =>
         `M${around(48, (a: number) => pt(r + k * Math.sin(8 * a), a) + ' L').slice(0, -2)}Z`;
       return `<path d="${wave(34, 3.5)} ${wave(26, 3.5)}" fill="${g(
@@ -5931,7 +5941,7 @@ export const MONART = (() => {
         ],
       )}" fill-rule="evenodd" stroke="#1C2541" stroke-width="2.6"/><path d="${wave(31.5, 3.5)}" fill="none" stroke="#C6EEFF" stroke-width="2" stroke-dasharray="7 9"/>`;
     },
-    flamme: (g: (arg0: string, arg1: string, arg2: (string | number)[][]) => any) =>
+    flamme: (g) =>
       `<g fill="${g('radial', 'cx="0" cy="0" r="44" gradientUnits="userSpaceOnUse"', [
         [0.5, '#FFE066'],
         [0.72, '#FF8A3D'],
@@ -5943,15 +5953,11 @@ export const MONART = (() => {
           `<path d="M${pt(26, a - 0.08)} Q${pt(33, a)} ${pt(37, a + 0.1)}" fill="none" stroke="#FFF3B0" stroke-width="2" stroke-linecap="round"/>`,
       ),
   };
-  function topSVG(
-    color: any,
-    parts: { disc: string | number; tip: string | number; ring: string | number },
-    cls?: any,
-  ) {
+  function topSVG(color: string, parts: { disc: string; tip: string; ring: string }, cls?: string) {
     const [face, grain, th] = DISC[parts.disc] || DISC.leicht,
       id = 'tp' + uid++,
-      defs: any[] = [];
-    const g = (kind: string, attrs: string, stops: any[][]) => {
+      defs: string[] = [];
+    const g: Grad = (kind, attrs, stops) => {
       const k = `${id}_${defs.length}`;
       defs.push(
         `<${kind}Gradient id="${k}" ${attrs}>${stops.map(([t, c]) => `<stop offset="${t}" stop-color="${c}"/>`).join('')}</${kind}Gradient>`,
@@ -5998,7 +6004,7 @@ export const MONART = (() => {
           .join('');
     const pins = around(
       4,
-      (a: any) =>
+      (a) =>
         `<circle cx="${pt(38.5, a).replace(' ', '" cy="')}" r="3.5" fill="${grain ? '#4A2E18' : '#E4E9F0'}" stroke="#1C2541" stroke-width="1.6"/>`,
     );
     return `<svg class="mon top ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><defs>${defs.join('')}</defs><g transform="translate(0 14)">${/\bfallen\b/.test(cls || '') ? '' : '<ellipse cx="60" cy="102" rx="12" ry="2.5" fill="#1C2541" opacity=".18"/>'}${tip}
@@ -6208,7 +6214,7 @@ export const MONART = (() => {
   FIT.dirigentin = { top: [60, 30, 1.1], eyes: [60, 58, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] };
 
   /* ---------- Klasse 1 und 2: Mathe, Deutsch, Musik (klasse12.ts) ---------- */
-  const k12_head = (skin: any) =>
+  const k12_head = (skin: string) =>
     `<ellipse cx="60" cy="56" rx="25" ry="26" ${F(skin)}/><ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
   const k12_face = (iris: string, brow: string) =>
     shine(47, 52, 5, 3, -20) +
@@ -6255,7 +6261,7 @@ export const MONART = (() => {
     if (o.evo >= 2)
       s += `<rect x="72" y="96" width="10" height="7" rx="1.5" ${F('#FFFDF5', 1.6)}/><path d="M74 99.5 L80 99.5" stroke="#E0453B" stroke-width="1.6"/>`;
     // the class's 20-bead counting frame in the left hand: 6 and 3 pushed to the left
-    const bead = (x: number, y: any, c: string) =>
+    const bead = (x: number, y: number, c: string) =>
       `<circle cx="${f1(x)}" cy="${y}" r="2" fill="${c}" stroke="${OUT}" stroke-width="1.1"/>`;
     const row = (y: number, left: number) =>
       Array.from({ length: 10 }, (_, i) =>
@@ -6607,13 +6613,15 @@ export const MONART = (() => {
     s += `<ellipse cx="60" cy="64" rx="48" ry="12" ${F(C.lin('#FFB84D', '#E8852A'))}/><ellipse cx="84" cy="64" rx="7" ry="3.5" ${F('#C9CED8', 2)}/>`;
     s += C.glyph(
       60,
-      [
+      (
+        [
         ['B', 26, 64, -15],
         ['K', 42, 68, 12],
         ['R', 60, 62, -6],
         ['E', 70, 70, 18],
         ['a', 38, 59, 0],
-      ]
+      ] as [string, number, number, number][]
+      )
         .map(([l, x, y, r]) => k12_letter(LET[l], x, y, '#FFF3C4', 0.75, r))
         .join(''),
     );

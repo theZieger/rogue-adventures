@@ -25,9 +25,9 @@ export const K12E = (() => {
   const USED = new Set<string>();
   const fl = (c: string) =>
     /^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c;
-  const ln = (d: string, w?: number | undefined, c?: string | undefined) =>
+  const ln = (d: string, w?: number, c?: string) =>
     `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const sh = (d: string, fill: string, w?: number | undefined) =>
+  const sh = (d: string, fill: string, w?: number) =>
     `<path d="${d}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
   const rect = (
     x: number,
@@ -35,11 +35,11 @@ export const K12E = (() => {
     w: number,
     h: string | number,
     fill: string,
-    rx?: number | undefined,
-    sw?: number | undefined,
+    rx?: number,
+    sw?: number,
   ) =>
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${sw || 2.5}"/>`;
-  const circ = (cx: number, cy: number, r: number, fill: string, w?: number | undefined) =>
+  const circ = (cx: number, cy: number, r: number, fill: string, w?: number) =>
     `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
   const oval = (
     cx: number,
@@ -47,12 +47,12 @@ export const K12E = (() => {
     rx: number,
     ry: number,
     fill: string,
-    w?: number | undefined,
-    rot?: number | undefined,
+    w?: number,
+    rot?: number,
   ) =>
     `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
   // white gloss: a soft spot or a stroke along the lit edge
-  const gloss = (cx: number, cy: number, rx: number, ry: number, rot?: number | undefined) =>
+  const gloss = (cx: number, cy: number, rx: number, ry: number, rot?: number) =>
     `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
   const lit = (d: string, w: number) =>
     `<path d="${d}" fill="none" stroke="#fff" stroke-width="${w || 2}" stroke-linecap="round" opacity=".6"/>`;
@@ -3664,7 +3664,7 @@ export const K12E = (() => {
     b.word = b.noun.toLowerCase();
   });
   // eigene Zeichen: long line = long tone, dots = short tones, big = loud, small = quiet; read from left to right
-  const dash = (x1: number, x2: number, w?: number | undefined) => tube(`M${x1} 50 H${x2}`, w || 6, BLUE);
+  const dash = (x1: number, x2: number, w?: number) => tube(`M${x1} 50 H${x2}`, w || 6, BLUE);
   const SIGNS = [
     {
       id: 'lang',

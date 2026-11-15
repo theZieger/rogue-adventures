@@ -96,11 +96,11 @@ export const MS3 = (() => {
     `<g transform="translate(${x} ${y}) rotate(${rot})${s !== 1 ? ` scale(${s})` : ''}">${inner}</g>`;
   // both pictures set round caps and joins once on a wrapping group
   const ROUND = '<g stroke-linecap="round" stroke-linejoin="round">';
-  const leaf = (d: string, fill?: null | undefined, w?: number | undefined) =>
+  const leaf = (d: string, fill?: null, w?: number) =>
     `<path d="${d}" fill="${fill || 'url(#flLf)'}" stroke="${OUT}" stroke-width="${w || 1.1}"/>`;
-  const vein = (d: string, c?: string | undefined, w?: number | undefined) =>
+  const vein = (d: string, c?: string, w?: number) =>
     `<path d="${d}" fill="none" stroke="${c || '#DDEFC0'}" stroke-width="${w || 0.8}"/>`;
-  const stem = (d: string, w: number, c?: string | undefined) =>
+  const stem = (d: string, w: number, c?: string) =>
     `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(w || 2.2) + 1.8}"/><path d="${d}" fill="none" stroke="${c || '#6EA842'}" stroke-width="${w || 2.2}"/>`;
   // n petals of length len and half-width w around cx|cy, starting r0 from the centre
   const petals = (
@@ -113,7 +113,7 @@ export const MS3 = (() => {
     r0: number,
     off: number,
     sw: number,
-    sc?: string | undefined,
+    sc?: string,
   ) =>
     `<g transform="translate(${cx} ${cy})" fill="${fill}" stroke="${sc || OUT}" stroke-width="${sw || 0.6}">${Array.from({ length: n }, (_, i) => `<ellipse cy="${f1(-(r0 || 0) - len / 2)}" rx="${w}" ry="${len / 2}" transform="rotate(${f1((360 / n) * i + (off || 0))})"/>`).join('')}</g>`;
   const shine = (x: number, y: number, rx: number, ry: number, rot: number | undefined) =>
@@ -221,7 +221,7 @@ export const MS3 = (() => {
     Array.from({ length: n }, (_, i) =>
       at(0, 0, f1(-spread + (2 * spread * i) / (n - 1)), 1, leaf(LEAVES.lobe, null, 0.9) + vein('M0 -2 L0 -20')),
     ).join('');
-  const pinnate = (n: number, round?: boolean | undefined) =>
+  const pinnate = (n: number, round?: boolean) =>
     `<path d="M0 0 L0 -${n * 8 + 6}" stroke="${OUT}" stroke-width="2.2"/><path d="M0 0 L0 -${n * 8 + 6}" stroke="#6EA842" stroke-width="1.1"/>` +
     Array.from({ length: n }, (_, i) =>
       [-1, 1]
@@ -516,7 +516,7 @@ export const MS3 = (() => {
   const hit = (y: number, h: number) =>
     `<rect class="hitarea" x="0" y="${y}" width="300" height="${h}" fill="transparent"/>`;
   // texture strokes sit in style="" so a glowing layer keeps them (the glow rule recolours stroke attributes only)
-  const tex = (d: string, c: string, w: number, o?: number | undefined, dash?: string | undefined) =>
+  const tex = (d: string, c: string, w: number, o?: number, dash?: string) =>
     `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}"${o ? ` opacity="${o}"` : ''}${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
   const blade = (x: number, h: number, l: number) =>
     `M${x - 2.6} 187 Q${x + l * 0.3} ${187 - h * 0.6} ${x + l} ${187 - h} Q${x + 1.2 + l * 0.3} ${187 - h * 0.6} ${x + 2.6} 187 Z`;

@@ -17,7 +17,7 @@ import { MQ as Q } from './logic.ts';
   const fl = (c: string) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
   const grad = (c: string) =>
     `<linearGradient id="km${c}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone('#' + c, 0.32)}"/><stop offset=".5" stop-color="#${c}"/><stop offset="1" stop-color="${tone('#' + c, -0.16)}"/></linearGradient>`;
-  const svgOf = (w: number, h: number, body: string, label: string, attrs?: string | undefined) => {
+  const svgOf = (w: number, h: number, body: string, label: string, attrs?: string) => {
     const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u: string | any[]) => u.slice(7, 13)))];
     return `<svg viewBox="0 0 ${w} ${h}"${attrs || ''} role="img" aria-label="${label}">${used.length ? `<defs>${used.map(grad).join('')}</defs>` : ''}${body}</svg>`;
   };
@@ -1178,7 +1178,7 @@ import { MQ as Q } from './logic.ts';
     dz: number,
     k: number,
     fills: any[],
-    cls?: string | undefined,
+    cls?: string,
   ) =>
     (
       [
@@ -1608,7 +1608,7 @@ import { MQ as Q } from './logic.ts';
       D = 3;
     let b = '';
     // a block of h units seen from the front with a little depth: top and right side, then the front squares
-    const block = (x: number, y: number, h: number, c: string, cls?: string | undefined) =>
+    const block = (x: number, y: number, h: number, c: string, cls?: string) =>
       `<path d="M${x} ${y} l${D} ${-D} h${U} l${-D} ${D} Z" fill="${tone(c, 0.35)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/><path d="M${x + U} ${y} l${D} ${-D} v${h * U} l${-D} ${D} Z" fill="${tone(c, -0.25)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/>` +
       range(0, h - 1)
         .map(
@@ -3355,7 +3355,7 @@ import { MQ as Q } from './logic.ts';
   const lineSVG1 = (kind: any) => svgOf(140, 84, lineG(kind, pick([0, 15, -15, 30, -30]), 70, 42), 'Linie');
   // a Würfel or Quader big enough to mark one corner, edge or face; the marked part is the only element with class="mark"
   const CUBE = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
-  function solidMarkSVG(quader: boolean, mark?: string | undefined) {
+  function solidMarkSVG(quader: boolean, mark?: string) {
     const [dx, dy, dz, k] = quader ? [2, 1, 1.2, 2.2] : [1, 1, 1, 3],
       P = (x: number, y: number | undefined, z: number | undefined) => iso(x * dx, y * dy, z * dz, k);
     const top: Corner[] = [

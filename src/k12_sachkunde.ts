@@ -32,7 +32,7 @@ export const MSK12 = (() => {
         extra: Object.fromEntries(Object.entries(o.modules as Unit['modules']).map(([k, m]) => [k, m.atk])),
       }),
     );
-  const mod = (name: string, icon: string, atk: string, dmg: number, maxTier?: number | undefined) => ({
+  const mod = (name: string, icon: string, atk: string, dmg: number, maxTier?: number) => ({
     name,
     icon,
     atk,
@@ -58,7 +58,7 @@ export const MSK12 = (() => {
     `${+(x + Math.cos(a) * r).toFixed(1)} ${+(y + Math.sin(a) * r).toFixed(1)}`;
   const sun = (x: number, y: number, r: number) =>
     `<path d="${Array.from({ length: 8 }, (_, i) => `M${pt(x, y, (i * Math.PI) / 4, r + 4)} L${pt(x, y, (i * Math.PI) / 4, r + 11)}`).join('')}" stroke="#F0A500" stroke-width="3" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="${r}" fill="#FFD43B" ${ln(2)}/>`;
-  const cloud = (x: number, y: number, s: number, fill?: string | undefined) =>
+  const cloud = (x: number, y: number, s: number, fill?: string) =>
     `<path transform="translate(${x} ${y}) scale(${s})" d="M-26 10 Q-36 10 -34 0 Q-32 -10 -22 -8 Q-20 -22 -4 -20 Q8 -30 20 -16 Q34 -16 32 -2 Q38 10 26 10 Z" fill="${fill || '#fff'}" ${ln(+(2 / s).toFixed(2))}/>`;
   const flake = (x: number, y: number) =>
     `M${x - 5} ${y} L${x + 5} ${y} M${x - 2.5} ${y - 4.3} L${x + 2.5} ${y + 4.3} M${x - 2.5} ${y + 4.3} L${x + 2.5} ${y - 4.3}`;
@@ -1828,11 +1828,11 @@ export const MSK12 = (() => {
     wt: lgr('k2wt', '#FFFFFF', '#D2DCE6', 0, 1),
   };
   const defs = (...k: string[]) => `<defs>${k.map((x) => GRAD[x]).join('')}</defs>`;
-  const vein = (d: string, w?: number | undefined) =>
+  const vein = (d: string, w?: number) =>
     `<path d="${d}" fill="none" stroke="#E6F4CE" stroke-width="${w || 0.9}" stroke-linecap="round" opacity=".9"/>`;
   const petiole = (d: string, w: number) =>
     `<path d="${d}" fill="none" ${ln(w + 2)}/><path d="${d}" fill="none" stroke="#8DBE5A" stroke-width="${w}" stroke-linecap="round"/>`;
-  const leafFill = (d: string, w?: number | undefined) => `<path d="${d}" fill="url(#k2lf)" ${ln(w || 1.4)}/>`;
+  const leafFill = (d: string, w?: number) => `<path d="${d}" fill="url(#k2lf)" ${ln(w || 1.4)}/>`;
   // Eiche: rounded lobes alternating left and right, ear-like lobes at the base, hardly any stalk
   const OAK = [
     [8, 1, 10, -4],
@@ -2394,9 +2394,9 @@ export const MSK12 = (() => {
     );
   const fruitSVG = (id: string | number) => pic('0 0 100 100', FRUITS[id], 'Frucht eines Baumes', 140);
 
-  const stalk = (d: string, w?: number | undefined) =>
+  const stalk = (d: string, w?: number) =>
     `<path d="${d}" fill="none" ${ln((w || 2.6) + 2.4)}/><path d="${d}" fill="none" stroke="#6DB24A" stroke-width="${w || 2.6}" stroke-linecap="round"/>`;
-  const blade = (x: number, h: number, l: number, w: number, g: string, stripe?: number | undefined) =>
+  const blade = (x: number, h: number, l: number, w: number, g: string, stripe?: number) =>
     `<path d="M${x - w} 120 Q${x + l * 0.3 - w * 0.4} ${120 - h * 0.6} ${x + l} ${120 - h} Q${x + w * 0.4 + l * 0.3} ${120 - h * 0.6} ${x + w} 120 Z" fill="url(#k2${g || 'lf'})" ${ln(1.2)}/>${stripe ? `<path d="M${x} 120 Q${x + l * 0.3} ${120 - h * 0.6} ${fx(x + l * 0.94)} ${fx(120 - h * 0.94)}" fill="none" stroke="#F4FAEC" stroke-width=".9"/>` : ''}`;
   const frill = (x: number, y: number, rx: number, ry: number) =>
     smooth(
@@ -3666,7 +3666,7 @@ export const MSK12 = (() => {
     ['ein Stück Pappe', 'Die Pappe', false],
     ['Alufolie', 'Die Alufolie', false],
   ];
-  const lamp = (label: any, through?: boolean | undefined) =>
+  const lamp = (label: any, through?: boolean) =>
     pic(
       '0 0 200 110',
       `<rect x="8" y="44" width="34" height="20" rx="4" fill="#8E96B5" ${ln(2)}/><path d="M42 40 L52 34 V74 L42 68 Z" fill="#C9CEDD" ${ln(2)}/><path d="M52 42 L96 46 M52 66 L96 62" stroke="#FFD43B" stroke-width="3"/><rect x="96" y="22" width="10" height="66" fill="#F2E3C6" ${ln(2)}/>${S.txt(101, 104, label, { size: 11 })}<rect x="176" y="10" width="10" height="90" fill="#E3DED0" ${ln(2)}/>${through ? `<path d="M106 46 L176 52 M106 62 L176 58" stroke="#FFD43B" stroke-width="3"/><ellipse cx="174" cy="55" rx="5" ry="12" fill="#FFE27A"/>` : through === false ? '<ellipse cx="174" cy="55" rx="5" ry="12" fill="#3A3F4F" opacity=".5"/>' : ''}`,
