@@ -101,7 +101,7 @@ export async function unpackSave(text: string): Promise<Backup> {
   if (!isObj(d) || d.v !== 1 || !isObj(d.meta)) throw bad;
   return { at: typeof d.at === 'string' ? d.at : '', meta: normMeta(d.meta), runs: isObj(d.runs) ? d.runs : {} };
 }
-const okKnow = (q) => isObj(q) && Number.isFinite(q.c) && Number.isFinite(q.t);
+const okKnow = (q: unknown) => isObj(q) && Number.isFinite(q.c) && Number.isFinite(q.t);
 // dev = this device, inc = from the code (both normalised): nothing that was reached on either device gets lost
 export function mergeMeta(dev: Meta, inc: Meta) {
   const m: Meta = JSON.parse(JSON.stringify(dev));

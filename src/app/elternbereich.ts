@@ -46,8 +46,8 @@ const P_TABS = {
   settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', show: 'Anzeigen', reset: 'Löschen' }],
 };
 const P_JUMPS = { load: ['settings', 'save'], save: ['settings', 'save'], appsec: ['settings', 'app'] };
-export let pAt;
-const tutOf = (m, k, tier) => {
+export let pAt: { tab: any; sub: any; back?: any; subj: any; mode: any };
+const tutOf = (m: string | number, k: string, tier: string | number) => {
   const c = MODES[m];
   return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier];
 };
@@ -66,7 +66,11 @@ export function confirmBox(title: string, body: string | Markup, yes: string, fn
   $('#no', ov).focus({ preventScroll: true });
 }
 // quiet: redrawn in place after a switch or a tab, without the screen animation
-export function screenParent(jump, back?, quiet?) {
+export function screenParent(
+  jump: string | null,
+  back?: { (): void; (): void } | undefined,
+  quiet?: boolean | undefined,
+) {
   back = typeof back === 'function' ? back : screenTitle;
   if (!quiet) pAt = { tab: 'overview', sub: {}, subj: -1, mode: '' };
   if (P_JUMPS[jump]) {
@@ -78,7 +82,7 @@ export function screenParent(jump, back?, quiet?) {
   const subs = P_TABS[tab][2];
   const sub = subs[pAt.sub[tab]] ? pAt.sub[tab] : Object.keys(subs)[0];
   state.depth = sub === 'subjects' && curGrade().subjects[pAt.subj] ? 2 : 1;
-  const redraw = (focus?) => {
+  const redraw = (focus?: string | undefined) => {
     screenParent(null, back, true);
     const el = focus && $(focus);
     if (el) el.focus({ preventScroll: true });
@@ -138,17 +142,17 @@ export function screenParent(jump, back?, quiet?) {
     html`<b>sicher:</b> mindestens 8 von 10 richtig · <b>fast sicher:</b> mindestens die Hälfte · <b>übt noch:</b> weniger als die Hälfte`,
   );
   const report = weekReport();
-  const gameState = (m) => {
+  const gameState = (m: string | null) => {
     if (!shown(m)) return 'ausgeblendet';
     const all = Object.keys(MODES[m].modules);
     const n = all.filter((k) => !offList(m).includes(k)).length;
     const S = MODES[m].starters;
-    return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`;
+    return `${n} von ${all.length} Aufgabenarten${S.length > 1 ? ` · ${S.filter((x: { id: any }) => heroShown(m, x)).length} von ${S.length} Helden` : ''}`;
   };
 
   const turmSubjCard = () => {
     const G = grades().filter((g) => g.grade !== 1),
-      fixed = (g) => (state.meta.turm.subjects || {})[g] || [];
+      fixed = (g: number) => (state.meta.turm.subjects || {})[g] || [];
     return G.length
       ? card('Turmwacht: Fächer festlegen', [
           note(ELTERN.TURM.subjects),
@@ -171,7 +175,7 @@ export function screenParent(jump, back?, quiet?) {
   const pages: Record<string, () => unknown> = {
     week() {
       const r = report;
-      const sum = (f) => r.rows.reduce((a, x) => a + x[f], 0);
+      const sum = (f: string) => r.rows.reduce((a, x) => a + x[f], 0);
       const weak = r.rows
         .filter((x) => x.t >= 3 && x.c / x.t < 0.8)
         .sort((a, b) => a.c / a.t - b.c / b.t)
@@ -334,7 +338,7 @@ export function screenParent(jump, back?, quiet?) {
         c.starters.length > 1
           ? card(
               'Helden',
-              html`${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), html`data-hide="hero:${m}:${x.id}" data-action="hide"`, x.names[0], html`<span>${[...new Set(x.attacks.map((a) => c.modules[a.mod].name))].join(', ')}</span>`))}${msg}`,
+              html`${note('Jeder Held bringt eigene Aufgabenarten mit. Ausgeschaltete Helden stehen nicht mehr zur Wahl.')}${c.starters.map((x) => sw(heroShown(m, x), html`data-hide="hero:${m}:${x.id}" data-action="hide"`, x.names[0], html`<span>${[...new Set(x.attacks.map((a: { mod: string | number }) => c.modules[a.mod].name))].join(', ')}</span>`))}${msg}`,
             )
           : '',
         card(
@@ -469,7 +473,7 @@ export function screenParent(jump, back?, quiet?) {
       () => screenParent('appsec', back),
       () => screenParent('appsec', back),
     );
-  const sample = (v) => speak('Hallo! So klingt diese Stimme.', v);
+  const sample = (v: SpeechSynthesisVoice | null | undefined) => speak('Hallo! So klingt diese Stimme.', v);
   const sampleEn = 'Hello! This is how I sound.';
   const copy = (text: string, box: string, out: string) => {
     const tell = (t: string) => {
@@ -484,7 +488,7 @@ export function screenParent(jump, back?, quiet?) {
       navigator.clipboard.writeText(text).then(() => tell('Kopiert.'), mark);
     else mark();
   };
-  const readCode = async (how) => {
+  const readCode = async (how: string) => {
     let s;
     try {
       s = await unpackSave($<HTMLTextAreaElement>('#pcodein').value);
@@ -509,10 +513,10 @@ export function screenParent(jump, back?, quiet?) {
         true,
       );
   };
-  const setHidden = (keys, hide) => {
+  const setHidden = (keys: string | ConcatArray<string>, hide: boolean) => {
     state.meta.hidden = state.meta.hidden.filter((x) => !keys.includes(x)).concat(hide ? keys : []);
   };
-  const noGameLeft = (keys) =>
+  const noGameLeft = (keys: string | string[]) =>
     !curGrade().subjects.some((s) => s.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
   screen(
     html`<div class="screen">${raw(topbar('Elternbereich'))}<nav class="ptabs" role="tablist" aria-label="Bereiche">${Object.entries(
@@ -564,7 +568,7 @@ export function screenParent(jump, back?, quiet?) {
         const M = MODES[m].modules[k];
         const tiers = Array.from({ length: M.maxTier }, (_, i) => [i + 1, tutOf(m, k, i + 1)]).filter((x) => x[1]);
         const ov = modal(
-          html`<h2>${M.icon} ${M.name}</h2><p>${ELTERN.INFO[m][k]}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => html`${tiers.length > 1 ? html`<h4>Stufe ${t}: ${x.title}</h4>` : ''}<ol>${x.steps.map((s) => html`<li>${s}</li>`)}</ol>`)}<button class="btn" id="ok" data-action="ok">Schließen</button>`,
+          html`<h2>${M.icon} ${M.name}</h2><p>${ELTERN.INFO[m][k]}</p><h3>So erklärt Lernquest es Ihrem Kind</h3>${tiers.length > 1 ? note('Die Stufen gehen von leicht nach schwer.') : ''}${tiers.map(([t, x]) => html`${tiers.length > 1 ? html`<h4>Stufe ${t}: ${x.title}</h4>` : ''}<ol>${x.steps.map((s: unknown) => html`<li>${s}</li>`)}</ol>`)}<button class="btn" id="ok" data-action="ok">Schließen</button>`,
           { ok: () => ov.remove() },
         );
         $('#ok', ov).focus({ preventScroll: true });
@@ -663,7 +667,7 @@ export function screenParent(jump, back?, quiet?) {
         if ($('#pwarn')) $('#pwarn').remove();
         const full = saveData(false);
         const code = await packSave(full);
-        const link = (c) => SITE + '#lade=' + c;
+        const link = (c: string) => SITE + '#lade=' + c;
         let qr = QR.svg(link(qrCode(code)), 'QR-Code mit dem Spielstand'),
           short = false;
         if (!qr) {
@@ -754,7 +758,7 @@ export function screenParent(jump, back?, quiet?) {
           all = Object.assign({}, state.meta.turm.subjects),
           cur = all[g] || [];
         if (!cur.includes(s) && cur.length >= 3) return say(b, 'Höchstens drei Fächer.');
-        all[g] = cur.includes(s) ? cur.filter((x) => x !== s) : cur.concat(s);
+        all[g] = cur.includes(s) ? cur.filter((x: string) => x !== s) : cur.concat(s);
         if (!all[g].length) delete all[g];
         state.meta.turm.subjects = Object.keys(all).length ? all : null;
         saveAll();

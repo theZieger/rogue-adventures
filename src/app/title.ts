@@ -121,16 +121,21 @@ export function screenTitle() {
   });
   showWeeklyNews();
 }
-export const subjectOf = (m) =>
+export const subjectOf = (m: string) =>
   visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
-export const openGoals = (m) => (extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : []);
-export const practised = (m) => Object.values(state.meta.stats[m]).some((x) => x.t > 0);
+export const openGoals = (m: string) =>
+  extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : [];
+export const practised = (m: string) => Object.values(state.meta.stats[m]).some((x) => x.t > 0);
 // no locks: a ranked subject marks its easiest theme and points from a harder one to the easiest one not practised yet
-export function screenSubject(sub) {
+export function screenSubject(
+  sub:
+    | { subject: 'Mathe' | 'Deutsch' | 'Ethik' | 'Sachkunde' | 'Musik' | 'Englisch'; icon: string; modes: string[] }
+    | undefined,
+) {
   state.depth = 1;
-  const ranked = sub.modes.some((m) => MODES[m].rank);
-  const path = (m, i) => {
-    const e = ranked && sub.modes.slice(0, i).find((x) => !practised(x));
+  const ranked = sub.modes.some((m: string | number) => MODES[m].rank);
+  const path = (m: any, i: any) => {
+    const e = ranked && sub.modes.slice(0, i).find((x: any) => !practised(x));
     return [
       ranked && !i ? html`<span class="startbadge">Hier anfangen</span>` : '',
       e ? html`<p class="pathhint">Leichter geht es mit „${MODES[e].title}“ los.</p>` : '',
@@ -138,7 +143,7 @@ export function screenSubject(sub) {
   };
   screen(
     html`<div class="screen">${raw(topbar(esc(sub.subject)))}<div class="scroll"><div class="stack">${sub.modes.map(
-      (m, i) => {
+      (m: unknown, i: any) => {
         const r = loadRun(m);
         const c = MODES[m];
         return html`<div class="card modecard"><div class="row" style="align-items:center;gap:12px"><div style="font-size:40px" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(
@@ -199,11 +204,11 @@ export function screenWeekly() {
   );
 }
 // straight into the game of a goal; an adventure whose hero lacks the goal's task type asks first
-function playGoal(g) {
+function playGoal(g: { kind: string; mod: any } | undefined) {
   state.mode = g.m;
   state.run = loadRun(state.mode);
   if (!state.run) return screenStarter(g);
-  if (g.kind !== 'right' || heroAttacks().some((a) => a.mod === g.mod)) return resumeRun();
+  if (g.kind !== 'right' || heroAttacks().some((a: { mod: any }) => a.mod === g.mod)) return resumeRun();
   const M = MODES[state.mode].modules[g.mod];
   const ov = modal(
     html`<h2>${M.icon} ${M.name}</h2><p>Dein Held in „${MODES[state.mode].title}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes" data-action="yes">Neues Abenteuer</button><button class="btn secondary" id="cont" data-action="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
@@ -222,7 +227,7 @@ function playGoal(g) {
 }
 
 /* ---------- First start, PIN, parental gate ---------- */
-export const setupDone = (how) => {
+export const setupDone = (how: string) => {
   state.meta.setup[how] = true;
   state.meta.setup.at = state.meta.setup.at || new Date().toISOString();
   saveAll();
@@ -253,7 +258,7 @@ function screenSetup() {
   });
 }
 // a parental gate, not encryption: four digits are guessed quickly anyway, the hash only keeps the PIN out of plain sight
-const pinHash = (p) => {
+const pinHash = (p: string) => {
   let h = 2166136261;
   for (const c of 'lernquest:' + p) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
   return 'h1' + (h >>> 0).toString(36);
@@ -261,7 +266,18 @@ const pinHash = (p) => {
 let pinFails = 0,
   pinLockUntil = 0;
 // one numpad screen for entering the PIN, choosing one and the parental gate
-function screenCode(o) {
+function screenCode(o: {
+  title: any;
+  text: any;
+  lock?: any;
+  relock?: any;
+  back: any;
+  forgot?: any;
+  onCode: any;
+  msg?: any;
+  task?: any;
+  len?: any;
+}) {
   let val = '';
   const len = o.len || 4;
   if (!o.relock) state.depth++;
@@ -278,12 +294,12 @@ function screenCode(o) {
     el.setAttribute('aria-label', o.task ? val || 'leer' : `${val.length} von ${len} Ziffern`);
   };
   const keys = [...app.querySelectorAll<HTMLButtonElement>('.numpad [data-k]')];
-  const fail = (msg) => {
+  const fail = (msg: string | null) => {
     val = '';
     paint();
     $('#cmsg').textContent = msg;
   };
-  function press(k) {
+  function press(k: string | undefined) {
     if (keys[0].disabled) return;
     if (k === 'del') val = val.slice(0, -1);
     else if (k === 'ok') {
@@ -331,7 +347,17 @@ function screenCode(o) {
   }
 }
 // relock: the parents' area locked itself; a wrong PIN goes to the title screen
-export function askPin(then, relock?) {
+export function askPin(
+  then: {
+    (jump: string | null, back?: { (): void; (): void } | undefined, quiet?: boolean | undefined): void;
+    (jump: string | null, back?: { (): void; (): void } | undefined, quiet?: boolean | undefined): void;
+    (): void;
+    (): void;
+    (): void;
+    (): any;
+  },
+  relock?: boolean | undefined,
+) {
   if (!state.meta.pin) return then();
   screenCode({
     title: 'Elternbereich',
@@ -340,7 +366,7 @@ export function askPin(then, relock?) {
     relock,
     back: screenTitle,
     forgot: () => screenGate(then),
-    onCode: (v, fail) => {
+    onCode: (v: any, fail: (arg0: string) => void) => {
       if (pinHash(v) === state.meta.pin) {
         pinFails = 0;
         return then();
@@ -366,19 +392,19 @@ document.addEventListener('visibilitychange', () => {
     $('.scroll').scrollTop = y;
   }, true);
 });
-export function setPin(done, back) {
-  const first = (msg?) =>
+export function setPin(done: { (): void; (): void; (): void }, back: { (): void; (): void; (): void }) {
+  const first = (msg?: string | undefined) =>
     screenCode({
       title: 'PIN festlegen',
       text: 'Vier Ziffern für den Elternbereich wählen.',
       msg,
       back,
-      onCode: (a) =>
+      onCode: (a: any) =>
         screenCode({
           title: 'PIN festlegen',
           text: 'Zur Kontrolle dieselbe PIN noch einmal eingeben.',
           back: () => first(),
-          onCode: (b) => {
+          onCode: (b: any) => {
             if (a !== b) return first('Die beiden Eingaben waren verschieden. Bitte neu wählen.');
             state.meta.pin = pinHash(a);
             setupDone('done');
@@ -388,7 +414,7 @@ export function setPin(done, back) {
     });
   first();
 }
-function screenGate(then, msg?) {
+function screenGate(then: any, msg?: string | undefined) {
   const a = rnd(13, 29),
     b = rnd(13, 29);
   screenCode({
@@ -397,7 +423,7 @@ function screenGate(then, msg?) {
     task: `${a} · ${b} = ?`,
     msg,
     back: screenTitle,
-    onCode: (v) =>
+    onCode: (v: string | number) =>
       +v === a * b ? setPin(then, screenTitle) : screenGate(then, 'Das stimmt nicht. Hier ist eine neue Aufgabe.'),
   });
 }
@@ -419,7 +445,9 @@ export const MONTHS = [
   'November',
   'Dezember',
 ];
-const deDate = (iso) => {
+const deDate = (iso: {
+  split: (arg0: string) => { (): any; new (): any; map: { (arg0: NumberConstructor): [any, any, any]; new (): any } };
+}) => {
   const [y, m, d] = iso.split('-').map(Number);
   return `${d}. ${MONTHS[m - 1]} ${y}`;
 };
@@ -428,7 +456,7 @@ function screenNews() {
   state.depth = 1;
   const unseen = state.meta.seenNews || '';
   screen(
-    html`<div class="screen">${raw(topbar('Was ist neu?'))}<div class="scroll"><div class="stack">${NEWS.length ? NEWS.map((e) => html`<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? html` <span class="newbadge">Neu!</span>` : ''}</h3>${e.groups.map((g) => html`<h4>${GROUP_ICON[g.title] || '📌'} ${g.title}</h4><ul>${g.items.map((it) => html`<li>${it}</li>`)}</ul>`)}</div>`) : html`<p>Noch keine Einträge.</p>`}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
+    html`<div class="screen">${raw(topbar('Was ist neu?'))}<div class="scroll"><div class="stack">${NEWS.length ? NEWS.map((e: { date: number; groups: any[] }) => html`<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? html` <span class="newbadge">Neu!</span>` : ''}</h3>${e.groups.map((g: { title: unknown; items: any[] }) => html`<h4>${GROUP_ICON[g.title] || '📌'} ${g.title}</h4><ul>${g.items.map((it: unknown) => html`<li>${it}</li>`)}</ul>`)}</div>`) : html`<p>Noch keine Einträge.</p>`}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     { back: screenTitle },
   );
   if (NEWS.length) {
