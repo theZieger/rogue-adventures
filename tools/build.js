@@ -53,7 +53,7 @@ function bakedMonsters() {
 
 // Every module of src/ under the name it exports, then the game. units.js goes first: it sets the order of the units.
 function appSource() {
-  const modules = files(SRC, '.js').filter((name) => name !== 'sw.js' && name !== 'units.js');
+  const modules = files(SRC).filter((name) => /\.(js|ts)$/.test(name) && name !== 'sw.js' && name !== 'units.js');
   const imports = ['units.js', ...modules].flatMap((name) => {
     const exported = /^export const (\w+)/m.exec(read(SRC, name));
     return exported ? [`import { ${exported[1]} } from './${name}';`] : [];

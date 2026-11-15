@@ -12,7 +12,8 @@
     "screenshots": "node tools/screenshots.js",
     "svg": "node tools/svg.js",
     "format": "biome format --write .",
-    "lint": "biome lint ."
+    "lint": "biome lint .",
+    "typecheck": "tsc"
   },
   "engines": {
     "node": ">=20"
@@ -23,7 +24,8 @@
     "esbuild": "0.28.2",
     "jsdom": "^26.0.0",
     "playwright": "1.63.0",
-    "svgo": "^4.1.0"
+    "svgo": "^4.1.0",
+    "typescript": "7.0.2"
   },
   "license": "MIT"
 }

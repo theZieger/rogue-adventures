@@ -4,7 +4,7 @@
 import * as page from './page.js';
 import zlib from 'zlib';
 import { QR } from '../src/qr.js';
-import { SAVECODE } from '../src/savecode.js';
+import { SAVECODE } from '../src/savecode.ts';
 
 let fails = 0;
 const check = (cond, msg) => {
