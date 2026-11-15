@@ -6,7 +6,7 @@
  *
  * The raw files are the drawing code's output, one per variant the game shows. svgo only runs on files whose
  * raw content (or the svgo config/version) changed since the last run: art/monsters/manifest.json keeps a
- * sha256 of each raw file, so an unchanged monster costs nothing. build.py inlines art/monsters/svg/*.svg.
+ * sha256 of each raw file, so an unchanged monster costs nothing. tools/build.js inlines art/monsters/svg/*.svg.
  * Settings are lossless on purpose: 3 decimals (the drawings use at most 1), no path merging, and transforms are
  * not baked into path data (that changes how scaled outlines render). tools/svg_compare.js checks it pixel by pixel. */
 const fs = require('fs');

@@ -143,7 +143,7 @@
       onCode: (v) => (+v === a * b ? setPin(then, screenTitle) : screenGate(then, 'Das stimmt nicht. Hier ist eine neue Aufgabe.')) });
   }
 
-  /* ---------- Changelog (CHANGELOG.md via build.py) ---------- */
+  /* ---------- Changelog (CHANGELOG.md via tools/build.js) ---------- */
   const NEWS = (typeof CHANGELOG !== 'undefined' && Array.isArray(CHANGELOG)) ? CHANGELOG : [];
   const hasNews = () => NEWS.length > 0 && NEWS[0].date > (meta.seenNews || '');
   const MONTHS = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];

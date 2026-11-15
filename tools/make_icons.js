@@ -59,7 +59,7 @@ const ICONS = [
 ];
 
 // iOS/iPadOS launch screens (apple-touch-startup-image). Safari needs one exact
-// image per device: [CSS width, CSS height, pixel ratio]. build.py turns the
+// image per device: [CSS width, CSS height, pixel ratio]. tools/build.js turns the
 // file names into <link> tags, so adding a device here is all that's needed.
 const IPHONES = [
   [440, 956, 3],  // 16 Pro Max, 17 Pro Max

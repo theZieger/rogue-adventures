@@ -1,4 +1,4 @@
-// __VERSION__ = build hash (build.py), so every build refreshes the cache.
+// __VERSION__ = build hash (tools/build.js), so every build refreshes the cache.
 const VERSION = '__VERSION__';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;

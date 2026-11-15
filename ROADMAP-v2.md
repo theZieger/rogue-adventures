@@ -13,22 +13,14 @@ beschriebenen Entscheidungen sind verbindlich. Wo etwas offen ist, steht es als 
   von der aktuellen Spitze von `origin/v2`.
 - Am Ende: Pull Request **gegen `v2`** (nicht gegen `main`). Titel: `v2/NN: <was der Spieler bekommt>`.
   PR-Text: was gebaut wurde, welche Entscheidungen getroffen wurden, wie getestet, bekannte Lücken.
-- Die CI (`.github/workflows/ci.yml`) läuft auf jedem Push: `npm ci`, `npm run build`, Prüfung dass `docs/` zum
-  Stand von `src/` passt, `npm test`, `npm run playtest`. Der PR muss grün sein.
+- Die CI (`.github/workflows/ci.yml`) läuft auf jedem Push: `npm ci`, `npm run build`, `npm test`,
+  `npm run playtest`. Der PR muss grün sein.
 - Vor dem Öffnen des PR: `git fetch origin v2 && git rebase origin/v2`, dann `npm run build && npm test &&
-  npm run playtest`, dann erst pushen. Konflikte in `docs/index.html`, `docs/sw.js` oder `docs/manifest.webmanifest`
-  **nie von Hand lösen**: eigene Version verwerfen (`git checkout --theirs` bzw. Datei löschen), `npm run build`
-  ausführen und das Ergebnis committen. Konflikte in `CHANGELOG.md`: beide Seiten behalten, Einträge unter dem
+  npm run playtest`, dann erst pushen. Konflikte in `CHANGELOG.md`: beide Seiten behalten, Einträge unter dem
   passenden Datum zusammenführen, Datumsreihenfolge prüfen (der Build bricht sonst ab).
-- Wenn die Session fertig ist, meldet sie sich beim Orchestrator (Session-ID steht im Auftrag) mit PR-Nummer,
-  Branch und einer Zusammenfassung in drei Sätzen. Danach bleibt sie erreichbar: Fragen, CI-Fehler und
-  Konflikte kommen als Nachricht zurück und werden von der Session auf demselben Branch behoben.
-- Keine neuen Abhängigkeiten (`package.json` nur für Tests anfassen), keine neuen Build-Schritte, alles bleibt eine
-  HTML-Datei plus Service Worker. Neue Dateien in `src/` müssen in `build.py` eingebunden werden; neue Assets, die
-  offline gebraucht werden, in `CORE` in `src/sw.js`.
 
 ### Qualitätsregeln (Kurzfassung von CLAUDE.md, dort gilt der volle Text)
-- Nur `src/*` editieren, `docs/*` wird gebaut und mitcommittet.
+- Nur `src/*` editieren; `docs/index.html`, `docs/sw.js` und `docs/manifest.webmanifest` baut die CI.
 - **Jede sichtbare Änderung bekommt einen Eintrag in `CHANGELOG.md`** unter dem heutigen Datum, Gruppen
   `### Neu`, `### Verbessert`, `### Behoben`, kurze deutsche Sätze für Kinder und Eltern, keine Technikwörter.
   Der Eintrag vom 2026-11-07 bleibt unverändert.
@@ -258,7 +250,7 @@ mehr unbemerkt verloren.
 
 ### 11 Deutsch als neues Fach: Wörterwerkstatt und Satzbaustelle
 - `CURRICULUM` bekommt das Fach Deutsch mit zwei Einheiten. Wortlisten liegen in einer neuen Datei
-  `src/woerter.js` (in `build.py` einbinden), damit Eltern die Lernwörter der Klasse ergänzen können; Struktur im
+  `src/woerter.js` (in `tools/build.js` einbinden), damit Eltern die Lernwörter der Klasse ergänzen können; Struktur im
   Dateikopf erklären. Grundlage: Sächsischer Rechtschreibrahmen Klasse 3 und Lehrplan Deutsch 2025, Lernbereiche
   „Richtig schreiben“ und „Sprache untersuchen“.
 - **Wörterwerkstatt** (Rechtschreibung), Aufgabenarten: Doppelkonsonant/ck/tz (richtige Schreibung aus zwei wählen),

@@ -3774,7 +3774,7 @@ const MONART = (() => {
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><defs>${defs.join('')}</defs>${back}<g${tf}>${body}</g>${front}</svg>`;
   }
 
-  /* Baked art: build.py inlines the svgo-optimised files from art/monsters/svg/ as MONBAKED.
+  /* Baked art: tools/build.js inlines the svgo-optimised files from art/monsters/svg/ as MONBAKED.
      Keys: hero "<shape>-<stage>", enemy "<shape>[-elite|-boss]", plus "-enemy" when the mirrored battle sprite differs. */
   const BAKED = typeof MONBAKED !== 'undefined' ? MONBAKED : null;
   function bakedKey(shape, evo, cls, opts) {
