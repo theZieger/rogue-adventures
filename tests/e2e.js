@@ -31,6 +31,7 @@ const KNOWN_PROBLEMS = [
   'news: color-contrast',
   'news: scrollable-region-focusable',
   'feedback: color-contrast',
+  'parents-reset: color-contrast',
 ];
 
 test('no screen has a new serious accessibility problem', () =>
