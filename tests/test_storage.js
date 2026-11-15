@@ -534,8 +534,12 @@ const same = (a, b) => {
     );
   return canon(a) === canon(b);
 };
+// waits for work outside the page's timers (reading a file, packing a save): real time, up to three seconds
 const until = async (fn) => {
-  for (let i = 0; i < 100 && !fn(); i++) await sleep(10);
+  for (let i = 0; i < 300 && !fn(); i++) {
+    await new Promise((r) => setTimeout(r, 10));
+    await sleep(10);
+  }
   return fn();
 };
 // the code as versions before LQ2 made it, and the QR form of an LQ2 code
