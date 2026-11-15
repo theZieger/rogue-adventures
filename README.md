@@ -110,7 +110,7 @@ src/turmart.js     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-B
 src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
 src/units.js       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
-src/app/           Spiel-Engine in Teilen; build.py setzt sie in der Reihenfolge von `APP` zu einer Funktion zusammen,
+src/app/           Spiel-Engine in Teilen; tools/build.js setzt sie in der Reihenfolge von `APP` zu einer Funktion zusammen,
                    sie teilen sich also einen Zustand (meta, run, mode):
                    core (Einheiten, Lehrplan, Icons) · storage (Spielstand laden und reparieren) · progress (Stufen,
                    Stempel, Wochenziele) · ui (Anzeige, Zurück, Töne, Erklärungen) · tasks (Aufgaben-UI, Vorlesen) ·
@@ -121,7 +121,7 @@ src/app/           Spiel-Engine in Teilen; build.py setzt sie in der Reihenfolge
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
-build.py           baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest; Ladereihenfolge in `SCRIPTS`
+tools/build.js     baut docs/index.html (eine Datei, mit esbuild gebündelt) + docs/sw.js + docs/manifest.webmanifest
 GLOSSARY.md        die Begriffe des Projekts (Einheit, Abenteuer, Aufgabenart, Stufe …) und ihre Namen im Code
 adr/               festgehaltene Entscheidungen zur Architektur
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
@@ -129,7 +129,7 @@ tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); page.js lädt die gebaute Seite für die Seitentests; Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
-docs/index.html    gebaute Spieldatei → GitHub Pages
+docs/index.html    gebaute Spieldatei (nicht eingecheckt, die CI baut und veröffentlicht sie)
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
 docs/screenshots/  Bilder für den Installieren-Dialog (Android/Desktop)
@@ -140,10 +140,13 @@ docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebu
 ## Entwickeln
 
 ```bash
-npm install          # nur jsdom für die Tests
+npm install          # nur Werkzeuge für Build und Tests (danach einmal: npx playwright install chromium)
 npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
-npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/)
-npm run playtest     # Bot spielt alle Modi durch
+npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, etwa zwei Minuten)
+npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js)
+npm run e2e          # Browser-Tests (Playwright): Start ohne Internet, Barrierefreiheit jedes Bildschirms
+npm run screenshots vorher   # Bildschirmfotos aller Bildschirme aus tools/screens.js; mit zwei Ordnern: Vergleich
+npm run format       # formatiert JS, CSS und JSON mit Biome (die CI prüft das)
 MODE=turm GRADE=3 SUBJECTS=Mathe,Deutsch ACC=0.9 RUNS=1 node tests/playtest.js   # nur die Turmwacht (SEED=n, NAIVE=1 tippt wie ein Kind beliebige Monster an)
 ```
 
@@ -159,13 +162,14 @@ Inhalte anpassen:
 
 Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.js`).
 `src/units.js` macht daraus die eine Liste `UNITS`: Startseite, Klassen-Reiter, Statistik, Spielstand, Bot und Monster-Bilder lesen sie.
-Dazu gehören: eine neue Datei in `SCRIPTS` (`build.py`) und in `src/units.js` eintragen, Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
+Dazu gehören: eine neue Datei in `src/units.js` importieren (die Reihenfolge dort ist die Reihenfolge der Themen), Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
 `src/monsters.js`, neue Emojis in `src/icons.js`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app/core.js`).
 
 ## Veröffentlichen (GitHub Pages)
 
-Repository → Settings → Pages → Source „Deploy from a branch“, Branch `main`, Ordner `/docs`.
-Nach jedem `npm run build` das geänderte `docs/` committen und pushen. Die CI prüft, dass `docs/` zum Stand von `src/` passt.
+Repository → Settings → Pages → Source „GitHub Actions“.
+Die CI (`.github/workflows/ci.yml`) baut bei jedem Push auf `main`, prüft und veröffentlicht `docs/`. Die gebauten Dateien
+`docs/index.html`, `docs/sw.js` und `docs/manifest.webmanifest` werden nicht eingecheckt; `art/` schon (siehe oben).
 
 ## Feedback
 

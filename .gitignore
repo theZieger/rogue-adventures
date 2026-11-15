@@ -4,3 +4,8 @@ node_modules/
 !docs/icons/*.png
 !docs/splash/*.png
 !docs/screenshots/*.png
+
+# built by npm run build, deployed by CI
+docs/index.html
+docs/sw.js
+docs/manifest.webmanifest

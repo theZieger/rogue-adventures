@@ -6,6 +6,12 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-15
+
+### Verbessert
+- Kleine Schrift auf roten und orangen Flächen ist dunkler und besser zu lesen.
+- Mit Tastatur oder Vorlese-Hilfe lässt sich Lernquest leichter bedienen.
+
 ## 2026-11-14
 
 ### Neu

@@ -1,4 +1,4 @@
-// __VERSION__ = build hash (build.py), so every build refreshes the cache.
+// __VERSION__ = build hash (tools/build.js), so every build refreshes the cache.
 const VERSION = '__VERSION__';
 const CACHE = 'lernquest-' + VERSION;
 const NET_TIMEOUT_MS = 3500;
@@ -30,16 +30,22 @@ const CORE = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) => c.addAll(CORE.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys()
+    caches
+      .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: 'window' }))
-      .then((wins) => wins.forEach((w) => w.postMessage({ type: 'sw-activated', version: VERSION })))
+      .then((wins) => wins.forEach((w) => w.postMessage({ type: 'sw-activated', version: VERSION }))),
   );
 });
 
@@ -55,21 +61,25 @@ self.addEventListener('fetch', (e) => {
   const isGame = url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html';
   if (req.mode === 'navigate' && !isGame) return;
   if (req.mode === 'navigate') {
-    e.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      const net = fetch(req, { cache: 'no-cache' }).then((res) => {
-        if (res.ok) cache.put('./index.html', res.clone());
-        return res;
-      });
-      net.catch(() => {});
-      const timeout = new Promise((r) => setTimeout(r, NET_TIMEOUT_MS));
-      try {
-        const res = await Promise.race([net, timeout]);
-        if (res) return res;
-      } catch (err) { /* offline – fall through */ }
-      const hit = await cache.match('./index.html');
-      return hit || net;
-    })());
+    e.respondWith(
+      (async () => {
+        const cache = await caches.open(CACHE);
+        const net = fetch(req, { cache: 'no-cache' }).then((res) => {
+          if (res.ok) cache.put('./index.html', res.clone());
+          return res;
+        });
+        net.catch(() => {});
+        const timeout = new Promise((r) => setTimeout(r, NET_TIMEOUT_MS));
+        try {
+          const res = await Promise.race([net, timeout]);
+          if (res) return res;
+        } catch (err) {
+          /* offline – fall through */
+        }
+        const hit = await cache.match('./index.html');
+        return hit || net;
+      })(),
+    );
     return;
   }
 

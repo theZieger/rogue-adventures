@@ -1,0 +1,39 @@
+// Browser tests against the built app in Chromium (npm run e2e): offline start and accessibility of every screen.
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { AxeBuilder } from '@axe-core/playwright';
+import { withApp } from '../tools/browser.js';
+import { SCREENS, visit } from '../tools/screens.js';
+
+test('starts and runs a fight offline, and never asks another server', () =>
+  withApp(async (newPage, url) => {
+    const page = await newPage();
+    const foreign = [];
+    page.on('request', (request) => {
+      if (!request.url().startsWith(url)) foreign.push(request.url());
+    });
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.context().setOffline(true);
+    await page.reload();
+    await visit(page, SCREENS['task-number']);
+    assert.ok(await page.isVisible('.numpad'), 'a task is on screen');
+    assert.ok(await page.evaluate(() => document.fonts.check('19px Andika')), 'the font came from the cache');
+    assert.deepStrictEqual(foreign, []);
+  }));
+
+test('no screen has a serious accessibility problem', () =>
+  withApp(async (newPage) => {
+    const problems = [];
+    for (const [name, taps] of Object.entries(SCREENS)) {
+      const page = await newPage();
+      await visit(page, taps);
+      const { violations } = await new AxeBuilder({ page }).analyze();
+      for (const { id, impact, nodes } of violations) {
+        if (impact !== 'serious' && impact !== 'critical') continue;
+        problems.push(`${name}: ${id}`);
+        console.log(`${name}: ${id} at ${nodes[0].target}`);
+      }
+      await page.context().close();
+    }
+    assert.deepStrictEqual(problems, []);
+  }));
