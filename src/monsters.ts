@@ -987,12 +987,7 @@ export const MONART = (() => {
       <path d="M42 26 L48 22 M50 18 L54 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>
       ${M.fangs(60, 44, 9)}`;
   }
-  function kaefer(
-    P: Palette,
-    o: DrawOpts,
-    C: Defs,
-    queen: boolean,
-  ) {
+  function kaefer(P: Palette, o: DrawOpts, C: Defs, queen: boolean) {
     const shell = C.grad(queen ? '#FFE07A' : '#F4D56E'),
       orange = C.grad('#EE8F3A'),
       black = '#1E1A26';
@@ -2171,11 +2166,11 @@ export const MONART = (() => {
         `<path d="${arc(43)}" fill="none" stroke="${OUT}" stroke-width="26"/>` +
         (
           [
-          ['#FF8A7A', 52],
-          ['#FFC93C', 46],
-          ['#7BD88F', 40],
-          ['#6FB6F2', 34],
-        ] as [string, number][]
+            ['#FF8A7A', 52],
+            ['#FFC93C', 46],
+            ['#7BD88F', 40],
+            ['#6FB6F2', 34],
+          ] as [string, number][]
         )
           .map(
             ([c, r]) =>
@@ -2652,10 +2647,10 @@ export const MONART = (() => {
       s += `<path d="M44 80 L88 116 L76 116 L38 84 Z" ${F('#2E6B8A', 2)}/>`;
       s += (
         [
-        [50, 90, '#FFC93C'],
-        [62, 100, '#E8553A'],
-        [74, 110, '#9BD77A'],
-      ] as [number, number, string][]
+          [50, 90, '#FFC93C'],
+          [62, 100, '#E8553A'],
+          [74, 110, '#9BD77A'],
+        ] as [number, number, string][]
       )
         .slice(0, e + 1)
         .map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="3.6" ${F(c, 1.6)}/>`)
@@ -4594,10 +4589,10 @@ export const MONART = (() => {
     // lens-flare ghosts along the glare axis
     s += (
       [
-      [88, 86, 6, '#7FD8FF', 0.4],
-      [100, 98, 3.5, '#FF9EC4', 0.45],
-      [30, 28, 4, '#B9F2A0', 0.35],
-    ] as [number, number, number, string, number][]
+        [88, 86, 6, '#7FD8FF', 0.4],
+        [100, 98, 3.5, '#FF9EC4', 0.45],
+        [30, 28, 4, '#B9F2A0', 0.35],
+      ] as [number, number, number, string, number][]
     )
       .map(
         ([x, y, r, c, a]) =>
@@ -5776,7 +5771,7 @@ export const MONART = (() => {
     boss?: boolean;
     bare?: boolean;
     plain?: boolean;
-    outfit?: string;
+    outfit?: string | null;
   }
   function render(shape: string, color: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
@@ -5846,7 +5841,7 @@ export const MONART = (() => {
     return shape + (opts.elite ? '-elite' : boss ? '-boss' : '');
   }
   // clothes go on top of the drawing (baked or live), scaled like the hero's stage
-  function dress(svg: string, shape: string, evo: number, outfit?: string) {
+  function dress(svg: string, shape: string, evo: number, outfit?: string | null) {
     const o = FIT[shape] && OUTFIT[outfit!];
     if (!o) return svg;
     // the friends both wear the piece; only the first carries the school bag
@@ -5888,7 +5883,8 @@ export const MONART = (() => {
     schwer: [['#C48E62', '#8A5A36', '#4E301A'], '#5E3A1E', 10],
     eisen: [['#F4F7FB', '#B4BCC8', '#69727F'], null, 8],
   };
-  const around = (n: number, f: (a: number) => string) => Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
+  const around = (n: number, f: (a: number) => string) =>
+    Array.from({ length: n }, (_, k) => f((k / n) * 2 * Math.PI)).join('');
   const pt = (r: number, a: number) => `${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}`;
   type Grad = (kind: string, attrs: string, stops: Stop[]) => string;
   const steel = (g: Grad) =>
@@ -6224,7 +6220,7 @@ export const MONART = (() => {
   // letters drawn as double strokes (outline, then colour), d around (0, 0), about 10 high
   const k12_letter = (d: string, x: number, y: number, c: string, k: number, r?: number | undefined) =>
     `<g transform="translate(${x} ${y}) rotate(${r || 0}) scale(${k || 1})"><path d="${d}" fill="none" stroke="${OUT}" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>`;
-  const LET = {
+  const LET: Record<string, string> = {
     A: 'M-5 5 L0 -5 L5 5 M-3 1.5 L3 1.5',
     B: 'M-3 -5 L-3 5 M-3 -5 Q3 -5 3 -2.5 Q3 0 -3 0 Q4 0 4 2.5 Q4 5 -3 5',
     K: 'M-3 -5 L-3 5 M3 -5 L-3 0 L3 5',
@@ -6615,12 +6611,12 @@ export const MONART = (() => {
       60,
       (
         [
-        ['B', 26, 64, -15],
-        ['K', 42, 68, 12],
-        ['R', 60, 62, -6],
-        ['E', 70, 70, 18],
-        ['a', 38, 59, 0],
-      ] as [string, number, number, number][]
+          ['B', 26, 64, -15],
+          ['K', 42, 68, 12],
+          ['R', 60, 62, -6],
+          ['E', 70, 70, 18],
+          ['a', 38, 59, 0],
+        ] as [string, number, number, number][]
       )
         .map(([l, x, y, r]) => k12_letter(LET[l], x, y, '#FFF3C4', 0.75, r))
         .join(''),

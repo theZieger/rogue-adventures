@@ -1,6 +1,13 @@
 // Musik Klasse 3 (Lehrplan Sachsen Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
 // Registers its unit in MK.MODES; src/units.ts picks it up from there.
-import { MK as K } from './knowledge.ts';
+import { MK as K, type GenOpts, type Know } from './knowledge.ts';
+
+// a note or a rest: v = Wert in Achteln, s = Tonstufe
+interface Sign {
+  v: number;
+  s?: number;
+  rest?: boolean;
+}
 export const MU = (() => {
   const { shuffle, pick } = K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
@@ -11,9 +18,9 @@ export const MU = (() => {
     note: string,
     q: string,
     answer: string,
-    wrongs: string | any[],
+    wrongs: string[],
     qid: string,
-    extra?: { pic?: any; step?: number; cols?: number } | undefined,
+    extra?: { pic?: string; step?: number; cols?: number },
   ) =>
     Object.assign(
       {
@@ -30,7 +37,7 @@ export const MU = (() => {
       },
       extra || {},
     );
-  const others = (list: any[], x: any, n: number | undefined) => shuffle(list.filter((y: any) => y !== x)).slice(0, n);
+  const others = <T>(list: T[], x: T, n: number) => shuffle(list.filter((y) => y !== x)).slice(0, n);
 
   /* ---------- Notenbilder ---------- */
   // Notensystem: unterste Linie y = 62, Abstand 10. Tonstufe s: 0 = c' (Hilfslinie) … 7 = c''
@@ -44,7 +51,7 @@ export const MU = (() => {
   const staff = (w: number, inner: string, label: string, clef: boolean, maxW: number) =>
     box(w, 84, LINES(6, w - 6) + (clef === false ? '' : CLEF) + inner, label, maxW);
   // answer pictures: no frame, cropped to the staff, as tall as the button allows
-  const optStaff = (w: number, inner: string, clef?: boolean | undefined) =>
+  const optStaff = (w: number, inner: string, clef?: boolean) =>
     `<svg ${NS} viewBox="0 6 ${w} 76" style="width:100%;height:104px" role="img" aria-label="Notensystem">${LINES(2, w - 2)}${clef ? CLEF : ''}${inner}</svg>`;
 
   // v: Wert in Achteln (8 ganze, 4 halbe, 2 Viertel, 1 Achtel); s: Tonstufe
@@ -75,7 +82,7 @@ export const MU = (() => {
       return `<path d="M${x - 3} 24 L${x + 4} 32 Q${x - 3} 37 ${x + 1} 43 L${x + 4} 47 Q${x - 5} 44 ${x - 1} 55" fill="none" stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
     return `<circle cx="${x - 3}" cy="35" r="3" fill="${INK}"/><path d="M${x - 3} 37 Q${x + 2} 39 ${x + 5} 32 L${x - 1} 53" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
   }
-  const timeSig = (x: number, top: any) =>
+  const timeSig = (x: number, top: number) =>
     `<g font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" fill="${INK}" text-anchor="middle"><text x="${x}" y="41">${top}</text><text x="${x}" y="61">4</text></g>`;
 
   // Notenwerte und Pausen: id, Wert in Achteln, Name
@@ -89,14 +96,14 @@ export const MU = (() => {
     { id: 'vpause', v: 2, rest: true, name: 'Viertelpause', acc: 'die Viertelpause' },
     { id: 'apause', v: 1, rest: true, name: 'Achtelpause', acc: 'die Achtelpause' },
   ];
-  const itemSVG = (x: number, it: { rest: any; v: any }, s?: undefined) =>
+  const itemSVG = (x: number, it: Sign, s?: number) =>
     it.rest ? restSVG(x, it.v) : noteSVG(x, s === undefined ? 4 : s, it.v);
-  const valuePic = (it: any) => staff(96, itemSVG(64, it), 'Notensystem mit einem Zeichen', true, 230);
-  const valueOpt = (it: any) => optStaff(44, itemSVG(22, it));
+  const valuePic = (it: Sign) => staff(96, itemSVG(64, it), 'Notensystem mit einem Zeichen', true, 230);
+  const valueOpt = (it: Sign) => optStaff(44, itemSVG(22, it));
 
   // Takt: Wert in Achteln je Taktart (2/4 = 4 Achtel, 3/4 = 6, 4/4 = 8)
-  const W = { 1: 24, 2: 30, 4: 40 };
-  function barSVG(top: any, items: any[], gap: { v: any }) {
+  const W: Record<number, number> = { 1: 24, 2: 30, 4: 40 };
+  function barSVG(top: number, items: Sign[], gap: Sign) {
     let x = 62,
       body = timeSig(44, top);
     for (const it of items) {
@@ -105,7 +112,7 @@ export const MU = (() => {
         x += W[it.v];
         continue;
       }
-      body += it.rest ? restSVG(x + 8, it.v) : noteSVG(x + 8, it.s, it.v);
+      body += it.rest ? restSVG(x + 8, it.v) : noteSVG(x + 8, it.s!, it.v);
       x += W[it.v];
     }
     return staff(
@@ -116,13 +123,13 @@ export const MU = (() => {
       340,
     );
   }
-  const NOTE_OF = { 1: 'Achtelnote', 2: 'Viertelnote', 4: 'Halbe Note' };
+  const NOTE_OF: Record<number, string> = { 1: 'Achtelnote', 2: 'Viertelnote', 4: 'Halbe Note' };
   // tier 1: 2/4 or 3/4 with notes only; tier 2: also 4/4 and with rests
   function makeBar(tier: number) {
     const top = tier >= 2 ? pick([2, 3, 4]) : pick([2, 3]);
     const len = top * 2;
     const miss = pick([1, 2, 4].filter((v) => v < len));
-    const items: any[] = [];
+    const items: Sign[] = [];
     let left = len - miss;
     while (left > 0) {
       const v = pick([1, 2, 2, 4].filter((x) => x <= left));
@@ -163,7 +170,7 @@ export const MU = (() => {
   ];
 
   /* ---------- Instrumente ---------- */
-  const FAM = {
+  const FAM: Record<string, string> = {
     streich: 'Streichinstrumente',
     zupf: 'Zupfinstrumente',
     holz: 'Holzblasinstrumente',
@@ -171,7 +178,7 @@ export const MU = (() => {
     schlag: 'Schlaginstrumente',
     tasten: 'Tasteninstrumente',
   };
-  const HOW = {
+  const HOW: Record<string, string> = {
     streich: 'Ein Bogen streicht über die Saiten.',
     zupf: 'Die Saiten werden gezupft.',
     holz: 'Man bläst Luft hinein.',
@@ -180,7 +187,7 @@ export const MU = (() => {
     tasten: 'Man drückt Tasten.',
   };
   // keys and valves are pressed too, and organ and accordion are played with air
-  const HOW_NOT = {
+  const HOW_NOT: Record<string, string[]> = {
     streich: ['zupf'],
     zupf: [],
     holz: ['tasten'],
@@ -327,8 +334,8 @@ export const MU = (() => {
       desc: 'Man trägt es vor dem Bauch, zieht den Balg auseinander und drückt Tasten und Knöpfe.',
     },
   ];
-  const nom = (i: { art: any; name: any }) => `${i.art} ${i.name}`;
-  const cap = (s: string | any[]) => s[0].toUpperCase() + s.slice(1);
+  const nom = (i: { art: string; name: string }) => `${i.art} ${i.name}`;
+  const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
   function instrTask(tier: number) {
     const i = pick(INSTR);
     if (tier >= 2) {
@@ -362,12 +369,12 @@ export const MU = (() => {
           Object.keys(FAM).filter((f) => !i.not.includes(f)),
           i.fam,
           2,
-        ).map((f: string | number) => FAM[f]),
+        ).map((f) => FAM[f]),
         'mfam_' + i.id,
       );
     const wrong = shuffle(INSTR.filter((x) => x.fam !== i.fam && !i.not.includes(x.fam)))
       .slice(0, 2)
-      .map((x: { name: any }) => x.name);
+      .map((x) => x.name);
     return choice('instr', 'familien', `Welches Instrument ist das? ${i.desc}`, i.name, wrong, 'mwer_' + i.id);
   }
 
@@ -1398,22 +1405,14 @@ export const MU = (() => {
 
   /* ---------- Aufgaben ---------- */
   // number task: picture and question in `fig`; beats (in eighths) and unit let tests and the bot recount it
-  const num = (
-    mod: string,
-    q: string,
-    svg: string,
-    beats: string | any[],
-    unit: number,
-    qid: string,
-    show: string,
-  ) => ({
+  const num = (mod: string, q: string, svg: string, beats: number[], unit: number, qid: string, show: string) => ({
     kind: 'num',
     mod,
     tier: 2,
     group: mod + ':2',
     note: 'notenwerte',
     fig: `<div class="mus">${svg || ''}<div class="question">${q}</div></div>`,
-    answers: [beats.reduce((a: any, b: any) => a + b, 0) / unit],
+    answers: [beats.reduce((a, b) => a + b, 0) / unit],
     beats,
     unit,
     maxLen: 2,
@@ -1421,7 +1420,7 @@ export const MU = (() => {
     show,
   });
   // [Frage, Dauer in Achteln, Einheit in Achteln]
-  const FACTS = [
+  const FACTS: [string, number, number][] = [
     ['Wie viele Viertelnoten dauern so lange wie eine halbe Note?', 4, 2],
     ['Wie viele Viertelnoten dauern so lange wie eine ganze Note?', 8, 2],
     ['Wie viele Achtelnoten dauern so lange wie eine Viertelnote?', 2, 1],
@@ -1435,7 +1434,7 @@ export const MU = (() => {
     ['Wie viele halbe Noten passen in einen 4/4-Takt?', 8, 4],
     ['Wie viele Viertelpausen dauern so lange wie eine halbe Pause?', 4, 2],
   ];
-  const unitName = { 1: 'Achtel', 2: 'Viertel', 4: 'halbe Noten' };
+  const unitName: Record<number, string> = { 1: 'Achtel', 2: 'Viertel', 4: 'halbe Noten' };
   function notenTask(tier: number) {
     if (tier >= 2) {
       if (Math.random() < 0.5) {
@@ -1446,16 +1445,16 @@ export const MU = (() => {
       // picture: two or three notes, counted in quarters (eighths come in pairs)
       const vs = shuffle([8, 4, 4, 2, 2, 2, 1]).slice(0, 2 + Math.floor(Math.random() * 2));
       if (vs.includes(1)) vs.push(1);
-      vs.sort((a: number, b: number) => b - a);
+      vs.sort((a, b) => b - a);
       let x = 30;
       const body = vs
-        .map((v: string | number) => {
+        .map((v) => {
           const s = noteSVG(x, pick([2, 3, 4, 5]), v);
           x += W[v] || 44;
           return s;
         })
         .join('');
-      const n = vs.reduce((a: any, b: any) => a + b, 0) / 2;
+      const n = vs.reduce((a, b) => a + b, 0) / 2;
       return num(
         'noten',
         'Wie viele Viertel dauern diese Noten zusammen?',
@@ -1474,7 +1473,7 @@ export const MU = (() => {
         'notenwerte',
         it.rest ? 'Wie heißt diese Pause?' : 'Wie heißt diese Note?',
         it.name,
-        others(same, it, 2).map((x: { name: any }) => x.name),
+        others(same, it, 2).map((x) => x.name),
         'mbild_' + it.id,
         { pic: valuePic(it) },
       );
@@ -1493,7 +1492,7 @@ export const MU = (() => {
       qid: 'mfind_' + it.id,
     };
   }
-  function taktTask(tier: string | number) {
+  function taktTask(tier: number) {
     const b = makeBar(tier);
     return {
       kind: 'choice',
@@ -1550,7 +1549,7 @@ export const MU = (() => {
         'begriffe',
         `Was bedeutet „${t.t}“?`,
         cap(t.m),
-        others(TERMS, t, 2).map((x: { m: any }) => cap(x.m)),
+        others(TERMS, t, 2).map((x) => cap(x.m)),
         'mterm_' + t.t,
       );
     if (r < 0.7)
@@ -1559,7 +1558,7 @@ export const MU = (() => {
         'begriffe',
         `Wie heißt „${t.m}“ in der Musik?`,
         t.t,
-        others(TERMS, t, 2).map((x: { t: any }) => x.t),
+        others(TERMS, t, 2).map((x) => x.t),
         'mwort_' + t.t,
       );
     return choice(
@@ -1567,7 +1566,7 @@ export const MU = (() => {
       'begriffe',
       'Was bedeutet dieses Zeichen?',
       cap(t.m),
-      others(TERMS, t, 2).map((x: { m: any }) => cap(x.m)),
+      others(TERMS, t, 2).map((x) => cap(x.m)),
       'mzeichen_' + t.t,
       { pic: t.pic() },
     );
@@ -1576,8 +1575,8 @@ export const MU = (() => {
     if (Math.random() < 0.6) {
       const idx = shuffle(KOMP.map((_, i) => i))
         .slice(0, 4)
-        .sort((a: number, b: number) => a - b);
-      const items = idx.map((i: string | number) => KOMP[i]);
+        .sort((a, b) => a - b);
+      const items = idx.map((i) => KOMP[i]);
       return {
         kind: 'order',
         mod: 'komp',
@@ -1586,7 +1585,7 @@ export const MU = (() => {
         note: 'komponisten',
         q: 'Wer lebte zuerst? Tippe die Komponisten der Reihe nach an: zuerst den, der am frühesten geboren wurde.',
         items,
-        order: items.map((x: { id: any }) => x.id),
+        order: items.map((x) => x.id),
         display: shuffle(items),
         qid: 'mkord_' + idx.join(''),
       };
@@ -1637,9 +1636,9 @@ export const MU = (() => {
     );
   }
   // the topic filter (events) asks the pool; generated tasks only without a topic
-  const wantsPool = (mod: string, opts: { g: string }) =>
+  const wantsPool = (mod: string, opts: GenOpts) =>
     !!(opts && opts.g && POOL.some((p) => p.mod === mod && p.g === opts.g));
-  function gen(mod: string, tier: number, know: any, seq: any, opts: any) {
+  function gen(mod: string, tier: number, know: Know, seq: number, opts: GenOpts) {
     if (wantsPool(mod, opts)) return null;
     const r = Math.random();
     if (mod === 'noten') return tier >= 2 || r < 0.75 ? notenTask(tier) : null;

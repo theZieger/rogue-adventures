@@ -2,7 +2,8 @@
 // (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen) und Klasse 1 „Die Klangkiste“
 // (LB 2 bis 4: Orff-Instrumente, Gegensätze, Stimmungen, Körperinstrumente, eigene Zeichen), nur Bilder, keine Töne.
 // Registers the units in MK.MODES with the shared hero and opponents of K12.SETS. Mode keys are save keys: never rename.
-import { MK as K } from './knowledge.ts';
+import { MK as K, type GenOpts, type Know, type Question } from './knowledge.ts';
+import type { TaskExtra } from './sachkunde.ts';
 import { K12 as S } from './klasse12.ts';
 export const K12E = (() => {
   const { shuffle, pick } = K;
@@ -71,7 +72,7 @@ export const K12E = (() => {
   const defs = () =>
     `<defs>${[...USED].map((c) => `<linearGradient id="ke${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
   // question picture with a paper frame, answer pictures plain; labels never name the answer
-  const pic = (inner: any, label: string) =>
+  const pic = (inner: string, label: string) =>
     `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}">${defs()}<rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
   const optPic = (inner: string, label: string) =>
     `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${defs()}${inner}</svg>`;
@@ -90,7 +91,7 @@ export const K12E = (() => {
     '<circle cx="38.5" cy="52.5" r="1.4" fill="#fff"/><circle cx="64.5" cy="52.5" r="1.4" fill="#fff"/>';
   const CHEEKS =
     '<circle cx="27" cy="66" r="5.5" fill="#FF8A8A" opacity=".5"/><circle cx="73" cy="66" r="5.5" fill="#FF8A8A" opacity=".5"/>';
-  const FACES = {
+  const FACES: Record<string, { word: string; svg: string }> = {
     froehlich: {
       word: 'fröhlich',
       svg:
@@ -331,10 +332,8 @@ export const K12E = (() => {
     },
   ];
   const symFits = (
-    a: { fest: any; not: any },
-    b:
-      | { id: string; fest: string; note: string; svg: string; not?: undefined }
-      | { id: string; fest: string; note: string; not: string[]; svg: string },
+    a: { fest: string; not?: string[] },
+    b: { fest: string; not?: string[] },
   ) => a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
 
   /* Instrumente */
@@ -657,7 +656,7 @@ export const K12E = (() => {
         rect(52, 89, 5, 4, GOLD, 1, 1.2),
     },
   ];
-  const FAM = {
+  const FAM: Record<string, string> = {
     saiten: 'Saiteninstrument',
     blas: 'Blasinstrument',
     schlag: 'Schlaginstrument',
@@ -688,31 +687,9 @@ export const K12E = (() => {
     note: string,
     q: string,
     answer: string,
-    wrongs: string | any[],
+    wrongs: string[],
     qid: string,
-    extra: {
-      pic?: string;
-      face?: any;
-      svgOpts?: boolean;
-      why?: any;
-      faces?: any[];
-      sym?: any;
-      syms?: any[];
-      instr?: any;
-      instrs?: any[];
-      form?: any;
-      parts?: any[];
-      how?: any;
-      opps?: any[];
-      opp?: any;
-      moods?: any[];
-      mood?: any;
-      body?: any;
-      bodies?: any[];
-      signs?: any[];
-      sign?: any;
-      pats?: any[];
-    },
+    extra?: TaskExtra,
   ) =>
     Object.assign(
       {
@@ -729,12 +706,12 @@ export const K12E = (() => {
       },
       extra || {},
     );
-  const some = (list: string | any[], n: number) => shuffle(list.slice()).slice(0, n);
-  const ord = (mod: string, group: string, src: { items: any; q: string } & { note: string }, qid: string) => {
-    const idx = shuffle(src.items.map((_: any, i: any) => i))
+  const some = <T>(list: T[], n: number) => shuffle(list.slice()).slice(0, n);
+  const ord = (mod: string, group: string, src: { items: { id: string }[]; q: string; note: string }, qid: string) => {
+    const idx = shuffle(src.items.map((_, i) => i))
       .slice(0, 4)
-      .sort((a: number, b: number) => a - b);
-    const items = idx.map((i: string | number) => src.items[i]);
+      .sort((a, b) => a - b);
+    const items = idx.map((i) => src.items[i]);
     return {
       kind: 'order',
       mod,
@@ -743,15 +720,15 @@ export const K12E = (() => {
       note: src.note,
       q: src.q,
       items,
-      order: items.map((x: { id: any }) => x.id),
+      order: items.map((x) => x.id),
       display: shuffle(items),
       qid: qid + idx.join(''),
     };
   };
-  const steps = (prefix: string, texts: any[]) => texts.map((text: any, i: number) => ({ id: prefix + (i + 1), text }));
+  const steps = (prefix: string, texts: string[]) => texts.map((text, i) => ({ id: prefix + (i + 1), text }));
   // events ask for one topic (opts.g): those questions come from the pool
-  const wantsPool = (pool: any[], mod: any, opts: { g: any }) =>
-    !!(opts && opts.g && pool.some((p: { mod: any; g: any }) => p.mod === mod && p.g === opts.g));
+  const wantsPool = (pool: Question[], mod: string, opts?: GenOpts) =>
+    !!(opts && opts.g && pool.some((p) => p.mod === mod && p.g === opts.g));
   const RF = [
     'Hör dir den Satz an.',
     'Stimmt er? Dann tippe auf „Richtig“.',
@@ -1339,7 +1316,7 @@ export const K12E = (() => {
       qid: 'k1eot_',
     },
   ];
-  function gen1(mod: string, tier: any, know: any, seq: any, opts: any) {
+  function gen1(mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) {
     if (mod !== 'gefuehl' || wantsPool(POOL1, mod, opts) || Math.random() < 0.4) return null;
     const id = pick(FACE_IDS),
       f = FACES[id];
@@ -1352,7 +1329,7 @@ export const K12E = (() => {
         some(
           FACE_IDS.filter((x) => x !== id),
           2,
-        ).map((x: string | number) => FACES[x].word),
+        ).map((x) => FACES[x].word),
         'k1egb_' + id,
         { pic: pic(f.svg, 'Gesicht eines Kindes'), face: id },
       );
@@ -2369,7 +2346,7 @@ export const K12E = (() => {
       q: 'Ein Blatt im Jahr: Tippe der Reihe nach an.',
     },
   ].map((o) => Object.assign(o, { note: 'wachsen' }));
-  function gen2(mod: string, tier: any, know: any, seq: any, opts: any) {
+  function gen2(mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) {
     if (wantsPool(POOL2, mod, opts)) return null;
     const r = Math.random();
     if (mod === 'jahr' && r < 0.55)
@@ -2406,11 +2383,11 @@ export const K12E = (() => {
         'k2fsb_' + s.id,
         { pic: pic(s.svg, 'Zeichen eines Festes'), sym: s.id },
       );
-    const opt = (x: { svg: any }) => optPic(x.svg, 'Zeichen');
+    const opt = (x: { svg: string }) => optPic(x.svg, 'Zeichen');
     return choice('symbol', s.note, `Tippe auf das Zeichen für ${s.fest}.`, opt(s), others.map(opt), 'k2fst_' + s.id, {
       svgOpts: true,
       why: `Das gehört zu ${s.fest}:`,
-      syms: [s.id].concat(others.map((x: { id: any }) => x.id)),
+      syms: [s.id].concat(others.map((x) => x.id)),
     });
   }
   K.MODES.feste2 = unit(
@@ -3108,7 +3085,7 @@ export const K12E = (() => {
       a: 0,
     },
   ];
-  function gen3(mod: string, tier: any, know: any, seq: any, opts: any) {
+  function gen3(mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) {
     if (wantsPool(POOL3, mod, opts)) return null;
     if (mod === 'form') return formTask();
     const r = Math.random();
@@ -3124,7 +3101,7 @@ export const K12E = (() => {
           some(
             INSTR.filter((x) => x !== i),
             2,
-          ).map((x: { name: any }) => x.name),
+          ).map((x) => x.name),
           'k2mb_' + i.id,
           look,
         );
@@ -3132,11 +3109,11 @@ export const K12E = (() => {
         INSTR.filter((x) => x !== i),
         2,
       );
-      const opt = (x: { svg: any }) => optPic(x.svg, 'Instrument');
+      const opt = (x: { svg: string }) => optPic(x.svg, 'Instrument');
       return choice('bild', 'instrumente', `Tippe auf ${i.acc}.`, opt(i), others.map(opt), 'k2mt_' + i.id, {
         svgOpts: true,
         why: `So sieht ${i.acc} aus:`,
-        instrs: [i.id].concat(others.map((x: { id: any }) => x.id)),
+        instrs: [i.id].concat(others.map((x) => x.id)),
       });
     }
     if (mod === 'familie' && r < 0.7)
@@ -3148,7 +3125,7 @@ export const K12E = (() => {
         some(
           Object.keys(FAM).filter((f) => f !== i.fam && !(i.notFam || []).includes(f)),
           2,
-        ).map((f: string | number) => FAM[f]),
+        ).map((f) => FAM[f]),
         'k2mfb_' + i.id,
         look,
       );
@@ -3168,7 +3145,7 @@ export const K12E = (() => {
     if (mod === 'hoch' && r < 0.6) {
       const p = pick(PAIRS),
         low = Math.random() < 0.5;
-      const opt = (inner: any) => optPic(inner, 'Instrument');
+      const opt = (inner: string) => optPic(inner, 'Instrument');
       const sizes = shuffle([1, 2]);
       return {
         kind: 'choice',
@@ -3177,7 +3154,7 @@ export const K12E = (() => {
         group: 'hoch:1',
         note: 'hoch',
         q: `${p.q} klingt ${low ? 'tiefer' : 'höher'}?`,
-        options: sizes.map((s: number) => opt(s === 2 ? p.big : p.small)),
+        options: sizes.map((s) => opt(s === 2 ? p.big : p.small)),
         answer: opt(low ? p.big : p.small),
         sizes,
         svgOpts: true,
@@ -3189,27 +3166,27 @@ export const K12E = (() => {
     return null;
   }
   // Wiederholung und Gegensatz: each part of a piece is a pattern of three shapes; A comes back, B is the contrast
-  const SHAPES = {
-    k: (x: any) => circ(x, 50, 11, BLUE, 2),
+  const SHAPES: Record<string, (x: number) => string> = {
+    k: (x: number) => circ(x, 50, 11, BLUE, 2),
     q: (x: number) => rect(x - 10, 40, 20, 20, RED, 3, 2),
     d: (x: number) => sh(`M${x} 37 L${x + 13} 61 L${x - 13} 61 Z`, GOLD, 2),
   };
-  const part = (code: any, ox: number) =>
+  const part = (code: string, ox: number) =>
     rect(ox + 4, 22, 92, 56, PAPER, 10, 2) + [...code].map((c, i) => SHAPES[c](ox + 22 + i * 28)).join('');
   const gap = (ox: number) =>
     `<rect x="${ox + 4}" y="22" width="92" height="56" rx="10" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="6 5"/><text x="${ox + 50}" y="61" font-size="30" font-weight="700" text-anchor="middle" fill="${INK}">?</text>`;
-  const strip = (codes: any[]) => {
-    const inner = codes.map((c: any, i: number) => (c ? part(c, i * 100) : gap(i * 100))).join('');
+  const strip = (codes: (string | null)[]) => {
+    const inner = codes.map((c, i) => (c ? part(c, i * 100) : gap(i * 100))).join('');
     return `<svg ${NS} class="pic" viewBox="0 0 300 100" style="max-width:300px" role="img" aria-label="Musikstück aus Mustern">${defs()}${inner}</svg>`;
   };
-  const mix = (letters: any[]) => {
+  const mix = (letters: string[]) => {
     for (;;) {
       const c = Array.from({ length: 3 }, () => pick(letters)).join('');
       if (new Set(c).size > 1) return c;
     }
   };
   const FORMS = ['ABA', 'AAB', 'ABB'];
-  const formName = (f: any) => [...f].join(' – ');
+  const formName = (f: string) => [...f].join(' – ');
   function formTask() {
     const [x, y, z] = shuffle(Object.keys(SHAPES));
     const a = mix([x, y]),
@@ -3519,7 +3496,7 @@ export const K12E = (() => {
         gloss(34, 32, 8, 4, -30),
     },
   ];
-  const OPP_Q = {
+  const OPP_Q: Record<string, string> = {
     laut: 'Klingt das laut oder leise?',
     tempo: 'Ist dieses Tier schnell oder langsam?',
     hoch: 'Hat dieses Tier eine hohe oder tiefe Stimme?',
@@ -3609,8 +3586,8 @@ export const K12E = (() => {
     },
   ];
   const moodFits = (
-    a: { id: any; not: string | any[] },
-    b: { id: any; music?: string; not: any; qs?: string[]; svg?: string },
+    a: { id: string; not: string[] },
+    b: { id: string; not: string[] },
   ) => a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
   const BODY: { id: string; noun: string; svg: string; word?: string }[] = [
     {
@@ -3709,7 +3686,7 @@ export const K12E = (() => {
       })
       .join(''),
   }));
-  const patWords = (id: any) =>
+  const patWords = (id: string) =>
     [...id].map((c, i) => (c === 'L' ? (i ? 'lang' : 'Lang') : i ? 'kurz' : 'Kurz')).join(', ');
   const ORFF = ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel'].map(
     (id) => INSTR.find((i) => i.id === id)!,
@@ -4041,18 +4018,10 @@ export const K12E = (() => {
       a: 0,
     },
   ];
-  function gen4(mod: string, tier: any, know: any, seq: any, opts: any) {
+  function gen4(mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) {
     if (wantsPool(POOL4, mod, opts) || Math.random() < 0.25) return null;
     const r = Math.random();
-    const opt = (x: {
-      id?: string;
-      dim?: string;
-      word?: string;
-      tap?: string;
-      why?: string;
-      svg: any;
-      mean?: string;
-    }) => optPic(x.svg, 'Bild');
+    const opt = (x: { svg: string }) => optPic(x.svg, 'Bild');
     if (mod === 'instr') {
       const i = pick(ORFF),
         others = some(
@@ -4065,14 +4034,14 @@ export const K12E = (() => {
           'instrumente',
           'Wie heißt das Instrument?',
           i.name,
-          others.map((x: { name: any }) => x.name),
+          others.map((x) => x.name),
           'k1mb_' + i.id,
           { pic: pic(i.svg, 'Bild eines Instruments'), instr: i.id },
         );
       return choice('instr', 'instrumente', `Tippe auf ${i.acc}.`, opt(i), others.map(opt), 'k1mt_' + i.id, {
         svgOpts: true,
         why: `So sieht ${i.acc} aus:`,
-        instrs: [i.id].concat(others.map((x: { id: any }) => x.id)),
+        instrs: [i.id].concat(others.map((x) => x.id)),
       });
     }
     if (mod === 'spielen') {
@@ -4099,7 +4068,7 @@ export const K12E = (() => {
         svgOpts: true,
         why: `Das ${verb} man:`,
         how: h,
-        instrs: [i.id].concat(others.map((x: { id: any }) => x.id)),
+        instrs: [i.id].concat(others.map((x) => x.id)),
       });
     }
     if (mod === 'gegen') {
@@ -4148,8 +4117,8 @@ export const K12E = (() => {
           'koerper',
           'koerper',
           'Was macht das Kind?',
-          b.word,
-          others.map((x: { word: any }) => x.word),
+          b.word!,
+          others.map((x) => x.word!),
           'k1mkb_' + b.id,
           { pic: pic(b.svg, 'Bild'), body: b.id },
         );
@@ -4160,7 +4129,7 @@ export const K12E = (() => {
         opt(b),
         others.map(opt),
         'k1mkt_' + b.id,
-        { svgOpts: true, why: `So sieht ${b.noun} aus:`, bodies: [b.id].concat(others.map((x: { id: any }) => x.id)) },
+        { svgOpts: true, why: `So sieht ${b.noun} aus:`, bodies: [b.id].concat(others.map((x) => x.id)) },
       );
     }
     if (mod === 'zeichen') {

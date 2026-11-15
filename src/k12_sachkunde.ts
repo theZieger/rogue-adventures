@@ -2,20 +2,35 @@
 // Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (Klasse 2). Units register in MK.MODES like sachkunde3.ts;
 // hero and opponents come from the shared set K12.SETS.sachkunde, the tap-a-part pictures go into MS.PLANTS.
 import type { Unit } from './curriculum.ts';
-import { MK as K } from './knowledge.ts';
+import { MK as K, type GenOpts, type Know, type Question } from './knowledge.ts';
 import { K12 as S12 } from './klasse12.ts';
-import { MS as S, type PartsPicture } from './sachkunde.ts';
+import { MS as S, type Experiment, type PartsPicture } from './sachkunde.ts';
 import { MJ as J } from './jahrmarkt.ts';
 export const MSK12 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, choice, orderTask, wantsPool, partsSVG, plantTask, partPool } = S;
   const OUT = '#1C2541';
+  type PoolRow = [q: string, a: string[] | boolean, why?: string] | null;
+  interface Songbird {
+    body: string;
+    wing: string;
+    tail: string;
+    beak: string;
+    legs: string;
+    bk: string;
+    tl?: string;
+    wg?: string;
+    ring?: string;
+    bar?: string;
+    marks?: string;
+    eye?: number;
+  }
 
   /* ---------- helpers ---------- */
   // pool rows: [question, [answer, wrong, wrong]] or [statement, true] or [statement, false, why].
   // ids follow the position in the list, so new questions go at the end and a deleted one stays as null.
-  const P = (pre: string, mod: string, g: string, rows: any[]) =>
-    rows.flatMap((r: any[], i: number) =>
+  const P = (pre: string, mod: string, g: string, rows: PoolRow[]): Question[] =>
+    rows.flatMap((r, i) =>
       !r
         ? []
         : Object.assign(
@@ -23,7 +38,7 @@ export const MSK12 = (() => {
             Array.isArray(r[1]) ? { o: r[1], a: 0 } : { rf: true, a: r[1], why: r[2] || '' },
           ),
     );
-  const unit = ({ attacks, ...o }) =>
+  const unit = ({ attacks, ...o }: Partial<Unit> & { attacks: { name: string; mod: string }[] }) =>
     S12.unit(
       'sachkunde',
       attacks,
@@ -40,8 +55,8 @@ export const MSK12 = (() => {
     worldCap: [maxTier || 1],
     dmg,
   });
-  const others = (list: any[], keep: string, n?: undefined) =>
-    shuffle(list.filter((x: any) => x !== keep)).slice(0, n || 2);
+  const others = <T>(list: T[], keep: T, n?: number) =>
+    shuffle(list.filter((x) => x !== keep)).slice(0, n || 2);
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
   const minus = (n: number) => (n < 0 ? '−' + -n : String(n));
 
@@ -66,7 +81,7 @@ export const MSK12 = (() => {
     `<path d="M0 ${y} Q${w / 2} ${y - 4} ${w} ${y} L${w} ${y + 40} L0 ${y + 40} Z" fill="#B88A5E"/><path d="M0 ${y} Q${w / 2} ${y - 4} ${w} ${y}" fill="none" ${ln(2)}/>`;
 
   // Wetterzeichen wie an der Wetterwand der Klasse
-  const WX = {
+  const WX: Record<string, { name: string; art: string }> = {
     sonnig: { name: 'Sonnig', art: sun(50, 40, 16) },
     bewoelkt: { name: 'Bewölkt', art: cloud(62, 32, 0.9, '#C9D1DD') + cloud(44, 46, 1.1) },
     regen: {
@@ -96,15 +111,15 @@ export const MSK12 = (() => {
       art: `<path d="M14 24 H86 M22 38 H78 M14 52 H86 M26 66 H74" stroke="#9AA4B2" stroke-width="6" stroke-linecap="round"/>`,
     },
   };
-  const wxSVG = (k: string | number) => pic('0 0 100 80', WX[k].art, 'Wetterzeichen', 160);
+  const wxSVG = (k: string) => pic('0 0 100 80', WX[k].art, 'Wetterzeichen', 160);
 
   // ein Baum in den vier Jahreszeiten
   const SEASONS = ['Frühling', 'Sommer', 'Herbst', 'Winter'];
-  function seasonSVG(i: string | number) {
+  function seasonSVG(i: number) {
     const crown = (a: string, b: string) =>
       `<defs><linearGradient id="k2cr${i}" x1="0" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><path d="M60 22 Q86 18 94 40 Q108 50 100 68 Q98 84 78 84 Q60 92 42 84 Q22 84 20 68 Q12 50 26 40 Q34 18 60 22 Z" fill="url(#k2cr${i})" ${ln(2)}/><path d="M36 42 q8 -7 16 0 M64 34 q8 -7 16 0 M26 62 q8 -7 16 0 M76 58 q8 -7 16 0 M50 74 q8 -7 16 0" fill="none" stroke="${b}" stroke-width="1.8" stroke-linecap="round"/>`;
     // spread evenly over the crown (sunflower spiral)
-    const dots = (cols: string | any[], n: number) =>
+    const dots = (cols: string[], n: number) =>
       Array.from(
         { length: n },
         (_, k) =>
@@ -147,7 +162,7 @@ export const MSK12 = (() => {
       not: '',
     },
   ];
-  const daySVG = (d: { sky: any; glow: any; name: string; art: any; lit: any }) =>
+  const daySVG = (d: (typeof DAYTIMES)[number]) =>
     pic(
       '0 0 120 80',
       `<rect width="120" height="80" fill="${d.sky}"/>${d.glow ? `<ellipse cx="${d.name === 'Morgens' ? 22 : 98}" cy="60" rx="60" ry="26" fill="${d.glow}" opacity=".8"/>` : ''}${d.art}<path d="M48 60 V42 L60 34 L72 42 V60 Z" fill="#E3DED0" ${ln(1.6)}/><rect x="56" y="46" width="8" height="7" fill="${d.lit ? '#FFD43B' : '#9CC9F0'}" ${ln(1)}/><path d="M0 62 Q60 56 120 62 V80 H0 Z" fill="${d.name === 'Nachts' ? '#2F4A2A' : d.name === 'Abends' ? '#6E9E45' : '#7CC35B'}" ${ln(1.6)}/>`,
@@ -156,7 +171,7 @@ export const MSK12 = (() => {
     );
 
   // Fußgängerampel: das leuchtende Männchen ist farbig, das andere grau
-  const AMPEL = {
+  const AMPEL: Record<string, { col: string; mean: string }> = {
     rot: { col: '#E8344A', mean: 'Du musst warten' },
     gruen: { col: '#3DBE5A', mean: 'Du darfst gehen' },
   };
@@ -172,7 +187,7 @@ export const MSK12 = (() => {
   }
 
   // Essen zum Antippen: gesund (Frühstück, Brotdose) und süß
-  const FOOD = {
+  const FOOD: Record<string, string> = {
     apfel: `<path d="M30 20 Q12 12 10 32 Q10 52 30 52 Q50 52 50 32 Q48 12 30 20 Z" fill="#E8344A" ${ln(2)}/><path d="M30 20 Q30 12 34 8" fill="none" ${ln(2)}/><path d="M34 12 Q42 6 46 12 Q40 16 34 12 Z" fill="#7CC35B" ${ln(1.4)}/><ellipse cx="20" cy="30" rx="4" ry="6" fill="#fff" opacity=".6"/>`,
     moehre: `<path d="M24 18 L40 18 L31 56 Z" fill="#F28C28" ${ln(2)}/><path d="M27 26 h6 M28 34 h5 M29 42 h3" stroke="#C0601A" stroke-width="1.4"/><path d="M28 18 Q22 8 18 6 M32 18 Q32 8 32 4 M36 18 Q40 8 46 6" fill="none" stroke="#4E9A32" stroke-width="3" stroke-linecap="round"/>`,
     brot: `<path d="M10 52 V30 Q8 12 30 12 Q52 12 50 30 V52 Z" fill="#C8894A" ${ln(2)}/><path d="M15 48 V31 Q14 17 30 17 Q46 17 45 31 V48 Z" fill="#F2D3A0"/><path d="M22 28 l2 1 M34 26 l2 -1 M28 36 l1 2 M38 38 l2 1 M20 42 l2 0" stroke="#8A5A34" stroke-width="2" stroke-linecap="round"/>`,
@@ -192,7 +207,7 @@ export const MSK12 = (() => {
         '',
       )}<path d="M20 22 Q18 30 19 50" fill="none" stroke="#fff" stroke-width="2" opacity=".7" stroke-linecap="round"/>`,
   };
-  const foodSVG = (k: string | number) => `<svg ${NS} viewBox="0 0 60 60" aria-hidden="true">${FOOD[k]}</svg>`;
+  const foodSVG = (k: string) => `<svg ${NS} viewBox="0 0 60 60" aria-hidden="true">${FOOD[k]}</svg>`;
   const HEALTHY = ['apfel', 'moehre', 'brot'],
     SWEET = ['lolli', 'schoko', 'limo'];
 
@@ -252,7 +267,7 @@ export const MSK12 = (() => {
     partsSVG(
       BODY,
       opts,
-      (g: (arg0: string, arg1: string) => any) => {
+      (g) => {
         const step = (opts && opts.step) || 99;
         const limb = (d: string) =>
           twin(d, SKIN, 16) + `<path class="hitarea" d="${d}" fill="none" stroke="transparent" stroke-width="26"/>`;
@@ -337,7 +352,7 @@ export const MSK12 = (() => {
       FACE,
       opts,
       (
-        g: (arg0: string, arg1: string) => any,
+        g,
       ) => `<ellipse cx="100" cy="112" rx="66" ry="80" fill="${SKIN}" ${ln(2.5)}/>
     ${g('ohr', `<ellipse cx="32" cy="112" rx="11" ry="18" fill="${SKIN}" ${ln(2.2)}/><path d="M34 104 q-6 8 0 16" fill="none" ${ln(1.6)}/><ellipse cx="168" cy="112" rx="11" ry="18" fill="${SKIN}" ${ln(2.2)}/><path d="M166 104 q6 8 0 16" fill="none" ${ln(1.6)}/>`)}
     ${g('kinn', `<path d="M78 180 Q100 194 122 180" fill="none" ${ln(2)}/><ellipse class="hitarea" cx="100" cy="182" rx="30" ry="12" fill="transparent"/>`)}
@@ -678,7 +693,7 @@ export const MSK12 = (() => {
     },
   };
   function koGen(cfg: Unit) {
-    return (m: string, tier: any, know: any, seq: any, opts: any) => {
+    return (m: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (m === 'parts') return plantTask(cfg, 'koerper12', m, tier, know, seq, opts);
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
@@ -725,7 +740,7 @@ export const MSK12 = (() => {
           'kleidung',
           'So ist das Wetter. Was ziehst du an?',
           w[1],
-          others(WEAR, w).map((x: any[]) => x[1]),
+          others(WEAR, w).map((x) => x[1]),
           'sk1k_wear_' + w[0],
           { pic: wxSVG(w[0]) },
         );
@@ -1017,7 +1032,7 @@ export const MSK12 = (() => {
       ],
     },
   };
-  const JA_POOL = [].concat(
+  const JA_POOL = ([] as Question[]).concat(
     P('sk1j_ze', 'zeiten', 'zeiten', [
       ['Wie viele Jahreszeiten gibt es?', ['4', '2', '12']],
       ['Welche Jahreszeit kommt nach dem Winter?', ['Frühling', 'Sommer', 'Herbst']],
@@ -1085,7 +1100,7 @@ export const MSK12 = (() => {
       ['Es ist 7 Uhr. Wie spät ist es eine Stunde später?', ['8 Uhr', '6 Uhr', 'halb 8']],
       ['Womit siehst du, wie spät es ist?', ['Mit der Uhr', 'Mit dem Lineal', 'Mit dem Thermometer']],
       ['Wo stehen um 12 Uhr beide Zeiger?', ['Beide auf der 12', 'Beide auf der 6', 'Auf 3 und 9']],
-    ]).map((p: { id: string }) =>
+    ]).map((p) =>
       ['sk1j_uh2', 'sk1j_uh6', 'sk1j_uh7', 'sk1j_uh8'].includes(p.id) ? Object.assign(p, { t: 2 }) : p,
     ), // „halb“ comes on tier 2
     P('sk1j_we', 'wetter', 'wetter', [
@@ -1234,7 +1249,7 @@ export const MSK12 = (() => {
     },
   };
   function jaGen(cfg: Unit) {
-    return (m: string, tier: number, know: any, seq: any, opts: any) => {
+    return (m: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
       if (m === 'zeiten') {
@@ -1335,7 +1350,7 @@ export const MSK12 = (() => {
             'tag',
             'Welche Tageszeit zeigt das Bild?',
             d.name,
-            [c[0], c.find((x: { not: any }, i: any) => i && x.not !== c[0].name)].map((x) => x.name),
+            [c[0], c.find((x, i) => i && x.not !== c[0].name)!].map((x) => x.name),
             'sk1j_dt_' + d.name,
             { pic: daySVG(d) },
           );
@@ -1372,7 +1387,7 @@ export const MSK12 = (() => {
           'wetter',
           'Welches Wetter zeigt das Zeichen?',
           WX[k].name,
-          others(Object.values(WX), WX[k]).map((x: { name: any }) => x.name),
+          others(Object.values(WX), WX[k]).map((x) => x.name),
           'sk1j_wx_' + k,
           { pic: wxSVG(k) },
         );
@@ -1561,7 +1576,7 @@ export const MSK12 = (() => {
       TREE,
       opts,
       (
-        g: (arg0: string, arg1: string) => any,
+        g,
       ) => `<defs>${GRAD.lf}<linearGradient id="k2tc" gradientUnits="userSpaceOnUse" x1="90" y1="10" x2="170" y2="160"><stop offset="0" stop-color="#A8DA6C"/><stop offset="1" stop-color="#468A2C"/></linearGradient><linearGradient id="k2ts" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A8744A"/><stop offset="1" stop-color="#6E4426"/></linearGradient></defs>${SOIL(240, 260)}
     ${g('wurzeln', `${twin('M130 240 Q112 258 96 282 M130 240 Q126 264 120 292 M130 240 Q140 264 146 290 M130 240 Q150 254 168 276 M130 242 Q104 248 86 254 M130 242 Q156 248 176 252', '#D9B98E', 3)}<rect class="hitarea" x="80" y="242" width="100" height="54" fill="transparent"/>`)}
     ${g('krone', `${BLOBS.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#k2tc)" ${ln(2.5)}/>`).join('')}${BLOBS.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r - 1.5}" fill="url(#k2tc)"/>`).join('')}<path d="M70 100 q6 -6 12 0 M150 120 q6 -6 12 0 M110 50 q6 -6 12 0 M176 70 q6 -6 12 0" fill="none" stroke="${LEAF_D}" stroke-width="2" stroke-linecap="round"/>`)}
@@ -1660,7 +1675,7 @@ export const MSK12 = (() => {
     `<g transform="translate(${x} ${y})"><path d="M0 0 Q-10 -4 -9 -12 Q0 -14 0 -4 Q0 -14 9 -12 Q10 -4 0 0 Z" fill="#F2E9FF" ${ln(1.4)}/><path d="M-4 -1 Q0 6 4 -1" fill="#C9A6E8" ${ln(1.2)}/></g>`;
   // pod along a quadratic curve "Mx0 y0 Qcx cy x1 y1": thick light green line with the beans as bumps
   const pod = (d: string) => {
-    const [x0, y0, cx, cy, x1, y1] = d.match(/-?[\d.]+/g).map(Number);
+    const [x0, y0, cx, cy, x1, y1] = d.match(/-?[\d.]+/g)!.map(Number);
     const q = (t: number) => [
       (1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1,
       (1 - t) ** 2 * y0 + 2 * (1 - t) * t * cy + t * t * y1,
@@ -1680,7 +1695,7 @@ export const MSK12 = (() => {
     partsSVG(
       BEAN,
       opts,
-      (g: (arg0: string, arg1: string) => any) => `<defs>${GRAD.lf}</defs>${SOIL(214, 260)}
+      (g) => `<defs>${GRAD.lf}</defs>${SOIL(214, 260)}
     ${g('wurzel', `${twin('M130 214 Q122 236 112 262 M130 214 Q134 240 132 274 M130 214 Q142 234 154 254 M126 230 l-12 6 M133 246 l10 4 M120 248 l-10 2', '#EAD7B0', 2.4)}<rect class="hitarea" x="100" y="216" width="64" height="64" fill="transparent"/>`)}
     ${g('staengel', twin('M130 214 Q127 150 130 100 Q133 70 128 46', '#6DB24A', 5) + `<path class="hitarea" d="M130 214 Q127 150 130 100 Q133 70 128 46" fill="none" stroke="transparent" stroke-width="18"/>`)}
     ${g('blatt', trio(129, 200, -105, 1.1) + trio(130, 192, 105, 1.1) + trio(130, 82, -75, 0.95) + trio(131, 72, 75, 0.95))}
@@ -1701,9 +1716,9 @@ export const MSK12 = (() => {
   // Blätter, Nadelzweige und Früchte mit den Merkmalen aus dem Bestimmungsbuch (Blattform, Nadeln, Zapfen, Frucht)
   const fx = (v: number) => +v.toFixed(1);
   // closed smooth outline through the points (Catmull-Rom as cubic Béziers)
-  const smooth = (pts: any[]) =>
+  const smooth = (pts: number[][]) =>
     pts
-      .map((p: number[], i: number) => {
+      .map((p, i) => {
         const a = pts[(i - 1 + pts.length) % pts.length],
           b = pts[(i + 1) % pts.length],
           c = pts[(i + 2) % pts.length];
@@ -1714,9 +1729,9 @@ export const MSK12 = (() => {
       })
       .join('') + 'Z';
   // n points evenly spaced along the smooth line through pts, each as [x, y, tangent x, tangent y]
-  function samp(pts: string | any[], n: number, closed: boolean) {
+  function samp(pts: number[][], n: number, closed: boolean) {
     const L = pts.length,
-      d: any[] = [],
+      d: number[][] = [],
       g = (k: number) => pts[closed ? (k + L) % L : Math.max(0, Math.min(L - 1, k))];
     for (let i = 0; i < (closed ? L : L - 1); i++) {
       const p0 = g(i - 1),
@@ -1742,7 +1757,7 @@ export const MSK12 = (() => {
     d.push(closed ? d[0] : pts[L - 1]);
     const cum = [0];
     for (let i = 1; i < d.length; i++) cum.push(cum[i - 1] + Math.hypot(d[i][0] - d[i - 1][0], d[i][1] - d[i - 1][1]));
-    const out: any[] = [];
+    const out: number[][] = [];
     let j = 0;
     for (let i = 0; i < n; i++) {
       const s = (cum[cum.length - 1] * i) / (closed ? n : n - 1);
@@ -1759,12 +1774,7 @@ export const MSK12 = (() => {
   const rim = (
     pts: number[][],
     n: number,
-    amp: {
-      (i: any, x: any, y: any): number;
-      (i: any, x: any, y: any): number;
-      (i: any, x: any, y: any): number;
-      (arg0: number, arg1: any, arg2: any): any;
-    },
+    amp: (i: number, x: number, y: number) => number,
   ) => {
     const s = samp(pts, n, true);
     let A = 0;
@@ -1785,14 +1795,14 @@ export const MSK12 = (() => {
     );
   };
   // right half as segments [x, y] (line) or [cx, cy, x, y] (curve) from 0|0, mirrored into a closed shape; dy shifts the left half
-  const symQ = (segs: any[], ox: number, oy: number, s: number, dy: number) => {
+  const symQ = (segs: number[][], ox: number, oy: number, s: number, dy: number) => {
     const P = (x: number, y: number, sx: number, d: number) => `${fx(ox + sx * x * s)} ${fx(oy + (y + d) * s)}`,
-      pts = [[0, 0]].concat(segs.map((g: string | any[]) => g.slice(-2)));
+      pts = [[0, 0]].concat(segs.map((g) => g.slice(-2)));
     let d =
       `M${P(0, 0, 1, 0)}` +
       segs
         .map(
-          (g: string | any[]) =>
+          (g) =>
             (g.length > 2 ? `Q${P(g[0], g[1], 1, 0)} ` : 'L') + P(g[g.length - 2], g[g.length - 1], 1, 0),
         )
         .join('');
@@ -1806,7 +1816,7 @@ export const MSK12 = (() => {
     `<linearGradient id="${id}" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
   const rgr = (id: string, a: string, b: string) =>
     `<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient>`;
-  const GRAD = {
+  const GRAD: Record<string, string> = {
     lf: lgr('k2lf', '#A8DA6C', '#468A2C', 1, 1),
     gl: lgr('k2gl', '#B2D4A0', '#5A8A5A', 1, 1),
     bk: lgr('k2bk', '#E8A260', '#9A5226', 0, 1),
@@ -1905,7 +1915,7 @@ export const MSK12 = (() => {
   ];
   const beechW = (t: number, i: number) =>
     27 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.85)), 0.9) + (i % 2 || !i ? 0 : 1.3);
-  const LEAVES = {
+  const LEAVES: Record<string, string> = {
     eiche:
       defs('lf') +
       petiole('M50 90 L50 99', 2.4) +
@@ -1979,7 +1989,7 @@ export const MSK12 = (() => {
             [40, 16],
           ],
           84,
-          (i: number, x: any, y: any) => (i % 2 ? 1.3 : 0) * near(x, y, 50, 72, 10),
+          (i, x, y) => (i % 2 ? 1.3 : 0) * near(x, y, 50, 72, 10),
         ),
         1.3,
       ) +
@@ -1999,7 +2009,7 @@ export const MSK12 = (() => {
               .map(([x, y]) => [100 - x, y]),
           ),
           76,
-          (i: number, x: any, y: any) => [2.2, 0, 1.1, 0][i % 4] * near(x, y, 50, 82, 8) * near(x, y, 50, 6, 12),
+          (i, x, y) => [2.2, 0, 1.1, 0][i % 4] * near(x, y, 50, 82, 8) * near(x, y, 50, 6, 12),
         ),
         1.3,
       ) +
@@ -2034,7 +2044,7 @@ export const MSK12 = (() => {
             70,
             r,
             s,
-            `<path d="${rim(KLEAF, 58, (i: number, x: any, y: number) => (i % 2 ? 1 : 0) * Math.min(1, -y / 12))}" fill="url(#k2lf)" ${ln(fx(1.3 / s))}/>` +
+            `<path d="${rim(KLEAF, 58, (i, x, y) => (i % 2 ? 1 : 0) * Math.min(1, -y / 12))}" fill="url(#k2lf)" ${ln(fx(1.3 / s))}/>` +
               vein(
                 `M0 -2 L0 -48 ${[-12, -20, -28, -36, -43].map((y) => `M0 ${y + 4} L${fx(-y * 0.16 + 4)} ${y - 2} M0 ${y + 4} L${fx(y * 0.16 - 4)} ${y - 2}`).join(' ')}`,
                 fx(0.9 / s),
@@ -2057,7 +2067,7 @@ export const MSK12 = (() => {
       my = y + (s * l) / 2 + c * b;
     return `M${fx(x)} ${fx(y)}Q${fx(mx - s * w)} ${fx(my + c * w)} ${fx(x + c * l)} ${fx(y + s * l)}Q${fx(mx + s * w)} ${fx(my - c * w)} ${fx(x)} ${fx(y)}Z`;
   };
-  const tuft = (list: any[], fill: string, edge: string) =>
+  const tuft = (list: string[], fill: string, edge: string) =>
     `<path d="${list.join('')}" fill="${fill}" stroke="${edge}" stroke-width=".4" stroke-linejoin="round"/>`;
   // point and direction on a quadratic curve [x0, y0, cx, cy, x1, y1]
   const qp = (p: number[], t: number) => {
@@ -2070,8 +2080,8 @@ export const MSK12 = (() => {
   };
   // a twig along that curve, tapering from w0 to w1
   const branch = (p: number[], w0: number, w1: number, fill: string) => {
-    const L: any[] = [],
-      Rt: any[] = [];
+    const L: string[] = [],
+      Rt: string[] = [];
     for (let i = 0; i <= 16; i++) {
       const t = i / 16,
         [x, y, a] = qp(p, t),
@@ -2084,8 +2094,8 @@ export const MSK12 = (() => {
   // Waldkiefer: long needles in pairs from a short sheath, a dense brush at the shoot tip, an egg-shaped cone pointing backwards
   function kiefer() {
     const tw = [14, 114, 44, 80, 78, 38],
-      back: never[] = [],
-      front: any[] = [];
+      back: string[] = [],
+      front: string[] = [];
     for (let i = 0; i < 60; i++) {
       const t = 0.32 + 0.68 * Math.pow(i / 59, 0.7),
         [x, y, a] = qp(tw, t),
@@ -2160,8 +2170,8 @@ export const MSK12 = (() => {
         [6, 52, 56, 30, 114, 30],
         [47, 38, 56, 22, 70, 6],
       ],
-      back: any[] = [],
-      front: never[] = [];
+      back: string[] = [],
+      front: string[] = [];
     shoots.forEach((tw, s) => {
       const n = s ? 18 : 40;
       for (let i = 0; i < n; i++) {
@@ -2217,9 +2227,9 @@ export const MSK12 = (() => {
   // Lärche: soft light-green needles in rosettes on short knobs, small upright rose-like cones
   function laerche() {
     const tw = [8, 100, 54, 70, 112, 20],
-      back: never[] = [],
-      front: any[] = [],
-      knobs: any[] = [];
+      back: string[] = [],
+      front: string[] = [],
+      knobs: string[] = [];
     [0.12, 0.3, 0.5, 0.66, 0.84].forEach((t, j) => {
       const [x0, y0, a] = qp(tw, t),
         sd = j % 2 ? 1 : -1,
@@ -2265,7 +2275,7 @@ export const MSK12 = (() => {
       tuft(front, '#B2E27A', '#5E9A3A')
     );
   }
-  const NEEDLES = { kiefer: kiefer(), fichte: fichte(), laerche: laerche() };
+  const NEEDLES: Record<string, string> = { kiefer: kiefer(), fichte: fichte(), laerche: laerche() };
   const acorn = (x: number, y: number, r: number, s: number) =>
     at(
       x,
@@ -2289,7 +2299,7 @@ export const MSK12 = (() => {
           .map(([a, b]) => `M${a - 2} ${b} q2 2 4 0`)
           .join('')}" fill="none" stroke="#4E3820" stroke-width=".8"/>`,
     );
-  const FRUITS = {
+  const FRUITS: Record<string, string> = {
     eiche:
       defs('nut', 'cup') +
       `<path d="M58 4 Q56 18 52 28 Q44 32 38 38 M52 28 Q60 34 66 42" fill="none" ${ln(3.4)}/><path d="M58 4 Q56 18 52 28 Q44 32 38 38 M52 28 Q60 34 66 42" fill="none" stroke="#8A6A3F" stroke-width="1.6" stroke-linecap="round"/>` +
@@ -2385,14 +2395,14 @@ export const MSK12 = (() => {
     { id: 'kiefer', name: 'Kiefer' },
     { id: 'laerche', name: 'Lärche' },
   ];
-  const treeSVG = (id: string | number) =>
+  const treeSVG = (id: string) =>
     pic(
       '0 0 120 120',
       LEAVES[id] ? `<g transform="translate(10 4)">${LEAVES[id]}</g>` : NEEDLES[id],
       LEAVES[id] ? 'Blatt eines Baumes' : 'Zweig eines Nadelbaumes',
       150,
     );
-  const fruitSVG = (id: string | number) => pic('0 0 100 100', FRUITS[id], 'Frucht eines Baumes', 140);
+  const fruitSVG = (id: string) => pic('0 0 100 100', FRUITS[id], 'Frucht eines Baumes', 140);
 
   const stalk = (d: string, w?: number) =>
     `<path d="${d}" fill="none" ${ln((w || 2.6) + 2.4)}/><path d="${d}" fill="none" stroke="#6DB24A" stroke-width="${w || 2.6}" stroke-linecap="round"/>`;
@@ -2406,7 +2416,7 @@ export const MSK12 = (() => {
         return [x + Math.cos(a) * rx * f, y + Math.sin(a) * ry * f];
       }),
     );
-  const FLOWERS = {
+  const FLOWERS: Record<string, string> = {
     schneegloeckchen:
       defs('gl', 'wt') +
       blade(44, 62, -4, 2.8, 'gl') +
@@ -2443,7 +2453,7 @@ export const MSK12 = (() => {
     { id: 'tulpe', name: 'Tulpe' },
     { id: 'osterglocke', name: 'Osterglocke' },
   ];
-  const flowerSVG = (id: string | number) =>
+  const flowerSVG = (id: string) =>
     pic('0 0 100 130', `${FLOWERS[id]}${SOIL(120, 100)}`, 'Bild einer Frühlingsblume', 150);
 
   // Obstarten: k = Kernobst, s = Steinobst, b = Beerenobst
@@ -2461,7 +2471,7 @@ export const MSK12 = (() => {
     ['Himbeere', 'b'],
     ['Heidelbeere', 'b'],
   ];
-  const OBST_ART = { k: 'Kernobst', s: 'Steinobst', b: 'Beerenobst' };
+  const OBST_ART: Record<string, string> = { k: 'Kernobst', s: 'Steinobst', b: 'Beerenobst' };
   const art = (name: string) => (['Apfel', 'Pfirsich'].includes(name) ? 'der' : 'die');
   const KEIM = [
     'Samen in feuchte Erde',
@@ -2723,7 +2733,7 @@ export const MSK12 = (() => {
     },
   };
   function baGen(cfg: Unit) {
-    return (m: string, tier: number, know: any, seq: any, opts: any) => {
+    return (m: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (m === 'parts') return plantTask(cfg, 'baum12', m, tier, know, seq, opts);
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
@@ -2735,7 +2745,7 @@ export const MSK12 = (() => {
             'laub',
             'Von welchem Baum ist diese Frucht?',
             t.name,
-            others(LAUB, t).map((x: { name: any }) => x.name),
+            others(LAUB, t).map((x) => x.name),
             'sk2b_fr_' + t.id,
             { pic: fruitSVG(t.id), group: 'baum:2', tier: 2 },
           );
@@ -2747,7 +2757,7 @@ export const MSK12 = (() => {
             'laub',
             'Von welchem Baum ist dieses Blatt?',
             t.name,
-            others(LAUB, t).map((x: { name: any }) => x.name),
+            others(LAUB, t).map((x) => x.name),
             'sk2b_bl_' + t.id,
             { pic: treeSVG(t.id) },
           );
@@ -2759,7 +2769,7 @@ export const MSK12 = (() => {
             'nadel',
             'Welcher Nadelbaum ist das?',
             t.name,
-            others(NADEL, t).map((x: { name: any }) => x.name),
+            others(NADEL, t).map((x) => x.name),
             'sk2b_nz_' + t.id,
             { pic: treeSVG(t.id) },
           );
@@ -2786,7 +2796,7 @@ export const MSK12 = (() => {
           'frueh',
           'Wie heißt dieser Frühblüher?',
           f.name,
-          others(SPRING, f).map((x: { name: any }) => x.name),
+          others(SPRING, f).map((x) => x.name),
           'sk2b_fb_' + f.id,
           { pic: flowerSVG(f.id) },
         );
@@ -2925,23 +2935,23 @@ export const MSK12 = (() => {
     [85, 64],
     [93, 50],
   ]);
-  const BEAK = {
+  const BEAK: Record<string, string> = {
     thin: 'M91 31 Q98 33 104 35 Q98 36.6 91 38 Z',
     cone: 'M90 29 Q99 31 103 35 Q99 38.6 90 40 Z',
     short: 'M91 31 L100 34.5 L91 37.5 Z',
     tiny: 'M92 32 L99 34.5 L92 36.6 Z',
   };
-  const TAIL = {
+  const TAIL: Record<string, string> = {
     n: 'M42 60 L16 72 Q11 76 15 80 L46 68 Z',
     long: 'M42 60 L7 74 Q3 79 9 81 L46 68 Z',
     fork: 'M42 62 L2 70 L4 73 L32 68 L5 83 L8 85 L44 68 Z',
   };
-  const WING = {
+  const WING: Record<string, string> = {
     n: 'M70 38 Q54 40 40 58 L33 67 Q48 68 62 62 Q74 54 70 38 Z',
     long: 'M72 40 Q50 44 8 74 Q32 70 52 64 Q70 58 72 40 Z',
   };
   // Singvögel aus einer Form; die Gefiederzeichnung liegt beschnitten auf dem Körper
-  const SONG = {
+  const SONG: Record<string, Songbird> = {
     amsel: {
       body: '#2A2A30',
       wing: '#1C1C21',
@@ -3075,8 +3085,8 @@ export const MSK12 = (() => {
       Math.min(1, Math.sqrt((1.02 - t) / 0.12)) *
       (t > 0.66 && t < 0.77 ? 1.18 : 1);
     const side = (t0: number, t1: number, f: number) => {
-      const L: any[] = [],
-        Rt: any[] = [];
+      const L: string[] = [],
+        Rt: string[] = [];
       c.forEach(([x, y, tx, ty], i) => {
         const t = i / 63;
         if (t < t0 || t > t1) return;
@@ -3105,7 +3115,7 @@ export const MSK12 = (() => {
       `<path d="${side(0, 1, 1)}" fill="url(#k2wm)" ${ln(1.3)}/><path d="${rings}" stroke="#A04E5E" stroke-width=".6" opacity=".7"/><path d="${side(0.66, 0.77, 1)}" fill="#E8977C" ${ln(1)}/><path d="${hl}" fill="none" stroke="#fff" stroke-width="1" opacity=".5" stroke-linecap="round"/>`
     );
   }
-  const SMALL = {
+  const SMALL: Record<string, string> = {
     igel: (() => {
       const sil = Array.from({ length: 41 }, (_, k) => {
         const a = Math.PI + (k * (0.86 * Math.PI)) / 40,
@@ -3175,7 +3185,7 @@ export const MSK12 = (() => {
     { id: 'schnecke', name: 'Schnecke' },
     { id: 'marienkaefer', name: 'Marienkäfer' },
   ];
-  const smallSVG = (id: string | number) => pic('0 0 120 90', SMALL[id], 'Bild eines kleinen Tieres', 160);
+  const smallSVG = (id: string) => pic('0 0 120 90', SMALL[id], 'Bild eines kleinen Tieres', 160);
   const NEST = ['Ein Nest bauen', 'Eier legen', 'Eier ausbrüten', 'Junge füttern', 'Die Jungen fliegen aus'].map(
     (text, i) => ({ id: 'n' + i, text }),
   );
@@ -3247,7 +3257,7 @@ export const MSK12 = (() => {
       ],
     },
   };
-  const TI_POOL = [].concat(
+  const TI_POOL = ([] as Question[]).concat(
     P('sk2t_vo', 'vogel', 'vogel', [
       ['Welcher Vogel hat eine rote Kehle und einen langen Schwanz?', ['Schwalbe', 'Amsel', 'Spatz']],
       ['Welche Farbe hat das Amselmännchen?', ['Schwarz', 'Gelb', 'Weiß']],
@@ -3413,7 +3423,7 @@ export const MSK12 = (() => {
     },
   };
   function tiGen(cfg: Unit) {
-    return (m: string, tier: number, know: any, seq: any, opts: any) => {
+    return (m: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
       if (m === 'vogel') {
@@ -3428,7 +3438,7 @@ export const MSK12 = (() => {
             ans.name,
             shuffle(BIRDS.filter((b) => !t.has.includes(b.id) && !(t.skip || []).includes(b.id)))
               .slice(0, 2)
-              .map((b: { name: any }) => b.name),
+              .map((b) => b.name),
             'sk2t_vm_' + BIRD_TRAITS.indexOf(t),
             { group: 'vogel:2', tier: 2 },
           );
@@ -3440,7 +3450,7 @@ export const MSK12 = (() => {
             'vogel',
             'Wie heißt dieser Vogel?',
             b.name,
-            others(BIRDS, b).map((x: { name: any }) => x.name),
+            others(BIRDS, b).map((x) => x.name),
             'sk2t_vb_' + b.id,
             { pic: birdSVG(b.id) },
           );
@@ -3457,7 +3467,7 @@ export const MSK12 = (() => {
           'klein',
           'Wie heißt dieses Tier?',
           t.name,
-          others(SMALL_LIST, t).map((x: { name: any }) => x.name),
+          others(SMALL_LIST, t).map((x) => x.name),
           'sk2t_kb_' + t.id,
           { pic: smallSVG(t.id) },
         );
@@ -3570,13 +3580,13 @@ export const MSK12 = (() => {
   TI.gen = tiGen(TI);
 
   /* ================= LICHT, LUFT UND WASSER (Klasse 2, LB 4) ================= */
-  const OBJ = {
+  const OBJ: Record<string, string> = {
     baum: `<rect x="76" y="46" width="8" height="28" fill="${BARK}" ${ln(1.6)}/><circle cx="80" cy="38" r="16" fill="${LEAF}" ${ln(2)}/>`,
     kind: `<circle cx="80" cy="38" r="7" fill="${SKIN}" ${ln(1.6)}/><rect x="74" y="46" width="12" height="16" rx="3" fill="#3B82F6" ${ln(1.6)}/><path d="M77 62 V74 M83 62 V74" ${ln(3)}/>`,
     haus: `<rect x="66" y="50" width="28" height="24" fill="#E3DED0" ${ln(1.8)}/><path d="M62 52 L80 36 L98 52 Z" fill="#E8603A" ${ln(1.8)}/><rect x="76" y="60" width="8" height="14" fill="${BARK}"/>`,
   };
   // side: wo die Sonne steht ('l' oder 'r'); der Schatten fällt auf die andere Seite
-  const shadowSVG = (obj: string | number, side: string, showSun: boolean) =>
+  const shadowSVG = (obj: string, side: string, showSun: boolean) =>
     pic(
       '0 0 160 90',
       `<rect width="160" height="90" fill="#DFF1FF"/><rect y="74" width="160" height="16" fill="#9CD06E"/><path d="M0 74 H160" ${ln(1.6)}/>${showSun ? sun(side === 'l' ? 22 : 138, 22, 10) : `<ellipse cx="${side === 'l' ? 110 : 50}" cy="77" rx="30" ry="4" fill="#3A3F4F" opacity=".55"/>`}${OBJ[obj]}`,
@@ -3597,7 +3607,7 @@ export const MSK12 = (() => {
       112,
     );
   }
-  const GHS = {
+  const GHS: Record<string, { mean: string; art: string }> = {
     flamme: {
       mean: 'Brennt leicht',
       art: `<path d="M31 55 Q22 45 28 33 Q30 39 35 40 Q31 27 42 15 Q42 27 49 31 Q51 25 48 20 Q60 30 55 44 Q53 51 48 55 Z" fill="${OUT}"/><path d="M38 55 Q35 48 40 42 Q42 47 45 48 Q47 52 44 55 Z" fill="#fff"/><path d="M27 59 H53" ${ln(3.4)}/>`,
@@ -3636,7 +3646,7 @@ export const MSK12 = (() => {
       art: `<path d="M29 57 V25 M29 46 L21 39 M29 40 L36 32 M29 34 L23 26 M29 30 L32 21 M21 39 L18 40 M36 32 L40 31" fill="none" ${ln(2.6)}/><path d="M36 50 Q45 42 55 50 Q45 57 36 50 Z" fill="${OUT}"/><path d="M54 50 L61 45 L59 50 L61 55 Z M43 55 l3 3 l3 -3 Z" fill="${OUT}"/><path d="M38.6 47.6 l2.8 2.8 M41.4 47.6 l-2.8 2.8" stroke="#fff" stroke-width="1.2"/><path d="M23 58 H57" ${ln(2.4)}/>`,
     },
   };
-  const ghsSVG = (k: string | number) =>
+  const ghsSVG = (k: string) =>
     pic(
       '0 0 80 80',
       `<path d="M40 4 L76 40 L40 76 L4 40 Z" fill="#fff" stroke="#E8344A" stroke-width="5" stroke-linejoin="round"/>${GHS[k].art}`,
@@ -3644,14 +3654,14 @@ export const MSK12 = (() => {
       120,
     );
   // Forscherlabor: erst vermuten, dann zeigt das Bild das Ergebnis
-  const glass = (label: string | any[], state: string) =>
+  const glass = (label: string, state: string) =>
     pic(
       '0 0 200 150',
       `<rect x="56" y="24" width="88" height="118" rx="8" fill="#E3F2FD" ${ln(2.5)}/><rect x="58" y="52" width="84" height="88" rx="6" fill="#64B5F6" opacity="${state === 'klar' ? 0.4 : 0.6}"/>${state === 'unten' ? `<path d="M62 136 Q80 124 100 130 Q120 124 138 136 Z" fill="#C9A26A" ${ln(1.6)}/>` : ''}${state === 'oben' ? `<rect x="${100 - Math.max(34, label.length * 4 + 10)}" y="8" width="${2 * Math.max(34, label.length * 4 + 10)}" height="20" rx="10" fill="#FFE0B2" ${ln(2)}/>` : ''}${state === 'oben' ? S.txt(100, 22, label, { size: 12 }) : S.txt(100, 18, label, { size: 12 })}`,
       'Glas mit Wasser',
       220,
     );
-  const SOLVE = [
+  const SOLVE: [name: string, dissolves: boolean, not?: string][] = [
     ['Zucker', true],
     ['Salz', true],
     ['Sand', false],
@@ -3659,14 +3669,14 @@ export const MSK12 = (() => {
     ['Mehl', false, 'nicht auf. Das Wasser wird milchig, später sinkt das Mehl auf den Boden.'],
     ['Brausepulver', true],
   ];
-  const SHINE = [
+  const SHINE: [acc: string, nom: string, through: boolean][] = [
     ['eine Glasscheibe', 'Die Glasscheibe', true],
     ['ein Holzbrett', 'Das Holzbrett', false],
     ['Klarsichtfolie', 'Die Klarsichtfolie', true],
     ['ein Stück Pappe', 'Die Pappe', false],
     ['Alufolie', 'Die Alufolie', false],
   ];
-  const lamp = (label: any, through?: boolean) =>
+  const lamp = (label: string, through?: boolean) =>
     pic(
       '0 0 200 110',
       `<rect x="8" y="44" width="34" height="20" rx="4" fill="#8E96B5" ${ln(2)}/><path d="M42 40 L52 34 V74 L42 68 Z" fill="#C9CEDD" ${ln(2)}/><path d="M52 42 L96 46 M52 66 L96 62" stroke="#FFD43B" stroke-width="3"/><rect x="96" y="22" width="10" height="66" fill="#F2E3C6" ${ln(2)}/>${S.txt(101, 104, label, { size: 11 })}<rect x="176" y="10" width="10" height="90" fill="#E3DED0" ${ln(2)}/>${through ? `<path d="M106 46 L176 52 M106 62 L176 58" stroke="#FFD43B" stroke-width="3"/><ellipse cx="174" cy="55" rx="5" ry="12" fill="#FFE27A"/>` : through === false ? '<ellipse cx="174" cy="55" rx="5" ry="12" fill="#3A3F4F" opacity=".5"/>' : ''}`,
@@ -3696,7 +3706,7 @@ export const MSK12 = (() => {
   function laborSet() {
     const sol = shuffle(SOLVE)
       .slice(0, 2)
-      .map(([x, l, not]) => ({
+      .map(([x, l, not]): Experiment => ({
         kind: 'loesen',
         topic: 'loesen',
         q: `Du rührst ${x} in ein Glas Wasser. Löst es sich auf?`,
@@ -3823,7 +3833,7 @@ export const MSK12 = (() => {
       ],
     },
   };
-  const NA_POOL = [].concat(
+  const NA_POOL = ([] as Question[]).concat(
     P('sk2n_li', 'licht', 'licht', [
       ['Was ist eine natürliche Lichtquelle?', ['Die Sonne', 'Die Taschenlampe', 'Die Kerze']],
       ['Was ist eine künstliche Lichtquelle?', ['Die Glühlampe', 'Die Sonne', 'Ein Blitz']],
@@ -4017,39 +4027,39 @@ export const MSK12 = (() => {
   // Plan lesen: the plan and legend of Kompass und Karte (Klasse 3) without the compass; four places on the 3 × 3 blocks
   const dat = (p: { vom: string }) => p.vom.replace(/^vom /, 'dem ').replace(/^von /, '');
   const akk = (p: { name: string }) => p.name.replace(/^der /, 'den ');
-  const big = (p: { name: string | any[] }) => p.name[0].toUpperCase() + p.name.slice(1);
+  const big = (p: { name: string }) => p.name[0].toUpperCase() + p.name.slice(1);
   function planTask() {
     for (;;) {
       const spots = shuffle(Array.from({ length: 9 }, (_, i) => [Math.floor(i / 3), i % 3])).slice(0, 4);
       const places = shuffle(S.PLACES)
         .slice(0, 4)
-        .map((p: any, i: string | number) => ({ p, rc: spots[i] }));
+        .map((p, i) => ({ p, rc: spots[i] }));
       const svg =
         `<svg ${NS} class="pic" viewBox="0 0 300 210" aria-label="Plan mit Legende">${S.PLAN_DEFS}${S.PLAN_BG}${places.map(({ p, rc }) => p.icon(38 + rc[1] * 66, 42 + rc[0] * 66)).join('')}` +
         `<rect x="213" y="40" width="87" height="125" rx="7" fill="${OUT}" opacity=".12"/><rect x="211" y="38" width="86" height="124" rx="7" fill="url(#kp-paper)" stroke="${OUT}" stroke-width="2"/>${S.txt(254, 55, 'Legende', { size: 12 })}<path d="M222 61 L286 61" stroke="#C9AE76" stroke-width="1.2"/>` +
-        `${places.map(({ p }: any, i: number) => `<g transform="translate(225 ${82 + i * 23}) scale(.47)">${p.icon(0, 0)}</g>${S.txt(238, 86 + i * 23, big(p).split(' ')[1], { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
+        `${places.map(({ p }, i) => `<g transform="translate(225 ${82 + i * 23}) scale(.47)">${p.icon(0, 0)}</g>${S.txt(238, 86 + i * 23, big(p).split(' ')[1], { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
       if (Math.random() < 0.5) {
         const [{ p }, ...rest] = places;
-        const opt = (x: { icon: (arg0: number, arg1: number) => any }) =>
+        const opt = (x: { icon: (x: number, y: number) => string }) =>
           `<svg ${NS} viewBox="-26 -36 52 56" role="img" aria-label="Zeichen">${S.PLAN_DEFS}${x.icon(0, 0)}</svg>`;
         return choice(
           'plan',
           'plan',
           `Welches Zeichen steht für ${akk(p)}?`,
           opt(p),
-          rest.slice(0, 2).map((x: { p: any }) => opt(x.p)),
+          rest.slice(0, 2).map((x) => opt(x.p)),
           'sk2n_pz_' + p.id,
           { pic: svg, svgOpts: true, why: `So sieht das Zeichen für ${akk(p)} aus:` },
         );
       }
-      const side = pick([
+      const side = pick<[number, string]>([
         [1, 'rechts'],
         [-1, 'links'],
       ]);
-      const pairs = places.flatMap((a: { rc: any[] }) =>
+      const pairs = places.flatMap((a) =>
         places
-          .filter((b: { rc: any[] }) => b.rc[0] === a.rc[0] && b.rc[1] === a.rc[1] + side[0])
-          .map((b: any) => [a, b]),
+          .filter((b) => b.rc[0] === a.rc[0] && b.rc[1] === a.rc[1] + side[0])
+          .map((b) => [a, b]),
       );
       if (!pairs.length) continue;
       const [a, b] = pick(pairs);
@@ -4058,7 +4068,7 @@ export const MSK12 = (() => {
         'plan',
         `Was liegt auf dem Plan ${side[1]} neben ${dat(a.p)}?`,
         big(b.p),
-        places.filter((x: any) => x !== a && x !== b).map((x: { p: any }) => big(x.p)),
+        places.filter((x) => x !== a && x !== b).map((x) => big(x.p)),
         'sk2n_pn_' + a.p.id + side[1],
         {
           pic: svg,
@@ -4070,7 +4080,7 @@ export const MSK12 = (() => {
     }
   }
   function naGen(cfg: Unit) {
-    return (m: string, tier: any, know: any, seq: any, opts: any) => {
+    return (m: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (wantsPool(cfg, m, opts)) return null;
       const r = Math.random();
       if (m === 'plan' && r < 0.75) return planTask();
@@ -4115,7 +4125,7 @@ export const MSK12 = (() => {
           'thermo',
           'Wie warm ist es? Lies ab.',
           minus(t) + ' °C',
-          wrong.map((v: any) => minus(v) + ' °C'),
+          wrong.map((v) => minus(v) + ' °C'),
           'sk2n_th_' + t,
           { pic: thermoSVG(t), temp: t },
         );
@@ -4127,7 +4137,7 @@ export const MSK12 = (() => {
           'gefahr',
           'Was bedeutet dieses Warnzeichen?',
           GHS[k].mean,
-          others(Object.keys(GHS), k).map((x: string | number) => GHS[x].mean),
+          others(Object.keys(GHS), k).map((x) => GHS[x].mean),
           'sk2n_ghs_' + k,
           { pic: ghsSVG(k) },
         );

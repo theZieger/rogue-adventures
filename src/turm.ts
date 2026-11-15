@@ -6,7 +6,17 @@ export const TW = (() => {
     TOWER_HP = 60;
   // n normal monsters, base HP; start/enter = monsters entering at wave start / per turn
   // (enter 0: the next one only when the board is empty); boss/elite/final = queue position of the special monster
-  const WAVES = [
+  interface Wave {
+    n: number;
+    hp: number;
+    start: number;
+    enter: number;
+    boss?: number;
+    elite?: number;
+    final?: number;
+    fast?: number; // every fast-th normal monster walks two fields
+  }
+  const WAVES: Wave[] = [
     { n: 3, hp: 25, start: 1, enter: 0 },
     { n: 5, hp: 32, start: 2, enter: 2 },
     { n: 3, hp: 37, start: 2, enter: 2, boss: 1 },
@@ -49,7 +59,8 @@ export const TW = (() => {
   const START_ITEMS = ['trank'],
     BOSS_ITEM = 'grosstrank',
     OFFER = ['trank', 'schild', 'keks', 'lupe'];
-  const FLOORS = {
+  type Fx = 'chain' | 'stun' | 'repair' | 'brick' | 'push' | 'volley';
+  const FLOORS: Record<string, Fx> = {
     Mathe: 'chain',
     Ethik: 'stun',
     Sachkunde: 'repair',
@@ -57,9 +68,9 @@ export const TW = (() => {
     Musik: 'push',
     Englisch: 'volley',
   };
-  const BEATS = { feuer: 'pflanze', pflanze: 'wasser', wasser: 'feuer' }; // = MQ.BEATS (test checks)
+  const BEATS: Record<string, string> = { feuer: 'pflanze', pflanze: 'wasser', wasser: 'feuer' }; // = MQ.BEATS (test checks)
   // what really happened stays when the checkpoint is used: answers, practice counts, tiers, the record
-  const KEEP = ['cp', 'cpUsed', 'best', 'score', 'used', 'at'];
+  const KEEP: (keyof Turm)[] = ['cp', 'cpUsed', 'best', 'score', 'used', 'at'];
 
   // one kind of question: unit m, task type k
   interface Source {
@@ -70,7 +81,7 @@ export const TW = (() => {
   interface Again extends Source {
     lane: number;
     tier: number;
-    task?: any;
+    task?: any; // the task as its unit made it (src/app/), stored so the same question comes back
   }
   interface Monster extends Source {
     id: number;
@@ -96,48 +107,159 @@ export const TW = (() => {
     part?: number;
   }
 
-  const pick = (ctx: { rnd: () => number }, a: string | any[]) => a[Math.floor(ctx.rnd() * a.length)];
-  const clone = (o: any) => JSON.parse(JSON.stringify(o));
-  const keyOf = (s: { m: string; k: string }) => s.m + ':' + s.k;
-  const at = (t: { monsters: any[] }, lane: any, cell: number) =>
-    t.monsters.find((x: { lane: any; cell: any }) => x.lane === lane && x.cell === cell);
-  const front = (t: { monsters: any[] }, lane: number, ok: (x: Monster) => boolean = () => true) =>
-    t.monsters
-      .filter((x) => x.lane === lane && ok(x))
-      .sort((a: { cell: number }, b: { cell: number }) => a.cell - b.cell)[0];
-  const usedOf = (t: { lanes: { [x: string]: { src: any[] } }; used: { [x: string]: any } }, i: string | number) =>
-    t.lanes[i].src.reduce((a: any, s: any) => a + (t.used[keyOf(s)] || 0), 0);
-  const accOf = (t: { lanes: { [x: string]: any } }, i: string | number, ctx: { acc: (arg0: any) => any }) =>
-    ctx.acc ? ctx.acc(t.lanes[i]) : 0.6;
-  const order = (
-    t: { lanes: any[] },
-    a: { (i: any): any; (i: any): any; (arg0: any): number },
-    b: { (i: any): any; (i: any): any; (arg0: any): number },
-  ): number[] => t.lanes.map((_: any, i: any) => i).sort((x: number, y: number) => a(x) - a(y) || b(x) - b(y) || x - y);
-  const weakest = (t: any, ctx: any) =>
+  interface Lane {
+    subject: string;
+    src: Source[];
+  }
+  interface Guard {
+    look: string;
+    type: string;
+    lvl: number;
+  }
+  // the question on screen: the monster asked and the path it counts for
+  interface Asking extends Source {
+    id: number;
+    lane: number;
+    again?: Again;
+  }
+  type Phase = 'build' | 'choose' | 'task' | 'step' | 'reward' | 'won' | 'fallen';
+  interface Turm {
+    wave: number;
+    turn: number;
+    phase: Phase;
+    lanes: Lane[];
+    at: Record<string, unknown>; // per unit, kept by src/app/turm.ts
+    used: Record<string, number>; // questions asked per source (keyOf)
+    monsters: Monster[];
+    queue: Monster[];
+    guards: Record<string, Guard>; // key 'lane:spot'
+    floors: string[];
+    ziegel: number;
+    earned: Record<string, number>;
+    stamps: number;
+    again: Again[];
+    score: Record<string, { c: number; t: number }>; // right / asked per subject
+    asking: Asking | null;
+    weak: number | null;
+    offer: string[] | null;
+    boss3: { lane: number; name: string } | null;
+    free: boolean;
+    cp: Checkpoint | null;
+    cpUsed: number;
+    best: number;
+    nextId: number;
+    hurtThisWave: boolean;
+  }
+  interface Run {
+    mode: string;
+    v: number;
+    grade: number;
+    hero: { m: string; id: string; evo: number; hp: number; maxHp: number };
+    items: string[];
+    shield: boolean;
+    power: boolean;
+    hint: boolean;
+    right: number;
+    answered: number;
+    solved: number;
+    turm: Turm;
+  }
+  // the run as it was at the last Bauzeit, without what KEEP names
+  type Checkpoint = Omit<Run, 'right' | 'answered' | 'solved' | 'turm'> & {
+    turm: Omit<Turm, 'cp' | 'cpUsed' | 'best' | 'score' | 'used' | 'at'>;
+  };
+  // a monster as its unit describes it
+  interface Spec {
+    name: string;
+    shape: string;
+    type: string;
+    hp: number;
+    acc?: string;
+  }
+  interface Ctx {
+    rnd(): number;
+    enemies(m: string, world: number): { normal: Spec[]; elite: Spec; boss: Spec };
+    worlds(m: string): number;
+    dmg(m: string, k: string): number;
+    heroType: string;
+    acc?(lane: Lane): number;
+    on?(m: string, k: string): boolean;
+  }
+  // what happened, in order, for the screen to show: t names the event, the other fields depend on it
+  interface Ev {
+    t: string;
+    id?: number | string; // a monster, or the item of 'item'
+    lane?: number;
+    cell?: number;
+    boss?: boolean;
+    elite?: boolean;
+    n?: number;
+    why?: string;
+    total?: number;
+    m?: string;
+    k?: string;
+    dmg?: number;
+    hp?: number;
+    strong?: boolean;
+    weak?: boolean;
+    power?: boolean;
+    from?: number | string;
+    to?: number;
+    left?: number;
+    subject?: string;
+    fx?: Fx;
+    gone?: boolean;
+    wave?: number;
+    evo?: number;
+    items?: string[];
+    card?: Card;
+    cost?: number;
+    ziegel?: number;
+  }
+  // { kind: 'guard', lane, spot, look, type } | { kind: 'up', lane, spot } | { kind: 'floor', subject } | { kind: 'fix' }
+  interface Card {
+    kind: string;
+    lane?: number;
+    spot?: number;
+    look?: string;
+    type?: string;
+    subject?: string;
+  }
+
+  const pick = <T>(ctx: Ctx, a: T[]) => a[Math.floor(ctx.rnd() * a.length)];
+  const clone = (o: unknown) => JSON.parse(JSON.stringify(o));
+  const keyOf = (s: Source) => s.m + ':' + s.k;
+  const at = (t: Turm, lane: number, cell: number) => t.monsters.find((x) => x.lane === lane && x.cell === cell);
+  const front = (t: Turm, lane: number, ok: (x: Monster) => boolean = () => true) =>
+    t.monsters.filter((x) => x.lane === lane && ok(x)).sort((a, b) => a.cell - b.cell)[0];
+  const usedOf = (t: Turm, i: number) => t.lanes[i].src.reduce((a, s) => a + (t.used[keyOf(s)] || 0), 0);
+  const accOf = (t: Turm, i: number, ctx: Ctx) => (ctx.acc ? ctx.acc(t.lanes[i]) : 0.6);
+  const order = (t: Turm, a: (i: number) => number, b: (i: number) => number) =>
+    t.lanes.map((_, i) => i).sort((x, y) => a(x) - a(y) || b(x) - b(y) || x - y);
+  const weakest = (t: Turm, ctx: Ctx) =>
     order(
       t,
-      (i: any) => accOf(t, i, ctx),
-      (i: any) => usedOf(t, i),
+      (i) => accOf(t, i, ctx),
+      (i) => usedOf(t, i),
     );
-  const leastUsed = (t: any, ctx: any) =>
+  const leastUsed = (t: Turm, ctx: Ctx) =>
     order(
       t,
-      (i: any) => usedOf(t, i),
-      (i: any) => accOf(t, i, ctx),
+      (i) => usedOf(t, i),
+      (i) => accOf(t, i, ctx),
     );
-  const remove = (t: { monsters: any[]; weak: null }, x: { id: any }) => {
-    t.monsters = t.monsters.filter((y: any) => y !== x);
+  const remove = (t: Turm, x: Monster) => {
+    t.monsters = t.monsters.filter((y) => y !== x);
     if (t.weak === x.id) t.weak = null;
   };
   // earned: this wave's Ziegel by reason, for the wave-cleared screen
-  const earn = (t: { ziegel: any; earned: { [x: string]: any } }, n: number, why: string, ev: any[]) => {
+  const earn = (t: Turm, n: number, why: string, ev: Ev[]) => {
     t.ziegel += n;
     t.earned[why] = (t.earned[why] || 0) + n;
     ev.push({ t: 'ziegel', n, why, total: t.ziegel });
   };
-  const catchUp = (t: { score: { [s: string]: { c: number; t: number } } | ArrayLike<{ c: number; t: number }> }) => {
-    const s = Object.values<{ c: number; t: number }>(t.score),
+  const catchUp = (t: Turm) => {
+    const s = Object.values(t.score),
       c = s.reduce((a, x) => a + x.c, 0),
       n = s.reduce((a, x) => a + x.t, 0);
     return n < CATCHUP_AFTER
@@ -146,53 +268,46 @@ export const TW = (() => {
   };
   // the final boss only takes damage from questions of its current shield's path
   const hittable = (lane: number) => (x: Monster) => !x.final || x.shields![0] === lane;
-  const protector = (t: { monsters: any[] }, x: { lane: any; cell: number }) =>
-    t.monsters
-      .filter((e: { elite: any; lane: any; cell: number }) => e.elite && e.lane === x.lane && e.cell < x.cell)
-      .sort((a: { cell: number }, b: { cell: number }) => b.cell - a.cell)[0] || null;
-  const canTarget = (run: { turm: { monsters: any[] } }, id: any) => {
-    const x = run.turm.monsters.find((y: { id: any }) => y.id === id);
+  const protector = (t: Turm, x: Monster) =>
+    t.monsters.filter((e) => e.elite && e.lane === x.lane && e.cell < x.cell).sort((a, b) => b.cell - a.cell)[0] ||
+    null;
+  const canTarget = (run: Run, id: number) => {
+    const x = run.turm.monsters.find((y) => y.id === id);
     return !!x && !protector(run.turm, x);
   };
 
   // 1 subject: split by unit (≥ 3 units) or round-robin by task type, so the board never becomes a single corridor
-  function lanesFor(subjects: any[], sourcesOf: (arg0: any) => { m: any; k: any }[]) {
+  function lanesFor(subjects: string[], sourcesOf: (subject: string) => Source[]) {
     const subs = subjects
       .slice(0, 3)
-      .map((subject: any) => ({ subject, src: sourcesOf(subject).map(({ m, k }) => ({ m, k })) }))
-      .filter((l: { src: string | any[] }) => l.src.length);
+      .map((subject) => ({ subject, src: sourcesOf(subject).map(({ m, k }) => ({ m, k })) }))
+      .filter((l) => l.src.length);
     if (subs.length !== 1) return subs;
     const { subject, src } = subs[0],
-      units = [...new Set(src.map((s: { m: any }) => s.m))];
+      units = [...new Set(src.map((s) => s.m))];
     const n = Math.min(3, src.length),
       lanes = Array.from({ length: n }, () => ({ subject, src: [] as Source[] }));
-    src.forEach((s, i: any) => lanes[(units.length >= 3 ? units.indexOf(s.m) : i) % n].src.push(s));
+    src.forEach((s, i) => lanes[(units.length >= 3 ? units.indexOf(s.m) : i) % n].src.push(s));
     return lanes;
   }
 
-  function nextSource(run: { turm: any }, lane: number, not: null, ctx: { on: (arg0: any, arg1: any) => any }) {
+  function nextSource(run: Run, lane: number, not: Source | null, ctx: Ctx) {
     const t = run.turm,
-      on = (s: { m: any; k: any }) => !ctx.on || ctx.on(s.m, s.k);
+      on = (s: Source) => !ctx.on || ctx.on(s.m, s.k);
     let src = t.lanes[lane].src.filter(on);
-    if (!src.length) src = t.lanes.flatMap((l: { src: any }) => l.src).filter(on);
-    if (!src.length) src = t.lanes.flatMap((l: { src: any }) => l.src);
-    if (not && src.length > 1) src = src.filter((s: any) => keyOf(s) !== keyOf(not));
-    const u = (s: any) => t.used[keyOf(s)] || 0,
+    if (!src.length) src = t.lanes.flatMap((l) => l.src).filter(on);
+    if (!src.length) src = t.lanes.flatMap((l) => l.src);
+    if (not && src.length > 1) src = src.filter((s) => keyOf(s) !== keyOf(not));
+    const u = (s: Source) => t.used[keyOf(s)] || 0,
       min = Math.min(...src.map(u));
     const s = pick(
       ctx,
-      src.filter((x: any) => u(x) === min),
+      src.filter((x) => u(x) === min),
     );
     return { m: s.m, k: s.k };
   }
 
-  function spawn(
-    run: { turm: any; grade: number },
-    ctx: { worlds: (arg0: any) => any; enemies: (arg0: any, arg1: number) => any },
-    lane: number,
-    kind: string,
-    src?: { m: any; k: any } | undefined,
-  ) {
+  function spawn(run: Run, ctx: Ctx, lane: number, kind: 'normal' | 'elite' | 'boss' | 'final', src?: Source) {
     const t = run.turm,
       w = WAVES[t.wave - 1],
       base = w.hp * (run.grade === 2 ? K2_HP : 1);
@@ -201,7 +316,7 @@ export const TW = (() => {
     const worlds = ctx.worlds(unit),
       world = Math.min(worlds, Math.ceil((t.wave * worlds) / WAVES.length));
     const pool = ctx.enemies(unit, world),
-      avg = pool.normal.reduce((a: any, s: { hp: any }) => a + s.hp, 0) / pool.normal.length;
+      avg = pool.normal.reduce((a, s) => a + s.hp, 0) / pool.normal.length;
     const sp = kind === 'normal' ? pick(ctx, pool.normal) : kind === 'elite' ? pool.elite : pool.boss;
     const x = {
       id: t.nextId++,
@@ -235,22 +350,15 @@ export const TW = (() => {
   }
 
   // a different boss than in wave 3 if any unit on the board has one
-  function finalUnit(
-    run: { turm: any },
-    ctx: {
-      enemies: (arg0: any, arg1: any) => { (): any; new (): any; boss: { (): any; new (): any; name: any } };
-      worlds: (arg0: any) => any;
-    },
-    lane: string | number,
-  ) {
+  function finalUnit(run: Run, ctx: Ctx, lane: number) {
     const t = run.turm,
-      us = [...new Set([...t.lanes[lane].src, ...t.lanes.flatMap((l: { src: any }) => l.src)].map((s) => s.m))];
-    const bossOf = (m: any) => ctx.enemies(m, ctx.worlds(m)).boss.name;
+      us = [...new Set([...t.lanes[lane].src, ...t.lanes.flatMap((l) => l.src)].map((s) => s.m))];
+    const bossOf = (m: string) => ctx.enemies(m, ctx.worlds(m)).boss.name;
     return us.find((m) => !t.boss3 || bossOf(m) !== t.boss3.name) || us[0];
   }
 
   // which path each monster of the coming wave walks on: the same plan builds the wave and the Bauzeit preview
-  function plan(run: { turm: any; grade: number }, ctx: any, wave: number) {
+  function plan(run: Run, ctx: Ctx, wave: number) {
     const t = run.turm,
       w = WAVES[wave - 1],
       k2 = run.grade === 2,
@@ -259,13 +367,13 @@ export const TW = (() => {
     const n = k2 ? Math.max(K2_MIN, Math.round(w.n * K2_COUNT)) : w.n;
     // spread over the lanes so every path gets its share of questions, then one more for a weak lane;
     // 🔁 monsters walk their own path and the boss/elite's many questions count first, so the others go elsewhere
-    const load = t.lanes.map((_: any, i: any) => usedOf(t, i)),
+    const load = t.lanes.map((_, i) => usedOf(t, i)),
       special = w.boss != null ? BOSS_HP : w.elite != null ? ELITE_HP : 0;
     load[weak[0]] += special * PER_MONSTER;
     // at most half the wave are 🔁 monsters: they walk the path of the wrong answer, so more would starve the other subjects
     const took = t.again.slice(0, Math.ceil(n / 2)),
-      again = took.filter((e: { lane: number }) => e.lane < L),
-      lanes = again.map((e: { lane: any }) => e.lane);
+      again = took.filter((e) => e.lane < L),
+      lanes = again.map((e) => e.lane);
     for (const l of lanes) load[l] += PER_MONSTER;
     while (lanes.length < n) {
       const l = load.indexOf(Math.min(...load));
@@ -273,19 +381,19 @@ export const TW = (() => {
       load[l] += PER_MONSTER;
     }
     // the extra monster: the weakest path that has not had more than its share of questions yet
-    const used = t.lanes.map((_: any, i: any) => usedOf(t, i)),
-      fair = used.reduce((x: any, y: any) => x + y, 0) / L;
+    const used = t.lanes.map((_, i) => usedOf(t, i)),
+      fair = used.reduce((x, y) => x + y, 0) / L;
     if (lanes.length < n + 1) lanes.push(weak.find((i) => used[i] <= fair) ?? weak[0]);
-    const normal = lanes.map((lane: any, i: number) => ({
+    const normal = lanes.map((lane, i) => ({
       lane,
       again: again[i],
       fast: !!w.fast && !k2 && i % w.fast === w.fast - 1,
     }));
-    const finalLane = (L > 1 && t.boss3 ? weak.find((i) => i !== t.boss3.lane) : null) ?? weak[0];
+    const finalLane = (L > 1 && t.boss3 ? weak.find((i) => i !== t.boss3!.lane) : null) ?? weak[0];
     return { w, weak, normal, n: lanes.length, took: took.length, finalLane };
   }
 
-  function buildWave(run: { turm: any }, ctx: any) {
+  function buildWave(run: Run, ctx: Ctx) {
     const t = run.turm,
       p = plan(run, ctx, t.wave),
       w = p.w,
@@ -308,7 +416,7 @@ export const TW = (() => {
   }
 
   // Bauzeit: what the next wave brings on each path → [{ n, fast, boss, elite, final }] (n counts every monster)
-  function preview(run: { turm: any }, ctx: any) {
+  function preview(run: Run, ctx: Ctx) {
     const t = run.turm;
     if (t.phase !== 'build' || t.wave >= WAVES.length) return null;
     const p = plan(run, ctx, t.wave + 1),
@@ -317,7 +425,7 @@ export const TW = (() => {
       out[e.lane].n++;
       if (e.fast) out[e.lane].fast++;
     }
-    const add = (lane: number, k: string) => {
+    const add = (lane: number, k: 'boss' | 'elite' | 'final') => {
       out[lane].n++;
       out[lane][k] = true;
     };
@@ -327,7 +435,7 @@ export const TW = (() => {
     return out;
   }
 
-  function enter(t: { monsters: any[]; queue: any[] }, max: number, ev: any[]) {
+  function enter(t: Turm, max: number, ev: Ev[]) {
     if (!max) max = t.monsters.length ? 0 : 1;
     for (let i = 0; i < t.queue.length && max > 0; ) {
       const x = t.queue[i];
@@ -351,7 +459,7 @@ export const TW = (() => {
   }
 
   // 🎯: front monster on the least practised path this run
-  function weakTarget(run: { turm: any }, ctx: any) {
+  function weakTarget(run: Run, ctx: Ctx) {
     const t = run.turm;
     for (const i of leastUsed(t, ctx)) {
       const x = front(t, i);
@@ -360,23 +468,7 @@ export const TW = (() => {
     return null;
   }
 
-  function nextWave(
-    run: {
-      mode?: string;
-      v?: number;
-      grade?: any;
-      hero?: { m: any; id: any; evo: number; hp: number; maxHp: number };
-      items?: string[];
-      shield?: boolean;
-      power?: boolean;
-      hint?: boolean;
-      right?: number;
-      answered?: number;
-      solved?: number;
-      turm: any;
-    },
-    ctx: any,
-  ) {
+  function nextWave(run: Run, ctx: Ctx) {
     const t = run.turm;
     if (t.phase !== 'build' || t.wave >= WAVES.length) return [];
     t.wave++;
@@ -388,7 +480,7 @@ export const TW = (() => {
     t.earned = {};
     t.stamps = 0;
     t.queue = buildWave(run, ctx);
-    const ev = [{ t: 'wave', wave: t.wave }];
+    const ev: Ev[] = [{ t: 'wave', wave: t.wave }];
     enter(t, WAVES[t.wave - 1].start, ev);
     t.weak = weakTarget(run, ctx);
     return ev;
@@ -396,8 +488,8 @@ export const TW = (() => {
 
   // ctx: { rnd() → [0,1), enemies(m, world) → { normal: [], elite, boss }, worlds(m), dmg(m, k), heroType,
   //        acc(lane) → 0…1 (optional, default 0.6), on(m, k) → enabled (optional) }
-  function newRun({ grade, lanes, hero }: any, ctx: any) {
-    const run = {
+  function newRun({ grade, lanes, hero }: { grade: number; lanes: Lane[]; hero: { m: string; id: string } }, ctx: Ctx) {
+    const run: Run = {
       mode: 'turm',
       v: 1,
       grade,
@@ -441,11 +533,7 @@ export const TW = (() => {
     return run;
   }
 
-  function heroDamage(
-    run: { turm: any; hero: { evo: number }; power: any },
-    x: { type: any; id: any; m: any; k: any },
-    ctx: { heroType: string | number; dmg: (arg0: any, arg1: any) => number },
-  ) {
+  function heroDamage(run: Run, x: Monster, ctx: Ctx) {
     const t = run.turm,
       strong = BEATS[ctx.heroType] === x.type,
       weak = t.weak === x.id;
@@ -457,30 +545,30 @@ export const TW = (() => {
       (1 + CATCHUP_HERO * (1 - catchUp(t)));
     return { dmg: Math.max(1, Math.round(d)), strong, weak };
   }
-  const guardDamage = (g: { lvl: number; type: string | number }, x: { type: any }) =>
+  const guardDamage = (g: Guard, x: Monster) =>
     Math.max(1, Math.round(GUARD_DMG[g.lvl - 1] * (BEATS[g.type] === x.type ? STRONG : 1)));
 
   // what the monster card shows; blockedBy = the elite that protects it
-  function card(run: { turm: any }, id: any, ctx: any) {
+  function card(run: Run, id: number, ctx: Ctx) {
     const t = run.turm,
-      x = t.monsters.find((y: { id: any }) => y.id === id);
+      x = t.monsters.find((y) => y.id === id);
     if (!x) return null;
     const p = protector(t, x);
     return { ...heroDamage(run, x, ctx), again: !!x.again, m: x.m, blockedBy: p && p.id };
   }
 
-  function ask(run: { turm: any }, id: any) {
+  function ask(run: Run, id: number) {
     const t = run.turm,
-      x = t.monsters.find((y: { id: any }) => y.id === id);
+      x = t.monsters.find((y) => y.id === id)!;
     if (t.phase !== 'choose' || !canTarget(run, id)) return null;
-    t.asking = { id, m: x.m, k: x.k, lane: x.final ? x.shields[0] : x.lane };
+    t.asking = { id, m: x.m, k: x.k, lane: x.final ? x.shields![0] : x.lane };
     if (x.again) t.asking.again = x.again;
     t.phase = 'task';
     return t.asking;
   }
 
-  function noteWrong(t, { m, k, lane, tier, task }: { m: any; k: any; lane: any; tier: any; task: any }) {
-    if (t.again.length >= AGAIN_MAX || t.again.some((e: { m: any; k: any }) => e.m === m && e.k === k)) return false;
+  function noteWrong(t: Turm, { m, k, lane, tier, task }: Again) {
+    if (t.again.length >= AGAIN_MAX || t.again.some((e) => e.m === m && e.k === k)) return false;
     const e: Again = { m, k, lane, tier };
     // number tasks come back with new numbers: their solution was just shown
     if (task && task.kind !== 'num' && JSON.stringify(task).length <= AGAIN_TASK_MAX) e.task = task;
@@ -489,13 +577,13 @@ export const TW = (() => {
   }
 
   // info: { task, tier } of the question just answered (for 🔁)
-  function answer(run: { turm: any; power: boolean }, ok: any, ctx: any, info: { task?: any; tier?: number } = {}) {
+  function answer(run: Run, ok: boolean, ctx: Ctx, info: { task?: Again['task']; tier?: number } = {}) {
     const t = run.turm,
       a = t.asking;
     if (t.phase !== 'task' || !a) return [];
-    const x = t.monsters.find((y: { id: any }) => y.id === a.id),
+    const x = t.monsters.find((y) => y.id === a.id),
       sub = t.lanes[a.lane].subject,
-      ev: any[] = [];
+      ev: Ev[] = [];
     t.used[keyOf(a)] = (t.used[keyOf(a)] || 0) + 1;
     const sc = t.score[sub] || (t.score[sub] = { c: 0, t: 0 });
     sc.t++;
@@ -516,13 +604,9 @@ export const TW = (() => {
         ev.push({ t: 'again', m: a.m, k: a.k });
     } else if (x) {
       let broke = false;
-      const hurt = (
-        y: { final: any; part: number; shields: number[]; hp: number; id: any },
-        d: number,
-        e: { t: string; strong: boolean; weak?: boolean; power?: any; from?: string },
-      ) => {
+      const hurt = (y: Monster, d: number, e: Ev) => {
         if (!y || !t.monsters.includes(y) || (y.final && broke)) return;
-        const cap = y.final ? y.part * (y.shields.length - 1) : 0,
+        const cap = y.final ? y.part! * (y.shields!.length - 1) : 0,
           n = Math.min(d, y.hp - cap);
         if (n < 1) return;
         y.hp -= n;
@@ -532,8 +616,8 @@ export const TW = (() => {
           ev.push({ t: 'beaten', id: y.id });
         } else if (y.final && y.hp <= cap) {
           broke = true;
-          const lane = y.shields.shift();
-          y.shields = leastUsed(t, ctx).filter((i) => y.shields.includes(i));
+          const lane = y.shields!.shift();
+          y.shields = leastUsed(t, ctx).filter((i) => y.shields!.includes(i));
           ev.push({ t: 'shield', id: y.id, lane, left: y.shields.length });
         }
       };
@@ -553,7 +637,7 @@ export const TW = (() => {
       if (t.floors.includes(sub)) floorFx(run, ctx, FLOORS[sub], x, a, h.dmg, hurt, volley, ev);
       earn(t, INCOME.right, 'right', ev);
       if (weak) earn(t, INCOME.weak, 'weak', ev);
-      if (t.monsters.includes(x)) Object.assign(x, nextSource(run, x.final ? x.shields[0] : x.lane, x, ctx));
+      if (t.monsters.includes(x)) Object.assign(x, nextSource(run, x.final ? x.shields![0] : x.lane, x, ctx));
     }
     t.asking = null;
     t.phase = 'step';
@@ -561,15 +645,15 @@ export const TW = (() => {
   }
 
   function floorFx(
-    run: { turm: any; hero: any },
-    ctx: any,
-    fx: string,
-    x: { lane: number; id: any; stun: number },
-    a: { lane: string | number },
+    run: Run,
+    ctx: Ctx,
+    fx: Fx,
+    x: Monster,
+    a: Asking,
     dmg: number,
-    hurt: { (y: any, d: any, e: any): void; (arg0: any, arg1: number, arg2: { t: string; from: any }): void },
-    volley: { (): void; (): void },
-    ev: any[],
+    hurt: (y: Monster, d: number, e: Ev) => void,
+    volley: () => void,
+    ev: Ev[],
   ) {
     const t = run.turm,
       L = t.lanes.length,
@@ -605,12 +689,7 @@ export const TW = (() => {
     } else if (fx === 'volley') volley();
   }
 
-  function towerHit(
-    run: { turm: any; hero: any; shield: boolean },
-    x: { boss: any; id: any; elite: any },
-    ev: any[],
-    turnLost: number,
-  ) {
+  function towerHit(run: Run, x: Monster, ev: Ev[], turnLost: number) {
     const t = run.turm,
       h = run.hero,
       gone = !x.boss;
@@ -636,8 +715,8 @@ export const TW = (() => {
   }
 
   // every monster walks its turn, front first; hit(x) for each one that reaches the gate (it must remove a non-boss)
-  function walk(t: { monsters: any[] }, ev: any[], hit: { (x: any): void; (x: any): void; (arg0: any): void }) {
-    for (const x of t.monsters.slice().sort((a: { cell: number }, b: { cell: number }) => a.cell - b.cell)) {
+  function walk(t: Turm, ev: Ev[], hit: (x: Monster) => void) {
+    for (const x of t.monsters.slice().sort((a, b) => a.cell - b.cell)) {
       if (x.boss) {
         const rest = x.slow;
         x.slow = 1 - x.slow;
@@ -664,23 +743,23 @@ export const TW = (() => {
     }
   }
   // ids of the monsters that reach the tower in the next step (the board warns about them)
-  function threats(run: { turm: any }) {
-    const t = clone(run.turm),
-      ids: any[] = [];
-    walk(t, [], (x: { id: any; boss: any }) => {
+  function threats(run: Run) {
+    const t: Turm = clone(run.turm),
+      ids: number[] = [];
+    walk(t, [], (x) => {
       ids.push(x.id);
       if (!x.boss) remove(t, x);
     });
     return ids;
   }
   // monsters walk, hit the tower, new ones enter; then the next turn, the wave's end or the fall
-  function step(run: { turm: any; hero: { hp: number } }, ctx: any) {
+  function step(run: Run, ctx: Ctx) {
     const t = run.turm,
-      ev: any[] = [];
+      ev: Ev[] = [];
     if (t.phase !== 'step' && t.phase !== 'choose') return ev;
     t.asking = null;
     let lost = 0;
-    walk(t, ev, (x: any) => {
+    walk(t, ev, (x) => {
       lost += towerHit(run, x, ev, lost);
     });
     if (run.hero.hp <= 0) {
@@ -698,12 +777,12 @@ export const TW = (() => {
     return ev;
   }
 
-  function toBuild(run: { turm: { phase: string; cp: any } }) {
+  function toBuild(run: Run) {
     run.turm.phase = 'build';
     run.turm.cp = snapshot(run);
   }
 
-  function waveDone(run: { turm: any; hero: { evo: number }; items: string[] }, ctx: any, ev: any[]) {
+  function waveDone(run: Run, ctx: Ctx, ev: Ev[]) {
     const t = run.turm,
       w = WAVES[t.wave - 1];
     t.weak = null;
@@ -743,7 +822,7 @@ export const TW = (() => {
     toBuild(run);
   }
 
-  function takeReward(run: { turm: any; items: any[] }, i: string | number) {
+  function takeReward(run: Run, i: number) {
     const t = run.turm;
     if (t.phase !== 'reward' || !t.offer || !t.offer[i]) return false;
     run.items.push(t.offer[i]);
@@ -754,52 +833,43 @@ export const TW = (() => {
 
   // card: { kind: 'guard', lane, spot, look, type } | { kind: 'up', lane, spot } | { kind: 'floor', subject } | { kind: 'fix' }
   // → cost in Ziegel, or -1 if the card can't be used now
-  function price(
-    run: { turm: any; hero: { hp: number; maxHp: number } },
-    c: { lane: string | number; spot: string | number; kind: string; subject: any },
-  ) {
+  function price(run: Run, c: Card) {
     const t = run.turm,
-      okSpot = c.lane >= 0 && c.lane < t.lanes.length && c.spot >= 0 && c.spot < SPOTS,
+      okSpot = c.lane! >= 0 && c.lane! < t.lanes.length && c.spot! >= 0 && c.spot! < SPOTS,
       g = okSpot && t.guards[c.lane + ':' + c.spot];
     if (t.phase !== 'build') return -1;
     if (c.kind === 'guard') return okSpot ? (t.free && t.wave === 1 ? 0 : COST.guard) : -1;
     if (c.kind === 'up') return g && g.lvl < GUARD_DMG.length ? COST.up[g.lvl - 1] : -1;
     if (c.kind === 'floor')
-      return t.lanes.some((l: { subject: any }) => l.subject === c.subject) && !t.floors.includes(c.subject)
-        ? COST.floor
-        : -1;
+      return t.lanes.some((l) => l.subject === c.subject) && !t.floors.includes(c.subject!) ? COST.floor : -1;
     if (c.kind === 'fix') return run.hero.hp < run.hero.maxHp ? COST.fix : -1;
     return -1;
   }
 
-  function buy(
-    run: { turm: any; hero: { hp: number; maxHp: number } },
-    c: { lane: string; spot: string; kind: string; look: any; type: any; subject: any },
-  ) {
+  function buy(run: Run, c: Card) {
     const t = run.turm,
       p = price(run, c);
     if (p < 0 || p > t.ziegel) return null;
     t.ziegel -= p;
     const k = c.lane + ':' + c.spot;
     if (c.kind === 'guard') {
-      t.guards[k] = { look: c.look, type: c.type, lvl: 1 };
+      t.guards[k] = { look: c.look!, type: c.type!, lvl: 1 };
       t.free = false;
     } else if (c.kind === 'up') t.guards[k].lvl++;
-    else if (c.kind === 'floor') t.floors.push(c.subject);
+    else if (c.kind === 'floor') t.floors.push(c.subject!);
     else run.hero.hp = Math.min(run.hero.maxHp, run.hero.hp + FIX_HP);
     return [{ t: 'built', card: { ...c }, cost: p, ziegel: t.ziegel }];
   }
 
-  function snapshot(run: { [x: string]: any; right: any; answered: any; solved: any; turm: any }) {
+  function snapshot(run: Run): Checkpoint {
     const { right, answered, solved, turm, ...rest } = run,
-      tt = { ...turm };
+      tt: Partial<Turm> = { ...turm };
     for (const k of KEEP) delete tt[k];
     return clone({ ...rest, turm: tt });
   }
-  const canRetry = (run: { turm: { phase: string; cp: any; cpUsed: number } }) =>
-    run.turm.phase === 'fallen' && !!run.turm.cp && run.turm.cpUsed < CP_USES;
+  const canRetry = (run: Run) => run.turm.phase === 'fallen' && !!run.turm.cp && run.turm.cpUsed < CP_USES;
   // „Ab Welle N weitermachen“: back to the last Bauzeit with a repaired tower; N = run.turm.cp.turm.wave + 1
-  function retry(run: { turm: { cpUsed: number; phase: string }; hero: { hp: any; maxHp: any } }) {
+  function retry(run: Run) {
     if (!canRetry(run)) return false;
     const old = run.turm,
       c = clone(old.cp);

@@ -1,6 +1,6 @@
 // Ethik Klasse 3 (Lehrplan Sachsen, Lernbereiche 1 und 4): „Ich, wir und die Welt“, Welt 1 „Ich im Wir“, Welt 2 „Wir in der Welt“.
 // Registers its unit in MK.MODES; src/units.ts picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
-import { MK as K } from './knowledge.ts';
+import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 export const ME = (() => {
   const { weightedPick } = K;
 
@@ -1828,7 +1828,7 @@ export const ME = (() => {
     },
   ];
 
-  const gen = (mod: string, tier: any, know: any, seqNow: any, opts: { g: string }) => {
+  const gen = (mod: string, tier: number, know: Know, seqNow: number, opts: GenOpts) => {
     if (mod !== 'welten') return null;
     let cands = POOL.filter((p) => p.mod === 'welten');
     if (opts && opts.g) {
@@ -1844,7 +1844,7 @@ export const ME = (() => {
       note: e.g,
       q: e.q,
       options: WELTEN.slice(),
-      answer: WELTEN[e.a],
+      answer: WELTEN[e.a as number],
       why: e.why || '',
       qid: e.id,
       cols: 1,

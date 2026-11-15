@@ -1,4 +1,87 @@
-import type { Unit } from './curriculum.ts';
+import type { TaskType, Unit } from './curriculum.ts';
+
+type Cell = number[]; // a square on the grid: [row, column]
+type Plan = number[][]; // a building seen from above: how many cubes stand on each field
+type View = string[]; // rows from top to bottom, '#' = square
+type Rect = number[]; // [x, y, width, height]
+type Tile = [shape: string, turn: number, colour: number];
+export interface Tutorial {
+  title: string;
+  steps: string[];
+}
+// What a generator hands to the task screen. Each task type sets only the fields it needs.
+export interface Task {
+  kind?: string; // missing: the numbers in `answers` are typed in
+  mod?: string;
+  tier?: number;
+  group?: string; // key of the tutorial that explains it
+  note?: string; // key of the knowledge page that belongs to it
+  qid?: string; // id under which the answer is remembered
+  text?: string;
+  q?: string;
+  ask?: string;
+  fig?: string; // question and drawing as ready HTML
+  answers?: number[];
+  labels?: string[] | null;
+  show?: string; // the answer written out
+  maxLen?: number;
+  options?: string[];
+  answer?: string;
+  why?: string;
+  tip?: string;
+  more?: string;
+  cols?: number;
+  inline?: boolean; // the options are the parts of a sentence and keep their order
+  english?: string[]; // what the English voice reads
+  items?: { id: string; text: string }[];
+  order?: string[];
+  display?: { id: string; text: string }[];
+  svg?: string;
+  pic?: string;
+  svgOpts?: boolean; // the options are pictures
+  tall?: boolean;
+  long?: boolean;
+  sig?: string; // two tasks with the same sig are the same task
+  reverse?: boolean;
+  riddle?: boolean;
+  digits?: number;
+  word?: boolean;
+  money?: boolean;
+  rest?: boolean;
+  nb?: string;
+  n?: number;
+  seq?: number[] | Tile[];
+  grid?: { size: number; sr: number; sc: number; tr: number; tc: number; base: number; stepR: number; stepD: number };
+  col?: { op: string; rows: number[]; carry: number[]; w: number };
+  part?: string;
+  // what the picture shows (the tests check the picture against it)
+  plan?: Plan;
+  full?: number;
+  side?: string;
+  views?: View[];
+  nets?: Cell[][];
+  rects?: Rect[][];
+  solid?: string;
+  shown?: string[] | number;
+  next?: Tile[];
+  angles?: number[];
+  cells?: Cell[];
+  area?: Cell[];
+  figs?: Cell[][];
+  shape?: Cell[] | string;
+  k?: number;
+  flat?: boolean;
+  left?: Cell[];
+  halves?: Cell[][];
+  from?: Cell[];
+  to?: Cell[];
+  pts?: number[][];
+  yes?: string[];
+  beats?: number[];
+  unit?: number;
+  bar?: { top: number; items: number[]; gap: number };
+  step?: number;
+}
 export const MQ = (() => {
   const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = <T>(arr: readonly T[]): T => arr[Math.floor(Math.random() * arr.length)];
@@ -12,7 +95,7 @@ export const MQ = (() => {
   };
 
   /* ---------- Modules ---------- */
-  const MODULES = {
+  const MODULES: Record<string, TaskType> = {
     add: { name: 'Addition', icon: '➕', maxTier: 5, worldCap: [2, 4, 5], dmg: 10 },
     sub: { name: 'Subtraktion', icon: '➖', maxTier: 5, worldCap: [2, 4, 5], dmg: 12 },
     mul: { name: 'Einmaleins', icon: '✖️', maxTier: 3, worldCap: [2, 3, 3], dmg: 12 },
@@ -146,96 +229,96 @@ export const MQ = (() => {
     text: string;
     test: (x: Digits) => boolean;
   }
-  const CLUE_TYPES_2 = [
-    (d: { z: number; e: number }) =>
+  const CLUE_TYPES_2: ((d: Digits) => Clue | null)[] = [
+    (d) =>
       d.z > 0 && d.e % d.z === 0 && d.e / d.z >= 2
         ? {
             text: `Mein Einer ist ${d.e / d.z}-mal so groß wie mein Zehner.`,
-            test: (x: { z: number; e: number }) => x.z > 0 && x.e === (d.e / d.z) * x.z,
+            test: (x) => x.z > 0 && x.e === (d.e / d.z) * x.z,
           }
         : null,
-    (d: { e: number; z: number }) =>
+    (d) =>
       d.e > d.z
         ? {
             text: `Mein Einer ist um ${d.e - d.z} größer als mein Zehner.`,
-            test: (x: { e: number; z: number }) => x.e - x.z === d.e - d.z,
+            test: (x) => x.e - x.z === d.e - d.z,
           }
         : null,
-    (d: { e: number; z: number }) =>
+    (d) =>
       d.e < d.z
         ? {
             text: `Mein Einer ist um ${d.z - d.e} kleiner als mein Zehner.`,
-            test: (x: { z: number; e: number }) => x.z - x.e === d.z - d.e,
+            test: (x) => x.z - x.e === d.z - d.e,
           }
         : null,
-    (d: { z: any }) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x: { z: any }) => x.z === d.z }),
-    (d: { e: any }) => ({ text: `Mein Einer ist ${d.e}.`, test: (x: { e: any }) => x.e === d.e }),
-    (d: { e: any; z: any }) =>
+    (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
+    (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
+    (d) =>
       d.e === d.z
-        ? { text: `Mein Einer und mein Zehner sind gleich.`, test: (x: { e: any; z: any }) => x.e === x.z }
+        ? { text: `Mein Einer und mein Zehner sind gleich.`, test: (x) => x.e === x.z }
         : null,
-    (d: { e: number }) => ({
+    (d) => ({
       text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`,
-      test: (x: { e: number }) => x.e % 2 === d.e % 2,
+      test: (x) => x.e % 2 === d.e % 2,
     }),
   ];
-  const CLUE_TYPES_3 = [
-    (d: { z: number; e: number }) =>
+  const CLUE_TYPES_3: ((d: Digits) => Clue | null)[] = [
+    (d) =>
       d.z > 0 && d.e % d.z === 0 && d.e / d.z >= 2
         ? {
             text: `Mein Einer ist ${d.e / d.z}-mal so groß wie mein Zehner.`,
-            test: (x: { z: number; e: number }) => x.z > 0 && x.e === (d.e / d.z) * x.z,
+            test: (x) => x.z > 0 && x.e === (d.e / d.z) * x.z,
           }
         : null,
-    (d: { e: number; z: number }) =>
+    (d) =>
       d.e > d.z
         ? {
             text: `Mein Einer ist um ${d.e - d.z} größer als mein Zehner.`,
-            test: (x: { e: number; z: number }) => x.e - x.z === d.e - d.z,
+            test: (x) => x.e - x.z === d.e - d.z,
           }
         : null,
-    (d: { e: number; z: number }) =>
+    (d) =>
       d.e < d.z
         ? {
             text: `Mein Einer ist um ${d.z - d.e} kleiner als mein Zehner.`,
-            test: (x: { z: number; e: number }) => x.z - x.e === d.z - d.e,
+            test: (x) => x.z - x.e === d.z - d.e,
           }
         : null,
-    (d: { h: number; z: number }) =>
+    (d) =>
       d.h < d.z
         ? {
             text: `Mein Hunderter ist um ${d.z - d.h} kleiner als mein Zehner.`,
-            test: (x: { z: number; h: number }) => x.z - x.h === d.z - d.h,
+            test: (x) => x.z - x.h === d.z - d.h,
           }
         : null,
-    (d: { h: number; z: number }) =>
+    (d) =>
       d.h > d.z
         ? {
             text: `Mein Hunderter ist um ${d.h - d.z} größer als mein Zehner.`,
-            test: (x: { h: number; z: number }) => x.h - x.z === d.h - d.z,
+            test: (x) => x.h - x.z === d.h - d.z,
           }
         : null,
-    (d: { h: number; z: number }) =>
+    (d) =>
       d.h > 0 && d.z % d.h === 0 && d.z / d.h >= 2
         ? {
             text: `Mein Zehner ist ${d.z / d.h}-mal so groß wie mein Hunderter.`,
-            test: (x: { h: number; z: number }) => x.h > 0 && x.z === (d.z / d.h) * x.h,
+            test: (x) => x.h > 0 && x.z === (d.z / d.h) * x.h,
           }
         : null,
-    (d: { h: any }) => ({ text: `Mein Hunderter ist ${d.h}.`, test: (x: { h: any }) => x.h === d.h }),
-    (d: { z: any }) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x: { z: any }) => x.z === d.z }),
-    (d: { e: any }) => ({ text: `Mein Einer ist ${d.e}.`, test: (x: { e: any }) => x.e === d.e }),
-    (d: { e: number }) => ({
+    (d) => ({ text: `Mein Hunderter ist ${d.h}.`, test: (x) => x.h === d.h }),
+    (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
+    (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
+    (d) => ({
       text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`,
-      test: (x: { e: number }) => x.e % 2 === d.e % 2,
+      test: (x) => x.e % 2 === d.e % 2,
     }),
   ];
-  const isRel = (c) => c.text.includes('-mal') || c.text.includes('größer') || c.text.includes('kleiner');
-  function countMatches(clues: any[], lo: number, hi: number) {
+  const isRel = (c: Clue) => c.text.includes('-mal') || c.text.includes('größer') || c.text.includes('kleiner');
+  function countMatches(clues: Clue[], lo: number, hi: number) {
     let n = 0;
     for (let x = lo; x <= hi; x++) {
       const dx = digits(x);
-      if (clues.every((c: { test: (arg0: { h: number; z: number; e: number }) => any }) => c.test(dx))) {
+      if (clues.every((c) => c.test(dx))) {
         n++;
         if (n > 1) break;
       }
@@ -258,7 +341,7 @@ export const MQ = (() => {
       let rel = clues.filter(isRel);
       if (t === 1) rel = rel.slice(0, 1);
       const ordered = rel.concat(clues.filter((c) => !isRel(c)));
-      let chosen: any[] = [];
+      let chosen: Clue[] = [];
       for (const c of ordered) {
         chosen.push(c);
         if (countMatches(chosen, lo, hi) === 1) break;
@@ -296,7 +379,7 @@ export const MQ = (() => {
   function genSeq(t: number) {
     let start,
       step,
-      step2 = null;
+      step2: number | null = null;
     if (t === 1) {
       step = rnd(2, 10);
       start = rnd(1, 99 - step * 6);
@@ -341,7 +424,7 @@ export const MQ = (() => {
     const lo = Math.floor(n / 10) * 10;
     return task(`${n}`, [lo, lo + 10], { nb: 'Zehner', n });
   }
-  function genGrid(t: number, elite: any) {
+  function genGrid(t: number, elite?: boolean) {
     const size = 3;
     // like the Hundertertafel: one step right = +1, one step down = +10 (tier 3: ×10, so +10 and +100)
     const stepR = t >= 3 ? 10 : 1,
@@ -387,7 +470,7 @@ export const MQ = (() => {
     return task(`${a * b} : ${a} = ?`, [b]);
   }
   // zero: the division goes up (remainder 0) – the Bergwerk needs those for ore
-  function genRest(t: number, zero: any) {
+  function genRest(t: number, zero?: boolean) {
     // the quotient stays within the Einmaleins (at most 10)
     const hi = t === 1 ? 50 : 99;
     let n, d;
@@ -422,16 +505,16 @@ export const MQ = (() => {
   }
   // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
   // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
-  function columns(op: string, rows: any[]) {
+  function columns(op: string, rows: number[]) {
     const res =
-      op === '+' ? rows.reduce((a: any, b: any) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
-    const w = Math.max(...rows.concat(res).map((n: any) => String(n).length));
+      op === '+' ? rows.reduce((a, b) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
+    const w = Math.max(...rows.concat(res).map((n) => String(n).length));
     const dig = (n: number, i: number) => Math.floor(n / 10 ** (w - 1 - i)) % 10;
-    const carry = Array(w).fill(0);
+    const carry: number[] = Array(w).fill(0);
     for (let i = w - 1; i > 0; i--)
       carry[i - 1] =
         op === '+'
-          ? Math.floor((rows.reduce((s: number, n: any) => s + dig(n, i), 0) + carry[i]) / 10)
+          ? Math.floor((rows.reduce((s, n) => s + dig(n, i), 0) + carry[i]) / 10)
           : op === '·'
             ? Math.floor((dig(rows[0], i) * rows[1] + carry[i]) / 10)
             : dig(rows[0], i) < dig(rows[1], i) + carry[i]
@@ -439,9 +522,7 @@ export const MQ = (() => {
               : 0;
     return task(`${rows.join(` ${op} `)} = ?`, [res], { col: { op, rows, carry, w } });
   }
-  const carries = (t: {
-    col: { carry: { filter: (arg0: BooleanConstructor) => { (): any; new (): any; length: any } } };
-  }) => t.col.carry.filter(Boolean).length;
+  const carries = (t: Task) => t.col!.carry.filter(Boolean).length;
   function genSadd(t: number) {
     let tk;
     do
@@ -452,7 +533,7 @@ export const MQ = (() => {
     while (tk.answers[0] > 999 || !carries(tk));
     return tk;
   }
-  function genSsub(t: any) {
+  function genSsub(t: number) {
     let tk;
     // tier 1: one Übertrag, tier 2: two (often with a zero in the minuend)
     do {
@@ -467,12 +548,12 @@ export const MQ = (() => {
     do {
       const b = t === 1 ? rnd(2, 4) : rnd(2, 9);
       tk = columns('·', [rnd(100, Math.floor(999 / b)), b]);
-    } while ((t === 1 ? carries(tk) : !carries(tk)) || tk.col.rows[0] % 100 === 0);
+    } while ((t === 1 ? carries(tk) : !carries(tk)) || tk.col!.rows[0] % 100 === 0);
     return tk;
   }
-  const choice = (q: string, options: string[], answer: string, extra: { why: any; cols?: number; tip?: any }) =>
+  const choice = (q: string, options: string[], answer: string, extra: { why: string; cols?: number; tip?: string }) =>
     Object.assign({ kind: 'choice', text: q, q, options, answer }, extra);
-  const DIV_TIP = {
+  const DIV_TIP: Record<number, string> = {
     2: 'Durch 2 teilbar: Die letzte Ziffer ist 0, 2, 4, 6 oder 8.',
     3: 'Durch 3 teilbar: Die Quersumme ist durch 3 teilbar.',
     5: 'Durch 5 teilbar: Die letzte Ziffer ist 0 oder 5.',
@@ -480,7 +561,7 @@ export const MQ = (() => {
     10: 'Durch 10 teilbar: Die letzte Ziffer ist 0.',
     100: 'Durch 100 teilbar: Die letzten beiden Ziffern sind 00.',
   };
-  const qsum = (n: any) =>
+  const qsum = (n: number) =>
     String(n)
       .split('')
       .reduce((s, c) => s + +c, 0);
@@ -501,7 +582,7 @@ export const MQ = (() => {
     };
     if (t === 2) {
       const right = hit();
-      const wrong: any[] = [];
+      const wrong: number[] = [];
       while (wrong.length < 2) {
         const n = miss();
         if (!wrong.includes(n)) wrong.push(n);
@@ -520,7 +601,7 @@ export const MQ = (() => {
     });
   }
   // Zahlenmauer: every stone is the sum of the two below. Rechendreieck: each outer field is the sum of its two inner neighbours.
-  const stone = (x: number, y: number, w: number, v: any, miss: boolean) =>
+  const stone = (x: number, y: number, w: number, v: number | string, miss: boolean) =>
     `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${miss ? '#FFE27A' : '#F3D9B1'}" stroke="#1C2541" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="#1C2541">${v}</text></g>`;
   function genMauer(t: number) {
     if (t === 3) {
@@ -564,14 +645,14 @@ export const MQ = (() => {
       ask: 'Jeder Stein ist die Summe der beiden Steine darunter. Welche Zahl fehlt?',
     });
   }
-  const FRAC = {
+  const FRAC: Record<string, [number, number, string]> = {
     '½': [1, 2, 'die Hälfte'],
     '¼': [1, 4, 'ein Viertel'],
     '¾': [3, 4, 'drei Viertel'],
     '⅓': [1, 3, 'ein Drittel'],
   };
   // ½ m = 50 cm, ¼ h = 15 min …: only pairs with a whole result
-  const SIZES = [
+  const SIZES: [string, string, number, string][] = [
     ['m', 'cm', 100, 'einem Meter'],
     ['h', 'min', 60, 'einer Stunde'],
     ['kg', 'g', 1000, 'einem Kilogramm'],
@@ -629,7 +710,7 @@ export const MQ = (() => {
   ];
   const TENS = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
   // „ein“ before „und“, „hundert“ and „tausend“, „eins“ at the end (101 = einhunderteins)
-  function numWord(n: number) {
+  function numWord(n: number): string {
     if (n === 1000) return 'eintausend';
     if (n >= 100) {
       const h = Math.floor(n / 100),
@@ -647,7 +728,7 @@ export const MQ = (() => {
     ['E', 1],
   ];
   const digits3 = (n: number) => [Math.floor(n / 100), Math.floor(n / 10) % 10, n % 10];
-  const pvText = (d: number[], order: any[]) => order.map((i: string | number) => `${d[i]} ${PV[i][0]}`).join(' ');
+  const pvText = (d: number[], order: number[]) => order.map((i) => `${d[i]} ${PV[i][0]}`).join(' ');
   function genZahlwort(t: number) {
     if (t < 3) {
       const n = t === 1 ? rnd(13, 99) : rnd(101, 999);
@@ -793,65 +874,40 @@ export const MQ = (() => {
       money: true,
     });
   }
-  function task(
-    text: string,
-    answers: any[],
-    extra?:
-      | {
-          reverse?: boolean;
-          riddle?: boolean;
-          digits?: number;
-          seq?: any[];
-          nb?: string;
-          n?: any;
-          grid?: { size: number; sr: any; sc: any; tr: any; tc: any; base: any; stepR: number; stepD: number };
-          rest?: boolean;
-          labels?: string[];
-          ask?: string;
-          col?: { op: any; rows: any; carry: any[]; w: number };
-          svg?: string;
-          long?: boolean;
-          word?: boolean;
-          money?: boolean;
-          plan?: any[][];
-          sig?: string;
-          full?: number;
-          cells?: any;
-          area?: any;
-        }
-      | undefined,
-  ) {
+  function task(text: string, answers: number[], extra?: Task) {
     return Object.assign({ text, answers }, extra || {});
   }
 
-  function generate(mod: string | number, tier: number, opts: { elite: any; zero: any }) {
+  function generate(mod: string, tier: number, opts?: { elite?: boolean; zero?: boolean }) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
-    const g = {
-      add: genAdd,
-      sub: genSub,
-      mul: genMul,
-      riddle: genRiddle,
-      seq: genSeq,
-      nb: genNb,
-      grid: (t: any) => genGrid(t, opts && opts.elite),
-      div: genDiv,
-      rest: (t: any) => genRest(t, opts && opts.zero),
-      rund: genRund,
-      dopp: genDopp,
-      sadd: genSadd,
-      ssub: genSsub,
-      smul: genSmul,
-      teilbar: genTeilbar,
-      mauer: genMauer,
-      bruch: genBruch,
-      vorrang: genVorrang,
-      zahlwort: genZahlwort,
-      kopf: genKopf,
-      zmul: genZmul,
-      vergl: genVergl,
-      ueber: genUeber,
-      geld: genGeld,
-    }[mod];
+    const g = (
+      {
+        add: genAdd,
+        sub: genSub,
+        mul: genMul,
+        riddle: genRiddle,
+        seq: genSeq,
+        nb: genNb,
+        grid: (t: number) => genGrid(t, opts && opts.elite),
+        div: genDiv,
+        rest: (t: number) => genRest(t, opts && opts.zero),
+        rund: genRund,
+        dopp: genDopp,
+        sadd: genSadd,
+        ssub: genSsub,
+        smul: genSmul,
+        teilbar: genTeilbar,
+        mauer: genMauer,
+        bruch: genBruch,
+        vorrang: genVorrang,
+        zahlwort: genZahlwort,
+        kopf: genKopf,
+        zmul: genZmul,
+        vergl: genVergl,
+        ueber: genUeber,
+        geld: genGeld,
+      } as Record<string, (t: number) => Task>
+    )[mod];
     const tk = g(tier);
     tk.mod = mod;
     tk.tier = tier;
@@ -859,7 +915,7 @@ export const MQ = (() => {
   }
 
   /* ---------- Tutorials ---------- */
-  const TUT = {
+  const TUT: Record<string, Record<number, Tutorial>> = {
     add: {
       1: {
         title: 'Plus rechnen',
@@ -1800,12 +1856,12 @@ export const MQ = (() => {
     return y + '-W' + String(w).padStart(2, '0');
   }
   // school year on the stamp card: ISO week 36 to week 30 of the next year; in the summer gap the year that just ended
-  function schoolWeeks(date: any) {
+  function schoolWeeks(date: Date) {
     const [y, w] = isoWeek(date).split('-W').map(Number);
     const start = w >= 36 ? y : y - 1;
     const jan4 = new Date(start, 0, 4);
     const d = new Date(start, 0, 4 - ((jan4.getDay() || 7) - 1) + 35 * 7);
-    const out: any[] = [];
+    const out: string[] = [];
     const end = start + 1 + '-W30';
     for (let k = isoWeek(d); ; d.setDate(d.getDate() + 7), k = isoWeek(d)) {
       out.push(k);
@@ -1814,7 +1870,7 @@ export const MQ = (() => {
   }
 
   // mulberry32 over an FNV hash of the key: the same week key gives the same weekly goals on every device
-  function seeded(key: any) {
+  function seeded(key: string) {
     let a = 2166136261;
     for (const c of String(key)) a = Math.imul(a ^ c.charCodeAt(0), 16777619);
     return () => {
@@ -1861,7 +1917,7 @@ export const MQ = (() => {
     const lanes = used.map((s) => [...s].sort((a, b) => a - b));
     const type = lanes.map((): Record<number, string> => ({}));
     const parents = (f: number, c: number) => (f === 0 ? [] : lanes[f - 1].filter((p) => edges[f - 1][p].has(c)));
-    const children = (f: number, c: string | number) => (f >= F - 2 ? [] : [...edges[f][c]]);
+    const children = (f: number, c: number) => (f >= F - 2 ? [] : [...edges[f][c]]);
     for (const c of lanes[0]) type[0][c] = 'fight';
     for (const c of lanes[F - 2]) type[F - 2][c] = 'rest';
     const WEIGHT = { fight: 46, event: 16, elite: 16, rest: 8 };
@@ -1870,7 +1926,7 @@ export const MQ = (() => {
         const ps = parents(f, c).map((p) => type[f - 1][p]);
         const sib = new Set();
         for (const p of parents(f, c)) for (const s of edges[f - 1][p]) if (s !== c && type[f][s]) sib.add(type[f][s]);
-        const bag: any[] = [];
+        const bag: string[] = [];
         for (const [k, w] of Object.entries(WEIGHT)) {
           if (k === 'elite' && f < 2) continue;
           if (k === 'rest' && (f < 3 || f > F - 4)) continue;
@@ -1881,7 +1937,7 @@ export const MQ = (() => {
         type[f][c] = pick(bag);
       }
     // two treasures on floors 4–6 (of 8), behind an elite where possible
-    const cand: any[] = [];
+    const cand: { f: number; c: number; lure: number; r: number }[] = [];
     for (let f = Math.max(2, F - 5); f <= F - 3; f++)
       for (const c of lanes[f])
         if (type[f][c] === 'fight' || type[f][c] === 'event')
@@ -1911,7 +1967,7 @@ export const MQ = (() => {
 
   /* ---------- Die Baustelle (Raum und Form) ----------
      Task pictures are built here as SVG strings, so the tests can check them without a browser. */
-  const BAU_MODULES = {
+  const BAU_MODULES: Record<string, TaskType> = {
     wz: { name: 'Würfel zählen', icon: '🧊', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     fq: { name: 'Quader ergänzen', icon: '📦', maxTier: 2, worldCap: [1, 2], dmg: 14 },
     netz: { name: 'Würfel- und Quadernetze', icon: '🎲', maxTier: 2, worldCap: [1, 2], dmg: 16 },
@@ -1929,10 +1985,10 @@ export const MQ = (() => {
     LINE = `stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"`;
   const svgFig = (x: number, y: number, w: number, h: number, body: string, label: string) =>
     `<svg viewBox="${x} ${y} ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
-  const sum = (a: any[]) => a.reduce((s: any, x: any) => s + x, 0);
+  const sum = (a: number[]) => a.reduce((s, x) => s + x, 0);
 
   // isometric view from the front right: x = column (to the right), y = row (to the front), z = up
-  const iso = (x: number, y: number | undefined, z: number | undefined) => `${(x - y) * 12},${(x + y) * 7 - z * 14}`;
+  const iso = (x: number, y: number, z: number) => `${(x - y) * 12},${(x + y) * 7 - z * 14}`;
   function boxFaces(
     x: number,
     y: number,
@@ -1940,8 +1996,8 @@ export const MQ = (() => {
     dx: number,
     dy: number,
     dz: number,
-    fills: any[] | null,
-    attrs?: string | undefined,
+    fills: string[] | null,
+    attrs?: string,
   ) {
     const X = x + dx,
       Y = y + dy,
@@ -1976,13 +2032,13 @@ export const MQ = (() => {
   }
   const BRICK = ['#F6A36B', '#D9653B', '#B54E2A'];
   // full: height of the complete Quader, drawn as a dashed outline
-  function isoView(plan: any[], full: number) {
+  function isoView(plan: Plan, full?: number) {
     const rows = plan.length,
       cols = plan[0].length,
       top = full || Math.max(...plan.flat());
-    const cubes: any[] = [];
-    plan.forEach((row: any[], r: any) =>
-      row.forEach((n: number, c: any) => {
+    const cubes: number[][] = [];
+    plan.forEach((row, r) =>
+      row.forEach((n, c) => {
         for (let z = 0; z < n; z++) cubes.push([c, r, z]);
       }),
     );
@@ -2002,15 +2058,15 @@ export const MQ = (() => {
       'Gebäude aus Würfeln',
     );
   }
-  function planView(plan: any[]) {
+  function planView(plan: Plan) {
     const S = 24,
       rows = plan.length,
       cols = plan[0].length;
     const cells = plan
-      .map((row: any[], r: number) =>
+      .map((row, r) =>
         row
           .map(
-            (n: any, c: number) =>
+            (n, c) =>
               `<rect x="${c * S}" y="${r * S}" width="${S}" height="${S}" fill="${n ? '#FFF3C4' : '#fff'}" ${LINE}/><text x="${c * S + S / 2}" y="${r * S + 17}" text-anchor="middle" font-size="15" font-weight="700" fill="${INK}">${n}</text>`,
           )
           .join(''),
@@ -2025,7 +2081,7 @@ export const MQ = (() => {
       'Bauplan von oben',
     );
   }
-  const figPair = (plan: any[][], full?: number | undefined) =>
+  const figPair = (plan: Plan, full?: number) =>
     `<figure>${planView(plan)}<figcaption>Bauplan</figcaption></figure><figure>${isoView(plan, full)}<figcaption>Ansicht</figcaption></figure>`;
 
   function genWz(t: number) {
@@ -2076,30 +2132,29 @@ export const MQ = (() => {
   }
 
   // a view is a list of rows from top to bottom, '#' = square. Seen from the right, the front row is on the left.
-  const colView = (hs: any[]) => {
+  const colView = (hs: number[]) => {
     const H = Math.max(...hs);
-    return Array.from({ length: H }, (_, i) => hs.map((h: number) => (h >= H - i ? '#' : '.')).join(''));
+    return Array.from({ length: H }, (_, i) => hs.map((h) => (h >= H - i ? '#' : '.')).join(''));
   };
-  const sideHs = {
-    vorn: (plan: any[]) =>
-      plan[0].map((_: any, c: string | number) => Math.max(...plan.map((row: { [x: string]: any }) => row[c]))),
-    rechts: (plan: any[]) => plan.map((row: any) => Math.max(...row)).reverse(),
+  const sideHs: Record<string, (plan: Plan) => number[]> = {
+    vorn: (plan) => plan[0].map((_, c) => Math.max(...plan.map((row) => row[c]))),
+    rechts: (plan) => plan.map((row) => Math.max(...row)).reverse(),
   };
-  const VIEWS = {
-    vorn: (plan: any) => colView(sideHs.vorn(plan)),
-    rechts: (plan: any) => colView(sideHs.rechts(plan)),
-    oben: (plan: any[]) => plan.map((row: any[]) => row.map((n: any) => (n ? '#' : '.')).join('')),
+  const VIEWS: Record<string, (plan: Plan) => View> = {
+    vorn: (plan) => colView(sideHs.vorn(plan)),
+    rechts: (plan) => colView(sideHs.rechts(plan)),
+    oben: (plan) => plan.map((row) => row.map((n) => (n ? '#' : '.')).join('')),
   };
-  const trimView = (rows: any[]) => {
+  const trimView = (rows: View) => {
     const cols = rows[0].length,
-      used = (c: number) => rows.some((r: { [x: string]: string }) => r[c] === '#');
+      used = (c: number) => rows.some((r) => r[c] === '#');
     let c0 = 0,
       c1 = cols - 1;
     while (!used(c0)) c0++;
     while (!used(c1)) c1--;
-    return rows.filter((r: string | string[]) => r.includes('#')).map((r: string | any[]) => r.slice(c0, c1 + 1));
+    return rows.filter((r) => r.includes('#')).map((r) => r.slice(c0, c1 + 1));
   };
-  function viewSVG(rows: any[], W: number, H: number) {
+  function viewSVG(rows: View, W: number, H: number) {
     const S = 14,
       ox = ((W - rows[0].length) * S) / 2,
       oy = (H - rows.length) * S;
@@ -2109,7 +2164,7 @@ export const MQ = (() => {
       W * S + 4,
       H * S + 4,
       rows
-        .flatMap((row: any, r: number) =>
+        .flatMap((row, r) =>
           [...row].map((ch, c) =>
             ch === '#'
               ? `<rect x="${ox + c * S}" y="${oy + r * S}" width="${S}" height="${S}" fill="${BRICK[0]}" ${LINE}/>`
@@ -2122,7 +2177,7 @@ export const MQ = (() => {
   }
   function genAnsicht(t: number) {
     const side = t === 1 ? pick(['vorn', 'oben']) : pick(['vorn', 'oben', 'rechts']);
-    let plan: any[][];
+    let plan: Plan;
     do {
       const [rows, cols] =
         t === 1
@@ -2139,10 +2194,10 @@ export const MQ = (() => {
     } while (
       plan.flat().filter((n) => !n).length > t ||
       plan.some((row) => row.every((n) => !n)) ||
-      plan[0].some((_, c) => plan.every((row: any[]) => !row[c]))
+      plan[0].some((_, c) => plan.every((row) => !row[c]))
     );
     const right = trimView(VIEWS[side](plan)),
-      mirror = (v: any[]) => v.map((r: any) => [...r].reverse().join(''));
+      mirror = (v: View) => v.map((r) => [...r].reverse().join(''));
     const others = shuffle(
       Object.keys(VIEWS)
         .filter((k) => k !== side)
@@ -2159,10 +2214,10 @@ export const MQ = (() => {
               ),
             )
             .filter((v) => v.join('').includes('#'))
-        : sideHs[side](plan).flatMap((h: number, i: any, hs: any[]) =>
+        : sideHs[side](plan).flatMap((h, i, hs) =>
             [h - 1, h + 1]
               .filter((x) => x >= 1 && x <= 4)
-              .map((x) => colView(hs.map((y: any, j: any) => (j === i ? x : y)))),
+              .map((x) => colView(hs.map((y, j) => (j === i ? x : y)))),
           ),
     );
     const views = [right],
@@ -2175,14 +2230,14 @@ export const MQ = (() => {
     const W = Math.max(...views.map((v) => v[0].length)),
       H = Math.max(...views.map((v) => v.length)),
       order = shuffle([0, 1, 2]);
-    const options = order.map((i: string | number) => viewSVG(views[i], W, H));
+    const options = order.map((i) => viewSVG(views[i], W, H));
     return {
       kind: 'choice',
       q: `Welches Bild zeigt das Gebäude von ${side}?`,
       pic: figPair(plan),
       options,
       answer: options[order.indexOf(0)],
-      views: order.map((i: string | number) => views[i]),
+      views: order.map((i) => views[i]),
       plan,
       side,
       svgOpts: true,
@@ -2206,13 +2261,13 @@ export const MQ = (() => {
     '###..|..###',
   ];
   const parseNet = (s: string) =>
-    s.split('|').flatMap((row: any, r: any) => [...row].map((ch, c) => (ch === '#' ? [r, c] : null)).filter(Boolean));
-  const normCells = (cells: any[]) => {
-    const r0 = Math.min(...cells.map((p: any[]) => p[0])),
-      c0 = Math.min(...cells.map((p: any[]) => p[1]));
-    return cells.map(([r, c]) => [r - r0, c - c0]).sort((a: number[], b: number[]) => a[0] - b[0] || a[1] - b[1]);
+    s.split('|').flatMap((row, r) => [...row].map((ch, c) => (ch === '#' ? [r, c] : null)).filter(Boolean) as Cell[]);
+  const normCells = (cells: Cell[]) => {
+    const r0 = Math.min(...cells.map((p) => p[0])),
+      c0 = Math.min(...cells.map((p) => p[1]));
+    return cells.map(([r, c]) => [r - r0, c - c0]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   };
-  const SYM = [
+  const SYM: ((p: Cell) => Cell)[] = [
     ([r, c]) => [r, c],
     ([r, c]) => [c, -r],
     ([r, c]) => [-r, -c],
@@ -2223,7 +2278,7 @@ export const MQ = (() => {
     ([r, c]) => [c, r],
   ];
   // same shape after turning or flipping → same key
-  const shapeKey = (cells: [any, any][]) => SYM.map((f) => JSON.stringify(normCells(cells.map(f)))).sort()[0];
+  const shapeKey = (cells: Cell[]) => SYM.map((f) => JSON.stringify(normCells(cells.map(f)))).sort()[0];
   // Fold the squares around the first one like rolling a die: n is where the square ends up on the cube,
   // u and v are the grid's right and down directions on it. A net uses each of the 6 sides exactly once.
   // fn(cell, frame, parent cell) is called in the order the squares are reached
@@ -2232,18 +2287,10 @@ export const MQ = (() => {
     u: number[];
     v: number[];
   }
-  function fold(
-    cells: number[][],
-    fn?:
-      | {
-          (p: any, f: any, from: any): void;
-          (arg0: any[], arg1: { n: number[]; u: number[]; v: number[] } | undefined, arg2: any[] | null): void;
-        }
-      | undefined,
-  ) {
-    const key = ([r, c]: number[]) => r + ',' + c,
+  function fold(cells: Cell[], fn?: (p: Cell, f: Frame, from: Cell | null) => void) {
+    const key = ([r, c]: Cell) => r + ',' + c,
       has = new Set(cells.map(key)),
-      neg = (a: any[]) => a.map((x: number) => -x);
+      neg = (a: number[]) => a.map((x) => -x);
     const frames = new Map([[key(cells[0]), { n: [0, 0, -1], u: [1, 0, 0], v: [0, 1, 0] }]]);
     const queue = [cells[0]];
     const roll: [dr: number, dc: number, turn: (f: Frame) => Frame][] = [
@@ -2252,9 +2299,9 @@ export const MQ = (() => {
       [1, 0, (f) => ({ n: f.v, u: f.u, v: neg(f.n) })],
       [-1, 0, (f) => ({ n: neg(f.v), u: f.u, v: f.n })],
     ];
-    if (fn) fn(cells[0], frames.get(key(cells[0])), null);
+    if (fn) fn(cells[0], frames.get(key(cells[0]))!, null);
     while (queue.length) {
-      const [r, c] = queue.shift();
+      const [r, c] = queue.shift()!;
       const f = frames.get(key([r, c]));
       for (const [dr, dc, g] of roll) {
         const p = [r + dr, c + dc],
@@ -2262,24 +2309,24 @@ export const MQ = (() => {
         if (has.has(k) && !frames.has(k)) {
           frames.set(k, g(f!));
           queue.push(p);
-          if (fn) fn(p, frames.get(k), [r, c]);
+          if (fn) fn(p, frames.get(k)!, [r, c]);
         }
       }
     }
     return frames;
   }
-  function cubeNet(cells: string | any[]) {
+  function cubeNet(cells: Cell[]) {
     if (cells.length !== 6) return false;
     const frames = fold(cells);
     return frames.size === 6 && new Set([...frames.values()].map((f) => f.n.join())).size === 6;
   }
-  const connected = (cells: any[]) => {
-    const key = ([r, c]: number[]) => r + ',' + c,
+  const connected = (cells: Cell[]) => {
+    const key = ([r, c]: Cell) => r + ',' + c,
       at = new Set(cells.map(key)),
       seen = new Set([key(cells[0])]),
       q = [cells[0]];
     while (q.length) {
-      const [r, c] = q.pop();
+      const [r, c] = q.pop()!;
       for (const p of [
         [r + 1, c],
         [r - 1, c],
@@ -2298,9 +2345,9 @@ export const MQ = (() => {
     for (;;) {
       const net = parseNet(pick(NETS));
       const i = rnd(0, 5);
-      const rest = net.filter((_: any, j: any) => j !== i);
+      const rest = net.filter((_, j) => j !== i);
       if (!connected(rest)) continue;
-      const free: any[] = [];
+      const free: Cell[] = [];
       for (const [r, c] of rest)
         for (const p of [
           [r + 1, c],
@@ -2308,15 +2355,15 @@ export const MQ = (() => {
           [r, c + 1],
           [r, c - 1],
         ])
-          if (!net.some((q: any[]) => q[0] === p[0] && q[1] === p[1])) free.push(p);
+          if (!net.some((q) => q[0] === p[0] && q[1] === p[1])) free.push(p);
       const shape = rest.concat([pick(free)]);
       if (!cubeNet(shape)) return normCells(shape);
     }
   }
-  function netSVG(cells: any[], size: number) {
+  function netSVG(cells: Cell[], size: number) {
     const S = 14,
-      h = Math.max(...cells.map((p: any[]) => p[0])) + 1,
-      w = Math.max(...cells.map((p: any[]) => p[1])) + 1,
+      h = Math.max(...cells.map((p) => p[0])) + 1,
+      w = Math.max(...cells.map((p) => p[1])) + 1,
       ox = ((size - w) * S) / 2,
       oy = ((size - h) * S) / 2;
     return svgFig(
@@ -2333,50 +2380,49 @@ export const MQ = (() => {
     );
   }
   // Quadernetz: the squares of a cube net become rectangles; each face lies along two edges of the Quader (L = length per axis)
-  const axisOf = (v: any[]) => v.findIndex((x: number) => x !== 0);
-  const noBlock = (cells: any[]) =>
+  const axisOf = (v: number[]) => v.findIndex((x) => x !== 0);
+  const noBlock = (cells: Cell[]) =>
     !cells.some(([r, c]) =>
       [
         [r, c + 1],
         [r + 1, c],
         [r + 1, c + 1],
-      ].every((p) => cells.some((q: any[]) => q.join() === p.join())),
+      ].every((p) => cells.some((q) => q.join() === p.join())),
     );
-  const normRects = (rs: any[]) => {
-    const x0 = Math.min(...rs.map((r: any[]) => r[0])),
-      y0 = Math.min(...rs.map((r: any[]) => r[1]));
+  const normRects = (rs: Rect[]) => {
+    const x0 = Math.min(...rs.map((r) => r[0])),
+      y0 = Math.min(...rs.map((r) => r[1]));
     return rs.map(([x, y, w, h]) => [x - x0, y - y0, w, h]);
   };
-  function boxRects(cells: any[], L: { [x: string]: any }) {
-    const rect = new Map(),
-      key = (p: any[]) => p.join();
-    fold(cells, (p: number[], f: { u: any; v: any }, from: number[]) => {
+  function boxRects(cells: Cell[], L: number[]) {
+    const rect = new Map<string, Rect>(),
+      key = (p: Cell) => p.join();
+    fold(cells, (p, f, from) => {
       const w = L[axisOf(f.u)],
         h = L[axisOf(f.v)];
       if (!from) {
         rect.set(key(p), [0, 0, w, h]);
         return;
       }
-      const [x, y, pw, ph] = rect.get(key(from)),
+      const [x, y, pw, ph] = rect.get(key(from))!,
         dr = p[0] - from[0],
         dc = p[1] - from[1];
       rect.set(key(p), [dc > 0 ? x + pw : dc < 0 ? x - w : x, dr > 0 ? y + ph : dr < 0 ? y - h : y, w, h]);
     });
-    return normRects(cells.map((p: any) => rect.get(key(p))));
+    return normRects(cells.map((p) => rect.get(key(p))!));
   }
-  const overlap = (rs: any[]) =>
-    rs.some((a: any[], i: number) =>
+  const overlap = (rs: Rect[]) =>
+    rs.some((a, i) =>
       rs.some(
-        (b: number[], j: number) =>
+        (b, j) =>
           j > i && a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3],
       ),
     );
-  const rectKey = (rs: any[]) =>
-    JSON.stringify(rs.slice().sort((a: number[], b: number[]) => a[0] - b[0] || a[1] - b[1]));
-  function rectSVG(rs: any[], size: number) {
+  const rectKey = (rs: Rect[]) => JSON.stringify(rs.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]));
+  function rectSVG(rs: Rect[], size: number) {
     const S = 7,
-      w = Math.max(...rs.map((r: any[]) => r[0] + r[2])),
-      h = Math.max(...rs.map((r: any[]) => r[1] + r[3])),
+      w = Math.max(...rs.map((r) => r[0] + r[2])),
+      h = Math.max(...rs.map((r) => r[1] + r[3])),
       ox = ((size - w) * S) / 2,
       oy = ((size - h) * S) / 2;
     return svgFig(
@@ -2414,14 +2460,14 @@ export const MQ = (() => {
       // wrong nets: one face missing at an end, or six faces where two land on the same side
       if (nets.length === 1 && Math.random() < 0.5) {
         const leaves = cells
-          .map((p: any, i: any) => i)
+          .map((p, i) => i)
           .filter(
-            (i: string | number) =>
-              cells.filter((q: number[]) => Math.abs(q[0] - cells[i][0]) + Math.abs(q[1] - cells[i][1]) === 1)
+            (i) =>
+              cells.filter((q) => Math.abs(q[0] - cells[i][0]) + Math.abs(q[1] - cells[i][1]) === 1)
                 .length === 1,
           );
         const i = pick(leaves);
-        n = normRects(good.filter((_: any, j: any) => j !== i));
+        n = normRects(good.filter((_, j) => j !== i));
       } else {
         const sh = almostNet();
         if (!noBlock(sh)) continue;
@@ -2435,13 +2481,13 @@ export const MQ = (() => {
     }
     const size = Math.max(...nets.flat().map((r) => Math.max(r[0] + r[2], r[1] + r[3])));
     const order = shuffle([0, 1, 2]);
-    const options = order.map((i: string | number) => rectSVG(nets[i], size));
+    const options = order.map((i) => rectSVG(nets[i], size));
     return {
       kind: 'choice',
       q: 'Welches Netz lässt sich zu einem Quader falten?',
       options,
       answer: options[order.indexOf(0)],
-      rects: order.map((i: string | number) => nets[i]),
+      rects: order.map((i) => nets[i]),
       svgOpts: true,
       tall: true,
       why: 'Dieses Netz lässt sich zu einem Quader falten:',
@@ -2462,20 +2508,20 @@ export const MQ = (() => {
     }
     const size = Math.max(...nets.flat().map((p) => Math.max(...p))) + 1;
     const order = shuffle([0, 1, 2]);
-    const options = order.map((i: string | number) => netSVG(nets[i], size));
+    const options = order.map((i) => netSVG(nets[i], size));
     return {
       kind: 'choice',
       q: 'Welches Netz lässt sich zu einem Würfel falten?',
       options,
       answer: options[order.indexOf(0)],
-      nets: order.map((i: string | number) => nets[i]),
+      nets: order.map((i) => nets[i]),
       svgOpts: true,
       why: 'Dieses Netz lässt sich falten:',
       sig: shapeKey(net),
     };
   }
 
-  const SOLIDS = {
+  const SOLIDS: Record<string, string[]> = {
     wuerfel: ['Würfel', 'den'],
     quader: ['Quader', 'den'],
     kugel: ['Kugel', 'die'],
@@ -2484,20 +2530,22 @@ export const MQ = (() => {
     zylinder: ['Zylinder', 'den'],
   };
   const SOLID_FILL = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
-  const solidSVG = (id: string | number) => {
+  const solidSVG = (id: string) => {
     const D = `fill="none" stroke="${INK}" stroke-width="1.5" stroke-dasharray="3 3"`;
-    const body = {
-      wuerfel: () => `<g transform="translate(36 30) scale(1.6)">${boxFaces(0, 0, 0, 1, 1, 1, SOLID_FILL)}</g>`,
-      quader: () => `<g transform="translate(23.4 25.6) scale(1.05)">${boxFaces(0, 0, 0, 3, 1, 1.4, SOLID_FILL)}</g>`,
-      kugel: () =>
-        `<circle cx="36" cy="30" r="24" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M12 30 a24 8 0 0 0 48 0" fill="none" ${LINE}/><path d="M12 30 a24 8 0 0 1 48 0" ${D}/>`,
-      zylinder: () =>
-        `<path d="M16 12 v34 a20 7 0 0 0 40 0 v-34" fill="${SOLID_FILL[1]}" ${LINE}/><ellipse cx="36" cy="12" rx="20" ry="7" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
-      kegel: () =>
-        `<path d="M36 4 L16 46 a20 7 0 0 0 40 0 Z" fill="${SOLID_FILL[1]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
-      pyramide: () =>
-        `<path d="M38 4 L12 46 L44 54 Z" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M38 4 L44 54 L62 42 Z" fill="${SOLID_FILL[2]}" ${LINE}/><path d="M12 46 L30 36 L62 42 M38 4 L30 36" ${D}/>`,
-    }[id]();
+    const body = (
+      {
+        wuerfel: () => `<g transform="translate(36 30) scale(1.6)">${boxFaces(0, 0, 0, 1, 1, 1, SOLID_FILL)}</g>`,
+        quader: () => `<g transform="translate(23.4 25.6) scale(1.05)">${boxFaces(0, 0, 0, 3, 1, 1.4, SOLID_FILL)}</g>`,
+        kugel: () =>
+          `<circle cx="36" cy="30" r="24" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M12 30 a24 8 0 0 0 48 0" fill="none" ${LINE}/><path d="M12 30 a24 8 0 0 1 48 0" ${D}/>`,
+        zylinder: () =>
+          `<path d="M16 12 v34 a20 7 0 0 0 40 0 v-34" fill="${SOLID_FILL[1]}" ${LINE}/><ellipse cx="36" cy="12" rx="20" ry="7" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
+        kegel: () =>
+          `<path d="M36 4 L16 46 a20 7 0 0 0 40 0 Z" fill="${SOLID_FILL[1]}" ${LINE}/><path d="M16 46 a20 7 0 0 1 40 0" ${D}/>`,
+        pyramide: () =>
+          `<path d="M38 4 L12 46 L44 54 Z" fill="${SOLID_FILL[0]}" ${LINE}/><path d="M38 4 L44 54 L62 42 Z" fill="${SOLID_FILL[2]}" ${LINE}/><path d="M12 46 L30 36 L62 42 M38 4 L30 36" ${D}/>`,
+      } as Record<string, () => string>
+    )[id]();
     return svgFig(0, 0, 72, 60, body, 'Körper');
   };
   function genKoerper() {
@@ -2505,7 +2553,7 @@ export const MQ = (() => {
     const id = pick(ids);
     const shown = shuffle([id].concat(shuffle(ids.filter((k) => k !== id)).slice(0, 2)));
     if (Math.random() < 0.5) {
-      const options = shown.map((k: string | number) => SOLIDS[k][0]);
+      const options = shown.map((k) => SOLIDS[k][0]);
       return {
         kind: 'choice',
         q: 'Wie heißt dieser Körper?',
@@ -2534,27 +2582,27 @@ export const MQ = (() => {
 
   // a tile is [shape, turn in degrees, colour]
   const TILE_COL = ['#E4572E', '#3FA0FF', '#4FB04F', '#F4C542'];
-  const TILE = {
-    dreieck: (col: any) => `<path d="M10 3 L17 17 L3 17 Z" fill="${col}"/>`,
-    quadrat: (col: any) => `<rect x="4" y="4" width="12" height="12" fill="${col}"/>`,
-    kreis: (col: any) => `<circle cx="10" cy="10" r="7" fill="${col}"/>`,
-    bogen: (col: any) => `<path d="M3 15 A7 7 0 0 1 17 15 Z" fill="${col}"/>`,
+  const TILE: Record<string, (col: string) => string> = {
+    dreieck: (col) => `<path d="M10 3 L17 17 L3 17 Z" fill="${col}"/>`,
+    quadrat: (col) => `<rect x="4" y="4" width="12" height="12" fill="${col}"/>`,
+    kreis: (col) => `<circle cx="10" cy="10" r="7" fill="${col}"/>`,
+    bogen: (col) => `<path d="M3 15 A7 7 0 0 1 17 15 Z" fill="${col}"/>`,
   };
-  const tileSVG = ([shape, rot, col]: any, x: number) =>
+  const tileSVG = ([shape, rot, col]: Tile, x: number) =>
     `<g transform="translate(${x} 0) rotate(${rot} 10 10)" ${LINE}>${TILE[shape](TILE_COL[col])}</g>`;
-  const tileKey = (t: any[]) => t.join();
+  const tileKey = (t: Tile) => t.join();
   function genBand(t: number) {
-    let alpha: any[], seq;
+    let alpha: Tile[], seq;
     // tier 1: different shapes and colours; tier 2: one shape that is turned (like a real band ornament)
     do {
       if (t === 1) {
         const shapes = shuffle(['dreieck', 'quadrat', 'kreis']);
         const cols = shuffle([0, 1, 2, 3]);
-        alpha = [0, 1, 2].map((i) => [shapes[i], 0, cols[i]]);
+        alpha = [0, 1, 2].map((i): Tile => [shapes[i], 0, cols[i]]);
       } else {
         const shape = pick(['dreieck', 'bogen']);
         const col = rnd(0, 3);
-        alpha = shuffle([0, 90, 180, 270]).map((r: any) => [shape, r, col]);
+        alpha = shuffle([0, 90, 180, 270]).map((r): Tile => [shape, r, col]);
       }
       const p = t === 1 ? rnd(2, 3) : rnd(3, 4);
       seq = Array.from({ length: p }, () => pick(alpha));
@@ -2565,17 +2613,17 @@ export const MQ = (() => {
     const p = seq.length,
       shown = 2 * p + rnd(0, p - 1);
     const next = [seq[shown % p], seq[(shown + 1) % p]];
-    const used = alpha.filter((a: any) => seq.some((s) => tileKey(s) === tileKey(a)));
-    const pairs: any[] = [];
+    const used = alpha.filter((a) => seq.some((s) => tileKey(s) === tileKey(a)));
+    const pairs: Tile[][] = [];
     for (const a of used) for (const b of used) pairs.push([a, b]);
     const wrong = shuffle(pairs.filter((pr) => pr.map(tileKey).join('|') !== next.map(tileKey).join('|'))).slice(0, 2);
-    const pairSVG = (pr: any[]) =>
+    const pairSVG = (pr: Tile[]) =>
       svgFig(
         -2,
         -2,
         48,
         24,
-        pr.map((tl: [any, any, any], i: number) => tileSVG(tl, i * 24)).join(''),
+        pr.map((tl, i) => tileSVG(tl, i * 24)).join(''),
         'zwei Teile des Musters',
       );
     const options = shuffle([next].concat(wrong)).map(pairSVG);
@@ -2612,11 +2660,11 @@ export const MQ = (() => {
 
   const LAGE = { parallel: 'parallel', senkrecht: 'senkrecht', keins: 'weder noch' };
   function genLage() {
-    const kind = pick(Object.keys(LAGE));
+    const kind = pick(Object.keys(LAGE) as (keyof typeof LAGE)[]);
     const a = pick([0, 30, 45, 60, 90, 120, 135, 150]);
     const b = a + (kind === 'parallel' ? 0 : kind === 'senkrecht' ? 90 : pick([30, 45, 60, 120, 135, 150]));
     const dir = (deg: number) => [Math.cos((deg * Math.PI) / 180), -Math.sin((deg * Math.PI) / 180)];
-    const seg = ([cx, cy]: number[], deg: any, col: string) => {
+    const seg = ([cx, cy]: number[], deg: number, col: string) => {
       const [dx, dy] = dir(deg);
       const f = (v: number) => Math.round(v * 10) / 10;
       return `<line x1="${f(cx - dx * 30)}" y1="${f(cy - dy * 30)}" x2="${f(cx + dx * 30)}" y2="${f(cy + dy * 30)}" stroke="${col}" stroke-width="4" stroke-linecap="round"/>`;
@@ -2653,9 +2701,9 @@ export const MQ = (() => {
   }
 
   // squares on a grid; the perimeter is the number of square sides that border the outside
-  const edges = (cells: any[]) => {
-    const at = new Set(cells.map((p: any[]) => p.join()));
-    const out: any[] = [];
+  const edges = (cells: Cell[]) => {
+    const at = new Set(cells.map((p) => p.join()));
+    const out: number[][] = [];
     for (const [r, c] of cells)
       for (const [dr, dc, x1, y1, x2, y2] of [
         [-1, 0, 0, 0, 1, 0],
@@ -2667,8 +2715,8 @@ export const MQ = (() => {
     return out;
   };
   // an empty square enclosed by the shape would count twice as edge, so shapes with holes are not used
-  const hasHole = (cells: any[]) => {
-    const at = new Set(cells.map((p: any[]) => p.join()));
+  const hasHole = (cells: Cell[]) => {
+    const at = new Set(cells.map((p) => p.join()));
     const seen = new Set(['-1,-1']);
     const q = [[-1, -1]];
     while (q.length) {
@@ -2703,13 +2751,19 @@ export const MQ = (() => {
   }
   // squared paper W × H; shapes: { cells, fill, line } with line = thin lines between the squares stay visible
   const PS = 16;
-  function paperSVG(W: number, H: number, shapes: any[], extra: string, label: string) {
+  function paperSVG(
+    W: number,
+    H: number,
+    shapes: { cells: Cell[]; fill?: string; line?: string }[],
+    extra: string,
+    label: string,
+  ) {
     let grid = '';
     for (let i = 0; i <= W; i++) grid += `<path d="M${i * PS} 0 V${H * PS}" stroke="#C9D3E8"/>`;
     for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * PS} H${W * PS}" stroke="#C9D3E8"/>`;
     const body = shapes
       .map(
-        (s: { cells: [any, any][]; fill: any; line: any }) =>
+        (s) =>
           s.cells
             .map(
               ([r, c]) =>
@@ -2726,11 +2780,8 @@ export const MQ = (() => {
       .join('');
     return svgFig(-2, -2, W * PS + 4, H * PS + 4, grid + body + (extra || ''), label);
   }
-  const at = (cells: any[][], dr: number, dc: number) => cells.map(([r, c]) => [r + dr, c + dc]);
-  const span = (cells: any[]) => [
-    Math.max(...cells.map((p: any[]) => p[0])) + 1,
-    Math.max(...cells.map((p: any[]) => p[1])) + 1,
-  ];
+  const at = (cells: Cell[], dr: number, dc: number) => cells.map(([r, c]) => [r + dr, c + dc]);
+  const span = (cells: Cell[]) => [Math.max(...cells.map((p) => p[0])) + 1, Math.max(...cells.map((p) => p[1])) + 1];
   function genUmfang(t: number) {
     let cells;
     if (t === 1) {
@@ -2800,9 +2851,8 @@ export const MQ = (() => {
   }
 
   // Achsensymmetrie: a half of k columns next to a vertical axis; srt gives a position-exact key
-  const srt = (cells: any[]) =>
-    JSON.stringify(cells.slice().sort((p: number[], q: number[]) => p[0] - q[0] || p[1] - q[1]));
-  const mirrorAt = (cells: any[][], k: number) => cells.map(([r, c]) => [r, 2 * k - 1 - c]);
+  const srt = (cells: Cell[]) => JSON.stringify(cells.slice().sort((p, q) => p[0] - q[0] || p[1] - q[1]));
+  const mirrorAt = (cells: Cell[], k: number) => cells.map(([r, c]) => [r, 2 * k - 1 - c]);
   const AXIS = (x1: number, y1: number, x2: number, y2: number) =>
     `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="#C0392B" stroke-width="2.5" stroke-dasharray="6 4"/>`;
   function half(R: number, k: number) {
@@ -2812,12 +2862,12 @@ export const MQ = (() => {
     return L;
   }
   // one square moved to another free place next to the shape
-  function nudge(cells: any[], R: number, k: number) {
+  function nudge(cells: Cell[], R: number, k: number) {
     for (;;) {
       const i = rnd(0, cells.length - 1);
-      const rest = cells.filter((_: any, j: any) => j !== i);
+      const rest = cells.filter((_, j) => j !== i);
       if (!connected(rest)) continue;
-      const free: any[] = [];
+      const free: Cell[] = [];
       for (const [r, c] of rest)
         for (const p of [
           [r + 1, c],
@@ -2825,7 +2875,7 @@ export const MQ = (() => {
           [r, c + 1],
           [r, c - 1],
         ])
-          if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !cells.some((q: any[]) => q.join() === p.join()))
+          if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !cells.some((q) => q.join() === p.join()))
             free.push(p);
       if (free.length) return rest.concat([pick(free)]);
     }
@@ -2863,7 +2913,7 @@ export const MQ = (() => {
       };
     }
     // complete the mirror image: the right half in its own columns 0 … k−1, next to the axis
-    let L, right, opts;
+    let L, right, opts: Cell[][];
     do {
       L = half(R, k);
       right = L.map(([r, c]) => [r, k - 1 - c]);
@@ -2879,7 +2929,7 @@ export const MQ = (() => {
     } while (opts.length < 3);
     const halves = shuffle(opts.slice(0, 3)),
       axisAt = (x: number) => AXIS(x, 0, x, (R + 2) * PS);
-    const options = halves.map((hf: any) =>
+    const options = halves.map((hf) =>
       paperSVG(k + 1, R + 2, [{ cells: at(hf, 1, 0) }], axisAt(0), 'rechte Hälfte'),
     );
     const answer = options[halves.indexOf(right)];
@@ -2906,9 +2956,13 @@ export const MQ = (() => {
   }
 
   // gespiegelt, gedreht oder verschoben: the shape has no symmetry, so the three cases never look alike
-  const TRANSFORMS = { verschoben: [SYM[0]], gedreht: [SYM[1], SYM[2], SYM[3]], gespiegelt: [SYM[4]] };
+  const TRANSFORMS: Record<string, ((p: Cell) => Cell)[]> = {
+    verschoben: [SYM[0]],
+    gedreht: [SYM[1], SYM[2], SYM[3]],
+    gespiegelt: [SYM[4]],
+  };
   function genBewegung() {
-    let P: [any, any][];
+    let P: Cell[];
     do P = normCells(blob(rnd(4, 5), 3, 3));
     while (new Set(SYM.map((f) => JSON.stringify(normCells(P.map(f))))).size < 8);
     const kind = pick(Object.keys(TRANSFORMS));
@@ -2959,16 +3013,19 @@ export const MQ = (() => {
     'Viereck ohne parallele Seiten',
   ];
   // names that are true for a shape (a square is also a rectangle and a parallelogram)
-  const TRUE_FOR = { Quadrat: ['Quadrat', 'Rechteck', 'Parallelogramm'], Rechteck: ['Rechteck', 'Parallelogramm'] };
+  const TRUE_FOR: Record<string, string[]> = {
+    Quadrat: ['Quadrat', 'Rechteck', 'Parallelogramm'],
+    Rechteck: ['Rechteck', 'Parallelogramm'],
+  };
   const cross = ([ax, ay]: number[], [bx, by]: number[]) => ax * by - ay * bx,
     vec = (p: number[], q: number[]) => [q[0] - p[0], q[1] - p[1]];
-  const sides = (pts: any[]) => pts.map((p: any, i: number) => vec(p, pts[(i + 1) % pts.length]));
-  const convexOk = (pts: any[][]) => {
-    const s = sides(pts).map((v: number[], i: number, a: string | any[]) => cross(v, a[(i + 1) % a.length]));
-    return s.every((x: number) => x > 0) || s.every((x: number) => x < 0);
+  const sides = (pts: number[][]) => pts.map((p, i) => vec(p, pts[(i + 1) % pts.length]));
+  const convexOk = (pts: number[][]) => {
+    const s = sides(pts).map((v, i, a) => cross(v, a[(i + 1) % a.length]));
+    return s.every((x) => x > 0) || s.every((x) => x < 0);
   };
-  const rightAngles = (pts: any[][]) =>
-    sides(pts).filter((v: number[], i: number, a: string | any[]) => {
+  const rightAngles = (pts: number[][]) =>
+    sides(pts).filter((v, i, a) => {
       const w = a[(i + 1) % a.length];
       return v[0] * w[0] + v[1] * w[1] === 0;
     }).length;
@@ -3034,7 +3091,7 @@ export const MQ = (() => {
         ];
       while (
         !convexOk(pts) ||
-        sides(pts).some((v: number[], i: number, a: number[][]) => cross(v, a[(i + 2) % 4]) === 0)
+        sides(pts).some((v, i, a) => cross(v, a[(i + 2) % 4]) === 0)
       );
     // turned by a quarter turn now and then
     for (let i = rnd(0, 3); i > 0; i--) pts = pts.map(([x, y]) => [-y, x]);
@@ -3042,9 +3099,9 @@ export const MQ = (() => {
       y0 = Math.min(...pts.map((p) => p[1]));
     return pts.map(([x, y]) => [x - x0, y - y0]);
   }
-  function polySVG(pts: any[]) {
-    const W = Math.max(...pts.map((p: any[]) => p[0])) + 2,
-      H = Math.max(...pts.map((p: any[]) => p[1])) + 2;
+  function polySVG(pts: number[][]) {
+    const W = Math.max(...pts.map((p) => p[0])) + 2,
+      H = Math.max(...pts.map((p) => p[1])) + 2;
     let grid = '';
     for (let i = 0; i <= W; i++) grid += `<path d="M${i * PS} 0 V${H * PS}" stroke="#C9D3E8"/>`;
     for (let i = 0; i <= H; i++) grid += `<path d="M0 ${i * PS} H${W * PS}" stroke="#C9D3E8"/>`;
@@ -3058,7 +3115,7 @@ export const MQ = (() => {
     );
   }
   // tier 2: properties; each question lists the names that make it true
-  const PROPS = [
+  const PROPS: [string, string[]][] = [
     ['Welche Figur hat zwei Paar parallele Seiten?', ['Quadrat', 'Rechteck', 'Parallelogramm']],
     ['Welche Figur hat vier rechte Winkel und vier gleich lange Seiten?', ['Quadrat']],
     ['Welche Figur hat vier rechte Winkel, aber nicht vier gleich lange Seiten?', ['Rechteck']],
@@ -3067,9 +3124,9 @@ export const MQ = (() => {
     ['Welche Figur hat drei Ecken und keinen rechten Winkel?', ['Dreieck ohne rechten Winkel']],
   ];
   // quiz pool per question: names that are clearly false for it (a general Viereck may have one right angle)
-  const PROP_FALSE = (q: string | string[], yes: string | string[]) =>
+  const PROP_FALSE = (q: string, yes: string[]) =>
     SHAPES.filter((s) => !yes.includes(s) && !(q.includes('genau einen rechten') && s.startsWith('Viereck')));
-  const COUNTS = [
+  const COUNTS: [string, Record<string, number>, string[]][] = [
     [
       'rechte Winkel',
       { Quadrat: 4, Rechteck: 4, Parallelogramm: 0, 'Dreieck mit rechtem Winkel': 1, 'Dreieck ohne rechten Winkel': 0 },
@@ -3087,7 +3144,7 @@ export const MQ = (() => {
         yes = TRUE_FOR[id] || [id];
       const tri = id.startsWith('Dreieck');
       const no = shuffle(SHAPES.filter((s) => !yes.includes(s))).sort(
-        (a: string, b: string) => (a.startsWith('Dreieck') === tri ? 0 : 1) - (b.startsWith('Dreieck') === tri ? 0 : 1),
+        (a, b) => (a.startsWith('Dreieck') === tri ? 0 : 1) - (b.startsWith('Dreieck') === tri ? 0 : 1),
       );
       const pts = polyPoints(id);
       return {
@@ -3131,7 +3188,7 @@ export const MQ = (() => {
       kind: 'choice',
       q: `Wie viele ${what} hat dieses ${id}?`,
       pic: polySVG(polyPoints(id)),
-      options: [right].concat(shuffle(opts.filter((o: string) => o !== right)).slice(0, 2)).sort(),
+      options: [right].concat(shuffle(opts.filter((o) => o !== right)).slice(0, 2)).sort(),
       answer: right,
       shape: id,
       cols: 1,
@@ -3139,28 +3196,30 @@ export const MQ = (() => {
     };
   }
 
-  function bauGenerate(mod: string, tier: string | number) {
+  function bauGenerate(mod: string, tier: number) {
     tier = Math.max(1, Math.min(BAU_MODULES[mod].maxTier, tier));
-    const tk = {
-      wz: genWz,
-      fq: genFq,
-      netz: genNetz,
-      koerper: genKoerper,
-      band: genBand,
-      lage: genLage,
-      umfang: genUmfang,
-      flaeche: genFlaeche,
-      spiegel: genSpiegel,
-      bewegung: genBewegung,
-      vieleck: genVieleck,
-      ansicht: genAnsicht,
-    }[mod](tier);
+    const tk = (
+      {
+        wz: genWz,
+        fq: genFq,
+        netz: genNetz,
+        koerper: genKoerper,
+        band: genBand,
+        lage: genLage,
+        umfang: genUmfang,
+        flaeche: genFlaeche,
+        spiegel: genSpiegel,
+        bewegung: genBewegung,
+        vieleck: genVieleck,
+        ansicht: genAnsicht,
+      } as Record<string, (t: number) => Task>
+    )[mod](tier);
     if (!tk.kind) tk.kind = 'num';
     if (tk.pic) tk.pic = `<div class="figure">${tk.pic}</div>`;
     // one tutorial per task type, a second one where a tier brings something new
     return Object.assign(tk, { mod, tier, group: BAU_TUT[mod + ':' + tier] ? mod + ':' + tier : mod + ':1' });
   }
-  const BAU_TUT = {
+  const BAU_TUT: Record<string, Tutorial> = {
     'wz:1': {
       title: 'Würfel zählen',
       steps: [

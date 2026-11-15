@@ -1,6 +1,6 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen, LB 3 „Lebensraum Wiese“ und LB 1 „Zusammen leben und lernen“): Die Wiese, Früher und heute.
 // Registers its units in MK.MODES like sachkunde.ts; the Stockwerke picture goes into MS.PLANTS for the parts tasks.
-import { MK as K } from './knowledge.ts';
+import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 import type { Unit } from './curriculum.ts';
 import { MS as S, type PartsPicture } from './sachkunde.ts';
 export const MS3 = (() => {
@@ -86,7 +86,7 @@ export const MS3 = (() => {
   const pt = (cx: number, cy: number, a: number, r: number) =>
     `${f1(cx + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r)}`;
   // a right-hand outline from the base (0|0) to the tip, mirrored into a closed leaf pointing up
-  const sym = (pts: number[][] | [any, any][]) =>
+  const sym = (pts: number[][]) =>
     `M0 0 L${pts.map(([x, y]) => `${x} ${y}`).join(' L')} L${pts
       .slice(0, -1)
       .reverse()
@@ -473,7 +473,7 @@ export const MS3 = (() => {
       'Bg',
     ]
       .concat(d)
-      .map((k) => FL_DEFS[k])
+      .map((k) => FL_DEFS[k as keyof typeof FL_DEFS])
       .join('')}</defs><ellipse cx="60" cy="84" rx="58" ry="80" fill="url(#flBg)"/>${ROUND}${a}${GRASS}</g></svg>`;
   }
 
@@ -1277,7 +1277,7 @@ export const MS3 = (() => {
     },
   };
   function wiGen(cfg: Unit) {
-    return (mod: string, tier: number, know: any, seq: any, opts: { g: any }) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'pflanze') {
         if (tier >= 2 && Math.random() < 0.7) {
@@ -1286,7 +1286,7 @@ export const MS3 = (() => {
           const ans = FLORA.find((p) => p.id === id)!;
           const wrong = shuffle(FLORA.filter((p) => !t.has.includes(p.id) && !(t.skip || []).includes(p.id)))
             .slice(0, 2)
-            .map((p: { name: any }) => p.name);
+            .map((p) => p.name);
           return choice(mod, 'pflanzen', t.q, ans.name, wrong, 'wimerk_' + TRAITS.indexOf(t), {
             group: 'pflanze:2',
             tier: 2,
@@ -1301,7 +1301,7 @@ export const MS3 = (() => {
             p.name,
             shuffle(FLORA.filter((x) => x !== p))
               .slice(0, 2)
-              .map((x: { name: any }) => x.name),
+              .map((x) => x.name),
             'wibild_' + p.id,
             { pic: floraSVG(p.id) },
           );
@@ -1347,7 +1347,7 @@ export const MS3 = (() => {
             LAYERS[an.l].name,
             shuffle(LAYERS.filter((_, i) => i !== an.l))
               .slice(0, 2)
-              .map((l: { name: any }) => l.name),
+              .map((l) => l.name),
             'wstier_' + ANIMALS.indexOf(an),
           );
         }
@@ -2294,7 +2294,7 @@ export const MS3 = (() => {
     },
   };
   function frGen(cfg: Unit) {
-    return (mod: string, tier: any, know: any, seq: any, opts: { g: any }) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'geraet' && Math.random() < 0.6) {
         const i = rnd(0, TOOLS.length - 1);
@@ -2305,7 +2305,7 @@ export const MS3 = (() => {
             'geraete',
             `Früher: ${TOOLS[i][0]}. Was benutzt man heute dafür?`,
             TOOLS[i][1],
-            others.map((x: any[]) => x[1]),
+            others.map((x) => x[1]),
             'frneu_' + i,
           );
         return choice(
@@ -2313,7 +2313,7 @@ export const MS3 = (() => {
           'geraete',
           `Heute: ${TOOLS[i][1]}. Was benutzte man früher dafür?`,
           TOOLS[i][0],
-          others.map((x: any[]) => x[0]),
+          others.map((x) => x[0]),
           'fralt_' + i,
         );
       }

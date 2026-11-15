@@ -1,6 +1,6 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen LB 2 und LB 5): Die fünf Sinne, Sicher im Verkehr.
 // Uses the picture and task helpers of sachkunde.ts and registers its units in MK.MODES.
-import { MK as K } from './knowledge.ts';
+import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 import type { Unit } from './curriculum.ts';
 import { MS as S, type PartsPicture } from './sachkunde.ts';
 export const MS2 = (() => {
@@ -77,9 +77,9 @@ export const MS2 = (() => {
   // texture strokes sit in style="" so a glowing part keeps them (the glow rule recolours stroke attributes only)
   const tex = (d: string, c: string, w: number, o?: number) =>
     `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round"${o ? ` opacity="${o}"` : ''}/>`;
-  const lashes = (cy: number, ts: any[], len: number) =>
+  const lashes = (cy: number, ts: number[], len: number) =>
     ts
-      .map((t: number) => {
+      .map((t) => {
         const [x, y] = lidAt(t, cy),
           dx = (t - 0.5) * 26,
           l = len * (1 - Math.abs(t - 0.5)) * (cy < 110 ? -1 : 1);
@@ -274,10 +274,10 @@ export const MS2 = (() => {
   ];
   function senseTask(mod: string) {
     const s = pick(SENSES);
-    const others = (k: string) =>
+    const others = (k: 'organ' | 'sinn') =>
       shuffle(SENSES.filter((x) => x !== s))
         .slice(0, 2)
-        .map((x: { [x: string]: any }) => x[k]);
+        .map((x) => x[k]);
     const v = rnd(0, 2);
     if (v === 0) {
       const ex = pick(s.ex);
@@ -1041,7 +1041,7 @@ export const MS2 = (() => {
       shuffle(ILLUSIONS.filter((x) => x.look))
         .slice(0, 3)
         .concat(shuffle(ILLUSIONS.filter((x) => !x.look)).slice(0, 2)),
-    ).map((x: { id: any; q: any; opts: string | any[]; a: any; note: any; pic: any; after: any }) => ({
+    ).map((x) => ({
       kind: x.id,
       topic: 'taeuschung',
       q: x.q,
@@ -1053,7 +1053,7 @@ export const MS2 = (() => {
     }));
 
   function siGen(cfg: Unit) {
-    return (mod: string, tier: number, know: { [x: string]: any }, seq: number, opts: { g: any } | undefined) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (mod === 'parts') return plantTask(cfg, 'auge', mod, tier, know, seq, opts);
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'sinne' && Math.random() < 0.6) return senseTask(mod);
@@ -1328,8 +1328,8 @@ export const MS2 = (() => {
   const disc = (r: number) => `M${50 - r} 50 A${r} ${r} 0 1 0 ${50 + r} 50 A${r} ${r} 0 1 0 ${50 - r} 50 Z`;
   const box = (x: number, y: number, w: number, h: number, r: number) =>
     `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + h - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`;
-  const poly = (pts: number[][] | [any, any][]) => 'M' + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join(' L') + ' Z';
-  const around = (pts: number[][] | [any, any][], k: number, cx: number, cy: number) =>
+  const poly = (pts: number[][]) => 'M' + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join(' L') + ' Z';
+  const around = (pts: number[][], k: number, cx: number, cy: number) =>
     poly(pts.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]));
   const OCT = (R: number) =>
     poly(
@@ -1507,7 +1507,7 @@ export const MS2 = (() => {
         'zeichen',
         'Was bedeutet dieses Zeichen?',
         s.mean,
-        others.map((x: { mean: any }) => x.mean),
+        others.map((x) => x.mean),
         'vzmean_' + s.id,
       ),
       { pic: signSVG(s.id) },
@@ -1521,7 +1521,8 @@ export const MS2 = (() => {
     W: { x: 44, y: 132, rot: 90 },
     E: { x: 196, y: 108, rot: 270 },
   };
-  const RIGHT_OF = { S: 'E', E: 'N', N: 'W', W: 'S' };
+  type Arm = keyof typeof ARMS;
+  const RIGHT_OF: Record<Arm, Arm> = { S: 'E', E: 'N', N: 'W', W: 'S' };
   // on the grass to the driver's right, before the crossing
   const SIGN_AT = { S: [166, 168], N: [74, 60], W: [74, 168], E: [166, 60] };
   const VEHICLES = [
@@ -1546,18 +1547,18 @@ export const MS2 = (() => {
       art: '<rect x="-14" y="2" width="6" height="14" rx="2" fill="#333"/><rect x="8" y="2" width="6" height="14" rx="2" fill="#333"/><rect x="-11" y="-16" width="4" height="8" rx="1" fill="#333"/><rect x="7" y="-16" width="4" height="8" rx="1" fill="#333"/><rect x="-8" y="-18" width="16" height="34" rx="3" fill="#43A047" stroke="#1C2541" stroke-width="2"/><rect x="-7" y="2" width="14" height="12" rx="2" fill="#C8E6C9" stroke="#1C2541" stroke-width="1.5"/>',
     },
   ];
-  const vehicleAt = (arm: string | number, v: { art: any }) => {
+  const vehicleAt = (arm: Arm, v: { art: string }) => {
     const a = ARMS[arm];
     return `<g transform="translate(${a.x} ${a.y}) rotate(${a.rot})">${v.art}<path d="M0 -24 L0 -42 M-6 -36 L0 -43 L6 -36" stroke="#FFC93C" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
   };
-  const smallSign = (arm: string, art: string) => {
+  const smallSign = (arm: Arm, art: string) => {
     const [x, y] = SIGN_AT[arm];
     return `<path d="M${x} ${y + 10} L${x} ${y + 24}" stroke="#555" stroke-width="2"/><g transform="translate(${x - 11} ${y - 12}) scale(.22)">${art}</g>`;
   };
-  function crossingSVG(cars: any[], extras?: string) {
+  function crossingSVG(cars: { arm: Arm; v: { art: string } }[], extras?: string) {
     const road =
       '<rect x="90" width="60" height="240" fill="#8A8F98"/><rect y="90" width="240" height="60" fill="#8A8F98"/><path d="M120 0 L120 88 M120 152 L120 240 M0 120 L88 120 M152 120 L240 120" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 8"/>';
-    return `<svg ${NS} class="pic" viewBox="0 0 240 240" style="max-width:280px" aria-label="Kreuzung von oben"><rect width="240" height="240" rx="12" fill="#9CCC65"/>${road}${extras || ''}${cars.map((c: { arm: any; v: any }) => vehicleAt(c.arm, c.v)).join('')}<g transform="translate(222 22)"><path d="M0 -12 L6 4 L0 0 L-6 4 Z" fill="${STROKE}"/>${txt(0, 18, 'N', { size: 11 })}</g></svg>`;
+    return `<svg ${NS} class="pic" viewBox="0 0 240 240" style="max-width:280px" aria-label="Kreuzung von oben"><rect width="240" height="240" rx="12" fill="#9CCC65"/>${road}${extras || ''}${cars.map((c) => vehicleAt(c.arm, c.v)).join('')}<g transform="translate(222 22)"><path d="M0 -12 L6 4 L0 0 L-6 4 Z" fill="${STROKE}"/>${txt(0, 18, 'N', { size: 11 })}</g></svg>`;
   }
   // tier 1: rechts vor links with two cars at a right angle or three cars; tier 2: Vorfahrtstraße / Vorfahrt gewähren / Stopp or traffic lights
   function rightOfWayTask(mod: string, tier: number) {
@@ -1565,25 +1566,25 @@ export const MS2 = (() => {
     if (tier <= 1) {
       const arms =
         Math.random() < 0.5
-          ? shuffle(['S', 'W', 'N', 'E']).slice(0, 3)
-          : (([a]) => [a, RIGHT_OF[a]])(shuffle(['S', 'W', 'N', 'E']));
-      const cars = arms.map((arm: any, i: string | number) => ({ arm, v: vs[i] }));
-      const first = cars.find((c: { arm: string | number }) => !arms.includes(RIGHT_OF[c.arm]));
+          ? shuffle<Arm>(['S', 'W', 'N', 'E']).slice(0, 3)
+          : (([a]) => [a, RIGHT_OF[a]])(shuffle<Arm>(['S', 'W', 'N', 'E']));
+      const cars = arms.map((arm, i) => ({ arm, v: vs[i] }));
+      const first = cars.find((c) => !arms.includes(RIGHT_OF[c.arm]))!;
       return choice(
         mod,
         'vorfahrt',
         'Alle fahren geradeaus. Es gibt kein Schild und keine Ampel. Wer darf zuerst fahren?',
         first.v.name,
-        cars.filter((c: any) => c !== first).map((c: { v: { name: any } }) => c.v.name),
+        cars.filter((c) => c !== first).map((c) => c.v.name),
         'vfr_' + arms.join(''),
         { pic: crossingSVG(cars) },
       );
     }
-    const main = pick([
+    const main = pick<Arm[]>([
       ['S', 'N'],
       ['W', 'E'],
     ]);
-    const side = ['S', 'N', 'W', 'E'].filter((a) => !main.includes(a));
+    const side = (['S', 'N', 'W', 'E'] as Arm[]).filter((a) => !main.includes(a));
     // one car on the main road, one or two on the side road; on the side road the car from the right would win without signs
     const first = { arm: pick(main), v: vs[0] };
     const others = (Math.random() < 0.5 ? side : [pick(side)]).map((arm, i) => ({ arm, v: vs[i + 1] }));
@@ -1607,7 +1608,7 @@ export const MS2 = (() => {
     }
     const wait = pick(['vorfahrtgewaehren', 'stopp']);
     const signs =
-      main.map((a: any) => smallSign(a, SIGN_ART.vorfahrtstrasse)).join('') +
+      main.map((a) => smallSign(a, SIGN_ART.vorfahrtstrasse)).join('') +
       side.map((a) => smallSign(a, SIGN_ART[wait])).join('');
     return choice(
       mod,
@@ -1804,7 +1805,7 @@ export const MS2 = (() => {
     const p = pick(BIKE_PARTS);
     const others = shuffle(BIKE_PARTS.filter((x) => x !== p))
       .slice(0, 2)
-      .map((x: { name: any }) => x.name);
+      .map((x) => x.name);
     return choice(mod, 'fahrrad', 'Was fehlt an diesem Fahrrad?', p.name, others, 'vfehlt_' + p.id, {
       pic: BIKEP.svg({ omit: p.id }),
     });
@@ -2415,7 +2416,7 @@ export const MS2 = (() => {
     },
   };
   function veGen(cfg: Unit) {
-    return (mod: string, tier: number, know: { [x: string]: any }, seq: number, opts: { g: any } | undefined) => {
+    return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
       if (mod === 'parts') return plantTask(cfg, 'fahrrad', mod, tier, know, seq, opts);
       if (mod === 'fehlt') return missingTask(mod);
       if (wantsPool(cfg, mod, opts)) return null;

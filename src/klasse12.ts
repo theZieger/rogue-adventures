@@ -3,6 +3,11 @@
 // four attacks: K12.unit(<fach>, attacks, { everything else of the unit }).
 // Hero ids and opponent names are stored in saves: never rename them once released.
 import type { Unit } from './curriculum.ts';
+
+interface Attack {
+  name: string;
+  mod: string;
+}
 export const K12 = (() => {
   const set = (
     hero: { id: string; type: string; shape: string; names: string[]; hp: number; perk: string; desc: string },
@@ -153,7 +158,7 @@ export const K12 = (() => {
       ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß'],
     ),
   };
-  const unit = (fach: string | number, attacks: any, o: any): Unit =>
+  const unit = (fach: keyof typeof SETS, attacks: Attack[], o: Partial<Unit>) =>
     Object.assign(
       {
         worlds: 1,
@@ -162,9 +167,9 @@ export const K12 = (() => {
         moves: SETS[fach].moves,
       },
       o,
-    );
+    ) as Unit;
   // events every Klasse-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
-  const rest = (title: any, text: any) => ({
+  const rest = (title: string, text: string) => ({
     title,
     text,
     opts: [
@@ -172,7 +177,7 @@ export const K12 = (() => {
       { label: 'Weiter', effect: {} },
     ],
   });
-  const dilemma = (title: any, text: any, opts: [any, any, any][]) => ({
+  const dilemma = (title: string, text: string, opts: [label: string, then: string, think: string][]) => ({
     title,
     dilemma: true,
     reward: { hp: 5 },

@@ -6,16 +6,18 @@ import { MONART } from './monsters.ts';
 export const TWART = (() => {
   const INK = '#1C2541';
   let uid = 0;
-  const shade = (hex: any, amt: number) => MONART.shade(hex, amt);
+  const shade = (hex: string, amt: number) => MONART.shade(hex, amt);
   const S = (w: number) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
-  const F = (fill: any, w: any) => `fill="${fill}" ${S(w)}`;
-  const N = (w: any) => `fill="none" ${S(w)}`;
+  const F = (fill: string, w: number) => `fill="${fill}" ${S(w)}`;
+  const N = (w: number) => `fill="none" ${S(w)}`;
   const r1 = (v: number) => Math.round(v * 10) / 10;
   // gradient factory per drawing, so ids stay unique when the same picture is on the page twice
+  type Stop = [offset: number, color: string, opacity?: number];
+  type Defs = ReturnType<typeof defs>;
   function defs() {
     const id = 'tw' + uid++,
-      list: any[] = [];
-    const add = (tag: string, attrs: string, stops: any[][]) => {
+      list: string[] = [];
+    const add = (tag: string, attrs: string, stops: Stop[]) => {
       const k = `${id}_${list.length}`;
       list.push(
         `<${tag} id="${k}" ${attrs}>${stops.map(([o, c, a]) => `<stop offset="${o}" stop-color="${c}"${a == null ? '' : ` stop-opacity="${a}"`}/>`).join('')}</${tag}>`,
@@ -23,20 +25,21 @@ export const TWART = (() => {
       return `url(#${k})`;
     };
     return {
-      lin: (a: any, b: any, h?: any) =>
+      lin: (a: string, b: string, h?: boolean) =>
         add('linearGradient', `x1="0" y1="0" x2="${h ? 1 : 0}" y2="${h ? 0 : 1}"`, [
           [0, a],
           [1, b],
         ]),
-      linS: (stops: any, h?: any) => add('linearGradient', `x1="0" y1="0" x2="${h ? 1 : 0}" y2="${h ? 0 : 1}"`, stops),
-      rad: (c: any) =>
+      linS: (stops: Stop[], h?: boolean) =>
+        add('linearGradient', `x1="0" y1="0" x2="${h ? 1 : 0}" y2="${h ? 0 : 1}"`, stops),
+      rad: (c: string) =>
         add('radialGradient', 'cx=".36" cy=".3" r=".8"', [
           [0, shade(c, 0.42)],
           [0.55, c],
           [1, shade(c, -0.3)],
         ]),
-      radS: (attrs: any, stops: any) => add('radialGradient', attrs, stops),
-      clip: (inner: any) => {
+      radS: (attrs: string, stops: Stop[]) => add('radialGradient', attrs, stops),
+      clip: (inner: string) => {
         const k = `${id}_${list.length}`;
         list.push(`<clipPath id="${k}">${inner}</clipPath>`);
         return `url(#${k})`;
@@ -49,7 +52,7 @@ export const TWART = (() => {
 
   /* ---------- rooms: one tower floor per subject ---------- */
   // name = the floor's name in the Bauzeit; c = the subject's colour (paths, banners, boss shields)
-  const ROOMS = {
+  const ROOMS: Record<string, { name: string; c: string }> = {
     Mathe: { name: 'Rechenstube', c: '#3B7DD8' },
     Deutsch: { name: 'Schreibstube', c: '#E8833A' },
     Sachkunde: { name: 'Kartoffelkeller', c: '#4FA64F' },
@@ -57,11 +60,14 @@ export const TWART = (() => {
     Musik: { name: 'Glockenstube', c: '#E0507A' },
     Englisch: { name: 'Plauderstube', c: '#22A39A' },
   };
-  const subjColor = (s: string | number) => (ROOMS[s] || { c: '#8A93B0' }).c;
+  const subjColor = (s: string) => (ROOMS[s] || { c: '#8A93B0' }).c;
+  interface Lane {
+    subject: string;
+  }
   // a subject split over several paths gets lighter/darker variants, so the boss shields stay apart
-  function laneColors(lanes: any[]) {
-    return lanes.map((l: { subject: any }, i: any) => {
-      const same = lanes.filter((x: { subject: any }) => x.subject === l.subject);
+  function laneColors(lanes: Lane[]) {
+    return lanes.map((l, i) => {
+      const same = lanes.filter((x) => x.subject === l.subject);
       const k = same.indexOf(l);
       return same.length > 1 ? shade(subjColor(l.subject), [0, 0.38, -0.3][k]) : subjColor(l.subject);
     });
@@ -71,7 +77,15 @@ export const TWART = (() => {
   // cells[0] is cell 1 (at the gate) … cells[4] cell 5; spots = the two guard pedestals; head = where the name chip sits
   // (anchor: 'l' left edge, 'lb' left edge with the chips stacked, 'r' right edge, 'c' centre); hp = the tower's ❤️ chip (anchor 'c' top centre, 'rb' bottom right corner); path = extra points before cell 5 (from the board edge) and after cell 1
   const W = 358;
-  const LEFT = {
+  type Pt = [x: number, y: number];
+  interface LaneGeo {
+    cells: Pt[];
+    spots: Pt[];
+    from: Pt[];
+    to: Pt[];
+    head: [x: number, y: number, anchor: string];
+  }
+  const LEFT: LaneGeo = {
     cells: [
       [118, 270],
       [86, 236],
@@ -90,14 +104,14 @@ export const TWART = (() => {
     to: [[146, 290]],
     head: [8, 8, 'l'],
   };
-  const mirror = (g: { cells: any; spots: any; from: any; to: any; head: any }) => ({
+  const mirror = (g: LaneGeo): LaneGeo => ({
     cells: g.cells.map(([x, y]) => [W - x, y]),
     spots: g.spots.map(([x, y]) => [W - x, y]),
     from: g.from.map(([x, y]) => [W - x, y]),
     to: g.to.map(([x, y]) => [W - x, y]),
     head: [W - g.head[0], g.head[1], 'r'],
   });
-  const BOTTOM = {
+  const BOTTOM: LaneGeo = {
     cells: [
       [179, 326],
       [214, 358],
@@ -124,7 +138,7 @@ export const TWART = (() => {
   }
 
   // Catmull-Rom through the points as one smooth path
-  function smooth(p: string | any[]) {
+  function smooth(p: Pt[]) {
     let d = `M${p[0][0]} ${p[0][1]}`;
     for (let i = 0; i < p.length - 1; i++) {
       const a = p[i - 1] || p[i],
@@ -137,38 +151,14 @@ export const TWART = (() => {
   }
   const tuft = (x: number, y: number, k: number, c: string) =>
     `<path d="M${x - 5 * k} ${y} q${2 * k} ${-6 * k} ${1 * k} ${-10 * k} M${x} ${y} q0 ${-7 * k} ${2 * k} ${-12 * k} M${x + 5 * k} ${y} q${-1 * k} ${-5 * k} ${2 * k} ${-9 * k}" fill="none" stroke="${c}" stroke-width="${r1(1.8 * k)}" stroke-linecap="round"/>`;
-  function bush(
-    D: {
-      lin?: (a: any, b: any, h?: any) => string;
-      linS?: (stops: any, h?: any) => string;
-      rad: any;
-      radS?: (attrs: any, stops: any) => string;
-      clip?: (inner: any) => string;
-      out?: () => string;
-    },
-    x: number,
-    y: number,
-    k: number,
-  ) {
+  function bush(D: Defs, x: number, y: number, k: number) {
     const g = D.rad('#3F7A4E');
     return (
       `<ellipse cx="${x}" cy="${y + 2}" rx="${22 * k}" ry="${5 * k}" fill="${INK}" opacity=".22"/><path d="M${x - 20 * k} ${y} q-4 ${-14 * k} ${8 * k} ${-16 * k} q${4 * k} ${-12 * k} ${16 * k} ${-8 * k} q${10 * k} ${-6 * k} ${16 * k} ${6 * k} q${10 * k} ${4 * k} ${2 * k} ${18 * k} Z" fill="${g}" ${S(2)}/>` +
       `<path d="M${x - 10 * k} ${y - 14 * k} q${5 * k} ${-5 * k} ${10 * k} ${-3 * k}" fill="none" stroke="#9FD38A" stroke-width="2" stroke-linecap="round" opacity=".6"/>`
     );
   }
-  function tree(
-    D: {
-      lin?: (a: any, b: any, h?: any) => string;
-      linS?: (stops: any, h?: any) => string;
-      rad: any;
-      radS?: (attrs: any, stops: any) => string;
-      clip?: (inner: any) => string;
-      out?: () => string;
-    },
-    x: number,
-    y: number,
-    k: number,
-  ) {
+  function tree(D: Defs, x: number, y: number, k: number) {
     const leaf = D.rad('#2F6B4A');
     return (
       `<ellipse cx="${x}" cy="${y + 2}" rx="${18 * k}" ry="${5 * k}" fill="${INK}" opacity=".25"/><path d="M${x - 4 * k} ${y} L${x - 3 * k} ${y - 18 * k} L${x + 3 * k} ${y - 18 * k} L${x + 4 * k} ${y} Z" fill="#6E4A2E" ${S(2)}/>` +
@@ -177,22 +167,10 @@ export const TWART = (() => {
     );
   }
   // the flagstone a monster stands on (cell), tinted with its path's colour
-  const stone = (x: number, y: number, c: any) =>
+  const stone = (x: number, y: number, c: string) =>
     `<ellipse cx="${x}" cy="${y + 2.5}" rx="21" ry="12" fill="${INK}" opacity=".28"/><ellipse cx="${x}" cy="${y}" rx="20" ry="11.5" fill="${shade(c, 0.55)}" ${S(2)}/><ellipse cx="${x}" cy="${y - 1.6}" rx="15.5" ry="7.6" fill="${shade(c, 0.72)}"/><path d="M${x - 12} ${y - 3.5} q5 -4 12 -4.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>`;
   // guard pedestal: a dressed stone block seen from slightly above; its band carries the path colour
-  function pedestal(
-    D: {
-      lin?: (a: any, b: any, h?: any) => string;
-      linS: any;
-      rad?: (c: any) => string;
-      radS?: (attrs: any, stops: any) => string;
-      clip?: (inner: any) => string;
-      out?: () => string;
-    },
-    x: number,
-    y: number,
-    c: string,
-  ) {
+  function pedestal(D: Defs, x: number, y: number, c: string) {
     const face = D.linS(
       [
         [0, '#9AA3BC'],
@@ -208,7 +186,7 @@ export const TWART = (() => {
     );
   }
   // background: meadow at dusk, the paths with their flagstones, the courtyard at the gate, pedestals
-  function scene(lanes: string | any[]) {
+  function scene(lanes: Lane[]) {
     const G = geo(lanes.length),
       D = defs(),
       cols = laneColors(lanes),
@@ -311,7 +289,7 @@ export const TWART = (() => {
       s += g.cells.map(([x, y]) => stone(x, y, cols[i])).join('');
     });
     // trees and bushes frame the free corners
-    const deco =
+    const deco: [kind: string, x: number, y: number, k: number][] =
       lanes.length >= 3
         ? [
             ['t', 30, 384, 0.62],
@@ -365,14 +343,7 @@ export const TWART = (() => {
     }
     return s;
   }
-  const wallGrad = (D: {
-    lin?: (a: any, b: any, h?: any) => string;
-    linS: any;
-    rad?: (c: any) => string;
-    radS?: (attrs: any, stops: any) => string;
-    clip?: (inner: any) => string;
-    out?: () => string;
-  }) =>
+  const wallGrad = (D: Defs) =>
     D.linS(
       [
         [0, '#9AA3BC'],
@@ -386,13 +357,14 @@ export const TWART = (() => {
   function arch(x: number, y: number, w: number, h: number) {
     return `M${x} ${y + h} V${y + w / 2} A${w / 2} ${w / 2} 0 0 1 ${x + w} ${y + w / 2} V${y + h} Z`;
   }
-  const sill = (x: number, y: any, w: number) =>
+  const sill = (x: number, y: number, w: number) =>
     `<rect x="${x - 3}" y="${y}" width="${w + 6}" height="4" rx="1.5" fill="#E2E6EF" ${S(1.8)}/>`;
-  const shutter = (x: number, y: number, w: number, h: number, c: any) =>
+  const shutter = (x: number, y: number, w: number, h: number, c: string) =>
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5" fill="${c}" ${S(1.8)}/><path d="M${x + 1.5} ${y + h / 3} h${w - 3} M${x + 1.5} ${y + (2 * h) / 3} h${w - 3}" stroke="${shade(c, -0.35)}" stroke-width="1.2"/>`;
-  const ROOM_ART = {
+  type Room = (D: Defs, y: number, c: string) => string;
+  const ROOM_ART: Record<string, Room> = {
     // abacus in a wide window, blue shutters
-    Mathe(D: any, y: number, c: any) {
+    Mathe(D, y, c) {
       const wx = 33,
         wy = y + 8,
         ww = 44,
@@ -417,7 +389,7 @@ export const TWART = (() => {
       return s + sill(wx, wy + wh, ww);
     },
     // arched window with a big open book on a lectern and a quill in the ink pot (read at board size: few, bold shapes)
-    Deutsch(D: any, y: number, c: any) {
+    Deutsch(D, y, c) {
       const wx = 31,
         wy = y + 4,
         ww = 48,
@@ -435,7 +407,7 @@ export const TWART = (() => {
       return s + sill(wx, wy + wh, ww);
     },
     // half-timbered cellar floor: hatch with a potato sack
-    Sachkunde(D: { lin: (arg0: string, arg1: string) => any }, y: number, c: any) {
+    Sachkunde(D, y, c) {
       let s = `<rect x="17" y="${y}" width="76" height="${FLOOR}" fill="${D.lin('#F2E4C4', '#D8C49A')}"/>`;
       s += `<path d="M17 ${y + 1.5} H93 M17 ${y + FLOOR - 1.5} H93 M23 ${y} V${y + FLOOR} M87 ${y} V${y + FLOOR} M23 ${y + 2} L35 ${y + FLOOR - 2} M87 ${y + 2} L75 ${y + FLOOR - 2}" stroke="#7A4E2D" stroke-width="3.2"/>`;
       s += `<rect x="38" y="${y + 6}" width="34" height="27" rx="2" fill="#7A4E2D" ${S(2)}/><rect x="41" y="${y + 9}" width="28" height="24" fill="#2A2F4A" ${S(1.4)}/><rect x="41" y="${y + 9}" width="28" height="3" fill="${c}"/>`;
@@ -454,7 +426,7 @@ export const TWART = (() => {
       return s;
     },
     // a big wooden printing press with its screw and handle; a fresh sheet hangs on the left (bold shapes for board size)
-    Ethik(D: any, y: number, c: any) {
+    Ethik(D, y, c) {
       const wx = 24,
         wy = y + 5,
         ww = 62,
@@ -471,7 +443,7 @@ export const TWART = (() => {
       );
     },
     // open belfry: two arches and a golden bell
-    Musik(D: { rad: (arg0: string) => any }, y: number, c: any) {
+    Musik(D, y, c) {
       let s = `<path d="${arch(28, y + 4, 54, 30)}" fill="#2A2F4A" ${S(2.2)}/><path d="M55 ${y + 6} V${y + 34}" stroke="${INK}" stroke-width="0"/>`;
       s += `<path d="M30 ${y + 13} H80" stroke="#7A4E2D" stroke-width="3"/><path d="M55 ${y + 13} V${y + 15}" stroke="${INK}" stroke-width="2"/>`;
       s += `<path d="M46 ${y + 30} Q46 ${y + 16} 55 ${y + 15} Q64 ${y + 16} 64 ${y + 30} L66 ${y + 31} L44 ${y + 31} Z" fill="${D.rad('#F2C23C')}" ${S(1.8)}/><circle cx="55" cy="${y + 33}" r="2.2" fill="#B8862A" ${S(1.2)}/><path d="M49 ${y + 21} q1 -3 3 -4" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>`;
@@ -482,7 +454,7 @@ export const TWART = (() => {
       );
     },
     // window with a flower box, two speech bubbles in front
-    Englisch(D: any, y: number, c: any) {
+    Englisch(D, y, c) {
       const wx = 38,
         wy = y + 6,
         ww = 34,
@@ -501,21 +473,9 @@ export const TWART = (() => {
       return s + bub(20, y + 9, 14, 'Hi', false) + bub(77, y + 13, 12, '?', true);
     },
   };
-  const ROOM_FALLBACK = (D: any, y: number) => `<path d="${arch(45, y + 7, 20, 24)}" fill="#2A2F4A" ${S(2)}/>`;
+  const ROOM_FALLBACK: Room = (D, y) => `<path d="${arch(45, y + 7, 20, 24)}" fill="#2A2F4A" ${S(2)}/>`;
   // one floor of the tower (wall, string course, its room); x 17–93
-  function floorArt(
-    D: {
-      lin: (a: any, b: any, h?: any) => string;
-      linS: (stops: any, h?: any) => string;
-      rad: (c: any) => string;
-      radS: (attrs: any, stops: any) => string;
-      clip: (inner: any) => string;
-      out: () => string;
-    },
-    subject: string | number,
-    y: number,
-    i: number,
-  ) {
+  function floorArt(D: Defs, subject: string, y: number, i: number) {
     const c = subjColor(subject);
     let s =
       `<rect x="17" y="${y}" width="76" height="${FLOOR}" fill="${wallGrad(D)}" ${S(2.5)}/>` +
@@ -525,7 +485,7 @@ export const TWART = (() => {
     return s;
   }
   // cracks by ❤️ thirds: one in the base below 2/3, more and a chipped merlon below 1/3
-  function cracks(n: any, foot: number, lvl: number) {
+  function cracks(n: number, foot: number, lvl: number) {
     if (!lvl) return '';
     const crack = (x: number, y: number, s: number) =>
       `<path d="M${x} ${y} l${4 * s} 6 l${-5 * s} 5 l${5 * s} 7 l${-2 * s} 6 M${x + 4 * s} ${y + 6} l${4 * s} 1" fill="none" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><path d="M${x + 1} ${y + 1.5} l${4 * s} 6" stroke="#fff" stroke-width="1" opacity=".55"/>`;
@@ -549,7 +509,7 @@ export const TWART = (() => {
     return s;
   }
   // floors: subjects bottom → top; dmg 0 | 1 | 2 (see cracks). Returns the back (tower) and front (parapet over the hero's feet) svgs.
-  function tower(floors: string | any[], hp: number, maxHp: number) {
+  function tower(floors: string[], hp: number, maxHp: number) {
     const n = floors.length,
       H = towerH(n),
       D = defs(),
@@ -618,7 +578,7 @@ export const TWART = (() => {
   /* ---------- small marks on the board ---------- */
   // walking speed: one drawn 👣 per field a turn (the icon sheet src/app/core.ts puts in the page); faded = rests this turn
   // (boss) or stopped (Druckerei)
-  const feet = (n: number, faded: any) =>
+  const feet = (n: number, faded: boolean) =>
     `<svg class="tw-feet${faded ? ' rest' : ''}" viewBox="0 0 ${n * 26 + 2} 28" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<use href="#i-1f463" x="${i * 26 - 1}" y="-1" width="30" height="30"/>`).join('')}</svg>`;
   // guard level 1–3 as gold rank chevrons
   function pips(lvl: number) {
@@ -636,7 +596,7 @@ export const TWART = (() => {
     return `<svg class="tw-bubble" viewBox="0 0 60 60" aria-hidden="true">${D.out()}<circle cx="30" cy="30" r="27" fill="${g}" stroke="#DDF1FF" stroke-width="2"/><path d="M12 22 A20 20 0 0 1 24 9" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".85"/><circle cx="44" cy="44" r="2" fill="#fff" opacity=".7"/></svg>`;
   }
   // final boss: one ring segment per path in its colour; cols = [colour of each remaining shield, current first], gone = broken count
-  function shields(cols: any[], gone: any) {
+  function shields(cols: string[], gone: number) {
     const n = cols.length + gone,
       seg = 360 / n,
       R = 29;
@@ -650,7 +610,7 @@ export const TWART = (() => {
         ? `<path d="${d}" fill="none" stroke="#FFF9EE" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round" opacity=".55"/>`
         : `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${cur ? 9 : 7.5}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${cur ? 5.5 : 4}" stroke-linecap="round"/>${cur ? `<path d="${d}" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>` : ''}`;
     };
-    return `<svg class="tw-shields" viewBox="0 0 64 64" aria-hidden="true">${cols.map((c: any, i: number) => arc(i, c, i === 0, false)).join('')}${Array.from({ length: gone }, (_, i) => arc(cols.length + i, '', false, true)).join('')}</svg>`;
+    return `<svg class="tw-shields" viewBox="0 0 64 64" aria-hidden="true">${cols.map((c, i) => arc(i, c, i === 0, false)).join('')}${Array.from({ length: gone }, (_, i) => arc(cols.length + i, '', false, true)).join('')}</svg>`;
   }
 
   /* ---------- motion pieces (src/app/turm_screens.ts animates them) ---------- */
@@ -669,89 +629,89 @@ export const TWART = (() => {
       )
       .join('')}<g class="s">${spark(-22, -22, 5)}${spark(22, 16, 4, '#fff')}</g></svg>`;
   // a shot: glowing ball in the shooter's type colour; big = 🎯 or a level-3 guard
-  const orb = (c: any, big: any) =>
+  const orb = (c: string, big: boolean) =>
     `<svg class="tw-orb${big ? ' big' : ''}" viewBox="-12 -12 24 24" aria-hidden="true"><circle r="10" fill="${c}" opacity=".35"/><circle r="6.5" fill="${c}" ${S(2)}/><circle cx="-2" cy="-2" r="2.2" fill="#fff" opacity=".85"/></svg>`;
   // one Ziegel flying to the counter
   const brickOne = () => `<svg viewBox="-1 -1 18 10" aria-hidden="true">${brick(1, 1)}</svg>`;
   // Druckerei leaflet with printed lines
-  const leaflet = (c: any) =>
+  const leaflet = (c: string) =>
     `<svg class="tw-leaf" viewBox="0 0 14 18" aria-hidden="true"><path d="M1 1 H10 L13 4 V17 H1 Z" fill="#FFFDF5" ${S(1.4)}/><path d="M3.5 6 h7 M3.5 9 h7 M3.5 12 h5" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/></svg>`;
   // the shield item at the gate
   const guardShield = () =>
     `<svg class="tw-bigshield" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 3 L36 9 V22 C36 33 28 40 20 43 C12 40 4 33 4 22 V9 Z" fill="#7CC2FF" ${S(2.6)}/><path d="M20 8 L31 12 V22 C31 30 26 35 20 38 Z" fill="#2478D6" opacity=".5"/><path d="M9 13 Q9 10 13 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 
   /* ---------- Bauzeit card pictures (viewBox 0 0 80 56) ---------- */
-  const mini = (shape: string, color: string | number, x: number, y: number, s: number, o: { mirror?: boolean } = {}) =>
-    MONART.monsterSVG(shape, color, 0, o.mirror ? 'enemy' : '', o).replace(
+  const mini = (shape: string, color: string, x: number, y: number, s: number, o: { mirror?: boolean } = {}) =>
+    MONART.monsterSVG(shape, color, 0, o.mirror ? 'enemy' : '', o as object).replace(
       '<svg',
       `<svg x="${x}" y="${y}" width="${s}" height="${s}"`,
     );
-  const bolt = (x0: number, y0: number, x1: number, y1: number, c?: undefined) =>
+  const bolt = (x0: number, y0: number, x1: number, y1: number, c?: string) =>
     `<path d="M${x0} ${y0} Q${(x0 + x1) / 2} ${Math.min(y0, y1) - 10} ${x1} ${y1}" fill="none" stroke="${c || '#FFE066'}" stroke-width="2.4" stroke-dasharray="1 4.5" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="3.6" fill="${c || '#FFE066'}" ${S(1.4)}/>`;
-  const PEDESTAL = (D: any, x: number, y: number) => pedestal(D, x, y, '#FFC93C');
+  const PEDESTAL = (D: Defs, x: number, y: number) => pedestal(D, x, y, '#FFC93C');
   const ENEMY = ['schotterhaufen', '#9AA0B4'] as const;
   const plus = (x: number, y: number, c?: string | undefined) =>
     `<path d="M${x - 5} ${y} h10 M${x} ${y - 5} v10" stroke="${INK}" stroke-width="5.5" stroke-linecap="round"/><path d="M${x - 5} ${y} h10 M${x} ${y - 5} v10" stroke="${c || '#4FC96A'}" stroke-width="2.8" stroke-linecap="round"/>`;
-  const towerMini = (D: any, x: number, y: number, k: number) =>
+  const towerMini = (D: Defs, x: number, y: number, k: number) =>
     `<g transform="translate(${x} ${y}) scale(${k})"><rect x="-14" y="-30" width="28" height="30" fill="${wallGrad(D)}" ${S(2)}/>${[-14, -5, 4].map((mx) => `<rect x="${mx}" y="-36" width="7" height="7" fill="${wallGrad(D)}" ${S(2)}/>`).join('')}<path d="${arch(-6, -14, 12, 14)}" fill="#8E5E36" ${S(1.8)}/></g>`;
   // „for every right answer“: a green tick badge
   const ok = (x: number, y: number) =>
     `<circle cx="${x}" cy="${y}" r="7.5" fill="#4FC96A" ${S(1.8)}/><path d="M${x - 3.6} ${y} l2.6 2.8 l4.8 -5.4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
   const brick = (x: number, y: number) =>
     `<rect x="${x}" y="${y}" width="14" height="7" rx="1.2" fill="#D9653B" ${S(1.6)}/><path d="M${x + 2} ${y + 2} h6" stroke="#FFB08A" stroke-width="1.2" stroke-linecap="round"/>`;
-  const PICS = {
+  const PICS: Record<string, (D: Defs) => string> = {
     // a guard on its pedestal shooting at a monster
-    guard: (D: any) =>
+    guard: (D) =>
       PEDESTAL(D, 18, 42) +
       mini('fox', '#FF6A3D', 2, 6, 34) +
       bolt(32, 22, 60, 28) +
       mini(...ENEMY, 50, 16, 30, { mirror: true }),
     // a guard with chevrons and an arrow up
-    up: (D: any) =>
+    up: (D) =>
       PEDESTAL(D, 30, 42) +
       mini('fox', '#FF6A3D', 14, 6, 34) +
       `<g transform="translate(43 1) scale(1.6)">${pips(2).replace(/<\/?svg[^>]*>/g, '')}</g><path d="M66 52 V30 M58 37 l8 -9 l8 9" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M66 52 V30 M58 37 l8 -9 l8 9" fill="none" stroke="#4FC96A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
     // Mathe: one hit, and a second spark jumps to the front monster of another path
-    chain: (D: any) =>
+    chain: (D) =>
       mini(...ENEMY, 4, 14, 28, { mirror: true }) +
       mini('regenwicht', '#3FA0FF', 48, 14, 28, { mirror: true }) +
       `<path d="M24 22 L34 14 L32 24 L44 20" fill="none" stroke="${INK}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 22 L34 14 L32 24 L44 20" fill="none" stroke="#FFE066" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>` +
       spark(18, 12, 5) +
       spark(62, 12, 4),
     // Ethik: the hit monster stops for a turn
-    stun: (D: any) =>
+    stun: (D) =>
       mini(...ENEMY, 8, 12, 38, { mirror: true }) +
       `<circle cx="60" cy="24" r="13" fill="#FFF9EE" ${S(2.2)}/><rect x="54" y="17" width="4.4" height="14" rx="1.6" fill="${INK}"/><rect x="61.6" y="17" width="4.4" height="14" rx="1.6" fill="${INK}"/>` +
       spark(10, 14, 4) +
       spark(44, 8, 3.4),
     // Sachkunde: a right answer repairs the tower
-    repair: (D: any) =>
+    repair: (D) =>
       ok(10, 12) +
       towerMini(D, 30, 50, 1.1) +
       `<path d="M58 10 C58 6 52 4 50 9 C48 4 42 6 42 10 C42 16 50 21 50 21 C50 21 58 16 58 10 Z" fill="#E8344A" ${S(1.8)}/>` +
       plus(66, 30),
     // Deutsch: one more brick
-    brick: (D: any) => ok(12, 14) + brick(20, 34) + brick(36, 34) + brick(28, 26) + plus(60, 22, '#FFC93C'),
+    brick: (D) => ok(12, 14) + brick(20, 34) + brick(36, 34) + brick(28, 26) + plus(60, 22, '#FFC93C'),
     // Musik: the bell rings and the front monster steps back
-    push: (D: { rad: (arg0: string) => any }) =>
+    push: (D) =>
       `<path d="M10 30 Q10 12 20 11 Q30 12 30 30 L32 32 L8 32 Z" fill="${D.rad('#F2C23C')}" ${S(1.8)}/><circle cx="20" cy="35" r="2.6" fill="#B8862A" ${S(1.2)}/><path d="M36 16 q4 6 0 12 M41 13 q6 9 0 18" fill="none" stroke="#E0507A" stroke-width="2.2" stroke-linecap="round"/>` +
       mini(...ENEMY, 46, 12, 30, { mirror: true }) +
       `<path d="M50 48 H70 M64 43 l6 5 l-6 5" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 48 H70 M64 43 l6 5 l-6 5" fill="none" stroke="#FFF9EE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`,
     // Englisch: the guards on that path shoot twice
-    volley: (D: any) =>
+    volley: (D) =>
       PEDESTAL(D, 16, 42) +
       mini('toad', '#3FA0FF', 0, 8, 32) +
       bolt(30, 22, 60, 22) +
       bolt(30, 30, 60, 34) +
       mini(...ENEMY, 50, 14, 30, { mirror: true }),
     // Mauer flicken: trowel and bricks on the wall
-    fix: (D: any) =>
+    fix: (D) =>
       towerMini(D, 24, 50, 1.1) +
       brick(40, 38) +
       `<path d="M46 28 L66 12" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M46 28 L66 12" stroke="#8E5E36" stroke-width="2.6" stroke-linecap="round"/><path d="M40 30 L50 22 L54 30 L46 36 Z" fill="#C9CED8" ${S(1.8)}/>` +
       plus(66, 34, '#E8344A'),
   };
-  const FX = {
+  const FX: Record<string, string> = {
     Mathe: 'chain',
     Ethik: 'stun',
     Sachkunde: 'repair',
@@ -760,7 +720,7 @@ export const TWART = (() => {
     Englisch: 'volley',
   };
   // kind: guard | up | fix | a floor effect (chain, stun, repair, brick, push, volley) | a subject name (its floor's effect)
-  function picture(kind: string | number) {
+  function picture(kind: string) {
     const D = defs(),
       f = PICS[FX[kind] || kind];
     if (!f) return '';
@@ -781,7 +741,7 @@ export const TWART = (() => {
     leaflet,
     brickOne,
     guardShield,
-    spark: (c: any) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`,
+    spark: (c: string) => `<svg class="tw-spark" viewBox="-8 -8 16 16" aria-hidden="true">${spark(0, 0, 7, c)}</svg>`,
     feet,
     pips,
     bubble,
