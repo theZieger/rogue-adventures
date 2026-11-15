@@ -1,5 +1,5 @@
 // Duell: two children on one device, nothing is saved (runs the built docs/index.html in jsdom).
-import { open, answer } from './page.js';
+import { open, answer, sleep } from './page.js';
 
 let fails = 0;
 const check = (cond, msg) => {
@@ -8,7 +8,6 @@ const check = (cond, msg) => {
     console.log('FAIL', msg);
   } else console.log('ok  ', msg);
 };
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const META = 'mathquest_meta_v2';
 
 (async () => {

@@ -4,15 +4,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withApp } from './browser.js';
-import { SCREENS, visit } from './screens.js';
+import { open, SCREENS } from './screens.js';
 
 async function shoot(dir) {
   fs.mkdirSync(dir, { recursive: true });
   await withApp(async (newPage) => {
-    for (const [name, taps] of Object.entries(SCREENS)) {
-      const page = await newPage();
-      await visit(page, taps);
-      await page.screenshot({ path: path.join(dir, `${name}.png`) });
+    for (const name of Object.keys(SCREENS)) {
+      const page = await open(newPage, name);
+      await page.screenshot({ path: path.join(dir, `${name}.png`), fullPage: name === 'gallery' });
       await page.context().close();
     }
   });

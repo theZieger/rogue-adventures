@@ -1,13 +1,13 @@
 // Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
-import { ELTERN } from '../src/eltern.js';
-import { ICONS } from '../src/icons.js';
+import { ELTERN } from '../src/eltern.ts';
+import { ICONS } from '../src/icons.ts';
 import { JSDOM } from 'jsdom';
 import path from 'path';
 import { open as openPage } from './page.js';
-import { MQ } from '../src/logic.js';
-import { MK } from '../src/knowledge.js';
-import { UNITS as modes } from '../src/units.js';
-import { MONART } from '../src/monsters.js';
+import { MQ } from '../src/logic.ts';
+import { MK } from '../src/knowledge.ts';
+import { UNITS as modes } from '../src/units.ts';
+import { MONART } from '../src/monsters.ts';
 const fails = [];
 const fail = (msg) => fails.push(msg);
 const shapes = new Set(MONART.shapes);
@@ -107,7 +107,7 @@ for (const [mode, cfg] of Object.entries(modes)) {
 }
 
 // Lesestube texts: 60–120 words, three questions with one right answer each
-import { TEXTE } from '../src/texte.js';
+import { TEXTE } from '../src/texte.ts';
 if (TEXTE.length < 12) fail('Lesestube: fewer than 12 texts');
 const KINDS = [
   'Fabel',
@@ -274,13 +274,13 @@ if (modes.turm) fail('turm must not be a unit');
   }
 }
 
-// src/units.js loads the unit files by name in Node: it must end up with the units the built page has
+// src/units.ts loads the unit files by name in Node: it must end up with the units the built page has
 {
   const p = openPage();
   const inPage = p.w.eval('Object.keys(UNITS)');
   p.close();
   if (inPage.join() !== Object.keys(modes).join())
-    fail(`src/units.js: Node has the units ${Object.keys(modes)}, the page has ${inPage}`);
+    fail(`src/units.ts: Node has the units ${Object.keys(modes)}, the page has ${inPage}`);
 }
 
 console.log('data fails', fails.length);

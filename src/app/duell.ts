@@ -1,0 +1,225 @@
+import { MODES } from '../curriculum.ts';
+import { html, raw } from '../ui/html.ts';
+import { $, MODULES_OF, TYPES, app, esc } from './core.ts';
+import { type Attack, goalDone, heroLocked, heroSVG, makeTask, weekly, weeklyGoals } from './progress.ts';
+import { state } from './state.ts';
+import { enabledMods, extraOn, heroShown, loadRun, visSubjects } from './storage.ts';
+import { runTask } from './tasks.ts';
+import { screenTitle } from './title.ts';
+import { SFX, announce, fx, on, screen, topbar } from './ui.ts';
+
+/* ---------- Duell ---------- */
+// Two children on one device. Nothing is saved: no run, no stamps, and no statistics, because
+// the device statistics belong to one child and a duel would mix in the other child's answers.
+const DUEL_HP = 60,
+  DUEL_HIT = 12;
+const duelSpec = (p: Duellist) => MODES[p.mode].starters.find((s) => s.id === p.hero)!;
+// each child plays at the level of the running adventure in that unit, otherwise level 1
+const duelTiers = (m: string) => {
+  const r = loadRun(m);
+  return Object.fromEntries(
+    Object.entries(MODES[m].modules).map(([k, M]) => [k, Math.max(1, Math.min(M.maxTier, (r && r.tiers[k]) || 1))]),
+  );
+};
+const duelAttacks = (p: Duellist): Attack[] => {
+  const on = enabledMods(p.mode);
+  const a = duelSpec(p).attacks.filter((x: Attack) => on.includes(x.mod));
+  return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k }));
+};
+// a child choosing its unit and hero; startDuel adds hp and tiers
+interface DuelPlayer {
+  name: string;
+  mode: string | null;
+  hero: string | null;
+}
+// both in the running duel
+interface Duellist {
+  name: string;
+  mode: string;
+  hero: string;
+  hp: number;
+  tiers: Record<string, number>;
+}
+// in memory only; recent: the last tasks per task type, as in an adventure
+export interface Duel {
+  p: Duellist[];
+  turn: number;
+  recent?: Record<string, string[]>;
+}
+export function screenDuel(players: DuelPlayer[]) {
+  const i = players.length;
+  const p: DuelPlayer = { name: '', mode: null, hero: null };
+  state.depth = i ? 2 : 1;
+  const units = visSubjects().flatMap((s) => s.modes);
+  const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s) && heroShown(p.mode, s)) : []);
+  const paint = () => {
+    app.querySelectorAll<HTMLElement>('[data-unit]').forEach((b) => {
+      const on = b.dataset.unit === p.mode;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on as unknown as string); // written as "true" or "false"
+    });
+    $('#dheroes').innerHTML = p.mode
+      ? html`<h3>Dein Held</h3><div class="stack">${heroes().map(
+          (s) =>
+            html`<button class="choice ${p.hero === s.id ? 'selected' : ''}" data-hero="${s.id}" data-action="hero" aria-pressed="${String(p.hero === s.id)}">${raw(heroSVG(s, 0))}<div class="meta"><div class="name">${s.names[0]}</div><div class="desc">Attacken: ${[...new Set(s.attacks.map((a: Attack) => MODES[p.mode!].modules[a.mod].name))].join(', ')}</div></div></button>`,
+        )}</div>`.text
+      : '';
+    $<HTMLButtonElement>('#go').disabled = !p.hero;
+  };
+  screen(
+    html`<div class="screen">${raw(topbar(`Duell · Kind ${i + 1} von 2`))}<div class="scroll"><div class="stack">
+      ${i ? html`<p class="center">${players[0].name} ist bereit. Jetzt wählt das zweite Kind.</p>` : html`<p class="center">Zwei Kinder, ein Gerät. Ihr löst abwechselnd Aufgaben. Jede richtige Antwort trifft den Helden des anderen Kindes.</p>`}
+      <div class="card"><h3><label for="dname">Dein Name</label></h3><input id="dname" class="nameinput" maxlength="12" autocomplete="off" placeholder="Kind ${i + 1}"><p class="pnote">Der Name wird nicht gespeichert.</p></div>
+      <div class="card"><h3>Einheit</h3><div class="toggles" role="group" aria-label="Einheit">${units.map((m) => html`<button class="toggle" data-unit="${m}" data-action="unit" aria-pressed="false">${MODES[m].icon} ${MODES[m].title}</button>`)}</div></div>
+      <div id="dheroes"></div>
+      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back" data-action="back">Zurück</button><button class="btn" id="go" data-action="go" disabled>${i ? 'Duell starten' : 'Weiter'}</button></div></div></div>`,
+    {
+      unit: (b) => {
+        p.mode = b.dataset.unit!;
+        const h = heroes();
+        p.hero = h.length === 1 ? h[0].id : null;
+        paint();
+      },
+      hero: (b) => {
+        p.hero = b.dataset.hero!;
+        paint();
+      },
+      back: () => (i ? screenDuel([]) : screenTitle()),
+      go: () => {
+        if (!p.hero) return;
+        p.name = $<HTMLInputElement>('#dname').value.trim().slice(0, 12) || `Kind ${i + 1}`;
+        if (i === 0) screenDuel([p]);
+        else startDuel([players[0], p], 0);
+      },
+    },
+  );
+}
+function startDuel(players: DuelPlayer[], first: number) {
+  state.run = null;
+  state.duel = {
+    p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode!) })) as Duellist[],
+    turn: first,
+  };
+  duelTurn(`${esc(state.duel.p[first].name)} fängt an.`, '');
+}
+// child 1 stands at the bottom like the hero in a fight, child 2 at the top
+function renderDuel(log: string, cls: string) {
+  const plate = (p: Duellist, side: string) => {
+    const pct = (p.hp / DUEL_HP) * 100;
+    return html`<div class="plate ${side}"><div class="name">${p.name}${state.duel.p[state.duel.turn] === p ? html` <span class="levelbadge">am Zug</span>` : ''}</div><div class="plateline"><span class="chip" style="background:${TYPES[duelSpec(p).type].color};color:#1C2541">${MODES[p.mode].icon} ${duelSpec(p).names[0]}</span></div><div class="hpbar"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">❤️ ${p.hp} / ${DUEL_HP}</div></div>`;
+  };
+  const sprite = (p: Duellist, side: string, id: string) =>
+    html`<div class="sprite ${side}" id="${id}">${raw(heroSVG(duelSpec(p), 0, side === 'enemy' ? 'enemy' : undefined))}<i class="ground"></i></div>`;
+  const [a, b] = state.duel.p;
+  screen(
+    html`<div class="screen">${raw(topbar('⚔️ Duell'))}<div class="arena">${plate(b, 'enemy')}${sprite(b, 'enemy', 'fe')}${sprite(a, 'hero', 'fh')}${plate(a, 'hero')}</div><div class="log ${cls}">${raw(log)}</div><div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+    {},
+    true,
+  );
+  announce(log.replace(/<[^>]+>/g, ''));
+}
+function duelTurn(log: string, cls: string) {
+  const p = state.duel.p[state.duel.turn];
+  state.mode = p.mode;
+  const atks = duelAttacks(p);
+  const M = MODULES_OF();
+  renderDuel(log, cls);
+  $('#bottom').innerHTML =
+    html`<div class="attacks">${atks.map((a, i) => html`<button class="atk" data-i="${i}" data-action="attack" aria-label="${a.name}: ${M[a.mod].name}, ${DUEL_HIT} Schaden"><span class="n">${a.name}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">💥 ${DUEL_HIT}</span></span></button>`)}</div>`.text;
+  on({ attack: (btn) => duelAttack(atks[+btn.dataset.i!]) });
+}
+function duelAttack(atk: Attack) {
+  const p = state.duel.p[state.duel.turn],
+    o = state.duel.p[1 - state.duel.turn];
+  const t = makeTask(atk.mod, p.tiers[atk.mod] || 1);
+  $('.screen').classList.add('tasking');
+  $('#bottom').innerHTML = '';
+  let hit = false;
+  runTask(
+    t,
+    {
+      container: $('#taskwrap'),
+      bottom: $('#bottom'),
+      subtitle: `${p.name}: ${atk.name}`,
+      onResult: (ok) => {
+        hit = ok;
+        if (ok) o.hp = Math.max(0, o.hp - DUEL_HIT);
+      },
+    },
+    () => {
+      const log = hit
+        ? `${esc(atk.name)} trifft: ${DUEL_HIT} Schaden für ${esc(o.name)}.`
+        : `${esc(atk.name)} geht daneben.`;
+      const show = () => {
+        if (hit) {
+          const sel = state.duel.p.indexOf(o) ? '#fe' : '#fh';
+          $(sel).classList.add('hurt');
+          fx(sel, '−' + DUEL_HIT);
+          SFX.hit();
+        }
+      };
+      if (o.hp <= 0) {
+        renderDuel(log, 'hit');
+        show();
+        setTimeout(() => screenDuelEnd(p), 1500);
+        return;
+      }
+      state.duel.turn = 1 - state.duel.turn;
+      duelTurn(`${log} Jetzt ist ${esc(o.name)} dran.`, hit ? 'hit' : 'miss');
+      show();
+    },
+  );
+}
+function screenDuelEnd(w: Duellist) {
+  const players = state.duel.p;
+  const l = players.find((x: Duellist) => x !== w)!;
+  state.duel = null;
+  setTimeout(SFX.win, 150);
+  screen(
+    html`<div class="screen">${raw(topbar('⚔️ Duell'))}<div class="scroll"><div class="card center"><h2>${w.name} gewinnt das Duell.</h2>${raw(heroSVG(duelSpec(w), 0))}<p>${duelSpec(w).names[0]} hat noch ${w.hp} von ${DUEL_HP} Lebenspunkten.</p><p>Im nächsten Duell fängt ${l.name} an.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again" data-action="again">Noch ein Duell</button><button class="btn ghost" id="home" data-action="home">Zum Titel</button></div></div></div>`,
+    { again: () => startDuel(players, players.indexOf(l)), home: screenTitle },
+  );
+}
+
+// one task type practised this week: unit, right and total
+interface WeekRow {
+  m: string;
+  name: string;
+  icon: string;
+  c: number;
+  t: number;
+}
+// this week for parents: practised task types, the weakest one, the goals; the text has no names in it
+export function weekReport() {
+  const w = weekly();
+  const goals = weeklyGoals();
+  const wk = +w.week.slice(6);
+  const all = (
+    Object.entries(w.tally)
+      .map(([k, v]) => {
+        const [m, mod] = k.split(':');
+        const M = MODES[m] && MODES[m].modules[mod];
+        return M && v.t ? { m, name: M.name, icon: M.icon, c: v.c, t: v.t } : null;
+      })
+      .filter(Boolean) as WeekRow[]
+  ).sort((a, b) => b.t - a.t);
+  // Luther and Kirchenjahr share task type names
+  const rows = all.map((r) =>
+    Object.assign(r, {
+      label: all.some((x) => x.name === r.name && x.m !== r.m) ? `${r.name} (${MODES[r.m].title})` : r.name,
+    }),
+  );
+  const weak = rows.filter((r) => r.t >= 3).sort((a, b) => a.c / a.t - b.c / b.t)[0];
+  const done = goals.filter(goalDone).length;
+  const text = [
+    `Lernquest, Woche ${wk}`,
+    rows.length
+      ? 'Geübt (richtig von gesamt): ' + rows.map((r) => `${r.label} ${r.c} von ${r.t}`).join(', ')
+      : 'Diese Woche noch nichts geübt.',
+    weak ? `Schwächste Aufgabenart: ${weak.label} (${weak.c} von ${weak.t} richtig)` : '',
+    extraOn('wochenziele') ? `Wochenziele: ${done} von ${goals.length} erledigt` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return { text, wk, rows, goals, done };
+}

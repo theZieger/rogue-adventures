@@ -44,7 +44,7 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
 | 🎻 Der Konzertsaal | Musik, nur zum Anschauen (keine Töne): Notenwerte und Pausen (Bilder, in Stufe 2 rechnen), Takt ergänzen (2/4, 3/4, Stufe 2 auch 4/4 mit Pausen), Tonhöhen c bis c im Violinschlüssel, Instrumente und ihre Familien, wie der Ton entsteht, piano/forte/crescendo, Komponisten (Bach, Mozart, Beethoven, Robert und Clara Schumann, Wagner) mit Reihenfolge nach Geburtsjahr, Instrumente und Tänze anderer Länder |
 
-Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von selbst vorgelesen; je Fach ein gemeinsamer Held mit Gegnern in `src/klasse12.js`):
+Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von selbst vorgelesen; je Fach ein gemeinsamer Held mit Gegnern in `src/klasse12.ts`):
 
 | Klasse | Modus | Inhalt |
 |---|---|---|
@@ -67,11 +67,11 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 | 2 | 🕯️ Feste und die Welt | Geburtstag, Erntedank, St. Martin, Advent, Nikolaus, Weihnachten nach Lukas, Ostern; Staunen über die Natur, werden und wachsen – Dilemma-Karten |
 | 2 | 🥁 Der Musikraum | Welches Instrument ist das (als Bild)? Instrumentenfamilien, wie man es spielt, laut und leise, hoch und tief, Stimmen |
 
-- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.js`), danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
-- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.js`).
+- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.ts`), danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
+- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.ts`).
 - Kaufladen (Zahlenquest, einmal pro Welt, Kartenfeld `markt`): Das Kind bedient drei Kunden – in Welt 1 den Preis passend abzählen, ab Welt 2 das Rückgeld hinlegen – und sucht sich zum Dank einen Gegenstand aus. Eigenes Geld gibt es im ganzen Lernquest nicht: nichts wird verdient, nichts gekauft.
 - Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
-- Turmwacht (Titel, Klasse 2 und 3): Wiederholen am Wissensturm. Das Kind wählt ein bis drei Fächer (vorgeschlagen werden die schwächsten), jedes Fach bekommt einen Weg (ein Fach allein: bis zu drei Wege nach Thema oder Aufgabenart), auf dem Monster zum Turm laufen; jede richtige Antwort trifft eins. Gefragt werden nur schon geübte Aufgabenarten, mindestens zwei je Fach (ein neues Fach beginnt mit seinem ersten Thema). Sechs Wellen, Boss in Welle 3, Elitemonster in Welle 5, Endboss in Welle 6; Klasse 2 mit weniger und keinen schnellen Monstern. Richtige Antworten bringen Ziegel 🧱, mit denen man in der Bauzeit nach jeder Welle Wachen aufstellt und verbessert, Stockwerke für die Fächer baut (jedes mit eigener Wirkung) oder die Mauer flickt; nach jeder Welle wird die Mauer außerdem bis 30 ❤️ geflickt. Fällt der Turm, geht es zweimal pro Turmwacht ab der letzten Bauzeit weiter. Kein Zeitdruck; die Antworten zählen in Statistik und Wochenbericht. Die Turmwacht ist noch in Erprobung und deshalb zuerst ausgeschaltet: Eltern schalten sie unter „Anzeigen“ ein (`meta.turm.on`) und können dort die Fächer festlegen. Regeln in `src/turm.js`, Turm und Wege in `src/turmart.js`.
+- Turmwacht (Titel, Klasse 2 und 3): Wiederholen am Wissensturm. Das Kind wählt ein bis drei Fächer (vorgeschlagen werden die schwächsten), jedes Fach bekommt einen Weg (ein Fach allein: bis zu drei Wege nach Thema oder Aufgabenart), auf dem Monster zum Turm laufen; jede richtige Antwort trifft eins. Gefragt werden nur schon geübte Aufgabenarten, mindestens zwei je Fach (ein neues Fach beginnt mit seinem ersten Thema). Sechs Wellen, Boss in Welle 3, Elitemonster in Welle 5, Endboss in Welle 6; Klasse 2 mit weniger und keinen schnellen Monstern. Richtige Antworten bringen Ziegel 🧱, mit denen man in der Bauzeit nach jeder Welle Wachen aufstellt und verbessert, Stockwerke für die Fächer baut (jedes mit eigener Wirkung) oder die Mauer flickt; nach jeder Welle wird die Mauer außerdem bis 30 ❤️ geflickt. Fällt der Turm, geht es zweimal pro Turmwacht ab der letzten Bauzeit weiter. Kein Zeitdruck; die Antworten zählen in Statistik und Wochenbericht. Die Turmwacht ist noch in Erprobung und deshalb zuerst ausgeschaltet: Eltern schalten sie unter „Anzeigen“ ein (`meta.turm.on`) und können dort die Fächer festlegen. Regeln in `src/turm.ts`, Turm und Wege in `src/turmart.ts`.
 - Kein Zeitdruck. Alle vier Attacken sind von Anfang an da – nur in Klasse 1 beginnt das erste Abenteuer eines Themas mit zwei, das zweite mit drei Attacken; der Schaden steht als ganze Zahl auf dem Knopf.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
 - Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
@@ -91,27 +91,32 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 ## Projektstruktur
 
 ```
-src/style.css      Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast)
-src/logic.js       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
-src/jahrmarkt.js   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
-src/woerter.js     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
-src/english.js     Wörter und Sätze für Englisch – hier können Eltern Wörter der Klasse ergänzen (Aufbau im Dateikopf)
-src/texte.js       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
-src/knowledge.js   Wissensinhalte Ethik, Kartoffel, Deutsch und Englisch (Fragen, Notizkarten, Tutorials)
-src/ethik.js       Ethik-Einheit Ich, wir und die Welt (Fragen, Drei Welten, Dilemma-Karten)
-src/sachkunde.js   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
-src/sachkunde2.js  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
-src/sachkunde3.js  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
-src/musik.js       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
-src/klasse12.js    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
-src/k12_*.js       Klasse-1/2-Einheiten: Mathe, Deutsch, Sachkunde, Ethik (Musik steht mit in k12_ethik.js)
-src/turm.js        Turmwacht-Regeln (Wellen, Wachen, Stockwerke, Bauzeit, Neustart ab der letzten Bauzeit), ohne Oberfläche
-src/turmart.js     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-Bilder
-src/monsters.js    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
+src/styles/        Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast): tokens.css mit allen Farben, dann eine Datei
+                   je Bereich; die Reihenfolge steht in `STYLES` (tools/build.js)
+src/logic.ts       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
+src/jahrmarkt.ts   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
+src/woerter.ts     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
+src/english.ts     Wörter und Sätze für Englisch – hier können Eltern Wörter der Klasse ergänzen (Aufbau im Dateikopf)
+src/texte.ts       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
+src/knowledge.ts   Wissensinhalte Ethik, Kartoffel, Deutsch und Englisch (Fragen, Notizkarten, Tutorials)
+src/ethik.ts       Ethik-Einheit Ich, wir und die Welt (Fragen, Drei Welten, Dilemma-Karten)
+src/sachkunde.ts   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
+src/sachkunde2.ts  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
+src/sachkunde3.ts  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
+src/musik.ts       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
+src/klasse12.ts    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
+src/k12_*.ts       Klasse-1/2-Einheiten: Mathe, Deutsch, Sachkunde, Ethik (Musik steht mit in k12_ethik.ts)
+src/turm.ts        Turmwacht-Regeln (Wellen, Wachen, Stockwerke, Bauzeit, Neustart ab der letzten Bauzeit), ohne Oberfläche
+src/turmart.ts     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-Bilder
+src/monsters.ts    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
 art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
-src/units.js       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
-src/app/           Spiel-Engine in Teilen; tools/build.js setzt sie in der Reihenfolge von `APP` zu einer Funktion zusammen,
-                   sie teilen sich also einen Zustand (meta, run, mode):
+src/units.ts       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
+src/curriculum.ts  Reihenfolge der Einheiten, Fächer und Klassen (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) mit den Typen `Unit` und `TaskType`
+src/save.ts        der Spielstand: Typ `Meta`, Standardwerte, Laden/Speichern und die Reparatur beim Laden (`normMeta`)
+src/savecode.ts    Spielstand-Code (verkleinern, Base42); src/qr.ts zeichnet den QR-Code
+src/main.ts        Einstieg: lädt die Teile der Spiel-Engine in der Reihenfolge, in der sie starten
+src/app/           Spiel-Engine als Module, jedes importiert, was es braucht. Was mehrere Teile ändern (Spielstand `meta`,
+                   laufendes Abenteuer `run`, Einheit `mode`), steht in state.ts:
                    core (Einheiten, Lehrplan, Icons) · storage (Spielstand laden und reparieren) · progress (Stufen,
                    Stempel, Wochenziele) · ui (Anzeige, Zurück, Töne, Erklärungen) · tasks (Aufgaben-UI, Vorlesen) ·
                    title (Startseite, PIN, „Was ist neu?“) · backup (Spielstand-Code) · map (Held wählen, Karte) ·
@@ -130,6 +135,7 @@ tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildsc
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); page.js lädt die gebaute Seite für die Seitentests; Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
 docs/index.html    gebaute Spieldatei (nicht eingecheckt, die CI baut und veröffentlicht sie)
+docs/gallery.html  das Design auf einer Seite: Farben und alle Bausteine (gebaut aus src/gallery.ts, nicht eingecheckt)
 docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
 docs/splash/       iOS/iPadOS-Startbildschirme
 docs/screenshots/  Bilder für den Installieren-Dialog (Android/Desktop)
@@ -142,28 +148,31 @@ docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebu
 ```bash
 npm install          # nur Werkzeuge für Build und Tests (danach einmal: npx playwright install chromium)
 npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
-npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, etwa zwei Minuten)
-npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js)
+npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, etwa eine halbe Minute)
+npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js), auf einer virtuellen Uhr:
+                     # gleicher SEED = gleicher Lauf; TRACE_DIR=ordner schreibt jede Seite mit, um zwei Stände zu vergleichen
 npm run e2e          # Browser-Tests (Playwright): Start ohne Internet, Barrierefreiheit jedes Bildschirms
 npm run screenshots vorher   # Bildschirmfotos aller Bildschirme aus tools/screens.js; mit zwei Ordnern: Vergleich
-npm run format       # formatiert JS, CSS und JSON mit Biome (die CI prüft das)
+npm run typecheck    # tsc prüft alle TypeScript-Dateien
+npm run lint         # Biome (nicht deklarierte Namen) und Stylelint (Farben nur aus src/styles/tokens.css)
+npm run format       # formatiert JS, TS, CSS und JSON mit Biome (die CI prüft das)
 MODE=turm GRADE=3 SUBJECTS=Mathe,Deutsch ACC=0.9 RUNS=1 node tests/playtest.js   # nur die Turmwacht (SEED=n, NAIVE=1 tippt wie ein Kind beliebige Monster an)
 ```
 
 Inhalte anpassen:
-- Pflanzenteil-Namen: `PARTS` in `src/knowledge.js`
-- Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.js`; Auge, Ohr und Fahrrad: `EYE_PARTS`, `EAR_PARTS`, `BIKE_PARTS` in `src/sachkunde2.js`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
-- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.js`; Dilemma-Karten in `F_EVENTS`; Ich, wir und die Welt in `src/ethik.js` (`POOL`, Dinge für Drei Welten in `DINGE`, Dilemma-Karten in `EVENTS`)
-- Deutsch-Wörter und -Sätze: `src/woerter.js`, Englisch: `src/english.js` (danach `npm run build && npm test`)
-- Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.js`) bzw. `K_MODULES`
-- Gegner/Balance: `ENEMIES` in `src/logic.js`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.js`
+- Pflanzenteil-Namen: `PARTS` in `src/knowledge.ts`
+- Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.ts`; Auge, Ohr und Fahrrad: `EYE_PARTS`, `EAR_PARTS`, `BIKE_PARTS` in `src/sachkunde2.ts`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
+- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.ts`; Dilemma-Karten in `F_EVENTS`; Ich, wir und die Welt in `src/ethik.ts` (`POOL`, Dinge für Drei Welten in `DINGE`, Dilemma-Karten in `EVENTS`)
+- Deutsch-Wörter und -Sätze: `src/woerter.ts`, Englisch: `src/english.ts` (danach `npm run build && npm test`)
+- Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.ts`) bzw. `K_MODULES`
+- Gegner/Balance: `ENEMIES` in `src/logic.ts`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.ts`
 
 ## Neue Einheit
 
-Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.js`).
-`src/units.js` macht daraus die eine Liste `UNITS`: Startseite, Klassen-Reiter, Statistik, Spielstand, Bot und Monster-Bilder lesen sie.
-Dazu gehören: eine neue Datei in `src/units.js` importieren (die Reihenfolge dort ist die Reihenfolge der Themen), Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
-`src/monsters.js`, neue Emojis in `src/icons.js`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app/core.js`).
+Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.ts`).
+`src/units.ts` macht daraus die eine Liste `UNITS`: Startseite, Klassen-Reiter, Statistik, Spielstand, Bot und Monster-Bilder lesen sie.
+Dazu gehören: eine neue Datei in `src/units.ts` importieren (die Reihenfolge dort ist die Reihenfolge der Themen), Elterntexte in `src/eltern.ts`, Zeichnungen für Held und Gegner in
+`src/monsters.ts`, neue Emojis in `src/icons.ts`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app/core.ts`).
 
 ## Veröffentlichen (GitHub Pages)
 
@@ -175,7 +184,7 @@ Die CI (`.github/workflows/ci.yml`) baut bei jedem Push auf `main`, prüft und v
 
 „💡 Idee senden“ (Startseite und Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
 
-Ein anderes Formular verwenden: In `FEEDBACK` (`src/app/feedback.js`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
+Ein anderes Formular verwenden: In `FEEDBACK` (`src/app/feedback.ts`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
 
 ## Texte und Namen
 

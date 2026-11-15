@@ -10,27 +10,21 @@ const ROOT = path.join(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const DOCS = path.join(ROOT, 'docs');
 
-// The game itself: the parts of src/app/ in this order inside one function, so they share its state (meta, run, mode).
-const APP = [
-  'core',
-  'storage',
-  'progress',
-  'ui',
-  'tasks',
-  'title',
-  'backup',
-  'map',
+// tokens first; among the others a later file wins where two rules are equally specific, so the order is part of
+// the design.
+const STYLES = [
+  'tokens',
+  'base',
+  'title-map',
   'battle',
-  'nodes',
-  'collection',
-  'huette',
-  'duell',
-  'turm',
-  'turm_screens',
-  'garten',
-  'elternbereich',
-  'feedback',
-  'boot',
+  'task',
+  'small-screens',
+  'title-extras',
+  'motion',
+  'parents',
+  'units',
+  'kreisel',
+  'turmwacht',
 ];
 const GROUPS = ['Neu', 'Verbessert', 'Behoben'];
 
@@ -51,19 +45,9 @@ function bakedMonsters() {
   return baked;
 }
 
-// Every module of src/ under the name it exports, then the game. units.js goes first: it sets the order of the units.
-function appSource() {
-  const modules = files(SRC, '.js').filter((name) => name !== 'sw.js' && name !== 'units.js');
-  const imports = ['units.js', ...modules].flatMap((name) => {
-    const exported = /^export const (\w+)/m.exec(read(SRC, name));
-    return exported ? [`import { ${exported[1]} } from './${name}';`] : [];
-  });
-  return `${imports.join('\n')}\n(() => {\n${APP.map((part) => read(SRC, 'app', `${part}.js`)).join('')}})();\n`;
-}
-
-function bundle() {
+function bundle(entry) {
   const { outputFiles } = esbuild.buildSync({
-    stdin: { contents: appSource(), resolveDir: SRC, sourcefile: 'app.js' },
+    entryPoints: [path.join(SRC, entry)],
     bundle: true,
     format: 'iife',
     minifyWhitespace: true,
@@ -173,17 +157,17 @@ ${splashTags()}
 <link rel="preload" href="fonts/andika-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/patrickhand-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-${read(SRC, 'style.css')}
+${styles}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
 globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
-const CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
+globalThis.CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
 </script>
 <script>
-${bundle()}</script>
+${bundle('main.ts')}</script>
 <script>
 ${REGISTER_SERVICE_WORKER}
 </script>
@@ -210,11 +194,34 @@ function write(name, text) {
   return `docs/${name}`;
 }
 
-assert.deepStrictEqual(
-  APP.map((part) => `${part}.js`).sort(),
-  files(path.join(SRC, 'app'), '.js'),
-  'APP in tools/build.js must list every file in src/app/',
-);
+// Two cascade layers: the tokens, and above them everything that uses them. Inside the app layer the order of
+// STYLES decides as before; a sheet outside the layers (the gallery's) wins over both without fighting specificity.
+const [tokens, ...sheets] = STYLES.map((name) => read(SRC, 'styles', `${name}.css`));
+const styles = `@layer tokens, app;\n@layer tokens {\n${tokens}}\n@layer app {\n${sheets.join('')}}\n`;
+
+// The design system page: the game's styles and modules, but the gallery instead of the game.
+function gallery() {
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lernquest Design</title>
+<style>
+${styles}${read(SRC, 'styles', 'gallery.css')}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
+</script>
+<script>
+${bundle('gallery.ts')}</script>
+</body>
+</html>
+`;
+}
 
 const html = page();
 const manifest = read(SRC, 'manifest.webmanifest');
@@ -225,4 +232,5 @@ console.log(
   `built ${write('index.html', html.replaceAll('__BUILD__', id))} (${Buffer.byteLength(html).toLocaleString('en')} bytes)`,
 );
 write('manifest.webmanifest', manifest);
+write('gallery.html', gallery());
 console.log(`built ${write('sw.js', serviceWorker.replaceAll('__VERSION__', id))} (version ${id})`);

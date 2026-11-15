@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Monster art pipeline: src/monsters.js -> art/monsters/raw/*.svg -> (svgo) -> art/monsters/svg/*.svg
+/* Monster art pipeline: src/monsters.ts -> art/monsters/raw/*.svg -> (svgo) -> art/monsters/svg/*.svg
  *
  *   npm run svg            bake the raw SVGs and optimise the ones that changed
  *   npm run svg -- --all   re-optimise everything (e.g. after changing SVGO_CONFIG)
@@ -13,9 +13,9 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { optimize } from 'svgo';
-import { MONART } from '../src/monsters.js';
-import { MQ } from '../src/logic.js';
-import { UNITS } from '../src/units.js';
+import { MONART } from '../src/monsters.ts';
+import { MQ } from '../src/logic.ts';
+import { UNITS } from '../src/units.ts';
 
 const ROOT = path.join(import.meta.dirname, '..');
 const ART = path.join(ROOT, 'art', 'monsters');

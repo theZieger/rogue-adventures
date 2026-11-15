@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { MONART } from '../src/monsters.js';
+import { MONART } from '../src/monsters.ts';
 
 const OUT = path.join(import.meta.dirname, '..', 'docs', 'icons');
 const BG_TOP = '#2A3A73';

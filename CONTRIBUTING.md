@@ -8,13 +8,14 @@ everything a child or parent reads is German. Fixes to learning content are as w
 ```bash
 npm install
 npm run build        # src/* -> docs/index.html (one file, open it in a browser)
-npm test             # about two minutes; needs the build
+npm test             # half a minute; needs the build
 npm run playtest     # a bot plays every unit
 npm run e2e          # browser tests: offline start, accessibility (once before: npx playwright install chromium)
-npm run format       # Biome formats JS, CSS and JSON
+npm run typecheck    # tsc, strict, over every .ts file
+npm run format       # Biome formats JS, TS, CSS and JSON
 ```
 
-You need Node 20 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
+You need Node 22.22 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
 and e2e; CI checks all five.
 
 ## Find your way
@@ -22,7 +23,9 @@ and e2e; CI checks all five.
 - `README.md` lists every file and what it holds.
 - `GLOSSARY.md` has the project's words (Einheit, Abenteuer, Aufgabenart …) and their names in the code. Use them.
 - `adr/` records the architecture decisions and why they were made.
-- `src/units.js` is the one list of units; `README.md` → „Neue Einheit“ explains how to add one.
+- `docs/gallery.html` (after a build) shows the design system: every colour and building block. A colour is a
+  token in `src/styles/tokens.css`, never a hex value in a rule.
+- `src/units.ts` is the one list of units; `README.md` → „Neue Einheit“ explains how to add one.
 
 ## Rules that are not negotiable
 

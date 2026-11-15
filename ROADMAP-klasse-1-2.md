@@ -74,7 +74,7 @@ schnell/langsam, Wiederholung und Gegensatz. Noten und Komponisten stehen in Kla
 | T1 | **Leseanfänger:** kurze Sätze, größere Schrift, Bild statt Text bei den Antworten; Lesestube, Lückentext und lange Tipps in Klasse 1 aus | Kinder in Klasse 1 können die heutigen Aufgaben nicht lesen. Größtes Risiko des Vorhabens |
 | T2 | **Klasse wählen:** Einrichtung fragt nach der Klasse; Titel, Beschreibung und Installationstexte sagen nicht mehr „Klasse 3“ | heute fest verdrahtet |
 | T3 | **Rechenaufgaben mit einstellbarem Zahlenraum:** eine Tabelle je Aufgabenart (bis 10, bis 20, bis 100, mit/ohne Zehnerübergang) statt fester Stufen; Uhr, Geld, Diagramm, Würfelgebäude aus Jahrmarkt und Baustelle wiederverwendbar machen | die vorhandenen Generatoren beginnen bei Klasse-3-Niveau |
-| T4 | **Wortaufgaben nach Klasse:** Wortlisten in `src/woerter.js` je Klasse, Generatoren der Deutsch-Einheiten nehmen die Liste der Klasse | Rechtschreibthemen der Klasse 3 (ck, tz, Komma) dürfen in Klasse 2 nicht vorkommen |
+| T4 | **Wortaufgaben nach Klasse:** Wortlisten in `src/woerter.ts` je Klasse, Generatoren der Deutsch-Einheiten nehmen die Liste der Klasse | Rechtschreibthemen der Klasse 3 (ck, tz, Komma) dürfen in Klasse 2 nicht vorkommen |
 | T5 | **Bilder in Datenfragen:** kleine Bildbibliothek (Baum, Blatt, Vogel, Uhr, Wettersymbol …), die eine Frage mit Namen aufruft | Sachunterricht 1/2 lebt von Bildern; heute geht nur eingebettetes SVG |
 | T6 | **Kürzere Abenteuer und sanftere Gegner** für Klasse 1/2 (Kartenlänge, Lebenspunkte) | Ausdauer von Sechsjährigen |
 
@@ -93,7 +93,7 @@ einen Helden und sechs Gegner als Zeichnung.
 | D1 | 1 | Deutsch | Buchstaben und Laute | Anlaut zum Bild, Selbstlaut/Mitlaut, wo hörst du den Laut, Silben zählen, ABC, Reimwörter | Code (T4, T5) |
 | D2 | 2 | Deutsch | Richtig schreiben | st/sp, qu, ie, doppelte Mitlaute, verlängern, ableiten, groß/klein, Satzzeichen, ABC-Reihenfolge, kleine Wörter | Code (T4), Generatoren aus der Wörterwerkstatt |
 | D3 | 2 | Deutsch | Wörter und Sätze | vier Wortarten, Einzahl/Mehrzahl, Artikel, zusammengesetzte Nomen, Wortfamilie, Wortfeld, drei Satzarten | Code (T4), Generatoren aus der Satzbaustelle |
-| D4 | 1/2 | Deutsch | Leichte Lesestube | Texte mit 20–50 Wörtern, je zwei Fragen; Reim, Vers, Strophe, Märchen | Fragen (`src/texte.js` mit Klasse) |
+| D4 | 1/2 | Deutsch | Leichte Lesestube | Texte mit 20–50 Wörtern, je zwei Fragen; Reim, Vers, Strophe, Märchen | Fragen (`src/texte.ts` mit Klasse) |
 | S1 | 1 | Sachkunde | Mein Körper | Körper- und Zahnpflege, Frühstück, Kleidung nach Wetter, Nein sagen, Erste Hilfe, Notruf | Daten, Dilemma-Karten |
 | S2 | 1 | Sachkunde | Durch das Jahr | Jahreszeiten, Monate, Wochentage, Tageslauf, Uhr (volle Stunde), Wetterzeichen, Schulweg | Daten + Bilder (T5) |
 | S3 | 2 | Sachkunde | Bäume und Blumen | Laub- und Nadelbäume, Teile von Baum und Pflanze (Zeichenschule), Frühblüher, Keimung, Obstarten, Garten | Code (Bilder zum Antippen) |

@@ -1,5 +1,5 @@
 // Jahrmarkt generators: every task is solvable from what the child sees, whole numbers only, one right choice.
-import { MJ } from '../src/jahrmarkt.js';
+import { MJ } from '../src/jahrmarkt.ts';
 import { solve, textOf } from './jm_solver.js';
 const fails = [];
 const check = (cond, msg, t) => {

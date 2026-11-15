@@ -49,12 +49,14 @@ function fixRandomAndClock() {
   };
 }
 
-// use(newPage, url): newPage() opens the app in a fresh browser profile, so every caller starts without a save
+// use(newPage, url): newPage() opens the app (or another file of docs/) in a fresh browser profile, so every caller
+// starts without a save
 async function withApp(use, root) {
   const server = await serve(root);
-  const browser = await chromium.launch();
+  // CHROMIUM=/path/to/chrome uses that browser instead of the one Playwright installs
+  const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const url = `http://localhost:${server.address().port}/`;
-  const newPage = async () => {
+  const newPage = async (file = '') => {
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },
       deviceScaleFactor: 2,
@@ -63,7 +65,7 @@ async function withApp(use, root) {
     });
     await context.addInitScript(fixRandomAndClock);
     const page = await context.newPage();
-    await page.goto(url);
+    await page.goto(url + file);
     return page;
   };
   try {

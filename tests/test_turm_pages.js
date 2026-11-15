@@ -1,6 +1,6 @@
 // Turmwacht in the page: saving and resuming runs (runs the built docs/index.html in jsdom, seeded).
 // Page budget for the whole Turm feature: at most 15 page opens in this file.
-import { UNITS } from '../src/units.js';
+import { UNITS } from '../src/units.ts';
 import * as page from './page.js';
 
 const t0 = Date.now();
@@ -419,7 +419,7 @@ const turn = (p, ok) => {
   uiAnswer(u, true);
   const played = !!u.$('.tw-screen.playing'),
     saved1 = u.saved();
-  await new Promise((r) => setTimeout(r, 300));
+  await page.sleep(300);
   const R1 = u.w.__mq.run;
   check(
     played &&

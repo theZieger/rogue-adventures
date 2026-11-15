@@ -1,0 +1,65 @@
+/* Only for docs/gallery.html: the page scrolls and lays the specimens out one under the other. */
+body {
+  overflow: auto;
+  height: auto;
+}
+#app {
+  height: auto;
+}
+.gallery section {
+  padding: var(--space-8) var(--space-16) var(--space-20);
+}
+.gallery section > * + * {
+  margin-top: var(--space-12);
+}
+.gallery .swatches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-8);
+}
+.gallery .swatches li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  column-gap: var(--space-8);
+  align-items: center;
+  font-size: var(--text-13);
+}
+.gallery .swatches i {
+  grid-row: span 2;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-8);
+  border: 2px solid var(--white);
+}
+.gallery .swatches small {
+  opacity: 0.85;
+}
+.gallery .attacks,
+.gallery .numpad,
+.gallery .options {
+  position: static;
+}
+.gallery .sizes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+}
+.gallery .sizes code,
+.gallery .sizes small {
+  font-size: var(--text-13);
+  opacity: 0.85;
+}
+.gallery .corners i {
+  background: var(--card);
+  border-radius: 0;
+}
+.gallery .spaces i {
+  height: 12px;
+  border: 0;
+  border-radius: 0;
+  background: var(--gold);
+}

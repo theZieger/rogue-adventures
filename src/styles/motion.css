@@ -1,0 +1,213 @@
+/* ---------- Motion ---------- */
+.enter {
+  animation: screenIn 0.22s ease-out both;
+}
+@keyframes screenIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.sprite .mon {
+  animation: bob 3.2s ease-in-out infinite;
+}
+.sprite#fe .mon:not(.top) {
+  animation-delay: -1.6s;
+}
+.hero .logo,
+.card.center > .mon,
+.choice.selected .mon {
+  animation: bob 3.6s ease-in-out infinite;
+}
+@keyframes bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+.floatnum {
+  position: fixed;
+  transform: translateX(-50%);
+  font-family: var(--hand);
+  font-size: var(--text-36);
+  color: var(--white);
+  text-shadow:
+    0 2px 0 var(--ink),
+    0 0 6px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  animation: floatUp 2s ease-out forwards;
+  z-index: 3;
+}
+.floatnum.crit {
+  color: var(--gold);
+  font-size: var(--text-32);
+}
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 -44px;
+  }
+}
+.node.open {
+  animation: glow 2.4s ease-in-out infinite;
+}
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px var(--gold),
+      var(--shadow);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px rgba(255, 201, 60, 0.55),
+      var(--shadow);
+  }
+}
+.overlay .modal {
+  animation: modalIn 0.2s ease-out both;
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.feedback.good {
+  animation: pop 0.45s;
+}
+.atk.tired .tag.tired {
+  animation: none;
+}
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 5;
+}
+.confetti i {
+  position: absolute;
+  top: -12px;
+  left: var(--x);
+  width: 9px;
+  height: 14px;
+  border-radius: var(--radius-3);
+  background: var(--c);
+  opacity: 0;
+  animation: fall 2.6s ease-in var(--d) 1 forwards;
+}
+@keyframes fall {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(85vh) rotate(320deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .enter,
+  .sprite .mon,
+  .hero .logo,
+  .card.center > .mon,
+  .choice.selected .mon,
+  .node.open,
+  .overlay .modal,
+  .feedback.good,
+  .confetti i {
+    animation: none;
+  }
+  .confetti {
+    display: none;
+  }
+  .floatnum {
+    animation: none;
+    opacity: 1;
+  }
+  .btn,
+  .choice,
+  .atk,
+  .opt,
+  .oitem,
+  .node,
+  .item,
+  .toggle,
+  .gradechip,
+  .subjtile {
+    transition: none;
+  }
+}
+
+.advantage {
+  font-size: var(--text-13);
+  font-weight: 700;
+  background: var(--green-130);
+  color: var(--green-760);
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-8);
+  line-height: 20px;
+}
+@media (max-height: 720px) {
+  .grid {
+    grid-template-columns: repeat(3, 52px);
+    gap: var(--space-5);
+    margin: var(--space-6) 0;
+  }
+  .grid div {
+    width: 52px;
+    height: 52px;
+    font-size: var(--text-20);
+  }
+  .legend {
+    font-size: var(--text-13);
+    gap: var(--space-6);
+  }
+}
+@media (max-height: 720px) and (min-width: 500px) {
+  .grid {
+    grid-template-columns: repeat(3, 56px);
+  }
+  .grid div {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+.fbmsg {
+  min-height: 1em;
+  margin: var(--space-6) 0 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+.fbmsg a {
+  color: var(--blue);
+}
+.row .btn.small {
+  white-space: nowrap;
+}

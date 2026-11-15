@@ -3,6 +3,7 @@
 // freed while open, so the tests close the pages they are done with; dump() still works after close().
 // Parsing 4 MB of HTML took most of a page load, so the scripts are compiled once and run in each new page;
 // tests/playtest.js still loads the file as a browser does.
+import { install, sleep, uninstall } from './clock.js';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
@@ -44,6 +45,7 @@ function open(storage, opts) {
     beforeParse(w) {
       for (const [k, v] of Object.entries(storage || {})) w.localStorage.setItem(k, v);
       w.addEventListener('error', (e) => errors.push(e.message));
+      install(w, (message) => errors.push(message));
       if (opts.seed != null) w.Math.random = seeded(opts.seed);
       if (opts.zip) Object.assign(w, { CompressionStream, DecompressionStream, Response, TextEncoder });
       if (opts.voice) {
@@ -128,6 +130,7 @@ function open(storage, opts) {
     errors,
     close: () => {
       snap = dump();
+      uninstall(w);
       w.close();
     },
   };
@@ -163,4 +166,4 @@ function answer(p, right) {
   p.click('#next');
 }
 
-export { open, answer };
+export { open, answer, sleep };

@@ -9,3 +9,7 @@ node_modules/
 docs/index.html
 docs/sw.js
 docs/manifest.webmanifest
+docs/gallery.html
+
+# temporary checkouts of agents
+.claude/worktrees/

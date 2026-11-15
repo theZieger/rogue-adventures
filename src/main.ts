@@ -1,0 +1,20 @@
+// The game: the engine parts in the order they start.
+import './app/core.ts';
+import './app/storage.ts';
+import './app/progress.ts';
+import './app/ui.ts';
+import './app/tasks.ts';
+import './app/title.ts';
+import './app/backup.ts';
+import './app/map.ts';
+import './app/battle.ts';
+import './app/nodes.ts';
+import './app/collection.ts';
+import './app/huette.ts';
+import './app/duell.ts';
+import './app/turm.ts';
+import './app/turm_screens.ts';
+import './app/garten.ts';
+import './app/elternbereich.ts';
+import './app/feedback.ts';
+import './app/boot.ts';

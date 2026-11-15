@@ -1,0 +1,772 @@
+/* Jahrmarkt: clock, wheel, scale, ruler and chart */
+.jm-fig {
+  display: block;
+  margin: var(--space-4) auto 0;
+  width: 100%;
+  max-width: 170px;
+  max-height: 22vh;
+}
+.jm-fig.jm-wide {
+  max-width: 360px;
+}
+.jm text {
+  font-family: "Andika", sans-serif;
+}
+.jm .question {
+  text-align: center;
+}
+.jm-plan {
+  margin: var(--space-4) auto var(--space-8);
+  border-collapse: collapse;
+  font-size: var(--text-15);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.jm-plan caption {
+  font-weight: 700;
+  padding-bottom: var(--space-4);
+}
+.jm-plan th,
+.jm-plan td {
+  border: 2px solid var(--ink-soft);
+  padding: var(--space-2) var(--space-6);
+  text-align: center;
+}
+.jm-plan tr > th:first-child {
+  text-align: left;
+}
+.jm-plan tr:first-child th {
+  background: var(--cream-130);
+  color: var(--navy-800);
+}
+
+/* Stamps */
+.stampbtn {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top, 0px));
+  left: 66px;
+  z-index: 2;
+  min-height: 46px;
+  padding: 0 var(--space-14);
+  border-radius: var(--radius-pill);
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--paper-ink);
+  font-weight: 700;
+  font-size: var(--text-18);
+  cursor: pointer;
+}
+.stampgain {
+  font-weight: 800;
+  font-size: var(--text-24);
+  color: var(--orange-750);
+}
+.stampbal {
+  font-family: var(--hand);
+  font-size: var(--text-48);
+  line-height: 1.1;
+}
+.wkgrid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+.wk {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--card2);
+  border-radius: var(--radius-8);
+  font-size: var(--text-18);
+  font-weight: 800;
+  line-height: 1;
+}
+.wk.done {
+  background: var(--green-110);
+  border-color: var(--green);
+  color: var(--green-700);
+}
+.wk.gold {
+  background: var(--cream-170);
+  border-color: var(--gold);
+  color: var(--orange-650);
+}
+.wk.now {
+  outline: 3px solid var(--ink);
+  outline-offset: 1px;
+}
+.choice.reward,
+.choice.locked {
+  cursor: default;
+}
+.choice.reward:active,
+.choice.locked:active {
+  transform: none;
+  box-shadow: var(--shadow);
+}
+.choice.locked {
+  opacity: 0.75;
+}
+.choice.reward .btn {
+  margin-top: var(--space-8);
+}
+.rwprev {
+  width: 96px;
+  height: 96px;
+  flex: none;
+  border-radius: var(--radius-18);
+  border: 3px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-30);
+}
+.rwhave {
+  margin-top: var(--space-8);
+  font-weight: 700;
+  color: var(--green-700);
+}
+.topbar .mon.tbhero {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+  margin: -6px var(--space-4) -6px -4px;
+}
+.kkcard .mon {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+}
+.kkcard .name,
+.kkitem .name {
+  font-family: var(--hand);
+  font-size: var(--text-26);
+  line-height: 1.1;
+}
+.kkpick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  justify-content: center;
+}
+.kkhero {
+  width: 64px;
+  height: 64px;
+  padding: var(--space-4);
+  border-radius: var(--radius-16);
+  border: 3px solid var(--ink);
+  background: var(--card);
+  cursor: pointer;
+}
+.kkhero.on {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold);
+}
+.kkhero .mon {
+  width: 100%;
+  height: 100%;
+}
+.kkgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-12);
+}
+.kkitem {
+  background: var(--card);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-22);
+  padding: var(--space-10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.kkitem.on {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 3px var(--gold),
+    var(--shadow);
+}
+.kkitem.locked .mon {
+  opacity: 0.55;
+}
+.kkitem .mon {
+  width: 84px;
+  height: 84px;
+}
+.kkitem .desc {
+  font-size: var(--text-15);
+  color: var(--ink-soft);
+}
+.weekcard {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 3px solid var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.weekline {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  font-size: var(--text-18);
+}
+.weekline span {
+  font-size: var(--text-15);
+  color: var(--ink-soft);
+}
+.weekcard .bar,
+.goal .bar {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-8);
+}
+.goal p {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-19);
+  font-weight: 700;
+}
+.goalgame {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--text-22);
+  font-weight: 700;
+  margin: var(--space-2) 0 var(--space-4);
+}
+.goalgame span {
+  font-size: var(--text-30);
+}
+.goal.done {
+  opacity: 0.75;
+}
+.goalplay {
+  margin-top: var(--space-12);
+}
+.goalbadge {
+  display: block;
+  background: var(--cream-120);
+  color: var(--gold-810);
+  border-radius: var(--radius-14);
+  padding: var(--space-4) var(--space-10);
+  font-size: var(--text-15);
+  font-weight: 700;
+  margin: var(--space-8) 0 0;
+}
+.startbadge {
+  display: inline-block;
+  background: var(--green-100);
+  color: var(--green-770);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-10);
+  font-size: var(--text-14);
+  font-weight: 700;
+  margin: var(--space-8) 0 0;
+}
+.pathhint {
+  font-size: var(--text-15);
+  color: var(--ink-soft);
+  margin: var(--space-8) 0 0;
+}
+.weekgo {
+  display: block;
+  margin-top: var(--space-8);
+  font-size: var(--text-16);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: right;
+}
+.atk .tag.goal {
+  background: var(--cream-120);
+  color: var(--gold-810);
+}
+.goalrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+}
+.goalrow b {
+  white-space: nowrap;
+  margin-top: var(--space-8);
+}
+.codebox.reporttext {
+  word-break: normal;
+  font: 15px / 1.4 var(--text);
+}
+.wmap .node.weekboss small {
+  font-size: var(--text-9-5);
+}
+.gardencard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  border: 3px solid var(--green);
+}
+.gardencard p {
+  flex: 1;
+  margin: 0;
+  font-weight: 700;
+}
+.beds {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-10);
+}
+.bed {
+  background: var(--card);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-18);
+  padding: var(--space-10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.bed.ripe {
+  border-color: var(--green);
+  box-shadow:
+    0 0 0 3px var(--green),
+    var(--shadow);
+}
+.bed.locked {
+  background: var(--card2);
+}
+.bed .plant-art {
+  width: 96px;
+  height: 96px;
+}
+.bedart {
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-40);
+}
+.bedname {
+  font-family: var(--hand);
+  font-size: var(--text-26);
+  line-height: 1.1;
+}
+.beddesc {
+  font-size: var(--text-15);
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+.bed .btn.small {
+  margin-top: auto;
+  width: 100%;
+}
+.cropchoice .plant-art {
+  width: 72px;
+  height: 72px;
+  flex: none;
+}
+.modal .question {
+  font-size: var(--text-22);
+  font-weight: 700;
+  line-height: 1.35;
+}
+/* Sachkunde: pictures in tasks, treasure map, research lab */
+.pic {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  display: block;
+  margin: var(--space-6) auto;
+}
+.pic text,
+.kmap text {
+  font-family: var(--text);
+}
+.kmap {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  display: block;
+  margin: var(--space-6) auto;
+}
+.kmap .cell {
+  fill: var(--gold-150);
+  stroke: var(--orange-500);
+  stroke-width: 1.5;
+}
+.kmap.clickable .cell {
+  cursor: pointer;
+}
+.kmap.clickable .cell:hover,
+.kmap.clickable .cell:focus-visible {
+  fill: var(--blue-100);
+  outline: none;
+}
+.kmap .cell.hit {
+  fill: var(--green-260);
+}
+.kmap .cell.miss {
+  fill: var(--red-200);
+}
+.kmap .cell.reveal {
+  fill: var(--gold-400);
+}
+.labor h3 {
+  margin: var(--space-4) 0 var(--space-6);
+}
+.labres {
+  margin: var(--space-8) 0;
+}
+.notecard {
+  background: var(--card2);
+  border-left: 6px solid var(--gold);
+  border-radius: var(--radius-12);
+  padding: var(--space-10) var(--space-12);
+  font-weight: 700;
+  margin: var(--space-8) 0;
+}
+.plant .part.glow text {
+  stroke: none;
+}
+
+/* Written methods: column layout, carries in the small fields above the line */
+.colcalc {
+  display: grid;
+  grid-template-columns: 30px repeat(var(--w), 54px);
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  margin: var(--space-8) 0 var(--space-4);
+  font-size: var(--text-36);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.colcalc > span {
+  text-align: center;
+  line-height: 1.15;
+}
+.colcalc .op {
+  color: var(--ink-soft);
+}
+.colcalc .colline {
+  grid-column: 1 / -1;
+  border-top: 4px solid var(--ink);
+  margin: var(--space-2) 0;
+}
+.colcalc .inp {
+  min-width: 0;
+  width: 54px;
+  padding: 0;
+}
+.colcalc .inp.dig {
+  height: 58px;
+  font-size: var(--text-32);
+  border-radius: var(--radius-12);
+}
+.colcalc.mul {
+  grid-template-columns: 30px repeat(var(--w), 54px) 74px;
+}
+.task .numword {
+  font-size: var(--text-30);
+  font-weight: 700;
+  text-align: center;
+  margin: var(--space-8) 0 var(--space-4);
+  line-height: 1.2;
+}
+.task .figure svg.mauer {
+  height: 150px;
+}
+.task .figure svg.mauer.tri {
+  height: 200px;
+}
+.task .expr.long {
+  font-size: var(--text-34);
+}
+.colcalc .inp.carry {
+  width: 32px;
+  height: 32px;
+  font-size: var(--text-18);
+  border-width: 3px;
+  border-radius: var(--radius-8);
+  justify-self: center;
+}
+/* Lesestube and Duell */
+.readcard p {
+  font-size: var(--text-20);
+  line-height: 1.5;
+  white-space: pre-line;
+}
+.readcard p.syl {
+  font-size: var(--text-22);
+  line-height: 1.6;
+}
+.readcard .sy0 {
+  color: var(--blue-550);
+}
+.readcard .sy1 {
+  color: var(--red-610);
+}
+.readcard p.by {
+  font-size: var(--text-16);
+  color: var(--ink-soft);
+  margin-top: var(--space-8);
+}
+.nameinput {
+  width: 100%;
+  border: 3px solid var(--ink-soft);
+  border-radius: var(--radius-14);
+  padding: var(--space-10) var(--space-12);
+  font: inherit;
+  font-size: var(--text-20);
+  color: var(--ink);
+  background: var(--white);
+}
+.nameinput:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(63, 160, 255, 0.3);
+}
+/* Kaufladen */
+.seller .stall {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  margin: 0 auto var(--space-6);
+}
+.seller .row {
+  align-items: center;
+  gap: var(--space-10);
+}
+.seller .say {
+  flex: 1;
+  margin: 0;
+  font-family: var(--hand);
+  font-size: var(--text-23);
+  line-height: 1.15;
+}
+.seller .tut {
+  flex: none;
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: var(--radius-pill);
+  border: 3px solid var(--ink);
+  background: var(--white);
+  color: var(--ink);
+  font-size: var(--text-18);
+  cursor: pointer;
+}
+.offer .ic {
+  font-size: var(--text-34);
+  flex: none;
+}
+.offer .meta .name {
+  font-size: var(--text-24);
+}
+.till .lbl {
+  font-weight: 700;
+  font-size: var(--text-15);
+  color: var(--ink-soft);
+}
+.till .cust {
+  margin: var(--space-2) 0 var(--space-10);
+  font-size: var(--text-20);
+  line-height: 1.3;
+}
+.till .cust b {
+  white-space: nowrap;
+}
+.counter {
+  min-height: 64px;
+  margin: var(--space-4) 0 var(--space-10);
+  padding: var(--space-6);
+  border: 3px dashed var(--ink-soft);
+  border-radius: var(--radius-14);
+  background: var(--cream-150);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  align-items: center;
+}
+.counter .muted {
+  color: var(--ink-soft);
+  font-size: var(--text-15);
+  padding: 0 var(--space-4);
+}
+.coins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  justify-content: center;
+}
+.coin {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  font-weight: 700;
+  font-size: var(--text-15);
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.coin.copper {
+  background: var(--orange-400);
+}
+.coin.brass {
+  background: var(--gold-350);
+}
+.coin.euro {
+  background: radial-gradient(circle, var(--gold-350) 52%, var(--blue-200) 54%);
+}
+.coin.note {
+  width: 84px;
+  border-radius: var(--radius-8);
+}
+.coin.n500 {
+  background: var(--grey-200);
+}
+.coin.n1000 {
+  background: var(--red-250);
+}
+.counter .coin {
+  width: 48px;
+  height: 48px;
+  font-size: var(--text-13);
+}
+.counter .coin.note {
+  width: 70px;
+}
+
+/* Baustelle pictures and the Bergwerk */
+.task .figure {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--space-16);
+  margin: var(--space-8) 0 var(--space-6);
+}
+.task .figure svg {
+  height: 120px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+}
+/* figures sit on a plain patch: a counting grid on top of the squared paper is hard to read */
+.task .figure svg,
+.task .jm-fig {
+  background: var(--card);
+  border-radius: var(--radius-10);
+  box-shadow: 0 0 0 8px var(--card);
+}
+.task .figure figure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+.task .figure figure:first-child svg {
+  height: 90px;
+}
+.task .figure figcaption {
+  font-size: var(--text-14);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.task .figure svg text {
+  font-family: var(--text);
+}
+.options.pics {
+  grid-template-columns: repeat(3, 1fr);
+}
+.feedback .fbpic {
+  display: block;
+  margin: var(--space-6) auto 0;
+  width: 110px;
+}
+.feedback .fbpic svg {
+  width: 100%;
+  height: 64px;
+  display: block;
+}
+.options.pics .opt {
+  padding: var(--space-8) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.options.pics .opt svg {
+  width: 100%;
+  height: 72px;
+  display: block;
+}
+/* wide pictures (Quadernetze): one per row, so the faces stay large enough to compare */
+.options.pics.tall {
+  grid-template-columns: 1fr;
+}
+.options.pics.tall .opt svg {
+  height: 104px;
+}
+.mine {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-8);
+  max-width: 340px;
+  margin: var(--space-12) auto var(--space-6);
+}
+.mblock {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.mblock svg {
+  width: 100%;
+  max-width: 72px;
+  aspect-ratio: 1;
+  display: block;
+}
+.mblock.covered:not(:disabled) svg {
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.3));
+}
+.mblock:disabled {
+  cursor: default;
+}
+.mblock.covered:disabled {
+  opacity: 0.6;
+}
+.mblock small {
+  font-size: var(--text-14);
+  font-weight: 700;
+}
+@media (max-height: 720px) {
+  .task .figure svg {
+    height: 96px;
+  }
+  .task .figure figure:first-child svg {
+    height: 72px;
+  }
+  .options.pics .opt svg {
+    height: 60px;
+  }
+  .options.pics.tall .opt svg {
+    height: 80px;
+  }
+}

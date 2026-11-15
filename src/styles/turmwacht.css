@@ -1,0 +1,1958 @@
+/* Turmwacht. Board: grid with the tower column on the left and one road per path (--rows); cell 1 touches the tower.
+   The tower and road drawings are placeholders until the proper art. */
+#turm {
+  flex-wrap: wrap;
+  row-gap: 0;
+  border-color: rgba(255, 201, 60, 0.55);
+}
+#turm > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  white-space: nowrap;
+}
+#turm > span:first-child .emo {
+  width: 30px;
+  height: 30px;
+  flex: none;
+}
+.twrun {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-14);
+  font-weight: 700;
+  opacity: 0.9;
+}
+.twflag {
+  width: 18px;
+  height: 18px;
+}
+.tw-lead {
+  margin: 0;
+}
+.tw-subjs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+.tw-subj {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--space-6) var(--space-12);
+  border: 3px solid var(--ink-soft);
+  border-radius: var(--radius-14);
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.tw-subj .ic {
+  font-size: var(--text-26);
+  line-height: 1;
+}
+.tw-subj .nm {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.tw-subj small {
+  font-size: var(--text-14);
+  font-weight: 700;
+  color: var(--gold-750);
+}
+.tw-subj .tick {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-9);
+  border: 3px solid var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+}
+.tw-subj.on {
+  border-color: var(--green);
+  background: var(--green-50);
+}
+.tw-subj.on .tick {
+  border-color: var(--green);
+  color: var(--green-760);
+  background: var(--white);
+}
+.tw-subj.fixed {
+  cursor: default;
+}
+.tw-heroes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+.tw-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-2);
+  border: 3px solid var(--ink-soft);
+  border-radius: var(--radius-14);
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-13);
+  font-weight: 700;
+  line-height: 1.15;
+  cursor: pointer;
+  min-width: 0;
+}
+.tw-hero .mon {
+  width: 56px;
+  height: 56px;
+}
+.tw-hero span {
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+.tw-hero.on {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold);
+}
+.tw-stages {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: var(--space-8);
+  margin-top: var(--space-12);
+}
+.tw-stages .mon {
+  width: 64px;
+  height: 64px;
+}
+.tw-stages .mon:nth-child(2) {
+  width: 76px;
+  height: 76px;
+}
+.tw-stages .mon:nth-child(3) {
+  width: 88px;
+  height: 88px;
+}
+.tw-saved > .mon,
+.tw-end > .mon {
+  width: 120px;
+  height: 120px;
+  margin: var(--space-4) auto;
+}
+
+/* Turmwacht board: a W × H scene in board units (1 tower drawing unit = 1 board unit); --x/--y place things, --u keeps sizes in step with the board */
+/* the board takes the room the panel leaves, but no more than its full width needs; leftover space goes above the panel */
+.tw-main {
+  flex: 1 1 auto;
+  min-height: max(270px, 50vh);
+  max-height: calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px);
+  container-type: size;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--space-6) 0 0;
+}
+.tw-board {
+  --u: calc(100cqw / var(--W));
+  position: relative;
+  container-type: inline-size;
+  width: min(100cqw - 16px, (100cqh - 4px) * var(--W) / var(--H));
+  aspect-ratio: var(--W) / var(--H);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-14);
+  overflow: hidden;
+  background: var(--green-720);
+  box-shadow: var(--shadow);
+}
+.tw-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tw-board .tw-lane {
+  display: contents;
+}
+.tw-board [style*="--x"] {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+}
+.tw-tower {
+  width: calc(110 * var(--u));
+  height: calc(var(--th) * var(--u));
+  translate: -50% -100%;
+  pointer-events: none;
+}
+.tw-tower > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tw-heroslot {
+  position: absolute;
+  left: calc(46 / 110 * 100%);
+  top: calc(var(--feet) * var(--u));
+  width: calc(52 * var(--u));
+  translate: -50% -96%;
+}
+.tw-heroslot .mon {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.tw-cell {
+  width: 0;
+  height: 0;
+}
+.tw-mon {
+  position: absolute;
+  left: calc(-30 * var(--u));
+  top: calc(-52 * var(--u));
+  width: calc(60 * var(--u));
+  height: calc(60 * var(--u));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.tw-mon > .mon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+.tw-mon.r > .mon {
+  transform: none;
+}
+.tw-mon.big {
+  left: calc(-35 * var(--u));
+  top: calc(-61 * var(--u));
+  width: calc(70 * var(--u));
+  height: calc(70 * var(--u));
+}
+.tw-mon::before {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -16%;
+  height: 38%;
+  border-radius: 50%;
+}
+.tw-mon.sel {
+  z-index: 2;
+}
+.tw-mon.sel::before {
+  left: -4%;
+  right: -4%;
+  bottom: -20%;
+  height: 44%;
+  border: calc(3 * var(--u)) solid var(--gold);
+  background: rgba(255, 201, 60, 0.45);
+  box-shadow: 0 0 calc(8 * var(--u)) rgba(255, 224, 102, 0.9);
+}
+.tw-mon.sel::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -24%;
+  translate: -50% 0;
+  border: calc(7 * var(--u)) solid transparent;
+  border-top: calc(10 * var(--u)) solid var(--gold);
+  border-bottom: 0;
+  filter: drop-shadow(1.5px 0 0 var(--ink)) drop-shadow(-1.5px 0 0 var(--ink)) drop-shadow(0 1.5px 0 var(--ink))
+    drop-shadow(0 -1.5px 0 var(--ink));
+}
+.tw-mon.sel > .mon {
+  filter: drop-shadow(0 0 calc(3 * var(--u)) var(--gold-300));
+}
+.tw-bubble {
+  position: absolute;
+  left: -12%;
+  top: -14%;
+  width: 124%;
+  height: 124%;
+  pointer-events: none;
+}
+.tw-shields {
+  position: absolute;
+  left: -22%;
+  top: -18%;
+  width: 144%;
+  height: 144%;
+  pointer-events: none;
+}
+.tw-stat {
+  position: absolute;
+  left: 50%;
+  bottom: -10%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: calc(2 * var(--u));
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+  border: calc(1.5 * var(--u)) solid var(--ink);
+  border-radius: var(--radius-99);
+  background: var(--cream-50);
+}
+.tw-feet {
+  display: block;
+  width: auto;
+  height: calc(10 * var(--u));
+}
+.tw-feet.rest {
+  opacity: 0.4;
+}
+.tw-hp {
+  display: block;
+  width: calc(38 * var(--u));
+  height: calc(7 * var(--u));
+  border-radius: var(--radius-99);
+  background: var(--blue-160);
+  overflow: hidden;
+}
+.tw-hp b {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+.tw-hp b.mid {
+  background: var(--gold);
+}
+.tw-hp b.low {
+  background: var(--red);
+}
+.tw-tags {
+  position: absolute;
+  top: -10%;
+  right: -16%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.tw-tags i {
+  display: flex;
+  color: var(--ink);
+  padding: calc(1.5 * var(--u));
+  border-radius: 50%;
+  background: var(--cream-50);
+  border: calc(1.5 * var(--u)) solid var(--ink);
+  font-style: normal;
+  line-height: 1;
+}
+.tw-tags .emo {
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
+}
+/* about to reach the tower: a red ring that keeps pulsing */
+.tw-mon.threat::before {
+  left: -4%;
+  right: -4%;
+  bottom: -20%;
+  height: 44%;
+  border: calc(3 * var(--u)) solid var(--red);
+  background: rgba(232, 52, 74, 0.35);
+  animation: tw-threat 1s ease-in-out infinite;
+}
+@keyframes tw-threat {
+  50% {
+    box-shadow: 0 0 calc(10 * var(--u)) calc(2 * var(--u)) rgba(255, 90, 90, 0.9);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-mon.threat::before {
+    animation: none;
+  }
+}
+.tw-spot {
+  width: calc(42 * var(--u));
+  height: calc(42 * var(--u));
+  translate: -50% calc(-100% + 3 * var(--u));
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+.tw-spot .mon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tw-spot .tw-pips {
+  position: absolute;
+  left: 50%;
+  bottom: calc(-26 * var(--u));
+  translate: -50% 0;
+  height: calc(11 * var(--u));
+  width: auto;
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+  border-radius: var(--radius-99);
+  background: var(--ink);
+  box-sizing: content-box;
+}
+button.tw-spot {
+  cursor: pointer;
+  border-radius: var(--radius-12);
+}
+.tw-lanehead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  max-width: calc(210 * var(--u));
+  z-index: 1;
+  font-weight: 700;
+  font-size: max(10px, calc(14 * var(--u)));
+  line-height: 1.15;
+}
+.tw-lanehead.r {
+  flex-direction: row-reverse;
+  translate: -100% 0;
+}
+.tw-lanehead.c {
+  justify-content: center;
+  translate: -50% 0;
+}
+.tw-lanehead.lb {
+  flex-direction: column;
+  align-items: flex-start;
+} /* bottom path: its far field is right of the chips */
+.tw-lanehead > span {
+  padding: calc(2 * var(--u)) calc(8 * var(--u));
+  border-radius: var(--radius-99);
+  background: var(--ink);
+  color: var(--white);
+  white-space: nowrap;
+}
+.tw-lanehead .nm {
+  border: 2px solid var(--c);
+  box-shadow: inset 0 -3px 0 var(--c);
+}
+.tw-lanehead .tw-queue {
+  font-size: 0.86em;
+  background: rgba(28, 37, 65, 0.92);
+}
+.tw-hpbox {
+  display: flex;
+  flex-direction: column;
+  gap: calc(3 * var(--u));
+  padding: calc(4 * var(--u)) calc(8 * var(--u)) calc(6 * var(--u));
+  border-radius: calc(12 * var(--u));
+  background: var(--ink);
+  color: var(--white);
+}
+.tw-hpbox.rb {
+  translate: -100% -100%;
+}
+.tw-hpbox.c {
+  translate: -50% 0;
+}
+.tw-hpbox .hptext {
+  font-size: max(13px, calc(18 * var(--u)));
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tw-hpbox.hurt {
+  background: var(--red-650);
+  box-shadow: 0 0 0 calc(2 * var(--u)) var(--red-260);
+}
+.tw-lost {
+  margin-left: calc(6 * var(--u));
+  font-style: normal;
+  color: var(--red-150);
+}
+.tw-lost[hidden] {
+  display: none;
+}
+.tw-hpbox .hpbar {
+  display: block;
+  height: calc(11 * var(--u));
+  border-radius: var(--radius-99);
+  background: var(--navy-660);
+  overflow: hidden;
+}
+.tw-hpbox .hpbar i {
+  display: block;
+  height: 100%;
+  background: var(--green);
+}
+.tw-hpbox .hpbar i.mid {
+  background: var(--gold);
+}
+.tw-hpbox .hpbar i.low {
+  background: var(--red);
+}
+.tw-log {
+  margin: var(--space-6) var(--space-12);
+  min-height: 0;
+  font-size: var(--text-20);
+}
+.tw-log.hurt {
+  border-color: var(--red);
+  background: var(--red-80);
+}
+.tw-hurtline {
+  font-family: "Andika", system-ui, sans-serif;
+  font-size: var(--text-18);
+  font-weight: 700;
+  color: var(--red-600);
+}
+.tw-log p {
+  margin: 0;
+}
+.tw-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  flex: 0 1 auto;
+  margin-top: auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* Bauzeit: the board gives up a little height so the cards under it are whole */
+.tw-screen.build .tw-main {
+  min-height: 270px;
+  max-height: min(calc((min(100vw, 640px) - 16px) * var(--H) / var(--W) + 10px), calc(100vh - 350px));
+}
+.tw-log {
+  flex: none;
+}
+/* two whole lines; more scrolls inside the text (scrolling the box itself would show a cut line in its padding) */
+.tw-log p {
+  max-height: 2.3em;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* tall phones have room under the board for a third line while no monster card is open */
+@media (min-height: 800px) and (orientation: portrait) {
+  .tw-screen:not(.carded):not(.build) .tw-log p {
+    max-height: 3.45em;
+  }
+}
+/* portrait: room the board can't use (it is as wide as the screen) is shared above the board and above the panel */
+.tw-main {
+  margin-top: auto;
+}
+/* an open monster card: the board shrinks so the card and the buttons under it fit */
+.tw-screen.carded .tw-main {
+  min-height: 200px;
+}
+.tw-panel .row {
+  margin: 0;
+}
+.tw-hint {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0 0 0 var(--space-4);
+  font-size: var(--text-17);
+  line-height: 1.2;
+  align-self: center;
+}
+.tw-hint.warn {
+  font-weight: 700;
+  color: var(--red-150);
+}
+.tw-card {
+  padding: var(--space-8) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.tw-cardinfo {
+  flex: 1;
+  min-width: 0;
+}
+.tw-from {
+  font-size: var(--text-15);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.tw-namerow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.tw-cardhp {
+  flex: none;
+  font-size: var(--text-19);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tw-card .tag.gate {
+  background: var(--red-60);
+  color: var(--red-600);
+}
+.tw-card p {
+  margin: 0;
+}
+.tw-card h3 {
+  font-size: var(--text-24);
+}
+.tw-cardhead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+}
+.tw-cardhead .mon {
+  width: 54px;
+  height: 54px;
+  flex: none;
+  transform: scaleX(-1);
+}
+.tw-cardinfo .name {
+  font-family: var(--hand);
+  font-size: var(--text-26);
+  line-height: 1.05;
+}
+.tw-cardinfo .speak {
+  vertical-align: middle;
+  margin-left: var(--space-6);
+}
+.tw-card .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.tw-card .tag {
+  font-size: var(--text-16);
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-10);
+  line-height: 26px;
+  background: var(--green-50);
+  color: var(--green-760);
+}
+.tw-card .tag.weak {
+  background: var(--gold);
+  color: var(--ink);
+}
+.tw-card .tag.power {
+  background: var(--cream-120);
+  color: var(--gold-810);
+}
+.tw-card .tag.again {
+  background: var(--blue-60);
+  color: var(--navy-650);
+}
+.tw-guard {
+  font-weight: 700;
+  color: var(--red-600);
+}
+.tw-gate {
+  font-weight: 700;
+  color: var(--orange-720);
+}
+.tw-card .btn {
+  min-height: 50px;
+}
+.tw-card .btn.small {
+  width: 100%;
+}
+.tw-item {
+  padding: var(--space-6) var(--space-12);
+  gap: var(--space-10);
+  box-shadow: none;
+}
+.tw-item .meta {
+  display: flex;
+  flex-direction: column;
+}
+.tw-item .meta .name {
+  font-size: var(--text-24);
+}
+.tw-item .meta .desc {
+  font-size: var(--text-15);
+  line-height: 1.25;
+}
+.tw-itemic {
+  font-size: var(--text-30);
+  line-height: 1;
+}
+.tw-screen.tasking .tw-main,
+.tw-screen.tasking .tw-log {
+  display: none;
+}
+.tw-res {
+  display: flex;
+  gap: var(--space-10);
+  font-weight: 700;
+}
+.tw-mon.guide::before {
+  left: -6%;
+  right: -6%;
+  bottom: -20%;
+  height: 44%;
+  border: calc(3 * var(--u)) dashed var(--gold);
+}
+.tw-bubble.flash {
+  animation: tw-flash 0.5s ease-in-out 3;
+}
+@keyframes tw-flash {
+  50% {
+    filter: drop-shadow(0 0 calc(6 * var(--u)) var(--white)) brightness(1.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-bubble.flash {
+    animation: none;
+    filter: drop-shadow(0 0 calc(4 * var(--u)) var(--white)) brightness(1.4);
+  }
+}
+.tw-shieldnow {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+  font-weight: 700;
+}
+.tw-card .tw-shieldnow,
+.tw-shieldnow {
+  font-size: var(--text-16);
+  line-height: 1.3;
+}
+i.dot {
+  flex: none;
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-top: var(--space-2);
+  border-radius: 50%;
+  border: 2.5px solid var(--ink);
+}
+.tw-shieldlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6) var(--space-14);
+  margin: var(--space-4) 0 var(--space-14);
+  font-size: var(--text-18);
+  font-weight: 700;
+}
+.tw-shieldlist span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+.tw-card .tag.boss {
+  background: var(--cream-110);
+  color: var(--orange-710);
+}
+.tw-card .tag.elite {
+  background: var(--blue-50);
+  color: var(--navy-650);
+}
+.tw-bannerov {
+  align-items: center;
+}
+.tw-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.tw-banner .mon {
+  width: 120px;
+  height: 120px;
+  transform: scaleX(-1);
+}
+.tw-banner h2 {
+  margin: var(--space-4) 0 var(--space-6);
+}
+.tw-bannerov .modal > p {
+  font-size: var(--text-19);
+  margin: 0 0 var(--space-12);
+}
+.tw-earned,
+.tw-score {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-8) 0;
+  text-align: left;
+}
+.tw-earned li,
+.tw-score li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-10);
+  padding: var(--space-5) var(--space-2);
+  border-bottom: 2px dashed rgba(28, 37, 65, 0.15);
+  font-size: var(--text-18);
+}
+.tw-earned li:last-child,
+.tw-score li:last-child {
+  border-bottom: 0;
+}
+.tw-earned b,
+.tw-score b {
+  white-space: nowrap;
+}
+.tw-cleared h2,
+.tw-end h2 {
+  margin-bottom: var(--space-4);
+}
+.tw-cleared p,
+.tw-end p {
+  margin: var(--space-6) 0;
+}
+.tw-evo .evo-row .mon {
+  width: 96px;
+  height: 96px;
+}
+.tw-endtower {
+  --u: 0.82px;
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-8);
+}
+.tw-endtower .tw-tower {
+  position: relative;
+  translate: none;
+}
+.tw-result {
+  font-size: var(--text-20);
+  font-weight: 700;
+}
+.tw-endbtns .pnote {
+  margin: -4px 0 var(--space-2);
+  color: var(--blue-160);
+}
+/* Bauzeit: cards in a strip under the board, so the board with the guard spots stays in view */
+.tw-lanehead .tw-coming {
+  background: var(--gold);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+}
+.tw-bau {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-height: 0;
+}
+.tw-bauhead {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 var(--space-10);
+}
+.tw-bauhead h3 {
+  margin: 0;
+  font-size: var(--text-22);
+}
+.tw-bauhead p {
+  margin: 0;
+  font-size: var(--text-16);
+  font-weight: 700;
+}
+.tw-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8);
+}
+.tw-cards > div {
+  display: flex;
+}
+.tw-buy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-5) var(--space-4) var(--space-6);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-14);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+}
+.tw-buy:active {
+  transform: translateY(3px);
+  box-shadow: none;
+}
+.tw-buy .tw-pic {
+  display: block;
+  width: 100%;
+  height: 46px;
+  border-radius: var(--radius-9);
+  background: var(--green-140);
+}
+.tw-buy b {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  font-size: var(--text-14);
+  line-height: 1.1;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+.tw-price {
+  padding: 0 var(--space-8);
+  border-radius: var(--radius-99);
+  background: var(--ink);
+  color: var(--white);
+  font-size: var(--text-15);
+  font-weight: 700;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.tw-price:empty {
+  display: none;
+}
+.tw-buy.short .tw-price {
+  background: none;
+  color: var(--orange-710);
+  padding: 0;
+}
+.tw-buy.short,
+.tw-buy.off {
+  background: var(--blue-110);
+  box-shadow: none;
+}
+.tw-buy.short .tw-pic,
+.tw-buy.off .tw-pic {
+  filter: grayscale(0.9);
+  opacity: 0.65;
+}
+.tw-sheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.tw-sheet .tw-pic {
+  width: min(100%, 220px);
+  height: 90px;
+  border-radius: var(--radius-12);
+  background: var(--green-140);
+}
+.tw-sheet h2 {
+  margin: var(--space-8) 0 var(--space-4);
+}
+.tw-sheet p {
+  margin: 0 0 var(--space-10);
+  font-size: var(--text-19);
+}
+.tw-sheet .tw-bmsg {
+  color: var(--orange-710);
+}
+.tw-bmsg {
+  margin: 0;
+  font-size: var(--text-17);
+  font-weight: 700;
+  color: var(--gold);
+}
+.tw-bmsg:empty {
+  display: none;
+}
+.tw-pickhint .tw-bmsg {
+  color: var(--orange-710);
+}
+.tw-baurow {
+  flex-wrap: nowrap;
+}
+.tw-baurow .btn.small {
+  flex: none;
+  min-height: 52px;
+}
+.tw-baurow .btn {
+  white-space: nowrap;
+}
+.tw-baurow #nextwave,
+.tw-baurow #atk {
+  flex: 1 1 auto;
+  min-height: 52px;
+  padding-inline: var(--space-10);
+}
+@media (max-width: 374px) {
+  .tw-baurow .btn.small {
+    padding-inline: var(--space-10);
+  }
+  .tw-baurow #nextwave {
+    font-size: var(--text-19);
+  }
+}
+.tw-pickhint p {
+  font-size: var(--text-18);
+  font-weight: 700;
+}
+button.tw-spot.pick::after {
+  content: "";
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  bottom: calc(-14 * var(--u));
+  height: calc(24 * var(--u));
+  border: calc(2.5 * var(--u)) dashed var(--gold);
+  border-radius: 50%;
+  animation: tw-ring 1.2s ease-in-out infinite;
+}
+button.tw-spot.pick.on::after {
+  bottom: calc(-30 * var(--u));
+}
+@keyframes tw-ring {
+  50% {
+    border-color: var(--white);
+  }
+}
+.tw-looks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--space-8);
+  max-height: min(56vh, calc(100vh - 230px));
+  overflow-y: auto;
+  padding: var(--space-2);
+  margin: var(--space-8) 0 var(--space-12);
+}
+.tw-look {
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-2);
+  box-shadow: none;
+  text-align: center;
+}
+.tw-look .mon {
+  width: 76px;
+  height: 76px;
+}
+.tw-look .name {
+  font-family: var(--hand);
+  font-size: var(--text-20);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+}
+.tw-look .meta .name {
+  font-size: var(--text-24);
+}
+.tw-pause {
+  font-size: var(--text-21);
+  font-weight: 700;
+  margin: var(--space-4) 0 var(--space-16);
+}
+#twt .tw-fl.new {
+  animation: tw-drop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes tw-drop {
+  from {
+    transform: translateY(-60px);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #twt .tw-fl.new,
+  button.tw-spot.pick::after {
+    animation: none;
+  }
+}
+.psubhead {
+  margin: var(--space-14) 0 0;
+}
+@media (max-height: 760px) {
+  .tw-log {
+    font-size: var(--text-18);
+    padding: var(--space-5) var(--space-10);
+    margin: var(--space-4) var(--space-12);
+  }
+  /* small phones: the card gets compact so the board keeps its size (the tapped monster is marked on the board) */
+  .tw-main {
+    min-height: max(270px, 55vh);
+  }
+  .tw-cardhead .mon {
+    display: none;
+  }
+  .tw-card {
+    padding: var(--space-7) var(--space-10);
+    gap: var(--space-4);
+  }
+  .tw-cardinfo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-8);
+  }
+  .tw-cardinfo .name {
+    font-size: var(--text-23);
+  }
+  .tw-card .btn {
+    min-height: 46px;
+  }
+  .tw-card .pnote,
+  .tw-card .tw-shieldnow {
+    font-size: var(--text-15);
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  /* the board takes the whole height on the left (tokens stay about 40 px); the top bar heads the right column */
+  .tw-screen:not(.tasking) {
+    display: grid;
+    grid-template-columns: min(58vw, (100vh - 10px) * var(--bw, 0.762) + 14px) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .tw-screen:not(.tasking) > .topbar {
+    grid-column: 2;
+    grid-row: 1;
+    padding: var(--space-6) var(--space-12);
+  }
+  .tw-screen:not(.tasking) .tw-main {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    max-height: none;
+    min-height: 0;
+    padding: var(--space-5) 0;
+    margin-top: 0;
+  }
+  .tw-screen:not(.tasking) .tw-log {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .tw-screen:not(.tasking) .tw-log p {
+    max-height: 4.6em;
+  }
+  /* the last turn's log gives way to an open monster card, so the card and the buttons fit */
+  .tw-screen.carded .tw-log {
+    display: none;
+  }
+  .tw-screen:not(.tasking) .tw-panel {
+    grid-column: 2;
+    grid-row: 3;
+    max-height: 100%;
+    overflow-y: auto;
+    border-top: 0;
+    border-left: 3px solid rgba(255, 255, 255, 0.08);
+  }
+  .tw-card p {
+    font-size: var(--text-16);
+  }
+  .tw-card h3 {
+    font-size: var(--text-21);
+  }
+  .tw-endbtns {
+    flex-direction: row;
+  }
+  .tw-endbtns .btn {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  /* Bauzeit beside the board: two tiles per row, the buttons stay at the bottom of the column */
+  .tw-bau {
+    flex: none;
+  }
+  .tw-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tw-baurow {
+    position: sticky;
+    bottom: -10px;
+    flex-wrap: wrap;
+    margin: 0 -12px -10px;
+    padding: var(--space-8) var(--space-12) var(--space-10);
+    background: var(--bg2);
+  }
+  .tw-baurow .btn.small {
+    flex: 1 1 0;
+  }
+  .tw-baurow #nextwave {
+    flex: 1 1 100%;
+    order: -1;
+  }
+}
+/* Turmwacht motion (src/app/turm_screens.js turmPlay / turmBuilt): pieces live in .tw-fx at board units, tokens get a class per beat */
+.tw-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+.tw-fx > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.tw-fxi {
+  width: 0;
+  height: 0;
+}
+.tw-fxi > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+}
+.tw-orb {
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  overflow: visible;
+  filter: drop-shadow(0 0 calc(4 * var(--u)) var(--white));
+}
+.tw-orb.big {
+  width: calc(34 * var(--u));
+  height: calc(34 * var(--u));
+  filter: drop-shadow(0 0 calc(8 * var(--u)) var(--gold-300));
+}
+.tw-orb.g1 {
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
+}
+.tw-orb.g2 {
+  width: calc(19 * var(--u));
+  height: calc(19 * var(--u));
+}
+.tw-orb.g3 {
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+  filter: drop-shadow(0 0 calc(6 * var(--u)) var(--gold-300));
+}
+.tw-num {
+  font-family: var(--hand);
+  font-size: max(20px, calc(30 * var(--u)));
+  line-height: 1;
+  color: var(--white);
+  white-space: nowrap;
+  text-shadow:
+    0 2px 0 var(--ink),
+    0 0 5px rgba(0, 0, 0, 0.5);
+  animation: tw-num 1s ease-out both;
+}
+.tw-num.crit {
+  color: var(--gold);
+  font-size: max(26px, calc(40 * var(--u)));
+}
+.tw-num.hurt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-12);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-99);
+  background: var(--red);
+  color: var(--white);
+  font-size: max(30px, calc(44 * var(--u)));
+  text-shadow: none;
+  animation-duration: 1.6s;
+}
+.tw-num.hurt .emo {
+  width: 0.8em;
+  height: 0.8em;
+}
+.floatnum.hurt {
+  padding: 0 var(--space-12);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-99);
+  background: var(--red);
+  text-shadow: none;
+}
+.tw-num.heal {
+  color: var(--green-250);
+}
+@keyframes tw-num {
+  0% {
+    opacity: 0;
+    scale: 0.4;
+  }
+  15% {
+    opacity: 1;
+    scale: 1.25;
+  }
+  30% {
+    scale: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: -50% calc(-50% - 26px);
+  }
+}
+.tw-burst {
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+  border-radius: 50%;
+  border: calc(5 * var(--u)) solid var(--gold);
+  box-shadow: 0 0 calc(10 * var(--u)) var(--gold-300);
+  animation: tw-burst 0.55s ease-out both;
+}
+@keyframes tw-burst {
+  from {
+    scale: 0.2;
+    opacity: 1;
+  }
+  to {
+    scale: 1.5;
+    opacity: 0;
+  }
+}
+.tw-poof {
+  width: calc(66 * var(--u));
+  height: calc(66 * var(--u));
+  overflow: visible;
+}
+.tw-poof .p {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tw-puff 0.7s ease-out calc(var(--i) * 25ms) both;
+}
+.tw-poof .s {
+  animation: tw-sparkle 0.7s ease-out both;
+}
+@keyframes tw-puff {
+  0% {
+    scale: 0.2;
+    opacity: 0;
+  }
+  25% {
+    scale: 1.1;
+    opacity: 1;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    scale: 1.35;
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+@keyframes tw-sparkle {
+  0%,
+  20% {
+    opacity: 0;
+    scale: 0.5;
+  }
+  45% {
+    opacity: 1;
+    scale: 1.2;
+  }
+  100% {
+    opacity: 0;
+    scale: 0.8;
+  }
+}
+.tw-shard {
+  width: calc(15 * var(--u));
+  height: calc(7 * var(--u));
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-3) var(--radius-8) var(--radius-3) var(--radius-8);
+  animation: tw-shard 0.7s cubic-bezier(0.2, 0.8, 0.4, 1) both;
+}
+@keyframes tw-shard {
+  from {
+    opacity: 1;
+    translate: -50% -50%;
+    rotate: 0deg;
+  }
+  to {
+    opacity: 0;
+    translate: calc(-50% + var(--dx)) calc(-50% + var(--dy));
+    rotate: 300deg;
+  }
+}
+.tw-say {
+  padding: var(--space-1) var(--space-7);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-10) var(--radius-10) var(--radius-10) var(--radius-2);
+  background: var(--cream-60);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: max(12px, calc(15 * var(--u)));
+  white-space: nowrap;
+  animation: tw-say 0.8s ease-out both;
+}
+.tw-say.r {
+  border-radius: var(--radius-10) var(--radius-10) var(--radius-2) var(--radius-10);
+}
+@keyframes tw-say {
+  0% {
+    scale: 0;
+    opacity: 0;
+  }
+  20% {
+    scale: 1.15;
+    opacity: 1;
+  }
+  35% {
+    scale: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: -50% calc(-50% - 10px);
+  }
+}
+.tw-leaf {
+  width: calc(18 * var(--u));
+  height: calc(23 * var(--u));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3));
+}
+#twt .tw-fl.tw-glow {
+  animation: tw-room 0.6s ease-out;
+}
+@keyframes tw-room {
+  35% {
+    filter: brightness(1.35) drop-shadow(0 0 4px var(--gold-300));
+  }
+}
+.tw-read .tw-leaf {
+  width: calc(22 * var(--u));
+  height: calc(28 * var(--u));
+}
+.tw-read {
+  animation: tw-read 0.9s ease-in-out both;
+}
+@keyframes tw-read {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  75% {
+    opacity: 1;
+    rotate: -6deg;
+  }
+  45% {
+    rotate: 6deg;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.tw-heart .emo {
+  width: max(20px, calc(26 * var(--u)));
+  height: max(20px, calc(26 * var(--u)));
+}
+.tw-spark {
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  animation: tw-sparkle 0.9s ease-out both;
+}
+.tw-rings circle {
+  fill: none;
+  stroke: var(--red-100);
+  stroke-width: 4.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tw-ring-out 0.75s ease-out both;
+}
+@keyframes tw-ring-out {
+  from {
+    scale: 0.5;
+    opacity: 1;
+  }
+  to {
+    scale: 3.2;
+    opacity: 0;
+  }
+}
+.tw-zap {
+  animation: tw-zap 0.5s ease-out both;
+}
+@keyframes tw-zap {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.tw-dust {
+  width: calc(50 * var(--u));
+  height: calc(18 * var(--u));
+  border-radius: 50%;
+  background: rgba(230, 220, 190, 0.85);
+  animation: tw-burst 0.6s ease-out both;
+}
+.tw-bigshield {
+  width: calc(40 * var(--u));
+  height: calc(46 * var(--u));
+  animation: tw-shieldup 0.7s ease-out both;
+}
+@keyframes tw-shieldup {
+  0% {
+    scale: 0.2;
+    opacity: 0;
+  }
+  25% {
+    scale: 1.15;
+    opacity: 1;
+  }
+  40% {
+    scale: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.tw-wavebanner {
+  padding: calc(6 * var(--u)) calc(16 * var(--u));
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-14);
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--hand);
+  font-size: max(20px, calc(30 * var(--u)));
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  animation: tw-banner 1.4s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes tw-banner {
+  0% {
+    translate: -160% -50%;
+    opacity: 0;
+  }
+  25% {
+    translate: -50% -50%;
+    opacity: 1;
+  }
+  80% {
+    translate: -50% -50%;
+    opacity: 1;
+  }
+  100% {
+    translate: -50% -50%;
+    opacity: 0;
+  }
+}
+/* tokens */
+.tw-mon > .mon,
+.tw-spot > .mon {
+  transition: none;
+}
+.tw-mon.tw-hit > .mon {
+  animation: tw-hit 0.42s ease-out;
+}
+@keyframes tw-hit {
+  0%,
+  100% {
+    filter: none;
+    translate: 0 0;
+  }
+  20% {
+    filter: brightness(2.3) saturate(0);
+    translate: -5% 0;
+  }
+  45% {
+    translate: 5% 0;
+  }
+  70% {
+    translate: -3% 0;
+  }
+}
+.tw-mon.tw-step > .mon {
+  animation: tw-step 0.3s ease-in-out;
+}
+@keyframes tw-step {
+  50% {
+    translate: 0 -10%;
+  }
+}
+.tw-mon.tw-gone {
+  scale: 0;
+  opacity: 0;
+  transition:
+    scale 0.25s ease-in,
+    opacity 0.25s ease-in !important;
+}
+.tw-mon.tw-dizzy > .mon {
+  animation: tw-dizzy 0.6s ease-in-out;
+}
+@keyframes tw-dizzy {
+  25% {
+    rotate: -10deg;
+  }
+  75% {
+    rotate: 10deg;
+  }
+}
+.tw-mon.tw-in {
+  scale: 0.25;
+  opacity: 0;
+  transition:
+    translate 0.3s ease-in,
+    scale 0.3s ease-in 0.1s,
+    opacity 0.2s ease-in 0.25s !important;
+}
+.tw-say.win {
+  background: var(--gold);
+}
+.tw-mon.tw-taunt > .mon {
+  animation: tw-taunt 0.4s ease-out;
+}
+@keyframes tw-taunt {
+  40% {
+    translate: 0 -14%;
+  }
+  70% {
+    translate: 0 2%;
+  }
+}
+.tw-mon.tw-land > .mon {
+  animation: tw-land 0.35s ease-out;
+  transform-origin: 50% 100%;
+}
+@keyframes tw-land {
+  30% {
+    scale: 1.15 0.82;
+  }
+  65% {
+    scale: 0.95 1.06;
+  }
+}
+.tw-mon.tw-ghost {
+  pointer-events: none;
+}
+.tw-mon .tw-hp b {
+  transition: width 0.35s ease-out;
+}
+.tw-spot.tw-fire > .mon {
+  animation: tw-fire 0.3s ease-out;
+}
+@keyframes tw-fire {
+  30% {
+    translate: 0 -8%;
+    scale: 1.08;
+  }
+}
+.tw-spot.tw-arrive > .mon {
+  animation: tw-arrive 0.6s cubic-bezier(0.3, 1.2, 0.5, 1) both;
+  transform-origin: 50% 100%;
+}
+@keyframes tw-arrive {
+  0% {
+    translate: -30% -120%;
+    opacity: 0;
+  }
+  50% {
+    translate: 0 -40%;
+    opacity: 1;
+  }
+  75% {
+    translate: 0 0;
+    scale: 1.12 0.85;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.tw-spot.tw-upnow .tw-pips {
+  animation: tw-pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes tw-pop {
+  0% {
+    scale: 0.2;
+  }
+  60% {
+    scale: 1.6;
+    filter: drop-shadow(0 0 6px var(--gold-300));
+  }
+  100% {
+    scale: 1;
+  }
+}
+.tw-heroslot.tw-throw .mon {
+  animation: tw-throw 0.32s ease-out;
+  transform-origin: 50% 100%;
+}
+@keyframes tw-throw {
+  35% {
+    scale: 1.12;
+    rotate: -8deg;
+  }
+}
+.tw-heroslot.tw-evolve .mon {
+  animation: tw-evolve 0.8s ease-in-out;
+  transform-origin: 50% 100%;
+}
+@keyframes tw-evolve {
+  0% {
+    filter: none;
+  }
+  40% {
+    filter: brightness(3) saturate(0);
+    scale: 1.2;
+  }
+  50% {
+    filter: brightness(3) saturate(0);
+    scale: 0.9;
+  }
+  100% {
+    filter: none;
+    scale: 1;
+  }
+}
+/* the tower */
+#twt.tw-shake > * {
+  animation: tw-shake 0.45s ease-out;
+}
+@keyframes tw-shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-4px) rotate(-1deg);
+  }
+  45% {
+    transform: translateX(4px) rotate(1deg);
+  }
+  70% {
+    transform: translateX(-2px);
+  }
+}
+#twt.tw-heal .tw-towerart {
+  animation: tw-healglow 0.7s ease-out;
+}
+@keyframes tw-healglow {
+  40% {
+    filter: drop-shadow(0 0 8px var(--green-250)) brightness(1.15);
+  }
+}
+#twt.tw-fall > * {
+  animation: tw-fall 1s ease-in both;
+}
+@keyframes tw-fall {
+  0% {
+    transform: none;
+    filter: none;
+  }
+  15% {
+    transform: translateX(-6px) rotate(-2deg);
+  }
+  30% {
+    transform: translateX(6px) rotate(2deg);
+  }
+  45% {
+    transform: translateX(-4px);
+  }
+  100% {
+    transform: translateY(4px);
+    filter: grayscale(0.7) brightness(0.8);
+  }
+}
+.tw-board.tw-won .tw-flag {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: tw-flag 0.5s ease-in-out 3;
+}
+@keyframes tw-flag {
+  50% {
+    transform: scaleX(0.75) skewY(-8deg);
+  }
+}
+.tw-board.tw-won #twt .tw-towerart {
+  animation: tw-healglow 1s ease-out;
+}
+.tw-board::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--navy-900);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.tw-board.tw-dim::after {
+  animation: tw-dim 1.2s ease-in-out both;
+}
+.tw-board.tw-alarm::after {
+  background: none;
+  box-shadow: inset 0 0 calc(46 * var(--u)) calc(10 * var(--u)) rgba(232, 52, 74, 0.85);
+  animation: tw-alarm 0.9s ease-out both;
+}
+@keyframes tw-alarm {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.tw-mon.tw-star {
+  z-index: 4;
+  filter: drop-shadow(0 0 calc(6 * var(--u)) var(--gold-300));
+}
+@keyframes tw-dim {
+  30%,
+  60% {
+    opacity: 0.5;
+  }
+}
+.tw-board .confetti i {
+  animation-duration: 1.8s;
+}
+/* Bauzeit: a new floor lifts what is above it, drops in and puffs; a mended wall loses its cracks */
+#twt .tw-fl.new {
+  animation: tw-drop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) 0.32s both;
+}
+@keyframes tw-drop {
+  from {
+    transform: translateY(-46px);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+#twt.tw-grow .tw-top {
+  animation: tw-lift 0.4s ease-out both;
+}
+#twt.tw-grow .tw-heroslot,
+#twt.tw-grow .tw-parapet {
+  animation: tw-lift-h 0.4s ease-out both;
+}
+@keyframes tw-lift {
+  from {
+    transform: translateY(38px);
+  }
+}
+@keyframes tw-lift-h {
+  from {
+    transform: translateY(calc(38 * var(--u)));
+  }
+}
+.tw-dustpuff {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: calc(var(--fy) * var(--u));
+  height: calc(16 * var(--u));
+  pointer-events: none;
+}
+.tw-dustpuff::before,
+.tw-dustpuff::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 34%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(240, 232, 210, 0.9);
+  border: 2px solid rgba(28, 37, 65, 0.5);
+  animation: tw-dust 0.55s ease-out 0.78s both;
+}
+.tw-dustpuff::before {
+  left: 0;
+}
+.tw-dustpuff::after {
+  right: 0;
+}
+@keyframes tw-dust {
+  0% {
+    opacity: 0;
+    scale: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.4;
+    translate: 0 -6px;
+  }
+}
+#twt .tw-oldart {
+  animation: tw-fadeout 0.7s ease-in 0.25s both;
+}
+@keyframes tw-fadeout {
+  to {
+    opacity: 0;
+  }
+}
+#twt.tw-mend .tw-towerart:not(.tw-oldart) {
+  animation: tw-healglow 0.9s ease-out 0.2s;
+}
+.tw-hpbox .hpbar i {
+  transition: width 0.4s ease-out;
+}
+.topbar .tw-tick .emo {
+  animation: tw-pop 0.35s ease-out;
+}
+.tw-fly {
+  position: absolute;
+  z-index: 20;
+  translate: -50% -50%;
+  pointer-events: none;
+}
+.tw-fly svg {
+  display: block;
+  width: 30px;
+  height: 17px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+}
+.tw-bannerov.slide {
+  animation: tw-dimin 0.4s ease-out both;
+}
+.tw-bannerov.slide .modal {
+  animation: tw-slidein 0.55s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes tw-dimin {
+  from {
+    background-color: transparent;
+  }
+}
+@keyframes tw-slidein {
+  from {
+    translate: -110vw 0;
+  }
+}
+.tw-endtower.rise .tw-tower {
+  animation: tw-drop 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-fx,
+  .tw-fly {
+    display: none;
+  }
+  .tw-mon > .mon,
+  .tw-spot > .mon,
+  .tw-spot .tw-pips,
+  .tw-heroslot .mon,
+  #twt > *,
+  #twt .tw-fl.new,
+  #twt .tw-top,
+  .tw-board::after,
+  .tw-bannerov.slide,
+  .tw-bannerov.slide .modal,
+  .tw-endtower .tw-tower,
+  .tw-flag {
+    animation: none !important;
+  }
+  .tw-dustpuff,
+  #twt .tw-oldart {
+    display: none;
+  }
+}
