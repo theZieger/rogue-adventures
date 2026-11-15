@@ -1,10 +1,19 @@
 // One page load of the built game (docs/index.html) in jsdom, for the page tests. open(storage) is a reload:
 // the page starts with that localStorage. Every page is a full copy of the app with its own timers and is never
 // freed while open, so the tests close the pages they are done with; dump() still works after close().
+// Parsing 4 MB of HTML took most of a page load, so the scripts are compiled once and run in each new page;
+// tests/playtest.js still loads the file as a browser does.
 const { JSDOM, VirtualConsole } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
-const html = fs.readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8');
+const vm = require('vm');
+const scripts = [];
+const html = fs
+  .readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8')
+  .replace(/<script>\n([\s\S]*?)\n<\/script>/g, (_, code) => {
+    scripts.push(new vm.Script(code));
+    return '';
+  });
 
 // mulberry32
 const seeded = (s) => () => {
@@ -74,6 +83,11 @@ function open(storage, opts) {
   });
   const w = dom.window,
     d = w.document;
+  try {
+    for (const script of scripts) script.runInContext(dom.getInternalVMContext());
+  } catch (e) {
+    errors.push(e.message);
+  }
   // tests were written for one title screen: a game's button sits on its subject screen, so open that from the
   // title first, and a title button looked for on a subject screen means going back
   const $ = (s) => d.querySelector(s) || toGame(s) || toTitle(s);

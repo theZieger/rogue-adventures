@@ -1,4 +1,5 @@
 // The bot plays every unit: one tests/playtest.js process per row, a few at a time.
+// A unit without a row of its own is played once, so a new unit needs no entry here.
 const { test } = require('node:test');
 const { execFile } = require('node:child_process');
 const path = require('node:path');
@@ -33,11 +34,15 @@ const RUNS = [
   { SEED: '1', MODE: 'turm', GRADE: '3', SUBJECTS: 'Mathe', ACC: '0.65', RUNS: '1' },
 ];
 
-function play(script, env = {}) {
+const named = new Set(RUNS.map((run) => run.MODE));
+const others = Object.keys(require('../src/units.js')).filter((unit) => !named.has(unit));
+const ALL_RUNS = [...RUNS, ...others.map((unit) => ({ MODE: unit, ACC: '0.9', RUNS: '1' }))];
+
+function play(env) {
   return new Promise((resolve, reject) => {
     execFile(
       process.execPath,
-      [path.join(__dirname, script)],
+      [path.join(__dirname, 'playtest.js')],
       { env: { ...process.env, ...env }, maxBuffer: 64 << 20 },
       (error, stdout, stderr) => (error ? reject(new Error(`${stderr}\n${stdout.slice(-2000)}`)) : resolve()),
     );
@@ -49,8 +54,5 @@ test('playtests', { concurrency: 4 }, async (t) => {
     Object.entries(env)
       .map(([key, value]) => `${key}=${value}`)
       .join(' ');
-  await Promise.all([
-    ...RUNS.map((env) => t.test(settings(env), () => play('playtest.js', env))),
-    t.test('playtest_units', () => play('playtest_units.js')),
-  ]);
+  await Promise.all(ALL_RUNS.map((env) => t.test(settings(env), () => play(env))));
 });
