@@ -1,8 +1,9 @@
 import { MONART } from '../monsters.ts';
 import { TOP, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
+import { type Markup, html, raw } from '../ui/html.ts';
 import { screenGameOver } from './collection.ts';
-import { $, BEATS, CFG, ITEMS, MODULES_OF, TYPES, app, esc, pick, reducedMotion, shuffle } from './core.ts';
+import { $, BEATS, CFG, ITEMS, MODULES_OF, TYPES, esc, pick, reducedMotion, shuffle } from './core.ts';
 import { advance, nodeDone, showBag, textsFor } from './map.ts';
 import { screenTreasure } from './nodes.ts';
 import {
@@ -30,7 +31,7 @@ import { state } from './state.ts';
 import { endRun, saveAll } from './storage.ts';
 import { plain, runTask, sayCard, speakBtn } from './tasks.ts';
 import { openGoals } from './title.ts';
-import { SFX, announce, ensureTutorial, fx, modal, render, topbar } from './ui.ts';
+import { SFX, announce, ensureTutorial, fx, modal, on, screen, topbar } from './ui.ts';
 
 /* ---------- Battle ---------- */
 // arena: a spinning-top duel against the owner of the other top, which isn't a Monsterbuch entry
@@ -84,21 +85,22 @@ export function renderBattle(b) {
   const quiet = !!b.shown;
   b.shown = true;
   const T = e.top;
-  render(
-    `<div class="screen">${topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf')}
+  screen(
+    html`<div class="screen">${raw(topbar(T ? '🌀 Kreisel-Arena' : e.read ? '📖 Lesestube' : e.boss ? '👑 Bosskampf' : e.weekboss ? '🏅 Wochenboss' : e.elite ? '💀 Elitekampf' : '⚔️ Kampf'))}
       <div class="arena ${T ? 'kreisel' : ''}">
-        <div class="plate enemy"><div class="name">${esc(e.name)}</div><div class="plateline">${typeChip(e.type)}${BEATS[heroSpec().type] === e.type ? `<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
+        <div class="plate enemy"><div class="name">${e.name}</div><div class="plateline">${raw(typeChip(e.type))}${BEATS[heroSpec().type] === e.type ? html`<span class="advantage">💪 stark gegen ${TYPES[e.type].name}</span>` : ''}</div><div class="hpbar"><i class="${hpcls(e.hp, e.maxHp)}" style="width:${pct(e.hp, e.maxHp)}%"></i></div><div class="hptext">${T ? `🌀 ${e.hp} Schwung` : `❤️ ${e.hp} / ${e.maxHp}`}</div></div>
         ${
           T
-            ? `<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${SPIRAL}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>`
-            : `<div class="sprite enemy" id="fe">${monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss })}<i class="ground"></i></div>
-        <div class="sprite hero" id="fh">${heroSVG(heroSpec(), h.evo)}<i class="ground"></i></div>`
+            ? html`<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${raw(SPIRAL)}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>`
+            : html`<div class="sprite enemy" id="fe">${raw(monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss }))}<i class="ground"></i></div>
+        <div class="sprite hero" id="fh">${raw(heroSVG(heroSpec(), h.evo))}<i class="ground"></i></div>`
         }
-        <div class="plate hero"><div class="name">${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span></div>${T ? `<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : `<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${state.run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" role="progressbar" aria-label="Erfahrung" aria-valuenow="${Math.round(Math.min(100, (h.xp / xpNeeded(h.level)) * 100))}"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
+        <div class="plate hero"><div class="name">${heroName()} <span class="levelbadge">Lv ${h.level}</span></div>${T ? html`<div class="hpbar"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : html`<div class="hpbar"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${state.run.shield ? '🛡️' : ''}</div>`}<div class="xpbar" role="progressbar" aria-label="Erfahrung" aria-valuenow="${Math.round(Math.min(100, (h.xp / xpNeeded(h.level)) * 100))}"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>
       </div>
-      <div class="log ${b.logCls}">${b.log}</div>
+      <div class="log ${b.logCls}">${raw(b.log)}</div>
       <div class="taskwrap" id="taskwrap"></div>
       <div class="bottom" id="bottom"></div></div>`,
+    {},
     quiet,
   );
   announce(b.log.replace(/<[^>]+>/g, ''));
@@ -139,7 +141,7 @@ const SPIRAL = (() => {
 function topSprite(who, spin, max, color, parts, state) {
   const live = spin > 0;
   const speed = (0.45 + 0.65 * (1 - spin / max)).toFixed(2);
-  return `<div class="sprite ${who} ${live ? 'live' : 'fallen'} ${live && spin / max < 0.3 ? 'low' : ''} ${state}" id="${who === 'hero' ? 'fh' : 'fe'}" style="--spin:${speed}s"><i class="streaks"></i>${MONART.topSVG(color, parts, live ? 'live' : 'fallen')}<i class="wave"></i><span class="sparks">${SPARKS}</span>${BANG}</div>`;
+  return html`<div class="sprite ${who} ${live ? 'live' : 'fallen'} ${live && spin / max < 0.3 ? 'low' : ''} ${state}" id="${who === 'hero' ? 'fh' : 'fe'}" style="--spin:${speed}s"><i class="streaks"></i>${raw(MONART.topSVG(color, parts, live ? 'live' : 'fallen'))}<i class="wave"></i><span class="sparks">${raw(SPARKS)}</span>${raw(BANG)}</div>`;
 }
 // Repeating an attack makes it tired; the weak spot moves to the least-practised attack after each hit.
 // Both push children to practise all task types. Damage is always a whole number.
@@ -198,30 +200,28 @@ function renderAttackChoice(b) {
   const goalMods = openGoals(state.mode)
     .filter((g) => g.kind === 'right')
     .map((g) => g.mod);
-  $('#bottom').innerHTML = `<div class="attacks">${atks
-    .map((a, i) => {
-      const inf = attackInfo(b, a);
-      return `<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-i="${i}" aria-label="${esc(attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod)))}"><span class="n">${esc(a.name)}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? '<span class="tag goal">⭐ Wochenziel</span>' : ''}${inf.weak ? '<span class="tag weak">🎯 Schwachstelle</span>' : ''}${inf.tired ? `<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? '<span class="tag power">🌶️ doppelt</span>' : ''}</span></button>`;
-    })
-    .join(
-      '',
-    )}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`;
-  $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
-  app.querySelectorAll<HTMLElement>('.atk').forEach((btn) => {
-    btn.onclick = () => chooseAttack(b, atks[+btn.dataset.i!]);
+  $('#bottom').innerHTML = html`<div class="attacks">${atks.map((a, i) => {
+    const inf = attackInfo(b, a);
+    return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod))}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? html`<span class="tag goal">⭐ Wochenziel</span>` : ''}${inf.weak ? html`<span class="tag weak">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="tag tired">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="tag power">🌶️ doppelt</span>` : ''}</span></button>`;
+  })}</div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:14px">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`.text;
+  on({
+    bag: () => showBag((it, lv) => useItemInBattle(b, it, lv)),
+    attack: (button) => chooseAttack(b, atks[+button.dataset.i!]),
   });
   if (!state.meta.seenTut['battle:intro2']) showBattleIntro();
 }
 function showBattleIntro() {
   const ov = modal(
-    `<h2>So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>🎯 <b>Schwachstelle</b>: Mit dieser Attacke triffst du besonders stark. Nach dem Treffer wandert sie zu einer anderen Attacke.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Alles klar</button>`,
+    html`<h2>So kämpfst du</h2><ol><li>Tippe auf eine Attacke und löse die Aufgabe.</li><li>Richtig gelöst: Dein Monster trifft. Die Zahl bei 💥 zeigt, wie viel Schaden das macht.</li><li>💪 <b>Stark gegen …</b> beim Gegner heißt: Dein Monster ist stark gegen ihn – alle Attacken machen mehr Schaden.</li><li>🎯 <b>Schwachstelle</b>: Mit dieser Attacke triffst du besonders stark. Nach dem Treffer wandert sie zu einer anderen Attacke.</li><li>😮‍💨 <b>müde</b> heißt: Du hast die Attacke gerade schon benutzt. Nimm eine andere – dann ist sie wieder stark.</li><li>Falsch gelöst: Der Gegner bekommt einen freien Schlag.</li></ol><button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Alles klar</button>`,
+    {
+      understood() {
+        ov.remove();
+        state.meta.seenTut['battle:intro2'] = true;
+        saveAll();
+      },
+    },
   );
   $('#tutok', ov).focus({ preventScroll: true });
-  $('#tutok', ov).onclick = () => {
-    ov.remove();
-    state.meta.seenTut['battle:intro2'] = true;
-    saveAll();
-  };
 }
 // potions take your turn; shield, cookie, magnifier and stars don't
 function useItemInBattle(b, it, lv) {
@@ -383,21 +383,21 @@ export function battleWon(b) {
     state.run.node.enemy = null;
     state.run.node.reward = true;
   } else nodeDone();
-  let evoMsg = '';
+  let evoMsg: Markup | '' = '';
   if (e.boss && state.run.hero.evo < 2 && CFG().worlds > 1 && state.run.world < CFG().worlds) {
     state.run.hero.evo++;
     state.run.hero.maxHp += 15;
     heal(20);
     state.meta.evoUnlocked[state.run.hero.id + state.run.hero.evo] = true;
     const wa = CFG().worldAttacks && CFG().worldAttacks[state.run.world + 1];
-    evoMsg = `<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${heroSVG(heroSpec(), state.run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(heroSpec(), state.run.hero.evo, 'after')}</div><p>Dein Monster ist jetzt <b>${esc(heroName())}</b>!</p>${wa ? `<p>Neue Attacken für die nächste Welt: ${wa.map((x) => esc(x.name)).join(', ')}</p>` : ''}</div>`;
+    evoMsg = html`<div class="card center" style="margin-top:12px"><h3>Dein Monster entwickelt sich!</h3><div class="evo-row">${raw(heroSVG(heroSpec(), state.run.hero.evo - 1, 'before'))}<span aria-hidden="true">➜</span>${raw(heroSVG(heroSpec(), state.run.hero.evo, 'after'))}</div><p>Dein Monster ist jetzt <b>${heroName()}</b>!</p>${wa ? html`<p>Neue Attacken für die nächste Welt: ${wa.map((x) => x.name).join(', ')}</p>` : ''}</div>`;
   }
   saveAll();
-  render(
-    `<div class="screen">${topbar('Gewonnen!')}<div class="scroll"><div class="card center"><h2>${esc(e.name)} besiegt!</h2><p>+${xp} XP</p>${wood ? `<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${stampLine(stamps)}${drops.map((d) => `<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${esc(ITEMS[d].desc)}</small></p>`).join('')}${e.elite ? '<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>' : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next">${e.elite ? 'Beute aussuchen' : e.boss ? (state.run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar('Gewonnen!'))}<div class="scroll"><div class="card center"><h2>${e.name} besiegt!</h2><p>+${xp} XP</p>${wood ? html`<p>🪵 +${wood} Holz für die Werkbank</p>` : ''}${raw(stampLine(stamps))}${drops.map((d) => html`<p>${ITEMS[d].icon} ${ITEMS[d].name} gefunden! <small class="muted" style="color:var(--ink-soft)">${ITEMS[d].desc}</small></p>`)}${e.elite ? html`<p>Als Beute suchst du dir gleich eine Belohnung aus.</p>` : ''}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:800">${m}</p>`)}</div>${evoMsg}</div><div class="bottom"><button class="btn" id="next" data-action="next">${e.elite ? 'Beute aussuchen' : e.boss ? (state.run.world >= CFG().worlds ? 'Zum großen Finale' : 'Weiter zur nächsten Welt') : 'Weiter'}</button></div></div>`,
+    { next: e.elite ? () => screenTreasure('elite') : advance },
   );
   sayCard();
-  $('#next').onclick = e.elite ? () => screenTreasure('elite') : advance;
 }
 
 /* ---------- Kreisel-Arena ---------- */
@@ -426,29 +426,29 @@ function topChoice(b) {
   const e = b.enemy,
     T = e.top;
   if (e.hp <= 0 || T.spin <= 0) {
-    $('#bottom').innerHTML = '<button class="btn" id="next">Weiter</button>';
-    $('#next').onclick = () => topEnd(b);
+    $('#bottom').innerHTML = '<button class="btn" id="next" data-action="next">Weiter</button>';
+    on({ next: () => topEnd(b) });
     return;
   }
   const atks = heroAttacks();
   const M = MODULES_OF();
   const wind = T.start < TOP_START;
   $('#bottom').innerHTML =
-    `<div class="attacks">${atks.map((a, i) => `<button class="atk" data-i="${i}" aria-label="${esc(a.name)}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${esc(a.name)}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`).join('')}</div>
-      <p class="muted toprule">${wind ? `Schwung holen: Aufgabe ${T.start + 1} von ${TOP_START}` : `Wucht ${T.wucht} · Panzer ${T.panzer}. Eine falsche Antwort kostet dich ${TOP_KNOCK - T.panzer} Schwung.`}</p>`;
-  app.querySelectorAll<HTMLElement>('.atk').forEach((btn) => {
-    btn.onclick = () => topAttack(b, atks[+btn.dataset.i!]);
-  });
+    html`<div class="attacks">${atks.map((a, i) => html`<button class="atk" data-action="attack" data-i="${i}" aria-label="${a.name}: ${M[a.mod].name}, ${wind ? `${TOP_WIND} Schwung` : `Wucht ${T.wucht}`}"><span class="n">${a.name}</span><span class="m">${M[a.mod].icon} ${M[a.mod].name}<span class="dmg">${wind ? `🌀 +${TOP_WIND}` : `💥 ${T.wucht}`}</span></span></button>`)}</div>
+      <p class="muted toprule">${wind ? `Schwung holen: Aufgabe ${T.start + 1} von ${TOP_START}` : `Wucht ${T.wucht} · Panzer ${T.panzer}. Eine falsche Antwort kostet dich ${TOP_KNOCK - T.panzer} Schwung.`}</p>`.text;
+  on({ attack: (button) => topAttack(b, atks[+button.dataset.i!]) });
   if (!state.meta.seenTut['arena:intro']) {
     const ov = modal(
-      `<h2>🌀 Kreisel-Arena</h2><ol><li>Erst holst du Schwung: ${TOP_START} Aufgaben, jede richtige gibt deinem Kreisel ${TOP_WIND} Schwung.</li><li>Dann stoßen die Kreisel zusammen. Richtig gelöst: Der andere Kreisel verliert so viel Schwung, wie deine Wucht zeigt.</li><li>Falsch gelöst: Dein Kreisel verliert ${TOP_KNOCK} Schwung, weniger, je mehr Panzer er hat.</li><li>Ein Kreisel ohne Schwung kippt um. Verlierst du, geht dein Abenteuer einfach weiter.</li><li>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</li></ol><button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`,
+      html`<h2>🌀 Kreisel-Arena</h2><ol><li>Erst holst du Schwung: ${TOP_START} Aufgaben, jede richtige gibt deinem Kreisel ${TOP_WIND} Schwung.</li><li>Dann stoßen die Kreisel zusammen. Richtig gelöst: Der andere Kreisel verliert so viel Schwung, wie deine Wucht zeigt.</li><li>Falsch gelöst: Dein Kreisel verliert ${TOP_KNOCK} Schwung, weniger, je mehr Panzer er hat.</li><li>Ein Kreisel ohne Schwung kippt um. Verlierst du, geht dein Abenteuer einfach weiter.</li><li>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</li></ol><button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
+      {
+        understood() {
+          ov.remove();
+          state.meta.seenTut['arena:intro'] = true;
+          saveAll();
+        },
+      },
     );
     $('#tutok', ov).focus({ preventScroll: true });
-    $('#tutok', ov).onclick = () => {
-      ov.remove();
-      state.meta.seenTut['arena:intro'] = true;
-      saveAll();
-    };
   }
 }
 function topAttack(b, atk) {
@@ -524,10 +524,12 @@ export function topEnd(b) {
   nodeDone();
   saveAll();
   if (won) setTimeout(SFX.win, 150);
-  render(`<div class="screen">${topbar('🌀 Kreisel-Arena')}<div class="scroll"><div class="card center topend" id="topend"><h2>${won ? 'Der andere Kreisel kippt um.' : 'Dein Kreisel kippt um.'}</h2>${MONART.topSVG(TYPES[heroSpec().type].color, T.parts, won ? 'live' : 'fallen')}
-      <p>${won ? `Dein Kreisel dreht sich noch mit ${T.spin} Schwung.` : `${esc(e.name)} gewinnt diesmal. Das kostet dich nichts, dein Abenteuer geht weiter.`}</p>${xp ? `<p>+${xp} XP</p>` : ''}${stampLine(stamps)}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}
-      ${won ? '' : '<p>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</p>'}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`);
-  $('#next').onclick = advance;
+  screen(
+    html`<div class="screen">${raw(topbar('🌀 Kreisel-Arena'))}<div class="scroll"><div class="card center topend" id="topend"><h2>${won ? 'Der andere Kreisel kippt um.' : 'Dein Kreisel kippt um.'}</h2>${raw(MONART.topSVG(TYPES[heroSpec().type].color, T.parts, won ? 'live' : 'fallen'))}
+      <p>${won ? `Dein Kreisel dreht sich noch mit ${T.spin} Schwung.` : `${e.name} gewinnt diesmal. Das kostet dich nichts, dein Abenteuer geht weiter.`}</p>${xp ? html`<p>+${xp} XP</p>` : ''}${raw(stampLine(stamps))}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:800">${m}</p>`)}
+      ${won ? '' : html`<p>Neue Teile für deinen Kreisel gibt es im Stempelheft unter „Kreisel bauen“.</p>`}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+    { next: advance },
+  );
 }
 
 /* ---------- Lesestube ---------- */
@@ -547,26 +549,15 @@ const readText = () => TEXTE[state.run.node.text];
 const sylHtml = (s) =>
   s
     .split(/([A-Za-zÄÖÜäöüß·]+)/)
-    .map((w, i) =>
-      i % 2
-        ? w
-            .split('·')
-            .map((x, k) => `<span class="sy${k % 2}">${x}</span>`)
-            .join('')
-        : esc(w),
-    )
-    .join('');
+    .map((w, i) => (i % 2 ? w.split('·').map((x, k) => html`<span class="sy${k % 2}">${x}</span>`) : w));
 const readCard = (t) =>
-  `<div class="card readcard"><div class="eyebrow">${esc(t.kind)}</div><h2>${esc(t.title)}</h2><p${t.syl ? ' class="syl"' : ''}>${t.syl ? sylHtml(t.syl) : esc(t.text)}</p>${t.by ? `<p class="by">${esc(t.by)}</p>` : ''}</div>`;
+  html`<div class="card readcard"><div class="eyebrow">${t.kind}</div><h2>${t.title}</h2><p${t.syl ? raw(' class="syl"') : ''}>${t.syl ? sylHtml(t.syl) : t.text}</p>${t.by ? html`<p class="by">${t.by}</p>` : ''}</div>`;
 export function screenRead() {
   if (!Number.isInteger(state.run.node.text) || !TEXTE[state.run.node.text]) {
     state.run.node.text = pick(textsFor(state.mode));
     saveAll();
   }
-  render(
-    `<div class="screen">${topbar('📖 Lesestube')}<div class="scroll">${readCard(readText())}</div><div class="bottom"><button class="btn" id="next">Zu den Fragen</button></div></div>`,
-  );
-  $('#next').onclick = () => {
+  const ask = () => {
     const e = {
       name: READ_FOE.name,
       type: READ_FOE.type,
@@ -585,27 +576,33 @@ export function screenRead() {
       phase: 'choose',
     });
   };
+  screen(
+    html`<div class="screen">${raw(topbar('📖 Lesestube'))}<div class="scroll">${readCard(readText())}</div><div class="bottom"><button class="btn" id="next" data-action="next">Zu den Fragen</button></div></div>`,
+    { next: ask },
+  );
 }
 function readChoice(b) {
   const r = b.enemy.read;
   const n = readText().qs.length;
   const dmg = Math.ceil(b.enemy.maxHp / n);
   if (r.q >= n || b.enemy.hp <= 0) {
-    $('#bottom').innerHTML = '<button class="btn" id="next">Weiter</button>';
-    $('#next').onclick = () => readEnd(b);
+    $('#bottom').innerHTML = '<button class="btn" id="next" data-action="next">Weiter</button>';
+    on({ next: () => readEnd(b) });
     return;
   }
   $('#bottom').innerHTML =
-    `<div class="attacks" style="grid-template-columns:1fr"><button class="atk" id="rq" aria-label="Frage ${r.q + 1} von ${n}, ${dmg} Schaden"><span class="n">Frage ${r.q + 1} von ${n}</span><span class="m">${READ_MOD.icon} ${READ_MOD.name}<span class="dmg">💥 ${dmg}${state.run.power ? ' · 🌶️ doppelt' : ''}</span></span></button></div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="rtext">📄 Text ansehen</button><button class="btn secondary small" id="bag">🎒 Beutel (${state.run.items.length})</button></div>`;
-  $('#rtext').onclick = () => {
-    const ov = modal(
-      `${readCard(readText())}<button class="btn" id="tutok" style="margin-top:12px">Zurück zur Frage</button>`,
-    );
-    $('#tutok', ov).focus({ preventScroll: true });
-    $('#tutok', ov).onclick = () => ov.remove();
-  };
-  $('#bag').onclick = () => showBag((it, lv) => useItemInBattle(b, it, lv));
-  $('#rq').onclick = () => readAsk(b, dmg);
+    html`<div class="attacks" style="grid-template-columns:1fr"><button class="atk" id="rq" data-action="ask" aria-label="Frage ${r.q + 1} von ${n}, ${dmg} Schaden"><span class="n">Frage ${r.q + 1} von ${n}</span><span class="m">${READ_MOD.icon} ${READ_MOD.name}<span class="dmg">💥 ${dmg}${state.run.power ? ' · 🌶️ doppelt' : ''}</span></span></button></div><div class="row" style="margin-top:8px"><button class="btn secondary small" id="rtext" data-action="text">📄 Text ansehen</button><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button></div>`.text;
+  on({
+    text() {
+      const ov = modal(
+        html`${readCard(readText())}<button class="btn" id="tutok" data-action="back" style="margin-top:12px">Zurück zur Frage</button>`,
+        { back: () => ov.remove() },
+      );
+      $('#tutok', ov).focus({ preventScroll: true });
+    },
+    bag: () => showBag((it, lv) => useItemInBattle(b, it, lv)),
+    ask: () => readAsk(b, dmg),
+  });
 }
 function readAsk(b, dmg) {
   const r = b.enemy.read;
@@ -677,9 +674,9 @@ export function readEnd(b) {
   nodeDone();
   saveAll();
   if (r.right) setTimeout(SFX.win, 150);
-  render(
-    `<div class="screen">${topbar('📖 Lesestube')}<div class="scroll"><div class="card center"><h2>${esc(b.enemy.name)} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? `<p>+${xp} XP</p>` : ''}${msgs.map((m) => `<p style="color:var(--orange);font-weight:800">${m}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar('📖 Lesestube'))}<div class="scroll"><div class="card center"><h2>${b.enemy.name} ${beaten ? 'ist besiegt.' : 'verschwindet zwischen den Seiten.'}</h2><p>${r.right} von ${readText().qs.length} Fragen richtig</p>${xp ? html`<p>+${xp} XP</p>` : ''}${msgs.map((m) => html`<p style="color:var(--orange);font-weight:800">${m}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+    { next: advance },
   );
   sayCard();
-  $('#next').onclick = advance;
 }

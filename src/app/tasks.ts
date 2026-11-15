@@ -1,26 +1,25 @@
 import { MK } from '../knowledge.ts';
 import { MQ } from '../logic.ts';
 import { MS } from '../sachkunde.ts';
+import { type Markup, html, raw } from '../ui/html.ts';
 import { READ_MOD } from './battle.ts';
 import { $, CFG, MODULES_OF, app, arrow, esc, euro, reducedMotion } from './core.ts';
 import { state } from './state.ts';
-import { SFX, showTutorial } from './ui.ts';
+import { SFX, on, showTutorial } from './ui.ts';
 
 /* ---------- Task UI ---------- */
 const PLACES = ['Einer', 'Zehner', 'Hunderter', 'Tausender'];
 function colHtml(c, text) {
   const place = (i) => PLACES[c.w - 1 - i];
-  const cells = (f) => Array.from({ length: c.w }, (_, i) => f(i)).join('');
+  const cells = (f: (i: number) => Markup) => Array.from({ length: c.w }, (_, i) => f(i));
   // multiplication is written in one line (213 · 3) with the result under the first factor
   const mul = c.op === '·';
-  const end = mul ? '<span></span>' : '';
-  const rows = (mul ? c.rows.slice(0, 1) : c.rows)
-    .map((n, r) => {
-      const s = String(n).padStart(c.w, ' ');
-      return `<span class="op">${r ? c.op : ''}</span>${cells((i) => `<span>${s[i].trim()}</span>`)}${mul ? `<span class="op">· ${c.rows[1]}</span>` : ''}`;
-    })
-    .join('');
-  return `<div class="colcalc${mul ? ' mul' : ''}" style="--w:${c.w}" role="group" aria-label="${esc(text.replace(' = ?', ''))}">${rows}<span class="op"></span>${cells((i) => (i < c.w - 1 ? `<div class="inp carry" data-i="${c.w + i}" aria-label="Übertrag ${place(i)}"></div>` : '<span></span>'))}${end}<i class="colline"></i><span class="op"></span>${cells((i) => `<div class="inp dig" data-i="${i}" aria-label="${place(i)}"></div>`)}${end}</div><div class="prompt">Rechne von rechts nach links. Den Übertrag schreibst du in das kleine Feld.</div>`;
+  const end = mul ? html`<span></span>` : '';
+  const rows = (mul ? c.rows.slice(0, 1) : c.rows).map((n, r) => {
+    const s = String(n).padStart(c.w, ' ');
+    return html`<span class="op">${r ? c.op : ''}</span>${cells((i) => html`<span>${s[i].trim()}</span>`)}${mul ? html`<span class="op">· ${c.rows[1]}</span>` : ''}`;
+  });
+  return html`<div class="colcalc${mul ? ' mul' : ''}" style="--w:${c.w}" role="group" aria-label="${text.replace(' = ?', '')}">${rows}<span class="op"></span>${cells((i) => (i < c.w - 1 ? html`<div class="inp carry" data-action="taskField" data-i="${c.w + i}" aria-label="Übertrag ${place(i)}"></div>` : html`<span></span>`))}${end}<i class="colline"></i><span class="op"></span>${cells((i) => html`<div class="inp dig" data-action="taskField" data-i="${i}" aria-label="${place(i)}"></div>`)}${end}</div><div class="prompt">Rechne von rechts nach links. Den Übertrag schreibst du in das kleine Feld.</div>`;
 }
 declare global {
   interface Window {
@@ -58,52 +57,54 @@ export function runTask(task, opts: TaskOpts, done: TaskDone) {
   const bottom = opts.bottom;
   const labelsFor = () => (task.nb ? [`${task.nb} davor`, `${task.nb} danach`] : task.seq ? ['', '', ''] : ['']);
   function cardHtml() {
-    let body = '';
+    let body: Markup;
     if (task.fig)
-      body = task.fig; // ready-made question with drawing (Jahrmarkt)
+      body = raw(task.fig); // ready-made question with drawing (Jahrmarkt)
     else if (task.riddle)
-      body = `<div class="clues">${task.text
+      body = html`<div class="clues">${task.text
         .split('\n')
-        .map((c) => `<div>${esc(c)}</div>`)
-        .join('')}</div><div class="prompt">Welche Zahl bin ich?</div>`;
+        .map((c) => html`<div>${c}</div>`)}</div><div class="prompt">Welche Zahl bin ich?</div>`;
     else if (task.seq)
-      body = `<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
-    else if (task.nb) body = `<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
+      body = html`<div class="seq">${task.seq.join(', ')}, …</div><div class="prompt">Wie gehen die nächsten drei weiter?</div>`;
+    else if (task.nb) body = html`<div class="prompt">Welche ${task.nb}zahl kommt davor, welche danach?</div>`;
     else if (task.grid) {
       const g = task.grid;
-      let cells = '';
+      const cells: Markup[] = [];
       for (let r = 0; r < g.size; r++)
         for (let c = 0; c < g.size; c++) {
           const isS = r === g.sr && c === g.sc,
             isT = r === g.tr && c === g.tc;
-          cells += `<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`;
+          cells.push(
+            html`<div class="${isS ? 'start' : ''}${isT ? ' target' : ''}">${isS ? g.base : isT ? '?' : ''}</div>`,
+          );
         }
-      body = `<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${arrow('r')} +${g.stepR}</span><span>${arrow('l')} −${g.stepR}</span><span>${arrow('d')} +${g.stepD}</span><span>${arrow('u')} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`;
+      body = html`<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${raw(arrow('r'))} +${g.stepR}</span><span>${raw(arrow('l'))} −${g.stepR}</span><span>${raw(arrow('d'))} +${g.stepD}</span><span>${raw(arrow('u'))} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`;
     } else if (C) body = colHtml(C, task.text);
     else if (task.word)
-      body = `<div class="prompt">Schreibe die Zahl:</div><div class="numword">${esc(task.text).replace(/hundert|tausend/g, '$&<wbr>')}</div>`;
-    else if (task.svg) body = `<div class="figure">${task.svg}</div><div class="prompt">${esc(task.ask)}</div>`;
-    else if (task.story) body = `<p class="story">${esc(task.story)}</p>`;
+      body = html`<div class="prompt">Schreibe die Zahl:</div><div class="numword">${raw(esc(task.text).replace(/hundert|tausend/g, '$&<wbr>'))}</div>`;
+    else if (task.svg) body = html`<div class="figure">${raw(task.svg)}</div><div class="prompt">${task.ask}</div>`;
+    else if (task.story) body = html`<p class="story">${task.story}</p>`;
     else if (task.ask)
-      body = `<div class="expr${task.long ? ' long' : ''}">${esc(task.text)}</div><div class="prompt">${esc(task.ask)}</div>`;
-    else body = `<div class="expr">${esc(task.text)}</div>`;
-    let inputs = '';
+      body = html`<div class="expr${task.long ? ' long' : ''}">${task.text}</div><div class="prompt">${task.ask}</div>`;
+    else body = html`<div class="expr">${task.text}</div>`;
+    let inputs: Markup | '' = '';
     if (C) inputs = '';
     else if (task.nb)
-      inputs = `<div class="nbline"><div class="inpgroup"><div class="inp" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-i="1"></div><span>danach</span></div></div>`;
+      inputs = html`<div class="nbline"><div class="inpgroup"><div class="inp" data-action="taskField" data-i="0"></div><span>davor</span></div><div class="mid">${task.n}</div><div class="inpgroup"><div class="inp" data-action="taskField" data-i="1"></div><span>danach</span></div></div>`;
     else if (task.labels)
-      inputs = `<div class="nbline">${task.labels.map((l, i) => `<div class="inpgroup"><div class="inp" data-i="${i}"></div><span>${esc(l)}</span></div>`).join('')}</div>`;
+      inputs = html`<div class="nbline">${task.labels.map((l, i) => html`<div class="inpgroup"><div class="inp" data-action="taskField" data-i="${i}"></div><span>${l}</span></div>`)}</div>`;
     else
-      inputs = `<div class="inputs">${task.answers.map((_, i) => `<div class="inp" data-i="${i}"></div>`).join('')}</div>`;
+      inputs = html`<div class="inputs">${task.answers.map((_, i) => html`<div class="inp" data-action="taskField" data-i="${i}"></div>`)}</div>`;
     const a0 = task.answers[0];
     const lo = Math.max(0, a0 - 1 - Math.floor(Math.random() * 3));
     const hint = opts.hint
-      ? `<div class="hintline">🌉 Tipp: ${task.answers.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>`
+      ? html`<div class="hintline">🌉 Tipp: ${task.answers.length > 1 ? 'Die erste Zahl' : 'Die Antwort'} liegt zwischen ${lo} und ${lo + 4}.</div>`
       : '';
-    return `<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
+    return html`<div class="task"><div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${opts.subtitle}` : ''}<button class="tut" type="button" data-action="taskTutorial" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>${body}${hint}${inputs}<div id="fb" role="status" aria-live="polite"></div></div>`;
   }
-  container.innerHTML = cardHtml();
-  bottom.innerHTML = `<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? `<button class="cancel" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`;
+  container.innerHTML = cardHtml().text;
+  bottom.innerHTML =
+    html`<div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => html`<button data-action="taskKey" data-k="${d}">${d}</button>`)}<button class="del" data-action="taskKey" data-k="del" aria-label="Löschen">⌫</button><button data-action="taskKey" data-k="0">0</button><button class="ok" data-action="taskKey" data-k="ok" aria-label="Antwort prüfen">✓</button>${opts.cancel ? html`<button class="cancel" data-action="taskKey" data-k="cancel" style="grid-column:1/-1">Abbrechen</button>` : ''}</div>`.text;
   const inps: HTMLElement[] = [];
   container.querySelectorAll<HTMLElement>('.inp').forEach((el) => {
     inps[+el.dataset.i!] = el;
@@ -116,22 +117,20 @@ export function runTask(task, opts: TaskOpts, done: TaskDone) {
     const a = inps[active];
     if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' });
   }
-  inps.forEach((el) => {
-    el.onclick = () => {
+  on({
+    taskField(field) {
       if (!locked) {
-        active = +el.dataset.i!;
+        active = +field.dataset.i!;
         paint();
       }
-    };
+    },
+    taskTutorial: () => showTutorial(task.group, task.note),
+    taskKey(key) {
+      if (!locked) press(key.dataset.k!);
+    },
   });
-  $('.tut', container).onclick = () => showTutorial(task.group, task.note);
   readAloud(container, opts.bottom, task);
   paint();
-  bottom.onclick = (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLElement>('button');
-    if (!b || locked || !bottom.contains(b) || !b.dataset.k) return;
-    press(b.dataset.k);
-  };
   state.keyHandler = (e) => {
     if (locked) return;
     let k: string | null = null;
@@ -215,7 +214,7 @@ export function runTask(task, opts: TaskOpts, done: TaskDone) {
     });
     const fb = $('#fb', container);
     if (ok) {
-      fb.innerHTML = `<div class="feedback good pop">Richtig! ✔</div>`;
+      fb.innerHTML = html`<div class="feedback good pop">Richtig! ✔</div>`.text;
       SFX.right();
       sayResult(fb, true);
     } else {
@@ -225,13 +224,14 @@ export function runTask(task, opts: TaskOpts, done: TaskDone) {
         (task.money
           ? euro(task.answers[0] * 100 + task.answers[1])
           : task.answers.join(task.nb ? ' und ' : task.rest ? ' Rest ' : ', '));
-      fb.innerHTML = `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`;
+      fb.innerHTML =
+        html`<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>Richtig wäre: ${corr}</small></div>`.text;
       sayResult(fb, false, 'Richtig wäre: ' + corr);
     }
     if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
-    bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
+    bottom.innerHTML = html`<button class="btn" id="next" data-action="taskNext">Weiter</button>`.text;
     $('#next').focus();
-    $('#next').onclick = () => done(ok);
+    on({ taskNext: () => done(ok) });
   }
 }
 
@@ -395,18 +395,19 @@ function runChoiceTask(task, opts: TaskOpts, done: TaskDone) {
     bottom = opts.bottom;
   const M = MODULES_OF()[task.mod] || READ_MOD;
   let locked = false;
-  const head = `<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${esc(opts.subtitle)}` : ''}<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>`;
+  const head = html`<div class="head">${M.icon} ${M.name}${opts.subtitle ? ` · ${opts.subtitle}` : ''}<button class="tut" type="button" data-action="taskTutorial" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div>`;
   // with two options crossing one out gives the answer away, so show the notes instead
   const strikeWrongOption = () => {
     if (task.options.length <= 2) {
       const n = task.note && CFG().notes ? CFG().notes[task.note] : null;
       $('#fb', container).insertAdjacentHTML(
         'beforebegin',
-        task.tip
-          ? `<div class="hintline">🌉 Tipp: ${esc(task.tip)}</div>`
+        (task.tip
+          ? html`<div class="hintline">🌉 Tipp: ${task.tip}</div>`
           : n
-            ? `<div class="hintline">🌉 Tipp aus deinen Notizen „${esc(n.title)}“:<br>${n.lines.map((l) => esc(l)).join('<br>')}</div>`
-            : '<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>',
+            ? html`<div class="hintline">🌉 Tipp aus deinen Notizen „${n.title}“:${n.lines.map((l) => html`<br>${l}`)}</div>`
+            : html`<div class="hintline">🌉 Tipp: Lies die Frage noch einmal ganz genau.</div>`
+        ).text,
       );
       return;
     }
@@ -420,47 +421,53 @@ function runChoiceTask(task, opts: TaskOpts, done: TaskDone) {
     }
     $('#fb', container).insertAdjacentHTML(
       'beforebegin',
-      '<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>',
+      html`<div class="hintline">🌉 Tipp: Eine falsche Antwort ist durchgestrichen.</div>`.text,
     );
   };
-  const finish = (ok, extraHtml) => {
+  const finish = (ok: boolean, why: Markup) => {
     locked = true;
     const fb = $('#fb', container);
     if (ok) SFX.right();
     else SFX.wrong();
     if (opts.onResult) opts.onResult(ok);
-    const more = task.more ? `<small>Herkunft: ${esc(task.more)}</small>` : ''; // where a saying comes from, after every answer
-    fb.innerHTML = ok
-      ? `<div class="feedback good pop">Richtig! ✔${more}</div>`
-      : `<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${extraHtml}</small>${more}</div>`;
-    sayResult(fb, ok, plain(extraHtml));
+    const more = task.more ? html`<small>Herkunft: ${task.more}</small>` : ''; // where a saying comes from, after every answer
+    fb.innerHTML = (
+      ok
+        ? html`<div class="feedback good pop">Richtig! ✔${more}</div>`
+        : html`<div class="feedback bad ${reducedMotion ? '' : 'shake'}">Daneben<small>${why}</small>${more}</div>`
+    ).text;
+    sayResult(fb, ok, plain(why.text));
     if (fb.scrollIntoView) fb.scrollIntoView({ block: 'nearest' });
-    bottom.innerHTML = `<button class="btn" id="next">Weiter</button>`;
+    bottom.innerHTML = html`<button class="btn" id="next" data-action="taskNext">Weiter</button>`.text;
     $('#next').focus();
-    $('#next').onclick = () => done(ok);
+    on({ taskNext: () => done(ok) });
   };
   if (task.kind === 'choice') {
     // svgOpts: the options are pictures (generated markup, not player text)
-    container.innerHTML = `<div class="task">${head}${task.fig || ''}<div class="question">${esc(task.q).replace('___', '<span class="blank">____</span>')}</div>${task.pic || ''}<div id="fb" role="status" aria-live="polite"></div></div>`;
-    bottom.innerHTML = `<div class="options ${task.svgOpts ? 'pics' + (task.tall ? ' tall' : '') : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => `<button class="opt" data-i="${i}"${task.svgOpts ? ` aria-label="Bild ${i + 1}">${o}` : `>${esc(o)}`}</button>`).join('')}${task.inline ? '<span aria-hidden="true">.</span>' : ''}</div>`;
-    bottom.querySelectorAll<HTMLElement>('.opt').forEach((b) => {
-      b.onclick = () => {
+    container.innerHTML =
+      html`<div class="task">${head}${raw(task.fig || '')}<div class="question">${raw(esc(task.q).replace('___', '<span class="blank">____</span>'))}</div>${raw(task.pic || '')}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
+    bottom.innerHTML =
+      html`<div class="options ${task.svgOpts ? 'pics' + (task.tall ? ' tall' : '') : task.inline ? 'sentence' : task.cols === 2 ? 'two' : ''}">${task.options.map((o, i) => (task.svgOpts ? html`<button class="opt" data-action="taskOption" data-i="${i}" aria-label="Bild ${i + 1}">${raw(o)}</button>` : html`<button class="opt" data-action="taskOption" data-i="${i}">${o}</button>`))}${task.inline ? html`<span aria-hidden="true">.</span>` : ''}</div>`.text;
+    on({
+      taskOption(b) {
         if (locked) return;
         const ok = task.options[+b.dataset.i!] === task.answer;
         b.classList.add(ok ? 'right' : 'wrong');
         if (task.svgOpts) {
-          finish(ok, `${esc(task.why)}<span class="fbpic">${task.answer}</span>`);
+          finish(ok, html`${task.why}<span class="fbpic">${raw(task.answer)}</span>`);
           return;
         }
-        finish(ok, `Richtig wäre: ${esc(task.answer)}${task.why ? ' – ' + esc(task.why) : ''}`);
-      };
+        finish(ok, html`Richtig wäre: ${task.answer}${task.why ? ' – ' + task.why : ''}`);
+      },
     });
     if (opts.hint) strikeWrongOption();
   } else if (task.kind === 'parts') {
-    container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${plantOf(task.plant).svg({ highlight: task.part })}<div id="fb" role="status" aria-live="polite"></div></div>`;
-    bottom.innerHTML = `<div class="options two">${task.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}</div>`;
-    bottom.querySelectorAll<HTMLElement>('.opt').forEach((b) => {
-      b.onclick = () => {
+    container.innerHTML =
+      html`<div class="task">${head}<div class="question">${task.q}</div>${raw(plantOf(task.plant).svg({ highlight: task.part }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
+    bottom.innerHTML =
+      html`<div class="options two">${task.options.map((o, i) => html`<button class="opt" data-action="taskOption" data-i="${i}">${o}</button>`)}</div>`.text;
+    on({
+      taskOption(b) {
         if (locked) return;
         const ok = task.options[+b.dataset.i!] === task.answer;
         b.classList.add(ok ? 'right' : 'wrong');
@@ -468,14 +475,16 @@ function runChoiceTask(task, opts: TaskOpts, done: TaskDone) {
           const el = container.querySelector<HTMLElement>('[data-part="' + task.part + '"]');
           if (el) el.classList.add('reveal');
         }
-        finish(ok, `Das ist: ${esc(task.answer)}`);
-      };
+        finish(ok, html`Das ist: ${task.answer}`);
+      },
     });
     if (opts.hint) strikeWrongOption();
   } else if (task.kind === 'parts-find') {
-    container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${plantOf(task.plant).svg({ clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
+    container.innerHTML =
+      html`<div class="task">${head}<div class="question">${task.q}</div>${raw(plantOf(task.plant).svg({ clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     const pp = plantOf(task.plant).parts.find((p) => p.id === task.part);
-    bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf ${(MS.PLANTS[task.plant] && MS.PLANTS[task.plant].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? `<p class="center hintline">🌉 Tipp: ${esc(pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`)}</p>` : ''}`;
+    bottom.innerHTML =
+      html`<p class="center muted" style="margin:6px 0">Tippe auf ${(MS.PLANTS[task.plant] && MS.PLANTS[task.plant].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? html`<p class="center hintline">🌉 Tipp: ${pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`}</p>` : ''}`.text;
     container.querySelectorAll<HTMLElement>('[data-part]').forEach((g) => {
       g.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -491,13 +500,15 @@ function runChoiceTask(task, opts: TaskOpts, done: TaskDone) {
           const el = container.querySelector<HTMLElement>('[data-part="' + task.part + '"]');
           if (el) el.classList.add('reveal');
         }
-        finish(ok, `Hier leuchtet jetzt: ${esc(task.answer)}`);
+        finish(ok, html`Hier leuchtet jetzt: ${task.answer}`);
       };
     });
   } else if (task.kind === 'karte') {
     const goal = task.target.join('-');
-    container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div>${MS.mapSVG({ start: task.start, neben: task.neben, scale: task.scale, clickable: true })}<div id="fb" role="status" aria-live="polite"></div></div>`;
-    bottom.innerHTML = `<p class="center muted" style="margin:6px 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? '<p class="center hintline">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>' : ''}`;
+    container.innerHTML =
+      html`<div class="task">${head}<div class="question">${task.q}</div>${raw(MS.mapSVG({ start: task.start, neben: task.neben, scale: task.scale, clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
+    bottom.innerHTML =
+      html`<p class="center muted" style="margin:6px 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? html`<p class="center hintline">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>` : ''}`.text;
     container.querySelectorAll<HTMLElement>('[data-cell]').forEach((c) => {
       c.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -510,57 +521,58 @@ function runChoiceTask(task, opts: TaskOpts, done: TaskDone) {
         const ok = c.dataset.cell === goal;
         c.classList.add(ok ? 'hit' : 'miss');
         if (!ok) container.querySelector<HTMLElement>(`[data-cell="${goal}"]`)!.classList.add('reveal');
-        finish(ok, 'Der Schatz liegt auf dem gelben Feld.');
+        finish(ok, html`Der Schatz liegt auf dem gelben Feld.`);
       };
     });
   } else if (task.kind === 'order') {
     const chosen = opts.hint ? [task.order[0]] : [];
     const fixed = chosen.length;
-    container.innerHTML = `<div class="task">${head}<div class="question">${esc(task.q)}</div><div class="orderlist" id="olist"></div><p class="ohelp">Tippe der Reihe nach. Nochmal tippen nimmt es wieder heraus.</p><div id="fb" role="status" aria-live="polite"></div></div>`;
+    container.innerHTML =
+      html`<div class="task">${head}<div class="question">${task.q}</div><div class="orderlist" id="olist"></div><p class="ohelp">Tippe der Reihe nach. Nochmal tippen nimmt es wieder heraus.</p><div id="fb" role="status" aria-live="polite"></div></div>`.text;
     const paint = () => {
-      $('#olist', container).innerHTML = task.display
-        .map((it) => {
-          const pos = chosen.indexOf(it.id);
-          return `<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-id="${it.id}" aria-pressed="${pos >= 0}" aria-label="${esc(it.text)}${pos >= 0 ? ', Platz ' + (pos + 1) : ''}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${esc(it.text)}</span></button>`;
-        })
-        .join('');
-      container.querySelectorAll<HTMLElement>('.oitem').forEach((b) => {
-        b.onclick = () => {
-          if (locked) return;
-          const pos = chosen.indexOf(b.dataset.id);
-          if (pos >= fixed) chosen.splice(pos, 1);
-          else if (pos < 0) chosen.push(b.dataset.id);
-          paint();
-        };
-      }); /* tap again = take it out, the ones after it move up */
+      $('#olist', container).innerHTML = html`${task.display.map((it) => {
+        const pos = chosen.indexOf(it.id);
+        return html`<button class="oitem ${pos >= 0 ? 'picked' : ''}" data-action="taskPick" data-id="${it.id}" aria-pressed="${String(pos >= 0)}" aria-label="${it.text}${pos >= 0 ? ', Platz ' + (pos + 1) : ''}"><span class="num">${pos >= 0 ? pos + 1 : ''}</span><span>${it.text}</span></button>`;
+      })}`.text;
       $<HTMLButtonElement>('#ocheck').disabled = chosen.length !== task.order.length;
       $<HTMLButtonElement>('#oundo').disabled = chosen.length <= fixed;
     };
-    bottom.innerHTML = `<div class="row"><button class="btn secondary" id="oundo">↶ Rückgängig</button><button class="btn" id="ocheck">✓ Prüfen</button></div>`;
-    $('#oundo').onclick = () => {
-      if (!locked && chosen.length > fixed) {
-        chosen.pop();
-        paint();
-      }
-    };
+    bottom.innerHTML =
+      html`<div class="row"><button class="btn secondary" id="oundo" data-action="taskUndo">↶ Rückgängig</button><button class="btn" id="ocheck" data-action="taskCheck">✓ Prüfen</button></div>`.text;
     if (fixed)
       $('#olist', container).insertAdjacentHTML(
         'afterend',
-        '<div class="hintline">🌉 Tipp: Das Erste steht schon richtig.</div>',
+        html`<div class="hintline">🌉 Tipp: Das Erste steht schon richtig.</div>`.text,
       );
-    $('#ocheck').onclick = () => {
-      if (locked || chosen.length !== task.order.length) return;
-      const ok = chosen.every((id, i) => id === task.order[i]);
-      const byId = Object.fromEntries(task.items.map((x) => [x.id, x.text]));
-      container.querySelectorAll<HTMLElement>('.oitem').forEach((b) => {
-        const i = chosen.indexOf(b.dataset.id);
-        b.classList.add(task.order[i] === b.dataset.id ? 'right' : 'wrong');
-      });
-      finish(ok, 'Richtige Reihenfolge:<br>' + task.order.map((id, i) => `${i + 1}. ${esc(byId[id])}`).join('<br>'));
-    };
+    on({
+      // tap again = take it out, the ones after it move up
+      taskPick(b) {
+        if (locked) return;
+        const pos = chosen.indexOf(b.dataset.id);
+        if (pos >= fixed) chosen.splice(pos, 1);
+        else if (pos < 0) chosen.push(b.dataset.id);
+        paint();
+      },
+      taskUndo() {
+        if (!locked && chosen.length > fixed) {
+          chosen.pop();
+          paint();
+        }
+      },
+      taskCheck() {
+        if (locked || chosen.length !== task.order.length) return;
+        const ok = chosen.every((id, i) => id === task.order[i]);
+        const byId = Object.fromEntries(task.items.map((x) => [x.id, x.text]));
+        container.querySelectorAll<HTMLElement>('.oitem').forEach((b) => {
+          const i = chosen.indexOf(b.dataset.id);
+          b.classList.add(task.order[i] === b.dataset.id ? 'right' : 'wrong');
+        });
+        finish(ok, html`Richtige Reihenfolge:${task.order.map((id, i) => html`<br>${i + 1}. ${byId[id]}`)}`);
+      },
+    });
     paint();
   }
-  $('.tut', container).onclick = () => showTutorial(task.group, task.note);
+  on({ taskTutorial: () => showTutorial(task.group, task.note) });
   readAloud(container, opts.bottom, task);
 }
 

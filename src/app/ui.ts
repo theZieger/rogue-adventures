@@ -1,11 +1,11 @@
 import { MQ } from '../logic.ts';
 import { READ_MOD, READ_TUT } from './battle.ts';
-import { $, CFG, MODULES_OF, app, esc } from './core.ts';
+import { $, CFG, MODULES_OF, app } from './core.ts';
 import { tutKey } from './progress.ts';
 import { state } from './state.ts';
 import { saveAll } from './storage.ts';
 import { joined, speakBtn } from './tasks.ts';
-import type { Markup } from '../ui/html.ts';
+import { type Markup, html, raw } from '../ui/html.ts';
 
 /* ---------- Rendering primitives ---------- */
 // physical keyboard while a number task is open
@@ -334,7 +334,16 @@ export function showTutorial(group, note?, onClose?, auto?) {
   const t = tutFor(group);
   const n = note && CFG().notes ? CFG().notes[note] : null;
   const ov = modal(
-    `<h2>${t.icon} ${esc(t.title)}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>${n ? `<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${esc(n.title)}</div>${n.lines.map((l) => `<div>• ${esc(l)}</div>`).join('')}${n.fig || ''}</div>` : ''}<button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`,
+    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
+    {
+      understood() {
+        ov.remove();
+        state.meta.seenTut[tutKey(group)] = true;
+        if (note) state.meta.seenTut[tutKey('note:' + note)] = true;
+        saveAll();
+        if (onClose) onClose();
+      },
+    },
   );
   const letter = /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/,
     say = (list) => (CFG().noLetters ? list.filter((x) => !letter.test(x)) : list);
@@ -346,13 +355,6 @@ export function showTutorial(group, note?, onClose?, auto?) {
     steps,
   );
   $('#tutok', ov).focus({ preventScroll: true });
-  $('#tutok', ov).onclick = () => {
-    ov.remove();
-    state.meta.seenTut[tutKey(group)] = true;
-    if (note) state.meta.seenTut[tutKey('note:' + note)] = true;
-    saveAll();
-    if (onClose) onClose();
-  };
 }
 export function ensureTutorial(task, then) {
   const needGroup = !state.meta.seenTut[tutKey(task.group)];
