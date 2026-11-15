@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /* Checks that svgo lost nothing: renders every art/monsters/raw/*.svg and its art/monsters/svg/*.svg twin at
  * 480×480 and compares the pixels. Needs Playwright with Chromium (not in CI):  node tools/svg_compare.js */
-const fs = require('fs');
-const path = require('path');
-const { chromium } = require('playwright');
-const ART = path.join(__dirname, '..', 'art', 'monsters');
+import fs from 'fs';
+import path from 'path';
+import { chromium } from 'playwright';
+const ART = path.join(import.meta.dirname, '..', 'art', 'monsters');
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 480, height: 480 } });

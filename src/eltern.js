@@ -1,6 +1,6 @@
 // Parent area: what each task type practises, in one plain sentence (INFO[mode][task type]), and where a topic
 // sits in the Saxon curriculum (PLAN[mode]), and the Turmwacht texts (TURM). tests/test_data.js checks that nothing is missing.
-const ELTERN = (() => {
+export const ELTERN = (() => {
   const facts = (thema) => ({
     rf: `Ihr Kind liest einen Satz ${thema} und entscheidet: richtig oder falsch?`,
     mc: `Ihr Kind beantwortet eine Frage ${thema} und wählt eine von drei Antworten.`,
@@ -421,4 +421,3 @@ const ELTERN = (() => {
   };
   return { INFO, PLAN, TURM };
 })();
-if (typeof module !== 'undefined') module.exports = ELTERN;

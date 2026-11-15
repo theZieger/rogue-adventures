@@ -1,6 +1,7 @@
 // Turmwacht in the page: saving and resuming runs (runs the built docs/index.html in jsdom, seeded).
 // Page budget for the whole Turm feature: at most 15 page opens in this file.
-const page = require('./page.js');
+import { UNITS } from '../src/units.js';
+import * as page from './page.js';
 
 const t0 = Date.now();
 let fails = 0,
@@ -138,7 +139,7 @@ const turn = (p, ok) => {
   {
     const S = p.T.say,
       names = new Map();
-    for (const u of Object.values(require('../src/units.js')))
+    for (const u of Object.values(UNITS))
       for (const w of Object.values(u.enemies))
         for (const e of [...w.normal, w.elite, w.boss]) if (e) names.set(e.name, e);
     const out = [];

@@ -1,11 +1,11 @@
 // Klasse 1/2 sachkunde: checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
 const fail = (m) => fails.push(m);
-require('../src/units.js');
-const K = require('../src/knowledge.js');
-const S = require('../src/sachkunde.js');
-const U = require('../src/k12_sachkunde.js');
-const ICONS = require('../src/icons.js');
+import '../src/units.js';
+import { MK as K } from '../src/knowledge.js';
+import { MS as S } from '../src/sachkunde.js';
+import { MSK12 as U } from '../src/k12_sachkunde.js';
+import { ICONS } from '../src/icons.js';
 const UNITS = { koerper1: 1, jahr1: 1, baeume2: 2, tiere2: 2, natur2: 2 };
 const words = (s) => s.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
 let seq = 0;

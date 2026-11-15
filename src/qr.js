@@ -1,6 +1,6 @@
 // QR code, error correction level L only (enough for a link shown on a screen). Byte mode, and alphanumeric mode for
 // the tail of the text made of 0–9, A–Z and space $%*+-./: (the save code in a link): 5.5 bits a character instead of 8.
-const QR = (() => {
+export const QR = (() => {
   // per version 1–40: error correction codewords per block, number of blocks (level L)
   const ECC = [
     0, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28, 30, 30, 26, 28, 30, 30,
@@ -262,4 +262,3 @@ const QR = (() => {
   }
   return { matrix, svg };
 })();
-if (typeof module !== 'undefined') module.exports = QR;

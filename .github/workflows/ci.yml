@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: 24, cache: npm }
       - run: npm ci
-      - run: npm run format:check
+      - run: npx biome ci .
       - run: npm run build
       # svgo runs only on monsters whose hash in art/monsters/manifest.json changed, so art/ is committed.
       - name: art/ must match src/monsters.js (run "npm run build" and commit art/)

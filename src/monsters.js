@@ -1,4 +1,4 @@
-const MONART = (() => {
+export const MONART = (() => {
   const OUT = '#1C2541';
   let uid = 0;
   function shade(hex, amt) {
@@ -5747,7 +5747,7 @@ const MONART = (() => {
 
   /* Baked art: tools/build.js inlines the svgo-optimised files from art/monsters/svg/ as MONBAKED.
      Keys: hero "<shape>-<stage>", enemy "<shape>[-elite|-boss]", plus "-enemy" when the mirrored battle sprite differs. */
-  const BAKED = typeof MONBAKED !== 'undefined' ? MONBAKED : null;
+  const BAKED = globalThis.MONBAKED ?? null;
   function bakedKey(shape, evo, cls, opts) {
     opts = opts || {};
     shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
@@ -6785,4 +6785,3 @@ const MONART = (() => {
     dressable: Object.keys(FIT),
   };
 })();
-if (typeof module !== 'undefined') module.exports = MONART;

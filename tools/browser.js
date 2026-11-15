@@ -1,11 +1,11 @@
 // The built app in a phone-sized Chromium, for screenshots and browser tests. Served over http, as the service
 // worker needs; random numbers and the clock are fixed so a screen looks the same on every run.
-const http = require('node:http');
-const fs = require('node:fs');
-const path = require('node:path');
-const { chromium } = require('playwright');
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { chromium } from 'playwright';
 
-const DOCS = path.join(__dirname, '..', 'docs');
+const DOCS = path.join(import.meta.dirname, '..', 'docs');
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
@@ -39,7 +39,6 @@ function fixRandomAndClock() {
   };
   const RealDate = Date;
   const now = RealDate.parse('2026-12-23T10:00:00');
-  // biome-ignore lint/suspicious/noGlobalAssign: the page's clock
   Date = class extends RealDate {
     constructor(...args) {
       super(...(args.length ? args : [now]));
@@ -75,4 +74,4 @@ async function withApp(use, root) {
   }
 }
 
-module.exports = { withApp };
+export { withApp };

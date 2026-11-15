@@ -1,7 +1,9 @@
 // Turmwacht drawings: the board scene, the Wissensturm, token marks and the Bauzeit card pictures.
 // Same hand as monsters.js: ink #1C2541, round joins, gradients lit from the top left, one white highlight.
 // Board units: the scene is drawn in a W × H box (geo); src/app/turm_screens.js places the HTML tokens with the same numbers.
-const TWART = (() => {
+import { MONART } from './monsters.js';
+
+export const TWART = (() => {
   const INK = '#1C2541';
   let uid = 0;
   const shade = (hex, amt) => MONART.shade(hex, amt);
@@ -732,4 +734,3 @@ const TWART = (() => {
     PICS: Object.keys(PICS),
   };
 })();
-if (typeof module !== 'undefined') module.exports = TWART;

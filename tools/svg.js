@@ -9,15 +9,15 @@
  * sha256 of each raw file, so an unchanged monster costs nothing. tools/build.js inlines art/monsters/svg/*.svg.
  * Settings are lossless on purpose: 3 decimals (the drawings use at most 1), no path merging, and transforms are
  * not baked into path data (that changes how scaled outlines render). tools/svg_compare.js checks it pixel by pixel. */
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const { optimize } = require('svgo');
-const MONART = require('../src/monsters.js');
-const MQ = require('../src/logic.js');
-const UNITS = require('../src/units.js');
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import { optimize } from 'svgo';
+import { MONART } from '../src/monsters.js';
+import { MQ } from '../src/logic.js';
+import { UNITS } from '../src/units.js';
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(import.meta.dirname, '..');
 const ART = path.join(ROOT, 'art', 'monsters');
 const RAW = path.join(ART, 'raw');
 const OUT = path.join(ART, 'svg');

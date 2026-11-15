@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // node tools/screenshots.js <dir>             every screen of the built app as <dir>/<name>.png (390×844 at 2×)
 // node tools/screenshots.js <before> <after>  compares two such folders and writes <after>/compare.html
-const fs = require('node:fs');
-const path = require('node:path');
-const { withApp } = require('./browser.js');
-const { SCREENS, visit } = require('./screens.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import { withApp } from './browser.js';
+import { SCREENS, visit } from './screens.js';
 
 async function shoot(dir) {
   fs.mkdirSync(dir, { recursive: true });

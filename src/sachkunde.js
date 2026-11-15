@@ -1,7 +1,7 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
 // Registers its units in MK.MODES; src/units.js picks them up from there.
-const MS = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
+import { MK as K } from './knowledge.js';
+export const MS = (() => {
   const { shuffle, pick, rnd, weightedPick } = K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const STROKE = '#1C2541';
@@ -3142,4 +3142,3 @@ const MS = (() => {
     inGrid,
   };
 })();
-if (typeof module !== 'undefined') module.exports = MS;

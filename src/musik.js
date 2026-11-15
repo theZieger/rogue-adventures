@@ -1,7 +1,7 @@
 // Musik Klasse 3 (Lehrplan Sachsen Grundschule): Der Konzertsaal. Everything is seen, nothing is heard.
 // Registers its unit in MK.MODES; src/units.js picks it up from there.
-const MU = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
+import { MK as K } from './knowledge.js';
+export const MU = (() => {
   const { shuffle, pick } = K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const INK = '#1C2541',
@@ -1748,4 +1748,3 @@ const MU = (() => {
   K.MODES.musik = MODE;
   return { MODE, TONES, INSTR, FAM, HOW, KOMP, WORLD, TERMS, FACTS, makeBar };
 })();
-if (typeof module !== 'undefined') module.exports = MU;

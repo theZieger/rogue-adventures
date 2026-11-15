@@ -59,7 +59,7 @@
   begleiter    [Satz mit ___, richtiges Artikelwort, falsch, falsch]: mein, dein, unser, dieser, jeder, kein;
                die falschen Formen passen nicht zum Nomen
 */
-const MW = {
+export const MW = {
   doppel: [
     ['die Sonne', 'die Sone'],
     ['die Mutter', 'die Muter'],
@@ -1120,4 +1120,3 @@ const MW = {
     ['___ Morgen trinke ich Milch.', 'Jeden', 'Jeder', 'Jedes'],
   ],
 };
-if (typeof module !== 'undefined') module.exports = MW;

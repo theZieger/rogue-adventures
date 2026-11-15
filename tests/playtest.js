@@ -1,7 +1,9 @@
-const { JSDOM } = require('jsdom');
-const JM = require('./jm_solver.js');
-const fs = require('fs');
-const html = fs.readFileSync(require('path').join(__dirname, '../docs/index.html'), 'utf8');
+import { MQ } from '../src/logic.js';
+import path from 'path';
+import { JSDOM } from 'jsdom';
+import * as JM from './jm_solver.js';
+import fs from 'fs';
+const html = fs.readFileSync(path.join(import.meta.dirname, '../docs/index.html'), 'utf8');
 // Seeded randomness (game and bot), so a failing run can be reproduced: SEED=123 node tests/playtest.js
 const SEED = +(process.env.SEED || 20261108);
 // W3=1: continue a Zahlenquest adventure in world 3 whose hero has the written methods as attacks (W3ATK=kopf,ueber,… picks others)
@@ -9,7 +11,6 @@ const W3 = process.env.W3 === '1';
 // OFF=a,b: these task types are switched off in the parent area, so the hero fights with the others
 const OFF = process.env.OFF || '';
 const w3run = () => {
-  const MQ = require('../src/logic.js');
   return JSON.stringify({
     mode: 'math',
     world: 3,
@@ -71,6 +72,7 @@ const dom = new JSDOM(html, {
 let runNo = 0; // each run picks the next starter, so all monsters (and their attacks) get played
 const w = dom.window,
   d = w.document;
+Object.assign(w, w.__mq.modules);
 let gradeTry = 0; // a unit of another Klasse: try the grade tabs until its subject shows
 const RUNS = +(process.env.RUNS || 2);
 const ACC = +(process.env.ACC || 0.85);

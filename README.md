@@ -121,7 +121,7 @@ src/app/           Spiel-Engine in Teilen; tools/build.js setzt sie in der Reihe
 src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
 src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
 CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
-tools/build.js     baut docs/index.html (eine Datei) + docs/sw.js + docs/manifest.webmanifest; Ladereihenfolge in `SCRIPTS`
+tools/build.js     baut docs/index.html (eine Datei, mit esbuild gebündelt) + docs/sw.js + docs/manifest.webmanifest
 GLOSSARY.md        die Begriffe des Projekts (Einheit, Abenteuer, Aufgabenart, Stufe …) und ihre Namen im Code
 adr/               festgehaltene Entscheidungen zur Architektur
 tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
@@ -162,7 +162,7 @@ Inhalte anpassen:
 
 Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.js`).
 `src/units.js` macht daraus die eine Liste `UNITS`: Startseite, Klassen-Reiter, Statistik, Spielstand, Bot und Monster-Bilder lesen sie.
-Dazu gehören: eine neue Datei in `SCRIPTS` (`tools/build.js`) und in `src/units.js` eintragen, Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
+Dazu gehören: eine neue Datei in `src/units.js` importieren (die Reihenfolge dort ist die Reihenfolge der Themen), Elterntexte in `src/eltern.js`, Zeichnungen für Held und Gegner in
 `src/monsters.js`, neue Emojis in `src/icons.js`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app/core.js`).
 
 ## Veröffentlichen (GitHub Pages)

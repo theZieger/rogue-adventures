@@ -1,4 +1,4 @@
-const M = require('../src/logic.js');
+import { MQ as M } from '../src/logic.js';
 const fails = [];
 function check(cond, msg, t) {
   if (!cond) {

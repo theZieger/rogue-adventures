@@ -2,11 +2,12 @@
 // Units register themselves in MK.MODES (pattern: src/sachkunde3.js) and share hero and opponents (K12.SETS.mathe).
 // Number tasks marked k12 are typed in by the bot from task.answers; tests/test_k12_mathe.js recomputes those answers
 // from the text and the pictures. Unmarked ones (sums, Zahlenmauer, Bauplan, Zahlenfolge) the bot works out itself.
+import { MJ as J } from './jahrmarkt.js';
+import { K12 as S } from './klasse12.js';
+import { MK as K } from './knowledge.js';
+import { MQ as Q } from './logic.js';
+
 (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
-  const S = typeof K12 !== 'undefined' ? K12 : require('./klasse12.js');
-  const Q = typeof MQ !== 'undefined' ? MQ : require('./logic.js');
-  const J = typeof MJ !== 'undefined' ? MJ : require('./jahrmarkt.js');
   const { shuffle, pick, rnd } = K;
   const OUT = '#1C2541',
     NB = ' ';

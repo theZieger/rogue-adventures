@@ -59,4 +59,4 @@ async function visit(page, taps) {
   await page.evaluate(() => document.fonts.ready);
 }
 
-module.exports = { SCREENS, visit };
+export { SCREENS, visit };

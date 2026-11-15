@@ -4,5 +4,9 @@
   "files": { "includes": ["**", "!art", "!docs", "!lehrplan", "!package-lock.json", "!**/*.md"] },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
   "javascript": { "formatter": { "quoteStyle": "single" } },
-  "linter": { "enabled": false }
+  "assist": { "enabled": false },
+  "linter": {
+    "includes": ["**", "!src/app/**"],
+    "rules": { "preset": "none", "correctness": { "noUndeclaredVariables": "error" } }
+  }
 }

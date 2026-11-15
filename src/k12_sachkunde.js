@@ -1,11 +1,11 @@
 // Sachkunde Klasse 1 und 2 (Lehrplan Sachsen 2019, Sachunterricht Kl. 1/2): Mein Körper, Durch das Jahr (Klasse 1),
 // Bäume und Blumen, Tiere bei uns, Licht, Luft und Wasser (Klasse 2). Units register in MK.MODES like sachkunde3.js;
 // hero and opponents come from the shared set K12.SETS.sachkunde, the tap-a-part pictures go into MS.PLANTS.
-const MSK12 = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
-  const S12 = typeof K12 !== 'undefined' ? K12 : require('./klasse12.js');
-  const S = typeof MS !== 'undefined' ? MS : require('./sachkunde.js');
-  const J = typeof MJ !== 'undefined' ? MJ : require('./jahrmarkt.js');
+import { MK as K } from './knowledge.js';
+import { K12 as S12 } from './klasse12.js';
+import { MS as S } from './sachkunde.js';
+import { MJ as J } from './jahrmarkt.js';
+export const MSK12 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, choice, orderTask, wantsPool, partsSVG, plantTask, partPool } = S;
   const OUT = '#1C2541';
@@ -4241,4 +4241,3 @@ const MSK12 = (() => {
     timeName,
   };
 })();
-if (typeof module !== 'undefined') module.exports = MSK12;

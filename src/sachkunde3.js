@@ -1,8 +1,8 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen, LB 3 „Lebensraum Wiese“ und LB 1 „Zusammen leben und lernen“): Die Wiese, Früher und heute.
 // Registers its units in MK.MODES like sachkunde.js; the Stockwerke picture goes into MS.PLANTS for the parts tasks.
-const MS3 = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
-  const S = typeof MS !== 'undefined' ? MS : require('./sachkunde.js');
+import { MK as K } from './knowledge.js';
+import { MS as S } from './sachkunde.js';
+export const MS3 = (() => {
   const { shuffle, pick, rnd } = K;
   const { choice, orderTask, wantsPool, partsSVG } = S;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
@@ -2536,4 +2536,3 @@ const MS3 = (() => {
   K.MODES.frueher = FR;
   return { FLORA, TRAITS, LAYERS, DEV, HERBAR, TOOLS, LINES, SOURCES, LOOKUP, floraSVG };
 })();
-if (typeof module !== 'undefined') module.exports = MS3;

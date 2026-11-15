@@ -1,10 +1,10 @@
 // Regression tests for saving/loading (runs the built docs/index.html in jsdom).
 // Each "page load" is a fresh JSDOM that starts with the localStorage of the previous one,
 // which is what a reload or reopening the app does.
-const page = require('./page.js');
-const zlib = require('zlib');
-const QR = require('../src/qr.js');
-const SAVECODE = require('../src/savecode.js');
+import * as page from './page.js';
+import zlib from 'zlib';
+import { QR } from '../src/qr.js';
+import { SAVECODE } from '../src/savecode.js';
 
 let fails = 0;
 const check = (cond, msg) => {

@@ -1,13 +1,15 @@
 // Klasse 1/2 deutsch: checks beyond the generic ones in test_knowledge.js and test_data.js
+import path from 'path';
+import fs from 'fs';
 const fails = [];
 const f = (ok, msg) => {
   if (!ok) fails.push(msg);
 };
-require('../src/units.js');
-const K = require('../src/knowledge.js');
-const D = require('../src/k12_deutsch.js');
-const TEXTE = require('../src/texte.js');
-const { JSDOM } = require('jsdom');
+import '../src/units.js';
+import { MK as K } from '../src/knowledge.js';
+import { K12D as D } from '../src/k12_deutsch.js';
+import { TEXTE } from '../src/texte.js';
+import { JSDOM } from 'jsdom';
 const parser = new new JSDOM('').window.DOMParser();
 const UNITS = { laute1: 1, schreiben2: 2, woerter2: 2 };
 const plain = (s) => s.replace(/<[^>]+>/g, ' ');
@@ -16,8 +18,8 @@ const norm = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').repl
 const K3 = /ck|tz/i;
 // what the read-aloud voice reads in a task: the selector is taken from readAloud in src/app/tasks.js, so both stay in step;
 // task.say replaces the question, task.quiet leaves out the options
-const SPOKEN = require('fs')
-  .readFileSync(require('path').join(__dirname, '../src/app/tasks.js'), 'utf8')
+const SPOKEN = fs
+  .readFileSync(path.join(import.meta.dirname, '../src/app/tasks.js'), 'utf8')
   .match(/function readAloud[\s\S]*?querySelectorAll\('([^']+)'\)/)[1];
 const dom = new JSDOM('').window.document;
 const spoken = (cfg, q) => {

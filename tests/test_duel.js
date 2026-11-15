@@ -1,5 +1,5 @@
 // Duell: two children on one device, nothing is saved (runs the built docs/index.html in jsdom).
-const { open, answer } = require('./page.js');
+import { open, answer } from './page.js';
 
 let fails = 0;
 const check = (cond, msg) => {

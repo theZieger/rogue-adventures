@@ -1,4 +1,4 @@
-const MQ = (() => {
+export const MQ = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const shuffle = (arr) => {
@@ -3408,4 +3408,3 @@ const MQ = (() => {
     BAU,
   };
 })();
-if (typeof module !== 'undefined') module.exports = MQ;

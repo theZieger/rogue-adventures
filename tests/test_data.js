@@ -1,13 +1,18 @@
 // Cross-checks the game data of all modes: events, items, topics, shapes, attacks, enemy moves.
-const MQ = require('../src/logic.js');
-const MK = require('../src/knowledge.js');
-const modes = require('../src/units.js');
-const MONART = require('../src/monsters.js');
+import { ELTERN } from '../src/eltern.js';
+import { ICONS } from '../src/icons.js';
+import { JSDOM } from 'jsdom';
+import path from 'path';
+import { open as openPage } from './page.js';
+import { MQ } from '../src/logic.js';
+import { MK } from '../src/knowledge.js';
+import { UNITS as modes } from '../src/units.js';
+import { MONART } from '../src/monsters.js';
 const fails = [];
 const fail = (msg) => fails.push(msg);
 const shapes = new Set(MONART.shapes);
-const fs = require('fs');
-const baked = (key) => fs.existsSync(require('path').join(__dirname, '../art/monsters/svg', key + '.svg'));
+import fs from 'fs';
+const baked = (key) => fs.existsSync(path.join(import.meta.dirname, '../art/monsters/svg', key + '.svg'));
 
 for (const [mode, cfg] of Object.entries(modes)) {
   const mods = new Set(Object.keys(cfg.modules));
@@ -102,7 +107,7 @@ for (const [mode, cfg] of Object.entries(modes)) {
 }
 
 // Lesestube texts: 60–120 words, three questions with one right answer each
-const TEXTE = require('../src/texte.js');
+import { TEXTE } from '../src/texte.js';
 if (TEXTE.length < 12) fail('Lesestube: fewer than 12 texts');
 const KINDS = [
   'Fabel',
@@ -170,7 +175,6 @@ for (const cfg of Object.values(modes)) {
 
 // Kleiderkammer: every hero shape can wear every piece, and the result is well-formed SVG with the piece drawn
 {
-  const { JSDOM } = require('jsdom');
   const parser = new new JSDOM('').window.DOMParser();
   const dressable = new Set(MONART.dressable);
   for (const cfg of Object.values(modes))
@@ -250,7 +254,6 @@ if (modes.turm) fail('turm must not be a unit');
 
 // parent area: every task type has its one-sentence explanation, every topic its place in the curriculum
 {
-  const ELTERN = require('../src/eltern.js');
   for (const [m, c] of Object.entries(modes)) {
     if (!ELTERN.PLAN[m]) fail(`eltern.js: PLAN.${m} is missing`);
     for (const k of Object.keys(c.modules))
@@ -263,7 +266,6 @@ if (modes.turm) fail('turm must not be a unit');
 
 // drawn icons: all live in one document, so ids must be unique; nothing may load from outside
 {
-  const ICONS = require('../src/icons.js');
   const ids = Object.values(ICONS).flatMap((m) => [...m.matchAll(/\bid="([^"]+)"/g)].map((x) => x[1]));
   for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i))) fail(`icons.js: id ${id} is used twice`);
   for (const [k, m] of Object.entries(ICONS)) {
@@ -274,7 +276,7 @@ if (modes.turm) fail('turm must not be a unit');
 
 // src/units.js loads the unit files by name in Node: it must end up with the units the built page has
 {
-  const p = require('./page.js').open();
+  const p = openPage();
   const inPage = p.w.eval('Object.keys(UNITS)');
   p.close();
   if (inPage.join() !== Object.keys(modes).join())

@@ -1,7 +1,7 @@
 // Save code LQ2: the save as JSON, made smaller before deflate. Known words become tokens („~“ and their place in WORDS in
 // base 36), an object whose values are objects with the same keys (know, stats, dex) becomes columns, and a column of whole
 // numbers is stored as differences. Everything comes back exactly; a string that starts with „~“ gets a second one.
-const SAVECODE = (() => {
+export const SAVECODE = (() => {
   // WORDS may only ever grow at the end and never change an entry: a word's place is its token in codes that already exist.
   // Words contain no „:“ or „|“.
   const WORDS = (
@@ -147,4 +147,3 @@ const SAVECODE = (() => {
   }
   return { shrink, grow, to42, from42 };
 })();
-if (typeof module !== 'undefined') module.exports = SAVECODE;

@@ -193,4 +193,4 @@ function solve(html, options, REF) {
   }
   throw new Error('unknown Jahrmarkt task ' + t + ': ' + q);
 }
-if (typeof module !== 'undefined') module.exports = { solve, textOf };
+export { solve, textOf };

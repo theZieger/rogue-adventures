@@ -1,31 +1,15 @@
 #!/usr/bin/env node
 // src/* -> docs/index.html, docs/sw.js, docs/manifest.webmanifest
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const assert = require('assert');
+import assert from 'node:assert';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import esbuild from 'esbuild';
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const DOCS = path.join(ROOT, 'docs');
 
-// Load order: a file may use the globals of the files above it. One inner list = one <script>.
-const SCRIPTS = [
-  ['logic.js'],
-  ['jahrmarkt.js', 'woerter.js', 'english.js'],
-  ['texte.js'],
-  ['knowledge.js'],
-  ['sachkunde.js'],
-  ['sachkunde2.js', 'sachkunde3.js', 'ethik.js'],
-  ['musik.js'],
-  ['klasse12.js', 'k12_mathe.js', 'k12_deutsch.js', 'k12_sachkunde.js', 'k12_ethik.js'],
-  ['monsters.js'],
-  ['icons.js'],
-  ['eltern.js'],
-  ['qr.js', 'savecode.js'],
-  ['turm.js', 'turmart.js'],
-  ['units.js'],
-];
 // The game itself: the parts of src/app/ in this order inside one function, so they share its state (meta, run, mode).
 const APP = [
   'core',
@@ -57,7 +41,6 @@ const files = (dir, ext = '') =>
     .filter((name) => name.endsWith(ext))
     .sort();
 const inlineJson = (value) => JSON.stringify(value).replaceAll('</', '<\\/');
-const sameList = (a, b) => assert.deepStrictEqual([...a].sort(), [...b].sort());
 
 function bakedMonsters() {
   const dir = path.join(ROOT, 'art', 'monsters', 'svg');
@@ -68,11 +51,26 @@ function bakedMonsters() {
   return baked;
 }
 
-// A file as the page gets it: without the line that exports it to the Node tests.
-function pageSource(name) {
-  const js = read(SRC, name).replace(/if \(typeof module !== 'undefined'\) module\.exports = \w+;\n/, '');
-  // monsters.js prefers the baked, svgo-optimised art over drawing at runtime
-  return name === 'monsters.js' ? `const MONBAKED = ${inlineJson(bakedMonsters())};\n${js}` : js;
+// Every module of src/ under the name it exports, then the game. units.js goes first: it sets the order of the units.
+function appSource() {
+  const modules = files(SRC, '.js').filter((name) => name !== 'sw.js' && name !== 'units.js');
+  const imports = ['units.js', ...modules].flatMap((name) => {
+    const exported = /^export const (\w+)/m.exec(read(SRC, name));
+    return exported ? [`import { ${exported[1]} } from './${name}';`] : [];
+  });
+  return `${imports.join('\n')}\n(() => {\n${APP.map((part) => read(SRC, 'app', `${part}.js`)).join('')}})();\n`;
+}
+
+function bundle() {
+  const { outputFiles } = esbuild.buildSync({
+    stdin: { contents: appSource(), resolveDir: SRC, sourcefile: 'app.js' },
+    bundle: true,
+    format: 'iife',
+    minifyWhitespace: true,
+    charset: 'utf8',
+    write: false,
+  });
+  return outputFiles[0].text;
 }
 
 // -> [{ date: '2026-11-07', groups: [{ title: 'Neu', items: ['...'] }] }]
@@ -149,8 +147,6 @@ const REGISTER_SERVICE_WORKER = `(function () {
 })();`;
 
 function page() {
-  const scripts = SCRIPTS.map((group) => `<script>\n${group.map(pageSource).join('\n')}\n</script>`).join('\n');
-  const app = `(() => {\n${APP.map((part) => read(SRC, 'app', `${part}.js`)).join('')}})();\n`;
   return `<!DOCTYPE html>
 <html lang="de">
 <head>
@@ -182,13 +178,12 @@ ${read(SRC, 'style.css')}
 </head>
 <body>
 <div id="app"></div>
-${scripts}
 <script>
+globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
 const CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
 </script>
 <script>
-${app}
-</script>
+${bundle()}</script>
 <script>
 ${REGISTER_SERVICE_WORKER}
 </script>
@@ -215,13 +210,10 @@ function write(name, text) {
   return `docs/${name}`;
 }
 
-sameList(
-  SCRIPTS.flat(),
-  files(SRC, '.js').filter((name) => name !== 'sw.js'),
-);
-sameList(
-  APP.map((part) => `${part}.js`),
+assert.deepStrictEqual(
+  APP.map((part) => `${part}.js`).sort(),
   files(path.join(SRC, 'app'), '.js'),
+  'APP in tools/build.js must list every file in src/app/',
 );
 
 const html = page();

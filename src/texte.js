@@ -3,7 +3,7 @@
 // Saved adventures store a text by its position, so new texts go at the end. tests/test_data.js checks the format.
 // grade: 1 or 2 marks a short text with two questions for Klasse 1 (8–30 words) or 2 (20–60 words); without it, Klasse 3.
 // Klasse-1 texts mark Sprechsilben with · (Son·ne) for the two-colour syllable display; text itself stays plain.
-const TEXTE = [
+export const TEXTE = [
   {
     id: 'rabe',
     kind: 'Fabel',
@@ -728,4 +728,3 @@ TEXTE.forEach((t) => {
     t.text = t.text.replace(/·/g, '');
   }
 });
-if (typeof module !== 'undefined') module.exports = TEXTE;

@@ -2,9 +2,9 @@
 // Content follows the Sächsischer Rechtschreibrahmen 2025 for Kl. 1/2: no ck, tz, silbentrennendes h, Komma or
 // wörtliche Rede; no rule like „Verben schreibt man klein“ (the Rahmen asks to avoid it).
 // Task ids come from the words, so adding words keeps the learning history of the others.
-const K12D = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
-  const S = typeof K12 !== 'undefined' ? K12 : require('./klasse12.js');
+import { MK as K } from './knowledge.js';
+import { K12 as S } from './klasse12.js';
+export const K12D = (() => {
   const { shuffle, pick, weightedPick } = K;
   const others = (arr, not, n) => shuffle(arr.filter((x) => !not.includes(x))).slice(0, n);
   const choice = (mod, tier, note, q, answer, wrongs, qid, extra) =>
@@ -2474,4 +2474,3 @@ const K12D = (() => {
     SATZARTEN,
   };
 })();
-if (typeof module !== 'undefined') module.exports = K12D;

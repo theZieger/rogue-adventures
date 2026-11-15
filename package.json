@@ -2,6 +2,7 @@
   "name": "lernquest",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Roguelike-Lernspiel für Grundschüler (Klasse 1 bis 3): Mathe, Deutsch, Englisch, Ethik und Sachkunde. Eine HTML-Datei, kein Server.",
   "scripts": {
     "build": "node tools/svg.js && node tools/build.js",
@@ -11,7 +12,7 @@
     "screenshots": "node tools/screenshots.js",
     "svg": "node tools/svg.js",
     "format": "biome format --write .",
-    "format:check": "biome format ."
+    "lint": "biome lint ."
   },
   "engines": {
     "node": ">=20"
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
     "@biomejs/biome": "2.6.7",
+    "esbuild": "0.28.2",
     "jsdom": "^26.0.0",
     "playwright": "1.63.0",
     "svgo": "^4.1.0"

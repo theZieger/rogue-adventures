@@ -28,7 +28,7 @@
   (auch in der Mehrzahl). Ist eines davon ausgeschaltet, kommt der Satz nicht dran. Sätze ohne Themenwort sind
   „Allgemein“ und immer an.
 */
-const ENG = {
+export const ENG = {
   woerter: {
     Schule: [
       ['pencil', 'der Bleistift'],
@@ -370,4 +370,3 @@ const ENG = {
     ['How do you go to school?', 'I go by bike.', 'I go on Monday.', 'I am nine.'],
   ],
 };
-if (typeof module !== 'undefined') module.exports = ENG;

@@ -1,9 +1,9 @@
 // Browser tests against the built app in Chromium (npm run e2e): offline start and accessibility of every screen.
-const { test } = require('node:test');
-const assert = require('node:assert');
-const { AxeBuilder } = require('@axe-core/playwright');
-const { withApp } = require('../tools/browser.js');
-const { SCREENS, visit } = require('../tools/screens.js');
+import { test } from 'node:test';
+import assert from 'node:assert';
+import { AxeBuilder } from '@axe-core/playwright';
+import { withApp } from '../tools/browser.js';
+import { SCREENS, visit } from '../tools/screens.js';
 
 test('starts and runs a fight offline, and never asks another server', () =>
   withApp(async (newPage, url) => {

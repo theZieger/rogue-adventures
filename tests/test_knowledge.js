@@ -1,10 +1,10 @@
-const K = require('../src/knowledge.js');
-const S = require('../src/sachkunde.js');
-const S2 = require('../src/sachkunde2.js');
-const S3 = require('../src/sachkunde3.js');
-const MU = require('../src/musik.js');
-const E = require('../src/ethik.js');
-require('../src/units.js');
+import { MK as K } from '../src/knowledge.js';
+import { MS as S } from '../src/sachkunde.js';
+import { MS2 as S2 } from '../src/sachkunde2.js';
+import { MS3 as S3 } from '../src/sachkunde3.js';
+import { MU } from '../src/musik.js';
+import { ME as E } from '../src/ethik.js';
+import '../src/units.js';
 const know = {};
 let seq = 0;
 const fails = [];

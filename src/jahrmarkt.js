@@ -1,5 +1,5 @@
-const MJ = (() => {
-  const Q = typeof MQ !== 'undefined' ? MQ : require('./logic.js');
+import { MQ as Q } from './logic.js';
+export const MJ = (() => {
   const { rnd, pick, shuffle } = Q;
 
   // Lehrplan Mathematik Klasse 3: Größen und Messen, Daten und Zufall
@@ -1424,4 +1424,3 @@ const MJ = (() => {
     chartSVG,
   };
 })();
-if (typeof module !== 'undefined') module.exports = MJ;

@@ -1,8 +1,8 @@
 // Sachkunde Klasse 3 (Lehrplan Sachsen LB 2 und LB 5): Die fünf Sinne, Sicher im Verkehr.
 // Uses the picture and task helpers of sachkunde.js and registers its units in MK.MODES.
-const MS2 = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
-  const S = typeof MS !== 'undefined' ? MS : require('./sachkunde.js');
+import { MK as K } from './knowledge.js';
+import { MS as S } from './sachkunde.js';
+export const MS2 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, PLANTS } = S;
   const HIT = (d) => `<path class="hitarea" d="${d}" fill="transparent"/>`;
@@ -2561,4 +2561,3 @@ const MS2 = (() => {
   K.MODES.verkehr = VE;
   return { EYE_PARTS, EAR_PARTS, BIKE_PARTS, SIGNS, RIGHT_OF, ABBIEGEN, QUEREN, signTask, missingTask, signSVG };
 })();
-if (typeof module !== 'undefined') module.exports = MS2;

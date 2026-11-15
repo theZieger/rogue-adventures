@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Icons + iOS splash screens from the monster art. Run manually when artwork changes; PNGs are committed.
-const fs = require('fs');
-const path = require('path');
-const MONART = require('../src/monsters.js');
+import { chromium } from 'playwright';
+import { execFileSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { MONART } from '../src/monsters.js';
 
-const OUT = path.join(__dirname, '..', 'docs', 'icons');
+const OUT = path.join(import.meta.dirname, '..', 'docs', 'icons');
 const BG_TOP = '#2A3A73';
 const BG_BOT = '#141B33';
 const FOX = '#FF6A3D';
@@ -99,7 +101,7 @@ const IPADS = [
   [744, 1133, 2], // mini 6+
 ];
 const FONT_B64 = fs
-  .readFileSync(path.join(__dirname, '..', 'docs', 'fonts', 'patrickhand-latin.woff2'))
+  .readFileSync(path.join(import.meta.dirname, '..', 'docs', 'fonts', 'patrickhand-latin.woff2'))
   .toString('base64');
 const SPLASH_BG = '#1C2541'; // = --bg, so the launch flows straight into the game
 
@@ -120,7 +122,7 @@ function splashHTML(w, h) {
 }
 
 async function makeSplash(browser) {
-  const dir = path.join(__dirname, '..', 'docs', 'splash');
+  const dir = path.join(import.meta.dirname, '..', 'docs', 'splash');
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
   const jobs = [];
@@ -136,7 +138,7 @@ async function makeSplash(browser) {
     await page.close();
     // shrink to a 256-colour palette (visually identical, ~half the size) if ImageMagick is there
     try {
-      require('child_process').execFileSync('convert', [
+      execFileSync('convert', [
         path.join(dir, name),
         '-dither',
         'FloydSteinberg',
@@ -153,9 +155,9 @@ async function makeSplash(browser) {
 
 // Screenshots for the install dialog (manifest "screenshots"): played from the built game, so run `npm run build` first.
 async function makeScreenshots(browser) {
-  const dir = path.join(__dirname, '..', 'docs', 'screenshots');
+  const dir = path.join(import.meta.dirname, '..', 'docs', 'screenshots');
   fs.mkdirSync(dir, { recursive: true });
-  const game = 'file://' + path.join(__dirname, '..', 'docs', 'index.html');
+  const game = 'file://' + path.join(import.meta.dirname, '..', 'docs', 'index.html');
   const shots = [
     // form factor, CSS viewport, pixel ratio (=> 1080x1920 / 1920x1080 pixels)
     ['narrow', 360, 640, 3],
@@ -203,7 +205,6 @@ async function makeScreenshots(browser) {
 }
 
 (async () => {
-  const { chromium } = require('playwright');
   fs.mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 1 });
@@ -221,7 +222,7 @@ async function makeScreenshots(browser) {
   console.log('wrote favicon.svg');
   // favicon.ico (16 + 32 px) for old browsers – needs ImageMagick
   try {
-    require('child_process').execFileSync('convert', [
+    execFileSync('convert', [
       path.join(OUT, 'favicon-16.png'),
       path.join(OUT, 'favicon-32.png'),
       path.join(OUT, '..', 'favicon.ico'),

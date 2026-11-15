@@ -3,13 +3,13 @@
 // freed while open, so the tests close the pages they are done with; dump() still works after close().
 // Parsing 4 MB of HTML took most of a page load, so the scripts are compiled once and run in each new page;
 // tests/playtest.js still loads the file as a browser does.
-const { JSDOM, VirtualConsole } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
-const vm = require('vm');
+import { JSDOM, VirtualConsole } from 'jsdom';
+import fs from 'fs';
+import path from 'path';
+import vm from 'vm';
 const scripts = [];
 const html = fs
-  .readFileSync(path.join(__dirname, '../docs/index.html'), 'utf8')
+  .readFileSync(path.join(import.meta.dirname, '../docs/index.html'), 'utf8')
   .replace(/<script>\n([\s\S]*?)\n<\/script>/g, (_, code) => {
     scripts.push(new vm.Script(code));
     return '';
@@ -85,6 +85,7 @@ function open(storage, opts) {
     d = w.document;
   try {
     for (const script of scripts) script.runInContext(dom.getInternalVMContext());
+    Object.assign(w, w.__mq.modules);
   } catch (e) {
     errors.push(e.message);
   }
@@ -162,4 +163,4 @@ function answer(p, right) {
   p.click('#next');
 }
 
-module.exports = { open, answer };
+export { open, answer };

@@ -1,4 +1,6 @@
-const MK = (() => {
+import { MW as W } from './woerter.js';
+import { ENG as E } from './english.js';
+export const MK = (() => {
   const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const shuffle = (arr) => {
@@ -4395,7 +4397,6 @@ const MK = (() => {
   ];
 
   /* ---------- DEUTSCH: Wörterwerkstatt und Satzbaustelle (Wortlisten in woerter.js) ---------- */
-  const W = typeof MW !== 'undefined' ? MW : require('./woerter.js');
   const cap = (s) => s[0].toUpperCase() + s.slice(1);
   const noun = (w) => w.slice(w.indexOf(' ') + 1);
   const ARTS = ['der', 'die', 'das'];
@@ -5736,7 +5737,6 @@ const MK = (() => {
   ];
 
   /* ---------- ENGLISCH: Die Teestube und Der Doppeldecker (Wörter und Sätze in english.js) ---------- */
-  const E = typeof ENG !== 'undefined' ? ENG : require('./english.js');
   // every theme as [[English, German], …]; numbers, colours, days and months count as themes for „Was passt nicht?“
   const EN_THEMES = Object.assign({}, E.woerter, {
     Farben: E.farben,
@@ -6844,4 +6844,3 @@ const MK = (() => {
     weightedPick,
   };
 })();
-if (typeof module !== 'undefined') module.exports = MK;

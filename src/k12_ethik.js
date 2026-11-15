@@ -2,9 +2,9 @@
 // (Klasse 2, LB 3 und 4). Dazu Musik Klasse 2 „Der Musikraum“ (LB 4: Instrumente und Stimmen) und Klasse 1 „Die Klangkiste“
 // (LB 2 bis 4: Orff-Instrumente, Gegensätze, Stimmungen, Körperinstrumente, eigene Zeichen), nur Bilder, keine Töne.
 // Registers the units in MK.MODES with the shared hero and opponents of K12.SETS. Mode keys are save keys: never rename.
-const K12E = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
-  const S = typeof K12 !== 'undefined' ? K12 : require('./klasse12.js');
+import { MK as K } from './knowledge.js';
+import { K12 as S } from './klasse12.js';
+export const K12E = (() => {
   const { shuffle, pick } = K;
 
   /* ---------- Zeichnungen ---------- */
@@ -4246,4 +4246,3 @@ const K12E = (() => {
     wrongHow,
   };
 })();
-if (typeof module !== 'undefined') module.exports = K12E;

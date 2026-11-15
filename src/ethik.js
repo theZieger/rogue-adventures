@@ -1,7 +1,7 @@
 // Ethik Klasse 3 (Lehrplan Sachsen, Lernbereiche 1 und 4): „Ich, wir und die Welt“, Welt 1 „Ich im Wir“, Welt 2 „Wir in der Welt“.
 // Registers its unit in MK.MODES; src/units.js picks it up from there. Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran.
-const ME = (() => {
-  const K = typeof MK !== 'undefined' ? MK : require('./knowledge.js');
+import { MK as K } from './knowledge.js';
+export const ME = (() => {
   const { weightedPick } = K;
 
   const NOTES = {
@@ -1902,4 +1902,3 @@ const ME = (() => {
   K.MODES.ichwelt = MODE;
   return { MODE, WELTEN, DINGE, VERSOEHNEN, BESSER, ARCHE, PAPIER, HELP };
 })();
-if (typeof module !== 'undefined') module.exports = ME;
