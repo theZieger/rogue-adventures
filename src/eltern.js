@@ -32,7 +32,8 @@ const ELTERN = (() => {
       zahlwort: 'Zahlen als Wort lesen und in Hunderter, Zehner und Einer zerlegen.',
       kopf: 'Mit Zehner- und Hunderterzahlen im Kopf rechnen (340 + 250, 700 − 260) und bis 1000 ergänzen (650 + ? = 1000).',
       zmul: 'Malnehmen mit Zehnerzahlen (4 · 70) und halbschriftlich: 6 · 23 = 6 · 20 + 6 · 3.',
-      vergl: 'Dreistellige Zahlen mit <, > und = vergleichen, auch in Hunderter, Zehner und Einer, und vier Zahlen der Größe nach ordnen.',
+      vergl:
+        'Dreistellige Zahlen mit <, > und = vergleichen, auch in Hunderter, Zehner und Einer, und vier Zahlen der Größe nach ordnen.',
       ueber: 'Ihr Kind rundet auf Hunderter und erkennt so, welches Ergebnis stimmen kann (nur in Welt 3).',
       geld: 'Im Kaufladen Kunden bedienen: Euro und Cent passend abzählen und Rückgeld geben. Ohne „Geld“ gibt es keinen Kaufladen.',
     },
@@ -95,7 +96,8 @@ const ELTERN = (() => {
       redensart: 'Ihr Kind erklärt, was eine Redensart wie „Schwein haben“ wirklich meint.',
       praedikat: 'Verben mit zwei Teilen im Satz finden: Lea räumt ihr Zimmer auf – aufräumen.',
       anrede: 'Im Brief Erwachsene mit Sie und Ihnen anreden, Freunde und Familie mit du.',
-      begleiter: 'Artikelwörter wie mein, dieser, jeder und kein passend zum Nomen wählen: meine Tasche, mit meinem Ball.',
+      begleiter:
+        'Artikelwörter wie mein, dieser, jeder und kein passend zum Nomen wählen: meine Tasche, mit meinem Ball.',
     },
     teestube: {
       en_de: 'Ein englisches Wort lesen und das deutsche Wort dazu finden.',
@@ -133,7 +135,8 @@ const ELTERN = (() => {
       kreislauf: 'Den Weg des Wassers im Bild erklären: Meer, Wolken, Regen, Fluss.',
       vorhersage: 'Eine Wetterkarte für vier Tage lesen: Wetter und Temperatur.',
       regel: 'Alte Wettersprüche der Bauern ergänzen. Der Reim hilft.',
-      forschen: 'Wie man einen Versuch plant: Frage, Vermutung, Versuch, Beobachtung, Ergebnis. Dazu Schwimmen und Sinken.',
+      forschen:
+        'Wie man einen Versuch plant: Frage, Vermutung, Versuch, Beobachtung, Ergebnis. Dazu Schwimmen und Sinken.',
     },
     kompass: {
       richtung: 'Norden, Osten, Süden und Westen kennen und wissen, wo die Sonne wann steht.',
@@ -185,9 +188,11 @@ const ELTERN = (() => {
       lt: LT,
     },
     ichdu1: {
-      gefuehl: 'Ihr Kind erkennt die Gefühle fröhlich, traurig, wütend und ängstlich an einem gezeichneten Gesicht und in kleinen Alltagsszenen.',
+      gefuehl:
+        'Ihr Kind erkennt die Gefühle fröhlich, traurig, wütend und ängstlich an einem gezeichneten Gesicht und in kleinen Alltagsszenen.',
       hoeflich: 'Wann sagt man bitte, danke oder Entschuldigung? Ihr Kind wählt die höfliche Antwort.',
-      familie: 'Familien sind verschieden: Ihr Kind lernt ohne Wertung Wörter wie Großfamilie, Patchworkfamilie, Regenbogenfamilie und Adoption kennen.',
+      familie:
+        'Familien sind verschieden: Ihr Kind lernt ohne Wertung Wörter wie Großfamilie, Patchworkfamilie, Regenbogenfamilie und Adoption kennen.',
       mc: 'Kleine Alltagsfragen zum Anderssein, zu Regeln in der Klasse, zu Streit und Versöhnung und dazu, niemanden auszuschließen.',
       rf: 'Ihr Kind hört einen Satz über sich und die anderen und entscheidet: richtig oder falsch?',
       ord: 'Ihr Kind bringt vier Schritte in die richtige Reihenfolge, zum Beispiel wie man sich nach einem Streit versöhnt.',
@@ -197,7 +202,8 @@ const ELTERN = (() => {
       symbol: 'Ihr Kind ordnet Zeichen wie Laterne, Adventskranz oder Osterei dem passenden Fest zu, oft als Bild.',
       jahr: 'Wann im Jahr ist welches Fest? Ihr Kind beantwortet Fragen dazu und bringt Feste in die Reihenfolge des Jahres.',
       natur: 'Fragen zum Staunen über Sonne, Mond, Sterne und kleine Tiere und dazu, wie man Natur und Tiere schützt.',
-      wachsen: 'Werden, wachsen, vergehen: Ihr Kind ordnet Lebensläufe wie vom Samen zur Frucht oder vom Ei zum Schmetterling.',
+      wachsen:
+        'Werden, wachsen, vergehen: Ihr Kind ordnet Lebensläufe wie vom Samen zur Frucht oder vom Ei zum Schmetterling.',
       rf: 'Ihr Kind hört einen Satz zu Festen oder zur Natur und entscheidet: richtig oder falsch?',
     },
     instrumente2: {
@@ -210,23 +216,30 @@ const ELTERN = (() => {
       form: 'Wiederholung und Gegensatz: Muster aus Kreisen, Quadraten und Dreiecken stehen für Teile eines Musikstücks, Ihr Kind erkennt die Form A – B – A.',
     },
     musik1: {
-      instr: 'Ihr Kind erkennt die Orff-Instrumente aus dem Musikunterricht am Bild: Triangel, Klanghölzer, Rassel, Handtrommel, Schellenkranz und Glockenspiel.',
-      spielen: 'Wie bringt man ein Instrument zum Klingen? Schlagen, schütteln oder zupfen, am Bild und in kurzen Fragen.',
-      gegen: 'Gegensätze an Bildern aus dem Alltag: Gewitter und Flüstern (laut, leise), Hase und Schnecke (schnell, langsam), Maus und Bär (hoch, tief).',
-      gefuehl: 'Ein Lied wird mit Worten beschrieben, zum Beispiel fröhlich oder ruhig. Ihr Kind wählt das passende Bild.',
+      instr:
+        'Ihr Kind erkennt die Orff-Instrumente aus dem Musikunterricht am Bild: Triangel, Klanghölzer, Rassel, Handtrommel, Schellenkranz und Glockenspiel.',
+      spielen:
+        'Wie bringt man ein Instrument zum Klingen? Schlagen, schütteln oder zupfen, am Bild und in kurzen Fragen.',
+      gegen:
+        'Gegensätze an Bildern aus dem Alltag: Gewitter und Flüstern (laut, leise), Hase und Schnecke (schnell, langsam), Maus und Bär (hoch, tief).',
+      gefuehl:
+        'Ein Lied wird mit Worten beschrieben, zum Beispiel fröhlich oder ruhig. Ihr Kind wählt das passende Bild.',
       koerper: 'Körperinstrumente: klatschen, stampfen, schnipsen und patschen am Bild erkennen.',
-      zeichen: 'Klänge aufmalen: Ein langer Strich ist ein langer Ton, Punkte sind kurze Töne, ein großes Zeichen ist laut. Dazu kurze Muster wie „lang, kurz, kurz“.',
+      zeichen:
+        'Klänge aufmalen: Ein langer Strich ist ein langer Ton, Punkte sind kurze Töne, ein großes Zeichen ist laut. Dazu kurze Muster wie „lang, kurz, kurz“.',
     },
     laute1: {
       laute: 'Selbstlaute, Umlaute und Mitlaute unterscheiden und einen fehlenden Selbstlaut im Wort ergänzen.',
       lautpos: 'Hört Ihr Kind den Laut am Anfang, in der Mitte oder am Ende des Wortes?',
-      silben: 'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben. Später ordnet Ihr Kind Silben zu einem Wort.',
+      silben:
+        'Wörter in Silben sprechen und die Silben zählen: Ba-na-ne hat 3 Silben. Später ordnet Ihr Kind Silben zu einem Wort.',
       alphabet: 'Das Abc sicher können: welcher Buchstabe davor, danach oder in der Lücke steht.',
       reim: 'Wörter finden, die sich reimen: Haus – Maus.',
       lesen: 'b, d, p, q und g unterscheiden und erste Wörter lesen: Das Wort zum Bild wird bewusst nicht vorgelesen.',
     },
     schreiben2: {
-      besonders: 'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie. Danach Merkwörter mit v, ß, Dehnungs-h, aa, ee, oo, ai und chs.',
+      besonders:
+        'Besondere Schreibungen: st und sp am Anfang, nk, qu, x sowie i oder ie. Danach Merkwörter mit v, ß, Dehnungs-h, aa, ee, oo, ai und chs.',
       doppel: 'Nach kurzem Selbstlaut steht ein doppelter Mitlaut: Sonne, nicht Sone.',
       verl: 'd oder t am Ende? Verlängern hilft: Hund – Hunde. Ä und äu leitet Ihr Kind von a und au ab: Baum – Bäume.',
       gross: 'Satzanfang, Nomen und Namen groß schreiben: Ihr Kind wählt den richtig geschriebenen Satz.',
@@ -280,7 +293,8 @@ const ELTERN = (() => {
       bild: 'Malaufgaben in Punktefeldern erkennen: Reihen mal Punkte in einer Reihe.',
       teilen: 'Teilen als Umkehrung des Malnehmens, zuerst mit 2, 5 und 10.',
       sach: 'Kurze Sachaufgaben zum Malnehmen und gerechten Verteilen.',
-      strategie: 'Rechenwege beim Malnehmen: Tauschaufgaben, Quadrataufgaben und ihre Nachbarn (7 · 6 = 6 · 6 + 6), Umkehraufgaben.',
+      strategie:
+        'Rechenwege beim Malnehmen: Tauschaufgaben, Quadrataufgaben und ihre Nachbarn (7 · 6 = 6 · 6 + 6), Umkehraufgaben.',
     },
     groessen2: {
       geld: 'Geld zählen, Euro und Cent umrechnen, mit Komma schreiben, wechseln und Rückgeld berechnen.',
@@ -347,7 +361,8 @@ const ELTERN = (() => {
     jahrmarkt: 'Mathematik, Klasse 3, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“.',
     woerterwerkstatt: 'Deutsch, Klasse 3, Lernbereich „Schreiben“.',
     satzbaustelle: 'Deutsch, Klasse 3, Lernbereich „Sprache und Sprachgebrauch untersuchen“.',
-    ethik: 'Ethik, Klasse 3, Lernbereich 3 „Voneinander“: christliche Feiertage in Sachsen, Reformationstag, Spuren Martin Luthers.',
+    ethik:
+      'Ethik, Klasse 3, Lernbereich 3 „Voneinander“: christliche Feiertage in Sachsen, Reformationstag, Spuren Martin Luthers.',
     kirchenjahr: 'Ethik, Klasse 3, Lernbereich 3 „Voneinander“: christliche Feiertage und das Kirchenjahr.',
     freunde: 'Ethik, Klasse 3, Lernbereich 2 „Miteinander“.',
     ichwelt: 'Ethik, Klasse 3, Lernbereich 1 „Ich im Wir“ und Lernbereich 4 „Wir in der Welt“.',
@@ -359,24 +374,37 @@ const ELTERN = (() => {
     verkehr: SU(5, 'Begegnung mit Raum und Zeit'),
     frueher: SU(1, 'Zusammen leben und lernen'),
     sinne: SU(2, 'Mein Körper und meine Gesundheit'),
-    musik: 'Musik, Klasse 3, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“. Notenwerte, Takt und Notennamen stehen so nicht im Lehrplan der Klasse 3, sie folgen den Arbeitsblättern aus dem Unterricht.',
-    teestube: 'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Animals“, „Food and drink“ und „My body and my clothes“.',
-    doppeldecker: 'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Me, my family and my friends“, „At school“ und „Around the year“.',
+    musik:
+      'Musik, Klasse 3, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“. Notenwerte, Takt und Notennamen stehen so nicht im Lehrplan der Klasse 3, sie folgen den Arbeitsblättern aus dem Unterricht.',
+    teestube:
+      'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Animals“, „Food and drink“ und „My body and my clothes“.',
+    doppeldecker:
+      'Englisch, Klasse 3, zum Beispiel die Lernbereiche „Me, my family and my friends“, „At school“ und „Around the year“.',
     ichdu1: 'Ethik, Klasse 1/2, Lernbereich 1 „Ich im Wir“ und Lernbereich 2 „Miteinander“.',
-    feste2: 'Ethik, Klasse 1/2, Lernbereich 3 „Voneinander“ und Lernbereich 4 „Wir in der Welt“. Religiöse Feste werden beschreibend erklärt.',
-    instrumente2: 'Musik, Klasse 1/2, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Instrumente und Gesangsstimmen, Lautstärke und Tempo) und Lernbereich 2 (Tonhöhe). Welche Instrumente vorkommen, legt der Lehrplan nicht fest; hier sind es die Orff-Instrumente der Schule und einige bekannte Instrumente.',
-    musik1: 'Musik, Klasse 1/2, Lernbereich 2 „Musik erfinden, wiedergeben und gestalten mit Instrumenten“ (Klangeigenschaften, Körper- und Rhythmusinstrumente, Notation mit selbst erdachten grafischen Zeichen), Lernbereich 3 „Musik umsetzen, verbinden und in Beziehung bringen“ (Stimmungen) und Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Lautstärke, Tempo, Instrumente). Die Aufgaben kommen ohne Töne aus. Singen, klatschen und klopfen Sie mit: ein Lied einmal laut und einmal leise, schnell und langsam, oder einen Rhythmus mit Strichen und Punkten aufmalen und zusammen klatschen.',
-    laute1: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Lernbereich 3 „Lesen“: Laute, Buchstaben, Silben und Alphabet.',
+    feste2:
+      'Ethik, Klasse 1/2, Lernbereich 3 „Voneinander“ und Lernbereich 4 „Wir in der Welt“. Religiöse Feste werden beschreibend erklärt.',
+    instrumente2:
+      'Musik, Klasse 1/2, Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Instrumente und Gesangsstimmen, Lautstärke und Tempo) und Lernbereich 2 (Tonhöhe). Welche Instrumente vorkommen, legt der Lehrplan nicht fest; hier sind es die Orff-Instrumente der Schule und einige bekannte Instrumente.',
+    musik1:
+      'Musik, Klasse 1/2, Lernbereich 2 „Musik erfinden, wiedergeben und gestalten mit Instrumenten“ (Klangeigenschaften, Körper- und Rhythmusinstrumente, Notation mit selbst erdachten grafischen Zeichen), Lernbereich 3 „Musik umsetzen, verbinden und in Beziehung bringen“ (Stimmungen) und Lernbereich 4 „Musik wahrnehmen, verstehen und deuten“ (Lautstärke, Tempo, Instrumente). Die Aufgaben kommen ohne Töne aus. Singen, klatschen und klopfen Sie mit: ein Lied einmal laut und einmal leise, schnell und langsam, oder einen Rhythmus mit Strichen und Punkten aufmalen und zusammen klatschen.',
+    laute1:
+      'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Lernbereich 3 „Lesen“: Laute, Buchstaben, Silben und Alphabet.',
     schreiben2: 'Deutsch, Klasse 1/2, Lernbereich 2 „Schreiben“ und Sächsischer Rechtschreibrahmen.',
     woerter2: 'Deutsch, Klasse 1/2, Lernbereich 5 „Sprache und Sprachgebrauch untersuchen“.',
-    zahlen20: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 20. Geld bis 20 € gehört zu Lernbereich 3 „Größen und Messen“.',
+    zahlen20:
+      'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 20. Geld bis 20 € gehört zu Lernbereich 3 „Größen und Messen“.',
     formen1: 'Mathematik, Klasse 1/2, Lernbereich 1 „Raum und Form“.',
-    zahlen100: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 100, ohne schriftliches Rechnen.',
-    malteilen: 'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“: Malnehmen und Teilen, sicher in den Reihen mit 2, 5 und 10.',
-    groessen2: 'Mathematik, Klasse 1/2, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“ mit ersten Kombinationen.',
-    formen2: 'Mathematik, Klasse 1/2, Lernbereich 1 „Raum und Form“: Achsensymmetrie, lineare Figuren, rechter Winkel, Würfelgebäude und Baupläne, Würfel und Quader.',
+    zahlen100:
+      'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“, Zahlenraum bis 100, ohne schriftliches Rechnen.',
+    malteilen:
+      'Mathematik, Klasse 1/2, Lernbereich 2 „Zahl und Operation“: Malnehmen und Teilen, sicher in den Reihen mit 2, 5 und 10.',
+    groessen2:
+      'Mathematik, Klasse 1/2, Lernbereich 3 „Größen und Messen“ und Lernbereich 4 „Daten und Zufall“ mit ersten Kombinationen.',
+    formen2:
+      'Mathematik, Klasse 1/2, Lernbereich 1 „Raum und Form“: Achsensymmetrie, lineare Figuren, rechter Winkel, Würfelgebäude und Baupläne, Würfel und Quader.',
     koerper1: 'Sachunterricht, Klasse 1/2, Lernbereich 2 „Mein Körper und meine Gesundheit“.',
-    jahr1: 'Sachunterricht, Klasse 1/2, Lernbereich 5 „Begegnung mit Raum und Zeit“, dazu die Jahreszeiten aus Lernbereich 3 und die Wetterzeichen aus Lernbereich 4.',
+    jahr1:
+      'Sachunterricht, Klasse 1/2, Lernbereich 5 „Begegnung mit Raum und Zeit“, dazu die Jahreszeiten aus Lernbereich 3 und die Wetterzeichen aus Lernbereich 4.',
     baeume2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
     tiere2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
     natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
@@ -385,8 +413,10 @@ const ELTERN = (() => {
   const TURM = {
     what: 'Schon geübte Aufgaben aus ein bis drei Fächern wiederholen und damit den Wissensturm verteidigen, ab Klasse 2.',
     beta: 'Die Turmwacht ist neu und deshalb zuerst ausgeschaltet. Regeln und Schwierigkeit können sich noch ändern. Ein begonnener Turm und der Rekord bleiben gespeichert, auch wenn Sie sie wieder ausschalten.',
-    subjects: 'Ohne Auswahl wählt Ihr Kind zu Beginn ein bis drei Fächer selbst. Lernquest schlägt die Fächer vor, die noch am wenigsten sicher sitzen. Schalten Sie hier Fächer ein, beginnt jede neue Turmwacht mit genau diesen, höchstens drei.',
-    counts: 'Gefragt werden die Aufgabenarten, die Ihr Kind im Fach schon geübt hat, mindestens zwei: Fehlt eine, kommt sie aus dem ersten geübten Thema, bei einem neuen Fach aus dem ersten Thema. Antworten aus der Turmwacht zählen bei den Themen und im Wochenbericht mit, genau wie im Abenteuer.',
+    subjects:
+      'Ohne Auswahl wählt Ihr Kind zu Beginn ein bis drei Fächer selbst. Lernquest schlägt die Fächer vor, die noch am wenigsten sicher sitzen. Schalten Sie hier Fächer ein, beginnt jede neue Turmwacht mit genau diesen, höchstens drei.',
+    counts:
+      'Gefragt werden die Aufgabenarten, die Ihr Kind im Fach schon geübt hat, mindestens zwei: Fehlt eine, kommt sie aus dem ersten geübten Thema, bei einem neuen Fach aus dem ersten Thema. Antworten aus der Turmwacht zählen bei den Themen und im Wochenbericht mit, genau wie im Abenteuer.',
     level: 'Die Turmwacht stellt ihre Aufgaben auf denselben Stufen und verschiebt sie nach denselben Regeln.',
   };
   return { INFO, PLAN, TURM };

@@ -56,48 +56,92 @@ const SAVECODE = (() => {
     'Die Bücherlawine|buecherlawine|Die Karies|karies|Die Schlammpfütze|schlammpfuetze|Der Sonnenbrand|sonnenbrand|Die Klette|klette|Der Schnupfen|' +
     'schnupfen|Der Schneesturm|schneesturm|Die zugeknallte Tür|knalltuer|Die schlechte Laune|schlechtelaune|Der Wutanfall|wutanfall|Die Langeweile|' +
     'langeweile|Das Heimweh|heimweh|Der große Streit|grosserstreit|Die Knarrtür|knarrtuer|Die gerissene Saite|gerissenesaite|Der Laubbläser|laubblaeser|' +
-    'Der Wasserhahn|wasserhahn|Die Pausenklingel|pausenklingel|Der Presslufthammer|presslufthammer'  ).split('|');
+    'Der Wasserhahn|wasserhahn|Die Pausenklingel|pausenklingel|Der Presslufthammer|presslufthammer'
+  ).split('|');
   const NUM = new Map(WORDS.map((w, i) => [w, i]));
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
   const word = (s) => (NUM.has(s) ? '~' + NUM.get(s).toString(36) : s[0] === '~' ? '~' + s : s);
-  const unword = (s) => { if (s[0] !== '~') return s; if (s[1] === '~') return s.slice(1); const w = WORDS[parseInt(s.slice(1), 36)]; if (w === undefined) throw new Error('unknown word ' + s); return w; };
+  const unword = (s) => {
+    if (s[0] !== '~') return s;
+    if (s[1] === '~') return s.slice(1);
+    const w = WORDS[parseInt(s.slice(1), 36)];
+    if (w === undefined) throw new Error('unknown word ' + s);
+    return w;
+  };
   // the parts of 'math:seq' (weekly tally) and 'math:seq:1' (tutorials) one by one
   const str = (s) => s.split(':').map(word).join(':');
   const unstr = (s) => s.split(':').map(unword).join(':');
-  const sameKeys = (rows) => { const ks = Object.keys(rows[0]); return ks.length && rows.every((r) => isObj(r) && Object.keys(r).length === ks.length && Object.keys(r).every((k, i) => k === ks[i])) && ks; };
+  const sameKeys = (rows) => {
+    const ks = Object.keys(rows[0]);
+    return (
+      ks.length &&
+      rows.every(
+        (r) => isObj(r) && Object.keys(r).length === ks.length && Object.keys(r).every((k, i) => k === ks[i]),
+      ) &&
+      ks
+    );
+  };
   // whole numbers as base-36 differences in one string: know.last counts up, so its steps are small
-  const column = (col) => { const d = col.map((x, i) => x - (i ? col[i - 1] : 0)); return col.every(Number.isSafeInteger) && d.every(Number.isSafeInteger) ? d.map((x) => x.toString(36)).join(',') : col.map(shrink); };
-  const uncolumn = (c) => { if (typeof c !== 'string') return c.map(grow); const n = c.split(',').map((x) => parseInt(x, 36)); for (let i = 1; i < n.length; i++) n[i] += n[i - 1]; return n; };
+  const column = (col) => {
+    const d = col.map((x, i) => x - (i ? col[i - 1] : 0));
+    return col.every(Number.isSafeInteger) && d.every(Number.isSafeInteger)
+      ? d.map((x) => x.toString(36)).join(',')
+      : col.map(shrink);
+  };
+  const uncolumn = (c) => {
+    if (typeof c !== 'string') return c.map(grow);
+    const n = c.split(',').map((x) => parseInt(x, 36));
+    for (let i = 1; i < n.length; i++) n[i] += n[i - 1];
+    return n;
+  };
   function shrink(v) {
     if (typeof v === 'string') return str(v);
     if (Array.isArray(v)) return v.map(shrink);
     if (!isObj(v)) return v;
-    const ids = Object.keys(v), rows = Object.values(v); const cols = rows.length > 1 && isObj(rows[0]) && sameKeys(rows);
-    return cols ? ['~', cols.map(str), ids.map(str), ...cols.map((c) => column(rows.map((r) => r[c])))] : Object.fromEntries(ids.map((k) => [str(k), shrink(v[k])]));
+    const ids = Object.keys(v),
+      rows = Object.values(v);
+    const cols = rows.length > 1 && isObj(rows[0]) && sameKeys(rows);
+    return cols
+      ? ['~', cols.map(str), ids.map(str), ...cols.map((c) => column(rows.map((r) => r[c])))]
+      : Object.fromEntries(ids.map((k) => [str(k), shrink(v[k])]));
   }
   function grow(v) {
     if (typeof v === 'string') return unstr(v);
     if (isObj(v)) return Object.fromEntries(Object.entries(v).map(([k, x]) => [unstr(k), grow(x)]));
     if (!Array.isArray(v)) return v;
     if (v[0] !== '~') return v.map(grow);
-    const cols = v[1].map(unstr), data = v.slice(3).map(uncolumn);
-    return Object.fromEntries(v[2].map((id, i) => [unstr(id), Object.fromEntries(cols.map((c, j) => [c, data[j][i]]))]));
+    const cols = v[1].map(unstr),
+      data = v.slice(3).map(uncolumn);
+    return Object.fromEntries(
+      v[2].map((id, i) => [unstr(id), Object.fromEntries(cols.map((c, j) => [c, data[j][i]]))]),
+    );
   }
   // A QR code stores 0–9, A–Z and a few signs in 5.5 bits instead of 8. Two bytes become three of these characters
   // (42³ > 65535, like base45 in RFC 9285, but without space, „%“ and „+“, which links do not keep as they are).
   const B42 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*-./:';
   function to42(bytes) {
     let s = '';
-    for (let i = 0; i < bytes.length; i += 2) { const two = i + 1 < bytes.length; let n = two ? bytes[i] * 256 + bytes[i + 1] : bytes[i]; for (let k = two ? 3 : 2; k--; n = Math.floor(n / 42)) s += B42[n % 42]; }
+    for (let i = 0; i < bytes.length; i += 2) {
+      const two = i + 1 < bytes.length;
+      let n = two ? bytes[i] * 256 + bytes[i + 1] : bytes[i];
+      for (let k = two ? 3 : 2; k--; n = Math.floor(n / 42)) s += B42[n % 42];
+    }
     return s;
   }
   function from42(s) {
-    const out = []; if (s.length % 3 === 1) throw new Error('base42 length');
+    const out = [];
+    if (s.length % 3 === 1) throw new Error('base42 length');
     for (let i = 0; i < s.length; i += 3) {
-      const c = s.slice(i, i + 3); let n = 0;
-      for (let j = c.length; j--;) { const d = B42.indexOf(c[j]); if (d < 0) throw new Error('base42 character'); n = n * 42 + d; }
+      const c = s.slice(i, i + 3);
+      let n = 0;
+      for (let j = c.length; j--; ) {
+        const d = B42.indexOf(c[j]);
+        if (d < 0) throw new Error('base42 character');
+        n = n * 42 + d;
+      }
       if (n > (c.length === 3 ? 65535 : 255)) throw new Error('base42 value');
-      if (c.length === 3) out.push(n >> 8, n & 255); else out.push(n);
+      if (c.length === 3) out.push(n >> 8, n & 255);
+      else out.push(n);
     }
     return Uint8Array.from(out);
   }

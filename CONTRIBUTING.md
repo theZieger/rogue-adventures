@@ -10,9 +10,11 @@ npm install
 npm run build        # src/* -> docs/index.html (one file, open it in a browser)
 npm test             # a few minutes; needs the build
 npm run playtest     # a bot plays every unit
+npm run format       # Biome formats JS, CSS and JSON
 ```
 
-You need Node 20 or newer, nothing else. A pull request must pass all three; CI runs them too.
+You need Node 20 or newer, nothing else. A pull request must be formatted and pass build, test and playtest;
+CI checks all four.
 
 ## Find your way
 

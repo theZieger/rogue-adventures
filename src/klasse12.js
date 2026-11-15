@@ -6,7 +6,15 @@ const K12 = (() => {
   const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
   const SETS = {
     mathe: set(
-      { id: 'held-mathe12', type: 'normal', shape: 'kauffrau', names: ['Die Kauffrau', 'Die Kauffrau', 'Die Kauffrau'], hp: 65, perk: 'crit', desc: 'Sie führt den Kaufladen der Klasse: Sie zählt Münzen, wiegt Äpfel ab und rechnet Preise zusammen.' },
+      {
+        id: 'held-mathe12',
+        type: 'normal',
+        shape: 'kauffrau',
+        names: ['Die Kauffrau', 'Die Kauffrau', 'Die Kauffrau'],
+        hp: 65,
+        perk: 'crit',
+        desc: 'Sie führt den Kaufladen der Klasse: Sie zählt Münzen, wiegt Äpfel ab und rechnet Preise zusammen.',
+      },
       [
         { name: 'Der Wackelturm', type: 'normal', shape: 'wackelturm', hp: 20, atk: 3 },
         { name: 'Das Maßband', type: 'pflanze', shape: 'massband', hp: 22, atk: 3 },
@@ -14,10 +22,27 @@ const K12 = (() => {
         { name: 'Der Kuckuck', type: 'wasser', shape: 'kuckuck', hp: 24, atk: 3 },
       ],
       { name: 'Die schiefe Waage', type: 'normal', shape: 'schiefewaage', hp: 36, atk: 4 },
-      { name: 'Der Kaugummiautomat', acc: 'den Kaugummiautomaten', type: 'feuer', shape: 'kaugummiautomat', hp: 55, atk: 5, boss: true },
-      ['Umkippen', 'Zurückschnellen', 'Sieben Augen', 'Kuckucksruf', 'Waagschale', 'Münzschlucker']),
+      {
+        name: 'Der Kaugummiautomat',
+        acc: 'den Kaugummiautomaten',
+        type: 'feuer',
+        shape: 'kaugummiautomat',
+        hp: 55,
+        atk: 5,
+        boss: true,
+      },
+      ['Umkippen', 'Zurückschnellen', 'Sieben Augen', 'Kuckucksruf', 'Waagschale', 'Münzschlucker'],
+    ),
     deutsch: set(
-      { id: 'held-deutsch12', type: 'normal', shape: 'lesepatin', names: ['Die Lesepatin', 'Die Lesepatin', 'Die Lesepatin'], hp: 68, perk: 'heal', desc: 'Sie kommt jede Woche in die Klasse, liest mit den Kindern in der Fibel und hört zu, wie sie Wörter lautieren.' },
+      {
+        id: 'held-deutsch12',
+        type: 'normal',
+        shape: 'lesepatin',
+        names: ['Die Lesepatin', 'Die Lesepatin', 'Die Lesepatin'],
+        hp: 68,
+        perk: 'heal',
+        desc: 'Sie kommt jede Woche in die Klasse, liest mit den Kindern in der Fibel und hört zu, wie sie Wörter lautieren.',
+      },
       [
         { name: 'Das Spiegel-S', type: 'wasser', shape: 'spiegels', hp: 20, atk: 3 },
         { name: 'Die Bastelschere', type: 'normal', shape: 'bastelschere', hp: 22, atk: 3 },
@@ -25,10 +50,27 @@ const K12 = (() => {
         { name: 'Der Papierflieger', type: 'pflanze', shape: 'papierflieger', hp: 20, atk: 3 },
       ],
       { name: 'Der Wackelzahn', type: 'normal', shape: 'wackelzahn', hp: 36, atk: 4 },
-      { name: 'Die Bücherlawine', acc: 'die Bücherlawine', type: 'pflanze', shape: 'buecherlawine', hp: 55, atk: 5, boss: true },
-      ['Spiegelschrift', 'Falscher Schnitt', 'Suppenkelle', 'Bruchlandung', 'Lispeln', 'Bücherrutsch']),
+      {
+        name: 'Die Bücherlawine',
+        acc: 'die Bücherlawine',
+        type: 'pflanze',
+        shape: 'buecherlawine',
+        hp: 55,
+        atk: 5,
+        boss: true,
+      },
+      ['Spiegelschrift', 'Falscher Schnitt', 'Suppenkelle', 'Bruchlandung', 'Lispeln', 'Bücherrutsch'],
+    ),
     sachkunde: set(
-      { id: 'held-sachkunde12', type: 'pflanze', shape: 'lotte', names: ['Lotte', 'Lotte', 'Lotte'], hp: 65, perk: 'heal', desc: 'Lotte gießt jeden Morgen die Sonnenblume, die sie im Frühling selbst gesät hat.' },
+      {
+        id: 'held-sachkunde12',
+        type: 'pflanze',
+        shape: 'lotte',
+        names: ['Lotte', 'Lotte', 'Lotte'],
+        hp: 65,
+        perk: 'heal',
+        desc: 'Lotte gießt jeden Morgen die Sonnenblume, die sie im Frühling selbst gesät hat.',
+      },
       [
         { name: 'Die Karies', type: 'normal', shape: 'karies', hp: 20, atk: 3 },
         { name: 'Die Schlammpfütze', type: 'wasser', shape: 'schlammpfuetze', hp: 22, atk: 3 },
@@ -36,10 +78,27 @@ const K12 = (() => {
         { name: 'Die Klette', type: 'pflanze', shape: 'klette', hp: 24, atk: 3 },
       ],
       { name: 'Der Schnupfen', type: 'normal', shape: 'schnupfen', hp: 36, atk: 4 },
-      { name: 'Der Schneesturm', acc: 'den Schneesturm', type: 'wasser', shape: 'schneesturm', hp: 55, atk: 5, boss: true },
-      ['Zahnbelag', 'Spritzwasser', 'Mittagshitze', 'Widerhaken', 'Niesanfall', 'Eiswind']),
+      {
+        name: 'Der Schneesturm',
+        acc: 'den Schneesturm',
+        type: 'wasser',
+        shape: 'schneesturm',
+        hp: 55,
+        atk: 5,
+        boss: true,
+      },
+      ['Zahnbelag', 'Spritzwasser', 'Mittagshitze', 'Widerhaken', 'Niesanfall', 'Eiswind'],
+    ),
     ethik: set(
-      { id: 'held-ethik12', type: 'feuer', shape: 'mats', names: ['Mats', 'Mats', 'Mats'], hp: 65, perk: 'crit', desc: 'Mats hat seine Laterne für den Martinsumzug aus Transparentpapier selbst gebastelt.' },
+      {
+        id: 'held-ethik12',
+        type: 'feuer',
+        shape: 'mats',
+        names: ['Mats', 'Mats', 'Mats'],
+        hp: 65,
+        perk: 'crit',
+        desc: 'Mats hat seine Laterne für den Martinsumzug aus Transparentpapier selbst gebastelt.',
+      },
       [
         { name: 'Die zugeknallte Tür', type: 'normal', shape: 'knalltuer', hp: 20, atk: 3 },
         { name: 'Die schlechte Laune', type: 'wasser', shape: 'schlechtelaune', hp: 22, atk: 3 },
@@ -47,10 +106,27 @@ const K12 = (() => {
         { name: 'Die Langeweile', type: 'pflanze', shape: 'langeweile', hp: 24, atk: 3 },
       ],
       { name: 'Das Heimweh', type: 'wasser', shape: 'heimweh', hp: 36, atk: 4 },
-      { name: 'Der große Streit', acc: 'den großen Streit', type: 'normal', shape: 'grosserstreit', hp: 55, atk: 5, boss: true },
-      ['Türschlag', 'Trübsal', 'Wutgeschrei', 'Dauergähnen', 'Abschiedsschmerz', 'Gezanke']),
+      {
+        name: 'Der große Streit',
+        acc: 'den großen Streit',
+        type: 'normal',
+        shape: 'grosserstreit',
+        hp: 55,
+        atk: 5,
+        boss: true,
+      },
+      ['Türschlag', 'Trübsal', 'Wutgeschrei', 'Dauergähnen', 'Abschiedsschmerz', 'Gezanke'],
+    ),
     musik: set(
-      { id: 'held-musik12', type: 'normal', shape: 'musiklehrerin', names: ['Die Musiklehrerin', 'Die Musiklehrerin', 'Die Musiklehrerin'], hp: 65, perk: 'crit', desc: 'Sie spielt zu jedem Lied Gitarre, und die Kinder klopfen mit Rassel, Triangel und Trommel den Takt.' },
+      {
+        id: 'held-musik12',
+        type: 'normal',
+        shape: 'musiklehrerin',
+        names: ['Die Musiklehrerin', 'Die Musiklehrerin', 'Die Musiklehrerin'],
+        hp: 65,
+        perk: 'crit',
+        desc: 'Sie spielt zu jedem Lied Gitarre, und die Kinder klopfen mit Rassel, Triangel und Trommel den Takt.',
+      },
       [
         { name: 'Die Knarrtür', type: 'pflanze', shape: 'knarrtuer', hp: 22, atk: 3 },
         { name: 'Die gerissene Saite', type: 'normal', shape: 'gerissenesaite', hp: 20, atk: 3 },
@@ -58,15 +134,55 @@ const K12 = (() => {
         { name: 'Der Wasserhahn', type: 'wasser', shape: 'wasserhahn', hp: 22, atk: 3 },
       ],
       { name: 'Die Pausenklingel', type: 'feuer', shape: 'pausenklingel', hp: 36, atk: 4 },
-      { name: 'Der Presslufthammer', acc: 'den Presslufthammer', type: 'normal', shape: 'presslufthammer', hp: 58, atk: 5, boss: true },
-      ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß']),
+      {
+        name: 'Der Presslufthammer',
+        acc: 'den Presslufthammer',
+        type: 'normal',
+        shape: 'presslufthammer',
+        hp: 58,
+        atk: 5,
+        boss: true,
+      },
+      ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß'],
+    ),
   };
-  const unit = (fach, attacks, o) => Object.assign({ worlds: 1, starters: [Object.assign({}, SETS[fach].hero, { attacks })], enemies: SETS[fach].enemies, moves: SETS[fach].moves }, o);
+  const unit = (fach, attacks, o) =>
+    Object.assign(
+      {
+        worlds: 1,
+        starters: [Object.assign({}, SETS[fach].hero, { attacks })],
+        enemies: SETS[fach].enemies,
+        moves: SETS[fach].moves,
+      },
+      o,
+    );
   // events every Klasse-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
-  const rest = (title, text) => ({ title, text, opts: [{ label: 'Ausruhen (+15 LP)', effect: { hp: 15 } }, { label: 'Weiter', effect: {} }] });
-  const dilemma = (title, text, opts) => ({ title, dilemma: true, reward: { hp: 5 }, text, opts: opts.map(([label, then, think]) => ({ label, then, think })) });
+  const rest = (title, text) => ({
+    title,
+    text,
+    opts: [
+      { label: 'Ausruhen (+15 LP)', effect: { hp: 15 } },
+      { label: 'Weiter', effect: {} },
+    ],
+  });
+  const dilemma = (title, text, opts) => ({
+    title,
+    dilemma: true,
+    reward: { hp: 5 },
+    text,
+    opts: opts.map(([label, then, think]) => ({ label, then, think })),
+  });
   // lighter (t > 0) or darker shade of a colour for the pictures
-  const tone = (hex, t) => '#' + [16, 8, 0].map((s) => { const v = (parseInt(hex.slice(1), 16) >> s) & 255; return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t)).toString(16).padStart(2, '0'); }).join('');
+  const tone = (hex, t) =>
+    '#' +
+    [16, 8, 0]
+      .map((s) => {
+        const v = (parseInt(hex.slice(1), 16) >> s) & 255;
+        return Math.round(t > 0 ? v + (255 - v) * t : v * (1 + t))
+          .toString(16)
+          .padStart(2, '0');
+      })
+      .join('');
   return { SETS, unit, rest, dilemma, tone };
 })();
 if (typeof module !== 'undefined') module.exports = K12;

@@ -35,13 +35,20 @@ const RUNS = [
 
 function play(script, env = {}) {
   return new Promise((resolve, reject) => {
-    execFile(process.execPath, [path.join(__dirname, script)], { env: { ...process.env, ...env }, maxBuffer: 64 << 20 }, (error, stdout, stderr) =>
-      error ? reject(new Error(`${stderr}\n${stdout.slice(-2000)}`)) : resolve());
+    execFile(
+      process.execPath,
+      [path.join(__dirname, script)],
+      { env: { ...process.env, ...env }, maxBuffer: 64 << 20 },
+      (error, stdout, stderr) => (error ? reject(new Error(`${stderr}\n${stdout.slice(-2000)}`)) : resolve()),
+    );
   });
 }
 
 test('playtests', { concurrency: 4 }, async (t) => {
-  const settings = (env) => Object.entries(env).map(([key, value]) => `${key}=${value}`).join(' ');
+  const settings = (env) =>
+    Object.entries(env)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(' ');
   await Promise.all([
     ...RUNS.map((env) => t.test(settings(env), () => play('playtest.js', env))),
     t.test('playtest_units', () => play('playtest_units.js')),

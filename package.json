@@ -7,7 +7,9 @@
     "build": "node tools/svg.js && node tools/build.js",
     "test": "node --test --test-reporter=spec \"tests/test_*.js\"",
     "playtest": "node tools/build.js && node --test --test-reporter=spec tests/playtests.js",
-    "svg": "node tools/svg.js"
+    "svg": "node tools/svg.js",
+    "format": "biome format --write .",
+    "format:check": "biome format ."
   },
   "engines": {
     "node": ">=20"

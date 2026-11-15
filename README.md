@@ -144,6 +144,7 @@ npm install          # jsdom und svgo (nur für Tests und Build)
 npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
 npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, dauert einige Minuten)
 npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js)
+npm run format       # formatiert JS, CSS und JSON mit Biome (die CI prüft das)
 MODE=turm GRADE=3 SUBJECTS=Mathe,Deutsch ACC=0.9 RUNS=1 node tests/playtest.js   # nur die Turmwacht (SEED=n, NAIVE=1 tippt wie ein Kind beliebige Monster an)
 ```
 

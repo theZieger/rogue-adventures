@@ -28,19 +28,42 @@ const SCRIPTS = [
 ];
 // The game itself: the parts of src/app/ in this order inside one function, so they share its state (meta, run, mode).
 const APP = [
-  'core', 'storage', 'progress', 'ui', 'tasks', 'title', 'backup', 'map', 'battle', 'nodes', 'collection', 'huette',
-  'duell', 'turm', 'turm_screens', 'garten', 'elternbereich', 'feedback', 'boot',
+  'core',
+  'storage',
+  'progress',
+  'ui',
+  'tasks',
+  'title',
+  'backup',
+  'map',
+  'battle',
+  'nodes',
+  'collection',
+  'huette',
+  'duell',
+  'turm',
+  'turm_screens',
+  'garten',
+  'elternbereich',
+  'feedback',
+  'boot',
 ];
 const GROUPS = ['Neu', 'Verbessert', 'Behoben'];
 
 const read = (...parts) => fs.readFileSync(path.join(...parts), 'utf8');
-const files = (dir, ext = '') => fs.readdirSync(dir).filter((name) => name.endsWith(ext)).sort();
+const files = (dir, ext = '') =>
+  fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith(ext))
+    .sort();
 const inlineJson = (value) => JSON.stringify(value).replaceAll('</', '<\\/');
 const sameList = (a, b) => assert.deepStrictEqual([...a].sort(), [...b].sort());
 
 function bakedMonsters() {
   const dir = path.join(ROOT, 'art', 'monsters', 'svg');
-  const baked = Object.fromEntries(files(dir, '.svg').map((name) => [path.basename(name, '.svg'), read(dir, name).trim()]));
+  const baked = Object.fromEntries(
+    files(dir, '.svg').map((name) => [path.basename(name, '.svg'), read(dir, name).trim()]),
+  );
   assert(Object.keys(baked).length, 'art/monsters/svg/ is empty: run npm run svg');
   return baked;
 }
@@ -75,8 +98,15 @@ function parseChangelog(text) {
   });
   for (const { date, groups } of entries) {
     const titles = groups.map((group) => group.title);
-    assert.deepStrictEqual(titles, GROUPS.filter((title) => titles.includes(title)), `CHANGELOG.md ${date}: groups must be in the order ${GROUPS}`);
-    assert(groups.every((group) => group.items.length), `CHANGELOG.md ${date}: empty group`);
+    assert.deepStrictEqual(
+      titles,
+      GROUPS.filter((title) => titles.includes(title)),
+      `CHANGELOG.md ${date}: groups must be in the order ${GROUPS}`,
+    );
+    assert(
+      groups.every((group) => group.items.length),
+      `CHANGELOG.md ${date}: empty group`,
+    );
   }
   const dates = entries.map((entry) => entry.date);
   assert.deepStrictEqual(dates, [...dates].sort().reverse(), 'CHANGELOG.md: dates must be newest first');
@@ -89,8 +119,10 @@ function splashTags() {
   return files(path.join(DOCS, 'splash'))
     .map((name) => [name, /^splash-(\d+)x(\d+)@(\d)-(portrait|landscape)\.png$/.exec(name)])
     .filter(([, match]) => match)
-    .map(([name, [, width, height, ratio, orientation]]) =>
-      `<link rel="apple-touch-startup-image" href="splash/${name}" media="(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio}) and (orientation: ${orientation})">`)
+    .map(
+      ([name, [, width, height, ratio, orientation]]) =>
+        `<link rel="apple-touch-startup-image" href="splash/${name}" media="(device-width: ${width}px) and (device-height: ${height}px) and (-webkit-device-pixel-ratio: ${ratio}) and (orientation: ${orientation})">`,
+    )
     .join('\n');
 }
 
@@ -169,8 +201,12 @@ ${REGISTER_SERVICE_WORKER}
 function buildId(texts) {
   const hash = crypto.createHash('sha256');
   texts.forEach((text) => hash.update(text, 'utf8'));
-  const assets = ['icons', 'splash', 'fonts', 'sounds'].flatMap((dir) => files(path.join(DOCS, dir)).map((name) => path.join(DOCS, dir, name)));
-  [...assets, path.join(DOCS, 'favicon.ico')].filter((file) => fs.statSync(file).isFile()).forEach((file) => hash.update(fs.readFileSync(file)));
+  const assets = ['icons', 'splash', 'fonts', 'sounds'].flatMap((dir) =>
+    files(path.join(DOCS, dir)).map((name) => path.join(DOCS, dir, name)),
+  );
+  [...assets, path.join(DOCS, 'favicon.ico')]
+    .filter((file) => fs.statSync(file).isFile())
+    .forEach((file) => hash.update(fs.readFileSync(file)));
   return hash.digest('hex').slice(0, 12);
 }
 
@@ -179,14 +215,22 @@ function write(name, text) {
   return `docs/${name}`;
 }
 
-sameList(SCRIPTS.flat(), files(SRC, '.js').filter((name) => name !== 'sw.js'));
-sameList(APP.map((part) => `${part}.js`), files(path.join(SRC, 'app'), '.js'));
+sameList(
+  SCRIPTS.flat(),
+  files(SRC, '.js').filter((name) => name !== 'sw.js'),
+);
+sameList(
+  APP.map((part) => `${part}.js`),
+  files(path.join(SRC, 'app'), '.js'),
+);
 
 const html = page();
 const manifest = read(SRC, 'manifest.webmanifest');
 const serviceWorker = read(SRC, 'sw.js');
 const id = buildId([html, manifest, serviceWorker]);
 
-console.log(`built ${write('index.html', html.replaceAll('__BUILD__', id))} (${Buffer.byteLength(html).toLocaleString('en')} bytes)`);
+console.log(
+  `built ${write('index.html', html.replaceAll('__BUILD__', id))} (${Buffer.byteLength(html).toLocaleString('en')} bytes)`,
+);
 write('manifest.webmanifest', manifest);
 console.log(`built ${write('sw.js', serviceWorker.replaceAll('__VERSION__', id))} (version ${id})`);
