@@ -21,6 +21,26 @@ test('starts and runs a fight offline, and never asks another server', () =>
     assert.deepStrictEqual(foreign, []);
   }));
 
+test('the feedback screen: choose a kind, an empty message is not sent, a failed send keeps the text', () =>
+  withApp(async (newPage) => {
+    const page = await open(newPage, 'feedback');
+    await page.click('[data-kind="🐞 Fehler"]');
+    assert.equal(await page.getAttribute('[data-kind="🐞 Fehler"]', 'aria-pressed'), 'true');
+    assert.equal(await page.getAttribute('[data-kind="💡 Idee"]', 'aria-pressed'), 'false');
+    await page.click('#fbsend');
+    assert.match(await page.textContent('#fbmsg'), /zuerst etwas hineinschreiben/);
+    await page.fill('#fbtext', 'Die Uhr <zeigt> falsch');
+    await page.context().setOffline(true);
+    await page.click('#fbsend');
+    await page.waitForSelector('#fbmsg a');
+    const link = await page.getAttribute('#fbmsg a', 'href');
+    assert.ok(decodeURIComponent(link).includes('🐞 Fehler: Die Uhr <zeigt> falsch'), link);
+    assert.equal(await page.inputValue('#fbtext'), 'Die Uhr <zeigt> falsch');
+    assert.equal(await page.textContent('#fbsend'), 'Nochmal versuchen');
+    await page.click('#back');
+    assert.ok(await page.isVisible('#parents'), 'back on the title');
+  }));
+
 test('no screen has a serious accessibility problem', () =>
   withApp(async (newPage) => {
     const problems = [];

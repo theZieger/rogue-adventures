@@ -5,6 +5,7 @@ import { tutKey } from './progress.ts';
 import { state } from './state.ts';
 import { saveAll } from './storage.ts';
 import { joined, speakBtn } from './tasks.ts';
+import type { Markup } from '../ui/html.ts';
 
 /* ---------- Rendering primitives ---------- */
 // physical keyboard while a number task is open
@@ -12,6 +13,7 @@ import { joined, speakBtn } from './tasks.ts';
 export function render(html, quiet?) {
   state.keyHandler = null;
   state.backTo = null;
+  actions = {};
   if (window.speechSynthesis) speechSynthesis.cancel();
   app.innerHTML = html;
   // a list with nothing to tab to must take the keyboard itself, or it cannot be scrolled without touch
@@ -20,6 +22,19 @@ export function render(html, quiet?) {
   if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter');
   syncHistory();
 }
+
+// A screen names what a tap does: data-action="send" on an element calls actions.send. One listener serves every
+// screen, so nothing is bound again after a render. Screens written before this still set onclick themselves.
+type Action = (element: HTMLElement, event: Event) => void;
+let actions: Record<string, Action> = {};
+export function screen(markup: Markup, handlers: Record<string, Action>) {
+  render(markup.text);
+  actions = handlers;
+}
+app.addEventListener('click', (event) => {
+  const element = (event.target as Element).closest<HTMLElement>('[data-action]');
+  if (element) actions[element.dataset.action!]?.(element, event);
+});
 
 /* ---------- Back button ---------- */
 // Android's back button and the browser's back gesture step back inside the app. History holds one entry per level

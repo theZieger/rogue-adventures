@@ -2,6 +2,7 @@
 // stylesheets, and every building block of the screens with the classes the screens use. It loads the engine's
 // modules without starting the game, so icons and the top bar are the real ones.
 import { app } from './app/core.ts';
+import { typeChip } from './app/progress.ts';
 import { topbar } from './app/ui.ts';
 
 interface Token {
@@ -52,13 +53,13 @@ ${section(
 )}
 ${section(
   'Marken und Schalter',
-  `<div class="row" style="flex-wrap:wrap;align-items:center"><button class="gradechip on" aria-pressed="true">Klasse 3</button><button class="gradechip" aria-pressed="false">Klasse 2</button><span class="chip" style="background:var(--blue);color:var(--ink)">💧 Wasser</span><span class="levelbadge">Lv 3</span><span class="newbadge">Neu!</span><button class="stampbtn" aria-label="Stempelheft, 12 Stempel">🏷️ 12</button><button class="switch" role="switch" aria-checked="true" aria-label="an"><i></i></button><button class="switch" role="switch" aria-checked="false" aria-label="aus"><i></i></button></div>
+  `<div class="row" style="flex-wrap:wrap;align-items:center"><button class="gradechip on" aria-pressed="true">Klasse 3</button><button class="gradechip" aria-pressed="false">Klasse 2</button>${typeChip('wasser')}<span class="levelbadge">Lv 3</span><span class="newbadge">Neu!</span><button class="stampbtn" aria-label="Stempelheft, 12 Stempel">🏷️ 12</button><button class="switch" role="switch" aria-checked="true" aria-label="an"><i></i></button><button class="switch" role="switch" aria-checked="false" aria-label="aus"><i></i></button></div>
 <nav class="ptabs" role="tablist" aria-label="Bereiche"><button role="tab" aria-selected="true"><span>Überblick</span></button><button role="tab" aria-selected="false"><span>Inhalte</span></button><button role="tab" aria-selected="false"><span>Einstellungen</span></button></nav>`,
 )}
 ${section(
   'Kampf',
   `<div class="row"><div class="plate hero"><div class="name">Glutfuchs <span class="levelbadge">Lv 1</span></div><div class="hpbar"><i style="width:70%"></i></div><div class="hptext">❤️ 42 / 60</div><div class="xpbar" role="progressbar" aria-label="Erfahrung" aria-valuenow="40"><i style="width:40%"></i></div></div>
-<div class="plate enemy"><div class="name">Regenwicht</div><div class="plateline"><span class="chip" style="background:var(--blue);color:var(--ink)">💧 Wasser</span></div><div class="hpbar"><i class="low" style="width:20%"></i></div><div class="hptext">❤️ 7 / 34</div></div></div>
+<div class="plate enemy"><div class="name">Regenwicht</div><div class="plateline">${typeChip('wasser')}</div><div class="hpbar"><i class="low" style="width:20%"></i></div><div class="hptext">❤️ 7 / 34</div></div></div>
 <div class="log">Regenwicht taucht auf! 🎯 Schwachstelle: Feuerreihe.</div>
 <div class="attacks"><button class="atk" aria-label="Funkenbiss: Addition, 12 Schaden"><span class="n">Funkenbiss</span><span class="m">➕ Addition<span class="dmg">💥 12</span></span><span class="tags"></span></button>
 <button class="atk weak" aria-label="Feuerreihe: Zahlenfolgen, 24, Schwachstelle – Schaden 24"><span class="n">Feuerreihe</span><span class="m">🔢 Zahlenfolgen<span class="dmg">💥 24</span></span><span class="tags"><span class="tag weak">🎯 Schwachstelle</span></span></button>

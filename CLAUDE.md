@@ -30,7 +30,7 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   variant to `art/monsters/raw/` and runs svgo only on changed ones (hashes in `art/monsters/manifest.json`) into
   `art/monsters/svg/`, which the game uses. Commit `art/` too. After changing the svgo settings run
   `node tools/svg_compare.js` (Playwright) to confirm the optimised SVGs look identical.
-- Before committing, opening a pull request or merging: `npm run format && npm run build && npm test && npm run playtest && npm run e2e`
+- Before committing, opening a pull request or merging: `npm run format && npm run lint && npm run typecheck && npm run build && npm test && npm run playtest && npm run e2e`
   (tests and playtest take about two minutes each, the browser tests half a minute; CI runs the same on every pull request and push to `main`).
 - **Any change a player can see needs before/after screenshots and the owner's approval before it is committed
   to `main`.** Take screenshots of every affected screen (phone size, 390×844 at 2×) before and after the change
@@ -42,6 +42,11 @@ German educational roguelike for primary-school children (about 3rd grade). Read
 - The game engine is `src/app/*.ts`: ES modules that import what they use; `src/main.ts` lists them in the order they
   start. What several of them change (`meta`, `run`, `mode` …) lives in `src/app/state.ts` as `state.meta` etc.
   Use the words in `GLOSSARY.md`; decisions that should not be re-argued are in `adr/`.
+- A new or reworked screen builds its markup with `html` (`src/ui/html.ts`, escapes what it is given) and passes it to
+  `screen(markup, actions)`; a tap on `data-action="name"` calls `actions.name`. `src/app/feedback.ts` is the example.
+  Older screens use `render()` with strings and `onclick`; move one over when you change it (`adr/0008`).
+- Colours are tokens in `src/styles/tokens.css`, never a hex value in a rule (Stylelint fails it). A new building
+  block gets a specimen in `src/gallery.ts` (`docs/gallery.html` after a build).
 - Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.ts` (key = the emoji) when shown.
   A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.
 - Icons and iOS launch screens (`docs/icons/`, `docs/splash/`) come from `node tools/make_icons.js`
