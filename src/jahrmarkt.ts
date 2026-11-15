@@ -17,27 +17,27 @@ export const MJ = (() => {
   /* ---------- Units and formats (never a comma number) ---------- */
   const UNIT = { km: 100000, m: 100, cm: 1, kg: 1000, g: 1 };
   // "2 m 35 cm", "½ kg" → cm or g
-  const qty = (s) => {
+  const qty = (s: { replace: (arg0: RegExp, arg1: (_: any, n: any, u: any) => void) => void }) => {
     let v = 0;
-    s.replace(/(½|\d+) (km|m|cm|kg|g)\b/g, (_, n, u) => {
+    s.replace(/(½|\d+) (km|m|cm|kg|g)\b/g, (_: any, n: string, u: string | number) => {
       v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u];
     });
     return v;
   };
-  const two = (v, big, small) => {
+  const two = (v: number, big: string, small: string) => {
     const a = Math.floor(v / UNIT[big]),
       b = (v % UNIT[big]) / UNIT[small];
     return a && b ? `${a} ${big} ${b} ${small}` : a ? `${a} ${big}` : `${b} ${small}`;
   };
   // amounts and times never break across lines (non-breaking spaces)
-  const euro = (ct) => Q.euro(ct).replace(/ /g, '\u00a0');
-  const pad = (m) => String(m).padStart(2, '0');
-  const tm = (min) => `${Math.floor(min / 60)}:${pad(min % 60)}\u00a0Uhr`;
+  const euro = (ct: number) => Q.euro(ct).replace(/ /g, '\u00a0');
+  const pad = (m: number) => String(m).padStart(2, '0');
+  const tm = (min: number) => `${Math.floor(min / 60)}:${pad(min % 60)}\u00a0Uhr`;
   const NAMES = ['Mia', 'Ole', 'Lena', 'Tim', 'Emil', 'Lotta', 'Can', 'Aylin', 'Jonas', 'Paula'];
 
   /* ---------- Drawings (data attributes let the test bot read them) ---------- */
   const OUT = '#1C2541';
-  function clockSVG(h, m) {
+  function clockSVG(h: number, m: number) {
     const ha = (h % 12) * 30 + m / 2,
       ma = m * 6;
     let marks = '';
@@ -55,7 +55,7 @@ export const MJ = (() => {
       <g class="hand-h" data-angle="${ha}" transform="rotate(${ha} 60 60)"><line x1="60" y1="66" x2="60" y2="32" stroke="${OUT}" stroke-width="6" stroke-linecap="round"/></g>
       <g class="hand-m" data-angle="${ma}" transform="rotate(${ma} 60 60)"><line x1="60" y1="68" x2="60" y2="11" stroke="#C0392B" stroke-width="3" stroke-linecap="round"/></g><circle cx="60" cy="60" r="4" fill="${OUT}"/></svg>`;
   }
-  function rulerSVG(cm, thing) {
+  function rulerSVG(cm: number, thing: any) {
     const px = 18,
       x0 = 16;
     let marks = '';
@@ -66,10 +66,10 @@ export const MJ = (() => {
       <rect class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}" x="${x0}" y="22" width="${x1 - x0}" height="22" rx="10" fill="#FF8FA3" stroke="${OUT}" stroke-width="2"/><path d="M${x0 + 8} 26 L${x0 + 16} 40 M${x0 + 24} 26 L${x0 + 32} 40" stroke="#fff" stroke-width="3" opacity=".7"/>
       <line x1="${x0}" y1="16" x2="${x0}" y2="52" stroke="${OUT}" stroke-dasharray="3 3"/><line x1="${x1}" y1="16" x2="${x1}" y2="52" stroke="${OUT}" stroke-dasharray="3 3"/></svg>`;
   }
-  const WEIGHT_TXT = (g) => (g >= 1000 ? `${g / 1000} kg` : `${g} g`);
-  function scaleSVG(weights, thing) {
+  const WEIGHT_TXT = (g: number) => (g >= 1000 ? `${g / 1000} kg` : `${g} g`);
+  function scaleSVG(weights: any[], thing: string) {
     const blocks = weights
-      .map((g, i) => {
+      .map((g: any, i: number) => {
         const x = 178 + (i % 2) * 56,
           y = 62 - Math.floor(i / 2) * 26;
         return `<g class="weight" data-g="${g}"><rect x="${x}" y="${y}" width="52" height="24" rx="4" fill="#8E9AAF" stroke="${OUT}" stroke-width="2"/><text x="${x + 26}" y="${y + 17}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${WEIGHT_TXT(g)}</text></g>`;
@@ -88,10 +88,10 @@ export const MJ = (() => {
   };
   // each colour also gets its own mark, so the wheel works without telling colours apart
   const MARK = {
-    rot: (x, y) => `<circle cx="${x}" cy="${y}" r="5"/>`,
-    blau: (x, y) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1"/>`,
-    gelb: (x, y) => `<path d="M${x} ${y - 6} L${x + 6} ${y + 5} L${x - 6} ${y + 5} Z"/>`,
-    gruen: (x, y) => `<path d="M${x} ${y - 7} L${x + 6} ${y} L${x} ${y + 7} L${x - 6} ${y} Z"/>`,
+    rot: (x: any, y: any) => `<circle cx="${x}" cy="${y}" r="5"/>`,
+    blau: (x: number, y: number) => `<rect x="${x - 5}" y="${y - 5}" width="10" height="10" rx="1"/>`,
+    gelb: (x: number, y: number) => `<path d="M${x} ${y - 6} L${x + 6} ${y + 5} L${x - 6} ${y + 5} Z"/>`,
+    gruen: (x: number, y: number) => `<path d="M${x} ${y - 7} L${x + 6} ${y} L${x} ${y + 7} L${x - 6} ${y} Z"/>`,
   };
   const WHEEL_DEFS =
     '<defs>' +
@@ -105,13 +105,13 @@ export const MJ = (() => {
     '<radialGradient id="jmw-brass" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#FFF3B0"/><stop offset=".5" stop-color="#F2BE3A"/><stop offset="1" stop-color="#A9761A"/></radialGradient>' +
     '<radialGradient id="jmw-gloss" cx="34%" cy="28%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#1C2541" stop-opacity=".12"/></radialGradient>' +
     '<pattern id="jmw-grain" width="14" height="7" patternUnits="userSpaceOnUse"><path d="M0 3.5 Q3.5 1.5 7 3.5 T14 3.5" fill="none" stroke="#5A3410" stroke-width=".6" opacity=".12"/></pattern></defs>';
-  function wheelSVG(sectors) {
+  function wheelSVG(sectors: any[]) {
     const n = sectors.length,
       R = 44,
-      P = (a, r) => [(60 + r * Math.sin(a)).toFixed(1), (64 - r * Math.cos(a)).toFixed(1)];
+      P = (a: number, r: number) => [(60 + r * Math.sin(a)).toFixed(1), (64 - r * Math.cos(a)).toFixed(1)];
     let studs = '';
     const parts = sectors
-      .map((c, i) => {
+      .map((c: string | number, i: number) => {
         const a0 = (i * 2 * Math.PI) / n,
           a1 = ((i + 1) * 2 * Math.PI) / n,
           [x0, y0] = P(a0, R),
@@ -130,18 +130,18 @@ export const MJ = (() => {
       `<path d="M51 3 Q60 0 69 3 L61.5 23 Q60 25.5 58.5 23 Z" fill="url(#jmw-brass)" stroke="${OUT}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="60" cy="7" r="2" fill="${OUT}"/><path d="M55 5 L58 14" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".7"/></svg>`
     );
   }
-  function chartSVG(title, bars, step, top) {
+  function chartSVG(title: any, bars: any[], step: number, top: number) {
     const H = 120,
       y0 = 140,
       x0 = 36,
       w = 274 / bars.length,
-      Y = (v) => y0 - (v / top) * H;
+      Y = (v: number) => y0 - (v / top) * H;
     let grid = '';
     for (let v = 0; v <= top; v += step)
       grid += `<line x1="${x0}" y1="${Y(v)}" x2="312" y2="${Y(v)}" stroke="${v ? '#B8C2D9' : OUT}" stroke-width="${v ? 1 : 2}"/><text x="${x0 - 5}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="${OUT}">${v}</text>`;
     const cols = ['#3F7FE0', '#E8453C', '#3DAA55', '#F5A623'];
     const rects = bars
-      .map((b, i) => {
+      .map((b: { label: any; value: any }, i: number) => {
         const x = x0 + i * w + w * 0.2;
         return `<rect class="jm-bar" data-label="${b.label}" data-value="${b.value}" x="${x.toFixed(1)}" y="${Y(b.value)}" width="${(w * 0.6).toFixed(1)}" height="${y0 - Y(b.value)}" fill="${cols[i]}" stroke="${OUT}" stroke-width="1.5"/><text x="${(x + w * 0.3).toFixed(1)}" y="${y0 + 15}" text-anchor="middle" font-size="11" fill="${OUT}">${b.label}</text>`;
       })
@@ -149,19 +149,19 @@ export const MJ = (() => {
     return `<svg class="jm-fig jm-wide" viewBox="0 0 320 162" role="img" aria-label="Säulendiagramm: ${title}"><text x="${x0}" y="11" font-size="12" font-weight="700" fill="${OUT}">${title}</text>${grid}${rects}</svg>`;
   }
   // the same data with lying bars
-  function barhSVG(title, bars, step, top) {
+  function barhSVG(title: any, bars: any[], step: number, top: number) {
     const x0 = 84,
       W = 222,
       y0 = 22,
       row = 28,
-      X = (v) => x0 + (v / top) * W,
+      X = (v: number) => x0 + (v / top) * W,
       y1 = y0 + bars.length * row;
     let grid = '';
     for (let v = 0; v <= top; v += step)
       grid += `<line x1="${X(v)}" y1="${y0 - 4}" x2="${X(v)}" y2="${y1}" stroke="${v ? '#B8C2D9' : OUT}" stroke-width="${v ? 1 : 2}"/><text x="${X(v)}" y="${y1 + 14}" text-anchor="middle" font-size="11" fill="${OUT}">${v}</text>`;
     const cols = ['#3F7FE0', '#E8453C', '#3DAA55', '#F5A623'];
     const rects = bars
-      .map((b, i) => {
+      .map((b: { label: any; value: any }, i: number) => {
         const y = y0 + i * row + 5;
         return `<rect class="jm-bar" data-label="${b.label}" data-value="${b.value}" x="${x0}" y="${y}" width="${(X(b.value) - x0).toFixed(1)}" height="${row - 10}" fill="${cols[i]}" stroke="${OUT}" stroke-width="1.5"/><text x="${x0 - 6}" y="${y + 13}" text-anchor="end" font-size="11" fill="${OUT}">${b.label}</text>`;
       })
@@ -169,14 +169,14 @@ export const MJ = (() => {
     return `<svg class="jm-fig jm-wide" viewBox="0 0 320 ${y1 + 20}" role="img" aria-label="Balkendiagramm: ${title}"><text x="${x0}" y="11" font-size="12" font-weight="700" fill="${OUT}">${title}</text>${grid}${rects}</svg>`;
   }
   // Fahrplan: one row per stop, one column per train; times without „Uhr“ like on a real timetable
-  function planTable(stops, times) {
-    const head = `<tr><th>Haltestelle</th>${times.map((_, b) => `<th>Bahn ${b + 1}</th>`).join('')}</tr>`;
-    return `<table class="jm-plan"><caption>Fahrplan der Jahrmarktbahn</caption>${head}${stops.map((st, i) => `<tr><th>${st}</th>${times.map((col) => `<td>${tm(col[i]).replace('\u00a0Uhr', '')}</td>`).join('')}</tr>`).join('')}</table>`;
+  function planTable(stops: any[], times: any[]) {
+    const head = `<tr><th>Haltestelle</th>${times.map((_: any, b: number) => `<th>Bahn ${b + 1}</th>`).join('')}</tr>`;
+    return `<table class="jm-plan"><caption>Fahrplan der Jahrmarktbahn</caption>${head}${stops.map((st: any, i: string | number) => `<tr><th>${st}</th>${times.map((col: { [x: string]: any }) => `<td>${tm(col[i]).replace('\u00a0Uhr', '')}</td>`).join('')}</tr>`).join('')}</table>`;
   }
 
   /* ---------- Task builders ---------- */
   // number task: question (and drawing) come as ready HTML in `fig`; answers are typed on the keypad
-  const num = (id, q, svg, answers, labels, show) => ({
+  const num = (id: string, q: string, svg: string, answers: any[], labels: any[] | null, show: string) => ({
     kind: 'num',
     text: id + '|' + q + '|' + (svg || '').length + answers.join(),
     answers,
@@ -185,7 +185,15 @@ export const MJ = (() => {
     maxLen: 4,
     fig: `<div class="jm" data-t="${id}">${svg || ''}<div class="question">${q}</div></div>`,
   });
-  const choice = (id, q, svg, options, answer, why, sig?) => ({
+  const choice = (
+    id: string,
+    q: string,
+    svg: string,
+    options: any[],
+    answer: string,
+    why: string,
+    sig?: string | undefined,
+  ) => ({
     kind: 'choice',
     text: id + '|' + q + '|' + (sig || ''),
     q,
@@ -196,7 +204,7 @@ export const MJ = (() => {
     fig: `<div class="jm" data-t="${id}">${svg || ''}</div>`,
   });
   // "2 m 35 cm = ? cm", "235 cm = ? m ? cm"
-  function conv(lhs, big, small?) {
+  function conv(lhs: string, big: string, small?: string | undefined) {
     const v = qty(lhs);
     if (!small) return num('conv', `${lhs} = ? ${big}`, '', [v / UNIT[big]], [big], `${v / UNIT[big]} ${big}`);
     return num(
@@ -209,11 +217,11 @@ export const MJ = (() => {
     );
   }
   // "65 cm + ? cm = 1 m"
-  function missing(have, unit, whole) {
+  function missing(have: string, unit: string, whole: string) {
     const a = (qty(whole) - qty(have)) / UNIT[unit];
     return num('conv', `${have} + ? ${unit} = ${whole}`, '', [a], [unit], `${a} ${unit}`);
   }
-  function compare(id, a, b, adj, same) {
+  function compare(id: string, a: string, b: string, adj: string, same: string) {
     const [x, y] = shuffle([a, b]);
     const va = qty(a),
       vb = qty(b);
@@ -223,7 +231,7 @@ export const MJ = (() => {
   }
 
   /* ---------- Generators ---------- */
-  function genUhr(t) {
+  function genUhr(t: number) {
     if (t <= 3) {
       const h = rnd(1, 12);
       let m;
@@ -284,7 +292,7 @@ export const MJ = (() => {
       `${15 * n} Minuten`,
     );
   }
-  const sec = (s) => {
+  const sec = (s: number) => {
     const m = Math.floor(s / 60),
       r = s % 60;
     const ms = m ? `${m} ${m === 1 ? 'Minute' : 'Minuten'}` : '',
@@ -358,7 +366,7 @@ export const MJ = (() => {
     ])();
   }
   const THINGS = ['Zuckerstange', 'Lakritzschnecke', 'Brezel', 'Lebkuchenstange'];
-  function genLaenge(t) {
+  function genLaenge(t: number) {
     if (t === 1)
       return pick([
         () => conv(`${rnd(1, 9)} m`, 'cm'),
@@ -434,7 +442,7 @@ export const MJ = (() => {
     ['der Sack Nüsse', 'Sack Nüsse', 200, 990],
     ['das Brot', 'Brot', 500, 990],
   ];
-  function genMasse(t) {
+  function genMasse(t: number) {
     if (t === 1)
       return pick([
         () => {
@@ -524,20 +532,20 @@ export const MJ = (() => {
       },
     ])();
   }
-  function genRad(t) {
+  function genRad(t: number) {
     // with 4 fields and 3 colours there is never a single least likely one
     const n = t === 3 ? pick([6, 8]) : pick([4, 6, 8]);
     const cols = shuffle(Object.keys(COLORS));
-    const name = (c) => COLORS[c].name,
-      adj = (c) => COLORS[c].name.toLowerCase();
+    const name = (c: string | number) => COLORS[c].name,
+      adj = (c: string | number) => COLORS[c].name.toLowerCase();
     // counts for k colours summing to n, all ≥ 1
-    const split = (k) => {
+    const split = (k: number) => {
       const c = Array(k).fill(1);
       for (let i = k; i < n; i++) c[rnd(0, k - 1)]++;
       return c;
     };
-    const wheel = (counts) => shuffle(counts.flatMap((x, i) => Array(x).fill(cols[i])));
-    const fields = (k) => (k === 1 ? '1 Feld' : `${k} Felder`);
+    const wheel = (counts: any[]) => shuffle(counts.flatMap((x: any, i: string | number) => Array(x).fill(cols[i])));
+    const fields = (k: number) => (k === 1 ? '1 Feld' : `${k} Felder`);
     if (t === 1) {
       const kind = pick(['sicher', 'möglich', 'unmöglich']);
       let sec, phrase, why;
@@ -553,7 +561,7 @@ export const MJ = (() => {
         const k = rnd(2, 3);
         sec = wheel(split(k));
         const c = kind === 'möglich' ? cols[rnd(0, k - 1)] : cols[k];
-        const cnt = sec.filter((x) => x === c).length;
+        const cnt = sec.filter((x: any) => x === c).length;
         phrase = name(c);
         why = cnt
           ? `${fields(cnt)} ${cnt === 1 ? 'ist' : 'sind'} ${adj(c)}, die anderen nicht.`
@@ -588,7 +596,7 @@ export const MJ = (() => {
       );
     }
     const most = Math.random() < 0.5;
-    let counts;
+    let counts: any[];
     do {
       counts = split(3);
     } while (counts.filter((c) => c === (most ? Math.max(...counts) : Math.min(...counts))).length !== 1);
@@ -602,12 +610,12 @@ export const MJ = (() => {
       name(target),
       cols
         .slice(0, 3)
-        .map((c, i) => `${counts[i]} ${adj(c)}`)
+        .map((c: any, i: string | number) => `${counts[i]} ${adj(c)}`)
         .join(', ') + '.',
       sec.join(),
     );
   }
-  function genLos(t) {
+  function genLos(t: number) {
     if (t === 1) {
       let a, b;
       do {
@@ -708,9 +716,9 @@ export const MJ = (() => {
         ['Achterbahn', 'die Achterbahn'],
         ['Autoscooter', 'der Autoscooter'],
       ],
-      read: (a) => `Wie viele Fahrten hatte ${a}?`,
-      diff: (a, b) => `Wie viele Fahrten hatte ${a} mehr als ${b}?`,
-      sum: (a, b) => `Wie viele Fahrten hatten ${a} und ${b} zusammen?`,
+      read: (a: any) => `Wie viele Fahrten hatte ${a}?`,
+      diff: (a: any, b: any) => `Wie viele Fahrten hatte ${a} mehr als ${b}?`,
+      sum: (a: any, b: any) => `Wie viele Fahrten hatten ${a} und ${b} zusammen?`,
     },
     {
       title: 'Verkaufte Lose',
@@ -720,9 +728,9 @@ export const MJ = (() => {
         ['Samstag', 'Samstag'],
         ['Sonntag', 'Sonntag'],
       ],
-      read: (a) => `Wie viele Lose wurden am ${a} verkauft?`,
-      diff: (a, b) => `Wie viele Lose wurden am ${a} mehr verkauft als am ${b}?`,
-      sum: (a, b) => `Wie viele Lose wurden am ${a} und am ${b} zusammen verkauft?`,
+      read: (a: any) => `Wie viele Lose wurden am ${a} verkauft?`,
+      diff: (a: any, b: any) => `Wie viele Lose wurden am ${a} mehr verkauft als am ${b}?`,
+      sum: (a: any, b: any) => `Wie viele Lose wurden am ${a} und am ${b} zusammen verkauft?`,
     },
     {
       title: 'Gewonnene Preise',
@@ -732,12 +740,12 @@ export const MJ = (() => {
         ['Flöten', 'Flöten'],
         ['Bücher', 'Bücher'],
       ],
-      read: (a) => `Wie viele ${a} wurden gewonnen?`,
-      diff: (a, b) => `Wie viele ${a} wurden mehr gewonnen als ${b}?`,
-      sum: (a, b) => `Wie viele ${a} und ${b} wurden zusammen gewonnen?`,
+      read: (a: any) => `Wie viele ${a} wurden gewonnen?`,
+      diff: (a: any, b: any) => `Wie viele ${a} wurden mehr gewonnen als ${b}?`,
+      sum: (a: any, b: any) => `Wie viele ${a} und ${b} wurden zusammen gewonnen?`,
     },
   ];
-  function genTafel(t) {
+  function genTafel(t: number) {
     const C = pick(CHARTS);
     const step = t === 1 ? pick([2, 5, 10]) : 10,
       top = step * (t === 1 ? rnd(6, 10) : 10),
@@ -745,13 +753,13 @@ export const MJ = (() => {
     let vals;
     do {
       vals = C.bars.map(() => unit * rnd(1, top / unit));
-    } while (new Set(vals).size < vals.length || (t === 2 && vals.every((v) => v % 10 === 0)));
-    const bars = C.bars.map((b, i) => ({ label: b[0], value: vals[i] }));
+    } while (new Set(vals).size < vals.length || (t === 2 && vals.every((v: number) => v % 10 === 0)));
+    const bars = C.bars.map((b: any[], i: string | number) => ({ label: b[0], value: vals[i] }));
     const svg = (t === 2 && Math.random() < 0.5 ? barhSVG : chartSVG)(C.title, bars, step, top);
     const [i, j] = shuffle([0, 1, 2, 3]);
     const [hi, lo] = vals[i] > vals[j] ? [i, j] : [j, i];
     if (t === 1 || Math.random() < 0.2) {
-      const k = t === 2 ? vals.findIndex((v) => v % 10) : i;
+      const k = t === 2 ? vals.findIndex((v: number) => v % 10) : i;
       return num('bar', C.read(C.bars[k][1]), svg, [vals[k]], null, `${vals[k]}`);
     }
     if (Math.random() < 0.5)
@@ -781,7 +789,7 @@ export const MJ = (() => {
     Autoscooter: ['am Autoscooter', 'vom Autoscooter', 'zum Autoscooter'],
     Riesenrad: ['am Riesenrad', 'vom Riesenrad', 'zum Riesenrad'],
   };
-  function genFahrplan(t) {
+  function genFahrplan(t: number) {
     const stops = ['Eingang'].concat(shuffle(['Losbude', 'Karussell', 'Geisterbahn', 'Autoscooter']).slice(0, 2), [
       'Riesenrad',
     ]);
@@ -849,7 +857,7 @@ export const MJ = (() => {
     ['Eine Bratwurst', 'eine Bratwurst'],
     ['Ein Becher Kinderpunsch', 'einen Becher Kinderpunsch'],
   ];
-  function genSach(t) {
+  function genSach(t: number) {
     const who = pick(NAMES);
     if (t === 1)
       return pick([
@@ -902,7 +910,7 @@ export const MJ = (() => {
           );
         },
       ])();
-    const money = (ct) => [Math.floor(ct / 100), ct % 100];
+    const money = (ct: number) => [Math.floor(ct / 100), ct % 100];
     if (t === 2)
       return pick([
         () => {
@@ -1026,7 +1034,7 @@ export const MJ = (() => {
     sach: genSach,
     fahrplan: genFahrplan,
   };
-  function generate(mod, tier) {
+  function generate(mod: string | number, tier: number) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
     const tk = GEN[mod](tier);
     tk.mod = mod;

@@ -1,7 +1,7 @@
 // Parent area: what each task type practises, in one plain sentence (INFO[mode][task type]), and where a topic
 // sits in the Saxon curriculum (PLAN[mode]), and the Turmwacht texts (TURM). tests/test_data.js checks that nothing is missing.
 export const ELTERN = (() => {
-  const facts = (thema) => ({
+  const facts = (thema: string) => ({
     rf: `Ihr Kind liest einen Satz ${thema} und entscheidet: richtig oder falsch?`,
     mc: `Ihr Kind beantwortet eine Frage ${thema} und wählt eine von drei Antworten.`,
     lt: 'In einem Satz fehlt ein Wort. Ihr Kind wählt das Wort, das passt.',
@@ -354,7 +354,7 @@ export const ELTERN = (() => {
     },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
-  const SU = (n, name) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
+  const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
   const PLAN = {
     math: 'Mathematik, Klasse 3, Lernbereich 2 „Zahl und Operation“. Geld gehört zu Lernbereich 3 „Größen und Messen“.',
     bau: 'Mathematik, Klasse 3, Lernbereich 1 „Raum und Form“.',

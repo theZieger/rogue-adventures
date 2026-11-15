@@ -82,28 +82,41 @@ export const MS3 = (() => {
       skip: ['margerite'],
     },
   ];
-  const f1 = (v) => +v.toFixed(1);
-  const pt = (cx, cy, a, r) => `${f1(cx + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r)}`;
+  const f1 = (v: number) => +v.toFixed(1);
+  const pt = (cx: number, cy: number, a: number, r: number) =>
+    `${f1(cx + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r)}`;
   // a right-hand outline from the base (0|0) to the tip, mirrored into a closed leaf pointing up
-  const sym = (pts) =>
+  const sym = (pts: number[][] | [any, any][]) =>
     `M0 0 L${pts.map(([x, y]) => `${x} ${y}`).join(' L')} L${pts
       .slice(0, -1)
       .reverse()
       .map(([x, y]) => `${-x} ${y}`)
       .join(' L')} Z`;
-  const at = (x, y, rot, s, inner) =>
+  const at = (x: number, y: number, rot: number, s: number, inner: string) =>
     `<g transform="translate(${x} ${y}) rotate(${rot})${s !== 1 ? ` scale(${s})` : ''}">${inner}</g>`;
   // both pictures set round caps and joins once on a wrapping group
   const ROUND = '<g stroke-linecap="round" stroke-linejoin="round">';
-  const leaf = (d, fill?, w?) =>
+  const leaf = (d: string, fill?: null | undefined, w?: number | undefined) =>
     `<path d="${d}" fill="${fill || 'url(#flLf)'}" stroke="${OUT}" stroke-width="${w || 1.1}"/>`;
-  const vein = (d, c?, w?) => `<path d="${d}" fill="none" stroke="${c || '#DDEFC0'}" stroke-width="${w || 0.8}"/>`;
-  const stem = (d, w, c?) =>
+  const vein = (d: string, c?: string | undefined, w?: number | undefined) =>
+    `<path d="${d}" fill="none" stroke="${c || '#DDEFC0'}" stroke-width="${w || 0.8}"/>`;
+  const stem = (d: string, w: number, c?: string | undefined) =>
     `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(w || 2.2) + 1.8}"/><path d="${d}" fill="none" stroke="${c || '#6EA842'}" stroke-width="${w || 2.2}"/>`;
   // n petals of length len and half-width w around cx|cy, starting r0 from the centre
-  const petals = (cx, cy, n, len, w, fill, r0, off, sw, sc?) =>
+  const petals = (
+    cx: number,
+    cy: number,
+    n: number,
+    len: number,
+    w: number,
+    fill: string,
+    r0: number,
+    off: number,
+    sw: number,
+    sc?: string | undefined,
+  ) =>
     `<g transform="translate(${cx} ${cy})" fill="${fill}" stroke="${sc || OUT}" stroke-width="${sw || 0.6}">${Array.from({ length: n }, (_, i) => `<ellipse cy="${f1(-(r0 || 0) - len / 2)}" rx="${w}" ry="${len / 2}" transform="rotate(${f1((360 / n) * i + (off || 0))})"/>`).join('')}</g>`;
-  const shine = (x, y, rx, ry, rot) =>
+  const shine = (x: number, y: number, rx: number, ry: number, rot: number | undefined) =>
     `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".75" transform="rotate(${rot || 0} ${x} ${y})"/>`;
   const FL_DEFS = {
     Lf: '<linearGradient id="flLf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9FD162"/><stop offset="1" stop-color="#4A872C"/></linearGradient>',
@@ -117,7 +130,7 @@ export const MS3 = (() => {
     Br: '<radialGradient id="flBr" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B08A5A"/><stop offset="1" stop-color="#5A3E22"/></radialGradient>',
     Rd: '<radialGradient id="flRd" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#E8806A"/><stop offset="1" stop-color="#8E2C24"/></radialGradient>',
   };
-  const disc = (x, y, r) =>
+  const disc = (x: number, y: number, r: number) =>
     `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#flYe)" stroke="${OUT}" stroke-width="${r > 6 ? 1.1 : 0.8}"/><path d="${Array.from(
       { length: Math.round(r * 2) },
       (_, i) => {
@@ -128,16 +141,16 @@ export const MS3 = (() => {
     ).join(
       '',
     )}" stroke="#C98500" stroke-width="${f1(r / 6)}" opacity=".7"/>${shine(x - r * 0.35, y - r * 0.4, r * 0.3, r * 0.18, -30)}`;
-  const daisy = (x, y, r, pink) =>
+  const daisy = (x: number, y: number, r: number, pink: boolean) =>
     petals(x, y, 24, f1(r * 0.72), f1(r * 0.13), pink ? 'url(#flDs)' : 'url(#flWt)', f1(r * 0.28), 0, 0.5) +
     disc(x, y, r * 0.32);
-  const dandelion = (x, y, r) =>
+  const dandelion = (x: number, y: number, r: number) =>
     petals(x, y, 24, f1(r * 0.62), f1(r * 0.12), '#FFD84A', f1(r * 0.36), 0, 0.5) +
     petals(x, y, 18, f1(r * 0.52), f1(r * 0.12), '#FFC61A', f1(r * 0.2), 10, 0.4, '#C98A00') +
     petals(x, y, 12, f1(r * 0.38), f1(r * 0.12), '#F5AE00', f1(r * 0.08), 5, 0.4, '#C98A00') +
     `<circle cx="${x}" cy="${y}" r="${f1(r * 0.12)}" fill="#E39A00"/>`;
-  const clover = (x, y, r) => {
-    const fl = (k, rr, n, o) =>
+  const clover = (x: number, y: number, r: number) => {
+    const fl = (k: number, rr: number, n: number, o: number) =>
       Array.from({ length: n }, (_, i) => {
         const a = o + (i / n) * Math.PI * 2;
         return `M${pt(x, y, a, rr - r * 0.3)} L${pt(x, y, a, rr)}`;
@@ -204,11 +217,11 @@ export const MS3 = (() => {
   const trefoil = [-58, 0, 58]
     .map((r) => at(0, 0, r, 1, leaf(LEAVES.trio) + vein('M-3.5 -10 Q0 -6 3.5 -10', '#E6F4D4', 1.6)))
     .join('');
-  const hand = (n, spread) =>
+  const hand = (n: number, spread: number) =>
     Array.from({ length: n }, (_, i) =>
       at(0, 0, f1(-spread + (2 * spread * i) / (n - 1)), 1, leaf(LEAVES.lobe, null, 0.9) + vein('M0 -2 L0 -20')),
     ).join('');
-  const pinnate = (n, round?) =>
+  const pinnate = (n: number, round?: boolean | undefined) =>
     `<path d="M0 0 L0 -${n * 8 + 6}" stroke="${OUT}" stroke-width="2.2"/><path d="M0 0 L0 -${n * 8 + 6}" stroke="#6EA842" stroke-width="1.1"/>` +
     Array.from({ length: n }, (_, i) =>
       [-1, 1]
@@ -220,7 +233,7 @@ export const MS3 = (() => {
         .join(''),
     ).join('') +
     `<ellipse cx="0" cy="-${n * 8 + 9}" rx="${round ? 5 : 1.6}" ry="${round ? 4.4 : 5}" fill="url(#flLf)" stroke="${OUT}" stroke-width=".8"/>`;
-  const cross = (x, y, r) =>
+  const cross = (x: number, y: number, r: number) =>
     [45, 135, 225, 315]
       .map(
         (a) =>
@@ -228,7 +241,7 @@ export const MS3 = (() => {
       )
       .join('') +
     `<path d="${[45, 135, 225, 315].map((a) => `M${pt(x, y, ((a - 90) * Math.PI) / 180, r * 0.3)} L${pt(x, y, ((a - 90) * Math.PI) / 180, r * 0.9)}`).join('')}" stroke="#9A6DB5" stroke-width=".6"/><circle cx="${x}" cy="${y}" r="${f1(r * 0.24)}" fill="#E8C33A" stroke="${OUT}" stroke-width=".5"/>`;
-  const cup = (x, y, r, rot) =>
+  const cup = (x: number, y: number, r: number, rot: number) =>
     `<g transform="rotate(${rot || 0} ${x} ${y})">${[0, 72, 144, 216, 288]
       .map(
         (a) =>
@@ -255,7 +268,7 @@ export const MS3 = (() => {
     [-1, 25, 5],
     [1, 26, 5],
   ];
-  function floraSVG(id) {
+  function floraSVG(id: string) {
     let a = '',
       d = ['Ye'];
     if (id === 'loewenzahn') {
@@ -500,11 +513,12 @@ export const MS3 = (() => {
     ask: () => 'Wie heißt das leuchtende Stockwerk der Wiese?',
     find: (p) => `Tippe auf das Stockwerk: ${p.name}`,
   } as Omit<PartsPicture, 'svg'> as PartsPicture;
-  const hit = (y, h) => `<rect class="hitarea" x="0" y="${y}" width="300" height="${h}" fill="transparent"/>`;
+  const hit = (y: number, h: number) =>
+    `<rect class="hitarea" x="0" y="${y}" width="300" height="${h}" fill="transparent"/>`;
   // texture strokes sit in style="" so a glowing layer keeps them (the glow rule recolours stroke attributes only)
-  const tex = (d, c, w, o?, dash?) =>
+  const tex = (d: string, c: string, w: number, o?: number | undefined, dash?: string | undefined) =>
     `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}"${o ? ` opacity="${o}"` : ''}${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
-  const blade = (x, h, l) =>
+  const blade = (x: number, h: number, l: number) =>
     `M${x - 2.6} 187 Q${x + l * 0.3} ${187 - h * 0.6} ${x + l} ${187 - h} Q${x + 1.2 + l * 0.3} ${187 - h * 0.6} ${x + 2.6} 187 Z`;
   const BLADES = [
     [8, 92, -8],
@@ -525,7 +539,7 @@ export const MS3 = (() => {
     [284, 76, -6],
     [294, 96, 4],
   ];
-  const roots = (x, l) =>
+  const roots = (x: number, l: number) =>
     `M${x} 187 q-3 ${l * 0.5} 1 ${l} M${x} 190 q-8 6 -12 15 M${x} 192 q7 6 10 16 M${x - 1} ${187 + l * 0.6} q-6 4 -8 10 M${x} ${187 + l * 0.45} q6 3 9 9`;
   WIESE.svg = (opts) =>
     partsSVG(
@@ -1262,8 +1276,8 @@ export const MS3 = (() => {
       ],
     },
   };
-  function wiGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function wiGen(cfg: Unit) {
+    return (mod: string, tier: number, know: any, seq: any, opts: { g: any }) => {
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'pflanze') {
         if (tier >= 2 && Math.random() < 0.7) {
@@ -1272,7 +1286,7 @@ export const MS3 = (() => {
           const ans = FLORA.find((p) => p.id === id)!;
           const wrong = shuffle(FLORA.filter((p) => !t.has.includes(p.id) && !(t.skip || []).includes(p.id)))
             .slice(0, 2)
-            .map((p) => p.name);
+            .map((p: { name: any }) => p.name);
           return choice(mod, 'pflanzen', t.q, ans.name, wrong, 'wimerk_' + TRAITS.indexOf(t), {
             group: 'pflanze:2',
             tier: 2,
@@ -1287,7 +1301,7 @@ export const MS3 = (() => {
             p.name,
             shuffle(FLORA.filter((x) => x !== p))
               .slice(0, 2)
-              .map((x) => x.name),
+              .map((x: { name: any }) => x.name),
             'wibild_' + p.id,
             { pic: floraSVG(p.id) },
           );
@@ -1333,7 +1347,7 @@ export const MS3 = (() => {
             LAYERS[an.l].name,
             shuffle(LAYERS.filter((_, i) => i !== an.l))
               .slice(0, 2)
-              .map((l) => l.name),
+              .map((l: { name: any }) => l.name),
             'wstier_' + ANIMALS.indexOf(an),
           );
         }
@@ -2279,8 +2293,8 @@ export const MS3 = (() => {
       ],
     },
   };
-  function frGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function frGen(cfg: Unit) {
+    return (mod: string, tier: any, know: any, seq: any, opts: { g: any }) => {
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'geraet' && Math.random() < 0.6) {
         const i = rnd(0, TOOLS.length - 1);
@@ -2291,7 +2305,7 @@ export const MS3 = (() => {
             'geraete',
             `Früher: ${TOOLS[i][0]}. Was benutzt man heute dafür?`,
             TOOLS[i][1],
-            others.map((x) => x[1]),
+            others.map((x: any[]) => x[1]),
             'frneu_' + i,
           );
         return choice(
@@ -2299,7 +2313,7 @@ export const MS3 = (() => {
           'geraete',
           `Heute: ${TOOLS[i][1]}. Was benutzte man früher dafür?`,
           TOOLS[i][0],
-          others.map((x) => x[0]),
+          others.map((x: any[]) => x[0]),
           'fralt_' + i,
         );
       }

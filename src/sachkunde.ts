@@ -14,18 +14,26 @@ export interface PartsPicture {
   note?: string;
   poolQ?: string;
   tap?: string;
-  ask: (part?) => string;
-  find: (part) => string;
-  svg: (opts?) => string; // set after the literal (hence the Omit there): it draws from the picture itself
+  ask: (part?: any) => string;
+  find: (part: any) => string;
+  svg: (opts?: any) => string; // set after the literal (hence the Omit there): it draws from the picture itself
 }
 export const MS = (() => {
   const { shuffle, pick, rnd, weightedPick } = K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const STROKE = '#1C2541';
-  const txt = (x, y, s, o?) =>
+  const txt = (x: number, y: number, s: string, o?: { size: any; fill?: any; anchor?: any } | undefined) =>
     `<text x="${x}" y="${y}" font-size="${(o && o.size) || 12}" font-weight="700" text-anchor="${(o && o.anchor) || 'middle'}" fill="${(o && o.fill) || STROKE}">${s}</text>`;
-  const minus = (n) => (n < 0 ? '−' + Math.abs(n) : String(n));
-  const choice = (mod, note, q, answer, wrongs, qid, extra?) =>
+  const minus = (n: number) => (n < 0 ? '−' + Math.abs(n) : String(n));
+  const choice = (
+    mod: string,
+    note: string,
+    q: string,
+    answer: string,
+    wrongs: string | any[],
+    qid: string,
+    extra?: { pic: string } | undefined,
+  ) =>
     Object.assign(
       {
         kind: 'choice',
@@ -43,12 +51,17 @@ export const MS = (() => {
     );
 
   /* ---------- Pflanzen-Bilder (gleiche Schnittstelle wie potatoSVG: highlight, clickable, labels, step) ---------- */
-  function partsSVG(P, opts, body, labels) {
+  function partsSVG(
+    P: PartsPicture,
+    opts: { step?: any; omit?: any; highlight?: any; clickable?: any; labels?: any },
+    body: { (g: any): string; (g: any): string; (arg0: (id: any, inner: any) => string): any },
+    labels: any[],
+  ) {
     opts = opts || {};
     const step = opts.step || 99;
-    const g = (id, inner) =>
+    const g = (id: string | number, inner: any) =>
       step >= (P.stepOf[id] || 1) && opts.omit !== id
-        ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p) => p.id === id) + 1}"` : ''}>${inner}</g>`
+        ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p: { id: any }) => p.id === id) + 1}"` : ''}>${inner}</g>`
         : '';
     // optional fifth entry: the point a thin leader line runs to
     const lab = opts.labels
@@ -56,7 +69,7 @@ export const MS = (() => {
           .filter(([id]) => step >= (P.stepOf[id] || 1))
           .map(
             ([id, x, y, a, to]) =>
-              `${to ? `<path d="M${x} ${y - 4} L${to[0]} ${to[1]}" stroke="${STROKE}" stroke-width="1" opacity=".6"/>` : ''}<text class="plabel" x="${x}" y="${y}" text-anchor="${a || 'start'}">${P.parts.find((p) => p.id === id).name}</text>`,
+              `${to ? `<path d="M${x} ${y - 4} L${to[0]} ${to[1]}" stroke="${STROKE}" stroke-width="1" opacity=".6"/>` : ''}<text class="plabel" x="${x}" y="${y}" text-anchor="${a || 'start'}">${P.parts.find((p: { id: any }) => p.id === id).name}</text>`,
           )
           .join('')
       : '';
@@ -127,7 +140,7 @@ export const MS = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
     poolQ: 'Wie heißt dieser Teil der Getreidepflanze?',
   } as Omit<PartsPicture, 'svg'> as PartsPicture;
-  const grainSpike = (g) => {
+  const grainSpike = (g: (arg0: string, arg1: string) => any) => {
     let k = '',
       a = '';
     for (let i = 0; i < 6; i++) {
@@ -144,7 +157,7 @@ export const MS = (() => {
     partsSVG(
       GRAIN,
       opts,
-      (g) => `
+      (g: (arg0: string, arg1: string) => any) => `
     <rect x="0" y="230" width="260" height="70" fill="#8B5E3C" opacity=".35"/><line x1="0" y1="230" x2="260" y2="230" stroke="#6B4423" stroke-width="3" stroke-dasharray="6 4"/>
     ${g('wurzeln', `<path d="M120 230 Q104 252 92 280 M120 230 Q112 258 108 290 M120 232 Q128 260 126 292 M120 230 Q138 254 150 282 M120 232 Q100 244 84 252 M120 232 Q142 244 158 250" stroke="#C7A27A" stroke-width="2.5" fill="none" stroke-linecap="round"/><path class="hitarea" d="M80 232 L162 232 L162 295 L80 295 Z" fill="transparent"/>`)}
     ${g('halm', `<path d="M120 230 Q118 150 121 80" stroke="#B5C95A" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M120 230 Q118 150 121 80" stroke="#7E9A2F" stroke-width="1.5" fill="none"/>`)}
@@ -196,9 +209,9 @@ export const MS = (() => {
       tip: 'Schau auf das blaue Band zwischen Berg und Meer.',
     },
   ];
-  const num = (n, x, y) =>
+  const num = (n: number, x: number, y: number) =>
     `<circle cx="${x}" cy="${y}" r="11" fill="#fff" stroke="${STROKE}" stroke-width="2"/>${txt(x, y + 5, n, { size: 14 })}`;
-  const cloud = (x, y, s, fill?) =>
+  const cloud = (x: number, y: number, s: number, fill?: string | undefined) =>
     `<g transform="translate(${x} ${y}) scale(${s})" fill="${fill || '#fff'}" stroke="#7A8AA8" stroke-width="2"><path d="M-26 8 Q-34 -4 -20 -8 Q-18 -22 -2 -18 Q8 -28 20 -14 Q34 -14 30 2 Q36 10 24 12 L-22 12 Q-32 12 -26 8 Z"/></g>`;
   const CYCLE = {
     label: 'Wasserkreislauf',
@@ -214,7 +227,7 @@ export const MS = (() => {
     partsSVG(
       CYCLE,
       opts,
-      (g) => `
+      (g: (arg0: string, arg1: string) => any) => `
     <rect width="300" height="220" fill="#E3F2FD"/><circle cx="34" cy="32" r="18" fill="#FFD54F" stroke="#F0A800" stroke-width="2"/>
     <path d="M180 220 L230 70 L262 120 L300 90 L300 220 Z" fill="#8D9E6B" stroke="#5E6E44" stroke-width="2"/><path d="M222 94 L230 70 L240 86 Z" fill="#fff"/>
     <path d="M0 176 Q40 170 80 176 T150 178 L170 220 L0 220 Z" fill="#3F8FD8" stroke="#2A6CB0" stroke-width="2"/>
@@ -233,9 +246,18 @@ export const MS = (() => {
     );
   const PLANTS: Record<string, PartsPicture> = { getreide: GRAIN, kreislauf: CYCLE };
 
-  function plantTask(cfg, plantKey, mod, tier, know, seq, opts?) {
-    let cands = cfg.pool.filter((x) => x.mod === mod);
-    if (opts && opts.g && cands.some((x) => x.g === opts.g)) cands = cands.filter((x) => x.g === opts.g);
+  function plantTask(
+    cfg: { pool: any[] },
+    plantKey: string,
+    mod: string,
+    tier: number,
+    know: { [x: string]: any },
+    seq: number,
+    opts?: { g: any } | undefined,
+  ) {
+    let cands = cfg.pool.filter((x: { mod: any }) => x.mod === mod);
+    if (opts && opts.g && cands.some((x: { g: any }) => x.g === opts.g))
+      cands = cands.filter((x: { g: any }) => x.g === opts.g);
     const e = weightedPick(cands, know, seq);
     plantKey = e.plant || plantKey;
     const P = PLANTS[plantKey];
@@ -256,7 +278,7 @@ export const MS = (() => {
     const options = shuffle(
       shuffle(P.parts.filter((p) => p.id !== part.id))
         .slice(0, 3)
-        .map((p) => p.name)
+        .map((p: { name: any }) => p.name)
         .concat([part.name]),
     );
     return {
@@ -273,7 +295,7 @@ export const MS = (() => {
       qid: e.id,
     };
   }
-  const partPool = (plantKey, mod, g, prefix): Question[] =>
+  const partPool = (plantKey: string, mod: string, g: string, prefix: string): Question[] =>
     PLANTS[plantKey].parts.map((p) => ({
       id: prefix + p.id,
       mod,
@@ -284,12 +306,21 @@ export const MS = (() => {
       a: p.name,
     }));
   // the topic filter (events) asks the pool; generated pictures only without a topic
-  const wantsPool = (cfg, mod, opts) => !!(opts && opts.g && cfg.pool.some((p) => p.mod === mod && p.g === opts.g));
-  const orderTask = (mod, group, note, q, src, qid, n?) => {
-    const idx = shuffle(src.map((_, i) => i))
+  const wantsPool = (cfg: { pool: any[] }, mod: any, opts: { g: any }) =>
+    !!(opts && opts.g && cfg.pool.some((p: { mod: any; g: any }) => p.mod === mod && p.g === opts.g));
+  const orderTask = (
+    mod: any,
+    group: string,
+    note: string,
+    q: string,
+    src: any[],
+    qid: string,
+    n?: number | undefined,
+  ) => {
+    const idx = shuffle(src.map((_: any, i: any) => i))
       .slice(0, n || 4)
-      .sort((a, b) => a - b);
-    const items = idx.map((i) => src[i]);
+      .sort((a: number, b: number) => a - b);
+    const items = idx.map((i: string | number) => src[i]);
     return {
       kind: 'order',
       mod,
@@ -298,7 +329,7 @@ export const MS = (() => {
       note,
       q,
       items,
-      order: items.map((x) => x.id),
+      order: items.map((x: { id: any }) => x.id),
       display: shuffle(items),
       qid: qid + idx.join(''),
     };
@@ -313,10 +344,10 @@ export const MS = (() => {
     { id: 'hafer', name: 'Hafer', stand: 'Rispe' },
     { id: 'mais', name: 'Mais', stand: 'Kolben' },
   ];
-  function earSVG(id) {
-    const grain = (x, y, rx, ry, rot) =>
+  function earSVG(id: string) {
+    const grain = (x: number, y: number, rx: number, ry: number, rot: number) =>
       `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${x} ${y})" fill="#E2B84A" stroke="#A07A1E" stroke-width="1.5"/>`;
-    const spike = (rows, rx, ry, gap, awn, w) => {
+    const spike = (rows: number, rx: number, ry: number, gap: number, awn: number, w: number) => {
       let s = '',
         a = '';
       for (let i = 0; i < rows; i++) {
@@ -936,8 +967,8 @@ export const MS = (() => {
       ],
     },
   };
-  function koGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function koGen(cfg: Unit) {
+    return (mod: string, tier: any, know: any, seq: any, opts: any) => {
       if (mod === 'parts') return plantTask(cfg, 'getreide', mod, tier, know, seq);
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'arten' && Math.random() < 0.5) {
@@ -950,7 +981,7 @@ export const MS = (() => {
             c.name,
             shuffle(CEREALS.filter((x) => x !== c))
               .slice(0, 2)
-              .map((x) => x.name),
+              .map((x: { name: any }) => x.name),
             'kobild_' + c.id,
             { pic: earSVG(c.id) },
           );
@@ -1122,7 +1153,7 @@ export const MS = (() => {
       def: 'Wasserdampf wird wieder zu flüssigem Wasser',
     },
   ];
-  const term = (t, others) => ({ o: [t].concat(others), a: 0 });
+  const term = (t: string, others: string[]) => ({ o: [t].concat(others), a: 0 });
   const WE_NOTES = {
     zustand: {
       title: 'Wasser hat drei Zustandsformen',
@@ -1659,12 +1690,12 @@ export const MS = (() => {
     regen: { range: [4, 15], ask: 'regnet es' },
     schnee: { range: [-5, 1], ask: 'schneit es' },
   };
-  const sun = (x, y, r) =>
+  const sun = (x: number, y: number, r: number) =>
     `<g stroke="#F0A800" stroke-width="2.5" stroke-linecap="round">${Array.from({ length: 8 }, (_, i) => {
       const a = (i * Math.PI) / 4;
       return `<path d="M${(x + Math.cos(a) * (r + 3)).toFixed(1)} ${(y + Math.sin(a) * (r + 3)).toFixed(1)} L${(x + Math.cos(a) * (r + 8)).toFixed(1)} ${(y + Math.sin(a) * (r + 8)).toFixed(1)}"/>`;
     }).join('')}</g><circle cx="${x}" cy="${y}" r="${r}" fill="#FFD54F" stroke="#F0A800" stroke-width="2"/>`;
-  function wxIcon(k, x, y) {
+  function wxIcon(k: string, x: number, y: number) {
     if (k === 'sonne') return sun(x, y, 12);
     if (k === 'sonnewolke') return sun(x - 8, y - 6, 10) + cloud(x + 4, y + 4, 0.6);
     if (k === 'wolke') return cloud(x, y, 0.75, '#CFD8DC');
@@ -1682,7 +1713,7 @@ export const MS = (() => {
     const start = rnd(0, 6);
     const kinds = shuffle(Object.keys(WX)).slice(0, 4);
     const used = new Set();
-    const days = kinds.map((k, i) => {
+    const days = kinds.map((k: string | number, i: number) => {
       let t;
       do t = rnd(WX[k].range[0], WX[k].range[1]);
       while (used.has(t));
@@ -1690,17 +1721,17 @@ export const MS = (() => {
       return { day: DAYS[(start + i) % 7], k, t };
     });
     const svg = `<svg ${NS} class="pic" viewBox="0 0 300 120" aria-label="Wettervorhersage für vier Tage"><rect x="1" y="1" width="298" height="118" rx="12" fill="#fff" stroke="${STROKE}" stroke-width="2"/>${days
-      .map((d, i) => {
+      .map((d: { day: any; k: any; t: any }, i: number) => {
         const x = 37 + i * 75;
         return `${i ? `<line x1="${x - 37}" y1="10" x2="${x - 37}" y2="110" stroke="#CFD8DC"/>` : ''}${txt(x, 24, d.day)}${wxIcon(d.k, x, 58)}${txt(x, 104, minus(d.t) + ' °C', { size: 16 })}`;
       })
       .join('')}</svg>`;
     return { days, svg };
   }
-  function forecastTask(mod) {
+  function forecastTask(mod: any) {
     const { days, svg } = forecast();
     const v = rnd(0, 3);
-    const others = (d) => days.filter((x) => x !== d);
+    const others = (d: any) => days.filter((x: any) => x !== d);
     if (v === 0) {
       const d = pick(days);
       return choice(
@@ -1710,13 +1741,13 @@ export const MS = (() => {
         minus(d.t) + ' °C',
         shuffle(others(d))
           .slice(0, 2)
-          .map((x) => minus(x.t) + ' °C'),
+          .map((x: { t: any }) => minus(x.t) + ' °C'),
         'wvtemp_' + d.k,
         { pic: svg },
       );
     }
     if (v === 1 || v === 2) {
-      const sorted = days.slice().sort((a, b) => a.t - b.t);
+      const sorted = days.slice().sort((a: { t: number }, b: { t: number }) => a.t - b.t);
       const d = v === 1 ? sorted[3] : sorted[0];
       return choice(
         mod,
@@ -1725,7 +1756,7 @@ export const MS = (() => {
         d.day,
         shuffle(others(d))
           .slice(0, 2)
-          .map((x) => x.day),
+          .map((x: { day: any }) => x.day),
         'wv' + (v === 1 ? 'warm' : 'kalt'),
         { pic: svg },
       );
@@ -1738,7 +1769,7 @@ export const MS = (() => {
       d.day,
       shuffle(others(d))
         .slice(0, 2)
-        .map((x) => x.day),
+        .map((x: { day: any }) => x.day),
       'wvsym_' + d.k,
       { pic: svg },
     );
@@ -1818,8 +1849,8 @@ export const MS = (() => {
       ],
     },
   };
-  function weGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function weGen(cfg: Unit) {
+    return (mod: string, tier: any, know: any, seq: any, opts: any) => {
       if (mod === 'kreislauf') return plantTask(cfg, 'kreislauf', mod, tier, know, seq);
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'zustand' && Math.random() < 0.6) {
@@ -1842,7 +1873,7 @@ export const MS = (() => {
           x.t,
           shuffle(TERMS.filter((y) => y !== x))
             .slice(0, 2)
-            .map((y) => y.t),
+            .map((y: { t: any }) => y.t),
           'wterm_' + x.t,
         );
       }
@@ -1984,12 +2015,12 @@ export const MS = (() => {
       why: 'Es ist innen hohl und voller Luft. Dieselbe Knete, die als Kugel sinkt, schwimmt als Schiffchen.',
     },
   ];
-  function tankSVG(label, where) {
+  function tankSVG(label: string | any[], where: string | null) {
     const y = where === 'oben' ? 46 : where === 'unten' ? 112 : 2;
     return `<svg ${NS} class="pic" viewBox="0 0 200 150" aria-label="Glas mit Wasser"><rect x="30" y="30" width="140" height="114" rx="8" fill="#E3F2FD" stroke="${STROKE}" stroke-width="2.5"/><rect x="32" y="58" width="136" height="84" rx="6" fill="#64B5F6" opacity=".6"/><path d="M32 58 Q66 52 100 58 T168 58" stroke="#2A6CB0" stroke-width="2" fill="none"/><rect x="34" y="${y}" width="132" height="24" rx="12" fill="#FFE0B2" stroke="${STROKE}" stroke-width="2"/>${txt(100, y + 17, label, { size: label.length > 12 ? 11 : 13 })}</svg>`;
   }
-  function urnSVG(a, b) {
-    const bag = (x, r, n, title) => {
+  function urnSVG(a: { r: any; n: any }, b: { r: any; n: any }) {
+    const bag = (x: number, r: number, n: any, title: string) => {
       const balls = Array.from({ length: n }, (_, i) => i < r);
       return `<path d="M${x + 10} 40 Q${x} 120 ${x + 20} 132 L${x + 100} 132 Q${x + 120} 120 ${x + 110} 40 Z" fill="#D7CCC8" stroke="${STROKE}" stroke-width="2.5"/><path d="M${x + 10} 40 L${x + 110} 40" stroke="#8D6E63" stroke-width="4"/>${balls.map((red, i) => `<circle cx="${x + 32 + (i % 3) * 28}" cy="${64 + Math.floor(i / 3) * 26}" r="11" fill="${red ? '#E5484D' : '#3B82F6'}" stroke="${STROKE}" stroke-width="2"/>`).join('')}${txt(x + 60, 24, title, { size: 15 })}`;
     };
@@ -2021,7 +2052,7 @@ export const MS = (() => {
   function laborSet() {
     const fl = shuffle(FLOAT)
       .slice(0, 2)
-      .map((x) => ({
+      .map((x: { acc: any; into: any; f: any; nom: any; why: any; label: any }) => ({
         kind: 'float',
         topic: 'schwimmen',
         q: `Du legst ${x.acc} ${x.into || 'ins Wasser'}. Schwimmt es oder sinkt es?`,
@@ -2033,7 +2064,7 @@ export const MS = (() => {
       }));
     const st = shuffle(WATER)
       .slice(0, 2)
-      .map((w) => ({
+      .map((w: { label: any; s: any; note: any }) => ({
         kind: 'state',
         topic: 'zustand',
         q: `${w.label}: fest, flüssig oder gasförmig?`,
@@ -2164,7 +2195,7 @@ export const MS = (() => {
     CLOCK = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
   const SIZE = 5;
   const inGrid = ([r, c]: number[]) => r >= 0 && r < SIZE && c >= 0 && c < SIZE;
-  function karteTarget(start, steps) {
+  function karteTarget(start: number[] | [any, any], steps: any[]) {
     let [r, c] = start;
     for (const s of steps) {
       r += DIRS[s.d][0] * s.n;
@@ -2172,11 +2203,16 @@ export const MS = (() => {
     }
     return [r, c];
   }
-  const fields = (n) => (n === 1 ? '1 Feld' : `${n} Felder`);
-  function karteText(steps, metres) {
+  const fields = (n: number) => (n === 1 ? '1 Feld' : `${n} Felder`);
+  function karteText(steps: string | any[], metres: boolean) {
     return (
       'Gehe ' +
-      steps.map((s, i) => `${metres ? s.n * 100 + ' m' : fields(s.n)} nach ${DIRS[s.d][2]}`).join(' und dann ') +
+      steps
+        .map(
+          (s: { n: number; d: string | number }, i: any) =>
+            `${metres ? s.n * 100 + ' m' : fields(s.n)} nach ${DIRS[s.d][2]}`,
+        )
+        .join(' und dann ') +
       '.'
     );
   }
@@ -2190,11 +2226,11 @@ export const MS = (() => {
     N: ['#F26A6E', '#B8323A'],
     mark: ['#FFA24D', '#E5620F'],
   };
-  function roseG(opts) {
+  function roseG(opts: { neben?: any; mark?: any }) {
     opts = opts || {};
     const mark = opts.mark,
-      f = (v) => v.toFixed(1);
-    const arm = (d, len, w) => {
+      f = (v: number) => v.toFixed(1);
+    const arm = (d: string, len: number, w: number) => {
       const a = (CLOCK.indexOf(d) * Math.PI) / 4,
         x = 60 + Math.sin(a) * len,
         y = 60 - Math.cos(a) * len,
@@ -2206,7 +2242,7 @@ export const MS = (() => {
         `<path d="M60 60 L${f(x)} ${f(y)}" stroke="${STROKE}" stroke-width="1" opacity=".5"/><path d="M60 60 L${f(60 + px)} ${f(60 + py)} L${f(x)} ${f(y)} L${f(60 - px)} ${f(60 - py)} Z" fill="none" stroke="${STROKE}" stroke-width="${d === mark ? 2.2 : 1.8}" stroke-linejoin="round"/>`
       );
     };
-    const lab = (d, len, size) => {
+    const lab = (d: string, len: number, size: number) => {
       const a = (CLOCK.indexOf(d) * Math.PI) / 4;
       if (d === mark) size = 14;
       return txt(f(60 + Math.sin(a) * len), f(60 - Math.cos(a) * len + size / 3), d === mark ? '?' : d, {
@@ -2228,10 +2264,10 @@ export const MS = (() => {
       `${MAIN.map((d) => lab(d, 53, 14)).join('')}${side ? SIDE.map((d) => lab(d, 45.5, 10)).join('') : ''}`
     );
   }
-  const roseSVG = (opts) =>
+  const roseSVG = (opts: { mark?: any }) =>
     `<svg ${NS} class="pic" viewBox="-4 -4 128 128" style="max-width:220px" aria-label="Windrose">${roseG(opts)}</svg>`;
   // Schatzkarte: 5 × 5 Felder, Zelt = Start, ✕ = Schatz; clickable cells carry data-cell="Zeile-Spalte"
-  function mapSVG(o) {
+  function mapSVG(o: { start: any; goal: any; scale: any; clickable?: any; neben?: any }) {
     const C = 43,
       X0 = 6,
       Y0 = 6;
@@ -2253,7 +2289,7 @@ export const MS = (() => {
       : '';
     return `<svg ${NS} class="kmap ${o.clickable ? 'clickable' : ''}" viewBox="0 0 300 228" aria-label="Schatzkarte mit 5 mal 5 Feldern"><rect x="${X0 - 3}" y="${Y0 - 3}" width="${SIZE * C + 6}" height="${SIZE * C + 6}" rx="6" fill="#E9D49C"/>${cells}<g pointer-events="none">${tent}${cross}</g><g transform="translate(232 6) scale(.55)">${roseG({ neben: !!o.neben })}</g>${scale}</svg>`;
   }
-  function makeKarte(tier) {
+  function makeKarte(tier: number) {
     for (;;) {
       const start = [rnd(0, SIZE - 1), rnd(0, SIZE - 1)];
       let steps;
@@ -2279,7 +2315,7 @@ export const MS = (() => {
         if (!inGrid(pos)) ok = false;
       }
       if (!ok || (pos[0] === start[0] && pos[1] === start[1])) continue;
-      const neben = steps.some((s) => SIDE.includes(s.d)) || tier >= 2;
+      const neben = steps.some((s: { d: string }) => SIDE.includes(s.d)) || tier >= 2;
       if (tier >= 3 && Math.random() < 0.5) {
         const dist = (Math.abs(pos[0] - start[0]) + Math.abs(pos[1] - start[1])) * 100;
         const wrong = [dist + 100, dist >= 200 ? dist - 100 : dist + 200, dist / 100]
@@ -2311,20 +2347,20 @@ export const MS = (() => {
         target: pos,
         neben,
         scale: tier >= 3,
-        qid: 'karte_' + start.join('') + steps.map((s) => s.d + s.n).join(''),
+        qid: 'karte_' + start.join('') + steps.map((s: { d: any; n: any }) => s.d + s.n).join(''),
       };
     }
   }
 
   // Plan mit Legende: fünf Orte auf einem 3 × 3-Plan; icons fit x ±20, y −30…+16 around their spot
-  const I = (d, fill, w?) =>
+  const I = (d: string, fill: string, w?: number | undefined) =>
     `<path d="${d}" fill="${fill}" stroke="${STROKE}" stroke-width="${w || 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
   const PLACES = [
     {
       id: 'kirche',
       name: 'die Kirche',
       vom: 'von der Kirche',
-      icon: (x, y) =>
+      icon: (x: any, y: any) =>
         `<g transform="translate(${x} ${y})">${I('M-5 -2 L-5 -11 L13 -11 L18 -2 Z', 'url(#kp-roof)')}${I('M-5 -2 L17 -2 L17 14 L-5 14 Z', 'url(#kp-stone)')}${I('M-16 -14 L-10 -27 L-4 -14 Z', 'url(#kp-copper)')}${I('M-15 -14 L-5 -14 L-5 14 L-15 14 Z', 'url(#kp-stone)')}` +
         `<path d="M-10 -27 L-10 -32 M-12.5 -30 L-7.5 -30" stroke="${STROKE}" stroke-width="1.6" stroke-linecap="round"/><circle cx="-10" cy="-7" r="2.6" fill="#FFF8E1" stroke="${STROKE}" stroke-width="1.2"/>${I('M-12.5 14 L-12.5 6 Q-10 2.5 -7.5 6 L-7.5 14', '#6D4C41', 1.5)}${[3, 11].map((d) => I(`M${d - 2} 9 L${d - 2} 3 Q${d} 0 ${d + 2} 3 L${d + 2} 9 Z`, '#8EC5F0', 1.3)).join('')}</g>`,
     },
@@ -2332,7 +2368,7 @@ export const MS = (() => {
       id: 'schule',
       name: 'die Schule',
       vom: 'von der Schule',
-      icon: (x, y) =>
+      icon: (x: any, y: any) =>
         `<g transform="translate(${x} ${y})"><path d="M0 -17 L0 -30" stroke="${STROKE}" stroke-width="1.8" stroke-linecap="round"/>${I('M0 -30 L11 -26.5 L0 -23 Z', '#3F7FE0', 1.4)}${I('M-17 -6 L17 -6 L17 14 L-17 14 Z', 'url(#kp-wall)')}${I('M-20 -5 L0 -18 L20 -5 Z', 'url(#kp-roof)')}` +
         `${[-12, -6, 6, 12].map((d) => `<rect x="${d - 2}" y="-1" width="4" height="5" fill="#8EC5F0" stroke="${STROKE}" stroke-width="1.1"/>`).join('')}${I('M-3.5 14 L-3.5 5 L3.5 5 L3.5 14', '#C0392B', 1.4)}<circle cx="0" cy="-9.5" r="2.3" fill="#FFF8E1" stroke="${STROKE}" stroke-width="1.1"/></g>`,
     },
@@ -2340,7 +2376,7 @@ export const MS = (() => {
       id: 'wald',
       name: 'der Wald',
       vom: 'vom Wald',
-      icon: (x, y) =>
+      icon: (x: any, y: any) =>
         `<g transform="translate(${x} ${y})">${[
           [-1, -10],
           [-10, 3],
@@ -2356,7 +2392,7 @@ export const MS = (() => {
       id: 'teich',
       name: 'der Teich',
       vom: 'vom Teich',
-      icon: (x, y) =>
+      icon: (x: any, y: any) =>
         `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="1" rx="23" ry="14.5" fill="#B9D88C" stroke="#7FA65A" stroke-width="1.2"/><ellipse cx="0" cy="1" rx="19.5" ry="11.5" fill="url(#kp-water)" stroke="${STROKE}" stroke-width="2"/>` +
         `<path d="M-9 -3 Q-5 -5.5 -1 -3 M3 4 Q7 1.5 11 4" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><path d="M8 -4 A3.4 2.4 0 1 0 11 -6.2 L8 -4 Z" fill="#5FAE4E" stroke="${STROKE}" stroke-width="1"/>` +
         `<path d="M-19 -2 L-20 -12 M-16.5 -1 L-15 -14 M-14 -1 L-11.5 -9" stroke="#4E7A35" stroke-width="1.6" stroke-linecap="round"/><rect x="-21.2" y="-15" width="2.6" height="5" rx="1.3" fill="#7B4A1E"/><rect x="-16.3" y="-17" width="2.6" height="5" rx="1.3" fill="#7B4A1E"/></g>`,
@@ -2365,7 +2401,7 @@ export const MS = (() => {
       id: 'spielplatz',
       name: 'der Spielplatz',
       vom: 'vom Spielplatz',
-      icon: (x, y) =>
+      icon: (x: any, y: any) =>
         `<g transform="translate(${x} ${y})"><ellipse cx="0" cy="14" rx="21" ry="4.5" fill="#F1D9A0" stroke="#C9A55C" stroke-width="1"/>` +
         `<path d="M-5 -13 L-5 4 M5 -13 L5 4" stroke="#5A6474" stroke-width="1.4"/>${I('M-8 2.5 L8 2.5 L8 6 L-8 6 Z', '#E8453C', 1.5)}` +
         `<path d="M-19 14 L-14 -14 L-9 14 M9 14 L14 -14 L19 14 M-16 -14 L16 -14" fill="none" stroke="${STROKE}" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M-19 14 L-14 -14 L-9 14 M9 14 L14 -14 L19 14 M-16 -14 L16 -14" fill="none" stroke="url(#kp-wood)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>`,
@@ -2374,7 +2410,7 @@ export const MS = (() => {
       id: 'baeckerei',
       name: 'die Bäckerei',
       vom: 'von der Bäckerei',
-      icon: (x, y) => {
+      icon: (x: any, y: number) => {
         const d =
           'M-8 7 L6.5 -8 C11 -13 19 -10 18 -1 C17 9 9 13 0 13 C-9 13 -17 9 -18 -1 C-19 -10 -11 -13 -6.5 -8 L8 7';
         return (
@@ -2395,13 +2431,13 @@ export const MS = (() => {
       id: 'bahnhof',
       name: 'der Bahnhof',
       vom: 'vom Bahnhof',
-      icon: (x, y) =>
+      icon: (x: any, y: any) =>
         `<g transform="translate(${x} ${y})">${I('M-13 -12 L13 -12 L13 2 L-13 2 Z', 'url(#kp-wall)')}${I('M-17 -12 L-12 -21 L12 -21 L17 -12 Z', 'url(#kp-roof)')}<circle cx="0" cy="-6" r="3.3" fill="#FFF8E1" stroke="${STROKE}" stroke-width="1.2"/><path d="M0 -6 L0 -8 M0 -6 L1.5 -6" stroke="${STROKE}" stroke-width="1"/>` +
         `${[-8.5, 8.5].map((d) => `<rect x="${d - 2}" y="-8" width="4" height="6" fill="#8EC5F0" stroke="${STROKE}" stroke-width="1.1"/>`).join('')}` +
         `${[-17, -8.5, 0, 8.5, 17].map((d) => `<rect x="${d - 1.6}" y="4.5" width="3.2" height="11" rx="1" fill="#9C6B43" stroke="${STROKE}" stroke-width="1"/>`).join('')}<path d="M-21 7.5 L21 7.5 M-21 12.5 L21 12.5" stroke="${STROKE}" stroke-width="3.6" stroke-linecap="round"/><path d="M-21 7.5 L21 7.5 M-21 12.5 L21 12.5" stroke="#AEB8C6" stroke-width="1.6" stroke-linecap="round"/></g>`,
     },
   ];
-  const lg = (id, a, b) =>
+  const lg = (id: string, a: string, b: string) =>
     `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
   const PLAN_DEFS =
     `<defs>${lg('kp-roof', '#E57361', '#A93C2E')}${lg('kp-stone', '#F2EEE6', '#BDB4A6')}${lg('kp-copper', '#8FD0B8', '#3F8C78')}${lg('kp-wall', '#FFEAA0', '#E8BE52')}${lg('kp-wood', '#F2C27E', '#A8662E')}${lg('kp-bread', '#E8A65A', '#9A5523')}${lg('kp-meadow', '#E1EFC2', '#BFD994')}` +
@@ -2424,14 +2460,14 @@ export const MS = (() => {
       .join('') +
     '<path d="M71 8 L71 200 M137 8 L137 200 M8 71 L200 71 M8 137 L200 137" stroke="#D8C49A" stroke-width="1.2" stroke-dasharray="5 4"/>' +
     `<rect x="4" y="4" width="200" height="200" rx="8" fill="none" stroke="${STROKE}" stroke-width="2.5"/>`;
-  const cap = (s) => s[0].toUpperCase() + s.slice(1);
-  function planTask(mod) {
+  const cap = (s: string | any[]) => s[0].toUpperCase() + s.slice(1);
+  function planTask(mod: any) {
     for (;;) {
       const spots = shuffle(Array.from({ length: 9 }, (_, i) => [Math.floor(i / 3), i % 3])).slice(0, 5);
       const places = shuffle(PLACES)
         .slice(0, 5)
-        .map((p, i) => ({ p, rc: spots[i] }));
-      const dirOf = (a, b) => {
+        .map((p: any, i: string | number) => ({ p, rc: spots[i] }));
+      const dirOf = (a: { rc: number[] }, b: { rc: number[] }) => {
         const dr = b.rc[0] - a.rc[0],
           dc = b.rc[1] - a.rc[1];
         if (dr && dc && Math.abs(dr) !== Math.abs(dc)) return null;
@@ -2445,9 +2481,9 @@ export const MS = (() => {
         `<svg ${NS} class="pic" viewBox="0 0 300 210" aria-label="Plan mit Legende">${PLAN_DEFS}${PLAN_BG}${places.map(({ p, rc }) => p.icon(38 + rc[1] * 66, 42 + rc[0] * 66)).join('')}` +
         `<path d="M234 12 L241.5 36 L234 31 Z" fill="#B8323A" stroke="${STROKE}" stroke-width="1.8" stroke-linejoin="round"/><path d="M234 12 L226.5 36 L234 31 Z" fill="#F26A6E" stroke="${STROKE}" stroke-width="1.8" stroke-linejoin="round"/>${txt(234, 52, 'N', { size: 14 })}` +
         `<rect x="213" y="61" width="87" height="145" rx="7" fill="${STROKE}" opacity=".12"/><rect x="211" y="59" width="86" height="144" rx="7" fill="url(#kp-paper)" stroke="${STROKE}" stroke-width="2"/>${txt(254, 76, 'Legende', { size: 12 })}<path d="M222 82 L286 82" stroke="#C9AE76" stroke-width="1.2"/>` +
-        `${places.map(({ p }, i) => `<g transform="translate(225 ${100 + i * 21}) scale(.47)">${p.icon(0, 0)}</g>${txt(238, 104 + i * 21, cap(p.name.split(' ')[1]), { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
+        `${places.map(({ p }: any, i: number) => `<g transform="translate(225 ${100 + i * 21}) scale(.47)">${p.icon(0, 0)}</g>${txt(238, 104 + i * 21, cap(p.name.split(' ')[1]), { size: 10.5, anchor: 'start' })}`).join('')}</svg>`;
       // exact direction only, and nothing else lies in that direction, so exactly one answer fits
-      const sameDir = places.filter((x) => x !== a && dirOf(a, x) === d);
+      const sameDir = places.filter((x: any) => x !== a && dirOf(a, x) === d);
       if (Math.random() < 0.5 || sameDir.length > 1) {
         return choice(
           mod,
@@ -2456,14 +2492,17 @@ export const MS = (() => {
           'Im ' + DIRS[d][2],
           shuffle(CLOCK.filter((x) => x !== d))
             .slice(0, 2)
-            .map((x) => 'Im ' + DIRS[x][2]),
+            .map((x: string | number) => 'Im ' + DIRS[x][2]),
           'plandir_' + a.p.id + b.p.id,
           { pic: svg },
         );
       }
       // wrong options must not lie even roughly in that direction (a place north-north-east would also count as „im Norden“)
-      const rough = (x) => [0, 1].every((k) => !DIRS[d][k] || Math.sign(x.rc[k] - a.rc[k]) === DIRS[d][k]);
-      const wrong = places.filter((x) => x !== a && x !== b && !rough(x)).map((x) => cap(x.p.name));
+      const rough = (x: { rc: number[] }) =>
+        [0, 1].every((k) => !DIRS[d][k] || Math.sign(x.rc[k] - a.rc[k]) === DIRS[d][k]);
+      const wrong = places
+        .filter((x: any) => x !== a && x !== b && !rough(x))
+        .map((x: { p: { name: any } }) => cap(x.p.name));
       if (wrong.length < 2) continue;
       return choice(
         mod,
@@ -2476,18 +2515,18 @@ export const MS = (() => {
       );
     }
   }
-  function roseTask(mod) {
+  function roseTask(mod: any) {
     const v = rnd(0, 4);
     const d = pick(CLOCK);
     const name = DIRS[d][2];
-    const others = (x) => shuffle(CLOCK.filter((y) => y !== x)).slice(0, 2);
+    const others = (x: string) => shuffle(CLOCK.filter((y) => y !== x)).slice(0, 2);
     if (v <= 1)
       return choice(
         mod,
         'neben',
         'Welche Himmelsrichtung zeigt der orange Pfeil mit dem Fragezeichen?',
         name,
-        others(d).map((x) => DIRS[x][2]),
+        others(d).map((x: string | number) => DIRS[x][2]),
         'rosemark_' + d,
         { pic: roseSVG({ mark: d }) },
       );
@@ -2499,10 +2538,10 @@ export const MS = (() => {
         `Welche Himmelsrichtung liegt ${name} genau gegenüber?`,
         DIRS[opp][2],
         others(opp)
-          .filter((x) => x !== d)
+          .filter((x: any) => x !== d)
           .concat([d])
           .slice(0, 2)
-          .map((x) => DIRS[x][2]),
+          .map((x: string | number) => DIRS[x][2]),
         'roseopp_' + d,
         { pic: roseSVG({}) },
       );
@@ -2538,22 +2577,22 @@ export const MS = (() => {
   // ja/nein, Fluss, Lage im Landkreis als Haupthimmelsrichtung). Solange die Liste leer ist, gibt es keine Landkreis-Aufgaben.
   // Beispiel: { ort: 'Musterstadt', kreisstadt: true, fluss: 'Musterbach', lage: 'Norden' },
   const LANDKREIS: any[] = [];
-  function landkreisPool(list) {
+  function landkreisPool(list: any[]) {
     if (list.length < 3) return [];
     const out: any[] = [];
-    const towns = list.map((x) => x.ort);
-    const seat = list.find((x) => x.kreisstadt);
+    const towns = list.map((x: { ort: any }) => x.ort);
+    const seat = list.find((x: { kreisstadt: any }) => x.kreisstadt);
     if (seat)
       out.push({
         id: 'lk_kreisstadt',
         mod: 'richtung',
         g: 'heimat',
         q: 'Welcher Ort ist die Kreisstadt unseres Landkreises?',
-        o: [seat.ort].concat(towns.filter((t) => t !== seat.ort).slice(0, 2)),
+        o: [seat.ort].concat(towns.filter((t: any) => t !== seat.ort).slice(0, 2)),
         a: 0,
       });
-    list.forEach((x, i) => {
-      const rivers = [...new Set(list.map((y) => y.fluss).filter((f) => f && f !== x.fluss))];
+    list.forEach((x: { fluss: any; ort: any; lage: string }, i: string) => {
+      const rivers = [...new Set(list.map((y: { fluss: any }) => y.fluss).filter((f: any) => f && f !== x.fluss))];
       if (x.fluss && rivers.length >= 2)
         out.push({
           id: 'lk_fluss' + i,
@@ -3016,8 +3055,8 @@ export const MS = (() => {
       ],
     },
   };
-  function kkGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function kkGen(cfg: Unit) {
+    return (mod: string, tier: any, know: any, seq: any, opts: any) => {
       if (mod === 'karte') return makeKarte(tier);
       if (mod === 'rose') return roseTask(mod);
       if (wantsPool(cfg, mod, opts)) return null;

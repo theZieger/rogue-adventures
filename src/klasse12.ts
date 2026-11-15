@@ -4,7 +4,13 @@
 // Hero ids and opponent names are stored in saves: never rename them once released.
 import type { Unit } from './curriculum.ts';
 export const K12 = (() => {
-  const set = (hero, normal, elite, boss, moves) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
+  const set = (
+    hero: { id: string; type: string; shape: string; names: string[]; hp: number; perk: string; desc: string },
+    normal: { name: string; type: string; shape: string; hp: number; atk: number }[],
+    elite: { name: string; type: string; shape: string; hp: number; atk: number },
+    boss: { name: string; acc: string; type: string; shape: string; hp: number; atk: number; boss: boolean },
+    moves: string[],
+  ) => ({ hero, enemies: { 1: { normal, elite, boss } }, moves });
   const SETS = {
     mathe: set(
       {
@@ -147,7 +153,7 @@ export const K12 = (() => {
       ['Türknarren', 'Saitenpeitsche', 'Laubgebläse', 'Tropfen', 'Dauerklingeln', 'Rüttelstoß'],
     ),
   };
-  const unit = (fach, attacks, o): Unit =>
+  const unit = (fach: string | number, attacks: any, o: any): Unit =>
     Object.assign(
       {
         worlds: 1,
@@ -158,7 +164,7 @@ export const K12 = (() => {
       o,
     );
   // events every Klasse-1/2 unit has: a rest on the way, and a Dilemma-Karte without a wrong answer
-  const rest = (title, text) => ({
+  const rest = (title: any, text: any) => ({
     title,
     text,
     opts: [
@@ -166,7 +172,7 @@ export const K12 = (() => {
       { label: 'Weiter', effect: {} },
     ],
   });
-  const dilemma = (title, text, opts) => ({
+  const dilemma = (title: any, text: any, opts: [any, any, any][]) => ({
     title,
     dilemma: true,
     reward: { hp: 5 },
@@ -174,7 +180,7 @@ export const K12 = (() => {
     opts: opts.map(([label, then, think]) => ({ label, then, think })),
   });
   // lighter (t > 0) or darker shade of a colour for the pictures
-  const tone = (hex, t) =>
+  const tone = (hex: string, t: number) =>
     '#' +
     [16, 8, 0]
       .map((s) => {

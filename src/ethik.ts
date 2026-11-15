@@ -1828,7 +1828,7 @@ export const ME = (() => {
     },
   ];
 
-  const gen = (mod, tier, know, seqNow, opts) => {
+  const gen = (mod: string, tier: any, know: any, seqNow: any, opts: { g: string }) => {
     if (mod !== 'welten') return null;
     let cands = POOL.filter((p) => p.mod === 'welten');
     if (opts && opts.g) {

@@ -23,9 +23,9 @@ export interface Question {
   english?: string[];
 }
 export const MK = (() => {
-  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const shuffle = (arr) => {
+  const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = (arr: string | any[]) => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = (arr: string | any[]) => {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -4419,8 +4419,8 @@ export const MK = (() => {
   ];
 
   /* ---------- DEUTSCH: Wörterwerkstatt und Satzbaustelle (Wortlisten in woerter.ts) ---------- */
-  const cap = (s) => s[0].toUpperCase() + s.slice(1);
-  const noun = (w) => w.slice(w.indexOf(' ') + 1);
+  const cap = (s: string | any[]) => s[0].toUpperCase() + s.slice(1);
+  const noun = (w: string | string[]) => w.slice(w.indexOf(' ') + 1);
   const ARTS = ['der', 'die', 'das'];
   // a task's ids come from its words, so adding words to woerter.ts keeps the learning history of the others
   const W_POOL: Question[] = [];
@@ -4512,7 +4512,7 @@ export const MK = (() => {
       why: 'Nur das, was jemand sagt, steht in Anführungszeichen.',
     });
   });
-  const plain = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
+  const plain = (w: string) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
   W.familien.forEach(([stem, word, fam, other]) =>
     W_POOL.push({
       id: 'wf_' + word,
@@ -4539,7 +4539,7 @@ export const MK = (() => {
   W.vorsilben.forEach(([q, r, f1, f2]) =>
     W_POOL.push({ id: 'vs_' + r, t: 2, mod: 'stamm', g: 'stamm', q: `Welches Wort passt? ${q}`, o: [r, f1, f2], a: 0 }),
   );
-  function trennWhy(r) {
+  function trennWhy(r: string) {
     const [a, b] = r.split('-');
     if (/^(ck|ch|sch|ph)/.test(b)) return `${b.match(/^(ck|sch|ch|ph)/)[0]} bleibt zusammen: ${r}.`;
     if (/s$/.test(a) && /^t/.test(b)) return `st wird getrennt: ${r}.`;
@@ -4654,7 +4654,7 @@ export const MK = (() => {
     }),
   );
   // dictionary order only needs the first three letters; woerter.ts keeps those free of umlauts
-  const abcKey = (w) => w.slice(0, 3).toLowerCase();
+  const abcKey = (w: string) => w.slice(0, 3).toLowerCase();
   function abcTask() {
     const first = pick(W.abc)[0];
     const same = W.abc.filter((w) => w[0] === first);
@@ -5043,7 +5043,7 @@ export const MK = (() => {
 
   const S_POOL: Question[] = [];
   const KLASSEN = ['Nomen', 'Verb', 'Adjektiv', 'Pronomen', 'Artikel'];
-  const wortart = (id, q, k) =>
+  const wortart = (id: string, q: string, k: string) =>
     S_POOL.push({
       id,
       mod: 'wortart',
@@ -5178,7 +5178,7 @@ export const MK = (() => {
       mod: 'ober',
       g: 'ober',
       q: `Welches Wort gehört zu „${o}“?`,
-      o: [pick(ws)].concat(rest.map((x) => pick(W.oberbegriffe[x]))),
+      o: [pick(ws)].concat(rest.map((x: string | number) => pick(W.oberbegriffe[x]))),
       a: 0,
     });
   });
@@ -5191,13 +5191,13 @@ export const MK = (() => {
       o: [w].concat(
         shuffle(W.teekessel.filter((x) => x[0] !== w))
           .slice(0, 2)
-          .map((x) => x[0]),
+          .map((x: any[]) => x[0]),
       ),
       a: 0,
     }),
   );
   // 'sie (Mehrzahl)' and 'sie' are the same word but stand for different groups
-  const word = (p) => p.split(' ')[0];
+  const word = (p: string) => p.split(' ')[0];
   W.ersatz.forEach(([ng, rest, p]) => {
     S_POOL.push({
       id: 'er_' + ng,
@@ -5217,7 +5217,7 @@ export const MK = (() => {
       o: [cap(ng)].concat(
         shuffle(W.ersatz.filter((x) => x[2] !== p))
           .slice(0, 2)
-          .map((x) => cap(x[0])),
+          .map((x: any[]) => cap(x[0])),
       ),
       a: 0,
     });
@@ -5239,7 +5239,7 @@ export const MK = (() => {
       why: `${cap(rest.join(' '))}. Das ist immer noch ein richtiger Satz.`,
     });
   });
-  const conj = (v) => {
+  const conj = (v: string | any[]) => {
     const st = v.slice(0, -2);
     return {
       ich: `Ich ${st}e.`,
@@ -5775,15 +5775,15 @@ export const MK = (() => {
     'Essen und Trinken|Farben',
     'Hobbys|Verkehrsmittel',
   ];
-  const near = (a, b) => EN_NEAR.includes(a + '|' + b) || EN_NEAR.includes(b + '|' + a);
-  const others = (list, x, n) => shuffle(list.filter((y) => y !== x)).slice(0, n);
+  const near = (a: string, b: string) => EN_NEAR.includes(a + '|' + b) || EN_NEAR.includes(b + '|' + a);
+  const others = (list: any[], x: string, n: number) => shuffle(list.filter((y: any) => y !== x)).slice(0, n);
   // parents switch topics off (opts.enOff); a task type with nothing left keeps all topics
-  const enOff = (opts) => (opts && opts.enOff) || [];
+  const enOff = (opts: { enOff: any }) => (opts && opts.enOff) || [];
   // a sentence belongs to every topic whose words it uses (also with plural -s); without one it is „Allgemein“ and always on
   const EN_WORDS: [topic: string, word: RegExp][] = Object.entries(EN_THEMES).flatMap(([t, list]) =>
     list.map(([en]) => [t, new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(e?s)?\\b`, 'i')]),
   );
-  const enTopics = (...texts) => {
+  const enTopics = (...texts: string[]) => {
     const s = texts.join(' ');
     return [...new Set(EN_WORDS.filter(([, re]) => re.test(s)).map(([t]) => t))];
   };
@@ -5834,8 +5834,8 @@ export const MK = (() => {
     );
   const NUM = Object.fromEntries(E.zahlen.map(([en, , n]) => [n, en]));
   // 21 to 99 follow the English pattern: tens, hyphen, ones (forty-two)
-  const numWord = (n) => NUM[n] || NUM[n - (n % 10)] + '-' + NUM[n % 10];
-  function zahlTask(tier, know, seq) {
+  const numWord = (n: number) => NUM[n] || NUM[n - (n % 10)] + '-' + NUM[n % 10];
+  function zahlTask(tier: string | number, know: any, seq: any) {
     let n;
     if (tier >= 2) n = Math.random() < 0.3 ? pick([30, 40, 50, 60, 70, 80, 90, 100]) : rnd(2, 9) * 10 + rnd(1, 9);
     else
@@ -5857,9 +5857,9 @@ export const MK = (() => {
       english: [numWord(n)],
     };
   }
-  const swatch = (hex) =>
+  const swatch = (hex: any) =>
     `<div class="figure"><svg viewBox="0 0 160 110" aria-label="Farbfleck"><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="${hex}" stroke="#FFF7E6" stroke-width="5" stroke-linejoin="round"/><path d="M30 20 Q56 4 84 14 Q120 4 138 30 Q156 56 136 82 Q118 106 82 98 Q50 108 28 90 Q4 70 12 46 Q16 28 30 20 Z" fill="none" stroke="#1C2541" stroke-width="2"/></svg></div>`;
-  function farbeTask(know, seq) {
+  function farbeTask(know: any, seq: any) {
     const c = weightedPick(
       E.farben.map((f) => ({ id: 'enf_' + f[0], f })),
       know,
@@ -5889,17 +5889,17 @@ export const MK = (() => {
       cols: 1,
     };
   }
-  function oddTask(opts) {
-    const pairs = (names) =>
-      names.flatMap((a) =>
-        EN_THEMES[a].length >= 3 ? names.filter((b) => b !== a && !near(a, b)).map((b) => [a, b]) : [],
+  function oddTask(opts: any) {
+    const pairs = (names: any[]) =>
+      names.flatMap((a: string | number) =>
+        EN_THEMES[a].length >= 3 ? names.filter((b: any) => b !== a && !near(a, b)).map((b: any) => [a, b]) : [],
       );
     const all = Object.keys(EN_THEMES);
     const on = pairs(all.filter((t) => !enOff(opts).includes(t)));
     const [a, b] = pick(on.length ? on : pairs(all));
     const three = shuffle(EN_THEMES[a])
       .slice(0, 3)
-      .map((x) => x[0]);
+      .map((x: any[]) => x[0]);
     const odd = pick(EN_THEMES[b])[0];
     return {
       kind: 'choice',
@@ -5916,9 +5916,9 @@ export const MK = (() => {
       english: three.concat([odd]),
     };
   }
-  function reiheTask(tier, opts) {
+  function reiheTask(tier: string | number, opts: any) {
     let months = tier >= 2;
-    const off = (m) => enOff(opts).includes(m ? 'Monate' : 'Wochentage');
+    const off = (m: boolean) => enOff(opts).includes(m ? 'Monate' : 'Wochentage');
     if (off(months) && !off(!months)) {
       months = !months;
       tier = months ? 2 : 1;
@@ -5926,8 +5926,8 @@ export const MK = (() => {
     const list = months ? E.monate : E.tage;
     const idx = shuffle(list.map((_, i) => i))
       .slice(0, 4)
-      .sort((x, y) => x - y);
-    const items = idx.map((i) => ({ id: (months ? 'm' : 'd') + i, text: list[i][0] }));
+      .sort((x: number, y: number) => x - y);
+    const items = idx.map((i: string | number) => ({ id: (months ? 'm' : 'd') + i, text: list[i][0] }));
     return {
       kind: 'order',
       mod: 'reihe',
@@ -5935,7 +5935,7 @@ export const MK = (() => {
       group: 'reihe:' + tier,
       note: 'reihe',
       items,
-      order: items.map((x) => x.id),
+      order: items.map((x: { id: any }) => x.id),
       display: shuffle(items),
       qid: 'enr_' + (months ? 'm' : 'd') + idx.join(''),
       english: list.map((x) => x[0]),
@@ -5944,11 +5944,11 @@ export const MK = (() => {
         : `Tippe die Wochentage der Reihe nach an. Die Woche beginnt mit ${E.tage[0][0]}.`,
     };
   }
-  const groupsOf = (list, n) =>
+  const groupsOf = (list: any[], n: number) =>
     Array.from({ length: Math.ceil(list.length / n) }, (_, i) =>
       list
         .slice(i * n, i * n + n)
-        .map((x) => `${x[0]} – ${x[1]}`)
+        .map((x: any[]) => `${x[0]} – ${x[1]}`)
         .join(', '),
     );
   const T_NOTES = {
@@ -6157,7 +6157,7 @@ export const MK = (() => {
         like
           .concat(rest)
           .slice(0, 2)
-          .map((x) => x[1]),
+          .map((x: any[]) => x[1]),
       ),
       a: 0,
       english: [en],
@@ -6337,8 +6337,8 @@ export const MK = (() => {
   ];
 
   /* ---------- Spaced repetition selection ---------- */
-  function weightedPick(items, know, seqNow) {
-    const w = items.map((it) => {
+  function weightedPick(items: any[], know: { [x: string]: any }, seqNow: number) {
+    const w = items.map((it: { id: string | number }) => {
       const k = know[it.id];
       if (!k) return 4;
       let x = 1 + k.ws * 3;
@@ -6346,7 +6346,7 @@ export const MK = (() => {
       if (seqNow - (k.last || 0) < 3) x *= 0.15;
       return x;
     });
-    let total = w.reduce((a, b) => a + b, 0);
+    let total = w.reduce((a: any, b: any) => a + b, 0);
     let r = Math.random() * total;
     for (let i = 0; i < items.length; i++) {
       r -= w[i];
@@ -6356,10 +6356,17 @@ export const MK = (() => {
   }
   // opts (optional): { g } = nur Fragen zu diesem Themengebiet (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
   // { world }: in Modi mit byWorld kommen nur Fragen und Reihenfolgen dieser Welt dran (w fehlt = Welt 1)
-  function generate(mode, mod, tier, know, seqNow, opts) {
+  function generate(
+    mode: string | number,
+    mod: string,
+    tier: number,
+    know: any,
+    seqNow: any,
+    opts: { world: any; g: any },
+  ) {
     const cfg = MODES[mode];
     const world = (opts && opts.world) || 1;
-    const inWorld = (p) => !cfg.byWorld || (p.w || 1) === world;
+    const inWorld = (p: { w: any }) => !cfg.byWorld || (p.w || 1) === world;
     const pool = cfg.pool.filter(inWorld);
     if (MODES[mode].gen) {
       const t = MODES[mode].gen(mod, tier, know, seqNow, opts);
@@ -6369,10 +6376,10 @@ export const MK = (() => {
     if (mod === 'umstell') return umstellTask();
     if (mod === 'ord') {
       const o = pick(cfg.order.filter(inWorld));
-      const idx = shuffle(o.items.map((_, i) => i))
+      const idx = shuffle(o.items.map((_: any, i: any) => i))
         .slice(0, 4)
-        .sort((a, b) => a - b);
-      const items = idx.map((i) => o.items[i]);
+        .sort((a: number, b: number) => a - b);
+      const items = idx.map((i: string | number) => o.items[i]);
       return {
         kind: 'order',
         mod,
@@ -6381,7 +6388,7 @@ export const MK = (() => {
         note: o.note,
         q: o.q,
         items,
-        order: items.map((x) => x.id),
+        order: items.map((x: { id: any }) => x.id),
         display: shuffle(items),
         qid: o.qid + idx.join(''),
       };
@@ -6404,8 +6411,8 @@ export const MK = (() => {
     if (mod === 'maerchen' && Math.random() < 0.25) {
       const idx = shuffle(STORY.map((_, i) => i))
         .slice(0, 4)
-        .sort((a, b) => a - b);
-      const items = idx.map((i) => STORY[i]);
+        .sort((a: number, b: number) => a - b);
+      const items = idx.map((i: string | number) => STORY[i]);
       return {
         kind: 'order',
         mod,
@@ -6414,19 +6421,19 @@ export const MK = (() => {
         note: 'maerchen',
         q: 'Tippe die Teile des Märchens in der richtigen Reihenfolge an.',
         items,
-        order: items.map((x) => x.id),
+        order: items.map((x: { id: any }) => x.id),
         display: shuffle(items),
         qid: 'story_' + idx.join(''),
       };
     }
-    let cands = pool.filter((p) => p.mod === mod);
-    const atTier = cands.filter((p) => (p.t || 1) === tier);
+    let cands = pool.filter((p: { mod: any }) => p.mod === mod);
+    const atTier = cands.filter((p: { t: any }) => (p.t || 1) === tier);
     if (atTier.length) cands = atTier; // t: 2 marks the harder questions of a module
     if (opts && opts.g) {
-      const topic = cands.filter((p) => p.g === opts.g);
+      const topic = cands.filter((p: { g: any }) => p.g === opts.g);
       if (topic.length) cands = topic;
     }
-    const onTopic = cands.filter((p) => !(p.en || []).some((t) => enOff(opts).includes(t)));
+    const onTopic = cands.filter((p: { en: any }) => !(p.en || []).some((t: any) => enOff(opts).includes(t)));
     if (onTopic.length) cands = onTopic;
     const e = weightedPick(cands, know, seqNow);
     if (mod === 'parts') {
@@ -6445,7 +6452,7 @@ export const MK = (() => {
         };
       const others = shuffle(PARTS.filter((p) => p.id !== part.id))
         .slice(0, 3)
-        .map((p) => p.name);
+        .map((p: { name: any }) => p.name);
       const options = shuffle(others.concat([part.name]));
       return {
         kind: 'parts',
@@ -6495,7 +6502,12 @@ export const MK = (() => {
       cols: options.length === 2 ? 2 : 1,
     };
   }
-  function record(know, qid, ok, seqNow) {
+  function record(
+    know: { [x: string]: { c: number; t: number; ws: number; last: number } },
+    qid: string | number,
+    ok: any,
+    seqNow: any,
+  ) {
     const k = know[qid] || (know[qid] = { c: 0, t: 0, ws: 0, last: 0 });
     k.t++;
     if (ok) {
@@ -6633,7 +6645,7 @@ export const MK = (() => {
       a: 0,
     },
   ];
-  function gardenQuestion(crop) {
+  function gardenQuestion(crop: string) {
     const e = pick(GARDEN_POOL.filter((x) => x.crop === crop || (crop !== 'kartoffel' && x.crop === 'getreide')));
     return { q: e.q, options: shuffle(e.o.slice()), answer: e.o[e.a], qid: e.id };
   }
@@ -6787,7 +6799,7 @@ export const MK = (() => {
       icon: '🫖',
       rank: 1,
       sub: 'Englische Wörter: Farben, Zahlen, Tiere, Essen, Kleidung und mehr',
-      gen: (mod, tier, know, seq, opts) =>
+      gen: (mod: string, tier: any, know: any, seq: any, opts: any) =>
         mod === 'zahl'
           ? zahlTask(tier, know, seq)
           : mod === 'farbe'
@@ -6813,7 +6825,7 @@ export const MK = (() => {
       icon: '🚌',
       rank: 2,
       sub: 'Englische Sätze, Fragen und Antworten, Wochentage und Monate',
-      gen: (mod, tier, know, seq, opts) => (mod === 'reihe' ? reiheTask(tier, opts) : null),
+      gen: (mod: string, tier: any, know: any, seq: any, opts: any) => (mod === 'reihe' ? reiheTask(tier, opts) : null),
     },
     kartoffel: {
       modules: K_MODULES,

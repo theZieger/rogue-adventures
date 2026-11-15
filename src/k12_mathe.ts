@@ -14,28 +14,29 @@ import { MQ as Q } from './logic.ts';
 
   // fl(colour): a soft light-to-shade gradient of the colour; svgOf adds the defs a drawing uses
   const { tone, rest } = S;
-  const fl = (c) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
-  const grad = (c) =>
+  const fl = (c: string) => (c === OUT ? c : `url(#km${c.slice(1).toUpperCase()})`);
+  const grad = (c: string) =>
     `<linearGradient id="km${c}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone('#' + c, 0.32)}"/><stop offset=".5" stop-color="#${c}"/><stop offset="1" stop-color="${tone('#' + c, -0.16)}"/></linearGradient>`;
-  const svgOf = (w, h, body, label, attrs?) => {
-    const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u) => u.slice(7, 13)))];
+  const svgOf = (w: number, h: number, body: string, label: string, attrs?: string | undefined) => {
+    const used = [...new Set((body.match(/url\(#km[0-9A-F]{6}\)/g) || []).map((u: string | any[]) => u.slice(7, 13)))];
     return `<svg viewBox="0 0 ${w} ${h}"${attrs || ''} role="img" aria-label="${label}">${used.length ? `<defs>${used.map(grad).join('')}</defs>` : ''}${body}</svg>`;
   };
-  const gloss = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"/>`;
-  const pic = (s) => `<div class="figure">${s}</div>`;
-  const height = (px) => ` style="height:${px}px"`;
+  const gloss = (x: number, y: number, rx: number, ry: number) =>
+    `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"/>`;
+  const pic = (s: string) => `<div class="figure">${s}</div>`;
+  const height = (px: number) => ` style="height:${px}px"`;
   // k different numbers close to right, inside lo … hi
-  const near = (right, lo, hi, k) => {
+  const near = (right: number, lo: number, hi: number, k: number) => {
     for (let d = 2; ; d++) {
       const c: any[] = [];
       for (let x = Math.max(lo, right - d); x <= Math.min(hi, right + d); x++) if (x !== right) c.push(x);
       if (c.length >= k) return shuffle(c).slice(0, k);
     }
   };
-  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+  const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
   // qid names the kind of task, not the numbers: saves keep one entry per kind
-  function maker(p) {
-    const base = (mod, tier, sub) => ({
+  function maker(p: string) {
+    const base = (mod: any, tier: any, sub: any) => ({
       mod,
       tier,
       group: `${mod}:${tier}`,
@@ -43,33 +44,314 @@ import { MQ as Q } from './logic.ts';
       qid: `${p}_${mod}${tier}_${sub}`,
     });
     return {
-      num: (mod, tier, sub, answers, extra) =>
+      num: (mod: any, tier: any, sub: any, answers: any, extra: any) =>
         Object.assign(base(mod, tier, sub), { kind: 'num', answers, k12: true }, extra),
-      choice: (mod, tier, sub, q, answer, wrong, extra?) =>
+      choice: (mod: any, tier: any, sub: any, q: any, answer: any, wrong: any, extra?: any) =>
         Object.assign(
           base(mod, tier, sub),
           { kind: 'choice', q, answer, options: shuffle([answer].concat(wrong)), why: '', cols: 1 },
           extra,
         ),
-      order: (mod, tier, sub, q, texts) => {
-        const items = texts.map((text, i) => ({ id: 'o' + i, text: String(text) }));
+      order: (mod: any, tier: any, sub: any, q: any, texts: any[]) => {
+        const items = texts.map((text: any, i: string) => ({ id: 'o' + i, text: String(text) }));
         return Object.assign(base(mod, tier, sub), {
           kind: 'order',
           q,
           items,
-          order: items.map((x) => x.id),
+          order: items.map((x: { id: any }) => x.id),
           display: shuffle(items),
         });
       },
     };
   }
-  function register(key, def, gen) {
+  function register(
+    key: string,
+    def: {
+      [x: string]: any;
+      grade?: number;
+      title?: string;
+      icon?: string;
+      sub?: string;
+      modules?:
+        | {
+            menge: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            zerlegen: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            vergleich: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            nachbar: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            dopp: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            rechnen: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            mauer: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            geschichte: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            zahlwort: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            geld: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            strahl: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+          }
+        | {
+            lage: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            formen: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            koerper: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            muster: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            bauen: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+          }
+        | {
+            stelle: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            zehner: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            gerade: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            folge: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            plus: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            minus: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            dreieck: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            vergleich: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            mauer: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+          }
+        | {
+            reihe: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            nachbar: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            bild: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            teilen: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            sach: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            strategie: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+          }
+        | {
+            geld: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            laenge: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            uhr: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            kalender: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            daten: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            zufall: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            kombi: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+          }
+        | {
+            spiegel: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            lage: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            linien: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            bauen: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+            koerper: { name: string; icon: string; maxTier: number; worldCap: number[]; dmg: number };
+          };
+      attacks: any;
+      extra?:
+        | {
+            menge: string;
+            zerlegen: string;
+            vergleich: string;
+            nachbar: string;
+            dopp: string;
+            rechnen: string;
+            mauer: string;
+            geschichte: string;
+            zahlwort: string;
+            geld: string;
+            strahl: string;
+          }
+        | { lage: string; formen: string; koerper: string; muster: string; bauen: string }
+        | {
+            stelle: string;
+            zehner: string;
+            gerade: string;
+            folge: string;
+            plus: string;
+            minus: string;
+            dreieck: string;
+            vergleich: string;
+            mauer: string;
+          }
+        | { reihe: string; nachbar: string; bild: string; teilen: string; sach: string; strategie: string }
+        | { geld: string; laenge: string; uhr: string; kalender: string; daten: string; zufall: string; kombi: string }
+        | { spiegel: string; lage: string; linien: string; bauen: string; koerper: string };
+      tut?:
+        | {
+            'menge:1': { title: string; steps: string[] };
+            'menge:2': { title: string; steps: string[] };
+            'zerlegen:1': { title: string; steps: string[] };
+            'zerlegen:2': { title: string; steps: string[] };
+            'vergleich:1': { title: string; steps: string[] };
+            'vergleich:2': { title: string; steps: string[] };
+            'nachbar:1': { title: string; steps: string[] };
+            'nachbar:2': { title: string; steps: string[] };
+            'dopp:1': { title: string; steps: string[] };
+            'dopp:2': { title: string; steps: string[] };
+            'rechnen:1': { title: string; steps: string[] };
+            'rechnen:2': { title: string; steps: string[] };
+            'rechnen:3': { title: string; steps: string[] };
+            'mauer:1': { title: string; steps: string[] };
+            'mauer:2': { title: string; steps: string[] };
+            'geschichte:1': { title: string; steps: string[] };
+            'geschichte:2': { title: string; steps: string[] };
+            'zahlwort:1': { title: string; steps: string[] };
+            'zahlwort:2': { title: string; steps: string[] };
+            'geld:1': { title: string; steps: string[] };
+            'geld:2': { title: string; steps: string[] };
+            'strahl:1': { title: string; steps: string[] };
+            'strahl:2': { title: string; steps: string[] };
+          }
+        | {
+            'lage:1': { title: string; steps: string[] };
+            'lage:2': { title: string; steps: string[] };
+            'formen:1': { title: string; steps: string[] };
+            'formen:2': { title: string; steps: string[] };
+            'koerper:1': { title: string; steps: string[] };
+            'koerper:2': { title: string; steps: string[] };
+            'muster:1': { title: string; steps: string[] };
+            'muster:2': { title: string; steps: string[] };
+            'bauen:1': { title: string; steps: string[] };
+            'bauen:2': { title: string; steps: string[] };
+          }
+        | {
+            'stelle:1': { title: string; steps: string[] };
+            'stelle:2': { title: string; steps: string[] };
+            'zehner:1': { title: string; steps: string[] };
+            'gerade:1': { title: string; steps: string[] };
+            'gerade:2': { title: string; steps: string[] };
+            'folge:1': { title: string; steps: string[] };
+            'folge:2': { title: string; steps: string[] };
+            'plus:1': { title: string; steps: string[] };
+            'plus:2': { title: string; steps: string[] };
+            'plus:3': { title: string; steps: string[] };
+            'minus:1': { title: string; steps: string[] };
+            'minus:2': { title: string; steps: string[] };
+            'minus:3': { title: string; steps: string[] };
+            'dreieck:1': { title: string; steps: string[] };
+            'vergleich:1': { title: string; steps: string[] };
+            'vergleich:2': { title: string; steps: string[] };
+            'mauer:1': { title: string; steps: string[] };
+            'mauer:2': { title: string; steps: string[] };
+            'dreieck:2': { title: string; steps: string[] };
+          }
+        | {
+            'reihe:1': { title: string; steps: string[] };
+            'reihe:2': { title: string; steps: string[] };
+            'nachbar:1': { title: string; steps: string[] };
+            'nachbar:2': { title: string; steps: string[] };
+            'bild:1': { title: string; steps: string[] };
+            'teilen:1': { title: string; steps: string[] };
+            'teilen:2': { title: string; steps: string[] };
+            'sach:1': { title: string; steps: string[] };
+            'strategie:1': { title: string; steps: string[] };
+            'strategie:2': { title: string; steps: string[] };
+            'sach:2': { title: string; steps: string[] };
+          }
+        | {
+            'geld:1': { title: string; steps: string[] };
+            'geld:2': { title: string; steps: string[] };
+            'laenge:1': { title: string; steps: string[] };
+            'laenge:2': { title: string; steps: string[] };
+            'uhr:1': { title: string; steps: string[] };
+            'uhr:2': { title: string; steps: string[] };
+            'kalender:1': { title: string; steps: string[] };
+            'kalender:2': { title: string; steps: string[] };
+            'daten:1': { title: string; steps: string[] };
+            'daten:2': { title: string; steps: string[] };
+            'kombi:1': { title: string; steps: string[] };
+            'kombi:2': { title: string; steps: string[] };
+            'zufall:1': { title: string; steps: string[] };
+          }
+        | {
+            'spiegel:1': { title: string; steps: string[] };
+            'spiegel:2': { title: string; steps: string[] };
+            'lage:1': { title: string; steps: string[] };
+            'lage:2': { title: string; steps: string[] };
+            'linien:1': { title: string; steps: string[] };
+            'linien:2': { title: string; steps: string[] };
+            'bauen:1': { title: string; steps: string[] };
+            'bauen:2': { title: string; steps: string[] };
+            'koerper:1': { title: string; steps: string[] };
+            'koerper:2': { title: string; steps: string[] };
+          };
+      notes?:
+        | {
+            menge: { title: string; lines: string[] };
+            zerlegen: { title: string; lines: string[] };
+            vergleich: { title: string; lines: string[] };
+            nachbar: { title: string; lines: string[] };
+            dopp: { title: string; lines: string[] };
+            rechnen: { title: string; lines: string[] };
+            mauer: { title: string; lines: string[] };
+            geschichte: { title: string; lines: string[] };
+            zahlwort: { title: string; lines: string[] };
+            geld: { title: string; lines: string[] };
+            strahl: { title: string; lines: string[] };
+          }
+        | {
+            lage: { title: string; lines: string[] };
+            formen: { title: string; lines: string[] };
+            koerper: { title: string; lines: string[] };
+            muster: { title: string; lines: string[] };
+            bauen: { title: string; lines: string[] };
+          }
+        | {
+            stelle: { title: string; lines: string[] };
+            zehner: { title: string; lines: string[] };
+            gerade: { title: string; lines: string[] };
+            folge: { title: string; lines: string[] };
+            plus: { title: string; lines: string[] };
+            minus: { title: string; lines: string[] };
+            dreieck: { title: string; lines: string[] };
+            vergleich: { title: string; lines: string[] };
+            mauer: { title: string; lines: string[] };
+          }
+        | {
+            reihe: { title: string; lines: string[] };
+            nachbar: { title: string; lines: string[] };
+            bild: { title: string; lines: string[] };
+            teilen: { title: string; lines: string[] };
+            sach: { title: string; lines: string[] };
+            strategie: { title: string; lines: string[] };
+          }
+        | {
+            geld: { title: string; lines: string[] };
+            laenge: { title: string; lines: string[] };
+            uhr: { title: string; lines: string[] };
+            kalender: { title: string; lines: string[] };
+            daten: { title: string; lines: string[] };
+            zufall: { title: string; lines: string[] };
+            kombi: { title: string; lines: string[] };
+          }
+        | {
+            spiegel: { title: string; lines: string[] };
+            lage: { title: string; lines: string[] };
+            linien: { title: string; lines: string[] };
+            bauen: { title: string; lines: string[] };
+            koerper: { title: string; lines: string[] };
+          };
+      events?: (
+        | {
+            title: any;
+            text: any;
+            opts: ({ label: string; effect: { hp: number } } | { label: string; effect: { hp?: undefined } })[];
+          }
+        | {
+            title: any;
+            text: any;
+            opts: (
+              | { label: any; task: any; win: any; lose: any; effect?: undefined }
+              | { label: string; effect: {}; task?: undefined; win?: undefined; lose?: undefined }
+            )[];
+          }
+      )[];
+    },
+    gen: {
+      (mod: any, t: any): any;
+      (mod: any, t: any): any;
+      (mod: any, t: any): any;
+      (mod: any, t: any): any;
+      (mod: any, t: any): any;
+      (mod: any, t: any): any;
+      (arg0: any, arg1: number): any;
+    },
+  ) {
     const { attacks, ...o } = def;
     const mode = S.unit('mathe', attacks, Object.assign({ subject: 'Mathe', pool: [] }, o));
-    mode.gen = (mod, tier) => gen(mod, Math.max(1, Math.min(mode.modules[mod].maxTier, tier)));
+    mode.gen = (mod: string | number, tier: number) => gen(mod, Math.max(1, Math.min(mode.modules[mod].maxTier, tier)));
     K.MODES[key] = mode;
   }
-  const ev = (title, text, label, task, win, lose) => ({
+  const ev = (
+    title: string,
+    text: string,
+    label: string,
+    task: string,
+    win: { item?: string; xp?: number },
+    lose: { hp?: number; xp?: number },
+  ) => ({
     title,
     text,
     opts: [
@@ -82,10 +364,10 @@ import { MQ as Q } from './logic.ts';
   const RED = '#E8453C',
     BLUE = '#3F7FE0';
   // counters get a shine; dice pips stay plain ink
-  const dot = (x, y, r, fill) =>
+  const dot = (x: number, y: number, r: number, fill: string) =>
     `<circle class="dot" cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${OUT}" stroke-width="1.5"/>${fill === OUT ? '' : gloss(x - r * 0.3, y - r * 0.35, r * 0.38, r * 0.26)}`;
   // Zehnerfeld (2 × 5) or Zwanzigerfeld (2 × 10), filled row by row: red up to five, then blue
-  function fieldSVG(n, cols) {
+  function fieldSVG(n: number, cols: number) {
     const C = 26;
     let b = '';
     for (let r = 0; r < 2; r++)
@@ -140,34 +422,79 @@ import { MQ as Q } from './logic.ts';
       [2, 2],
     ],
   };
-  const diceSVG = (ns) =>
+  const diceSVG = (ns: any[]) =>
     svgOf(
       ns.length * 64,
       64,
       ns
         .map(
-          (n, k) =>
+          (n: string | number, k: number) =>
             `<rect x="${k * 64 + 4}" y="5" width="56" height="56" rx="11" fill="${OUT}" opacity=".18"/><rect x="${k * 64 + 3}" y="3" width="56" height="56" rx="10" fill="#fff" stroke="${OUT}" stroke-width="2.5"/><path d="M${k * 64 + 10} 8 H${k * 64 + 50}" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>${PIPS[n].map(([c, r]) => dot(k * 64 + 15 + c * 16, 15 + r * 16, 5.5, OUT)).join('')}`,
         )
         .join(''),
       'Zwei Würfel',
     );
   // Zahlenmauer and Rechendreieck in the markup of src/logic.ts, so the bot reads them the same way
-  const stone = (x, y, w, v) =>
+  const stone = (x: number, y: number, w: number, v: string) =>
     `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${v === '?' ? '#FFE27A' : '#F3D9B1'}" stroke="${OUT}" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="${OUT}">${v}</text></g>`;
-  function mauerTask(m, mod, t, b, r, c) {
+  function mauerTask(
+    m: {
+      num: any;
+      choice?: (mod: any, tier: any, sub: any, q: any, answer: any, wrong: any, extra?: any) => any;
+      order?: (
+        mod: any,
+        tier: any,
+        sub: any,
+        q: any,
+        texts: any,
+      ) => { mod: any; tier: any; group: string; note: any; qid: string } & {
+        kind: string;
+        q: any;
+        items: any;
+        order: any;
+        display: any;
+      };
+    },
+    mod: any,
+    t: any,
+    b: any[],
+    r: number,
+    c: string | number,
+  ) {
     const rows = [b, [b[0] + b[1], b[1] + b[2]], [b[0] + 2 * b[1] + b[2]]];
-    const show = rows.map((row, i) => row.map((v, j) => (i === r && j === c ? '?' : v)));
-    const svg = `<svg class="mauer" viewBox="0 0 196 112" role="img" aria-label="Zahlenmauer">${show.map((row, i) => row.map((v, j) => stone(2 + i * 32 + j * 64, 2 + (2 - i) * 36, 64, v)).join('')).join('')}</svg>`;
+    const show = rows.map((row, i) => row.map((v: any, j: any) => (i === r && j === c ? '?' : v)));
+    const svg = `<svg class="mauer" viewBox="0 0 196 112" role="img" aria-label="Zahlenmauer">${show.map((row, i) => row.map((v: any, j: number) => stone(2 + i * 32 + j * 64, 2 + (2 - i) * 36, 64, v)).join('')).join('')}</svg>`;
     return m.num(mod, t, r ? 'oben' : 'unten', [rows[r][c]], {
       svg,
       ask: 'Zwei Steine zusammen ergeben den Stein darüber. Welche Zahl fehlt?',
       k12: false,
     });
   }
-  function triTask(m, mod, t, inner, k) {
+  function triTask(
+    m: {
+      num: any;
+      choice?: (mod: any, tier: any, sub: any, q: any, answer: any, wrong: any, extra?: any) => any;
+      order?: (
+        mod: any,
+        tier: any,
+        sub: any,
+        q: any,
+        texts: any,
+      ) => { mod: any; tier: any; group: string; note: any; qid: string } & {
+        kind: string;
+        q: any;
+        items: any;
+        order: any;
+        display: any;
+      };
+    },
+    mod: any,
+    t: any,
+    inner: any[],
+    k: number,
+  ) {
     const vals = inner.concat([inner[0] + inner[1], inner[1] + inner[2], inner[0] + inner[2]]);
-    const show = vals.map((v, i) => (i === k ? '?' : v));
+    const show = vals.map((v: any, i: any) => (i === k ? '?' : v));
     const P = [
       [120, 78],
       [72, 164],
@@ -176,7 +503,7 @@ import { MQ as Q } from './logic.ts';
       [120, 216],
       [212, 96],
     ];
-    const box = (i) => {
+    const box = (i: number) => {
       const [x, y] = P[i];
       return `<g data-tri="${i}" data-v="${show[i]}"><rect x="${x - 30}" y="${y - 17}" width="60" height="34" rx="${i < 3 ? 17 : 4}" fill="${i === k ? '#FFE27A' : i < 3 ? '#FFFFFF' : '#CFE6FF'}" stroke="${OUT}" stroke-width="2"/><text x="${x}" y="${y + 8}" text-anchor="middle" font-size="22" font-weight="700" fill="${OUT}">${show[i]}</text></g>`;
     };
@@ -190,20 +517,20 @@ import { MQ as Q } from './logic.ts';
 
   /* ================= ZAHLEN BIS 20 (Klasse 1) ================= */
   const z = maker('z20');
-  const sum = (a) => a.reduce((x, y) => x + y, 0);
+  const sum = (a: any[]) => a.reduce((x: any, y: any) => x + y, 0);
   // Rechengeschichten: a things, b come or go. Numbers are digits, so only the words count towards the 12.
   const STORY_PLUS = [
-    (a, b) => `Auf dem Ast sitzen ${a} Vögel. ${b} kommen dazu. Wie viele sind es jetzt?`,
-    (a, b) => `Im Korb liegen ${a} Äpfel. Opa legt ${b} dazu. Wie viele sind es jetzt?`,
-    (a, b) => `Im Sandkasten sind ${a} Kinder. ${b} kommen dazu. Wie viele sind es jetzt?`,
+    (a: any, b: any) => `Auf dem Ast sitzen ${a} Vögel. ${b} kommen dazu. Wie viele sind es jetzt?`,
+    (a: any, b: any) => `Im Korb liegen ${a} Äpfel. Opa legt ${b} dazu. Wie viele sind es jetzt?`,
+    (a: any, b: any) => `Im Sandkasten sind ${a} Kinder. ${b} kommen dazu. Wie viele sind es jetzt?`,
   ];
   const STORY_MINUS = [
-    (a, b) => `Auf dem Ast sitzen ${a} Vögel. ${b} fliegen weg. Wie viele bleiben?`,
-    (a, b) => `Im Bus sitzen ${a} Kinder. ${b} steigen aus. Wie viele bleiben?`,
-    (a, b) => `Auf dem Teller liegen ${a} Erdbeeren. Mia isst ${b}. Wie viele bleiben?`,
+    (a: any, b: any) => `Auf dem Ast sitzen ${a} Vögel. ${b} fliegen weg. Wie viele bleiben?`,
+    (a: any, b: any) => `Im Bus sitzen ${a} Kinder. ${b} steigen aus. Wie viele bleiben?`,
+    (a: any, b: any) => `Auf dem Teller liegen ${a} Erdbeeren. Mia isst ${b}. Wie viele bleiben?`,
   ];
   // counters in rows of ten: plus shows a red and b blue, minus shows a with the last b crossed out
-  function storySVG(a, b, plus) {
+  function storySVG(a: number, b: number, plus: boolean) {
     const n = plus ? a + b : a,
       C = 24;
     let s = '';
@@ -224,7 +551,7 @@ import { MQ as Q } from './logic.ts';
       plus ? 'Punkte, blaue kommen dazu' : 'Punkte, durchgestrichene sind weg',
     );
   }
-  function genZ20(mod, t) {
+  function genZ20(mod: string, t: number) {
     if (mod === 'menge') {
       const lo = t === 1 ? 1 : 11,
         hi = t === 1 ? 10 : 20,
@@ -295,7 +622,7 @@ import { MQ as Q } from './logic.ts';
       if (t === 2) {
         const ns = shuffle(range(0, 20))
           .slice(0, 4)
-          .sort((a, b) => a - b);
+          .sort((a: number, b: number) => a - b);
         return z.order(mod, t, 'ordnen', 'Tippe die Zahlen an. Fang mit der kleinsten an.', ns);
       }
       const n = rnd(1, 19);
@@ -792,10 +1119,10 @@ import { MQ as Q } from './logic.ts';
   };
   // a Quadrat is also a Rechteck and a Viereck, a Rechteck also a Viereck: such names never count as wrong
   const IS_ALSO = { quadrat: ['rechteck', 'viereck'], rechteck: ['viereck'] };
-  const fits = (shape, name) => shape === name || (IS_ALSO[shape] || []).includes(name);
-  const formG = (k, fill?) =>
+  const fits = (shape: string, name: string) => shape === name || (IS_ALSO[shape] || []).includes(name);
+  const formG = (k: string | number, fill?: undefined) =>
     `${FORMS[k].draw()} fill="${fl(fill || pick(FILLS))}" stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
-  const formSVG = (k) => svgOf(60, 60, formG(k), 'Form');
+  const formSVG = (k: any) => svgOf(60, 60, formG(k), 'Form');
   const STAR = 'M30 4 L37.6 19.5 L54.7 22 L42.4 34 L45.3 51 L30 43 L14.7 51 L17.6 34 L5.3 22 L22.4 19.5 Z';
   // things for the Lage tasks: one colour each, so they are easy to tell apart
   const THINGS = {
@@ -820,27 +1147,39 @@ import { MQ as Q } from './logic.ts';
       g: `<path d="${STAR}" fill="#8FE3A0" stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`,
     },
   };
-  const at = (x, y, s, inner) => `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
-  const rowSVG = (ks) =>
+  const at = (x: number, y: number, s: number, inner: string) =>
+    `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
+  const rowSVG = (ks: any[]) =>
     svgOf(
       210,
       74,
-      `<path d="M4 70 H206" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>${ks.map((k, i) => `<g data-at="${i}" data-thing="${k}">${at(8 + i * 68, 6, 1, THINGS[k].g)}</g>`).join('')}`,
+      `<path d="M4 70 H206" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>${ks.map((k: string | number, i: number) => `<g data-at="${i}" data-thing="${k}">${at(8 + i * 68, 6, 1, THINGS[k].g)}</g>`).join('')}`,
       'Drei Formen in einer Reihe',
     );
-  const shelfSVG = (ks) =>
+  const shelfSVG = (ks: any[]) =>
     svgOf(
       96,
       214,
-      `<rect x="4" y="4" width="88" height="206" rx="4" fill="#F2C27E" stroke="${OUT}" stroke-width="2.5"/>${[72, 140].map((y) => `<path d="M6 ${y} H90" stroke="${OUT}" stroke-width="3"/>`).join('')}${ks.map((k, i) => `<g data-at="${i}" data-thing="${k}">${at(20, 12 + i * 68, 0.95, THINGS[k].g)}</g>`).join('')}`,
+      `<rect x="4" y="4" width="88" height="206" rx="4" fill="#F2C27E" stroke="${OUT}" stroke-width="2.5"/>${[72, 140].map((y) => `<path d="M6 ${y} H90" stroke="${OUT}" stroke-width="3"/>`).join('')}${ks.map((k: string | number, i: number) => `<g data-at="${i}" data-thing="${k}">${at(20, 12 + i * 68, 0.95, THINGS[k].g)}</g>`).join('')}`,
       'Regal mit drei Fächern',
       height(170),
     );
   const SOLIDS = { wuerfel: ['Würfel', 'den'], quader: ['Quader', 'den'], kugel: ['Kugel', 'die'] };
   // isometric view like Die Baustelle (src/logic.ts): x to the right, y to the front, z up; faces top, front, right
   type Corner = [x: number, y: number, z: number];
-  const iso = (x, y, z, k) => `${((x - y) * 12 * k).toFixed(1)} ${((x + y) * 7 * k - z * 14 * k).toFixed(1)}`;
-  const box = (x, y, z, dx, dy, dz, k, fills, cls?) =>
+  const iso = (x: number, y: number, z: number | undefined, k: number | undefined) =>
+    `${((x - y) * 12 * k).toFixed(1)} ${((x + y) * 7 * k - z * 14 * k).toFixed(1)}`;
+  const box = (
+    x: number,
+    y: number,
+    z: number,
+    dx: number,
+    dy: number,
+    dz: number,
+    k: number,
+    fills: any[],
+    cls?: string | undefined,
+  ) =>
     (
       [
         [
@@ -871,7 +1210,7 @@ import { MQ as Q } from './logic.ts';
   const BLUES = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
   const SHADE =
     '<radialGradient id="kmball" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#BFE4FF"/><stop offset=".45" stop-color="#3FA0FF"/><stop offset="1" stop-color="#1F5E9E"/></radialGradient>';
-  const solidSVG = (k) =>
+  const solidSVG = (k: string | number) =>
     svgOf(
       68,
       62,
@@ -906,16 +1245,16 @@ import { MQ as Q } from './logic.ts';
     stern: `<path d="${STAR}" transform="translate(-2 -1) scale(.73)" fill="#8FE3A0"`,
     raute: '<path d="M20 3 L36 20 L20 37 L4 20 Z" fill="#C3A6FF"',
   };
-  const tokenG = (k) => `${TOKENS[k]} stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
-  const tokenSVG = (k) => svgOf(40, 40, `<g data-k="${k}">${tokenG(k)}</g>`, 'Musterteil');
+  const tokenG = (k: string | number) => `${TOKENS[k]} stroke="${OUT}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  const tokenSVG = (k: any) => svgOf(40, 40, `<g data-k="${k}">${tokenG(k)}</g>`, 'Musterteil');
   const PATTERNS = { 1: ['AB', 'ABC'], 2: ['AAB', 'ABB', 'AABB', 'ABAC'] };
   // a row of towers in the isometric view of Die Baustelle; every cube shows its front face, drawn back to front
-  function towerSVG(hs) {
+  function towerSVG(hs: any[]) {
     const H = Math.max(...hs),
       n = hs.length,
       k = 1.4;
     let b = '';
-    hs.forEach((h, x) => {
+    hs.forEach((h: number, x: any) => {
       for (let z = 0; z < h; z++) b += box(x, 0, z, 1, 1, 1, k, ['#F6A36B', '#D9653B', '#B54E2A'], 'cube');
     });
     return svgOf(
@@ -925,14 +1264,15 @@ import { MQ as Q } from './logic.ts';
       'Würfel in einer Reihe',
     );
   }
-  function genForm(mod, t) {
+  function genForm(mod: string, t: number) {
     if (mod === 'lage') {
       const ks = shuffle(Object.keys(THINGS)).slice(0, 3);
-      const names = ks.map((k) => THINGS[k].name);
-      const wrong = (i) => names.filter((_, j) => j !== i);
+      const names = ks.map((k: string | number) => THINGS[k].name);
+      const wrong = (i: any) => names.filter((_: any, j: any) => j !== i);
       const row = Math.random() < 0.6;
       const s = pic(row ? rowSVG(ks) : shelfSVG(ks));
-      const ask = (sub, q, i) => f.choice(mod, t, sub, q, names[i], wrong(i), { pic: s, things: ks });
+      const ask = (sub: string, q: string, i: number) =>
+        f.choice(mod, t, sub, q, names[i], wrong(i), { pic: s, things: ks });
       if (t === 1) {
         const i = rnd(0, 2);
         return row
@@ -992,7 +1332,7 @@ import { MQ as Q } from './logic.ts';
       if (Math.random() < 0.5) {
         const wrong = shuffle(kinds.filter((x) => !fits(k, x)))
           .slice(0, 2)
-          .map((x) => FORMS[x].name);
+          .map((x: string | number) => FORMS[x].name);
         return f.choice(mod, t, 'name', 'Wie heißt diese Form?', FORMS[k].name, wrong, {
           pic: pic(formSVG(k)),
           why: {
@@ -1060,7 +1400,7 @@ import { MQ as Q } from './logic.ts';
       const unit = pick(PATTERNS[t]);
       const letters = [...new Set(unit)];
       const kinds = shuffle(Object.keys(TOKENS));
-      const of = (ch) => kinds[letters.indexOf(ch)];
+      const of = (ch: unknown) => kinds[letters.indexOf(ch)];
       const L = unit.length,
         n = 2 * L + rnd(0, L - 1);
       const seq = range(0, n - 1).map((i) => of(unit[i % L]));
@@ -1261,14 +1601,14 @@ import { MQ as Q } from './logic.ts';
   /* ================= ZAHLEN BIS 100 (Klasse 2) ================= */
   const h = maker('z100');
   // Zehnerstangen and Einerwürfel
-  function blocksSVG(n) {
+  function blocksSVG(n: number) {
     const tens = Math.floor(n / 10),
       ones = n % 10,
       U = 11,
       D = 3;
     let b = '';
     // a block of h units seen from the front with a little depth: top and right side, then the front squares
-    const block = (x, y, h, c, cls?) =>
+    const block = (x: number, y: number, h: number, c: string, cls?: string | undefined) =>
       `<path d="M${x} ${y} l${D} ${-D} h${U} l${-D} ${D} Z" fill="${tone(c, 0.35)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/><path d="M${x + U} ${y} l${D} ${-D} v${h * U} l${-D} ${D} Z" fill="${tone(c, -0.25)}" stroke="${OUT}" stroke-width="1.2" stroke-linejoin="round"/>` +
       range(0, h - 1)
         .map(
@@ -1283,7 +1623,7 @@ import { MQ as Q } from './logic.ts';
       b += block(x0 + (k % 3) * 15, 2 + D + 10 * U - (Math.floor(k / 3) + 1) * 15 + 4, 1, '#FFD84A', 'one');
     return svgOf(x0 + 48, 10 * U + D + 4, b, 'Zehnerstangen und Einerwürfel');
   }
-  function hundredSVG(n) {
+  function hundredSVG(n: number) {
     const C = 12;
     let b = '';
     for (let i = 0; i < 100; i++) {
@@ -1299,9 +1639,9 @@ import { MQ as Q } from './logic.ts';
     return svgOf(130, 130, b, 'Hunderterfeld', height(170));
   }
   // a piece of the Zahlenstrahl from one Zehner to the next, arrow at `at`
-  function lineSVG(from, at) {
+  function lineSVG(from: number, at: any) {
     const C = 26,
-      X = (v) => 14 + (v - from) * C;
+      X = (v: number) => 14 + (v - from) * C;
     let b = `<path d="M6 40 H${X(from + 10) + 8}" stroke="${OUT}" stroke-width="2.5"/>`;
     for (let v = from; v <= from + 10; v++)
       b +=
@@ -1322,7 +1662,7 @@ import { MQ as Q } from './logic.ts';
     [9, 5, 1],
     [4, 3, 8],
   ];
-  function magicTask(t) {
+  function magicTask(t: any) {
     const k = rnd(1, 5),
       c = rnd(0, Math.floor((99 - 15 * k) / 3));
     let g = LOSHU.map((r) => r.slice());
@@ -1344,7 +1684,7 @@ import { MQ as Q } from './logic.ts';
       sum,
     });
   }
-  function genZ100(mod, t) {
+  function genZ100(mod: string, t: number) {
     if (mod === 'stelle') {
       const n = rnd(11, 99);
       if (t === 1) {
@@ -1387,7 +1727,7 @@ import { MQ as Q } from './logic.ts';
     }
     if (mod === 'gerade') {
       const r = Math.random();
-      const odd = (n) => n % 2 === 1;
+      const odd = (n: number) => n % 2 === 1;
       if (r < 0.35) {
         const n = rnd(1, 99);
         return h.choice(mod, t, 'gu', `Ist ${n} gerade oder ungerade?`, odd(n) ? 'ungerade' : 'gerade', [], {
@@ -1445,7 +1785,7 @@ import { MQ as Q } from './logic.ts';
       // a + b for plus, (a + b) − b for minus: the same pairs cross a Zehner or not in both directions
       const r = Math.random();
       let a, b;
-      const two = (crossing) => {
+      const two = (crossing: boolean) => {
         const za = rnd(1, 7),
           zb = rnd(1, 8 - za),
           ea = crossing ? rnd(1, 9) : rnd(0, 8),
@@ -1484,7 +1824,7 @@ import { MQ as Q } from './logic.ts';
     }
     if (mod === 'vergleich') {
       // tier 1: Zehner plus Zehner against a number, tier 2: two sums close to each other
-      const split = (s) => {
+      const split = (s: number) => {
         const a = rnd(11, s - 11);
         return { txt: `${a} + ${s - a}`, v: s };
       };
@@ -1800,7 +2140,7 @@ import { MQ as Q } from './logic.ts';
     [6, 5],
     [9, 10],
   ];
-  function arraySVG(r, c) {
+  function arraySVG(r: number, c: number) {
     const C = 20;
     let b = '';
     for (let i = 0; i < r; i++)
@@ -1808,22 +2148,22 @@ import { MQ as Q } from './logic.ts';
     return svgOf(c * C + (c > 5 ? 10 : 4), r * C + 4, b, 'Punktefeld');
   }
   const STORIES_MAL = [
-    (a, b) => [`${a} Teller mit je ${b} Äpfeln. Wie viele Äpfel sind es?`],
-    (a, b) => [`${a} Kinder haben je ${b} Murmeln. Wie viele Murmeln sind das zusammen?`],
-    (a, b) => {
+    (a: any, b: any) => [`${a} Teller mit je ${b} Äpfeln. Wie viele Äpfel sind es?`],
+    (a: any, b: any) => [`${a} Kinder haben je ${b} Murmeln. Wie viele Murmeln sind das zusammen?`],
+    (a: any, b: string | number) => {
       const [one, many] = { 2: ['Ein Heft', 'Hefte'], 5: ['Eine Kinokarte', 'Kinokarten'], 10: ['Ein Buch', 'Bücher'] }[
         b
       ];
       return [`${one} kostet ${b} €. Wie viel kosten ${a} ${many}?`, ['€']];
     },
-    (a, b) => [`In ${a} Tüten sind je ${b} Brötchen. Wie viele Brötchen sind es?`],
+    (a: any, b: any) => [`In ${a} Tüten sind je ${b} Brötchen. Wie viele Brötchen sind es?`],
   ];
   const STORIES_TEIL = [
-    (n, k) => `${n} Bonbons werden an ${k} Kinder verteilt. Wie viele bekommt jedes Kind?`,
-    (n, k) => `${n} Kinder bilden Gruppen zu je ${k}. Wie viele Gruppen gibt es?`,
-    (n, k) => `${n} Eier kommen in Schachteln zu je ${k}. Wie viele Schachteln werden voll?`,
+    (n: any, k: any) => `${n} Bonbons werden an ${k} Kinder verteilt. Wie viele bekommt jedes Kind?`,
+    (n: any, k: any) => `${n} Kinder bilden Gruppen zu je ${k}. Wie viele Gruppen gibt es?`,
+    (n: any, k: any) => `${n} Eier kommen in Schachteln zu je ${k}. Wie viele Schachteln werden voll?`,
   ];
-  function genMal(mod, t) {
+  function genMal(mod: string, t: number) {
     if (mod === 'reihe') {
       const a = pick(CORE),
         b = rnd(1, 10);
@@ -2115,8 +2455,8 @@ import { MQ as Q } from './logic.ts';
 
   /* ================= GELD, LÄNGE, ZEIT (Klasse 2) ================= */
   const g = maker('gr2');
-  const pad = (n) => String(n).padStart(2, '0');
-  const komma = (ct) => `${Math.floor(ct / 100)},${pad(ct % 100)}${NB}€`;
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const komma = (ct: number) => `${Math.floor(ct / 100)},${pad(ct % 100)}${NB}€`;
   // coins and notes in cent: label, colour, coin radius or note width; sizes follow the real coins and notes.
   // Euro coins have two metals: 1 € silver ring and gold core, 2 € gold ring and silver core.
   const GOLDC = '#EDBE4A',
@@ -2136,7 +2476,7 @@ import { MQ as Q } from './logic.ts';
     2000: ['20', '€', '#8FBDEE', 0, 70],
     5000: ['50', '€', '#F5AE62', 0, 73],
   };
-  function moneySVG(vals) {
+  function moneySVG(vals: any[]) {
     let x = 4,
       y = 4,
       rowH = 0,
@@ -2174,7 +2514,7 @@ import { MQ as Q } from './logic.ts';
     return svgOf(304, y + rowH + 6, b, 'Geld');
   }
   // 1 and c hundredths written wrongly: digits swapped, comma one place off, a zero too many
-  const mixups = (c, u) => {
+  const mixups = (c: number, u: string) => {
     const right = `1,${pad(c)}${NB}${u}`;
     return [
       ...new Set([
@@ -2186,13 +2526,13 @@ import { MQ as Q } from './logic.ts';
       .filter((x) => x !== right)
       .slice(0, 2);
   };
-  const coins = (from, k, max) => {
+  const coins = (from: number[], k: any, max: number) => {
     let vs;
     do vs = Array.from({ length: k }, () => pick(from)).sort((a, b) => b - a);
     while (vs.reduce((a, b) => a + b, 0) > max);
     return vs;
   };
-  function rulerSVG(cm) {
+  function rulerSVG(cm: number) {
     const px = 22,
       x0 = 14,
       x1 = x0 + cm * px;
@@ -2254,7 +2594,7 @@ import { MQ as Q } from './logic.ts';
     ['Wie viele Stunden hat ein Tag?', 24],
   ];
   const ORD = ['erste', 'zweite', 'dritte'];
-  function calSVG(mi, first) {
+  function calSVG(mi: string | number, first: number) {
     const C = 30,
       W = 7 * C,
       H = 54 + Math.ceil((first + MDAYS[mi]) / 7) * 26;
@@ -2281,15 +2621,17 @@ import { MQ as Q } from './logic.ts';
     return svgOf(W + 10, H + 6, b, `Kalenderblatt ${MONTHS[mi]}`, height(180));
   }
   // Strichliste: four strokes and the fifth across them
-  function tallySVG(rows) {
+  function tallySVG(rows: [any, any][]) {
     const H = rows.length * 32 + 6;
     let b =
       `<rect x="1" y="1" width="298" height="${H}" rx="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>` +
       rows
-        .map((_, i) => (i % 2 ? `<rect x="2" y="${4 + i * 32}" width="296" height="32" fill="#F3F6FC"/>` : ''))
+        .map((_: any, i: number) =>
+          i % 2 ? `<rect x="2" y="${4 + i * 32}" width="296" height="32" fill="#F3F6FC"/>` : '',
+        )
         .join('') +
       `<path d="M94 2 V${H}" stroke="#B8C2D9" stroke-width="1.5"/>`;
-    rows.forEach(([label, n], i) => {
+    rows.forEach(([label, n]: any, i: number) => {
       const y = 8 + i * 32;
       let s = '';
       for (let k = 0; k < n; k++) {
@@ -2309,17 +2651,17 @@ import { MQ as Q } from './logic.ts';
     {
       title: 'Lieblingsobst',
       rows: ['Äpfel', 'Birnen', 'Bananen', 'Kirschen'],
-      read: (x) => `Wie viele Kinder mögen ${x} am liebsten?`,
+      read: (x: any) => `Wie viele Kinder mögen ${x} am liebsten?`,
       top: 'Welches Obst mögen die meisten Kinder?',
-      diff: (x, y) => `Wie viele Kinder mehr mögen ${x} als ${y}?`,
+      diff: (x: any, y: any) => `Wie viele Kinder mehr mögen ${x} als ${y}?`,
     },
     {
       title: 'So kommen wir zur Schule',
       rows: ['zu Fuß', 'Fahrrad', 'Bus', 'Auto'],
       say: { 'zu Fuß': 'zu Fuß', Fahrrad: 'mit dem Fahrrad', Bus: 'mit dem Bus', Auto: 'mit dem Auto' },
-      read: (x) => `Wie viele Kinder kommen ${x}?`,
+      read: (x: any) => `Wie viele Kinder kommen ${x}?`,
       top: 'Wie kommen die meisten Kinder zur Schule?',
-      diff: (x, y) => `Wie viele Kinder mehr kommen ${x} als ${y}?`,
+      diff: (x: any, y: any) => `Wie viele Kinder mehr kommen ${x} als ${y}?`,
     },
   ];
   const COLORS = { rot: 'Rot', blau: 'Blau', gelb: 'Gelb', gruen: 'Grün' };
@@ -2337,11 +2679,11 @@ import { MQ as Q } from './logic.ts';
   ];
   const SMU = ['sicher', 'möglich', 'unmöglich'];
   const PAIRS = [
-    (a, b) => `Du hast ${a} Hosen und ${b} T-Shirts. Wie viele Paare kannst du bilden?`,
-    (a, b) => `Du hast ${a} Mützen und ${b} Schals. Wie viele Paare kannst du bilden?`,
-    (a, b) => `${a} Sorten Eis, ${b} Sorten Soße. Wie viele Paare kannst du bilden?`,
+    (a: any, b: any) => `Du hast ${a} Hosen und ${b} T-Shirts. Wie viele Paare kannst du bilden?`,
+    (a: any, b: any) => `Du hast ${a} Mützen und ${b} Schals. Wie viele Paare kannst du bilden?`,
+    (a: any, b: any) => `${a} Sorten Eis, ${b} Sorten Soße. Wie viele Paare kannst du bilden?`,
   ];
-  function genGr2(mod, t) {
+  function genGr2(mod: string, t: number) {
     if (mod === 'geld') {
       const r = Math.random();
       if (t === 1) {
@@ -2623,29 +2965,37 @@ import { MQ as Q } from './logic.ts';
     }
     if (mod === 'daten') {
       const D = pick(DATA),
-        say = (x) => (D.say ? D.say[x] : x);
-      let vals;
+        say = (x: string | number) => (D.say ? D.say[x] : x);
+      let vals: Iterable<unknown> | null | undefined;
       if (t === 1) {
         do vals = D.rows.map(() => rnd(1, 12));
         while (new Set(vals).size < vals.length);
-        const svg = tallySVG(D.rows.map((x, i) => [x, vals[i]]));
+        const svg = tallySVG(D.rows.map((x: any, i: string | number) => [x, vals[i]]));
         if (Math.random() < 0.7) {
           const i = rnd(0, 3);
           return g.num(mod, t, 'strich', [vals[i]], { svg, ask: D.read(say(D.rows[i])), rows: D.rows, vals });
         }
         const i = vals.indexOf(Math.max(...vals));
-        return g.choice(mod, t, 'meiste', D.top, D.rows[i], shuffle(D.rows.filter((_, j) => j !== i)).slice(0, 2), {
-          pic: pic(svg),
-          why: `${D.rows[i]}: ${vals[i]} Striche, so viele hat keine andere Zeile.`,
-        });
+        return g.choice(
+          mod,
+          t,
+          'meiste',
+          D.top,
+          D.rows[i],
+          shuffle(D.rows.filter((_: any, j: any) => j !== i)).slice(0, 2),
+          {
+            pic: pic(svg),
+            why: `${D.rows[i]}: ${vals[i]} Striche, so viele hat keine andere Zeile.`,
+          },
+        );
       }
       const top = 2 * rnd(7, 10);
       do vals = D.rows.map(() => 2 * rnd(1, top / 2));
       while (new Set(vals).size < vals.length);
-      const fig = (q) =>
+      const fig = (q: any) =>
         `<div class="jm">${J.chartSVG(
           D.title,
-          D.rows.map((x, i) => ({ label: x, value: vals[i] })),
+          D.rows.map((x: any, i: string | number) => ({ label: x, value: vals[i] })),
           2,
           top,
         )}<div class="question">${q}</div></div>`;
@@ -2700,7 +3050,7 @@ import { MQ as Q } from './logic.ts';
     };
     const sec = kind === 'sicher' ? Array(n).fill(cols[0]) : split();
     const c = kind === 'möglich' ? cols[rnd(0, k - 1)] : kind === 'sicher' ? cols[0] : cols[3];
-    const cnt = sec.filter((x) => x === c).length;
+    const cnt = sec.filter((x: any) => x === c).length;
     return g.choice(
       mod,
       t,
@@ -2926,10 +3276,10 @@ import { MQ as Q } from './logic.ts';
 
   /* ================= FORMEN UND FLÄCHEN (Klasse 2) ================= */
   const f2 = maker('form2');
-  const deg = (a) => [Math.cos((a * Math.PI) / 180), -Math.sin((a * Math.PI) / 180)];
-  const r1 = (v) => Math.round(v * 10) / 10;
+  const deg = (a: number) => [Math.cos((a * Math.PI) / 180), -Math.sin((a * Math.PI) / 180)];
+  const r1 = (v: number) => Math.round(v * 10) / 10;
   // squares on a grid like Die Baustelle; axes: [name, colour, vertical] through the middle of the grid
-  function axisSVG(cells, R, Cn, axes) {
+  function axisSVG(cells: any[][], R: number, Cn: number, axes: any[][]) {
     const P = 16,
       W = Cn + 2,
       H = R + 2;
@@ -2951,8 +3301,8 @@ import { MQ as Q } from './logic.ts';
     return svgOf(W * P, H * P, b, 'Figur mit zwei Linien', height(150));
   }
   // a connected half next to the axis (columns 0 … k−1, touching column k−1), mirrored to the right
-  function symShape(R, k) {
-    const has = (cs, p) => cs.some((q) => q[0] === p[0] && q[1] === p[1]);
+  function symShape(R: number, k: number) {
+    const has = (cs: any[], p: any[]) => cs.some((q: any[]) => q[0] === p[0] && q[1] === p[1]);
     const L = [[rnd(0, R - 1), k - 1]],
       n = rnd(3, 6);
     while (L.length < n) {
@@ -2968,8 +3318,8 @@ import { MQ as Q } from './logic.ts';
     return L.concat(L.map(([r, c]) => [r, 2 * k - 1 - c]));
   }
   // an angle from the corner (0, 0): legs as lines, so the test can measure them
-  function angleSVG(a, rot) {
-    const leg = (d) => {
+  function angleSVG(a: number, rot: any) {
+    const leg = (d: any) => {
       const [x, y] = deg(d);
       return `<line class="leg" x1="0" y1="0" x2="${r1(x * 52)}" y2="${r1(y * 52)}" stroke="${OUT}" stroke-width="4" stroke-linecap="round"/>`;
     };
@@ -2987,11 +3337,11 @@ import { MQ as Q } from './logic.ts';
     strecke: ['Strecke', 'Strecken', 'die'],
     strahl: ['Strahl', 'Strahlen', 'den'],
   };
-  function lineG(kind, a, cx, cy) {
+  function lineG(kind: string | number, a: any, cx: number, cy: number) {
     const [dx, dy] = deg(a),
       L = 48;
     let b = `<path d="M${r1(cx - dx * L)} ${r1(cy - dy * L)} L${r1(cx + dx * L)} ${r1(cy + dy * L)}" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`;
-    LINES[kind].forEach((end, i) => {
+    LINES[kind].forEach((end: string, i: any) => {
       const s = i ? 1 : -1,
         x = cx + s * dx * L,
         y = cy + s * dy * L;
@@ -3002,12 +3352,12 @@ import { MQ as Q } from './logic.ts';
     });
     return `<g class="lin">${b}</g>`;
   }
-  const lineSVG1 = (kind) => svgOf(140, 84, lineG(kind, pick([0, 15, -15, 30, -30]), 70, 42), 'Linie');
+  const lineSVG1 = (kind: any) => svgOf(140, 84, lineG(kind, pick([0, 15, -15, 30, -30]), 70, 42), 'Linie');
   // a Würfel or Quader big enough to mark one corner, edge or face; the marked part is the only element with class="mark"
   const CUBE = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
-  function solidMarkSVG(quader, mark?) {
+  function solidMarkSVG(quader: boolean, mark?: string | undefined) {
     const [dx, dy, dz, k] = quader ? [2, 1, 1.2, 2.2] : [1, 1, 1, 3],
-      P = (x, y, z) => iso(x * dx, y * dy, z * dz, k);
+      P = (x: number, y: number | undefined, z: number | undefined) => iso(x * dx, y * dy, z * dz, k);
     const top: Corner[] = [
         [0, 0, 1],
         [1, 0, 1],
@@ -3097,7 +3447,7 @@ import { MQ as Q } from './logic.ts';
     );
   }
   const EKF = { Ecken: [8, 'Ecke'], Kanten: [12, 'Kante'], Flächen: [6, 'Fläche'] };
-  function genForm2(mod, t) {
+  function genForm2(mod: string, t: number) {
     if (mod === 'spiegel') {
       if (t === 1) {
         const w = Q.BAU.generate('spiegel', 1);
@@ -3107,14 +3457,14 @@ import { MQ as Q } from './logic.ts';
           'pruefen',
           w.q,
           w.answer,
-          w.options.filter((o) => o !== w.answer),
+          w.options.filter((o: any) => o !== w.answer),
           { options: w.options, pic: w.pic, cols: 2, why: w.why },
         );
       }
       // exactly one of the two lines is a Spiegelachse; the figure reaches across both, so neither is ruled out at a glance
       const R = 4,
         k = 3;
-      let cells;
+      let cells: any[][];
       do cells = symShape(R, k);
       while (
         cells.every(([r, c]) => cells.some(([r2, c2]) => r2 === R - 1 - r && c2 === c)) ||

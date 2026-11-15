@@ -23,25 +23,41 @@ export const K12E = (() => {
     PAPER = '#FFFDF5';
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by pic and optPic)
   const USED = new Set<string>();
-  const fl = (c) =>
+  const fl = (c: string) =>
     /^#[0-9A-F]{6}$/i.test(c) && c !== INK ? (USED.add(c.toUpperCase()), `url(#ke${c.slice(1).toUpperCase()})`) : c;
-  const ln = (d, w?, c?) =>
+  const ln = (d: string, w?: number | undefined, c?: string | undefined) =>
     `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
-  const sh = (d, fill, w?) =>
+  const sh = (d: string, fill: string, w?: number | undefined) =>
     `<path d="${d}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
-  const rect = (x, y, w, h, fill, rx?, sw?) =>
+  const rect = (
+    x: number,
+    y: string | number,
+    w: number,
+    h: string | number,
+    fill: string,
+    rx?: number | undefined,
+    sw?: number | undefined,
+  ) =>
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${sw || 2.5}"/>`;
-  const circ = (cx, cy, r, fill, w?) =>
+  const circ = (cx: number, cy: number, r: number, fill: string, w?: number | undefined) =>
     `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
-  const oval = (cx, cy, rx, ry, fill, w?, rot?) =>
+  const oval = (
+    cx: number,
+    cy: number,
+    rx: number,
+    ry: number,
+    fill: string,
+    w?: number | undefined,
+    rot?: number | undefined,
+  ) =>
     `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
   // white gloss: a soft spot or a stroke along the lit edge
-  const gloss = (cx, cy, rx, ry, rot?) =>
+  const gloss = (cx: number, cy: number, rx: number, ry: number, rot?: number | undefined) =>
     `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".55"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
-  const lit = (d, w) =>
+  const lit = (d: string, w: number) =>
     `<path d="${d}" fill="none" stroke="#fff" stroke-width="${w || 2}" stroke-linecap="round" opacity=".6"/>`;
-  const tube = (d, w, c) => ln(d, w + 4) + ln(d, w, c);
-  const star = (cx, cy, R, r) =>
+  const tube = (d: string, w: number, c: string) => ln(d, w + 4) + ln(d, w, c);
+  const star = (cx: number, cy: number, R: number, r: number) =>
     'M' +
     Array.from({ length: 10 }, (_, i) => {
       const a = (Math.PI / 5) * i - Math.PI / 2,
@@ -49,24 +65,25 @@ export const K12E = (() => {
       return `${(cx + d * Math.cos(a)).toFixed(1)} ${(cy + d * Math.sin(a)).toFixed(1)}`;
     }).join(' L') +
     'Z';
-  const flame = (x, y) =>
+  const flame = (x: number, y: number) =>
     sh(`M${x} ${y - 13} Q${x + 6} ${y - 5} ${x} ${y} Q${x - 6} ${y - 5} ${x} ${y - 13} Z`, '#FFB347', 2) +
     `<path d="M${x} ${y - 8} Q${x + 2.5} ${y - 3} ${x} ${y - 1} Q${x - 2.5} ${y - 3} ${x} ${y - 8} Z" fill="#FFF3B0"/>`;
   const defs = () =>
     `<defs>${[...USED].map((c) => `<linearGradient id="ke${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
   // question picture with a paper frame, answer pictures plain; labels never name the answer
-  const pic = (inner, label) =>
+  const pic = (inner: any, label: string) =>
     `<svg ${NS} class="pic" viewBox="-6 -6 112 112" style="max-width:150px" role="img" aria-label="${label}">${defs()}<rect x="-5" y="-5" width="110" height="110" rx="10" fill="${PAPER}" stroke="#C9CFDF" stroke-width="1.5"/>${inner}</svg>`;
-  const optPic = (inner, label) =>
+  const optPic = (inner: string, label: string) =>
     `<svg ${NS} viewBox="0 0 100 100" role="img" aria-label="${label}">${defs()}${inner}</svg>`;
   // smaller copy standing on the same ground line (hoch und tief)
-  const scaled = (inner, s) => `<g transform="translate(${50 - 50 * s} ${100 - 100 * s}) scale(${s})">${inner}</g>`;
+  const scaled = (inner: string, s: number) =>
+    `<g transform="translate(${50 - 50 * s} ${100 - 100 * s}) scale(${s})">${inner}</g>`;
 
   /* Gesichter */
   const SKIN = '#FFD9A8';
   const HAIR =
     sh('M14 46 Q18 10 50 11 Q82 10 86 46 Q76 27 50 27 Q24 27 14 46 Z', DARK) + lit('M30 20 Q40 15 52 15', 2.5);
-  const HEAD = (skin) => circ(11, 56, 7, skin) + circ(89, 56, 7, skin) + circ(50, 52, 40, skin, 3) + HAIR;
+  const HEAD = (skin: string) => circ(11, 56, 7, skin) + circ(89, 56, 7, skin) + circ(50, 52, 40, skin, 3) + HAIR;
   const DOTS =
     circ(37, 54, 4.5, INK, 0) +
     circ(63, 54, 4.5, INK, 0) +
@@ -124,13 +141,13 @@ export const K12E = (() => {
 
   /* Zeichen der Feste */
   const FESTE = ['Geburtstag', 'Erntedank', 'St. Martin', 'Advent', 'Nikolaus', 'Weihnachten', 'Silvester', 'Ostern'];
-  const candle = (x, y, h, c) =>
+  const candle = (x: number, y: number, h: number, c: string) =>
     rect(x - 4, y - h, 8, h, c, 1.5, 2) +
     lit(`M${x - 1.5} ${y - h + 3} V${y - 3}`, 1.5) +
     ln(`M${x} ${y - h} v-3`, 1.5) +
     flame(x, y - h - 2);
   // Ähre: stalk and two rows of grains, tip at (x, y)
-  const ear = (x, y, rot) =>
+  const ear = (x: number, y: number, rot: number) =>
     `<g transform="rotate(${rot} ${x} ${y})">${ln(`M${x} ${y} V${y + 40}`, 2, '#B8862E')}${[0, 6, 12, 18].map((d) => oval(x - 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, -25) + oval(x + 2.6, y + 4 + d, 2.6, 4, '#F2C14E', 1.2, 25)).join('')}${oval(x, y + 1, 2.4, 4, '#F2C14E', 1.2)}</g>`;
   const heart =
     'M0 0 C-4 -6 -17 -9 -17 -20 C-17 -27 -9 -30 -4.5 -26.5 Q-1.5 -24 0 -20 Q1.5 -24 4.5 -26.5 C9 -30 17 -27 17 -20 C17 -9 4 -6 0 0 Z';
@@ -313,7 +330,12 @@ export const K12E = (() => {
         gloss(34, 30, 5, 10, 20),
     },
   ];
-  const symFits = (a, b) => a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
+  const symFits = (
+    a: { fest: any; not: any },
+    b:
+      | { id: string; fest: string; note: string; svg: string; not?: undefined }
+      | { id: string; fest: string; note: string; not: string[]; svg: string },
+  ) => a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
 
   /* Instrumente */
   // Handtrommel: flat wooden frame with a skin, played with the hand or a soft beater
@@ -443,7 +465,7 @@ export const K12E = (() => {
         `<circle cx="${x + 4}" cy="${(t + 4.5).toFixed(1)}" r="1.1" fill="${INK}"/><circle cx="${x + 4}" cy="${(b - 4.5).toFixed(1)}" r="1.1" fill="${INK}"/>`
       );
     }).join('');
-  const mallet = (x1, y1, x2, y2) =>
+  const mallet = (x1: number, y1: number, x2: number, y2: number) =>
     tube(`M${x1} ${y1} L${x2} ${y2}`, 2.4, WOOD) + circ(x1, y1, 5, RED, 2) + gloss(x1 - 1.5, y1 - 1.5, 1.5, 1.2);
   const INSTR = [
     {
@@ -643,7 +665,7 @@ export const K12E = (() => {
   };
   const HOWS = ['zupfen', 'streichen', 'blasen', 'schlagen', 'schütteln', 'Tasten drücken'];
   // hoch und tief: the same drawing small and big; the long bar of the Glockenspiel sounds lower; Geige against Kontrabass
-  const bar = (w) =>
+  const bar = (w: number) =>
     rect(50 - w / 2, 42, w, 16, BLUE, 3) +
     lit(`M${50 - w / 2 + 4} 46 H${50 + w / 2 - 4}`, 1.5) +
     circ(50 - w / 2 + 6, 50, 2, INK, 0) +
@@ -661,7 +683,37 @@ export const K12E = (() => {
   ];
 
   /* ---------- gemeinsame Bausteine ---------- */
-  const choice = (mod, note, q, answer, wrongs, qid, extra) =>
+  const choice = (
+    mod: string,
+    note: string,
+    q: string,
+    answer: string,
+    wrongs: string | any[],
+    qid: string,
+    extra: {
+      pic?: string;
+      face?: any;
+      svgOpts?: boolean;
+      why?: any;
+      faces?: any[];
+      sym?: any;
+      syms?: any[];
+      instr?: any;
+      instrs?: any[];
+      form?: any;
+      parts?: any[];
+      how?: any;
+      opps?: any[];
+      opp?: any;
+      moods?: any[];
+      mood?: any;
+      body?: any;
+      bodies?: any[];
+      signs?: any[];
+      sign?: any;
+      pats?: any[];
+    },
+  ) =>
     Object.assign(
       {
         kind: 'choice',
@@ -677,12 +729,12 @@ export const K12E = (() => {
       },
       extra || {},
     );
-  const some = (list, n) => shuffle(list.slice()).slice(0, n);
-  const ord = (mod, group, src, qid) => {
-    const idx = shuffle(src.items.map((_, i) => i))
+  const some = (list: string | any[], n: number) => shuffle(list.slice()).slice(0, n);
+  const ord = (mod: string, group: string, src: { items: any; q: string } & { note: string }, qid: string) => {
+    const idx = shuffle(src.items.map((_: any, i: any) => i))
       .slice(0, 4)
-      .sort((a, b) => a - b);
-    const items = idx.map((i) => src.items[i]);
+      .sort((a: number, b: number) => a - b);
+    const items = idx.map((i: string | number) => src.items[i]);
     return {
       kind: 'order',
       mod,
@@ -691,21 +743,29 @@ export const K12E = (() => {
       note: src.note,
       q: src.q,
       items,
-      order: items.map((x) => x.id),
+      order: items.map((x: { id: any }) => x.id),
       display: shuffle(items),
       qid: qid + idx.join(''),
     };
   };
-  const steps = (prefix, texts) => texts.map((text, i) => ({ id: prefix + (i + 1), text }));
+  const steps = (prefix: string, texts: any[]) => texts.map((text: any, i: number) => ({ id: prefix + (i + 1), text }));
   // events ask for one topic (opts.g): those questions come from the pool
-  const wantsPool = (pool, mod, opts) => !!(opts && opts.g && pool.some((p) => p.mod === mod && p.g === opts.g));
+  const wantsPool = (pool: any[], mod: any, opts: { g: any }) =>
+    !!(opts && opts.g && pool.some((p: { mod: any; g: any }) => p.mod === mod && p.g === opts.g));
   const RF = [
     'Hör dir den Satz an.',
     'Stimmt er? Dann tippe auf „Richtig“.',
     'Stimmt er nicht? Dann tippe auf „Falsch“.',
   ];
   const UNDO = 'Mit „Rückgängig“ nimmst du dein letztes Tippen zurück.';
-  const ask = (title, text, task, g, win, lose) => ({
+  const ask = (
+    title: string,
+    text: string,
+    task: string,
+    g: string | undefined,
+    win: { item: string },
+    lose: { hp?: number; xp?: number },
+  ) => ({
     title,
     text,
     opts: [
@@ -1279,7 +1339,7 @@ export const K12E = (() => {
       qid: 'k1eot_',
     },
   ];
-  function gen1(mod, tier, know, seq, opts) {
+  function gen1(mod: string, tier: any, know: any, seq: any, opts: any) {
     if (mod !== 'gefuehl' || wantsPool(POOL1, mod, opts) || Math.random() < 0.4) return null;
     const id = pick(FACE_IDS),
       f = FACES[id];
@@ -1292,7 +1352,7 @@ export const K12E = (() => {
         some(
           FACE_IDS.filter((x) => x !== id),
           2,
-        ).map((x) => FACES[x].word),
+        ).map((x: string | number) => FACES[x].word),
         'k1egb_' + id,
         { pic: pic(f.svg, 'Gesicht eines Kindes'), face: id },
       );
@@ -1302,7 +1362,7 @@ export const K12E = (() => {
         2,
       ),
     );
-    const opt = (x) => optPic(FACES[x].svg, 'Gesicht');
+    const opt = (x: string | number) => optPic(FACES[x].svg, 'Gesicht');
     return choice(
       'gefuehl',
       'gefuehle',
@@ -2309,7 +2369,7 @@ export const K12E = (() => {
       q: 'Ein Blatt im Jahr: Tippe der Reihe nach an.',
     },
   ].map((o) => Object.assign(o, { note: 'wachsen' }));
-  function gen2(mod, tier, know, seq, opts) {
+  function gen2(mod: string, tier: any, know: any, seq: any, opts: any) {
     if (wantsPool(POOL2, mod, opts)) return null;
     const r = Math.random();
     if (mod === 'jahr' && r < 0.55)
@@ -2346,11 +2406,11 @@ export const K12E = (() => {
         'k2fsb_' + s.id,
         { pic: pic(s.svg, 'Zeichen eines Festes'), sym: s.id },
       );
-    const opt = (x) => optPic(x.svg, 'Zeichen');
+    const opt = (x: { svg: any }) => optPic(x.svg, 'Zeichen');
     return choice('symbol', s.note, `Tippe auf das Zeichen für ${s.fest}.`, opt(s), others.map(opt), 'k2fst_' + s.id, {
       svgOpts: true,
       why: `Das gehört zu ${s.fest}:`,
-      syms: [s.id].concat(others.map((x) => x.id)),
+      syms: [s.id].concat(others.map((x: { id: any }) => x.id)),
     });
   }
   K.MODES.feste2 = unit(
@@ -3048,7 +3108,7 @@ export const K12E = (() => {
       a: 0,
     },
   ];
-  function gen3(mod, tier, know, seq, opts) {
+  function gen3(mod: string, tier: any, know: any, seq: any, opts: any) {
     if (wantsPool(POOL3, mod, opts)) return null;
     if (mod === 'form') return formTask();
     const r = Math.random();
@@ -3064,7 +3124,7 @@ export const K12E = (() => {
           some(
             INSTR.filter((x) => x !== i),
             2,
-          ).map((x) => x.name),
+          ).map((x: { name: any }) => x.name),
           'k2mb_' + i.id,
           look,
         );
@@ -3072,11 +3132,11 @@ export const K12E = (() => {
         INSTR.filter((x) => x !== i),
         2,
       );
-      const opt = (x) => optPic(x.svg, 'Instrument');
+      const opt = (x: { svg: any }) => optPic(x.svg, 'Instrument');
       return choice('bild', 'instrumente', `Tippe auf ${i.acc}.`, opt(i), others.map(opt), 'k2mt_' + i.id, {
         svgOpts: true,
         why: `So sieht ${i.acc} aus:`,
-        instrs: [i.id].concat(others.map((x) => x.id)),
+        instrs: [i.id].concat(others.map((x: { id: any }) => x.id)),
       });
     }
     if (mod === 'familie' && r < 0.7)
@@ -3088,7 +3148,7 @@ export const K12E = (() => {
         some(
           Object.keys(FAM).filter((f) => f !== i.fam && !(i.notFam || []).includes(f)),
           2,
-        ).map((f) => FAM[f]),
+        ).map((f: string | number) => FAM[f]),
         'k2mfb_' + i.id,
         look,
       );
@@ -3108,7 +3168,7 @@ export const K12E = (() => {
     if (mod === 'hoch' && r < 0.6) {
       const p = pick(PAIRS),
         low = Math.random() < 0.5;
-      const opt = (inner) => optPic(inner, 'Instrument');
+      const opt = (inner: any) => optPic(inner, 'Instrument');
       const sizes = shuffle([1, 2]);
       return {
         kind: 'choice',
@@ -3117,7 +3177,7 @@ export const K12E = (() => {
         group: 'hoch:1',
         note: 'hoch',
         q: `${p.q} klingt ${low ? 'tiefer' : 'höher'}?`,
-        options: sizes.map((s) => opt(s === 2 ? p.big : p.small)),
+        options: sizes.map((s: number) => opt(s === 2 ? p.big : p.small)),
         answer: opt(low ? p.big : p.small),
         sizes,
         svgOpts: true,
@@ -3130,26 +3190,26 @@ export const K12E = (() => {
   }
   // Wiederholung und Gegensatz: each part of a piece is a pattern of three shapes; A comes back, B is the contrast
   const SHAPES = {
-    k: (x) => circ(x, 50, 11, BLUE, 2),
-    q: (x) => rect(x - 10, 40, 20, 20, RED, 3, 2),
-    d: (x) => sh(`M${x} 37 L${x + 13} 61 L${x - 13} 61 Z`, GOLD, 2),
+    k: (x: any) => circ(x, 50, 11, BLUE, 2),
+    q: (x: number) => rect(x - 10, 40, 20, 20, RED, 3, 2),
+    d: (x: number) => sh(`M${x} 37 L${x + 13} 61 L${x - 13} 61 Z`, GOLD, 2),
   };
-  const part = (code, ox) =>
+  const part = (code: any, ox: number) =>
     rect(ox + 4, 22, 92, 56, PAPER, 10, 2) + [...code].map((c, i) => SHAPES[c](ox + 22 + i * 28)).join('');
-  const gap = (ox) =>
+  const gap = (ox: number) =>
     `<rect x="${ox + 4}" y="22" width="92" height="56" rx="10" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="6 5"/><text x="${ox + 50}" y="61" font-size="30" font-weight="700" text-anchor="middle" fill="${INK}">?</text>`;
-  const strip = (codes) => {
-    const inner = codes.map((c, i) => (c ? part(c, i * 100) : gap(i * 100))).join('');
+  const strip = (codes: any[]) => {
+    const inner = codes.map((c: any, i: number) => (c ? part(c, i * 100) : gap(i * 100))).join('');
     return `<svg ${NS} class="pic" viewBox="0 0 300 100" style="max-width:300px" role="img" aria-label="Musikstück aus Mustern">${defs()}${inner}</svg>`;
   };
-  const mix = (letters) => {
+  const mix = (letters: any[]) => {
     for (;;) {
       const c = Array.from({ length: 3 }, () => pick(letters)).join('');
       if (new Set(c).size > 1) return c;
     }
   };
   const FORMS = ['ABA', 'AAB', 'ABB'];
-  const formName = (f) => [...f].join(' – ');
+  const formName = (f: any) => [...f].join(' – ');
   function formTask() {
     const [x, y, z] = shuffle(Object.keys(SHAPES));
     const a = mix([x, y]),
@@ -3169,7 +3229,7 @@ export const K12E = (() => {
     // the changed copy of A: one shape swapped, so it only looks like the beginning
     const i = Math.floor(Math.random() * 3),
       v = a.slice(0, i) + (a[i] === x ? y : x) + a.slice(i + 1);
-    const opt = (c) => optPic(part(c, 0), 'Muster');
+    const opt = (c: string) => optPic(part(c, 0), 'Muster');
     return choice('form', 'form', 'Welches Muster wiederholt den Anfang?', opt(a), [opt(b), opt(v)], 'k2mfa_' + a + b, {
       pic: strip([a, b, null]),
       svgOpts: true,
@@ -3336,10 +3396,10 @@ export const K12E = (() => {
     HARE = '#D8C3A5',
     SKY = '#3A4A7A',
     LINE = '#2478D6';
-  const cloud = (fill) =>
+  const cloud = (fill: string) =>
     sh('M24 60 Q8 60 9 47 Q10 35 23 35 Q25 19 42 19 Q53 8 67 18 Q84 15 87 33 Q97 40 92 52 Q89 60 78 60 Z', fill) +
     lit('M17 43 Q20 38 26 38 M44 25 Q52 18 60 22', 2.5);
-  const drop = (x, y) =>
+  const drop = (x: number, y: number) =>
     sh(`M${x} ${y - 9} Q${x + 7} ${y + 1} ${x} ${y + 5} Q${x - 7} ${y + 1} ${x} ${y - 9} Z`, BLUE, 2);
   // hand seen from the palm side, fingers up, wrist at 0 0
   const hand =
@@ -3353,7 +3413,8 @@ export const K12E = (() => {
       .map(([x, h]) => rect(x - 2.8, -20 - h, 5.6, h + 6, SKIN1, 2.8, 2.2))
       .join('') +
     rect(-11.5, -24, 23, 24, SKIN1, 7, 2.2);
-  const at = (x, y, rot, s, inner) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})">${inner}</g>`;
+  const at = (x: number, y: number, rot: number, s: number, inner: string) =>
+    `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})">${inner}</g>`;
   const left = `<g transform="scale(-1 1)">${hand}</g>`;
   // Gegensätze: two pictures per pair, the answer is always one of the two
   const OPP = [
@@ -3477,7 +3538,8 @@ export const K12E = (() => {
         sh(
           Array.from({ length: 12 }, (_, i) => {
             const a = (i * Math.PI) / 6,
-              p = (r, d) => `${(50 + r * Math.cos(a + d)).toFixed(1)} ${(50 + r * Math.sin(a + d)).toFixed(1)}`;
+              p = (r: number, d: number) =>
+                `${(50 + r * Math.cos(a + d)).toFixed(1)} ${(50 + r * Math.sin(a + d)).toFixed(1)}`;
             return `M${p(30, -0.2)} L${p(47, 0)} L${p(30, 0.2)} Z`;
           }).join(' '),
           '#FFB347',
@@ -3546,7 +3608,10 @@ export const K12E = (() => {
         lit('M18 30 Q22 24 30 24', 2.5),
     },
   ];
-  const moodFits = (a, b) => a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
+  const moodFits = (
+    a: { id: any; not: string | any[] },
+    b: { id: any; music?: string; not: any; qs?: string[]; svg?: string },
+  ) => a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
   const BODY: { id: string; noun: string; svg: string; word?: string }[] = [
     {
       id: 'klatschen',
@@ -3599,7 +3664,7 @@ export const K12E = (() => {
     b.word = b.noun.toLowerCase();
   });
   // eigene Zeichen: long line = long tone, dots = short tones, big = loud, small = quiet; read from left to right
-  const dash = (x1, x2, w?) => tube(`M${x1} 50 H${x2}`, w || 6, BLUE);
+  const dash = (x1: number, x2: number, w?: number | undefined) => tube(`M${x1} 50 H${x2}`, w || 6, BLUE);
   const SIGNS = [
     {
       id: 'lang',
@@ -3644,13 +3709,47 @@ export const K12E = (() => {
       })
       .join(''),
   }));
-  const patWords = (id) => [...id].map((c, i) => (c === 'L' ? (i ? 'lang' : 'Lang') : i ? 'kurz' : 'Kurz')).join(', ');
+  const patWords = (id: any) =>
+    [...id].map((c, i) => (c === 'L' ? (i ? 'lang' : 'Lang') : i ? 'kurz' : 'Kurz')).join(', ');
   const ORFF = ['trommel', 'triangel', 'klanghoelzer', 'rassel', 'schellenkranz', 'glockenspiel'].map(
     (id) => INSTR.find((i) => i.id === id)!,
   );
   const SPIEL1 = ORFF.concat(INSTR.filter((i) => i.id === 'gitarre'));
   // a way of playing is only offered as wrong if it is neither the instrument's own nor also possible (notHow)
-  const wrongHow = (i, h) => h !== i.how && !(i.notHow || []).includes(h);
+  const wrongHow = (
+    i:
+      | {
+          id: string;
+          name: string;
+          acc: string;
+          fam: string;
+          how: string;
+          svg: string;
+          notHow?: undefined;
+          notFam?: undefined;
+        }
+      | {
+          id: string;
+          name: string;
+          acc: string;
+          fam: string;
+          how: string;
+          notHow: string[];
+          svg: string;
+          notFam?: undefined;
+        }
+      | {
+          id: string;
+          name: string;
+          acc: string;
+          fam: string;
+          how: string;
+          notFam: string[];
+          notHow: string[];
+          svg: string;
+        },
+    h: string,
+  ) => h !== i.how && !(i.notHow || []).includes(h);
   const NOTES4 = {
     instrumente: {
       title: 'Instrumente aus der Klangkiste',
@@ -3942,10 +4041,18 @@ export const K12E = (() => {
       a: 0,
     },
   ];
-  function gen4(mod, tier, know, seq, opts) {
+  function gen4(mod: string, tier: any, know: any, seq: any, opts: any) {
     if (wantsPool(POOL4, mod, opts) || Math.random() < 0.25) return null;
     const r = Math.random();
-    const opt = (x) => optPic(x.svg, 'Bild');
+    const opt = (x: {
+      id?: string;
+      dim?: string;
+      word?: string;
+      tap?: string;
+      why?: string;
+      svg: any;
+      mean?: string;
+    }) => optPic(x.svg, 'Bild');
     if (mod === 'instr') {
       const i = pick(ORFF),
         others = some(
@@ -3958,14 +4065,14 @@ export const K12E = (() => {
           'instrumente',
           'Wie heißt das Instrument?',
           i.name,
-          others.map((x) => x.name),
+          others.map((x: { name: any }) => x.name),
           'k1mb_' + i.id,
           { pic: pic(i.svg, 'Bild eines Instruments'), instr: i.id },
         );
       return choice('instr', 'instrumente', `Tippe auf ${i.acc}.`, opt(i), others.map(opt), 'k1mt_' + i.id, {
         svgOpts: true,
         why: `So sieht ${i.acc} aus:`,
-        instrs: [i.id].concat(others.map((x) => x.id)),
+        instrs: [i.id].concat(others.map((x: { id: any }) => x.id)),
       });
     }
     if (mod === 'spielen') {
@@ -3992,7 +4099,7 @@ export const K12E = (() => {
         svgOpts: true,
         why: `Das ${verb} man:`,
         how: h,
-        instrs: [i.id].concat(others.map((x) => x.id)),
+        instrs: [i.id].concat(others.map((x: { id: any }) => x.id)),
       });
     }
     if (mod === 'gegen') {
@@ -4042,7 +4149,7 @@ export const K12E = (() => {
           'koerper',
           'Was macht das Kind?',
           b.word,
-          others.map((x) => x.word),
+          others.map((x: { word: any }) => x.word),
           'k1mkb_' + b.id,
           { pic: pic(b.svg, 'Bild'), body: b.id },
         );
@@ -4053,7 +4160,7 @@ export const K12E = (() => {
         opt(b),
         others.map(opt),
         'k1mkt_' + b.id,
-        { svgOpts: true, why: `So sieht ${b.noun} aus:`, bodies: [b.id].concat(others.map((x) => x.id)) },
+        { svgOpts: true, why: `So sieht ${b.noun} aus:`, bodies: [b.id].concat(others.map((x: { id: any }) => x.id)) },
       );
     }
     if (mod === 'zeichen') {

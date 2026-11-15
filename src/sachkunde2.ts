@@ -6,7 +6,7 @@ import { MS as S, type PartsPicture } from './sachkunde.ts';
 export const MS2 = (() => {
   const { shuffle, pick, rnd } = K;
   const { NS, STROKE, txt, choice, partsSVG, plantTask, partPool, wantsPool, orderTask, PLANTS } = S;
-  const HIT = (d) => `<path class="hitarea" d="${d}" fill="transparent"/>`;
+  const HIT = (d: string) => `<path class="hitarea" d="${d}" fill="transparent"/>`;
 
   /* ================= DIE FÜNF SINNE (LB 2) ================= */
   // Teile von Auge und Ohr (für Lehrkräfte anpassbar): id, name, desc (Notizkarte), tip (Hinweis beim Suchen)
@@ -69,24 +69,24 @@ export const MS2 = (() => {
     find: (p) => `Tippe auf: ${p.name}`,
   } as Omit<PartsPicture, 'svg'> as PartsPicture;
   // points on the edges of the eye opening: quadratic curves from 60|110 over 150|cy to 240|110 (cy 44 above, 170 below)
-  const lidAt = (t, cy) => [
+  const lidAt = (t: number, cy: number) => [
     (1 - t) ** 2 * 60 + 2 * t * (1 - t) * 150 + t * t * 240,
     (1 - t) ** 2 * 110 + 2 * t * (1 - t) * cy + t * t * 110,
   ];
-  const f1 = (v) => Math.round(v * 10) / 10;
+  const f1 = (v: number) => Math.round(v * 10) / 10;
   // texture strokes sit in style="" so a glowing part keeps them (the glow rule recolours stroke attributes only)
-  const tex = (d, c, w, o?) =>
+  const tex = (d: string, c: string, w: number, o?: number | undefined) =>
     `<path d="${d}" fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round"${o ? ` opacity="${o}"` : ''}/>`;
-  const lashes = (cy, ts, len) =>
+  const lashes = (cy: number, ts: any[], len: number) =>
     ts
-      .map((t) => {
+      .map((t: number) => {
         const [x, y] = lidAt(t, cy),
           dx = (t - 0.5) * 26,
           l = len * (1 - Math.abs(t - 0.5)) * (cy < 110 ? -1 : 1);
         return `M${f1(x)} ${f1(y)} q${f1(dx * 0.1)} ${f1(l * 0.8)} ${f1(dx)} ${f1(l)}`;
       })
       .join(' ');
-  const ray = (cx, cy, n, r0, r1, odd) =>
+  const ray = (cx: number, cy: number, n: number, r0: number, r1: number, odd: number) =>
     Array.from({ length: n }, (_, i) => {
       const a = ((i * 2 + odd) * Math.PI) / n + (i % 3) * 0.04,
         a1 = r0 + (i % 3),
@@ -272,12 +272,12 @@ export const MS2 = (() => {
       ex: ['Das Katzenfell ist weich.', 'Der Schnee ist kalt.', 'Der Igel ist stachelig.'],
     },
   ];
-  function senseTask(mod) {
+  function senseTask(mod: string) {
     const s = pick(SENSES);
-    const others = (k) =>
+    const others = (k: string) =>
       shuffle(SENSES.filter((x) => x !== s))
         .slice(0, 2)
-        .map((x) => x[k]);
+        .map((x: { [x: string]: any }) => x[k]);
     const v = rnd(0, 2);
     if (v === 0) {
       const ex = pick(s.ex);
@@ -928,20 +928,20 @@ export const MS2 = (() => {
   };
 
   /* ---------- Sinnestäuschungen: erst vermuten, dann Ergebnis (wie das Forscherlabor) ---------- */
-  const pic = (inner, label, box?) =>
+  const pic = (inner: string, label: string, box?: undefined) =>
     `<svg ${NS} class="pic" viewBox="${box || '0 0 240 150'}" aria-label="${label}"><rect width="${(box || '0 0 240 150').split(' ')[2]}" height="${(box || '0 0 240 150').split(' ')[3]}" rx="10" fill="#fff"/>${inner}</svg>`;
-  const guide = (x, y1, y2) =>
+  const guide = (x: number, y1: number, y2: number) =>
     `<path d="M${x} ${y1} L${x} ${y2}" stroke="#E5484D" stroke-width="2" stroke-dasharray="5 4"/>`;
-  const fins = (x1, x2, y, out) => {
+  const fins = (x1: number, x2: number, y: number, out: boolean) => {
     const d = out ? -16 : 16;
     return `<path d="M${x1} ${y} L${x2} ${y} M${x1} ${y} l${d} -12 M${x1} ${y} l${d} 12 M${x2} ${y} l${-d} -12 M${x2} ${y} l${-d} 12" stroke="${STROKE}" stroke-width="4" stroke-linecap="round" fill="none"/>`;
   };
-  const ring = (cx, cy, r, n, R) =>
+  const ring = (cx: number, cy: number, r: number, n: number, R: number) =>
     Array.from({ length: n }, (_, i) => {
       const a = (i * 2 * Math.PI) / n;
       return `<circle cx="${(cx + Math.cos(a) * R).toFixed(1)}" cy="${(cy + Math.sin(a) * R).toFixed(1)}" r="${r}" fill="#9AA3C2"/>`;
     }).join('');
-  const bowl = (x, label, fill) =>
+  const bowl = (x: number, label: string, fill: string) =>
     `<path d="M${x - 34} 70 Q${x - 34} 120 ${x} 120 Q${x + 34} 120 ${x + 34} 70 Z" fill="${fill}" stroke="${STROKE}" stroke-width="2.5"/>${txt(x, 140, label, { size: 13 })}`;
   const ILLUSIONS = [
     {
@@ -1041,7 +1041,7 @@ export const MS2 = (() => {
       shuffle(ILLUSIONS.filter((x) => x.look))
         .slice(0, 3)
         .concat(shuffle(ILLUSIONS.filter((x) => !x.look)).slice(0, 2)),
-    ).map((x) => ({
+    ).map((x: { id: any; q: any; opts: string | any[]; a: any; note: any; pic: any; after: any }) => ({
       kind: x.id,
       topic: 'taeuschung',
       q: x.q,
@@ -1052,8 +1052,8 @@ export const MS2 = (() => {
       after: x.after,
     }));
 
-  function siGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function siGen(cfg: Unit) {
+    return (mod: string, tier: number, know: { [x: string]: any }, seq: number, opts: { g: any } | undefined) => {
       if (mod === 'parts') return plantTask(cfg, 'auge', mod, tier, know, seq, opts);
       if (wantsPool(cfg, mod, opts)) return null;
       if (mod === 'sinne' && Math.random() < 0.6) return senseTask(mod);
@@ -1325,12 +1325,13 @@ export const MS2 = (() => {
 
   /* ================= SICHER IM VERKEHR (LB 5) ================= */
   // Verkehrszeichen nach StVO im Kasten 0–100: weißer Rand, Tusche-Umriss, Emailglanz von links oben
-  const disc = (r) => `M${50 - r} 50 A${r} ${r} 0 1 0 ${50 + r} 50 A${r} ${r} 0 1 0 ${50 - r} 50 Z`;
-  const box = (x, y, w, h, r) =>
+  const disc = (r: number) => `M${50 - r} 50 A${r} ${r} 0 1 0 ${50 + r} 50 A${r} ${r} 0 1 0 ${50 - r} 50 Z`;
+  const box = (x: number, y: number, w: number, h: number, r: number) =>
     `M${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w} ${y + r} V${y + h - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} H${x + r} A${r} ${r} 0 0 1 ${x} ${y + h - r} V${y + r} A${r} ${r} 0 0 1 ${x + r} ${y} Z`;
-  const poly = (pts) => 'M' + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join(' L') + ' Z';
-  const around = (pts, k, cx, cy) => poly(pts.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]));
-  const OCT = (R) =>
+  const poly = (pts: number[][] | [any, any][]) => 'M' + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join(' L') + ' Z';
+  const around = (pts: number[][] | [any, any][], k: number, cx: number, cy: number) =>
+    poly(pts.map(([x, y]) => [cx + (x - cx) * k, cy + (y - cy) * k]));
+  const OCT = (R: number) =>
     poly(
       Array.from({ length: 8 }, (_, i) => [
         50 + R * Math.cos(((22.5 + 45 * i) * Math.PI) / 180),
@@ -1348,17 +1349,18 @@ export const MS2 = (() => {
       [50, 97],
       [3, 50],
     ];
-  const vg = (id, a, b) =>
+  const vg = (id: string, a: string, b: string) =>
     `<linearGradient id="vz-${id}" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
   const SIGN_DEFS =
     `<defs>${vg('red', '#E8424A', '#B3141E')}${vg('blue', '#3474C8', '#164C94')}${vg('yellow', '#FFD84A', '#EBA600')}${vg('white', '#FFFFFF', '#E3E8EF')}${vg('case', '#4A5560', '#1F262C')}` +
     '<radialGradient id="vz-sheen" cx="28%" cy="20%" r="90%"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#0B1020" stop-opacity=".12"/></radialGradient></defs>';
   // outer: the whole plate (white rim included); inner: the coloured field
-  const sign = (outer, inner, col, sym) =>
+  const sign = (outer: string, inner: string, col: string, sym: string) =>
     `${SIGN_DEFS}<path d="${outer}" fill="${STROKE}" opacity=".18" transform="translate(1.5 2.5)"/><path d="${outer}" fill="url(#vz-white)" stroke="${STROKE}" stroke-width="3" stroke-linejoin="round"/>${inner ? `<path d="${inner}" fill="${col}"/>` : ''}${sym}<path d="${outer}" fill="url(#vz-sheen)"/>`;
-  const LINE = (c, w) => `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+  const LINE = (c: string, w: number) =>
+    `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
   // facing right like on the signs 237 and 254
-  const BIKE = (c, w?) =>
+  const BIKE = (c: string, w?: number | undefined) =>
     `<g ${LINE(c, w || 4.5)}><circle cx="30" cy="61" r="13"/><circle cx="70" cy="61" r="13"/><path d="M30 61 L47 61 L41 41 M30 61 L42.2 45 L64.4 45 M47 61 L64 45 M70 61 L62 38 L58 33 M62 38 L69 36 M36 39 L47 39"/></g>`;
   const SANS = 'style="font-family:\'Arial Narrow\',Arial,Helvetica,sans-serif"';
   const SIGN_ART: Record<string, string> = {
@@ -1441,7 +1443,7 @@ export const MS2 = (() => {
     ['gelb', '#FFD23A', 50],
     ['gruen', '#3FD27A', 80],
   ];
-  const lamp = (lit) =>
+  const lamp = (lit: string) =>
     `${SIGN_DEFS}<rect x="31" y="3" width="38" height="94" rx="9" fill="${STROKE}" opacity=".18" transform="translate(1.5 2.5)"/><rect x="31" y="3" width="38" height="94" rx="9" fill="url(#vz-case)" stroke="${STROKE}" stroke-width="3"/>` +
     LAMPS.map(([k, c, y]) => {
       const on = k === lit;
@@ -1479,9 +1481,9 @@ export const MS2 = (() => {
   ];
   // these two both mean „let the others go first“, so neither is a wrong option for the other
   const ALIKE = ['stopp', 'vorfahrtgewaehren'];
-  const signSVG = (id, opt?) =>
+  const signSVG = (id: string | number, opt?: boolean | undefined) =>
     `<svg ${NS} class="${opt ? '' : 'pic'}" viewBox="0 0 100 100" ${opt ? '' : 'style="max-width:140px"'} aria-label="Verkehrszeichen">${SIGN_ART[id]}</svg>`;
-  function signTask(mod, tier) {
+  function signTask(mod: string, tier: number) {
     const s = pick(SIGNS);
     const others = shuffle(SIGNS.filter((x) => x !== s && !(ALIKE.includes(x.id) && ALIKE.includes(s.id)))).slice(0, 2);
     if (tier >= 2)
@@ -1505,7 +1507,7 @@ export const MS2 = (() => {
         'zeichen',
         'Was bedeutet dieses Zeichen?',
         s.mean,
-        others.map((x) => x.mean),
+        others.map((x: { mean: any }) => x.mean),
         'vzmean_' + s.id,
       ),
       { pic: signSVG(s.id) },
@@ -1544,35 +1546,35 @@ export const MS2 = (() => {
       art: '<rect x="-14" y="2" width="6" height="14" rx="2" fill="#333"/><rect x="8" y="2" width="6" height="14" rx="2" fill="#333"/><rect x="-11" y="-16" width="4" height="8" rx="1" fill="#333"/><rect x="7" y="-16" width="4" height="8" rx="1" fill="#333"/><rect x="-8" y="-18" width="16" height="34" rx="3" fill="#43A047" stroke="#1C2541" stroke-width="2"/><rect x="-7" y="2" width="14" height="12" rx="2" fill="#C8E6C9" stroke="#1C2541" stroke-width="1.5"/>',
     },
   ];
-  const vehicleAt = (arm, v) => {
+  const vehicleAt = (arm: string | number, v: { art: any }) => {
     const a = ARMS[arm];
     return `<g transform="translate(${a.x} ${a.y}) rotate(${a.rot})">${v.art}<path d="M0 -24 L0 -42 M-6 -36 L0 -43 L6 -36" stroke="#FFC93C" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>`;
   };
-  const smallSign = (arm, art) => {
+  const smallSign = (arm: string, art: string) => {
     const [x, y] = SIGN_AT[arm];
     return `<path d="M${x} ${y + 10} L${x} ${y + 24}" stroke="#555" stroke-width="2"/><g transform="translate(${x - 11} ${y - 12}) scale(.22)">${art}</g>`;
   };
-  function crossingSVG(cars, extras?) {
+  function crossingSVG(cars: any[], extras?: string | undefined) {
     const road =
       '<rect x="90" width="60" height="240" fill="#8A8F98"/><rect y="90" width="240" height="60" fill="#8A8F98"/><path d="M120 0 L120 88 M120 152 L120 240 M0 120 L88 120 M152 120 L240 120" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 8"/>';
-    return `<svg ${NS} class="pic" viewBox="0 0 240 240" style="max-width:280px" aria-label="Kreuzung von oben"><rect width="240" height="240" rx="12" fill="#9CCC65"/>${road}${extras || ''}${cars.map((c) => vehicleAt(c.arm, c.v)).join('')}<g transform="translate(222 22)"><path d="M0 -12 L6 4 L0 0 L-6 4 Z" fill="${STROKE}"/>${txt(0, 18, 'N', { size: 11 })}</g></svg>`;
+    return `<svg ${NS} class="pic" viewBox="0 0 240 240" style="max-width:280px" aria-label="Kreuzung von oben"><rect width="240" height="240" rx="12" fill="#9CCC65"/>${road}${extras || ''}${cars.map((c: { arm: any; v: any }) => vehicleAt(c.arm, c.v)).join('')}<g transform="translate(222 22)"><path d="M0 -12 L6 4 L0 0 L-6 4 Z" fill="${STROKE}"/>${txt(0, 18, 'N', { size: 11 })}</g></svg>`;
   }
   // tier 1: rechts vor links with two cars at a right angle or three cars; tier 2: Vorfahrtstraße / Vorfahrt gewähren / Stopp or traffic lights
-  function rightOfWayTask(mod, tier) {
+  function rightOfWayTask(mod: string, tier: number) {
     const vs = shuffle(VEHICLES);
     if (tier <= 1) {
       const arms =
         Math.random() < 0.5
           ? shuffle(['S', 'W', 'N', 'E']).slice(0, 3)
           : (([a]) => [a, RIGHT_OF[a]])(shuffle(['S', 'W', 'N', 'E']));
-      const cars = arms.map((arm, i) => ({ arm, v: vs[i] }));
-      const first = cars.find((c) => !arms.includes(RIGHT_OF[c.arm]));
+      const cars = arms.map((arm: any, i: string | number) => ({ arm, v: vs[i] }));
+      const first = cars.find((c: { arm: string | number }) => !arms.includes(RIGHT_OF[c.arm]));
       return choice(
         mod,
         'vorfahrt',
         'Alle fahren geradeaus. Es gibt kein Schild und keine Ampel. Wer darf zuerst fahren?',
         first.v.name,
-        cars.filter((c) => c !== first).map((c) => c.v.name),
+        cars.filter((c: any) => c !== first).map((c: { v: { name: any } }) => c.v.name),
         'vfr_' + arms.join(''),
         { pic: crossingSVG(cars) },
       );
@@ -1605,7 +1607,7 @@ export const MS2 = (() => {
     }
     const wait = pick(['vorfahrtgewaehren', 'stopp']);
     const signs =
-      main.map((a) => smallSign(a, SIGN_ART.vorfahrtstrasse)).join('') +
+      main.map((a: any) => smallSign(a, SIGN_ART.vorfahrtstrasse)).join('') +
       side.map((a) => smallSign(a, SIGN_ART[wait])).join('');
     return choice(
       mod,
@@ -1675,9 +1677,10 @@ export const MS2 = (() => {
       tip: 'Der Teil ist an den Pedalen.',
     },
   ];
-  const pol = (cx, cy, a, r) => `${f1(cx + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r)}`;
+  const pol = (cx: number, cy: number, a: number, r: number) =>
+    `${f1(cx + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r)}`;
   // tyre with tread and sheen, silver rim, 18 crossed spokes
-  const wheel = (cx) =>
+  const wheel = (cx: number) =>
     `<circle cx="${cx}" cy="140" r="46" fill="none" stroke="${STROKE}" stroke-width="10.5"/><circle cx="${cx}" cy="140" r="46" fill="none" stroke="#3B404C" stroke-width="7.5"/><circle cx="${cx}" cy="140" r="49.2" fill="none" stroke="#5B6271" stroke-width="1.6" stroke-dasharray="2.2 2.4"/><path d="M${pol(cx, 140, 3.5, 47)} A47 47 0 0 1 ${pol(cx, 140, 4.6, 47)}" fill="none" stroke="#9AA3B4" stroke-width="1.8" stroke-linecap="round"/>` +
     `<circle cx="${cx}" cy="140" r="40.5" fill="none" stroke="url(#bkRm)" stroke-width="3.6"/><circle cx="${cx}" cy="140" r="38.6" fill="none" stroke="#6E7887" stroke-width=".8"/>` +
     `<path d="${Array.from({ length: 18 }, (_, i) => {
@@ -1690,16 +1693,17 @@ export const MS2 = (() => {
     }).join('')}" stroke="#F4F7FB" stroke-width="1"/>` +
     `<circle cx="${cx}" cy="140" r="6.5" fill="url(#bkHb)" stroke="${STROKE}" stroke-width="1.5"/><circle cx="${cx}" cy="140" r="2" fill="#4A5260"/>`;
   // frame tube: ink edge, coloured body, a thin glossy line along the top
-  const tube = (d, w, c, hi) =>
+  const tube = (d: string, w: number, c: string, hi: string) =>
     `<g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="${d}" stroke="${STROKE}" stroke-width="${w + 3}"/><path d="${d}" stroke="${c}" stroke-width="${w}"/><path d="${d}" stroke="${hi}" stroke-width="1.3" opacity=".8" transform="translate(-.6 -1.3)"/></g>`;
-  const glint = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" style="stroke:none"/>`;
-  const amber = (x, y, w, h, rot) =>
+  const glint = (x: number, y: number, r: number) =>
+    `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" style="stroke:none"/>`;
+  const amber = (x: number, y: number, w: number, h: number, rot: number) =>
     `<g transform="rotate(${rot} ${x} ${y})"><rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="2" fill="url(#bkAm)" stroke="${STROKE}" stroke-width="1.5"/>${tex(`M${x - w / 2 + 3} ${y - h / 2 + 1.5} L${x - w / 2 + 3} ${y + h / 2 - 1.5} M${x} ${y - h / 2 + 1.5} L${x} ${y + h / 2 - 1.5} M${x + w / 2 - 3} ${y - h / 2 + 1.5} L${x + w / 2 - 3} ${y + h / 2 - 1.5}`, '#B86E00', 0.8, 0.7)}${glint(x - w / 2 + 2.5, y - h / 2 + 2, 1.1)}</g>`;
-  const spokeRefl = (cx) =>
+  const spokeRefl = (cx: number) =>
     [-0.6, 2.5]
       .map((a) => amber(+f1(cx + Math.cos(a) * 26), +f1(140 + Math.sin(a) * 26), 15, 7, f1((a * 180) / Math.PI)))
       .join('');
-  const caliper = (x, y, rot) =>
+  const caliper = (x: number, y: number, rot: number) =>
     `<g transform="rotate(${rot} ${x} ${y})"><path d="M${x - 7} ${y - 3} Q${x} ${y - 8} ${x + 7} ${y - 3} L${x + 6} ${y + 6} L${x + 3} ${y + 6} L${x + 3} ${y} L${x - 3} ${y} L${x - 3} ${y + 6} L${x - 6} ${y + 6} Z" fill="url(#bkDk)" stroke="${STROKE}" stroke-width="1.6" stroke-linejoin="round"/><rect x="${x - 5.5}" y="${y + 4}" width="3" height="4" fill="#7A4A32"/><rect x="${x + 2.5}" y="${y + 4}" width="3" height="4" fill="#7A4A32"/></g>`;
   const BIKEP = {
     label: 'Fahrrad',
@@ -1796,11 +1800,11 @@ export const MS2 = (() => {
       ],
     );
   PLANTS.fahrrad = BIKEP;
-  function missingTask(mod) {
+  function missingTask(mod: string) {
     const p = pick(BIKE_PARTS);
     const others = shuffle(BIKE_PARTS.filter((x) => x !== p))
       .slice(0, 2)
-      .map((x) => x.name);
+      .map((x: { name: any }) => x.name);
     return choice(mod, 'fahrrad', 'Was fehlt an diesem Fahrrad?', p.name, others, 'vfehlt_' + p.id, {
       pic: BIKEP.svg({ omit: p.id }),
     });
@@ -2410,8 +2414,8 @@ export const MS2 = (() => {
       ],
     },
   };
-  function veGen(cfg) {
-    return (mod, tier, know, seq, opts) => {
+  function veGen(cfg: Unit) {
+    return (mod: string, tier: number, know: { [x: string]: any }, seq: number, opts: { g: any } | undefined) => {
       if (mod === 'parts') return plantTask(cfg, 'fahrrad', mod, tier, know, seq, opts);
       if (mod === 'fehlt') return missingTask(mod);
       if (wantsPool(cfg, mod, opts)) return null;

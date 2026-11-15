@@ -6,8 +6,18 @@ import { MK as K } from './knowledge.ts';
 import { K12 as S } from './klasse12.ts';
 export const K12D = (() => {
   const { shuffle, pick, weightedPick } = K;
-  const others = (arr, not, n) => shuffle(arr.filter((x) => !not.includes(x))).slice(0, n);
-  const choice = (mod, tier, note, q, answer, wrongs, qid, extra?) =>
+  const others = (arr: any[], not: string | any[] | undefined, n: number) =>
+    shuffle(arr.filter((x: any) => !not.includes(x))).slice(0, n);
+  const choice = (
+    mod: string,
+    tier: string | number,
+    note: string,
+    q: string,
+    answer: string,
+    wrongs: string | any[],
+    qid: string,
+    extra?: ({ why: string } & ({ pic: string } | { pic?: undefined })) | undefined,
+  ) =>
     Object.assign(
       {
         kind: 'choice',
@@ -24,7 +34,7 @@ export const K12D = (() => {
       extra || {},
     );
   // gen items: { id, make(id) } – weightedPick brings back what went wrong
-  const ask = (items, know, seq) => {
+  const ask = (items: { id: string; make: (qid: any) => any }[], know: any, seq: any) => {
     const it = weightedPick(items, know, seq);
     return it.make(it.id);
   };
@@ -34,23 +44,35 @@ export const K12D = (() => {
   // every flat colour becomes a soft light-to-shade gradient of itself (defs added by svgOf)
   const { tone } = S;
   const USED = new Set<string>();
-  const fl = (c) => {
+  const fl = (c: string | any[]) => {
     const h = c.length === 4 ? '#' + [...c.slice(1)].map((x) => x + x).join('') : c;
     if (!/^#[0-9A-F]{6}$/i.test(h) || h === O) return c;
     USED.add(h.toUpperCase());
     return `url(#kd${h.slice(1).toUpperCase()})`;
   };
-  const p = (d, fill, w?) => `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
-  const ci = (x, y, r, fill) =>
+  const p = (d: string, fill: string, w?: number | undefined) =>
+    `<path d="${d}" fill="${fl(fill)}" stroke="${O}" stroke-width="${w || 2}"/>`;
+  const ci = (x: number, y: number, r: number, fill: string) =>
     `<circle cx="${x}" cy="${y}" r="${r}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
-  const el = (x, y, rx, ry, fill) =>
+  const el = (x: number, y: number, rx: number, ry: number, fill: string) =>
     `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
-  const rect = (x, y, w, h, fill, r?) =>
+  const rect = (x: number, y: number, w: number, h: number, fill: string, r?: number | undefined) =>
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r || 0}" fill="${fl(fill)}" stroke="${O}" stroke-width="2"/>`;
-  const line = (d, c, w) => `<path d="${d}" fill="none" stroke="${c || O}" stroke-width="${w || 2}"/>`;
-  const shine = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".6"/>`;
-  const around = (n, cx, cy, f) => Array.from({ length: n }, (_, i) => f(cx, cy, (i / n) * Math.PI * 2)).join('');
-  const r1 = (v) => Math.round(v * 10) / 10;
+  const line = (d: string, c: string, w: number) =>
+    `<path d="${d}" fill="none" stroke="${c || O}" stroke-width="${w || 2}"/>`;
+  const shine = (x: number, y: number, rx: number, ry: number) =>
+    `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".6"/>`;
+  const around = (
+    n: number,
+    cx: number,
+    cy: number,
+    f: {
+      (x: any, y: any, a: any): string;
+      (x: any, y: any, a: any): string;
+      (arg0: any, arg1: any, arg2: number): any;
+    },
+  ) => Array.from({ length: n }, (_, i) => f(cx, cy, (i / n) * Math.PI * 2)).join('');
+  const r1 = (v: number) => Math.round(v * 10) / 10;
   const RED = '#E8344A',
     YEL = '#FFD43B',
     GRN = '#4FC96A',
@@ -59,7 +81,7 @@ export const K12D = (() => {
     GRY = '#B8BECC';
   const spikes = Array.from({ length: 9 }, (_, i) => {
     const a = ((196 + i * 18) * Math.PI) / 180;
-    const pt = (d, r) => `${r1(36 + Math.cos(a + d) * 21 * r)} ${r1(40 + Math.sin(a + d) * 13 * r)}`;
+    const pt = (d: number, r: number) => `${r1(36 + Math.cos(a + d) * 21 * r)} ${r1(40 + Math.sin(a + d) * 13 * r)}`;
     return `M${pt(-0.16, 0.9)} L${pt(0, 1.5)} L${pt(0.16, 0.9)}`;
   }).join(' ');
   // w: the word as it is spoken and written, syl: in syllables
@@ -72,7 +94,7 @@ export const K12D = (() => {
           8,
           32,
           32,
-          (x, y, a) =>
+          (x: number, y: number, a: number) =>
             line(
               `M${r1(x + Math.cos(a) * 18)} ${r1(y + Math.sin(a) * 18)} L${r1(x + Math.cos(a) * 28)} ${r1(y + Math.sin(a) * 28)}`,
               O,
@@ -352,7 +374,9 @@ export const K12D = (() => {
         line('M32 34 L32 60', O, 5) +
         line('M32 34 L32 60', GRN, 2.5) +
         p('M32 50 Q42 40 50 46 Q42 54 32 50 Z', GRN) +
-        around(6, 32, 22, (x, y, a) => ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7')) +
+        around(6, 32, 22, (x: number, y: number, a: number) =>
+          ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7'),
+        ) +
         ci(32, 22, 6.5, YEL),
     },
     tiger: {
@@ -434,14 +458,14 @@ export const K12D = (() => {
     },
   };
   const DEFS = `<defs>${[...USED].map((c) => `<linearGradient id="kd${c.slice(1)}" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="${tone(c, 0.3)}"/><stop offset=".5" stop-color="${c}"/><stop offset="1" stop-color="${tone(c, -0.16)}"/></linearGradient>`).join('')}</defs>`;
-  const svgOf = (id) =>
+  const svgOf = (id: string) =>
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">${DEFS}${PICS[id].svg}</svg>`;
   // the picture in the task, with its name for the read-aloud voice (it reads .prompt, not the drawing)
-  const picOf = (id) =>
+  const picOf = (id: string) =>
     `<div class="pic" style="max-width:130px">${svgOf(id)}</div><span class="prompt sr-only">${PICS[id].w}</span>`;
-  const optPic = (id) => `${svgOf(id)}<span class="sr-only">${PICS[id].w}</span>`;
+  const optPic = (id: string) => `${svgOf(id)}<span class="sr-only">${PICS[id].w}</span>`;
   const PIC_IDS = Object.keys(PICS);
-  const first = (id) => PICS[id].w[0];
+  const first = (id: string) => PICS[id].w[0];
 
   /* ================= KLASSE 1: Laute und Buchstaben ================= */
   const ABC = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -544,20 +568,21 @@ export const K12D = (() => {
   ];
   // Ei and Bein sound too alike to be wrong answers for each other
   const ALIKE = ['Ei', 'Bein'];
-  const alike = (g, h) => ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
+  const alike = (g: string | string[], h: string | string[]) =>
+    ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
   const PIC_REIME = [
     ['haus', 'maus'],
     ['fisch', 'tisch'],
   ];
   // first vowel of a picture word, if it is a single vowel (not au, ei, ie, not an umlaut)
-  const vowelGap = (w) => {
+  const vowelGap = (w: string) => {
     const i = w.search(/[aeiouäöü]/i);
     return /^(au|ei|eu|ie|[äöü])/i.test(w.slice(i, i + 2)) ? null : i;
   };
   const DIPH = { haus: 'au', maus: 'au', baum: 'au', leiter: 'ei' };
   // Lesen: the shown letter or word sits in a plain div, which the read-aloud voice skips (it reads .question, .prompt,
   // .expr …), and the picture options carry no names – so the child reads it alone
-  const look = (text, size) =>
+  const look = (text: string, size: number) =>
     `<div style="font-size:${size}px;font-weight:700;text-align:center;line-height:1.2;margin:4px 0">${text}</div>`;
   // b, d, p, q and g look alike
   const MIRROR = ['b', 'd', 'p', 'q', 'g'];
@@ -569,7 +594,7 @@ export const K12D = (() => {
     g: ['gut', 'gelb', 'gehen'],
   };
   // wrong pictures for a word: preferably the same first letter or a similar length, so the whole word must be read
-  const lookalikes = (id) =>
+  const lookalikes = (id: string) =>
     PIC_IDS.filter((x) => x !== id)
       .map((x): [id: string, likeness: number] => [
         x,
@@ -591,7 +616,7 @@ export const K12D = (() => {
   const L1_ITEMS = {
     laute: VOW.map((v) => ({
       id: 'l1sl_' + v,
-      make: (qid) =>
+      make: (qid: any) =>
         choice('laute', 1, 'laute', 'Welcher Buchstabe ist ein Selbstlaut?', v, others(CONS, [], 2), qid, {
           quiet: true,
           why: 'Selbstlaute sind A, E, I, O, U.',
@@ -637,7 +662,7 @@ export const K12D = (() => {
       ),
     laute2: PIC_IDS.filter((id) => DIPH[id] || vowelGap(PICS[id].w) !== null).map((id) => ({
       id: 'l1fv_' + id,
-      make: (qid) => {
+      make: (qid: any) => {
         const w = PICS[id].w;
         const d = DIPH[id];
         const i = d ? w.indexOf(d) : vowelGap(w);
@@ -664,7 +689,7 @@ export const K12D = (() => {
     })),
     lautpos: LAUTPOS.map(([id, l, pos]) => ({
       id: 'l1lp_' + id + l,
-      make: (qid) =>
+      make: (qid: any) =>
         choice(
           'lautpos',
           1,
@@ -678,7 +703,7 @@ export const K12D = (() => {
     })),
     silben: SILBEN.map(([w, syl, id]) => ({
       id: 'l1si_' + w,
-      make: (qid) => {
+      make: (qid: any) => {
         const n = syl.split('-').length;
         const a = SYL[n - 1];
         return choice(
@@ -696,7 +721,7 @@ export const K12D = (() => {
     alphabet2: ABC.slice(1, 24)
       .map((x, i) => ({
         id: 'l1na_' + x,
-        make: (qid) =>
+        make: (qid: any) =>
           choice(
             'alphabet',
             2,
@@ -728,7 +753,7 @@ export const K12D = (() => {
       const i = j + 1;
       return {
         id: 'l1fe_' + ABC[i + 2],
-        make: (qid) =>
+        make: (qid: any) =>
           choice(
             'alphabet',
             1,
@@ -744,10 +769,10 @@ export const K12D = (() => {
     reim: REIME.flatMap((g, gi) =>
       g.map((w) => ({
         id: 'l1re_' + w,
-        make: (qid) => {
+        make: (qid: any) => {
           const wrong = shuffle(REIME.filter((x, j) => j !== gi && !alike(g, x)))
             .slice(0, 2)
-            .map((x) => pick(x));
+            .map((x: any) => pick(x));
           return choice('reim', 1, 'reim', `Was reimt sich auf „${w}“?`, pick(g.filter((x) => x !== w)), wrong, qid);
         },
       })),
@@ -778,14 +803,14 @@ export const K12D = (() => {
     ),
     silben2: SILBEN_ORDER.map(([w, syl]) => ({
       id: 'l1so_' + w,
-      make: (qid) => {
+      make: (qid: any) => {
         const items = syl
           .toUpperCase()
           .split('-')
-          .map((text, i) => ({ id: 's' + i, text }));
+          .map((text: any, i: string) => ({ id: 's' + i, text }));
         let display;
         do display = shuffle(items);
-        while (display.every((x, i) => x === items[i]));
+        while (display.every((x: any, i: string | number) => x === items[i]));
         return {
           kind: 'order',
           mod: 'silben',
@@ -795,7 +820,7 @@ export const K12D = (() => {
           quiet: true,
           q: 'Ordne die Silben zu einem Wort.',
           items,
-          order: items.map((x) => x.id),
+          order: items.map((x: { id: any }) => x.id),
           display,
           qid,
         };
@@ -807,21 +832,21 @@ export const K12D = (() => {
       return [
         {
           id: 'l1bk_' + x,
-          make: (qid) =>
+          make: (qid: any) =>
             choice(
               'lesen',
               1,
               'lesen',
               'Das ist ein kleiner Buchstabe. Welcher große gehört dazu?',
               X,
-              others(MIRROR, [x], 2).map((y) => y.toUpperCase()),
+              others(MIRROR, [x], 2).map((y: string) => y.toUpperCase()),
               qid,
               { quiet: true, pic: look(x, 72), why },
             ),
         },
         {
           id: 'l1bg_' + x,
-          make: (qid) =>
+          make: (qid: any) =>
             choice(
               'lesen',
               1,
@@ -835,14 +860,14 @@ export const K12D = (() => {
         },
         {
           id: 'l1bw_' + x,
-          make: (qid) =>
+          make: (qid: any) =>
             choice(
               'lesen',
               1,
               'lesen',
               'Welches Wort fängt mit diesem Buchstaben an?',
               pick(MIRROR_WORDS[x]),
-              others(MIRROR, [x], 2).map((y) => pick(MIRROR_WORDS[y])),
+              others(MIRROR, [x], 2).map((y: string | number) => pick(MIRROR_WORDS[y])),
               qid,
               { quiet: true, pic: look(x, 72), why: `Das ist ein ${x}.` },
             ),
@@ -851,7 +876,7 @@ export const K12D = (() => {
     }),
     lesen2: PIC_IDS.map((id) => ({
       id: 'l1lw_' + id,
-      make: (qid) =>
+      make: (qid: any) =>
         choice('lesen', 2, 'lesen', 'Lies das Wort. Welches Bild passt?', svgOf(id), lookalikes(id).map(svgOf), qid, {
           svgOpts: true,
           cols: 1,
@@ -1092,7 +1117,7 @@ export const K12D = (() => {
       ],
     },
   );
-  LAUTE1.gen = (mod, tier, know, seq) => {
+  LAUTE1.gen = (mod: string | number, tier: number, know: any, seq: any) => {
     const key = mod + (tier === 2 ? '2' : '');
     const items = L1_ITEMS[key] || L1_ITEMS[mod];
     return items ? ask(items, know, seq) : null;
@@ -1228,7 +1253,7 @@ export const K12D = (() => {
     ['Nase', 'Nasse', 'Na-se'],
     ['Igel', 'Iggel', 'I-gel'],
   ];
-  const whyDoppel = (r, s) =>
+  const whyDoppel = (r: string, s: string) =>
     s.startsWith('die ') || r === 'toll'
       ? `Verlängere das Wort: ${s}. Jetzt hörst du den kurzen Selbstlaut.`
       : /(.)\1/.test(r)
@@ -1351,8 +1376,8 @@ export const K12D = (() => {
     G: ['Gabel', 'Geld', 'Gras', 'Glas', 'Gurke'],
     P: ['Papa', 'Pferd', 'Pilz', 'Post', 'Puppe'],
   };
-  const abcKey = (w) => w.slice(0, 2).toLowerCase();
-  function abcOrder(tier) {
+  const abcKey = (w: string) => w.slice(0, 2).toLowerCase();
+  function abcOrder(tier: string | number) {
     let words;
     if (tier === 2) {
       const g = pick(Object.values(ABC_WORDS).filter((x) => x.length >= 4));
@@ -1360,9 +1385,9 @@ export const K12D = (() => {
     } else
       words = shuffle(Object.keys(ABC_WORDS))
         .slice(0, 4)
-        .map((l) => pick(ABC_WORDS[l]));
-    words.sort((a, b) => (abcKey(a) < abcKey(b) ? -1 : 1));
-    const items = words.map((w) => ({ id: 'w_' + w, text: w }));
+        .map((l: string | number) => pick(ABC_WORDS[l]));
+    words.sort((a: any, b: any) => (abcKey(a) < abcKey(b) ? -1 : 1));
+    const items = words.map((w: string) => ({ id: 'w_' + w, text: w }));
     return {
       kind: 'order',
       mod: 'alphabet',
@@ -1371,7 +1396,7 @@ export const K12D = (() => {
       note: 'alphabet',
       q: tier === 2 ? 'Ordne nach dem Abc. Schau auf den zweiten Buchstaben.' : 'Tippe die Wörter nach dem Abc an.',
       items,
-      order: items.map((x) => x.id),
+      order: items.map((x: { id: any }) => x.id),
       display: shuffle(items),
       qid: 's2abc_' + words.join('_'),
     };
@@ -1379,15 +1404,15 @@ export const K12D = (() => {
   function abcFirst() {
     const words = shuffle(Object.keys(ABC_WORDS))
       .slice(0, 3)
-      .map((l) => pick(ABC_WORDS[l]));
-    const a = words.slice().sort((x, y) => (abcKey(x) < abcKey(y) ? -1 : 1))[0];
+      .map((l: string | number) => pick(ABC_WORDS[l]));
+    const a = words.slice().sort((x: any, y: any) => (abcKey(x) < abcKey(y) ? -1 : 1))[0];
     return choice(
       'alphabet',
       1,
       'alphabet',
       'Welches Wort steht im Wörterbuch zuerst?',
       a,
-      words.filter((w) => w !== a),
+      words.filter((w: any) => w !== a),
       's2abf_' + words.slice().sort().join('_'),
       { why: `${a[0]} kommt im Abc zuerst.` },
     );
@@ -1765,10 +1790,10 @@ export const K12D = (() => {
   // Merkwörter are generated, not pooled: they have their own note, and pool topics must be reachable at tier 1
   const MERK_ITEMS = MERK.map(([r, f, k]) => ({
     id: 's2mw_' + r,
-    make: (qid) =>
+    make: (qid: any) =>
       choice('besonders', 2, 'merk', 'Welches Wort ist richtig geschrieben?', r, [f], qid, { why: WHY_M[k] }),
   }));
-  SCHREIBEN2.gen = (mod, tier, know, seq) =>
+  SCHREIBEN2.gen = (mod: string, tier: number, know: any, seq: any) =>
     mod === 'besonders' && tier === 2
       ? ask(MERK_ITEMS, know, seq)
       : mod !== 'alphabet'
@@ -1929,8 +1954,8 @@ export const K12D = (() => {
     ['das Wasser', 'das Glas', 'das Wasserglas'],
   ];
   const ARTS = ['der', 'die', 'das'];
-  const art = (w) => w.split(' ')[0],
-    noun = (w) => w.split(' ')[1];
+  const art = (w: string) => w.split(' ')[0],
+    noun = (w: string) => w.split(' ')[1];
   // [Wortstamm, Wort, Familie (3+), ähnlich aussehende Wörter aus anderen Familien]
   const FAMILIEN: [stem: string, word: string, family: string[], others: string[]][] = [
     ['fahr', 'fahren', ['das Fahrrad', 'der Fahrer', 'abfahren'], ['die Farbe', 'fallen']],
@@ -2005,7 +2030,7 @@ export const K12D = (() => {
   const KINDS = Object.keys(SATZARTEN);
 
   const W2_POOL: any[] = [];
-  const wa = (id, q, k, why) =>
+  const wa = (id: string, q: string, k: string, why: string) =>
     W2_POOL.push({ id, mod: 'wortart', g: 'wortart', q, o: [k].concat(others(WORTARTEN, [k], 2)), a: 0, why });
   NOMEN.forEach((n) =>
     wa('w2wa_' + noun(n), `Welche Wortart ist „${noun(n)}“?`, 'Nomen', `Davor passt ein Artikel: ${n}.`),
@@ -2145,20 +2170,20 @@ export const K12D = (() => {
       mod: 'familie',
       g: 'familie',
       q: `Welche Vorsilbe hat „${w}“?`,
-      o: [v + '-'].concat(others(VORSILBEN, [v], 2).map((x) => x + '-')),
+      o: [v + '-'].concat(others(VORSILBEN, [v], 2).map((x: string) => x + '-')),
       a: 0,
       why: `${v} + ${w.slice(v.length)}`,
     }),
   );
   const FELDER = Object.keys(WORTFELDER);
   FELDER.forEach((f) => {
-    WORTFELDER[f].forEach((w) =>
+    WORTFELDER[f].forEach((w: string) =>
       W2_POOL.push({
         id: 'w2fe_' + w,
         mod: 'feld',
         g: 'feld',
         q: `Welches Wort gehört zum Wortfeld „${f}“?`,
-        o: [w].concat(others(FELDER, [f], 2).map((x) => pick(WORTFELDER[x]))),
+        o: [w].concat(others(FELDER, [f], 2).map((x: string | number) => pick(WORTFELDER[x]))),
         a: 0,
         why: `Wortfeld „${f}“: ${WORTFELDER[f].join(', ')}.`,
       }),
@@ -2173,7 +2198,7 @@ export const K12D = (() => {
     });
   });
   KINDS.forEach((k) =>
-    SATZARTEN[k].forEach((s) => {
+    SATZARTEN[k].forEach((s: string) => {
       W2_POOL.push({
         id: 'w2sa_' + s,
         mod: 'satzart',
