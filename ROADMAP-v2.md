@@ -117,7 +117,7 @@ mehr unbemerkt verloren.
   Fallback: Text markieren) und „Teilen“ (`navigator.share` mit Text, sonst ausblenden). Darunter die
   Zusammenfassung: Stempel, Siege, Monsterbuch-Einträge, laufende Abenteuer, Datum.
 - **QR-Code:** Link `https://thezieger.github.io/rogue-adventures/#lade=<code>` als QR anzeigen. QR-Erzeugung als
-  kleine eigene Implementierung in `src/qr.js` (Byte-Modus, Fehlerkorrektur L, nur so viel wie nötig) oder, wenn der
+  kleine eigene Implementierung in `src/qr.ts` (Byte-Modus, Fehlerkorrektur L, nur so viel wie nötig) oder, wenn der
   Code für QR zu lang ist (> 2 900 Zeichen), stattdessen eine **Kurzfassung** ohne `stats.hist` und ohne laufende
   Abenteuer als QR und der volle Code als Text. Keine Kamera, kein Scanner in der App: der Link wird mit der
   Kamera-App des anderen Geräts geöffnet.
@@ -250,7 +250,7 @@ mehr unbemerkt verloren.
 
 ### 11 Deutsch als neues Fach: Wörterwerkstatt und Satzbaustelle
 - `CURRICULUM` bekommt das Fach Deutsch mit zwei Einheiten. Wortlisten liegen in einer neuen Datei
-  `src/woerter.js` (in `tools/build.js` einbinden), damit Eltern die Lernwörter der Klasse ergänzen können; Struktur im
+  `src/woerter.ts` (in `tools/build.js` einbinden), damit Eltern die Lernwörter der Klasse ergänzen können; Struktur im
   Dateikopf erklären. Grundlage: Sächsischer Rechtschreibrahmen Klasse 3 und Lehrplan Deutsch 2025, Lernbereiche
   „Richtig schreiben“ und „Sprache untersuchen“.
 - **Wörterwerkstatt** (Rechtschreibung), Aufgabenarten: Doppelkonsonant/ck/tz (richtige Schreibung aus zwei wählen),
@@ -336,7 +336,7 @@ mehr unbemerkt verloren.
   (nur Anzeige, nicht gespeichert).
 - **Lesestube-Knoten** `lesen` (einmal pro Welt in Deutsch- und Ethik-Einheiten): ein kurzer Text (Fabel, Sachtext,
   Witz mit Pointe, Sprichwort erklärt; 60–120 Wörter, eigene Texte oder gemeinfreie Fabeln nacherzählt), dann drei
-  Fragen als Angriff auf einen Gegner; Texte in `src/texte.js`.
+  Fragen als Angriff auf einen Gegner; Texte in `src/texte.ts`.
 - **Schriftliche Addition und Subtraktion** als Aufgabenarten in Zahlenquest nur in Welt 3: Spalteneingabe mit
   Übertragsfeldern (Addition bis drei Summanden, Subtraktion mit einem Subtrahenden, Übertrag), Tutorial mit
   Beispiel nach dem in Sachsen üblichen Verfahren (Ergänzen bei der Subtraktion).
@@ -346,7 +346,7 @@ mehr unbemerkt verloren.
 - Fach Englisch in `CURRICULUM` (Klasse 3, nach Lehrplan Englisch Grundschule Sachsen), zwei Einheiten in einer
   englischen Hafenstadt: **Die Teestube** (Wortschatz: Englisch ↔ Deutsch, Zahlwörter mit dem Ziffernblock bis 20 und
   bis 100, Farben am Farbfleck, „Was passt nicht?“) und **Der Doppeldecker** (Lückensatz, „Was bedeutet das?“,
-  Wochentage und Monate ordnen, Frage und Antwort). Wörter und Sätze in `src/english.js`, von Eltern erweiterbar,
+  Wochentage und Monate ordnen, Frage und Antwort). Wörter und Sätze in `src/english.ts`, von Eltern erweiterbar,
   britische Schreibweise, kein Ton. Keine Lesestube in Englisch. Wochenziele folgen den Fächern in `CURRICULUM`.
 
 ### 19 Sachkunde: Körper und Sinne, Verkehr und Fahrrad
@@ -355,10 +355,10 @@ mehr unbemerkt verloren.
   Sinnestäuschungen als Knoten im Stil des Forscherlabors.
 - **Sicher im Verkehr** (LB 5): Verkehrszeichen als SVG, Vorfahrt an der Kreuzung (rechts vor links, Schilder,
   Ampel), verkehrssicheres Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als
-  Reihenfolge, Helm, Sichtbarkeit, Gehwegregeln. Beides in `src/sachkunde2.js`.
+  Reihenfolge, Helm, Sichtbarkeit, Gehwegregeln. Beides in `src/sachkunde2.ts`.
 
 ### 20 Ethik: Ich im Wir und Wir in der Welt
-- Einheit **Ich, wir und die Welt** (`src/ethik.js`) mit zwei Welten: „Ich im Wir“ (LB 1: Stärken und Schwächen,
+- Einheit **Ich, wir und die Welt** (`src/ethik.ts`) mit zwei Welten: „Ich im Wir“ (LB 1: Stärken und Schwächen,
   Mut und Angst, Kind und Erwachsener, Gleich und verschieden, Gut und Böse, Dilemma-Karten) und „Wir in der Welt“
   (LB 4: Drei Welten sortieren als neue Aufgabenart, Natur als Lebensgrundlage, Arche Noah, Umweltschutz und
   Klimawandel, die vier Elemente mit Redewendungen). Religiöses neutral („die Bibel erzählt …“).
@@ -383,10 +383,10 @@ mehr unbemerkt verloren.
 - **Die Wiese** (LB 3): acht Wiesenpflanzen als Bild und nach Merkmal, Stockwerke der Wiese, Entwicklung von
   Schmetterling, Marienkäfer und Heuschrecke, Herbarium, Artenschutz.
 - **Früher und heute** (LB 1): Geräte und Leben auf dem Land früher und heute, Zeitleisten, Sprachen, Feste und
-  Essen aus aller Welt mit Dilemma-Karten, Medien als Informationsquelle. Beides in `src/sachkunde3.js`.
+  Essen aus aller Welt mit Dilemma-Karten, Medien als Informationsquelle. Beides in `src/sachkunde3.ts`.
 
 ### 25 Musik als neues Fach
-- Fach Musik mit der Einheit **Der Konzertsaal** (`src/musik.js`), alles ohne Ton: Notenwerte und Pausen, Takt
+- Fach Musik mit der Einheit **Der Konzertsaal** (`src/musik.ts`), alles ohne Ton: Notenwerte und Pausen, Takt
   ergänzen, Tonhöhen im Violinschlüssel, Instrumente und Instrumentenfamilien, Fachbegriffe (piano, forte,
   crescendo), Komponisten mit Sachsen-Bezug, Musik anderer Länder. Notizkarten können ein Bild zeigen.
 

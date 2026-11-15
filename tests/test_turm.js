@@ -1,6 +1,6 @@
-// Turmwacht rules engine (src/turm.js): Node only, seeded, no JSDOM.
-import { TW } from '../src/turm.js';
-import { MQ } from '../src/logic.js';
+// Turmwacht rules engine (src/turm.ts): Node only, seeded, no JSDOM.
+import { TW } from '../src/turm.ts';
+import { MQ } from '../src/logic.ts';
 const t0 = Date.now();
 const fails = [];
 const check = (cond, msg, x) => {

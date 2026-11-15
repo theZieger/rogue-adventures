@@ -1,20 +1,30 @@
 // What the title screen and the save are built from: every unit in a fixed order, the subjects, and the grades with
 // their subjects and units.
-import { UNITS } from './units.js';
+import { UNITS } from './units.ts';
 
+// biome-ignore lint/suspicious/noExplicitAny: the unit files are not typed yet; each field gets its type with them
+type Untyped = any;
 export interface TaskType {
   name: string;
   icon: string;
   worldCap: number[];
+  maxTier: number;
+  dmg: number;
   shop?: boolean;
+  [more: string]: Untyped;
 }
 export interface Unit {
+  title: string;
+  icon: string;
+  sub: string;
   grade: number;
   subject: string;
   rank?: number;
   worlds: number;
   modules: Record<string, TaskType>;
-  starters: { id: string }[];
+  starters: Untyped[];
+  enemies: Untyped;
+  [more: string]: Untyped;
 }
 export type Subject = keyof typeof SUBJECTS;
 

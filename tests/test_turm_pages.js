@@ -1,6 +1,6 @@
 // Turmwacht in the page: saving and resuming runs (runs the built docs/index.html in jsdom, seeded).
 // Page budget for the whole Turm feature: at most 15 page opens in this file.
-import { UNITS } from '../src/units.js';
+import { UNITS } from '../src/units.ts';
 import * as page from './page.js';
 
 const t0 = Date.now();

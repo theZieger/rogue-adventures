@@ -4,6 +4,7 @@
     "module": "preserve",
     "lib": ["es2023", "dom"],
     "strict": true,
+    "noImplicitAny": false,
     "allowJs": true,
     "noEmit": true,
     "allowImportingTsExtensions": true,

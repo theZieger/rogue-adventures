@@ -31,7 +31,7 @@ function bakedMonsters() {
 
 function bundle() {
   const { outputFiles } = esbuild.buildSync({
-    entryPoints: [path.join(SRC, 'main.js')],
+    entryPoints: [path.join(SRC, 'main.ts')],
     bundle: true,
     format: 'iife',
     minifyWhitespace: true,

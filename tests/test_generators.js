@@ -1,4 +1,4 @@
-import { MQ as M } from '../src/logic.js';
+import { MQ as M } from '../src/logic.ts';
 const fails = [];
 function check(cond, msg, t) {
   if (!cond) {
@@ -824,7 +824,7 @@ for (const w of [1, 2, 3])
         c,
       );
   }
-// path map rules (see makeMap in src/logic.js)
+// path map rules (see makeMap in src/logic.ts)
 const quiet = ['rest', 'treasure', 'elite', 'event'];
 if (M.FLOORS !== 8 || M.makeMap().length !== 8) fails.push('map: 8 floors by default');
 for (let i = 0; i < 3000; i++) {

@@ -1,10 +1,10 @@
-import { MK as K } from '../src/knowledge.js';
-import { MS as S } from '../src/sachkunde.js';
-import { MS2 as S2 } from '../src/sachkunde2.js';
-import { MS3 as S3 } from '../src/sachkunde3.js';
-import { MU } from '../src/musik.js';
-import { ME as E } from '../src/ethik.js';
-import '../src/units.js';
+import { MK as K } from '../src/knowledge.ts';
+import { MS as S } from '../src/sachkunde.ts';
+import { MS2 as S2 } from '../src/sachkunde2.ts';
+import { MS3 as S3 } from '../src/sachkunde3.ts';
+import { MU } from '../src/musik.ts';
+import { ME as E } from '../src/ethik.ts';
+import '../src/units.ts';
 const know = {};
 let seq = 0;
 const fails = [];

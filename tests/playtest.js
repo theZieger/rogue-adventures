@@ -1,4 +1,4 @@
-import { MQ } from '../src/logic.js';
+import { MQ } from '../src/logic.ts';
 import path from 'path';
 import { JSDOM } from 'jsdom';
 import * as JM from './jm_solver.js';

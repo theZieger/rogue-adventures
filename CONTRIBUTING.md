@@ -23,7 +23,7 @@ and e2e; CI checks all five.
 - `README.md` lists every file and what it holds.
 - `GLOSSARY.md` has the project's words (Einheit, Abenteuer, Aufgabenart …) and their names in the code. Use them.
 - `adr/` records the architecture decisions and why they were made.
-- `src/units.js` is the one list of units; `README.md` → „Neue Einheit“ explains how to add one.
+- `src/units.ts` is the one list of units; `README.md` → „Neue Einheit“ explains how to add one.
 
 ## Rules that are not negotiable
 

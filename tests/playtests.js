@@ -1,6 +1,6 @@
 // The bot plays every unit: one tests/playtest.js process per row, a few at a time.
 // A unit without a row of its own is played once, so a new unit needs no entry here.
-import { UNITS } from '../src/units.js';
+import { UNITS } from '../src/units.ts';
 import { test } from 'node:test';
 import { execFile } from 'node:child_process';
 import path from 'node:path';

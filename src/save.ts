@@ -1,9 +1,9 @@
 // The save: what is stored on the device, its defaults, and the repair every load goes through.
 // Saves must always load: a missing or wrong-typed field falls back to its default, old names map to new ones.
 import { CURRICULUM, MODE_KEYS, MODES, SUBJECTS, type Subject } from './curriculum.ts';
-import { MK } from './knowledge.js';
-import { MQ } from './logic.js';
-import { TW } from './turm.js';
+import { MK } from './knowledge.ts';
+import { MQ } from './logic.ts';
+import { TW } from './turm.ts';
 
 export interface Score {
   c: number;

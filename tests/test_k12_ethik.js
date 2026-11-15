@@ -1,10 +1,10 @@
 // Klasse 1/2 ethik (and the Musik units of Klasse 1 and 2): checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
 const fail = (m) => fails.push(m);
-import { MK } from '../src/knowledge.js';
-import { ICONS } from '../src/icons.js';
-import '../src/units.js';
-import { K12E as E } from '../src/k12_ethik.js';
+import { MK } from '../src/knowledge.ts';
+import { ICONS } from '../src/icons.ts';
+import '../src/units.ts';
+import { K12E as E } from '../src/k12_ethik.ts';
 
 const UNITS = { ichdu1: [1, 'Ethik'], feste2: [2, 'Ethik'], instrumente2: [2, 'Musik'], musik1: [1, 'Musik'] };
 const words = (s) => s.split(/\s+/).filter((w) => /[a-zäöüß0-9]/i.test(w)).length;
