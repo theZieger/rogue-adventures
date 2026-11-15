@@ -3,7 +3,7 @@
 // which is what a reload or reopening the app does.
 import * as page from './page.js';
 import zlib from 'zlib';
-import { QR } from '../src/qr.js';
+import { QR } from '../src/qr.ts';
 import { SAVECODE } from '../src/savecode.ts';
 
 let fails = 0;
