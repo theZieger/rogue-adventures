@@ -1,3 +1,34 @@
+import { CURRICULUM, MODES, MODE_KEYS, SUBJECTS } from '../curriculum.ts';
+import { ELTERN } from '../eltern.js';
+import { MK } from '../knowledge.js';
+import { MQ } from '../logic.js';
+import { QR } from '../qr.ts';
+import { KEY_RUN_FOR, clear, defaultMeta } from '../save.ts';
+import { TW } from '../turm.js';
+import { SITE, applySave, backupDue, packSave, qrCode, saveData, summaryHtml, unpackSave } from './backup.js';
+import { $, app, esc } from './core.js';
+import { weekReport } from './duell.js';
+import { screenFeedback } from './feedback.js';
+import { REWARDS, goalText } from './progress.js';
+import { state } from './state.js';
+import {
+  EXTRAS,
+  curGrade,
+  enOff,
+  extraOn,
+  fightMods,
+  gradeTabs,
+  grades,
+  heroShown,
+  loadRun,
+  offList,
+  saveAll,
+  shown,
+} from './storage.js';
+import { TTS, chosenVoice, enVoice, enVoices, speak, voice, voiceGuide, voices } from './tasks.js';
+import { MONTHS, goalCount, screenTitle, setPin } from './title.js';
+import { SFX, modal, render, topbar } from './ui.js';
+
 // svg, not emoji: the parent area looks the same on every device
 const ICO = {
   chart: '<path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/>',
@@ -14,12 +45,12 @@ const P_TABS = {
   settings: ['Einstellungen', 'sliders', { save: 'Spielstand', app: 'App', show: 'Anzeigen', reset: 'Löschen' }],
 };
 const P_JUMPS = { load: ['settings', 'save'], save: ['settings', 'save'], appsec: ['settings', 'app'] };
-let pAt;
+export let pAt;
 const tutOf = (m, k, tier) => {
   const c = MODES[m];
   return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier];
 };
-function confirmBox(title, body, yes, fn, danger) {
+export function confirmBox(title, body, yes, fn, danger) {
   const ov = modal(
     `<h2>${title}</h2>${body}<div class="stack"><button class="btn${danger ? ' danger' : ''}" id="yes">${yes}</button><button class="btn secondary" id="no">Abbrechen</button></div>`,
   );
@@ -31,7 +62,7 @@ function confirmBox(title, body, yes, fn, danger) {
   $('#no', ov).focus({ preventScroll: true });
 }
 // quiet: redrawn in place after a switch or a tab, without the screen animation
-function screenParent(jump, back, quiet) {
+export function screenParent(jump, back, quiet) {
   back = typeof back === 'function' ? back : screenTitle;
   if (!quiet) pAt = { tab: 'overview', sub: {}, subj: -1, mode: '' };
   if (P_JUMPS[jump]) {
@@ -42,7 +73,7 @@ function screenParent(jump, back, quiet) {
   const tab = pAt.tab;
   const subs = P_TABS[tab][2];
   const sub = subs[pAt.sub[tab]] ? pAt.sub[tab] : Object.keys(subs)[0];
-  depth = sub === 'subjects' && curGrade().subjects[pAt.subj] ? 2 : 1;
+  state.depth = sub === 'subjects' && curGrade().subjects[pAt.subj] ? 2 : 1;
   const redraw = (focus) => {
     screenParent(null, back, true);
     const el = focus && $(focus);
@@ -78,7 +109,7 @@ function screenParent(jump, back, quiet) {
     return (
       (vs.length > 1 ? `<div class="pset"><b>Stimme</b>${pick(vs, cur, '')}</div>` : '') +
       (es.length > 1 ? `<div class="pset"><b>Stimme für Englisch</b>${pick(es, ce, '-en')}</div>` : '') +
-      `<div class="pset"><label for="prate"><b>Tempo</b></label><input type="range" id="prate" class="prate" min="0.6" max="1.4" step="0.05" value="${meta.speakRate}"><div class="prange" aria-hidden="true"><span>langsam</span><span>schnell</span></div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>` +
+      `<div class="pset"><label for="prate"><b>Tempo</b></label><input type="range" id="prate" class="prate" min="0.6" max="1.4" step="0.05" value="${state.meta.speakRate}"><div class="prange" aria-hidden="true"><span>langsam</span><span>schnell</span></div>${vs.length > 1 ? '' : `<div class="pvrow">${tryBtn(0)}</div>`}</div>` +
       (es.length
         ? ''
         : note(
@@ -112,7 +143,7 @@ function screenParent(jump, back, quiet) {
 
   const turmSubjCard = () => {
     const G = grades().filter((g) => g.grade !== 1),
-      fixed = (g) => (meta.turm.subjects || {})[g] || [];
+      fixed = (g) => (state.meta.turm.subjects || {})[g] || [];
     return G.length
       ? card(
           'Turmwacht: Fächer festlegen',
@@ -178,16 +209,16 @@ function screenParent(jump, back, quiet) {
       );
     },
     all() {
-      const played = MODE_KEYS.filter((m) => Object.values(meta.stats[m]).some((x) => x.t > 0));
+      const played = MODE_KEYS.filter((m) => Object.values(state.meta.stats[m]).some((x) => x.t > 0));
       const topics = played
         .map((m) => {
           const r = loadRun(m);
           return card(
             `${MODES[m].icon} ${MODES[m].title}`,
             Object.keys(MODES[m].modules)
-              .filter((k) => meta.stats[m][k].t > 0)
+              .filter((k) => state.meta.stats[m][k].t > 0)
               .map((k) => {
-                const s = meta.stats[m][k];
+                const s = state.meta.stats[m][k];
                 return srow(
                   MODES[m].modules[k].icon,
                   MODES[m].modules[k].name,
@@ -200,7 +231,7 @@ function screenParent(jump, back, quiet) {
           );
         })
         .join('');
-      const weakFacts = Object.entries(meta.know)
+      const weakFacts = Object.entries(state.meta.know)
         .filter(([id, k]) => k.t >= 2 && k.c / k.t < 0.7)
         .map(([id, k]) => {
           const q = Object.values(MK.MODES)
@@ -212,14 +243,14 @@ function screenParent(jump, back, quiet) {
       return (
         card(
           'Seit dem ersten Tag',
-          `${stat('Abenteuer begonnen', meta.runs)}${stat('Bis zum Ende geschafft', meta.wins)}${stat('Stempel verdient insgesamt', meta.stampsTotal)}${stat('Davon noch übrig', meta.stamps)}${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`,
+          `${stat('Abenteuer begonnen', state.meta.runs)}${stat('Bis zum Ende geschafft', state.meta.wins)}${stat('Stempel verdient insgesamt', state.meta.stampsTotal)}${stat('Davon noch übrig', state.meta.stamps)}${note('Alle Fächer zusammen. „Geschafft“ heißt: Der Endgegner der letzten Welt ist besiegt.')}`,
         ) +
-        (meta.turm.runs || meta.turm.on
+        (state.meta.turm.runs || state.meta.turm.on
           ? card(
               '🏰 Turmwacht',
-              `${stat('Begonnen', meta.turm.runs)}${stat('Bis zum Ende geschafft', meta.turm.wins)}${stat('Rekord', meta.turm.best ? `Welle ${meta.turm.best} von ${TW.WAVES.length}` : '–')}${
-                Object.values(meta.turm.last).some((v) => v.t)
-                  ? `<p class="plead">Letzte Turmwacht</p>${Object.entries(meta.turm.last)
+              `${stat('Begonnen', state.meta.turm.runs)}${stat('Bis zum Ende geschafft', state.meta.turm.wins)}${stat('Rekord', state.meta.turm.best ? `Welle ${state.meta.turm.best} von ${TW.WAVES.length}` : '–')}${
+                Object.values(state.meta.turm.last).some((v) => v.t)
+                  ? `<p class="plead">Letzte Turmwacht</p>${Object.entries(state.meta.turm.last)
                       .filter(([, v]) => v.t)
                       .map(([s, v]) => srow(SUBJECTS[s], s, v.c, v.t))
                       .join('')}`
@@ -286,7 +317,7 @@ function screenParent(jump, back, quiet) {
                   )
                     .map((t) =>
                       sw(
-                        !meta.hidden.includes('en:' + t),
+                        !state.meta.hidden.includes('en:' + t),
                         `data-hide="en:${esc(t)}"`,
                         esc(t),
                         `<span>${MK.EN_THEMES[t]
@@ -343,7 +374,7 @@ function screenParent(jump, back, quiet) {
       ),
     save: () =>
       (backupDue()
-        ? `<div class="card warncard pwarn" id="pwarn">${ico('warn')}<p>Der Spielstand wurde ${meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>`
+        ? `<div class="card warncard pwarn" id="pwarn">${ico('warn')}<p>Der Spielstand wurde ${state.meta.backupAt ? 'seit über 30 Tagen' : 'noch nie'} gesichert.</p></div>`
         : '') +
       card(
         'Spielstand sichern',
@@ -353,7 +384,7 @@ function screenParent(jump, back, quiet) {
       card(
         'Speicher',
         note(
-          meta.storage.persisted
+          state.meta.storage.persisted
             ? 'Dieser Browser hebt den Spielstand dauerhaft auf.'
             : 'Dieser Browser darf den Spielstand löschen, wenn der Speicher knapp wird. Safari löscht ihn nach 7 Tagen ohne Besuch. Als App auf dem Startbildschirm ist er sicherer.',
         ),
@@ -362,7 +393,7 @@ function screenParent(jump, back, quiet) {
       card(
         'Töne',
         sw(
-          meta.sound,
+          state.meta.sound,
           'id="psound"',
           'Töne an',
           '<span>Klick, Treffer, Fanfare und Applaus. Alle Klänge sind gemeinfrei (CC0).</span>',
@@ -371,15 +402,15 @@ function screenParent(jump, back, quiet) {
       card(
         'Vorlesen',
         sw(
-          meta.speak,
+          state.meta.speak,
           'id="pspeak"',
           'Aufgaben vorlesen',
           '<span>Ein Knopf bei jeder Aufgabe liest Frage und Antworten vor, in Klasse 1 und 2 von selbst. Es spricht nur eine Stimme, die auf Ihrem Gerät gespeichert ist, ohne Internet.</span>',
-        ) + (meta.speak ? speakSettings() : ''),
+        ) + (state.meta.speak ? speakSettings() : ''),
       ) +
       card(
         'Eltern-PIN',
-        meta.pin
+        state.meta.pin
           ? `${note('Die PIN schützt den Elternbereich.')}<div class="row"><button class="btn small secondary" id="pchange">PIN ändern</button><button class="btn small secondary" id="pdel">PIN entfernen</button></div>`
           : `${note('Noch keine PIN festgelegt. Ohne PIN kann jeder hier alles ändern.')}<button class="btn small" id="pset">PIN festlegen</button>`,
       ) +
@@ -407,10 +438,10 @@ function screenParent(jump, back, quiet) {
       ) +
       card(
         '🏰 Turmwacht <span class="ptag">zum Ausprobieren</span>',
-        sw(meta.turm.on, 'data-turmon', 'Turmwacht anzeigen', `<span>${esc(ELTERN.TURM.what)}</span>`) +
+        sw(state.meta.turm.on, 'data-turmon', 'Turmwacht anzeigen', `<span>${esc(ELTERN.TURM.what)}</span>`) +
           note(ELTERN.TURM.beta),
       ) +
-      (meta.turm.on ? turmSubjCard() : ''),
+      (state.meta.turm.on ? turmSubjCard() : ''),
     reset: () =>
       card(
         '',
@@ -434,7 +465,7 @@ function screenParent(jump, back, quiet) {
           `<button role="tab" data-pt="${id}" aria-selected="${id === tab}">${ico(ic)}<span>${t}</span></button>`,
       )
       .join('')}</nav><div class="scroll"><div class="stack" id="p-${sub}">
-      ${meta.pin || tab !== 'overview' ? '' : `<div class="card warncard pwarn">${ico('warn')}<p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
+      ${state.meta.pin || tab !== 'overview' ? '' : `<div class="card warncard pwarn">${ico('warn')}<p><b>Noch keine PIN.</b> Ohne PIN kann jeder hier alles ändern.</p><button class="btn small" id="pnew">PIN festlegen</button></div>`}
       ${
         tab === 'practice' && curGrade().subjects[pAt.subj]
           ? ''
@@ -501,7 +532,7 @@ function screenParent(jump, back, quiet) {
       '<p>Ohne PIN kann jeder den Elternbereich öffnen und alles ändern.</p>',
       'Ja, PIN entfernen',
       () => {
-        meta.pin = '';
+        state.meta.pin = '';
         saveAll();
         again();
       },
@@ -509,7 +540,7 @@ function screenParent(jump, back, quiet) {
     ),
   );
   on('#pspeak', () => {
-    meta.speak = !meta.speak;
+    state.meta.speak = !state.meta.speak;
     saveAll();
     again();
   });
@@ -519,7 +550,7 @@ function screenParent(jump, back, quiet) {
   on('[data-voice]', (b) => {
     const v = voices()[+b.dataset.voice];
     if (!v) return;
-    meta.voiceName = v.name;
+    state.meta.voiceName = v.name;
     saveAll();
     again();
     sample(v);
@@ -531,7 +562,7 @@ function screenParent(jump, back, quiet) {
   on('[data-voice-en]', (b) => {
     const v = enVoices()[+b.dataset.voiceEn];
     if (!v) return;
-    meta.voiceEn = v.name;
+    state.meta.voiceEn = v.name;
     saveAll();
     again();
     speak(sampleEn, voice(), [sampleEn], v);
@@ -539,7 +570,7 @@ function screenParent(jump, back, quiet) {
   const rate = $('#prate');
   if (rate)
     rate.onchange = () => {
-      meta.speakRate = +rate.value;
+      state.meta.speakRate = +rate.value;
       saveAll();
       sample(chosenVoice());
     };
@@ -548,16 +579,16 @@ function screenParent(jump, back, quiet) {
       if ($('#pspeak')) again();
     }; // some browsers deliver their voices late
   on('#psound', () => {
-    meta.sound = !meta.sound;
+    state.meta.sound = !state.meta.sound;
     saveAll();
-    if (meta.sound) {
+    if (state.meta.sound) {
       SFX.unlock();
       setTimeout(SFX.right, 150);
     }
     again();
   });
   on('#rtut', (b) => {
-    meta.seenTut = {};
+    state.meta.seenTut = {};
     saveAll();
     say(b, 'Erledigt. Alle Erklärungen erscheinen beim nächsten Mal wieder.');
   });
@@ -568,11 +599,14 @@ function screenParent(jump, back, quiet) {
       '<p>Alle Trefferquoten, die Zahl der Abenteuer und der Rekord der Turmwacht werden gelöscht. Stempel, Monsterbuch und laufende Abenteuer bleiben.</p><p>Das kann man nicht rückgängig machen.</p>',
       'Ja, Statistik löschen',
       () => {
-        meta.stats = defaultMeta().stats;
-        meta.know = {};
-        meta.runs = 0;
-        meta.wins = 0;
-        meta.turm = Object.assign(defaultMeta().turm, { subjects: meta.turm.subjects, on: meta.turm.on });
+        state.meta.stats = defaultMeta().stats;
+        state.meta.know = {};
+        state.meta.runs = 0;
+        state.meta.wins = 0;
+        state.meta.turm = Object.assign(defaultMeta().turm, {
+          subjects: state.meta.turm.subjects,
+          on: state.meta.turm.on,
+        });
         saveAll();
         again();
       },
@@ -585,8 +619,8 @@ function screenParent(jump, back, quiet) {
       '<p>Alle Abenteuer, das Monsterbuch, die Statistik und die Einstellungen werden gelöscht.</p><p>Das kann man nicht rückgängig machen.</p>',
       'Ja, alles löschen',
       () => {
-        meta = defaultMeta();
-        run = null;
+        state.meta = defaultMeta();
+        state.run = null;
         for (const m of MODE_KEYS.concat('turm')) clear(KEY_RUN_FOR(m));
         saveAll();
         screenTitle();
@@ -609,7 +643,7 @@ function screenParent(jump, back, quiet) {
   };
   on('#wcopy', () => copy(report.text, '#wtext', '#wmsg'));
   on('#pexport', async () => {
-    meta.backupAt = new Date().toISOString();
+    state.meta.backupAt = new Date().toISOString();
     saveAll();
     if ($('#pwarn')) $('#pwarn').remove();
     const full = saveData(false);
@@ -707,7 +741,7 @@ function screenParent(jump, back, quiet) {
     $('#pcodein').focus({ preventScroll: true });
   }
   on('[data-grade]', (b) => {
-    meta.grade = +b.dataset.grade;
+    state.meta.grade = +b.dataset.grade;
     saveAll();
     again();
   });
@@ -722,18 +756,18 @@ function screenParent(jump, back, quiet) {
         return say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.');
       off.push(k);
     }
-    meta.off[m] = off;
+    state.meta.off[m] = off;
     saveAll();
     again();
   });
   const setHidden = (keys, hide) => {
-    meta.hidden = meta.hidden.filter((x) => !keys.includes(x)).concat(hide ? keys : []);
+    state.meta.hidden = state.meta.hidden.filter((x) => !keys.includes(x)).concat(hide ? keys : []);
   };
   const noGameLeft = (keys) =>
     !curGrade().subjects.some((s) => s.modes.some((m) => shown(m) && !keys.includes('mode:' + m)));
   on('[data-hide]', (b) => {
     const key = b.dataset.hide;
-    const hide = !meta.hidden.includes(key);
+    const hide = !state.meta.hidden.includes(key);
     const [kind, m, id] = key.split(':');
     if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
     if (hide && kind === 'en' && Object.keys(MK.EN_THEMES).every((t) => t === m || enOff().includes(t)))
@@ -748,29 +782,29 @@ function screenParent(jump, back, quiet) {
     )
       return say(b, 'Mindestens ein Held muss bleiben.');
     setHidden([key], hide);
-    meta.grade = curGrade().grade;
+    state.meta.grade = curGrade().grade;
     saveAll();
     again();
   });
   on('[data-turmon]', () => {
-    meta.turm.on = !meta.turm.on;
+    state.meta.turm.on = !state.meta.turm.on;
     saveAll();
     again();
   });
   on('[data-tsub]', (b) => {
     const [g, s] = b.dataset.tsub.split(':'),
-      all = Object.assign({}, meta.turm.subjects),
+      all = Object.assign({}, state.meta.turm.subjects),
       cur = all[g] || [];
     if (!cur.includes(s) && cur.length >= 3) return say(b, 'Höchstens drei Fächer.');
     all[g] = cur.includes(s) ? cur.filter((x) => x !== s) : cur.concat(s);
     if (!all[g].length) delete all[g];
-    meta.turm.subjects = Object.keys(all).length ? all : null;
+    state.meta.turm.subjects = Object.keys(all).length ? all : null;
     saveAll();
     again();
   });
   on('[data-hidesub]', (b) => {
     const keys = curGrade().subjects[+b.dataset.hidesub].modes.map((m) => 'mode:' + m);
-    const hide = keys.some((k) => !meta.hidden.includes(k));
+    const hide = keys.some((k) => !state.meta.hidden.includes(k));
     if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
     setHidden(keys, hide);
     saveAll();

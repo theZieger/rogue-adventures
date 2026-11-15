@@ -1,9 +1,49 @@
+import { MODES } from '../curriculum.ts';
+import { MQ } from '../logic.js';
+import { PANTRY_MAX, isObj } from '../save.ts';
+import { TEXTE } from '../texte.js';
+import { battleWon, enemyTurn, readEnd, renderBattle, screenRead, startBattle, topEnd } from './battle.js';
+import { screenVictory } from './collection.js';
+import { $, CFG, ITEMS, MODKEYS, MODULES_OF, app, esc, makeMap, pick } from './core.js';
+import {
+  screenEvent,
+  screenKarte,
+  screenLabor,
+  screenMarket,
+  screenMine,
+  screenRest,
+  screenSchool,
+  screenTreasure,
+} from './nodes.js';
+import {
+  REWARDS,
+  gainXp,
+  goalText,
+  heal,
+  heroLocked,
+  heroName,
+  heroSVG,
+  heroSpec,
+  levelOf,
+  markWeek,
+  monsterSVG,
+  seededOrder,
+  showWeeklyNews,
+  typeChip,
+  weekly,
+  xpNeeded,
+} from './progress.js';
+import { state } from './state.js';
+import { enabledMods, extraOn, heroShown, marketOn, offList, practice, saveAll } from './storage.js';
+import { screenSubject, screenTitle, screenWeekly, subjectOf } from './title.js';
+import { modal, render, topbar } from './ui.js';
+
 // goal: the weekly goal this adventure was started for; its task type is offered as an attack
-function screenStarter(goal) {
-  depth = 2;
-  const vis = CFG().starters.filter((s) => heroShown(mode, s));
+export function screenStarter(goal) {
+  state.depth = 2;
+  const vis = CFG().starters.filter((s) => heroShown(state.mode, s));
   const S = vis.filter((s) => !heroLocked(s));
-  const last = meta.lastStarter[mode];
+  const last = state.meta.lastStarter[state.mode];
   let sel = S.length === 1 ? S[0].id : null;
   const want = goal && goal.kind === 'right' ? goal.mod : null;
   // Klasse 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
@@ -12,7 +52,7 @@ function screenStarter(goal) {
     const a = s.attacks.slice(),
       i = a.findIndex((x) => x.mod === want);
     if (i > 0) a.unshift(a.splice(i, 1)[0]);
-    return a.slice(0, 2 + (meta.started[mode] || 0));
+    return a.slice(0, 2 + (state.meta.started[state.mode] || 0));
   };
   // recommend the monster whose attacks were practised least (and not the one played last time); for a goal one that has its task type
   const score = (s) =>
@@ -59,9 +99,9 @@ function screenStarter(goal) {
         )
         .join('')}
       <div id="swapbox"></div>
-      ${meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
+      ${state.meta.pantry.length ? `<p class="center">Aus deinem Vorrat kommt mit: ${state.meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn" id="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`);
-  $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(mode)));
+  $('#back').onclick = () => (goal ? screenWeekly() : screenSubject(subjectOf(state.mode)));
   app.querySelectorAll('.choice[data-id]').forEach((b) => {
     b.onclick = () => {
       sel = b.dataset.id;
@@ -74,8 +114,8 @@ function screenStarter(goal) {
   $('#go').onclick = () => {
     if (!sel) return;
     const s = CFG().starters.find((x) => x.id === sel);
-    run = {
-      mode,
+    state.run = {
+      mode: state.mode,
       world: 1,
       floor: 1,
       map: [],
@@ -88,25 +128,25 @@ function screenStarter(goal) {
         maxHp: s.hp,
         attacks: kit(s).map((a) => ({ name: a.name, mod: a.mod })),
       },
-      items: ['trank'].concat(meta.pantry.slice(0, PANTRY_MAX)),
-      tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(mode)[k] || 1) - 1)])),
+      items: ['trank'].concat(state.meta.pantry.slice(0, PANTRY_MAX)),
+      tiers: Object.fromEntries(MODKEYS().map((k) => [k, Math.max(1, (levelOf(state.mode)[k] || 1) - 1)])),
       path: [],
       shield: false,
     };
-    run.map = makeMapFor(1);
+    state.run.map = makeMapFor(1);
     if (swap && swapOn) {
-      const a = run.hero.attacks.find((x) => x.mod === swap.from);
+      const a = state.run.hero.attacks.find((x) => x.mod === swap.from);
       if (a) {
         a.mod = swap.to;
         a.name = CFG().extra[swap.to];
       }
     }
-    if (rec && sel === rec) run.items.push('stern');
-    if (swap && swapOn) run.items.push('stern');
-    meta.pantry = [];
-    meta.lastStarter[mode] = sel;
-    meta.started[mode] = (meta.started[mode] || 0) + 1;
-    meta.runs++;
+    if (rec && sel === rec) state.run.items.push('stern');
+    if (swap && swapOn) state.run.items.push('stern');
+    state.meta.pantry = [];
+    state.meta.lastStarter[state.mode] = sel;
+    state.meta.started[state.mode] = (state.meta.started[state.mode] || 0) + 1;
+    state.meta.runs++;
     markWeek();
     saveAll();
     screenMap();
@@ -148,11 +188,11 @@ function makeMapFor(world) {
     .slice(-4, -2)
     .flat()
     .filter((n) => n.t === 'fight');
-  if (extraOn('wochenziele') && !run.wb && fights.length && !weekly().beaten.includes(mode)) {
+  if (extraOn('wochenziele') && !state.run.wb && fights.length && !weekly().beaten.includes(state.mode)) {
     pick(fights).t = 'weekboss';
-    run.wb = true;
+    state.run.wb = true;
   }
-  if (readsIn(mode)) {
+  if (readsIn(state.mode)) {
     const fights = m
       .slice(1, -2)
       .flat()
@@ -176,11 +216,11 @@ function makeMapFor(world) {
 }
 // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
 // texts carry their grade (default 3); a unit only gets a Lesestube when there are texts for its grade
-const textsFor = (m) => TEXTE.map((t, i) => i).filter((i) => (TEXTE[i].grade || 3) === MODES[m].grade);
+export const textsFor = (m) => TEXTE.map((t, i) => i).filter((i) => (TEXTE[i].grade || 3) === MODES[m].grade);
 const readsIn = (m) => ['Deutsch', 'Ethik'].includes(MODES[m].subject) && textsFor(m).length > 0;
 // same enemy, weak spot and HP on every device in this week
 function weekBossSpec(world) {
-  const r = MQ.seeded(weekly().week + ':' + mode + ':' + world);
+  const r = MQ.seeded(weekly().week + ':' + state.mode + ':' + world);
   const pool = CFG().enemies[world].normal;
   const e = pool[Math.floor(r() * pool.length)];
   return Object.assign({}, e, {
@@ -192,7 +232,7 @@ function weekBossSpec(world) {
   });
 }
 
-const NODE_INFO = {
+export const NODE_INFO = {
   fight: ['⚔️', 'Kampf'],
   elite: ['💀', 'Elite'],
   event: ['❓', 'Ereignis'],
@@ -209,41 +249,41 @@ const NODE_INFO = {
   bergwerk: ['⛏️', 'Bergwerk'],
   arena: ['🌀', 'Kreisel-Arena'],
 };
-function screenMap() {
-  depth = 2;
-  const h = run.hero;
+export function screenMap() {
+  state.depth = 2;
+  const h = state.run.hero;
   const open = openNodes();
-  const live = run.map.map(() => new Set());
-  open.forEach((i) => live[run.floor - 1].add(i));
-  for (let f = run.floor - 1; f < run.map.length - 1; f++)
-    live[f].forEach((i) => run.map[f][i].n.forEach((j) => live[f + 1].add(j)));
+  const live = state.run.map.map(() => new Set());
+  open.forEach((i) => live[state.run.floor - 1].add(i));
+  for (let f = state.run.floor - 1; f < state.run.map.length - 1; f++)
+    live[f].forEach((i) => state.run.map[f][i].n.forEach((j) => live[f + 1].add(j)));
   const ROW = 86,
-    H = run.map.length * ROW;
+    H = state.run.map.length * ROW;
   const X = (c) => (c + 0.5) * 25;
   const Y = (f) => H - (f + 0.5) * ROW;
   let lines = '';
-  run.map.forEach((fl, f) =>
+  state.run.map.forEach((fl, f) =>
     fl.forEach((nd, i) =>
       nd.n.forEach((j) => {
-        if (!run.map[f + 1] || !run.map[f + 1][j]) return;
-        const walked = run.path[f] === i && run.path[f + 1] === j && f + 1 < run.floor - 1;
-        const next = f === run.floor - 2 && run.path[f] === i && open.includes(j);
+        if (!state.run.map[f + 1] || !state.run.map[f + 1][j]) return;
+        const walked = state.run.path[f] === i && state.run.path[f + 1] === j && f + 1 < state.run.floor - 1;
+        const next = f === state.run.floor - 2 && state.run.path[f] === i && open.includes(j);
         const dead = !walked && !next && !(live[f].has(i) && live[f + 1].has(j));
-        lines += `<line class="${walked ? 'walked' : next ? 'next' : dead ? 'dead' : ''}" x1="${X(nd.c)}" y1="${Y(f)}" x2="${X(run.map[f + 1][j].c)}" y2="${Y(f + 1)}"/>`;
+        lines += `<line class="${walked ? 'walked' : next ? 'next' : dead ? 'dead' : ''}" x1="${X(nd.c)}" y1="${Y(f)}" x2="${X(state.run.map[f + 1][j].c)}" y2="${Y(f + 1)}"/>`;
       }),
     ),
   );
-  const nodes = run.map
+  const nodes = state.run.map
     .map((fl, f) =>
       fl
         .map((nd, i) => {
-          const isOpen = f === run.floor - 1 && open.includes(i);
-          const taken = run.path[f] === i && f < run.floor - 1;
+          const isOpen = f === state.run.floor - 1 && open.includes(i);
+          const taken = state.run.path[f] === i && f < state.run.floor - 1;
           const cls = isOpen
             ? 'open'
             : taken
               ? 'taken'
-              : f < run.floor - 1
+              : f < state.run.floor - 1
                 ? 'past'
                 : live[f].has(i)
                   ? 'future'
@@ -253,24 +293,24 @@ function screenMap() {
         .join(''),
     )
     .join('');
-  const look = mode === 'math' && REWARDS.find((r) => r.world === run.world && meta.owned[r.id]);
+  const look = state.mode === 'math' && REWARDS.find((r) => r.world === state.run.world && state.meta.owned[r.id]);
   render(`<div class="screen"${look ? ` style="background:${look.bg}"` : ''}>${topbar(`${heroSVG(heroSpec(), h.evo, 'tbhero')}${esc(heroName())} <span class="levelbadge">Lv ${h.level}</span>`)}
       <div style="padding:8px 16px 0"><div class="hpbar"><i style="width:${(h.hp / h.maxHp) * 100}%" class="${h.hp / h.maxHp < 0.3 ? 'low' : h.hp / h.maxHp < 0.6 ? 'mid' : ''}"></i></div><div class="row" style="justify-content:space-between;font-size:15px;font-weight:700"><span>❤️ ${h.hp} / ${h.maxHp}</span><span>⭐ ${h.xp} / ${xpNeeded(h.level)} XP</span></div><p class="maphint">Wähle deinen Weg – er sperrt andere. 💀 Elite ist schwer, dafür suchst du dir die Beute aus.</p></div>
       <div class="scroll"><div class="wmap" style="height:${H}px"><svg class="maplines" viewBox="0 0 100 ${H}" preserveAspectRatio="none" aria-hidden="true">${lines}</svg>${nodes}</div></div>
-      <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
+      <div class="bottom"><div class="row"><button class="btn secondary small" id="bag">🎒 Beutel (${state.run.items.length})</button><button class="btn ghost small" id="home">Titel</button></div></div></div>`);
   app.querySelectorAll('.node.open').forEach((b) => {
     b.onclick = () => {
       const ni = +b.dataset.n;
-      run.path[run.floor - 1] = ni;
-      const type = run.map[run.floor - 1][ni].t;
-      run.node = { type };
+      state.run.path[state.run.floor - 1] = ni;
+      const type = state.run.map[state.run.floor - 1][ni].t;
+      state.run.node = { type };
       saveAll();
       enterNode(type);
     };
   });
   $('#home').onclick = screenTitle;
-  backTo = () => {
-    const s = subjectOf(mode);
+  state.backTo = () => {
+    const s = subjectOf(state.mode);
     if (s) screenSubject(s);
     else screenTitle();
   };
@@ -289,32 +329,32 @@ function screenMap() {
 }
 // nodes the hero can step on now: all of floor 1, later only those the last node leads to
 function openNodes() {
-  const fl = run.map[run.floor - 1];
+  const fl = state.run.map[state.run.floor - 1];
   const all = fl.map((_, i) => i);
-  if (run.floor === 1) return all;
-  const prev = run.map[run.floor - 2][run.path[run.floor - 2]];
+  if (state.run.floor === 1) return all;
+  const prev = state.run.map[state.run.floor - 2][state.run.path[state.run.floor - 2]];
   const n = prev ? prev.n.filter((i) => fl[i]) : [];
   return n.length ? n : all;
 }
 // ctx (Turmwacht) may override the texts: { full, later, desc: { [item id]: text } } and the screen after using an item outside a fight (done)
-function showBag(inBattle, ctx) {
+export function showBag(inBattle, ctx) {
   const T = ctx || {};
   const desc = (id) => (T.desc && T.desc[id]) || ITEMS[id].desc;
   const stacks = [];
-  run.items.forEach((it, i) => {
+  state.run.items.forEach((it, i) => {
     const st = stacks.find((x) => x.id === it);
     if (st) st.n++;
     else stacks.push({ id: it, i, n: 1 });
   });
   const ov = modal(
-    `<h2>🎒 Beutel</h2>${run.items.length ? `<div class="items">${stacks.map((st) => `<button class="item" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${esc(desc(st.id))}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? ` <b class="count">×${st.n}</b>` : ''}</span><small>${esc(desc(st.id))}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`,
+    `<h2>🎒 Beutel</h2>${state.run.items.length ? `<div class="items">${stacks.map((st) => `<button class="item" data-i="${st.i}" aria-label="${ITEMS[st.id].name}${st.n > 1 ? `, ${st.n} Stück` : ''}: ${esc(desc(st.id))}"><span>${ITEMS[st.id].icon} ${ITEMS[st.id].name}${st.n > 1 ? ` <b class="count">×${st.n}</b>` : ''}</span><small>${esc(desc(st.id))}</small></button>`).join('')}</div><p class="muted" style="opacity:.8;margin-top:10px" id="bagdesc">Tippe auf einen Gegenstand, um ihn zu benutzen.</p>` : '<p>Dein Beutel ist leer.</p>'}<button class="btn secondary" id="close" style="margin-top:10px">Schließen</button>`,
   );
   $('#close', ov).onclick = () => ov.remove();
   ov.querySelectorAll('.item').forEach((b) => {
     b.onclick = () => {
-      const id = run.items[+b.dataset.i];
+      const id = state.run.items[+b.dataset.i];
       const it = ITEMS[id];
-      if (it.heal && run.hero.hp >= run.hero.maxHp) {
+      if (it.heal && state.run.hero.hp >= state.run.hero.maxHp) {
         $('#bagdesc', ov).textContent = T.full || 'Du hast schon volle Lebenspunkte.';
         return;
       }
@@ -326,15 +366,15 @@ function showBag(inBattle, ctx) {
         $('#bagdesc', ov).textContent = `${it.name}: ${desc(id)}`;
         return;
       }
-      if ((it.shield && run.shield) || (it.power && run.power) || (it.hint && run.hint)) {
+      if ((it.shield && state.run.shield) || (it.power && state.run.power) || (it.hint && state.run.hint)) {
         $('#bagdesc', ov).textContent = `${it.name} wirkt schon – mehr geht nicht gleichzeitig.`;
         return;
       }
-      run.items.splice(+b.dataset.i, 1);
+      state.run.items.splice(+b.dataset.i, 1);
       if (it.heal) heal(it.heal);
-      if (it.shield) run.shield = true;
-      if (it.power) run.power = true;
-      if (it.hint) run.hint = true;
+      if (it.shield) state.run.shield = true;
+      if (it.power) state.run.power = true;
+      if (it.hint) state.run.hint = true;
       const lv = it.xp ? gainXp(it.xp) : [];
       saveAll();
       ov.remove();
@@ -355,9 +395,9 @@ function showBag(inBattle, ctx) {
 }
 
 // resume exactly where it stopped, so closing the app never swaps a node or resets a fight
-function resumeRun() {
-  depth = 2;
-  const n = run.node;
+export function resumeRun() {
+  state.depth = 2;
+  const n = state.run.node;
   if (!isObj(n)) return screenMap();
   if (n.done) return advance();
   if (n.reward) return screenTreasure('elite'); // elite beaten, reward not picked yet
@@ -369,7 +409,7 @@ function resumeRun() {
       b.phase = 'wait';
       renderBattle(b);
       setTimeout(() => {
-        if (run) enemyTurn(b, n.enemy.pending);
+        if (state.run) enemyTurn(b, n.enemy.pending);
       }, 1200);
       return;
     } // the enemy still has its turn
@@ -379,18 +419,18 @@ function resumeRun() {
   enterNode(n.type);
 }
 // mark the current node as finished (rewards already given) – a reload then simply moves on
-function nodeDone() {
-  if (run.node) {
-    run.node.done = true;
-    run.node.enemy = null;
+export function nodeDone() {
+  if (state.run.node) {
+    state.run.node.done = true;
+    state.run.node.enemy = null;
   }
 }
 function enterNode(type) {
-  if (type === 'fight') startBattle(pick(CFG().enemies[run.world].normal), false);
-  else if (type === 'elite') startBattle(CFG().enemies[run.world].elite, true);
-  else if (type === 'boss') startBattle(CFG().enemies[run.world].boss, true);
-  else if (type === 'weekboss') startBattle(weekBossSpec(run.world), true);
-  else if (type === 'arena') startBattle(pick(CFG().enemies[run.world].normal), false, true);
+  if (type === 'fight') startBattle(pick(CFG().enemies[state.run.world].normal), false);
+  else if (type === 'elite') startBattle(CFG().enemies[state.run.world].elite, true);
+  else if (type === 'boss') startBattle(CFG().enemies[state.run.world].boss, true);
+  else if (type === 'weekboss') startBattle(weekBossSpec(state.run.world), true);
+  else if (type === 'arena') startBattle(pick(CFG().enemies[state.run.world].normal), false, true);
   else if (type === 'event') screenEvent();
   else if (type === 'rest') screenRest();
   else if (type === 'treasure') screenTreasure();
@@ -404,22 +444,22 @@ function enterNode(type) {
     else screenEvent();
   }
 }
-function advance() {
-  run.floor++;
-  run.shield = false;
-  run.node = null;
-  if (run.floor > run.map.length) {
-    if (run.world >= CFG().worlds) {
+export function advance() {
+  state.run.floor++;
+  state.run.shield = false;
+  state.run.node = null;
+  if (state.run.floor > state.run.map.length) {
+    if (state.run.world >= CFG().worlds) {
       screenVictory();
       return;
     }
-    run.world++;
-    run.floor = 1;
-    run.map = makeMapFor(run.world);
-    run.path = [];
-    meta.bestWorld = Math.max(meta.bestWorld, run.world);
-    if (CFG().worldAttacks && CFG().worldAttacks[run.world]) {
-      run.hero.attacks = CFG().worldAttacks[run.world].map((x) => ({ name: x.name, mod: x.mod }));
+    state.run.world++;
+    state.run.floor = 1;
+    state.run.map = makeMapFor(state.run.world);
+    state.run.path = [];
+    state.meta.bestWorld = Math.max(state.meta.bestWorld, state.run.world);
+    if (CFG().worldAttacks && CFG().worldAttacks[state.run.world]) {
+      state.run.hero.attacks = CFG().worldAttacks[state.run.world].map((x) => ({ name: x.name, mod: x.mod }));
     }
   }
   saveAll();

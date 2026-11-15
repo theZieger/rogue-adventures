@@ -63,7 +63,6 @@ export interface Meta {
   };
 }
 // What a load hands to the repair: anything at all, until normMeta has looked at it.
-// biome-ignore lint/suspicious/noExplicitAny: unchecked data is the one place for it
 type Unchecked = any;
 
 export const KEY_META = 'mathquest_meta_v2';

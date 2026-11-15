@@ -1,3 +1,11 @@
+import { MK } from '../knowledge.js';
+import { MQ } from '../logic.js';
+import { MS } from '../sachkunde.js';
+import { READ_MOD } from './battle.js';
+import { $, CFG, MODULES_OF, app, arrow, esc, euro, reducedMotion } from './core.js';
+import { state } from './state.js';
+import { SFX, showTutorial } from './ui.js';
+
 /* ---------- Task UI ---------- */
 const PLACES = ['Einer', 'Zehner', 'Hunderter', 'Tausender'];
 function colHtml(c, text) {
@@ -14,7 +22,7 @@ function colHtml(c, text) {
     .join('');
   return `<div class="colcalc${mul ? ' mul' : ''}" style="--w:${c.w}" role="group" aria-label="${esc(text.replace(' = ?', ''))}">${rows}<span class="op"></span>${cells((i) => (i < c.w - 1 ? `<div class="inp carry" data-i="${c.w + i}" aria-label="Übertrag ${place(i)}"></div>` : '<span></span>'))}${end}<i class="colline"></i><span class="op"></span>${cells((i) => `<div class="inp dig" data-i="${i}" aria-label="${place(i)}"></div>`)}${end}</div><div class="prompt">Rechne von rechts nach links. Den Übertrag schreibst du in das kleine Feld.</div>`;
 }
-function runTask(task, opts, done) {
+export function runTask(task, opts, done) {
   opts = opts || {};
   window.__task = task;
   if (task.kind !== 'num') return runChoiceTask(task, opts, done);
@@ -108,7 +116,7 @@ function runTask(task, opts, done) {
     if (!b || locked || !bottom.contains(b) || !b.dataset.k) return;
     press(b.dataset.k);
   };
-  keyHandler = (e) => {
+  state.keyHandler = (e) => {
     if (locked) return;
     let k = null;
     if (/^[0-9]$/.test(e.key)) k = e.key;
@@ -170,7 +178,7 @@ function runTask(task, opts, done) {
   }
   function submit() {
     locked = true;
-    keyHandler = null;
+    state.keyHandler = null;
     const want = C ? String(task.answers[0]).padStart(C.w, ' ') : '';
     const fieldOk = (v, i) =>
       !C
@@ -213,27 +221,27 @@ function runTask(task, opts, done) {
 
 /* ---------- Vorlesen ---------- */
 // Only a voice that lives on the device: a network voice would send the task text away.
-const TTS = window.speechSynthesis;
+export const TTS = window.speechSynthesis;
 if (TTS) TTS.getVoices(); // some browsers only start loading the list when first asked
 const local = (lang) => (TTS ? TTS.getVoices().filter((v) => v.localService && lang.test(v.lang)) : []);
-const voices = () => local(/^de/i);
-const enVoices = () => local(/^en/i);
+export const voices = () => local(/^de/i);
+export const enVoices = () => local(/^en/i);
 // a saved voice that is gone from the device quietly falls back to the first German one
-const chosenVoice = () => {
+export const chosenVoice = () => {
   const vs = voices();
-  return vs.find((v) => v.name === meta.voiceName) || vs[0] || null;
+  return vs.find((v) => v.name === state.meta.voiceName) || vs[0] || null;
 };
-const enVoice = () => {
+export const enVoice = () => {
   const vs = enVoices();
   return (
-    vs.find((v) => v.name === meta.voiceEn) ||
+    vs.find((v) => v.name === state.meta.voiceEn) ||
     vs.find((v) => /^en[-_]GB/i.test(v.lang)) ||
     vs.find((v) => /^en[-_]US/i.test(v.lang)) ||
     vs[0] ||
     null
   );
 };
-const voice = () => (meta.speak ? chosenVoice() : null);
+export const voice = () => (state.meta.speak ? chosenVoice() : null);
 const spoken = (t) =>
   t
     .replace(/\bLP\b/g, 'Lebenspunkte')
@@ -267,20 +275,20 @@ function pieces(text, en) {
   return out.filter(([t]) => /[\p{L}\p{N}]/u.test(t));
 }
 // one utterance per piece; without an English voice the German one gets lang en-GB, which some engines follow
-function speak(text, v = voice(), en = [], ve = enVoice()) {
+export function speak(text, v = voice(), en = [], ve = enVoice()) {
   if (!v) return;
   TTS.cancel();
   for (const [t, isEn] of pieces(text, en)) {
     const u = new SpeechSynthesisUtterance(isEn ? t.replace(/_{2,}/g, ' … ') : spoken(t));
     u.voice = (isEn && ve) || v;
     u.lang = isEn ? (ve ? ve.lang : 'en-GB') : v.lang;
-    u.rate = meta.speakRate;
+    u.rate = state.meta.speakRate;
     TTS.speak(u);
   }
 }
 // a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button).
 // grade: Turmwacht passes its run's grade, the global mode there is just the unit that asked last
-function speakBtn(anchor, where, text, first = text, en = [], grade) {
+export function speakBtn(anchor, where, text, first = text, en = [], grade) {
   if (!voice()) return;
   if (anchor) {
     const b = document.createElement('button');
@@ -295,12 +303,12 @@ function speakBtn(anchor, where, text, first = text, en = [], grade) {
   }
   if (first && (grade || CFG().grade) < 3) speak(first(), voice(), en);
 }
-const joined = (...t) =>
+export const joined = (...t) =>
   t
     .filter(Boolean)
     .join('. ')
     .replace(/([.?!:…“])\. /g, '$1 ');
-const plain = (html) => {
+export const plain = (html) => {
   const d = document.createElement('div');
   d.innerHTML = html.replace(/<br>/g, '. ');
   d.querySelectorAll('svg').forEach((s) => s.remove());
@@ -316,12 +324,12 @@ const sayResult = (fb, ok, why) =>
     onScreen.english || [],
   );
 // how a fight ended: the headline and the line under it
-const sayCard = () =>
+export const sayCard = () =>
   speakBtn($('.card'), 'afterbegin', () =>
     joined(...[...app.querySelectorAll('.card h2, .card h2 + p')].slice(0, 2).map((e) => e.textContent)),
   );
 // setup help for the parents, only for their system; iPadOS reports itself as a Mac with touch
-function voiceGuide(open) {
+export function voiceGuide(open) {
   const ua = navigator.userAgent;
   const [steps, hint] = /Android/.test(ua)
     ? [
@@ -540,14 +548,15 @@ function runChoiceTask(task, opts, done) {
 
 /* ---------- Potato plant drawing ---------- */
 // shared by the hut, garden, market and mine pictures: ink outline, soft gradients lit from the top left
-const INK = '#1C2541';
-const ln = (w) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
-const lg = (id, a, b, h) =>
+export const INK = '#1C2541';
+export const ln = (w) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+export const lg = (id, a, b, h) =>
   `<linearGradient id="${id}" x1="0" y1="0" x2="${h ? 1 : 0}" y2="${h ? 0 : 1}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
-const rg = (id, a, b) =>
+export const rg = (id, a, b) =>
   `<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient>`;
-const r1 = (svg) => svg.replace(/(\.\d)\d+/g, '$1');
-const shadow = (cx, cy, rx, ry) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${INK}" opacity=".18"/>`;
+export const r1 = (svg) => svg.replace(/(\.\d)\d+/g, '$1');
+export const shadow = (cx, cy, rx, ry) =>
+  `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${INK}" opacity=".18"/>`;
 // the glow style recolours every stroke inside a part, so inner colours and widths are set inline
 const st = (c, w) => `fill="none" style="stroke:${c};stroke-width:${w}" stroke-linecap="round" stroke-linejoin="round"`;
 const twin = (d, c, w) => `<path d="${d}" ${st(INK, w + 3)}/><path d="${d}" ${st(c, w)}/>`;
@@ -629,5 +638,5 @@ const DRAW_STEPS = [
   'Zeichne oben die Blüten und eine kleine Beere.',
 ];
 // labelled pictures: the potato here, cereal plant and water cycle in sachkunde.js
-const POTATO = { svg: potatoSVG, parts: MK.PARTS, steps: DRAW_STEPS, qid: 'p_', note: 'teile' };
-const plantOf = (k) => (k && MS.PLANTS[k]) || POTATO;
+export const POTATO = { svg: potatoSVG, parts: MK.PARTS, steps: DRAW_STEPS, qid: 'p_', note: 'teile' };
+export const plantOf = (k) => (k && MS.PLANTS[k]) || POTATO;

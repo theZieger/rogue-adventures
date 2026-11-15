@@ -6,7 +6,6 @@
   "javascript": { "formatter": { "quoteStyle": "single" } },
   "assist": { "enabled": false },
   "linter": {
-    "includes": ["**", "!src/app/**"],
     "rules": { "preset": "none", "correctness": { "noUndeclaredVariables": "error" } }
   }
 }

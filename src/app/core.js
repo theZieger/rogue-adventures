@@ -1,15 +1,21 @@
-const { rnd, pick, shuffle, TYPES, BEATS, ITEMS, makeMap, euro } = MQ;
-let mode = 'math';
-const CFG = () => MODES[mode];
-const MODULES_OF = () => CFG().modules;
-const MODKEYS = () => Object.keys(CFG().modules);
-const $ = (sel, el) => (el || document).querySelector(sel);
-const app = $('#app');
-const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+import { MODES } from '../curriculum.ts';
+import { ICONS } from '../icons.js';
+import { MQ } from '../logic.js';
+import { state } from './state.js';
+
+export const { rnd, pick, shuffle, TYPES, BEATS, ITEMS, makeMap, euro } = MQ;
+
+export const CFG = () => MODES[state.mode];
+export const MODULES_OF = () => CFG().modules;
+export const MODKEYS = () => Object.keys(CFG().modules);
+export const $ = (sel, el) => (el || document).querySelector(sel);
+export const app = $('#app');
+export const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 // svg, not emoji: emoji arrows differ in size between fonts
-const arrow = (dir) =>
+export const arrow = (dir) =>
   `<svg class="arr arr-${dir}" viewBox="0 0 20 20" aria-label="${{ r: 'rechts', l: 'links', d: 'unten', u: 'oben' }[dir]}"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+export const esc = (s) =>
+  String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 /* ---------- Icons ---------- */
 // Emojis look different on every device and some are missing on older ones. Wherever one appears as text inside

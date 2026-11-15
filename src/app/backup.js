@@ -1,14 +1,26 @@
+import { MODES, MODE_KEYS } from '../curriculum.ts';
+import { KEY_RUN_FOR, clear, isObj, load, normMeta, save } from '../save.ts';
+import { SAVECODE } from '../savecode.ts';
+import { $, esc } from './core.js';
+import { state } from './state.js';
+import { loadRun, saveAll } from './storage.js';
+import { MONTHS, askPin, screenTitle, setupDone } from './title.js';
+import { loadTurm } from './turm.js';
+import { modal } from './ui.js';
+
 /* ---------- Save code: export, import, merge ---------- */
-const SITE = 'https://thezieger.github.io/rogue-adventures/';
+export const SITE = 'https://thezieger.github.io/rogue-adventures/';
 const b64 = (bin) => btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const viaStream = (bytes, stream) => new Response(new Response(bytes).body.pipeThrough(stream));
 const canZip = (S) => typeof S === 'function' && typeof Response === 'function' && typeof TextEncoder === 'function';
 // a won adventure (and later a purchase) since the last export, which was more than 30 days ago
-const backupDue = () =>
-  !!meta.progressAt && meta.progressAt > meta.backupAt && !(Date.now() - Date.parse(meta.backupAt) < 30 * 864e5);
+export const backupDue = () =>
+  !!state.meta.progressAt &&
+  state.meta.progressAt > state.meta.backupAt &&
+  !(Date.now() - Date.parse(state.meta.backupAt) < 30 * 864e5);
 // short: for the QR code, without answer history and running adventures
-function saveData(short) {
-  const m = JSON.parse(JSON.stringify(meta));
+export function saveData(short) {
+  const m = JSON.parse(JSON.stringify(state.meta));
   const runs = {};
   // unpractised task types are left out: loading fills them in again with empty stats
   for (const g of Object.values(m.stats))
@@ -27,7 +39,7 @@ function saveData(short) {
 }
 // LQ0: JSON, for browsers without compression; LQ1: deflated JSON from older versions; LQ2: deflated SAVECODE.shrink(data).
 // Codes stay out there for years, so every one of them must keep loading.
-async function packSave(data) {
+export async function packSave(data) {
   if (canZip(window.CompressionStream))
     try {
       const buf = new Uint8Array(
@@ -46,12 +58,12 @@ async function packSave(data) {
 }
 const unb64 = (s) => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
 // the same code for the QR code: „LQ2:“ and base 42, which the QR code packs tighter than base64
-const qrCode = (code) =>
+export const qrCode = (code) =>
   code.startsWith('LQ2.')
     ? 'LQ2:' + SAVECODE.to42(Uint8Array.from(unb64(code.slice(4)), (c) => c.charCodeAt(0)))
     : code;
 // accepts the code or the whole link; rejects with a message for parents
-async function unpackSave(text) {
+export async function unpackSave(text) {
   const bad = new Error('Das ist kein vollständiger Lernquest-Code. Bitte den ganzen Code kopieren und einfügen.');
   const m = /^LQ([012])([.:])([\w$*./:-]+)$/.exec(
     String(text)
@@ -81,7 +93,7 @@ async function unpackSave(text) {
 }
 const okKnow = (q) => isObj(q) && Number.isFinite(q.c) && Number.isFinite(q.t);
 // dev = this device, inc = from the code (both normalised): nothing that was reached on either device gets lost
-function mergeMeta(dev, inc) {
+export function mergeMeta(dev, inc) {
   const m = JSON.parse(JSON.stringify(dev));
   for (const k of ['runs', 'wins', 'bestWorld', 'knowSeq', 'stamps', 'stampsTotal'])
     if (Number.isFinite(inc[k])) m[k] = Math.max(Number.isFinite(m[k]) ? m[k] : 0, inc[k]);
@@ -143,8 +155,8 @@ function mergeMeta(dev, inc) {
   }
   return m;
 }
-function applySave(s, how) {
-  meta = how === 'replace' ? s.meta : mergeMeta(meta, s.meta);
+export function applySave(s, how) {
+  state.meta = how === 'replace' ? s.meta : mergeMeta(state.meta, s.meta);
   for (const g of MODE_KEYS.concat('turm')) {
     const r = s.runs[g];
     if (how === 'replace') {
@@ -152,12 +164,12 @@ function applySave(s, how) {
       else clear(KEY_RUN_FOR(g));
     } else if (isObj(r) && !(g === 'turm' ? loadTurm() : loadRun(g))) save(KEY_RUN_FOR(g), r);
   }
-  run = null;
+  state.run = null;
   saveAll();
-  if (!meta.setup.done && !meta.setup.skipped) setupDone('skipped'); // loading a save replaces the setup dialog
+  if (!state.meta.setup.done && !state.meta.setup.skipped) setupDone('skipped'); // loading a save replaces the setup dialog
   screenTitle();
 }
-function summaryHtml(s) {
+export function summaryHtml(s) {
   const open = MODE_KEYS.filter((g) => isObj(s.runs[g]))
     .map((g) => MODES[g].title)
     .concat(isObj(s.runs.turm) ? ['Turmwacht'] : []);
@@ -185,7 +197,7 @@ function askImport(s) {
   $('#ireplace', ov).onclick = go('replace');
   $('#ino', ov).onclick = () => ov.remove();
 }
-function importFromLink() {
+export function importFromLink() {
   const h = location.hash;
   if (!h.startsWith('#lade=')) return;
   try {

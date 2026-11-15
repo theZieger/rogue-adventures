@@ -1,5 +1,7 @@
 # The game engine is one function, kept in parts
 
+*Superseded by [0005](0005-the-engine-is-modules-with-one-state-object.md).*
+
 `src/app/*.js` are not modules: `tools/build.js` joins them in the order of `APP` inside one function, so every part sees
 the same state (`meta`, `run`, `mode`) and the same helpers. `app.js` was split this way because one 350 KB file
 could no longer be read or reviewed, while giving each screen a real interface would have meant passing that state

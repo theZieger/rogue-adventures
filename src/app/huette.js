@@ -1,6 +1,21 @@
+import { MODES, MODE_KEYS } from '../curriculum.ts';
+import { MK } from '../knowledge.js';
+import { MONART } from '../monsters.js';
+import { PANTRY_MAX, TOP } from '../save.ts';
+import { TOP_KNOCK, topVal } from './battle.js';
+import { screenStamps } from './collection.js';
+import { $, CFG, ITEMS, TYPES, app, esc, rnd } from './core.js';
+import { screenGarden } from './garten.js';
+import { OUTFITS, hasOutfit, heroLocked, heroSVG, markWeek, monsterSVG, wornBy } from './progress.js';
+import { state } from './state.js';
+import { extraOn, hasPart, saveAll } from './storage.js';
+import { INK, lg, ln, rg, runTask, shadow } from './tasks.js';
+import { screenTitle } from './title.js';
+import { modal, render, topbar } from './ui.js';
+
 /* ---------- Werkbank ---------- */
 // the question is about the thing being built (a · b); the cost stays small and fixed, because a bed gives one crop a week
-const RECIPES = [
+export const RECIPES = [
   {
     id: 'trank',
     need: { hafer: 1, holz: 1 },
@@ -75,30 +90,31 @@ const isFurn = (r) => r.id.startsWith('hut-');
 const rName = (r) => r.name || ITEMS[r.id].name;
 const missing = (r) =>
   Object.entries(r.need)
-    .filter(([k, n]) => (meta.materials[k] || 0) < n)
-    .map(([k, n]) => `${n - (meta.materials[k] || 0)} ${matName(k)}`);
-const craftable = (r) => !missing(r).length && (isFurn(r) ? !meta.owned[r.id] : meta.pantry.length < PANTRY_MAX);
-function craft(r) {
+    .filter(([k, n]) => (state.meta.materials[k] || 0) < n)
+    .map(([k, n]) => `${n - (state.meta.materials[k] || 0)} ${matName(k)}`);
+const craftable = (r) =>
+  !missing(r).length && (isFurn(r) ? !state.meta.owned[r.id] : state.meta.pantry.length < PANTRY_MAX);
+export function craft(r) {
   if (!craftable(r)) return false;
-  for (const [k, n] of Object.entries(r.need)) meta.materials[k] -= n;
-  if (isFurn(r)) meta.owned[r.id] = true;
-  else meta.pantry.push(r.id);
-  meta.progressAt = new Date().toISOString();
+  for (const [k, n] of Object.entries(r.need)) state.meta.materials[k] -= n;
+  if (isFurn(r)) state.meta.owned[r.id] = true;
+  else state.meta.pantry.push(r.id);
+  state.meta.progressAt = new Date().toISOString();
   return true;
 }
-function benchHtml() {
-  const stock = MATS.filter((k) => meta.materials[k]).map((k) => `${meta.materials[k]} ${matName(k)}`);
+export function benchHtml() {
+  const stock = MATS.filter((k) => state.meta.materials[k]).map((k) => `${state.meta.materials[k]} ${matName(k)}`);
   const row = (r) => {
     const miss = missing(r);
     const prev = isFurn(r) ? furnPreview(r.id) : `<div class="rwprev" aria-hidden="true">${ITEMS[r.id].icon}</div>`;
-    const state =
-      isFurn(r) && meta.owned[r.id]
+    const action =
+      isFurn(r) && state.meta.owned[r.id]
         ? '<div class="rwhave">✔ Steht in deiner Hütte</div>'
         : `<button class="btn small" data-craft="${r.id}" ${craftable(r) ? '' : 'disabled'}>Bauen</button>${miss.length ? `<div class="desc">Es fehlt: ${miss.join(', ')}</div>` : !isFurn(r) && !craftable(r) ? '<div class="desc">Der Vorrat ist voll.</div>' : ''}`;
-    return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(rName(r))}</div><div class="desc">${esc(isFurn(r) ? r.desc : ITEMS[r.id].desc)}</div><div class="desc">Braucht ${andList(Object.entries(r.need).map(([k, n]) => `${n} ${matName(k)}`))}</div>${state}</div></div>`;
+    return `<div class="choice reward">${prev}<div class="meta"><div class="name">${esc(rName(r))}</div><div class="desc">${esc(isFurn(r) ? r.desc : ITEMS[r.id].desc)}</div><div class="desc">Braucht ${andList(Object.entries(r.need).map(([k, n]) => `${n} ${matName(k)}`))}</div>${action}</div></div>`;
   };
   return `<h2 id="werkbank">Werkbank</h2>
-      <div class="card"><p>Im Lager: ${stock.length ? andList(stock) : 'noch nichts'}.</p><p>Im Vorrat: ${meta.pantry.length} von ${PANTRY_MAX}${meta.pantry.length ? ` (${meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')})` : ''}. Der Vorrat kommt ins nächste Abenteuer mit.</p>
+      <div class="card"><p>Im Lager: ${stock.length ? andList(stock) : 'noch nichts'}.</p><p>Im Vorrat: ${state.meta.pantry.length} von ${PANTRY_MAX}${state.meta.pantry.length ? ` (${state.meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')})` : ''}. Der Vorrat kommt ins nächste Abenteuer mit.</p>
       <p class="pnote">Holz gibt es auf dem Holzplatz in Zahlenquest und für jeden Sieg in der Kartoffel-Werkstatt. Erz und Stein findest du im Bergwerk, Ernte im Schulgarten. Vor dem Bauen löst du eine Aufgabe.</p></div>
       <h3>Für dein nächstes Abenteuer</h3>
       ${RECIPES.filter((r) => !isFurn(r))
@@ -106,8 +122,8 @@ function benchHtml() {
         .join('')}
       <h3>Für deine Hütte</h3>${RECIPES.filter(isFurn).map(row).join('')}`;
 }
-function screenCraft(id) {
-  depth = 2;
+export function screenCraft(id) {
+  state.depth = 2;
   const r = RECIPES.find((x) => x.id === id);
   if (!r || !craftable(r)) return screenStamps(true);
   const a = rnd(2, 6),
@@ -125,7 +141,7 @@ function screenCraft(id) {
       bottom: $('#bottom'),
       subtitle: rName(r),
       onResult: (ok) => {
-        const s = meta.stats.math.mul;
+        const s = state.meta.stats.math.mul;
         s.t++;
         if (ok) s.c++;
         markWeek();
@@ -169,7 +185,7 @@ const FURN = {
     art: (n) => `<defs>${lg('hh-m', '#C4CAD3', '#5E646E')}</defs>
       <rect x="168" y="91" width="22" height="11" rx="3" fill="#5A3A1E" opacity=".22"/><rect x="165" y="87" width="22" height="11" rx="3" fill="url(#hh-m)" ${ln(2.2)}/><circle cx="170" cy="92.5" r="1.7" fill="#E6E9EE" ${ln(0.8)}/><circle cx="182" cy="92.5" r="1.7" fill="#E6E9EE" ${ln(0.8)}/>
       <path d="M180 98v10q0 7-5 7q-6 0-6-6" fill="none" ${ln(7)}/><path d="M180 98v10q0 7-5 7q-6 0-6-6" fill="none" stroke="#8C939C" stroke-width="3.6" stroke-linecap="round"/><path d="M181.2 100v7" stroke="#EEF1F5" stroke-width="1.2" stroke-linecap="round"/>
-      ${n.tops ? `<path d="M175 114q-4 4 1 8" fill="none" stroke="#C8473B" stroke-width="2" stroke-linecap="round"/>${MONART.topSVG(TYPES.feuer.color, meta.top).replace('<svg ', '<svg x="152" y="104" width="48" height="48" ')}` : ''}`,
+      ${n.tops ? `<path d="M175 114q-4 4 1 8" fill="none" stroke="#C8473B" stroke-width="2" stroke-linecap="round"/>${MONART.topSVG(TYPES.feuer.color, state.meta.top).replace('<svg ', '<svg x="152" y="104" width="48" height="48" ')}` : ''}`,
   },
   'hut-regal': {
     box: [234, 68, 112, 168],
@@ -217,9 +233,9 @@ const HUT_DEFS = `<defs>${lg('hu-log', '#EDD6A6', '#CDAA70')}${lg('hu-gab', '#8E
     <pattern id="hu-logs" width="180" height="52" patternUnits="userSpaceOnUse" y="48"><rect width="180" height="52" fill="url(#hu-log)"/><rect y="26" width="180" height="26" fill="#E6CB94"/><rect y="39" width="180" height="13" fill="#CDAA70" opacity=".5"/>
       <path d="M0 25h180M0 51h180" stroke="#9C7444" stroke-width="2"/><path d="M0 2h180M0 28h180" stroke="#F8E8C4" stroke-width="1.4"/><path d="M14 10q30-3 60 1M100 16q30 2 64-1M30 36q40 3 80-1M130 44q20-2 44 0" stroke="#C49B63" stroke-width="1.1" fill="none"/><ellipse cx="88" cy="13" rx="4" ry="2" fill="none" stroke="#B48A55" stroke-width="1.1"/><ellipse cx="152" cy="38" rx="3" ry="1.6" fill="none" stroke="#B48A55" stroke-width="1.1"/></pattern></defs>`;
 const shelfNums = () => ({
-  dex: Object.keys(meta.dex).length,
-  tops: Object.keys(meta.owned).filter((k) => k.startsWith('top-')).length,
-  notes: Object.keys(meta.know).length,
+  dex: Object.keys(state.meta.dex).length,
+  tops: Object.keys(state.meta.owned).filter((k) => k.startsWith('top-')).length,
+  notes: Object.keys(state.meta.know).length,
 });
 const furnPreview = (id) => {
   const [x, y, w, h] = FURN[id].box;
@@ -229,9 +245,9 @@ const furnPreview = (id) => {
 function hutSVG(room) {
   const n = shelfNums();
   const here = Object.keys(FURN).filter(
-    (id) => meta.owned[id] && (room === 2) === (meta.hut.rooms >= 2 && meta.hut.items.includes(id)),
+    (id) => state.meta.owned[id] && (room === 2) === (state.meta.hut.rooms >= 2 && state.meta.hut.items.includes(id)),
   );
-  const gaps = room === 1 ? Object.keys(FURN).filter((id) => !meta.owned[id]) : [];
+  const gaps = room === 1 ? Object.keys(FURN).filter((id) => !state.meta.owned[id]) : [];
   const label = here.length
     ? 'Im Zimmer: ' + here.map((id) => RECIPES.find((r) => r.id === id).name).join(', ')
     : 'Das Zimmer ist leer';
@@ -243,25 +259,25 @@ function hutSVG(room) {
       <rect y="42" width="360" height="12" fill="url(#hu-beam)" ${ln(2.5)}/><path d="M20 46q60-2 120 1M200 50q70 2 140-1" stroke="#5E3A1E" stroke-width="1.1" fill="none" opacity=".6"/><circle cx="60" cy="48" r="2" fill="#4E3018"/><circle cx="300" cy="48" r="2" fill="#4E3018"/>
       <rect x="-2" y="54" width="12" height="176" fill="url(#hu-post)" ${ln(2)}/><rect x="350" y="54" width="12" height="176" fill="url(#hu-post)" ${ln(2)}/>
       <rect width="360" height="290" fill="url(#hu-light)"/>
-      ${room === 1 && meta.owned['hut-dachfenster'] ? ROOF : ''}${gaps
+      ${room === 1 && state.meta.owned['hut-dachfenster'] ? ROOF : ''}${gaps
         .map((id) => {
           const [x, y, w, h] = FURN[id].box;
           return `<rect x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="10" fill="#FFF7E6" fill-opacity=".55" stroke="#8A6A30" stroke-width="2.5" stroke-dasharray="7 6"/><text x="${x + w / 2}" y="${y + 30}" text-anchor="middle" font-size="15" font-weight="700" fill="#6B4A22">${RECIPES.find((r) => r.id === id).place}</text>`;
         })
         .join('')}${here.map((id) => FURN[id].art(n)).join('')}</svg>`;
 }
-function screenHut() {
-  depth = 1;
-  const two = meta.hut.rooms >= 2;
+export function screenHut() {
+  state.depth = 1;
+  const two = state.meta.hut.rooms >= 2;
   const n = shelfNums();
-  const built = Object.keys(FURN).filter((id) => meta.owned[id]);
+  const built = Object.keys(FURN).filter((id) => state.meta.owned[id]);
   const name = (id) => RECIPES.find((r) => r.id === id).name;
   render(`<div class="screen">${topbar('Meine Hütte')}<div class="scroll"><div class="stack">
       ${two ? '<h3>Erstes Zimmer</h3>' : ''}${hutSVG(1)}${two ? `<h3>Zweites Zimmer</h3>${hutSVG(2)}` : ''}
-      <div class="card">${built.length ? '' : '<p>Noch ist deine Hütte leer. Möbel baust du an der Werkbank im Stempelheft.</p>'}${meta.owned['hut-regal'] ? `<p>Im Regal: ${n.dex} im Monsterbuch, ${n.tops} Kreiselteile, ${n.notes} Notizkarten.</p>` : ''}
-      ${built.length && built.length < 5 ? '<p class="pnote">Die gestrichelten Plätze warten noch auf Möbel von der Werkbank.</p>' : ''}${two ? '' : '<p class="pnote">Ein zweites Zimmer gibt es im Stempelheft für 30 Stempel und 12 Stein.</p>'}${meta.owned['hut-dachfenster'] ? '' : '<p class="pnote">Wer Zahlenquest durch alle drei Welten gewinnt, bekommt ein Dachfenster.</p>'}</div>
+      <div class="card">${built.length ? '' : '<p>Noch ist deine Hütte leer. Möbel baust du an der Werkbank im Stempelheft.</p>'}${state.meta.owned['hut-regal'] ? `<p>Im Regal: ${n.dex} im Monsterbuch, ${n.tops} Kreiselteile, ${n.notes} Notizkarten.</p>` : ''}
+      ${built.length && built.length < 5 ? '<p class="pnote">Die gestrichelten Plätze warten noch auf Möbel von der Werkbank.</p>' : ''}${two ? '' : '<p class="pnote">Ein zweites Zimmer gibt es im Stempelheft für 30 Stempel und 12 Stein.</p>'}${state.meta.owned['hut-dachfenster'] ? '' : '<p class="pnote">Wer Zahlenquest durch alle drei Welten gewinnt, bekommt ein Dachfenster.</p>'}</div>
       <div class="row"><button class="btn ghost" id="bench">Zur Werkbank</button>${extraOn('garten') ? '<button class="btn ghost" id="garden">Schulgarten</button>' : ''}</div>
-      ${two && built.length ? `<div class="card"><h3>Umräumen</h3><div class="stack">${built.map((id) => `<button class="btn small secondary" data-move="${id}">${esc(name(id))} ins ${meta.hut.items.includes(id) ? 'erste' : 'zweite'} Zimmer</button>`).join('')}</div></div>` : ''}
+      ${two && built.length ? `<div class="card"><h3>Umräumen</h3><div class="stack">${built.map((id) => `<button class="btn small secondary" data-move="${id}">${esc(name(id))} ins ${state.meta.hut.items.includes(id) ? 'erste' : 'zweite'} Zimmer</button>`).join('')}</div></div>` : ''}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
   $('#back').onclick = screenTitle;
   $('#bench').onclick = () => screenStamps(true);
@@ -269,19 +285,20 @@ function screenHut() {
   app.querySelectorAll('[data-move]').forEach((b) => {
     b.onclick = () => {
       const id = b.dataset.move;
-      const h = meta.hut;
+      const h = state.meta.hut;
       h.items = h.items.includes(id) ? h.items.filter((x) => x !== id) : h.items.concat(id);
       saveAll();
       screenHut();
     };
   });
 }
-function screenWardrobe(heroId) {
-  depth = 2;
+export function screenWardrobe(heroId) {
+  state.depth = 2;
   const heroes = MODE_KEYS.flatMap((m) => MODES[m].starters).filter(
     (s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i,
   );
-  const hero = heroes.find((s) => s.id === heroId) || heroes.find((s) => s.id === meta.lastStarter[mode]) || heroes[0];
+  const hero =
+    heroes.find((s) => s.id === heroId) || heroes.find((s) => s.id === state.meta.lastStarter[state.mode]) || heroes[0];
   const worn = wornBy(hero.id);
   const tile = (o) => {
     const has = hasOutfit(o);
@@ -291,18 +308,18 @@ function screenWardrobe(heroId) {
         : has
           ? `<button class="btn small" data-wear="${o.id}">Anziehen</button>`
           : o.price
-            ? `<button class="btn small" data-buy="${o.id}" ${meta.stamps < o.price ? 'disabled' : ''}>Holen · ${o.price} 🏷️</button>`
+            ? `<button class="btn small" data-buy="${o.id}" ${state.meta.stamps < o.price ? 'disabled' : ''}>Holen · ${o.price} 🏷️</button>`
             : `<div class="desc">${esc(o.need())}</div>`;
     return `<div class="kkitem${o.id === worn ? ' on' : ''}${has ? '' : ' locked'}">${monsterSVG(hero.shape, TYPES[hero.type].color, 0, '', { outfit: o.id })}<div class="name">${o.name}</div>${act}</div>`;
   };
   render(`<div class="screen">${topbar('Kleiderkammer')}<div class="scroll"><div class="stack">
-      <div class="card center kkcard">${heroSVG(hero, 0)}<div class="name">${esc(hero.names[0])}</div><p>🏷️ ${meta.stamps} Stempel</p><p class="pnote">Kleidung ändert nichts am Kampf. Jeder Held trägt ein Teil.</p></div>
+      <div class="card center kkcard">${heroSVG(hero, 0)}<div class="name">${esc(hero.names[0])}</div><p>🏷️ ${state.meta.stamps} Stempel</p><p class="pnote">Kleidung ändert nichts am Kampf. Jeder Held trägt ein Teil.</p></div>
       ${heroes.length > 1 ? `<div class="kkpick" role="group" aria-label="Held wählen">${heroes.map((s) => `<button class="kkhero${s === hero ? ' on' : ''}" data-hero="${s.id}" aria-pressed="${s === hero}" aria-label="${esc(s.names[0])}">${heroSVG(s, 0)}</button>`).join('')}</div>` : ''}
       <div class="kkgrid">${OUTFITS.map(tile).join('')}</div>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
   const wear = (id) => {
-    if (id) meta.worn[hero.id] = id;
-    else delete meta.worn[hero.id];
+    if (id) state.meta.worn[hero.id] = id;
+    else delete state.meta.worn[hero.id];
     saveAll();
     screenWardrobe(hero.id);
   };
@@ -320,15 +337,15 @@ function screenWardrobe(heroId) {
     b.onclick = () => {
       const o = OUTFITS.find((x) => x.id === b.dataset.buy);
       const ov = modal(
-        `<h2>${o.name} holen?</h2><p>Das kostet ${o.price} Stempel. Danach hast du noch ${meta.stamps - o.price}.</p><div class="stack"><button class="btn" id="yes">Holen und anziehen</button><button class="btn secondary" id="no">Zurück</button></div>`,
+        `<h2>${o.name} holen?</h2><p>Das kostet ${o.price} Stempel. Danach hast du noch ${state.meta.stamps - o.price}.</p><div class="stack"><button class="btn" id="yes">Holen und anziehen</button><button class="btn secondary" id="no">Zurück</button></div>`,
       );
       $('#no', ov).onclick = () => ov.remove();
       $('#yes', ov).onclick = () => {
-        if (!hasOutfit(o) && meta.stamps >= o.price) {
-          meta.stamps -= o.price;
-          meta.owned['outfit-' + o.id] = true;
-          meta.progressAt = new Date().toISOString();
-          meta.worn[hero.id] = o.id;
+        if (!hasOutfit(o) && state.meta.stamps >= o.price) {
+          state.meta.stamps -= o.price;
+          state.meta.owned['outfit-' + o.id] = true;
+          state.meta.progressAt = new Date().toISOString();
+          state.meta.worn[hero.id] = o.id;
         }
         saveAll();
         screenWardrobe(hero.id);
@@ -336,7 +353,7 @@ function screenWardrobe(heroId) {
     };
   });
 }
-const partOf = (key) => {
+export const partOf = (key) => {
   const [, slot, id] = key.split('-');
   const p = TOP[slot] && TOP[slot].find((x) => x.id === id);
   return p ? Object.assign({ slot }, p) : null;
@@ -346,28 +363,28 @@ const TOP_ROWS = [
   ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`],
   ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.'],
 ];
-function screenTop() {
-  depth = 2;
-  const s = CFG().starters.find((x) => x.id === meta.lastStarter[mode]) || CFG().starters[0];
+export function screenTop() {
+  state.depth = 2;
+  const s = CFG().starters.find((x) => x.id === state.meta.lastStarter[state.mode]) || CFG().starters[0];
   const color = TYPES[s.type].color;
   const need = (p) =>
     p.chest
       ? `Liegt in einer Truhe in Welt ${p.chest}${p.chest > 2 ? ' von Zahlenquest' : ''}.`
       : 'Finde Erz im Bergwerk in Zahlenquest oder auf der Baustelle.';
   const tile = (slot, label, p) => {
-    const on = meta.top[slot] === p.id,
+    const on = state.meta.top[slot] === p.id,
       has = hasPart(slot, p.id);
     const act = on
       ? '<div class="rwhave">✔ Eingebaut</div>'
       : has
         ? `<button class="btn small" data-fit="${slot}:${p.id}">Einbauen</button>`
         : p.price
-          ? `<button class="btn small" data-buy="${slot}:${p.id}" ${meta.stamps < p.price ? 'disabled' : ''}>Holen · ${p.price} 🏷️</button>`
+          ? `<button class="btn small" data-buy="${slot}:${p.id}" ${state.meta.stamps < p.price ? 'disabled' : ''}>Holen · ${p.price} 🏷️</button>`
           : `<div class="desc">${need(p)}</div>`;
-    return `<div class="kkitem${on ? ' on' : ''}${has ? '' : ' locked'}">${MONART.topSVG(color, Object.assign({}, meta.top, { [slot]: p.id }))}<div class="name">${p.name}</div><div class="partval">${label} ${p.val}</div>${act}</div>`;
+    return `<div class="kkitem${on ? ' on' : ''}${has ? '' : ' locked'}">${MONART.topSVG(color, Object.assign({}, state.meta.top, { [slot]: p.id }))}<div class="name">${p.name}</div><div class="partval">${label} ${p.val}</div>${act}</div>`;
   };
   render(`<div class="screen">${topbar('Kreisel bauen')}<div class="scroll"><div class="stack">
-      <div class="card center kkcard">${MONART.topSVG(color, meta.top, 'live')}<p class="topvals"><span>💥 Wucht ${topVal('tip')}</span><span>🛡️ Panzer ${topVal('ring')}</span><span>🌀 Schwung ${topVal('disc')}</span></p><p>🏷️ ${meta.stamps} Stempel</p><p class="pnote">Mit diesem Kreisel trittst du in der Kreisel-Arena an. Er hat den Typ deines Helden.</p></div>
+      <div class="card center kkcard">${MONART.topSVG(color, state.meta.top, 'live')}<p class="topvals"><span>💥 Wucht ${topVal('tip')}</span><span>🛡️ Panzer ${topVal('ring')}</span><span>🌀 Schwung ${topVal('disc')}</span></p><p>🏷️ ${state.meta.stamps} Stempel</p><p class="pnote">Mit diesem Kreisel trittst du in der Kreisel-Arena an. Er hat den Typ deines Helden.</p></div>
       ${TOP_ROWS.map(([slot, title, label, text]) => `<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p) => tile(slot, label, p)).join('')}</div></div>`).join('')}
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
   const again = () => {
@@ -379,7 +396,7 @@ function screenTop() {
   app.querySelectorAll('[data-fit]').forEach((b) => {
     b.onclick = () => {
       const [slot, id] = b.dataset.fit.split(':');
-      meta.top[slot] = id;
+      state.meta.top[slot] = id;
       saveAll();
       again();
     };
@@ -389,15 +406,15 @@ function screenTop() {
       const [slot, id] = b.dataset.buy.split(':');
       const p = TOP[slot].find((x) => x.id === id);
       const ov = modal(
-        `<h2>${p.name} holen?</h2><p>Das kostet ${p.price} Stempel. Danach hast du noch ${meta.stamps - p.price}.</p><div class="stack"><button class="btn" id="yes">Holen und einbauen</button><button class="btn secondary" id="no">Zurück</button></div>`,
+        `<h2>${p.name} holen?</h2><p>Das kostet ${p.price} Stempel. Danach hast du noch ${state.meta.stamps - p.price}.</p><div class="stack"><button class="btn" id="yes">Holen und einbauen</button><button class="btn secondary" id="no">Zurück</button></div>`,
       );
       $('#no', ov).onclick = () => ov.remove();
       $('#yes', ov).onclick = () => {
-        if (!hasPart(slot, id) && meta.stamps >= p.price) {
-          meta.stamps -= p.price;
-          meta.owned[`top-${slot}-${id}`] = true;
-          meta.progressAt = new Date().toISOString();
-          meta.top[slot] = id;
+        if (!hasPart(slot, id) && state.meta.stamps >= p.price) {
+          state.meta.stamps -= p.price;
+          state.meta.owned[`top-${slot}-${id}`] = true;
+          state.meta.progressAt = new Date().toISOString();
+          state.meta.top[slot] = id;
           saveAll();
         }
         ov.remove();

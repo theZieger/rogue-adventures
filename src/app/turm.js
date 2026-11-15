@@ -1,3 +1,21 @@
+import { MODES, MODE_KEYS } from '../curriculum.ts';
+import { KEY_TURM, RENAMES, clear, isObj, load, nat, okScore, own } from '../save.ts';
+import { TW } from '../turm.js';
+import { ITEMS, TYPES } from './core.js';
+import {
+  giveStamps,
+  heroLocked,
+  levelOf,
+  makeTask,
+  payAnswers,
+  recordAnswer,
+  taskTier,
+  weeklyStep,
+} from './progress.js';
+import { state } from './state.js';
+import { curGrade, enabledMods, fightMods, heroShown, loadRun, saveAll, shown } from './storage.js';
+import { practised } from './title.js';
+
 /* ---------- Turmwacht (rules in src/turm.js) ---------- */
 const TURM_PHASES = ['choose', 'task', 'step', 'reward', 'build', 'fallen', 'won'];
 // a unit's Turm world: the furthest world reached in an adventure there (running, or a Monsterbuch entry from there)
@@ -8,7 +26,7 @@ const turmWorld = (m) => {
     Math.max(
       1,
       r ? r.world : 1,
-      ...Object.values(meta.dex)
+      ...Object.values(state.meta.dex)
         .filter((e) => isObj(e) && e.mode === m && Number.isInteger(e.world))
         .map((e) => e.world),
     ),
@@ -16,14 +34,14 @@ const turmWorld = (m) => {
 };
 // Turmwacht is for review: only the task types the child has practised in a subject, topped up to two from the first
 // practised theme, else from the subject's first theme in title order (a new subject brings two explanations, not a dozen)
-const turmSources = (subject, grade) => {
+export const turmSources = (subject, grade) => {
   const units = MODE_KEYS.filter((m) => MODES[m].grade === grade && MODES[m].subject === subject && shown(m)).sort(
       (x, y) => (MODES[x].rank || 0) - (MODES[y].rank || 0),
     ),
     done = units.filter(practised);
   const seen = done.flatMap((m) =>
     fightMods(m)
-      .filter((k) => meta.stats[m][k] && meta.stats[m][k].t > 0)
+      .filter((k) => state.meta.stats[m][k] && state.meta.stats[m][k].t > 0)
       .map((k) => ({ m, k })),
   );
   // at least two task types, so a subject alone still gets two paths
@@ -31,18 +49,18 @@ const turmSources = (subject, grade) => {
   for (const k of enabledMods(m)) if (seen.length < 2 && !seen.some((s) => s.m === m && s.k === k)) seen.push({ m, k });
   return seen;
 };
-const turmHero = (h = run.hero) => MODES[h.m].starters.find((s) => s.id === h.id);
+export const turmHero = (h = state.run.hero) => MODES[h.m].starters.find((s) => s.id === h.id);
 const laneAcc = (lane) => {
   let c = 0,
     t = 0;
   for (const { m, k } of lane.src) {
-    const s = meta.stats[m][k];
+    const s = state.meta.stats[m][k];
     c += s.c;
     t += s.t;
   }
   return t ? c / t : 0.6;
 };
-const turmCtx = (hero) => ({
+export const turmCtx = (hero) => ({
   rnd: Math.random,
   heroType: turmHero(hero).type,
   enemies: (m, w) => MODES[m].enemies[w],
@@ -53,44 +71,44 @@ const turmCtx = (hero) => ({
 });
 // the per-unit task box; start tiers one below the level reached, as in an adventure
 const turmBox = (m) =>
-  run.turm.at[m] ||
-  (run.turm.at[m] = {
+  state.run.turm.at[m] ||
+  (state.run.turm.at[m] = {
     world: turmWorld(m),
     tiers: Object.fromEntries(fightMods(m).map((k) => [k, Math.max(1, (levelOf(m)[k] || 1) - 1)])),
     recent: {},
   });
 // after every rule change: record and latest scores go to meta, and everything is saved at once
 function turmSync(x) {
-  const t = run.turm;
-  meta.turm.best = Math.max(meta.turm.best, t.best);
+  const t = state.run.turm;
+  state.meta.turm.best = Math.max(state.meta.turm.best, t.best);
   // a monster on the board is seen: Monsterbuch entry under its own unit and world, +2 Stempel when new (as in an adventure)
   for (const y of t.monsters)
-    if (!meta.dex[y.name]) {
-      meta.dex[y.name] = { type: y.type, shape: y.shape, world: y.world, mode: y.unit || y.m };
+    if (!state.meta.dex[y.name]) {
+      state.meta.dex[y.name] = { type: y.type, shape: y.shape, world: y.world, mode: y.unit || y.m };
       y.fresh = true;
       t.stamps += giveStamps(2);
     }
-  if (Object.keys(t.score).length) meta.turm.last = JSON.parse(JSON.stringify(t.score));
+  if (Object.keys(t.score).length) state.meta.turm.last = JSON.parse(JSON.stringify(t.score));
   saveAll();
   return x;
 }
 // a new run replaces a saved one
-function startTurm(subjects, hero) {
+export function startTurm(subjects, hero) {
   const grade = curGrade().grade;
   clear(KEY_TURM);
-  run = null;
+  state.run = null;
   const r = TW.newRun({ grade, lanes: TW.lanesFor(subjects, (s) => turmSources(s, grade)), hero }, turmCtx(hero));
-  run = r;
+  state.run = r;
   for (const l of r.turm.lanes) for (const s of l.src) turmBox(s.m);
-  meta.turm.runs++;
+  state.meta.turm.runs++;
   return turmSync(r);
 }
 // the question is saved with the run before it is shown, so a reload asks the same one again
-function turmAsk(id) {
-  const t = run.turm;
-  if (t.phase !== 'task' && !TW.ask(run, id)) return null;
+export function turmAsk(id) {
+  const t = state.run.turm;
+  if (t.phase !== 'task' && !TW.ask(state.run, id)) return null;
   const a = t.asking;
-  mode = a.m;
+  state.mode = a.m;
   turmBox(a.m);
   if (!a.task) {
     a.task = (a.again && a.again.task) || makeTask(a.k, a.again ? a.again.tier : taskTier(a.k));
@@ -99,45 +117,45 @@ function turmAsk(id) {
   return a.task;
 }
 // saved together with phase 'step': a reload never repeats the answer or its Ziegel
-function turmAnswer(ok) {
-  const a = run.turm.asking;
-  if (run.turm.phase !== 'task' || !a) return [];
-  mode = a.m;
+export function turmAnswer(ok) {
+  const a = state.run.turm.asking;
+  if (state.run.turm.phase !== 'task' || !a) return [];
+  state.mode = a.m;
   turmBox(a.m);
   recordAnswer(a.k, ok, a.task);
-  const elites = run.turm.monsters.filter((x) => x.elite),
-    ev = TW.answer(run, ok, turmCtx(run.hero), { task: a.task });
+  const elites = state.run.turm.monsters.filter((x) => x.elite),
+    ev = TW.answer(state.run, ok, turmCtx(state.run.hero), { task: a.task });
   for (const x of elites)
     if (ev.some((e) => e.t === 'beaten' && e.id === x.id)) {
-      mode = x.m;
+      state.mode = x.m;
       weeklyStep('elite');
     }
-  mode = a.m;
+  state.mode = a.m;
   return turmSync(ev);
 }
 // Stempel as in an adventure: the answers pay at the end of every wave and at the fall, +5 per boss wave, +10 for the victory
-function turmStep() {
-  const t = run.turm,
+export function turmStep() {
+  const t = state.run.turm,
     w = TW.WAVES[t.wave - 1];
   for (const x of t.monsters) delete x.fresh; // „Neu im Monsterbuch“ shows for the turn the monster arrives
-  const ev = TW.step(run, turmCtx(run.hero)),
+  const ev = TW.step(state.run, turmCtx(state.run.hero)),
     has = (k) => ev.some((e) => e.t === k);
   if (has('cleared') || has('fallen')) t.stamps += payAnswers();
   if (has('cleared') && (w.boss != null || w.final != null)) t.stamps += giveStamps(5);
   if (has('won')) {
-    meta.turm.wins++;
+    state.meta.turm.wins++;
     t.stamps += giveStamps(10);
-    meta.progressAt = new Date().toISOString();
+    state.meta.progressAt = new Date().toISOString();
   }
   return turmSync(ev);
 }
-const turmReward = (i) => turmSync(TW.takeReward(run, i));
-const turmBuy = (card) => turmSync(TW.buy(run, card));
-const turmNextWave = () => turmSync(TW.nextWave(run, turmCtx(run.hero)));
-const turmRetry = () => turmSync(TW.retry(run));
+export const turmReward = (i) => turmSync(TW.takeReward(state.run, i));
+export const turmBuy = (card) => turmSync(TW.buy(state.run, card));
+export const turmNextWave = () => turmSync(TW.nextWave(state.run, turmCtx(state.run.hero)));
+export const turmRetry = () => turmSync(TW.retry(state.run));
 
 // Saves must always load: a broken Turm run is removed (only its own key), single bad fields are repaired
-function loadTurm() {
+export function loadTurm() {
   const r = load(KEY_TURM, null);
   if (fixTurm(r)) return r;
   if (r) clear(KEY_TURM);
@@ -301,10 +319,10 @@ function fixTurm(r) {
 
 /* Turm screens. They never call CFG()-based helpers: the global mode is only the unit that asked last. */
 // off until the parents switch it on: Turmwacht is still being tried out
-const turmOn = () => meta.turm.on && curGrade().grade !== 1;
-const TW_FLAG =
+export const turmOn = () => state.meta.turm.on && curGrade().grade !== 1;
+export const TW_FLAG =
   '<svg class="twflag" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2.5v15" fill="none" stroke="#FFF9EE" stroke-width="2.2" stroke-linecap="round"/><path d="M6 3.5h9.5l-2.6 3.2 2.6 3.3H6Z" fill="#FF6A3D" stroke="#1C2541" stroke-width="1.4" stroke-linejoin="round"/></svg>';
-const TURM_BAG = {
+export const TURM_BAG = {
   full: 'Der Turm ist heil.',
   later: 'Das geht nur, solange eine Welle läuft.',
   desc: {
@@ -315,66 +333,66 @@ const TURM_BAG = {
     lupe: 'Ein Tipp bei der nächsten Aufgabe.',
   },
 };
-const turmSubjAcc = (subject, grade) => {
+export const turmSubjAcc = (subject, grade) => {
   let c = 0,
     t = 0;
   for (const { m, k } of turmSources(subject, grade)) {
-    const s = meta.stats[m][k];
+    const s = state.meta.stats[m][k];
     c += s.c;
     t += s.t;
   }
   return { subject, acc: t ? c / t : 0.6, t };
 };
 // starters of the units the child has practised (all units if none); Klasse-1/2 heroes are shared by a subject's units, each counts once
-function turmHeroes(grade) {
+export function turmHeroes(grade) {
   const units = MODE_KEYS.filter((m) => MODES[m].grade === grade && shown(m));
   const of = (ms) =>
     ms
       .flatMap((m) => MODES[m].starters.filter((s) => heroShown(m, s) && !heroLocked(s)).map((s) => ({ m, s })))
       .filter((h, i, all) => all.findIndex((x) => x.s.id === h.s.id) === i);
-  const met = of(units.filter((m) => practised(m) || meta.lastStarter[m])),
+  const met = of(units.filter((m) => practised(m) || state.meta.lastStarter[m])),
     all = of(units);
   return met.length ? met : all.length ? all : [{ m: units[0], s: MODES[units[0]].starters[0] }];
 }
-const turmLeave = (to) => {
+export const turmLeave = (to) => {
   saveAll();
-  run = null;
-  turmMode = null;
+  state.run = null;
+  state.turmMode = null;
   to();
 };
 // id → monster as it was before the answer (beaten ones are gone afterwards), for the log
-const turmNames = () =>
+export const turmNames = () =>
   Object.fromEntries(
-    run.turm.monsters
-      .concat(run.turm.queue)
+    state.run.turm.monsters
+      .concat(state.run.turm.queue)
       .map((x) => [x.id, { name: x.name, acc: accName(x), x: JSON.parse(JSON.stringify(x)) }]),
   );
 // „Erst den Wackelturm besiegen.“: the data's accusative if it has one, else the article (and an adjective after „Der“) declined
-const accName = (x) =>
+export const accName = (x) =>
   x.acc ||
   x.name.replace(
     /^(Der|Die|Das) (?:([a-zäöüß]+e) )?/,
     (_, art, adj) => `${{ Der: 'den', Die: 'die', Das: 'das' }[art]} ${adj ? adj + (art === 'Der' ? 'n ' : ' ') : ''}`,
   );
-const midName = (n) => n.replace(/^(Der|Die|Das) /, (a) => a.toLowerCase());
-const turmEliteText = (x) =>
+export const midName = (n) => n.replace(/^(Der|Die|Das) /, (a) => a.toLowerCase());
+export const turmEliteText = (x) =>
   `Das Elitemonster 🛡️ schützt alle Monster hinter sich auf seinem Weg. Erst wenn ${midName(x.name)} besiegt ist, kommst du an sie heran.`;
-const turmBlocked = (by) => `Erst ${accName(by)} besiegen.`;
+export const turmBlocked = (by) => `Erst ${accName(by)} besiegen.`;
 // the warning for monsters that reach the tower in the next step (TW.threats): card line and the hint under the board
-const turmGateLine = (x) => (x.boss ? 'Schlägt gleich wieder zu!' : 'Gleich am Turm!');
-const turmGateText = (xs) =>
+export const turmGateLine = (x) => (x.boss ? 'Schlägt gleich wieder zu!' : 'Gleich am Turm!');
+export const turmGateText = (xs) =>
   !xs.length
     ? ''
     : `Achtung! ${xs.length > 2 ? `${xs.length} Monster` : xs.map((x, i) => (i ? midName(x.name) : x.name)).join(' und ')} ${xs.length > 1 ? 'sind' : 'ist'} gleich am Turm.`;
 // stage names change only for some heroes, so the new name is said only when there is one (never „wird zu …“)
-function turmEvoText(evo) {
+export function turmEvoText(evo) {
   const N = turmHero().names,
     a = N[evo - 1],
     b = N[evo];
   return `${a} bekommt eine neue Gestalt${a !== b ? ` und heißt jetzt ${midName(b)}` : ''}. Jede Attacke macht ${TW.HERO_EVO} Schaden mehr.`;
 }
-const laneName = (i) => {
-  const L = run.turm.lanes,
+export const laneName = (i) => {
+  const L = state.run.turm.lanes,
     s = L[i].subject,
     same = L.filter((l) => l.subject === s);
   return same.length > 1 ? `${s} ${same.indexOf(L[i]) + 1}` : s;

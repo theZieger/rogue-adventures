@@ -1,3 +1,12 @@
+import { MK } from '../knowledge.js';
+import { $, app, esc } from './core.js';
+import { giveStamps, markWeek, stampLine } from './progress.js';
+import { state } from './state.js';
+import { saveAll } from './storage.js';
+import { INK, lg, ln, r1, rg, shadow } from './tasks.js';
+import { screenTitle } from './title.js';
+import { SFX, modal, render, topbar } from './ui.js';
+
 /* ---------- Schulgarten ---------- */
 const DAY = 864e5;
 // tests set window.__mq.now; a clock set back or forward only changes what grows, nothing is lost
@@ -8,9 +17,9 @@ const bedPhase = (b) => {
   return d >= 7 ? 3 : d >= 5 ? 2 : d >= 2 ? 1 : 0;
 };
 // bed 4 is the reward for winning the Kartoffel-Werkstatt (owned['beet-4'], set in screenVictory)
-const bedOpen = (i) => i < 3 || !!meta.owned['beet-4'];
-const ripeBeds = () => meta.garden.beds.filter((b, i) => b.crop && bedOpen(i) && bedPhase(b) === 3);
-function gardenCard() {
+const bedOpen = (i) => i < 3 || !!state.meta.owned['beet-4'];
+const ripeBeds = () => state.meta.garden.beds.filter((b, i) => b.crop && bedOpen(i) && bedPhase(b) === 3);
+export function gardenCard() {
   const r = ripeBeds();
   if (!r.length) return '';
   const crops = [...new Set(r.map((b) => b.crop))];
@@ -115,8 +124,8 @@ function plantSVG(crop, ph) {
   return r1(`<svg class="plant-art" viewBox="0 0 80 80" aria-hidden="true">${PG_DEFS}${shadow(40, 76.5, 37, 3)}<path d="M4 64Q4 55 16 55H64Q76 55 76 64Z" fill="url(#pg-soil)" ${ln(2)}/><circle cx="12" cy="59" r=".9" fill="#C99A70"/><circle cx="31" cy="57.5" r=".8" fill="#C99A70"/><circle cx="62" cy="58" r=".9" fill="#C99A70"/><circle cx="50" cy="62" r=".8" fill="#3E2414"/><circle cx="21" cy="62" r=".8" fill="#3E2414"/>${p}
       <rect x="3" y="63" width="74" height="13" rx="3" fill="url(#pg-bd)" ${ln(2)}/><path d="M6 65.5h68" stroke="#E2B07A" stroke-width="1" stroke-linecap="round"/><path d="M10 70q18-2 32 0M46 73q12 1 24-1" stroke="#6E4526" stroke-width=".8" fill="none" opacity=".6"/><circle cx="7.5" cy="69.5" r="1" fill="#5E646E"/><circle cx="72.5" cy="69.5" r="1" fill="#5E646E"/></svg>`);
 }
-function screenGarden() {
-  depth = 1;
+export function screenGarden() {
+  state.depth = 1;
   const bed = (b, i) => {
     if (!bedOpen(i))
       return `<div class="bed locked"><div class="bedart" aria-hidden="true">🔒</div><div class="bedname">Beet ${i + 1}</div><div class="beddesc">Gewinne die Kartoffel-Werkstatt, dann gehört dir dieses Beet.</div></div>`;
@@ -128,11 +137,11 @@ function screenGarden() {
     return `<div class="bed${ph === 3 ? ' ripe' : ''}">${plantSVG(b.crop, ph)}<div class="bedname">${c.name}</div><div class="beddesc">${ph === 3 ? 'Reif' : d ? `${[c.put, 'Keimling', c.top][ph]}<br>Tag ${d} von 7` : `Heute ${c.put.toLowerCase()}`}</div>${ph === 3 ? `<button class="btn small" data-harvest="${i}">Ernten</button>` : ''}</div>`;
   };
   const got = Object.keys(MK.CROPS)
-    .filter((k) => meta.materials[k])
-    .map((k) => `${MK.CROPS[k].name} ${meta.materials[k]}`);
+    .filter((k) => state.meta.materials[k])
+    .map((k) => `${MK.CROPS[k].name} ${state.meta.materials[k]}`);
   render(`<div class="screen">${topbar('Schulgarten')}<div class="scroll"><div class="stack">
       <div class="card"><p>Beete wachsen auch, wenn du Pause machst. Nach 7 Tagen kannst du ernten. Für jede Ernte gibt es 4 Stempel.</p>${got.length ? `<p class="pnote">Schon geerntet: ${got.join(' · ')}</p>` : ''}</div>
-      <div class="beds">${meta.garden.beds.map(bed).join('')}</div>
+      <div class="beds">${state.meta.garden.beds.map(bed).join('')}</div>
       </div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`);
   $('#back').onclick = screenTitle;
   app.querySelectorAll('[data-plant]').forEach((el) => {
@@ -154,7 +163,7 @@ function plantDialog(i) {
   $('#no', ov).onclick = () => ov.remove();
   ov.querySelectorAll('[data-crop]').forEach((el) => {
     el.onclick = () => {
-      meta.garden.beds[i] = { crop: el.dataset.crop, plantedAt: clock() };
+      state.meta.garden.beds[i] = { crop: el.dataset.crop, plantedAt: clock() };
       markWeek();
       saveAll();
       screenGarden();
@@ -162,7 +171,7 @@ function plantDialog(i) {
   });
 }
 function harvest(i) {
-  const b = meta.garden.beds[i];
+  const b = state.meta.garden.beds[i];
   if (!b.crop || bedPhase(b) !== 3 || !bedOpen(i)) return screenGarden();
   const c = MK.CROPS[b.crop];
   const t = MK.gardenQuestion(b.crop);
@@ -172,13 +181,13 @@ function harvest(i) {
   ov.querySelectorAll('.opt').forEach((el) => {
     el.onclick = () => {
       const ok = t.options[+el.dataset.i] === t.answer;
-      const first = !meta.owned['outfit-aehrenkranz'];
+      const first = !state.meta.owned['outfit-aehrenkranz'];
       // the harvest pays either way: the question is for learning, not a gate
-      meta.garden.beds[i] = { crop: null, plantedAt: 0 };
-      meta.materials[b.crop] = (meta.materials[b.crop] || 0) + 1;
+      state.meta.garden.beds[i] = { crop: null, plantedAt: 0 };
+      state.meta.materials[b.crop] = (state.meta.materials[b.crop] || 0) + 1;
       giveStamps(4);
-      meta.owned['outfit-aehrenkranz'] = true;
-      meta.progressAt = new Date().toISOString();
+      state.meta.owned['outfit-aehrenkranz'] = true;
+      state.meta.progressAt = new Date().toISOString();
       markWeek();
       saveAll();
       if (ok) SFX.right();

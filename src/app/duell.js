@@ -1,3 +1,12 @@
+import { MODES } from '../curriculum.ts';
+import { $, MODULES_OF, TYPES, app, esc } from './core.js';
+import { goalDone, heroLocked, heroSVG, makeTask, weekly, weeklyGoals } from './progress.js';
+import { state } from './state.js';
+import { enabledMods, extraOn, heroShown, loadRun, visSubjects } from './storage.js';
+import { runTask } from './tasks.js';
+import { screenTitle } from './title.js';
+import { SFX, announce, fx, render, topbar } from './ui.js';
+
 /* ---------- Duell ---------- */
 // Two children on one device. Nothing is saved: no run, no stamps, and no statistics, because
 // the device statistics belong to one child and a duel would mix in the other child's answers.
@@ -16,10 +25,10 @@ const duelAttacks = (p) => {
   const a = duelSpec(p).attacks.filter((x) => on.includes(x.mod));
   return a.length ? a : on.slice(0, 4).map((k) => ({ name: MODES[p.mode].extra[k], mod: k }));
 };
-function screenDuel(players) {
+export function screenDuel(players) {
   const i = players.length;
   const p = { name: '', mode: null, hero: null };
-  depth = i ? 2 : 1;
+  state.depth = i ? 2 : 1;
   const units = visSubjects().flatMap((s) => s.modes);
   const heroes = () => (p.mode ? MODES[p.mode].starters.filter((s) => !heroLocked(s) && heroShown(p.mode, s)) : []);
   render(`<div class="screen">${topbar(`Duell · Kind ${i + 1} von 2`)}<div class="scroll"><div class="stack">
@@ -67,19 +76,19 @@ function screenDuel(players) {
   };
 }
 function startDuel(players, first) {
-  run = null;
-  duel = { p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode) })), turn: first };
-  duelTurn(`${esc(duel.p[first].name)} fängt an.`, '');
+  state.run = null;
+  state.duel = { p: players.map((p) => Object.assign(p, { hp: DUEL_HP, tiers: duelTiers(p.mode) })), turn: first };
+  duelTurn(`${esc(state.duel.p[first].name)} fängt an.`, '');
 }
 // child 1 stands at the bottom like the hero in a fight, child 2 at the top
 function renderDuel(log, cls) {
   const plate = (p, side) => {
     const pct = (p.hp / DUEL_HP) * 100;
-    return `<div class="plate ${side}"><div class="name">${esc(p.name)}${duel.p[duel.turn] === p ? ' <span class="levelbadge">am Zug</span>' : ''}</div><div class="plateline"><span class="chip" style="background:${TYPES[duelSpec(p).type].color};color:#1C2541">${MODES[p.mode].icon} ${esc(duelSpec(p).names[0])}</span></div><div class="hpbar"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">❤️ ${p.hp} / ${DUEL_HP}</div></div>`;
+    return `<div class="plate ${side}"><div class="name">${esc(p.name)}${state.duel.p[state.duel.turn] === p ? ' <span class="levelbadge">am Zug</span>' : ''}</div><div class="plateline"><span class="chip" style="background:${TYPES[duelSpec(p).type].color};color:#1C2541">${MODES[p.mode].icon} ${esc(duelSpec(p).names[0])}</span></div><div class="hpbar"><i class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></i></div><div class="hptext">❤️ ${p.hp} / ${DUEL_HP}</div></div>`;
   };
   const sprite = (p, side, id) =>
     `<div class="sprite ${side}" id="${id}">${heroSVG(duelSpec(p), 0, side === 'enemy' ? 'enemy' : undefined)}<i class="ground"></i></div>`;
-  const [a, b] = duel.p;
+  const [a, b] = state.duel.p;
   render(
     `<div class="screen">${topbar('⚔️ Duell')}<div class="arena">${plate(b, 'enemy')}${sprite(b, 'enemy', 'fe')}${sprite(a, 'hero', 'fh')}${plate(a, 'hero')}</div><div class="log ${cls}">${log}</div><div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
     true,
@@ -87,8 +96,8 @@ function renderDuel(log, cls) {
   announce(log.replace(/<[^>]+>/g, ''));
 }
 function duelTurn(log, cls) {
-  const p = duel.p[duel.turn];
-  mode = p.mode;
+  const p = state.duel.p[state.duel.turn];
+  state.mode = p.mode;
   const atks = duelAttacks(p);
   const M = MODULES_OF();
   renderDuel(log, cls);
@@ -99,8 +108,8 @@ function duelTurn(log, cls) {
   });
 }
 function duelAttack(atk) {
-  const p = duel.p[duel.turn],
-    o = duel.p[1 - duel.turn];
+  const p = state.duel.p[state.duel.turn],
+    o = state.duel.p[1 - state.duel.turn];
   const t = makeTask(atk.mod, p.tiers[atk.mod] || 1);
   $('.screen').classList.add('tasking');
   $('#bottom').innerHTML = '';
@@ -122,7 +131,7 @@ function duelAttack(atk) {
         : `${esc(atk.name)} geht daneben.`;
       const show = () => {
         if (hit) {
-          const sel = duel.p.indexOf(o) ? '#fe' : '#fh';
+          const sel = state.duel.p.indexOf(o) ? '#fe' : '#fh';
           $(sel).classList.add('hurt');
           fx(sel, '−' + DUEL_HIT);
           SFX.hit();
@@ -134,16 +143,16 @@ function duelAttack(atk) {
         setTimeout(() => screenDuelEnd(p), 1500);
         return;
       }
-      duel.turn = 1 - duel.turn;
+      state.duel.turn = 1 - state.duel.turn;
       duelTurn(`${log} Jetzt ist ${esc(o.name)} dran.`, hit ? 'hit' : 'miss');
       show();
     },
   );
 }
 function screenDuelEnd(w) {
-  const players = duel.p;
+  const players = state.duel.p;
   const l = players.find((x) => x !== w);
-  duel = null;
+  state.duel = null;
   setTimeout(SFX.win, 150);
   render(
     `<div class="screen">${topbar('⚔️ Duell')}<div class="scroll"><div class="card center"><h2>${esc(w.name)} gewinnt das Duell.</h2>${heroSVG(duelSpec(w), 0)}<p>${esc(duelSpec(w).names[0])} hat noch ${w.hp} von ${DUEL_HP} Lebenspunkten.</p><p>Im nächsten Duell fängt ${esc(l.name)} an.</p></div></div><div class="bottom"><div class="stack"><button class="btn" id="again">Noch ein Duell</button><button class="btn ghost" id="home">Zum Titel</button></div></div></div>`,
@@ -153,7 +162,7 @@ function screenDuelEnd(w) {
 }
 
 // this week for parents: practised task types, the weakest one, the goals; the text has no names in it
-function weekReport() {
+export function weekReport() {
   const w = weekly();
   const goals = weeklyGoals();
   const wk = +w.week.slice(6);

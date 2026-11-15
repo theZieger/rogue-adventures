@@ -1,3 +1,20 @@
+import { MODES } from '../curriculum.ts';
+import { backupDue } from './backup.js';
+import { screenDex, screenStamps } from './collection.js';
+import { $, app, esc, rnd } from './core.js';
+import { screenDuel } from './duell.js';
+import { pAt, screenParent } from './elternbereich.js';
+import { screenFeedback } from './feedback.js';
+import { gardenCard, screenGarden } from './garten.js';
+import { screenHut } from './huette.js';
+import { resumeRun, screenStarter } from './map.js';
+import { goalDone, goalText, heroAttacks, showWeeklyNews, weekly, weeklyGoals } from './progress.js';
+import { state } from './state.js';
+import { curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.js';
+import { screenTurm } from './turm_screens.js';
+import { TW_FLAG, loadTurm, turmOn } from './turm.js';
+import { SFX, modal, render, topbar } from './ui.js';
+
 /* ---------- Screens ---------- */
 const GEAR =
   '<svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.4 3.35"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="3.2"/></svg>';
@@ -13,11 +30,11 @@ const evictable = () => {
     window.matchMedia('(display-mode: browser)').matches
   );
 };
-const showWarn = () => evictable() && !(Date.now() - Date.parse(meta.storage.warnedAt) < 30 * 864e5);
-function screenTitle() {
-  depth = 0;
-  if (!meta.setup.done && !meta.setup.skipped) return screenSetup();
-  render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!meta.sound}">${meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${meta.stamps} Stempel">🏷️ ${meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+const showWarn = () => evictable() && !(Date.now() - Date.parse(state.meta.storage.warnedAt) < 30 * 864e5);
+export function screenTitle() {
+  state.depth = 0;
+  if (!state.meta.setup.done && !state.meta.setup.skipped) return screenSetup();
+  render(`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" aria-label="${state.meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${!!state.meta.sound}">${state.meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" aria-label="Stempelheft, ${state.meta.stamps} Stempel">🏷️ ${state.meta.stamps}</button><button class="parentbtn" id="parents">${GEAR} Eltern${backupDue() ? '<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>' : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
       <div class="stack" style="margin-top:16px">
         ${showWarn() ? `<div class="card warncard"><button class="warnx" id="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp">Zum Elternbereich</button></div>` : ''}
         ${extraOn('wochenziele') ? weeklyCard() : ''}
@@ -28,7 +45,7 @@ function screenTitle() {
           })
           .join('')}</div>
         ${[
-          `<button class="btn ghost" id="dex">Monsterbuch (${Object.keys(meta.dex).length})</button>`,
+          `<button class="btn ghost" id="dex">Monsterbuch (${Object.keys(state.meta.dex).length})</button>`,
           '<button class="btn ghost" id="stamps">Stempelheft</button>',
           extraOn('huette') && '<button class="btn ghost" id="hut">Meine Hütte</button>',
           extraOn('garten') && '<button class="btn ghost" id="garden">Schulgarten</button>',
@@ -53,7 +70,7 @@ function screenTitle() {
   $('#parents').onclick = () => askPin(screenParent);
   if ($('#warnx')) {
     const seen = () => {
-      meta.storage.warnedAt = new Date().toISOString();
+      state.meta.storage.warnedAt = new Date().toISOString();
       saveAll();
     };
     $('#warnx').onclick = () => {
@@ -82,9 +99,9 @@ function screenTitle() {
   bind('#harvest', screenGarden);
   $('#feedback').onclick = () => screenFeedback(screenTitle);
   $('#snd').onclick = () => {
-    meta.sound = !meta.sound;
+    state.meta.sound = !state.meta.sound;
     saveAll();
-    if (meta.sound) {
+    if (state.meta.sound) {
       SFX.unlock();
       setTimeout(SFX.right, 150);
     }
@@ -92,7 +109,7 @@ function screenTitle() {
   };
   app.querySelectorAll('[data-grade]').forEach((b) => {
     b.onclick = () => {
-      meta.grade = +b.dataset.grade;
+      state.meta.grade = +b.dataset.grade;
       saveAll();
       screenTitle();
     };
@@ -100,13 +117,13 @@ function screenTitle() {
   bind('#weekly', screenWeekly);
   showWeeklyNews();
 }
-const subjectOf = (m) =>
+export const subjectOf = (m) =>
   visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
-const openGoals = (m) => (extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : []);
-const practised = (m) => Object.values(meta.stats[m]).some((x) => x.t > 0);
+export const openGoals = (m) => (extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : []);
+export const practised = (m) => Object.values(state.meta.stats[m]).some((x) => x.t > 0);
 // no locks: a ranked subject marks its easiest theme and points from a harder one to the easiest one not practised yet
-function screenSubject(sub) {
-  depth = 1;
+export function screenSubject(sub) {
+  state.depth = 1;
   const ranked = sub.modes.some((m) => MODES[m].rank);
   const path = (m, i) => {
     const e = ranked && sub.modes.slice(0, i).find((x) => !practised(x));
@@ -132,22 +149,22 @@ function screenSubject(sub) {
   );
   app.querySelectorAll('[data-cont]').forEach((b) => {
     b.onclick = () => {
-      mode = b.dataset.cont;
-      run = loadRun(mode);
-      if (run) resumeRun();
+      state.mode = b.dataset.cont;
+      state.run = loadRun(state.mode);
+      if (state.run) resumeRun();
       else screenSubject(sub);
     };
   });
   app.querySelectorAll('[data-new]').forEach((b) => {
     b.onclick = () => {
-      mode = b.dataset.new;
-      const r = loadRun(mode);
+      state.mode = b.dataset.new;
+      const r = loadRun(state.mode);
       if (r) {
         const ov = modal(
-          `<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`,
+          `<h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer in „${MODES[state.mode].title}“ wird gelöscht.</p><div class="stack"><button class="btn" id="yes">Ja, neu starten</button><button class="btn secondary" id="no">Zurück</button></div>`,
         );
         $('#yes', ov).onclick = () => {
-          run = null;
+          state.run = null;
           screenStarter(); /* old save is replaced only when the new adventure starts */
         };
         $('#no', ov).onclick = () => ov.remove();
@@ -156,15 +173,15 @@ function screenSubject(sub) {
   });
   $('#back').onclick = screenTitle;
 }
-const goalCount = (g) => Math.min(g.n, weekly().progress[g.i] || 0);
+export const goalCount = (g) => Math.min(g.n, weekly().progress[g.i] || 0);
 function weeklyCard() {
   const goals = weeklyGoals();
   const n = goals.filter(goalDone).length;
   const pct = Math.round((goals.reduce((a, g) => a + goalCount(g) / g.n, 0) / goals.length) * 100);
   return `<button class="card weekcard" id="weekly"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>${weekly().done ? 'Wochenaufgabe geschafft' : `${n} von ${goals.length} Zielen erledigt`}</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="${pct} %"><i style="width:${pct}%"></i></span>${weekly().done ? '' : '<span class="weekgo">Ziele ansehen und loslegen ›</span>'}</button>`;
 }
-function screenWeekly() {
-  depth = 1;
+export function screenWeekly() {
+  state.depth = 1;
   const goals = weeklyGoals();
   render(`<div class="screen">${topbar('Wochenaufgabe')}<div class="scroll"><div class="stack">
       <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
@@ -184,33 +201,33 @@ function screenWeekly() {
 }
 // straight into the game of a goal; an adventure whose hero lacks the goal's task type asks first
 function playGoal(g) {
-  mode = g.m;
-  run = loadRun(mode);
-  if (!run) return screenStarter(g);
+  state.mode = g.m;
+  state.run = loadRun(state.mode);
+  if (!state.run) return screenStarter(g);
   if (g.kind !== 'right' || heroAttacks().some((a) => a.mod === g.mod)) return resumeRun();
-  const M = MODES[mode].modules[g.mod];
+  const M = MODES[state.mode].modules[g.mod];
   const ov = modal(
-    `<h2>${M.icon} ${esc(M.name)}</h2><p>Dein Held in „${esc(MODES[mode].title)}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes">Neues Abenteuer</button><button class="btn secondary" id="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no">Zurück</button></div>`,
+    `<h2>${M.icon} ${esc(M.name)}</h2><p>Dein Held in „${esc(MODES[state.mode].title)}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes">Neues Abenteuer</button><button class="btn secondary" id="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no">Zurück</button></div>`,
   );
   $('#yes', ov).onclick = () => {
-    run = null;
+    state.run = null;
     screenStarter(g);
   };
   $('#cont', ov).onclick = resumeRun;
   $('#no', ov).onclick = () => {
-    run = null;
+    state.run = null;
     ov.remove();
   };
 }
 
 /* ---------- First start, PIN, parental gate ---------- */
-const setupDone = (how) => {
-  meta.setup[how] = true;
-  meta.setup.at = meta.setup.at || new Date().toISOString();
+export const setupDone = (how) => {
+  state.meta.setup[how] = true;
+  state.meta.setup.at = state.meta.setup.at || new Date().toISOString();
   saveAll();
 };
 function screenSetup() {
-  depth = 0;
+  state.depth = 0;
   render(`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:14px"><button class="btn" id="setpin">PIN festlegen</button><button class="btn secondary" id="setload">Spielstand laden</button><button class="btn secondary" id="later">Später</button></div>
@@ -218,7 +235,7 @@ function screenSetup() {
       <div class="card" style="margin-top:12px"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${gradeTabs()}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`);
   app.querySelectorAll('[data-grade]').forEach((b) => {
     b.onclick = () => {
-      meta.grade = +b.dataset.grade;
+      state.meta.grade = +b.dataset.grade;
       saveAll();
       screenSetup();
     };
@@ -242,7 +259,7 @@ let pinFails = 0,
 function screenCode(o) {
   let val = '';
   const len = o.len || 4;
-  if (!o.relock) depth++;
+  if (!o.relock) state.depth++;
   render(`<div class="screen">${topbar(o.title)}<div class="scroll"><div class="card codecard"><p>${o.text}</p>${o.task ? `<div class="codetask">${o.task}</div>` : ''}<div class="codeval ${o.task ? 'plain' : ''}" id="cval" role="img"></div><p id="cmsg" class="cmsg" role="status">${esc(o.msg || '')}</p>${o.forgot ? '<button class="linkbtn" id="forgot">PIN vergessen?</button>' : ''}</div></div>
       <div class="bottom"><div class="numpad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => `<button data-k="${d}">${d}</button>`).join('')}<button class="del" data-k="del" aria-label="Löschen">⌫</button><button data-k="0">0</button><button class="ok" data-k="ok" aria-label="Bestätigen">✓</button><button class="cancel" id="back" style="grid-column:1/-1">Zurück</button></div></div></div>`);
   const paint = () => {
@@ -280,7 +297,7 @@ function screenCode(o) {
     const b = e.target.closest('[data-k]');
     if (b) press(b.dataset.k);
   };
-  keyHandler = (e) => {
+  state.keyHandler = (e) => {
     const k = /^[0-9]$/.test(e.key)
       ? e.key
       : e.key === 'Backspace' || e.key === 'Delete'
@@ -312,8 +329,8 @@ function screenCode(o) {
   }
 }
 // relock: the parents' area locked itself; a wrong PIN goes to the title screen
-function askPin(then, relock) {
-  if (!meta.pin) return then();
+export function askPin(then, relock) {
+  if (!state.meta.pin) return then();
   screenCode({
     title: 'Elternbereich',
     text: 'Bitte die Eltern-PIN eingeben.',
@@ -322,7 +339,7 @@ function askPin(then, relock) {
     back: screenTitle,
     forgot: () => screenGate(then),
     onCode: (v, fail) => {
-      if (pinHash(v) === meta.pin) {
+      if (pinHash(v) === state.meta.pin) {
         pinFails = 0;
         return then();
       }
@@ -339,7 +356,7 @@ function askPin(then, relock) {
 }
 // in the background the parents' area locks at once, so the app switcher doesn't show it either; the PIN leads back to the same place
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'hidden' || !meta.pin || !$('.ptabs')) return;
+  if (document.visibilityState !== 'hidden' || !state.meta.pin || !$('.ptabs')) return;
   const y = $('.scroll').scrollTop,
     back = pAt.back;
   askPin(() => {
@@ -347,7 +364,7 @@ document.addEventListener('visibilitychange', () => {
     $('.scroll').scrollTop = y;
   }, true);
 });
-function setPin(done, back) {
+export function setPin(done, back) {
   const first = (msg) =>
     screenCode({
       title: 'PIN festlegen',
@@ -361,7 +378,7 @@ function setPin(done, back) {
           back: () => first(),
           onCode: (b) => {
             if (a !== b) return first('Die beiden Eingaben waren verschieden. Bitte neu wählen.');
-            meta.pin = pinHash(a);
+            state.meta.pin = pinHash(a);
             setupDone('done');
             done();
           },
@@ -384,9 +401,9 @@ function screenGate(then, msg) {
 }
 
 /* ---------- Changelog (CHANGELOG.md via tools/build.js) ---------- */
-const NEWS = typeof CHANGELOG !== 'undefined' && Array.isArray(CHANGELOG) ? CHANGELOG : [];
-const hasNews = () => NEWS.length > 0 && NEWS[0].date > (meta.seenNews || '');
-const MONTHS = [
+const NEWS = Array.isArray(globalThis.CHANGELOG) ? globalThis.CHANGELOG : [];
+const hasNews = () => NEWS.length > 0 && NEWS[0].date > (state.meta.seenNews || '');
+export const MONTHS = [
   'Januar',
   'Februar',
   'März',
@@ -406,13 +423,13 @@ const deDate = (iso) => {
 };
 const GROUP_ICON = { Neu: '✨', Verbessert: '🔧', Behoben: '🐞' };
 function screenNews() {
-  depth = 1;
-  const unseen = meta.seenNews || '';
+  state.depth = 1;
+  const unseen = state.meta.seenNews || '';
   render(
     `<div class="screen">${topbar('Was ist neu?')}<div class="scroll"><div class="stack">${NEWS.map((e) => `<div class="card news"><h3>${deDate(e.date)}${e.date > unseen ? ' <span class="newbadge">Neu!</span>' : ''}</h3>${e.groups.map((g) => `<h4>${GROUP_ICON[g.title] || '📌'} ${esc(g.title)}</h4><ul>${g.items.map((it) => `<li>${esc(it)}</li>`).join('')}</ul>`).join('')}</div>`).join('') || '<p>Noch keine Einträge.</p>'}</div></div><div class="bottom"><button class="btn secondary" id="back">Zurück</button></div></div>`,
   );
   if (NEWS.length) {
-    meta.seenNews = NEWS[0].date;
+    state.meta.seenNews = NEWS[0].date;
     saveAll();
   }
   $('#back').onclick = screenTitle;

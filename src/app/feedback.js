@@ -1,11 +1,16 @@
+import { $, app, esc } from './core.js';
+import { state } from './state.js';
+import { screenTitle } from './title.js';
+import { render, topbar } from './ui.js';
+
 /* ---------- Feedback ---------- */
 // The only external request. If sending fails, the prefilled form opens in a new tab.
 const FEEDBACK = {
   form: 'https://docs.google.com/forms/d/e/1FAIpQLSdJcDUJ8kqJWKyu5Y1UFrFHS0kRMuELfxjrACJxYK8k-QXDbw',
   entry: 'entry.1794178349',
 };
-function screenFeedback(back) {
-  depth++;
+export function screenFeedback(back) {
+  state.depth++;
   back = typeof back === 'function' ? back : screenTitle;
   render(`<div class="screen">${topbar('Idee oder Fehler melden')}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
       <div class="toggles" role="group" aria-label="Was ist es?">${['💡 Idee', '🐞 Fehler', '❤️ Lob'].map((t, i) => `<button class="toggle ${i ? '' : 'on'}" data-kind="${t}" aria-pressed="${!i}">${t}</button>`).join('')}</div>

@@ -1,9 +1,17 @@
+import { MQ } from '../logic.js';
+import { READ_MOD, READ_TUT } from './battle.js';
+import { $, CFG, MODULES_OF, app, esc } from './core.js';
+import { tutKey } from './progress.js';
+import { state } from './state.js';
+import { saveAll } from './storage.js';
+import { joined, speakBtn } from './tasks.js';
+
 /* ---------- Rendering primitives ---------- */
-let keyHandler = null; // physical keyboard while a number task is open
+// physical keyboard while a number task is open
 // quiet: re-render without fade-in (battle turns)
-function render(html, quiet) {
-  keyHandler = null;
-  backTo = null;
+export function render(html, quiet) {
+  state.keyHandler = null;
+  state.backTo = null;
   if (window.speechSynthesis) speechSynthesis.cancel();
   app.innerHTML = html;
   // a list with nothing to tab to must take the keyboard itself, or it cannot be scrolled without touch
@@ -18,11 +26,9 @@ function render(html, quiet) {
 // in-screen updates add nothing. Back does what the screen's „Zurück“ does: a dialog closes, the map goes to the
 // subject (the run stays saved), fights and tasks have no „Zurück“ and stay put, the title screen leaves the app.
 // History is only a convenience: a reload starts on the title as before.
-let depth = 0,
-  backTo = null,
-  maxD = 0,
-  moving = 0; // moving: our own history.go is on its way
-const level = () => depth + ($('.overlay') ? 1 : 0);
+let maxD = 0;
+let moving = 0; // moving: our own history.go is on its way
+const level = () => state.depth + ($('.overlay') ? 1 : 0);
 const atD = () => (history.state && Number.isInteger(history.state.lq) ? history.state.lq : 0);
 function syncHistory() {
   const d = atD(),
@@ -53,7 +59,7 @@ function goBack() {
     const b = $('#no, #ino, #iok, #ok, #close, #tutok, #hnext', ov);
     return b ? b.click() : ov.remove();
   }
-  if (backTo) return backTo();
+  if (state.backTo) return state.backTo();
   const b = $('#pback') || $('#back');
   if (b && !b.disabled) b.click();
 }
@@ -73,13 +79,13 @@ window.addEventListener('popstate', () => {
   // a screen reached by going back takes the entry back landed on
   const was = app.firstElementChild;
   goBack();
-  if (app.firstElementChild !== was) depth = Math.min(depth, d);
+  if (app.firstElementChild !== was) state.depth = Math.min(state.depth, d);
   syncHistory();
 });
 
 /* ---------- Sounds ---------- */
 // phones stay silent until a user gesture, so the first tap unlocks the context
-const SFX = (() => {
+export const SFX = (() => {
   const FILES = {
     tap: 0.45,
     right: 0.9,
@@ -110,7 +116,7 @@ const SFX = (() => {
         .catch(() => {});
   }
   function ensure() {
-    if (!AC || !meta.sound) return null;
+    if (!AC || !state.meta.sound) return null;
     try {
       if (!ctx) ctx = new AC();
       if (ctx.state === 'suspended') ctx.resume();
@@ -219,7 +225,7 @@ document.addEventListener(
   true,
 );
 window.__sfx = SFX;
-function fx(sel, text, cls) {
+export function fx(sel, text, cls) {
   const el = $(sel);
   if (!el) return;
   const r = el.getBoundingClientRect();
@@ -233,7 +239,7 @@ function fx(sel, text, cls) {
   setTimeout(() => s.remove(), 2100);
 }
 document.addEventListener('keydown', (e) => {
-  if (keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) keyHandler(e);
+  if (state.keyHandler && !e.ctrlKey && !e.metaKey && !e.altKey && !$('.overlay')) state.keyHandler(e);
 });
 // one persistent live region: screen readers miss re-created ones
 const live = document.createElement('div');
@@ -241,17 +247,17 @@ live.className = 'sr-only';
 live.setAttribute('aria-live', 'polite');
 live.setAttribute('role', 'status');
 document.body.appendChild(live);
-function announce(text) {
+export function announce(text) {
   live.textContent = '';
   setTimeout(() => {
     live.textContent = text;
   }, 50);
 }
-function topbar(title, extra) {
-  return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run && run.floor ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`;
+export function topbar(title, extra) {
+  return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${state.run && state.run.floor ? `<div class="world">${CFG().worlds > 1 ? `Welt ${state.run.world} · ` : ''}Etage ${state.run.floor}</div>` : ''}</div>`;
 }
 let modals = 0;
-function modal(html) {
+export function modal(html) {
   const ov = document.createElement('div');
   ov.className = 'overlay';
   ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
@@ -289,7 +295,7 @@ function tutFor(group) {
   const M = MODULES_OF()[mod];
   return Object.assign({ icon: M ? M.icon : '📖' }, t);
 }
-function showTutorial(group, note, onClose, auto) {
+export function showTutorial(group, note, onClose, auto) {
   const t = tutFor(group);
   const n = note && CFG().notes ? CFG().notes[note] : null;
   const ov = modal(
@@ -307,15 +313,15 @@ function showTutorial(group, note, onClose, auto) {
   $('#tutok', ov).focus({ preventScroll: true });
   $('#tutok', ov).onclick = () => {
     ov.remove();
-    meta.seenTut[tutKey(group)] = true;
-    if (note) meta.seenTut[tutKey('note:' + note)] = true;
+    state.meta.seenTut[tutKey(group)] = true;
+    if (note) state.meta.seenTut[tutKey('note:' + note)] = true;
     saveAll();
     if (onClose) onClose();
   };
 }
-function ensureTutorial(task, then) {
-  const needGroup = !meta.seenTut[tutKey(task.group)];
-  const needNote = task.note && !meta.seenTut[tutKey('note:' + task.note)];
+export function ensureTutorial(task, then) {
+  const needGroup = !state.meta.seenTut[tutKey(task.group)];
+  const needNote = task.note && !state.meta.seenTut[tutKey('note:' + task.note)];
   if (needGroup || needNote) showTutorial(task.group, task.note, then, true);
   else then();
 }

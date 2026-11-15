@@ -39,8 +39,9 @@ German educational roguelike for primary-school children (about 3rd grade). Read
   to `main` unapproved; a branch is fine for work in progress.
 - New units: see README „Neue Einheit“. Never add a second list of units anywhere – everything reads `UNITS`
   (`src/units.js`) and takes `grade` and `subject` from the unit itself.
-- The game engine is `src/app/*.js`: parts of one function, joined by `tools/build.js` in the order of `APP`. A new part
-  goes into that list. Use the words in `GLOSSARY.md`; decisions that should not be re-argued are in `adr/`.
+- The game engine is `src/app/*.js`: ES modules that import what they use; `src/main.js` lists them in the order they
+  start. What several of them change (`meta`, `run`, `mode` …) lives in `src/app/state.js` as `state.meta` etc.
+  Use the words in `GLOSSARY.md`; decisions that should not be re-argued are in `adr/`.
 - Small symbols: emojis in the app's text are swapped for the drawn icons in `src/icons.js` (key = the emoji) when shown.
   A new emoji needs a drawn icon there in the same style (see the file header), otherwise it shows as the device's emoji.
 - Icons and iOS launch screens (`docs/icons/`, `docs/splash/`) come from `node tools/make_icons.js`

@@ -10,28 +10,6 @@ const ROOT = path.join(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src');
 const DOCS = path.join(ROOT, 'docs');
 
-// The game itself: the parts of src/app/ in this order inside one function, so they share its state (meta, run, mode).
-const APP = [
-  'core',
-  'storage',
-  'progress',
-  'ui',
-  'tasks',
-  'title',
-  'backup',
-  'map',
-  'battle',
-  'nodes',
-  'collection',
-  'huette',
-  'duell',
-  'turm',
-  'turm_screens',
-  'garten',
-  'elternbereich',
-  'feedback',
-  'boot',
-];
 const GROUPS = ['Neu', 'Verbessert', 'Behoben'];
 
 const read = (...parts) => fs.readFileSync(path.join(...parts), 'utf8');
@@ -51,19 +29,9 @@ function bakedMonsters() {
   return baked;
 }
 
-// Everything the modules of src/ export, then the game. units.js goes first: it sets the order of the units.
-function appSource() {
-  const modules = files(SRC).filter((name) => /\.(js|ts)$/.test(name) && name !== 'sw.js' && name !== 'units.js');
-  const imports = ['units.js', ...modules].flatMap((name) => {
-    const exported = [...read(SRC, name).matchAll(/^export (?:const|function) (\w+)/gm)].map((match) => match[1]);
-    return exported.length ? [`import { ${exported.join(', ')} } from './${name}';`] : [];
-  });
-  return `${imports.join('\n')}\n(() => {\n${APP.map((part) => read(SRC, 'app', `${part}.js`)).join('')}})();\n`;
-}
-
 function bundle() {
   const { outputFiles } = esbuild.buildSync({
-    stdin: { contents: appSource(), resolveDir: SRC, sourcefile: 'app.js' },
+    entryPoints: [path.join(SRC, 'main.js')],
     bundle: true,
     format: 'iife',
     minifyWhitespace: true,
@@ -180,7 +148,7 @@ ${read(SRC, 'style.css')}
 <div id="app"></div>
 <script>
 globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
-const CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
+globalThis.CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
 </script>
 <script>
 ${bundle()}</script>
@@ -209,12 +177,6 @@ function write(name, text) {
   fs.writeFileSync(path.join(DOCS, name), text);
   return `docs/${name}`;
 }
-
-assert.deepStrictEqual(
-  APP.map((part) => `${part}.js`).sort(),
-  files(path.join(SRC, 'app'), '.js'),
-  'APP in tools/build.js must list every file in src/app/',
-);
 
 const html = page();
 const manifest = read(SRC, 'manifest.webmanifest');

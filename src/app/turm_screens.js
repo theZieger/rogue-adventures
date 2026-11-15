@@ -1,13 +1,55 @@
+import { MODES, SUBJECTS } from '../curriculum.ts';
+import { MQ } from '../logic.js';
+import { isObj, own } from '../save.ts';
+import { TW } from '../turm.js';
+import { TWART } from '../turmart.js';
+import { CONFETTI } from './collection.js';
+import { $, ITEMS, TYPES, app, esc, reducedMotion } from './core.js';
+import { confirmBox } from './elternbereich.js';
+import { showBag } from './map.js';
+import { heroSVG, monsterSVG, stampLine } from './progress.js';
+import { state } from './state.js';
+import { curGrade, endRun, saveAll, visSubjects } from './storage.js';
+import { joined, runTask, speakBtn } from './tasks.js';
+import { screenTitle } from './title.js';
+import {
+  TURM_BAG,
+  laneName,
+  loadTurm,
+  midName,
+  startTurm,
+  turmAnswer,
+  turmAsk,
+  turmBlocked,
+  turmBuy,
+  turmCtx,
+  turmEliteText,
+  turmEvoText,
+  turmGateLine,
+  turmGateText,
+  turmHero,
+  turmHeroes,
+  turmLeave,
+  turmNames,
+  turmNextWave,
+  turmRetry,
+  turmReward,
+  turmSources,
+  turmStep,
+  turmSubjAcc,
+} from './turm.js';
+import { SFX, announce, ensureTutorial, fx, modal, render, topbar } from './ui.js';
+
 // start: a saved run first, else subjects and hero
-function screenTurm() {
-  depth = 1;
-  run = null;
+export function screenTurm() {
+  state.depth = 1;
+  state.run = null;
   const r = loadTurm();
   if (!r) return screenTurmNew();
   const t = r.turm,
     h = r.hero,
     W = TW.WAVES.length;
-  const state =
+  const phaseText =
     t.phase === 'fallen'
       ? 'Der Turm ist gefallen.'
       : t.phase === 'won'
@@ -15,11 +57,11 @@ function screenTurm() {
         : t.phase === 'build' || t.phase === 'reward'
           ? `Bauzeit nach Welle ${t.wave} von ${W}`
           : `Welle ${t.wave} von ${W}`;
-  render(`<div class="screen">${topbar('🏰 Turmwacht')}<div class="scroll"><div class="card center tw-saved"><h2>Deine Turmwacht läuft</h2>${heroSVG(turmHero(h), h.evo)}<p>${state}<br>❤️ ${h.hp} / ${h.maxHp}</p><p class="pnote">${[...new Set(t.lanes.map((l) => l.subject))].map((s) => `${SUBJECTS[s]} ${esc(s)}`).join(' · ')}</p>${meta.turm.best ? `<p>Rekord: Welle ${meta.turm.best}</p>` : ''}</div></div>
+  render(`<div class="screen">${topbar('🏰 Turmwacht')}<div class="scroll"><div class="card center tw-saved"><h2>Deine Turmwacht läuft</h2>${heroSVG(turmHero(h), h.evo)}<p>${phaseText}<br>❤️ ${h.hp} / ${h.maxHp}</p><p class="pnote">${[...new Set(t.lanes.map((l) => l.subject))].map((s) => `${SUBJECTS[s]} ${esc(s)}`).join(' · ')}</p>${state.meta.turm.best ? `<p>Rekord: Welle ${state.meta.turm.best}</p>` : ''}</div></div>
       <div class="bottom"><div class="stack"><button class="btn" id="cont">Weiter (${r.grade !== curGrade().grade ? `Klasse ${r.grade}, ` : ''}Welle ${t.wave})</button><div class="row"><button class="btn secondary" id="back">Zurück</button><button class="btn secondary" id="new">Neu</button></div></div></div></div>`);
   $('#cont').onclick = () => {
-    run = loadTurm();
-    if (run) resumeTurm();
+    state.run = loadTurm();
+    if (state.run) resumeTurm();
     else screenTurm();
   };
   $('#new').onclick = () =>
@@ -32,13 +74,13 @@ function screenTurm() {
   $('#back').onclick = screenTitle;
 }
 function screenTurmNew() {
-  depth = 1;
-  run = null;
+  state.depth = 1;
+  state.run = null;
   const grade = curGrade().grade,
     saved = !!loadTurm();
   const subs = visSubjects().filter((s) => turmSources(s.subject, grade).length);
   if (!subs.length) return screenTitle();
-  const fixed = ((meta.turm.subjects || {})[grade] || []).filter((x) => subs.some((s) => s.subject === x));
+  const fixed = ((state.meta.turm.subjects || {})[grade] || []).filter((x) => subs.some((s) => s.subject === x));
   // the weakest subjects first: lowest share right, then least practised
   const weak = subs
     .map((s) => turmSubjAcc(s.subject, grade))
@@ -105,7 +147,7 @@ function screenTurmNew() {
     turmSel = null;
     screenTurmBoard({
       ev: [{ t: 'wave', wave: 1 }].concat(
-        run.turm.monsters.map((x) => ({ t: 'enter', id: x.id, lane: x.lane, cell: x.cell })),
+        state.run.turm.monsters.map((x) => ({ t: 'enter', id: x.id, lane: x.lane, cell: x.cell })),
       ),
     });
   };
@@ -114,8 +156,8 @@ function screenTurmNew() {
 // resume exactly where it stopped: the saved question, the monsters' step after an answer, or the screen of the phase
 function resumeTurm() {
   turmSel = null;
-  turmMode = null;
-  const t = run.turm;
+  state.turmMode = null;
+  const t = state.run.turm;
   if (t.phase === 'task') {
     const names = turmNames();
     screenTurmBoard();
@@ -133,7 +175,7 @@ function resumeTurm() {
 let turmSel = null; // id of the monster whose card is open
 let turmLost = 0; // ❤️ the tower lost in the turn on screen: stays marked at the tower until the next action
 const turmTop = () => {
-  const t = run.turm,
+  const t = state.run.turm,
     n = t.monsters.length + t.queue.length;
   return topbar(
     `🏰 Welle ${t.wave}/${TW.WAVES.length}`,
@@ -141,16 +183,16 @@ const turmTop = () => {
   );
 };
 function turmMonLabel(x) {
-  const t = run.turm;
+  const t = state.run.turm;
   return [
     x.name,
     `Weg ${laneName(x.lane)}`,
     `noch ${x.cell} ${x.cell === 1 ? 'Feld' : 'Felder'} bis zum Turm`,
-    TW.threats(run).includes(x.id) && (x.boss ? 'schlägt gleich wieder zu' : 'gleich am Turm'),
+    TW.threats(state.run).includes(x.id) && (x.boss ? 'schlägt gleich wieder zu' : 'gleich am Turm'),
     `${x.hp} Lebenspunkte`,
     t.weak === x.id && 'doppelte Ziegel',
     x.again && 'Aufgabe von vorhin',
-    !TW.canTarget(run, x.id) && 'geschützt',
+    !TW.canTarget(state.run, x.id) && 'geschützt',
     x.fresh && 'neu im Monsterbuch',
   ]
     .filter(Boolean)
@@ -158,11 +200,11 @@ function turmMonLabel(x) {
 }
 // a monster faces the gate: the plain sprite looks right, the mirrored enemy sprite (flipped back by CSS) looks left
 function turmMon(x, cols, right, ghost) {
-  const t = run.turm,
+  const t = state.run.turm,
     sel = x.id === turmSel,
     pct = Math.max(4, (x.hp / x.maxHp) * 100),
-    free = ghost || TW.canTarget(run, x.id);
-  const threat = !ghost && TW.threats(run).includes(x.id);
+    free = ghost || TW.canTarget(state.run, x.id);
+  const threat = !ghost && TW.threats(state.run).includes(x.id);
   const tags = [threat && '⚠️', t.weak === x.id && '🎯', x.again && '🔁']
     .filter(Boolean)
     .map((e) => `<i>${e}</i>`)
@@ -188,15 +230,16 @@ const turmGuardSVG = (g) => {
 };
 // outro: the last turn of a wave on the board, without the Bauzeit marks
 function turmBoardHtml(outro) {
-  const t = run.turm,
-    h = run.hero,
+  const t = state.run.turm,
+    h = state.run.hero,
     G = TWART.geo(t.lanes.length),
     cols = TWART.laneColors(t.lanes),
     pct = (h.hp / h.maxHp) * 100,
     build = t.phase === 'build' && !outro;
   const at = ([x, y]) => `--x:${x};--y:${y}`,
-    pv = build && TW.preview(run, turmCtx(run.hero));
-  const pick = (gd) => build && (turmMode === 'guard' || (turmMode === 'up' && gd && gd.lvl < TW.GUARD_DMG.length));
+    pv = build && TW.preview(state.run, turmCtx(state.run.hero));
+  const pick = (gd) =>
+    build && (state.turmMode === 'guard' || (state.turmMode === 'up' && gd && gd.lvl < TW.GUARD_DMG.length));
   const tw = TWART.tower(t.floors, h.hp, h.maxHp);
   const lanes = G.lanes
     .slice(0, t.lanes.length)
@@ -221,22 +264,22 @@ function turmBoardHtml(outro) {
   return `<div class="tw-board">${TWART.scene(t.lanes)}
       <div class="tw-tower" id="twt" style="--x:${G.gate[0]};--y:${G.gate[1] + 8};--th:${tw.h};--feet:${tw.feet}" data-floors="${t.floors.length}">${tw.back}<div class="tw-heroslot">${heroSVG(turmHero(), h.evo)}</div>${tw.front}</div>
       ${lanes}
-      <div class="tw-hpbox ${G.hp[2]}${turmLost ? ' hurt' : ''}" style="${at(G.hp)}"><span class="hptext" aria-label="Turm: ${h.hp} von ${h.maxHp} Lebenspunkten">Turm ❤️ <b>${h.hp}</b>${run.shield ? ' 🛡️' : ''}${turmLost ? `<em class="tw-lost">−${turmLost}</em>` : ''}</span><span class="hpbar" aria-hidden="true"><i class="${turmBar(pct)}" style="width:${pct}%"></i></span></div>
+      <div class="tw-hpbox ${G.hp[2]}${turmLost ? ' hurt' : ''}" style="${at(G.hp)}"><span class="hptext" aria-label="Turm: ${h.hp} von ${h.maxHp} Lebenspunkten">Turm ❤️ <b>${h.hp}</b>${state.run.shield ? ' 🛡️' : ''}${turmLost ? `<em class="tw-lost">−${turmLost}</em>` : ''}</span><span class="hpbar" aria-hidden="true"><i class="${turmBar(pct)}" style="width:${pct}%"></i></span></div>
       <div class="tw-fx" aria-hidden="true"><svg viewBox="0 0 ${G.w} ${G.h}" preserveAspectRatio="none"></svg></div></div>`;
 }
 const turmBar = (pct) => (pct < 30 ? 'low' : pct < 60 ? 'mid' : '');
 // o: { ev: engine events to show, names: id → { name, acc, x } from before the answer, lines: extra log lines first, quiet: no auto-reading }
 // o.still: the same screen again (a Bauzeit card was tapped), without the enter animation; o.bau: what was just bought (motion)
-function screenTurmBoard(o = {}) {
-  depth = 2;
-  const t = run.turm;
+export function screenTurmBoard(o = {}) {
+  state.depth = 2;
+  const t = state.run.turm;
   const end = t.phase === 'fallen' || t.phase === 'won',
     next = end ? () => screenTurmEnd(o) : () => screenTurmCleared(o);
   const outro = o.ev && o.ev.some((e) => e.t === 'cleared' || e.t === 'fallen');
   // the wave's last turn plays on the board first; without motion the next screen comes at once
   if ((end || t.phase === 'reward' || outro) && !(outro && turmMotion(true))) return next();
   if (!t.monsters.some((x) => x.id === turmSel)) turmSel = null;
-  if (t.phase !== 'build' || outro) turmMode = null;
+  if (t.phase !== 'build' || outro) state.turmMode = null;
   turmLost = (o.ev || []).reduce((a, e) => a + (e.t === 'tower' ? e.dmg : 0), 0);
   document.querySelectorAll('.floatnum').forEach((f) => f.remove()); // numbers of the turn before don't hang over this one
   const L = o.ev ? turmLines(o.ev, o.names || {}) : { hits: [], key: [], all: [] },
@@ -248,9 +291,9 @@ function screenTurmBoard(o = {}) {
     `<div class="screen tw-screen">${turmTop()}<div class="tw-main" style="--W:${TWART.geo(t.lanes.length).w};--H:${TWART.geo(t.lanes.length).h}">${turmBoardHtml(outro)}</div>${hurt || rest ? `<div class="log tw-log${hurt ? ' hurt' : ''}">${hurt ? `<p class="tw-hurtline">${esc(hurt)}</p>` : ''}${rest ? `<p>${esc(rest)}</p>` : ''}</div>` : ''}<div class="taskwrap" id="taskwrap"></div><div class="bottom tw-panel" id="bottom"></div></div>`,
     !!o.ev || !!o.still,
   );
-  backTo = turmMode
+  state.backTo = state.turmMode
     ? () => {
-        turmMode = null;
+        state.turmMode = null;
         screenTurmBoard({ still: true });
       }
     : () => turmLeave(screenTurm);
@@ -258,16 +301,16 @@ function screenTurmBoard(o = {}) {
   if (text) announce(text);
   if (hurt || rest) {
     const vis = joined(hurt, rest);
-    speakBtn($('.tw-log'), 'afterbegin', () => vis, o.quiet ? null : () => vis, [], run.grade);
+    speakBtn($('.tw-log'), 'afterbegin', () => vis, o.quiet ? null : () => vis, [], state.run.grade);
   }
   turmBind();
-  const bauTut = t.phase === 'build' && !outro && !meta.seenTut['turm:bau'];
+  const bauTut = t.phase === 'build' && !outro && !state.meta.seenTut['turm:bau'];
   if (outro) $('#bottom').innerHTML = '<button class="btn" id="twon">Weiter</button>';
   else turmPanel(t.phase === 'build' && !hurt && !rest && !o.still && !bauTut);
   const big = o.ev && o.ev.find((e) => e.t === 'enter' && (e.boss || e.elite)),
     bx = big && t.monsters.find((x) => x.id === big.id);
-  const intro = t.phase === 'choose' && !meta.seenTut['turm:intro'];
-  const hitTut = turmLost && !outro && !meta.seenTut['turm:hit'] ? () => turmHitTut(o) : null;
+  const intro = t.phase === 'choose' && !state.meta.seenTut['turm:intro'];
+  const hitTut = turmLost && !outro && !state.meta.seenTut['turm:hit'] ? () => turmHitTut(o) : null;
   if (o.ev && !intro && turmMotion()) turmPlay(o, outro ? next : bx ? () => turmBanner(bx, true) : hitTut);
   else if (o.ev) turmFx(o.ev);
   if (o.bau) turmBuilt(o.bau);
@@ -294,15 +337,15 @@ function turmPick() {
 }
 // the panel under the board: monster card, hint or Bauzeit
 function turmPanel(say) {
-  const t = run.turm,
+  const t = state.run.turm,
     bot = $('#bottom'),
     x = t.phase === 'choose' && t.monsters.find((y) => y.id === turmSel);
   $('.tw-screen').classList.toggle('carded', !!x);
   const row = (main) =>
-    `<div class="row tw-baurow"><button class="btn secondary small" id="bag" aria-label="Beutel, ${run.items.length}">🎒 ${run.items.length}</button><button class="btn ghost small" id="home">Titel</button>${main}</div>`;
+    `<div class="row tw-baurow"><button class="btn secondary small" id="bag" aria-label="Beutel, ${state.run.items.length}">🎒 ${state.run.items.length}</button><button class="btn ghost small" id="home">Titel</button>${main}</div>`;
   if (t.phase === 'build') return turmBau(bot, say);
   if (!x) {
-    const warn = turmGateText(t.monsters.filter((y) => TW.threats(run).includes(y.id)));
+    const warn = turmGateText(t.monsters.filter((y) => TW.threats(state.run).includes(y.id)));
     const hint = warn
       ? `⚠️ ${warn}`
       : t.turn === 0 && t.wave === 1
@@ -310,17 +353,17 @@ function turmPanel(say) {
         : 'Tippe auf ein Monster.';
     bot.innerHTML = row(`<p class="tw-hint${warn ? ' warn' : ''}">${hint}</p>`);
   } else {
-    const c = TW.card(run, x.id, turmCtx(run.hero)),
+    const c = TW.card(state.run, x.id, turmCtx(state.run.hero)),
       M = MODES[x.m],
       by = c.blockedBy && t.monsters.find((y) => y.id === c.blockedBy),
       cols = TWART.laneColors(t.lanes);
-    const gate = TW.threats(run).includes(x.id) && turmGateLine(x);
+    const gate = TW.threats(state.run).includes(x.id) && turmGateLine(x);
     // only what changes the child's choice: the warning, the double Ziegel, a question from before, how a special monster behaves
     const tags = [
       gate && `<span class="tag gate">⚠️ ${gate}</span>`,
       c.weak && '<span class="tag weak">🎯 Doppelte Ziegel</span>',
       c.again && '<span class="tag again">🔁 Aufgabe von vorhin</span>',
-      run.power && '<span class="tag power">🌶️ Doppelter Schaden</span>',
+      state.run.power && '<span class="tag power">🌶️ Doppelter Schaden</span>',
       x.boss && '<span class="tag boss">👑 Boss: langsam, aber stark</span>',
       x.elite && '<span class="tag elite">🛡️ schützt die Monster hinter sich</span>',
       x.steps > 1 && '<span class="tag boss">👣 Schnell: 2 Felder auf einmal</span>',
@@ -347,7 +390,7 @@ function turmPanel(say) {
         x.final && `Die Aufgabe kommt aus ${laneName(sh)}`,
         by && turmBlocked(by),
       );
-    speakBtn($('.tw-cardinfo .name', bot), 'beforeend', said, say ? said : null, [], run.grade);
+    speakBtn($('.tw-cardinfo .name', bot), 'beforeend', said, say ? said : null, [], state.run.grade);
     if (by) {
       const b = $(`.tw-mon[data-id="${x.id}"] .tw-bubble`);
       if (b) {
@@ -370,7 +413,7 @@ function turmPanel(say) {
   on('#home', () => turmLeave(screenTitle));
 }
 /* Bauzeit: cards under the board; a guard card waits for a spot on the board, then for the guard's look */
-let turmMode = null; // 'guard' | 'up' while a card waits for a spot (not saved: a reload shows the cards again)
+// 'guard' | 'up' while a card waits for a spot (not saved: a reload shows the cards again)
 const FLOOR_FX = {
   chain: 'trifft auch das vorderste Monster auf einem anderen Weg.',
   stun: 'Das Monster bleibt einen Zug stehen.',
@@ -386,7 +429,7 @@ function turmComing(p) {
   return `<span class="tw-queue tw-coming" aria-label="${said}">${p.n} ${p.n === 1 ? 'kommt' : 'kommen'}${p.boss || p.final ? ' 👑' : ''}${p.elite ? ' 🛡️' : ''}${p.fast ? ' 👣' : ''}</span>`;
 }
 function turmComingText() {
-  const pv = TW.preview(run, turmCtx(run.hero)),
+  const pv = TW.preview(state.run, turmCtx(state.run.hero)),
     n = pv.reduce((a, p) => a + p.n, 0);
   const extra = pv.some((p) => p.final)
     ? ', darunter der letzte Boss'
@@ -395,14 +438,14 @@ function turmComingText() {
       : pv.some((p) => p.elite)
         ? ', darunter ein Elitemonster'
         : '';
-  return `Welle ${run.turm.wave + 1} von ${TW.WAVES.length}: ${n} Monster${extra}.`;
+  return `Welle ${state.run.turm.wave + 1} von ${TW.WAVES.length}: ${n} Monster${extra}.`;
 }
 // every card with its price (null: nothing to pay) and why it can't be used now
 function turmCards() {
-  const t = run.turm,
+  const t = state.run.turm,
     G = Object.values(t.guards),
     ups = G.filter((g) => g.lvl < TW.GUARD_DMG.length),
-    free = TW.price(run, { kind: 'guard', lane: 0, spot: 0 }) === 0;
+    free = TW.price(state.run, { kind: 'guard', lane: 0, spot: 0 }) === 0;
   const upP = [...new Set(ups.map((g) => TW.COST.up[g.lvl - 1]))].sort((a, b) => a - b);
   const full = G.length === t.lanes.length * TW.SPOTS;
   const cards = [
@@ -440,17 +483,17 @@ function turmCards() {
       pic: 'fix',
       price: TW.COST.fix,
       desc: `Der Turm bekommt ${TW.FIX_HP} ❤️.`,
-      why: run.hero.hp >= run.hero.maxHp ? 'Der Turm ist heil.' : '',
+      why: state.run.hero.hp >= state.run.hero.maxHp ? 'Der Turm ist heil.' : '',
     });
   for (const c of cards) c.short = c.why ? 0 : Math.max(0, c.price - t.ziegel);
   return cards;
 }
 function turmBau(bot, say) {
-  const t = run.turm,
+  const t = state.run.turm,
     home = () => turmLeave(screenTitle);
-  if (turmMode) {
+  if (state.turmMode) {
     const text =
-      turmMode === 'guard'
+      state.turmMode === 'guard'
         ? `Tippe auf einen Platz am Weg.${Object.keys(t.guards).length ? ' Steht dort schon eine Wache, wird sie ersetzt.' : ''}`
         : 'Tippe auf die Wache, die stärker werden soll.';
     bot.innerHTML = `<div class="card tw-card tw-pickhint"><p>${text}</p><p class="tw-bmsg" role="status"></p><button class="btn secondary" id="pickno">Zurück</button></div>`;
@@ -460,9 +503,9 @@ function turmBau(bot, say) {
       () => text,
       () => text,
       [],
-      run.grade,
+      state.run.grade,
     );
-    $('#pickno', bot).onclick = backTo;
+    $('#pickno', bot).onclick = state.backTo;
     app.querySelectorAll('button.tw-spot').forEach((b) => {
       b.onclick = () => turmSpot(+b.dataset.lane, +b.dataset.spot);
     });
@@ -472,14 +515,14 @@ function turmBau(bot, say) {
     coming = turmComingText();
   bot.innerHTML = `<div class="tw-bau"><div class="tw-bauhead"><h3>Bauzeit</h3><p>${coming}</p></div>
       <div class="tw-cards" role="list">${cards.map((c) => `<div role="listitem"><button class="tw-buy${c.why ? ' off' : c.short ? ' short' : ''}" data-card="${esc(c.id)}" aria-disabled="${!!(c.why || c.short)}">${TWART.picture(c.pic)}<b>${esc(c.name)}</b><span class="tw-price${c.why ? ' done' : ''}">${c.why ? '' : c.short ? `Noch ${c.short} 🧱` : c.price ? `${c.label || c.price} 🧱` : 'geschenkt'}</span></button></div>`).join('')}</div>
-      <div class="row tw-baurow"><button class="btn secondary small" id="bag" aria-label="Beutel, ${run.items.length}">🎒 ${run.items.length}</button><button class="btn ghost small" id="home">Titel</button><button class="btn" id="nextwave">Welle ${t.wave + 1} starten</button></div></div>`;
+      <div class="row tw-baurow"><button class="btn secondary small" id="bag" aria-label="Beutel, ${state.run.items.length}">🎒 ${state.run.items.length}</button><button class="btn ghost small" id="home">Titel</button><button class="btn" id="nextwave">Welle ${t.wave + 1} starten</button></div></div>`;
   const said = () =>
     joined(
       'Bauzeit',
       coming,
       ...cards.map((c) => joined(c.name, c.why || (c.price ? `${c.label || c.price} Ziegel` : 'geschenkt'))),
     );
-  speakBtn($('.tw-bauhead h3'), 'beforeend', said, say ? said : null, [], run.grade);
+  speakBtn($('.tw-bauhead h3'), 'beforeend', said, say ? said : null, [], state.run.grade);
   bot.querySelectorAll('[data-card]').forEach((b) => {
     b.onclick = () => turmSheet(cards.find((x) => x.id === b.dataset.card));
   });
@@ -492,7 +535,7 @@ function turmBau(bot, say) {
   };
 }
 function turmSheet(c) {
-  const t = run.turm,
+  const t = state.run.turm,
     pick = c.id === 'guard' || c.id === 'up',
     no = c.why || (c.short ? `Dafür fehlen dir noch ${c.short} Ziegel.` : '');
   const cost = no
@@ -507,21 +550,21 @@ function turmSheet(c) {
     `<div class="tw-sheet">${TWART.picture(c.pic)}<h2>${esc(c.name)}</h2><p>${esc(text)}</p><p class="tw-bmsg" role="status">${esc(no)}</p></div><div class="row"><button class="btn secondary" id="no">Zurück</button><button class="btn" id="build"${no ? ' disabled' : ''}>${pick ? 'Platz aussuchen' : 'Bauen'}</button></div>`,
   );
   const said = () => joined(c.name, text, no);
-  speakBtn($('h2', ov), 'beforeend', said, said, [], run.grade);
+  speakBtn($('h2', ov), 'beforeend', said, said, [], state.run.grade);
   $('#no', ov).onclick = () => ov.remove();
   $('#build', ov).onclick = () => {
     ov.remove();
     if (pick) {
-      turmMode = c.id;
+      state.turmMode = c.id;
       return screenTurmBoard({ still: true });
     }
     if (c.id === 'fix') {
-      const hp = run.hero.hp;
+      const hp = state.run.hero.hp;
       if (turmBuy({ kind: 'fix' }))
         screenTurmBoard({
           still: true,
           bau: { fix: hp },
-          lines: [`Die Mauer ist geflickt: ❤️ ${run.hero.hp} / ${run.hero.maxHp}.`],
+          lines: [`Die Mauer ist geflickt: ❤️ ${state.run.hero.hp} / ${state.run.hero.maxHp}.`],
         });
       return;
     }
@@ -533,18 +576,18 @@ function turmSheet(c) {
   };
 }
 function turmSpot(lane, spot) {
-  const t = run.turm,
+  const t = state.run.turm,
     k = lane + ':' + spot,
     g = t.guards[k];
-  if (turmMode === 'guard') return turmLooks(lane, spot);
-  const p = TW.price(run, { kind: 'up', lane, spot });
+  if (state.turmMode === 'guard') return turmLooks(lane, spot);
+  const p = TW.price(state.run, { kind: 'up', lane, spot });
   if (p < 0) return;
   if (p > t.ziegel) {
     $('.tw-bmsg').textContent = `Dafür fehlen dir noch ${p - t.ziegel} Ziegel.`;
     return;
   }
   turmBuy({ kind: 'up', lane, spot });
-  turmMode = null;
+  state.turmMode = null;
   screenTurmBoard({
     still: true,
     bau: { up: k },
@@ -559,13 +602,13 @@ function turmGuardLooks() {
     name: MQ.STARTERS.find((s) => s.id === look).names[0],
   }));
   const isBoss = (m, name) => Object.values(MODES[m].enemies).some((w) => isObj(w) && w.boss && w.boss.name === name);
-  const bosses = Object.entries(meta.dex)
+  const bosses = Object.entries(state.meta.dex)
     .filter(
       ([name, e]) =>
         isObj(e) &&
         typeof e.shape === 'string' &&
         own(MODES, e.mode) &&
-        MODES[e.mode].grade === run.grade &&
+        MODES[e.mode].grade === state.run.grade &&
         isBoss(e.mode, name),
     )
     .map(([name, e]) => ({ look: e.shape, type: 'normal', name }))
@@ -573,8 +616,8 @@ function turmGuardLooks() {
   return typed.concat(bosses);
 }
 function turmLooks(lane, spot) {
-  const t = run.turm,
-    p = TW.price(run, { kind: 'guard', lane, spot }),
+  const t = state.run.turm,
+    p = TW.price(state.run, { kind: 'guard', lane, spot }),
     old = t.guards[lane + ':' + spot],
     looks = turmGuardLooks();
   const head = `Wache am Weg ${laneName(lane)}. ${p ? `Kostet ${p} 🧱.` : 'Die erste Wache ist geschenkt.'}${old ? ' Die Wache auf diesem Platz geht dafür weg.' : ''}`;
@@ -582,14 +625,14 @@ function turmLooks(lane, spot) {
     `<h2>Welche Wache?</h2><p class="pnote">${esc(head)}</p><div class="tw-looks">${looks.map((x, i) => `<button class="choice tw-look" data-l="${i}">${turmGuardSVG({ look: x.look, type: x.type })}<span class="name">${esc(x.name)}</span></button>`).join('')}</div><button class="btn secondary" id="no">Zurück</button>`,
   );
   const said = () => joined('Welche Wache', head, ...looks.map((x) => x.name));
-  speakBtn($('h2', ov), 'beforeend', said, said, [], run.grade);
+  speakBtn($('h2', ov), 'beforeend', said, said, [], state.run.grade);
   $('#no', ov).onclick = () => ov.remove();
   ov.querySelectorAll('[data-l]').forEach((b) => {
     b.onclick = () => {
       const x = looks[+b.dataset.l];
       ov.remove();
       if (!turmBuy({ kind: 'guard', lane, spot, look: x.look, type: x.type })) return;
-      turmMode = null;
+      state.turmMode = null;
       screenTurmBoard({
         still: true,
         bau: { guard: lane + ':' + spot },
@@ -602,16 +645,16 @@ function turmBauTut() {
   const steps = [
     'Mit Ziegeln 🧱 machst du den Turm stärker. Die erste Wache ist geschenkt.',
     'Eine Wache hilft dir auf ihrem Weg.',
-    `Bist du fertig, tippe auf „Welle ${run.turm.wave + 1} starten“.`,
+    `Bist du fertig, tippe auf „Welle ${state.run.turm.wave + 1} starten“.`,
   ];
   const ov = modal(
     `<h2>🧱 Bauzeit</h2><ol>${steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`,
   );
-  speakBtn($('h2', ov), 'afterbegin', () => joined(...steps), undefined, [], run.grade);
+  speakBtn($('h2', ov), 'afterbegin', () => joined(...steps), undefined, [], state.run.grade);
   $('#tutok', ov).focus({ preventScroll: true });
   $('#tutok', ov).onclick = () => {
     ov.remove();
-    meta.seenTut['turm:bau'] = true;
+    state.meta.seenTut['turm:bau'] = true;
     saveAll();
   };
 }
@@ -627,7 +670,7 @@ function turmPause() {
     () => text,
     () => text,
     [],
-    run.grade,
+    state.run.grade,
   );
   $('#tutok', ov).focus({ preventScroll: true });
   $('#tutok', ov).onclick = () => ov.remove();
@@ -638,13 +681,13 @@ function turmPause() {
 }
 // the normal task view; answered → the engine's events and the monsters' step are shown on the board
 function turmTask(task, names) {
-  const a = run.turm.asking,
-    x = run.turm.monsters.find((y) => y.id === a.id);
+  const a = state.run.turm.asking,
+    x = state.run.turm.monsters.find((y) => y.id === a.id);
   $('.screen').classList.add('tasking');
   $('#bottom').innerHTML = '';
-  backTo = () => {}; // a question stays until it is answered
-  const hint = !!run.hint;
-  run.hint = false;
+  state.backTo = () => {}; // a question stays until it is answered
+  const hint = !!state.run.hint;
+  state.run.hint = false;
   let ev = [];
   ensureTutorial(task, () =>
     runTask(
@@ -666,13 +709,13 @@ function turmTask(task, names) {
   );
 }
 function turmBag() {
-  if (run.turm.phase !== 'choose')
+  if (state.run.turm.phase !== 'choose')
     return showBag(
       null,
       Object.assign(
         {
           done: (it) =>
-            screenTurmBoard({ still: true, lines: [`${it.name} benutzt: Der Turm hat jetzt ${run.hero.hp} ❤️.`] }),
+            screenTurmBoard({ still: true, lines: [`${it.name} benutzt: Der Turm hat jetzt ${state.run.hero.hp} ❤️.`] }),
         },
         TURM_BAG,
       ),
@@ -680,7 +723,7 @@ function turmBag() {
   // a potion takes the turn, like in a fight; the other items don't
   showBag((it) => {
     if (it.heal) {
-      const hp = run.hero.hp,
+      const hp = state.run.hero.hp,
         names = turmNames();
       return screenTurmBoard({ lines: [`${it.name} benutzt: Der Turm hat jetzt ${hp} ❤️.`], ev: turmStep(), names });
     }
@@ -697,8 +740,8 @@ function turmBag() {
 }
 // the log under the board, one short sentence per thing that happened. names: id → { name, acc } from before the answer
 // → { hits: the tower's losses, key: what matters and is easy to miss, all: everything (for screen readers) }
-function turmLines(ev, names) {
-  const t = run.turm,
+export function turmLines(ev, names) {
+  const t = state.run.turm,
     cur = turmNames(),
     who = (id) => names[id] || cur[id] || { name: 'Ein Monster', acc: 'ein Monster' };
   const n = (id) => who(id).name,
@@ -719,8 +762,8 @@ function turmLines(ev, names) {
       gone = next && next.t === 'beaten' && next.id === e.id;
     if (e.t === 'wave') L.push(`Welle ${e.wave} von ${TW.WAVES.length}.`);
     else if (e.t === 'wrong') L.push('Die Monster rücken vor.');
-    else if (e.t === 'again' && t.wave < TW.WAVES.length && !meta.seenTut['turm:again']) {
-      meta.seenTut['turm:again'] = true;
+    else if (e.t === 'again' && t.wave < TW.WAVES.length && !state.meta.seenTut['turm:again']) {
+      state.meta.seenTut['turm:again'] = true;
       L.push('🔁 Diese Aufgabe kommt in der nächsten Welle noch einmal.', true);
     } else if (e.t === 'hit') L.push(`${n(e.id)} bekommt ${e.dmg} Schaden${gone ? ' und ist besiegt' : ''}.`);
     else if (e.t === 'shot') {
@@ -772,18 +815,18 @@ function turmLines(ev, names) {
 /* Motion. The board is drawn in its final state first (saved, tappable, what screen readers and tests see); turmPlay then
      replays the turn on top of it in short beats. A tap on the board jumps to the end. Timers only touch a board that is still
      on screen and not covered by a task. Without layout (tests) or with „Bewegung reduzieren“ everything is shown at once. */
-let turmSpeed = null; // test hook: a number forces the motion, at that speed factor
-const turmMotion = () => turmSpeed != null || (!reducedMotion && app.clientWidth > 0);
+// test hook: a number forces the motion, at that speed factor
+const turmMotion = () => state.turmSpeed != null || (!reducedMotion && app.clientWidth > 0);
 const TW_STEP = 300; // one field of walking, ms
 function turmPlay(o, after) {
-  const t = run.turm,
+  const t = state.run.turm,
     scr = $('.tw-screen'),
     board = $('.tw-board', scr),
     G = TWART.geo(t.lanes.length),
     cols = TWART.laneColors(t.lanes);
   const names = o.names || {},
     ev = o.ev,
-    k = turmSpeed || 1,
+    k = state.turmSpeed || 1,
     timers = [],
     fx = $('.tw-fx', board),
     fsvg = $('svg', fx),
@@ -910,22 +953,22 @@ function turmPlay(o, after) {
     hpBar = $('.hpbar i', hpBox),
     twt = $('#twt', board);
   const setHp = (hp) => {
-    const pct = (hp / run.hero.maxHp) * 100;
+    const pct = (hp / state.run.hero.maxHp) * 100;
     hpNow.textContent = hp;
     hpBar.style.width = pct + '%';
     hpBar.className = turmBar(pct);
   };
   const towerArt = (hp) => {
-    const tw = TWART.tower(t.floors, hp, run.hero.maxHp);
+    const tw = TWART.tower(t.floors, hp, state.run.hero.maxHp);
     twt.querySelector('.tw-towerart').outerHTML = tw.back;
     twt.querySelector('.tw-parapet').outerHTML = tw.front;
   };
-  const level = (hp) => (hp > (run.hero.maxHp * 2) / 3 ? 0 : hp > run.hero.maxHp / 3 ? 1 : 2);
+  const level = (hp) => (hp > (state.run.hero.maxHp * 2) / 3 ? 0 : hp > state.run.hero.maxHp / 3 ? 1 : 2);
   const hpEv = ev.find((e) => e.t === 'tower' || e.t === 'heal' || e.t === 'patch');
-  let hp = hpEv ? (hpEv.t === 'tower' ? hpEv.hp + hpEv.dmg : hpEv.hp - hpEv.n) : run.hero.hp;
-  if (hp !== run.hero.hp) {
+  let hp = hpEv ? (hpEv.t === 'tower' ? hpEv.hp + hpEv.dmg : hpEv.hp - hpEv.n) : state.run.hero.hp;
+  if (hp !== state.run.hero.hp) {
     setHp(hp);
-    if (level(hp) !== level(run.hero.hp)) towerArt(hp);
+    if (level(hp) !== level(state.run.hero.hp)) towerArt(hp);
   }
   // the „−7“ at the tower's ❤️ counts up with each hit
   const lostEl = $('.tw-lost', hpBox);
@@ -1332,7 +1375,7 @@ function turmPlay(o, after) {
     flyers.forEach((d) => d.remove());
     scr.removeEventListener('click', tap, true);
     scr.classList.remove('playing');
-    backTo = keepBack;
+    state.backTo = keepBack;
     if (hurtLog) hurtLog.style.visibility = '';
     if (!board.isConnected) return;
     if (after) return after();
@@ -1353,8 +1396,8 @@ function turmPlay(o, after) {
   };
   scr.addEventListener('click', tap, true);
   scr.classList.add('playing');
-  const keepBack = backTo;
-  backTo = finish;
+  const keepBack = state.backTo;
+  state.backTo = finish;
   let b = 0;
   const beat = () => {
     if (stopped) return;
@@ -1401,7 +1444,7 @@ function turmBuilt(bau) {
     }
   }
   if (bau.fix != null) {
-    const old = TWART.tower(run.turm.floors, bau.fix, run.hero.maxHp);
+    const old = TWART.tower(state.run.turm.floors, bau.fix, state.run.hero.maxHp);
     $('.tw-towerart', twt).insertAdjacentHTML(
       'afterend',
       old.back.replace('class="tw-towerart"', 'class="tw-towerart tw-oldart"'),
@@ -1431,11 +1474,11 @@ function turmIntro() {
   const ov = modal(
     `<h2>🏰 Turmwacht</h2><ol>${steps.map((s) => `<li>${esc(s)}</li>`).join('')}</ol><button class="btn" id="tutok" style="margin-top:12px">Verstanden</button>`,
   );
-  speakBtn($('h2', ov), 'afterbegin', () => joined(...steps), undefined, [], run.grade);
+  speakBtn($('h2', ov), 'afterbegin', () => joined(...steps), undefined, [], state.run.grade);
   $('#tutok', ov).focus({ preventScroll: true });
   $('#tutok', ov).onclick = () => {
     ov.remove();
-    meta.seenTut['turm:intro'] = true;
+    state.meta.seenTut['turm:intro'] = true;
     saveAll();
   };
 }
@@ -1451,17 +1494,17 @@ function turmHitTut(o) {
   );
   ov.classList.add('tw-bannerov');
   const said = () => joined('Oh nein', text, tip);
-  speakBtn($('h2', ov), 'beforeend', said, said, [], run.grade);
+  speakBtn($('h2', ov), 'beforeend', said, said, [], state.run.grade);
   $('#tutok', ov).focus({ preventScroll: true });
   $('#tutok', ov).onclick = () => {
     ov.remove();
-    meta.seenTut['turm:hit'] = true;
+    state.meta.seenTut['turm:hit'] = true;
     saveAll();
   };
 }
 // a boss or the elite arrives: a still banner over the board until it is tapped away (no timer)
 function turmBanner(x, slide) {
-  const t = run.turm,
+  const t = state.run.turm,
     cols = TWART.laneColors(t.lanes);
   const text = x.final
     ? 'Für jedes Fach trägt der Boss einen Schild. Die Aufgaben kommen der Reihe nach aus diesen Fächern:'
@@ -1477,7 +1520,7 @@ function turmBanner(x, slide) {
   ov.classList.add('tw-bannerov');
   if (slide) ov.classList.add('slide');
   const said = () => joined(`${x.name} kommt`, text, x.final && x.shields.map(laneName).join(', '));
-  speakBtn($('h2', ov), 'beforeend', said, said, [], run.grade);
+  speakBtn($('h2', ov), 'beforeend', said, said, [], state.run.grade);
   const close = () => ov.remove();
   $('#tutok', ov).focus({ preventScroll: true });
   $('#tutok', ov).onclick = close;
@@ -1487,8 +1530,8 @@ function turmBanner(x, slide) {
 }
 // after a wave: the Ziegel with their reasons and the Stempel; after the wave-3 boss also the new shape and the item choice
 function screenTurmCleared() {
-  depth = 2;
-  const t = run.turm,
+  state.depth = 2;
+  const t = state.run.turm,
     boss = TW.WAVES[t.wave - 1].boss != null,
     H = turmHero();
   const why = {
@@ -1503,19 +1546,20 @@ function screenTurmCleared() {
     .map((k) => `<li><span>${why[k]}</span><b>+${t.earned[k]} 🧱</b></li>`)
     .join('');
   const evo = boss
-    ? `<div class="card center tw-evo"><h3>Neue Gestalt</h3><div class="evo-row">${heroSVG(H, run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(H, run.hero.evo, 'after')}</div><p>${esc(turmEvoText(run.hero.evo))}</p></div>`
+    ? `<div class="card center tw-evo"><h3>Neue Gestalt</h3><div class="evo-row">${heroSVG(H, state.run.hero.evo - 1, 'before')}<span aria-hidden="true">➜</span>${heroSVG(H, state.run.hero.evo, 'after')}</div><p>${esc(turmEvoText(state.run.hero.evo))}</p></div>`
     : '';
   const offer = t.phase === 'reward' && t.offer;
   render(`<div class="screen">${turmTop()}<div class="scroll"><div class="stack"><div class="card center tw-cleared"><h2>Welle ${t.wave} ist vorbei.</h2>${rows ? `<ul class="tw-earned">${rows}</ul>` : ''}<p>Du hast jetzt ${t.ziegel} 🧱.</p>${stampLine(t.stamps)}<p class="pnote">Gleich ist Bauzeit: Mit Ziegeln machst du den Turm stärker.</p></div>${evo}</div></div>
       <div class="bottom">${offer ? '<button class="btn" id="pick">Belohnung aussuchen</button>' : '<button class="btn" id="tobuild">Zur Bauzeit</button>'}</div></div>`);
-  backTo = () => turmLeave(screenTurm);
+  state.backTo = () => turmLeave(screenTurm);
   speakBtn(
     $('.tw-cleared h2'),
     'beforeend',
-    () => joined(`Welle ${t.wave} ist vorbei`, `Du hast jetzt ${t.ziegel} Ziegel`, boss && turmEvoText(run.hero.evo)),
+    () =>
+      joined(`Welle ${t.wave} ist vorbei`, `Du hast jetzt ${t.ziegel} Ziegel`, boss && turmEvoText(state.run.hero.evo)),
     undefined,
     [],
-    run.grade,
+    state.run.grade,
   );
   setTimeout(boss ? SFX.levelup : SFX.win, 150);
   if (!offer) {
@@ -1533,7 +1577,7 @@ function screenTurmCleared() {
         ov.remove();
         if (turmReward(+b.dataset.r)) {
           screenTurmBoard({ lines: [`${ITEMS[id].icon} ${ITEMS[id].name} ist jetzt in deinem Beutel.`], quiet: true });
-          if (run.turm.wave === 3) turmPause();
+          if (state.run.turm.wave === 3) turmPause();
         }
       };
     });
@@ -1541,10 +1585,10 @@ function screenTurmCleared() {
 }
 // fallen or won: first what was practised, then the result
 function screenTurmEnd(o = {}) {
-  depth = 2;
-  const t = run.turm,
+  state.depth = 2;
+  const t = state.run.turm,
     won = t.phase === 'won',
-    retry = TW.canRetry(run),
+    retry = TW.canRetry(state.run),
     left = TW.CP_USES - t.cpUsed,
     H = turmHero();
   const rows = [...new Set(t.lanes.map((l) => l.subject))]
@@ -1561,15 +1605,15 @@ function screenTurmEnd(o = {}) {
       if (e) e.classList.add('rise');
     }, 0);
   // the finished tower with every floor built in this run and the hero in its last shape on top
-  const tw = TWART.tower(t.floors, run.hero.hp, run.hero.maxHp);
+  const tw = TWART.tower(t.floors, state.run.hero.hp, state.run.hero.maxHp);
   const pic = won
-    ? `<div class="tw-endtower"><div class="tw-tower" style="--th:${tw.h};--feet:${tw.feet}">${tw.back}<div class="tw-heroslot">${heroSVG(H, run.hero.evo)}</div>${tw.front}</div></div>`
-    : heroSVG(H, run.hero.evo);
+    ? `<div class="tw-endtower"><div class="tw-tower" style="--th:${tw.h};--feet:${tw.feet}">${tw.back}<div class="tw-heroslot">${heroSVG(H, state.run.hero.evo)}</div>${tw.front}</div></div>`
+    : heroSVG(H, state.run.hero.evo);
   const result = won
     ? 'Der Wissensturm hat allen Wellen standgehalten.'
     : `Der Turm ist gefallen. Du bist bis Welle ${t.wave} gekommen.`;
   render(`<div class="screen">${topbar('🏰 Turmwacht')}${won ? CONFETTI : ''}<div class="scroll"><div class="stack"><div class="card center tw-end"><h2>Das hast du geübt</h2><ul class="tw-score">${rows}</ul></div>
-      <div class="card center tw-end${won ? ' won' : ''}">${pic}<p class="tw-result">${result}</p>${won ? `<p>${esc(H.names[run.hero.evo])} steht ganz oben auf dem Turm.</p>` : ''}${stampLine(t.stamps)}<p>Rekord: Welle ${meta.turm.best}</p></div></div></div>
+      <div class="card center tw-end${won ? ' won' : ''}">${pic}<p class="tw-result">${result}</p>${won ? `<p>${esc(H.names[state.run.hero.evo])} steht ganz oben auf dem Turm.</p>` : ''}${stampLine(t.stamps)}<p>Rekord: Welle ${state.meta.turm.best}</p></div></div></div>
       <div class="bottom"><div class="stack tw-endbtns">${retry ? `<button class="btn" id="retry">Ab Welle ${t.cp.turm.wave + 1} weitermachen</button><p class="pnote center">Das geht in dieser Turmwacht noch ${left === 1 ? 'einmal' : 'zweimal'}.</p>` : ''}${
         won
           ? '<button class="btn" id="home">Zum Titel</button><button class="btn secondary" id="again">Neue Turmwacht</button>'
@@ -1586,19 +1630,19 @@ function screenTurmEnd(o = {}) {
       ),
     undefined,
     [],
-    run.grade,
+    state.run.grade,
   );
   const home = () => turmLeave(screenTitle);
-  backTo = home;
+  state.backTo = home;
   $('#home').onclick = home;
   $('#again').onclick = () => {
     endRun();
-    run = null;
+    state.run = null;
     screenTurmNew();
   };
   if (retry)
     $('#retry').onclick = () => {
       turmRetry();
-      screenTurmBoard({ lines: [`Der Turm ist wieder heil. Gleich kommt Welle ${run.turm.wave + 1}.`] });
+      screenTurmBoard({ lines: [`Der Turm ist wieder heil. Gleich kommt Welle ${state.run.turm.wave + 1}.`] });
     };
 }

@@ -113,8 +113,9 @@ src/units.js       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bo
 src/curriculum.ts  Reihenfolge der Einheiten, Fächer und Klassen (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) mit den Typen `Unit` und `TaskType`
 src/save.ts        der Spielstand: Typ `Meta`, Standardwerte, Laden/Speichern und die Reparatur beim Laden (`normMeta`)
 src/savecode.ts    Spielstand-Code (verkleinern, Base42); src/qr.ts zeichnet den QR-Code
-src/app/           Spiel-Engine in Teilen; tools/build.js setzt sie in der Reihenfolge von `APP` zu einer Funktion zusammen,
-                   sie teilen sich also einen Zustand (meta, run, mode):
+src/main.js        Einstieg: lädt die Teile der Spiel-Engine in der Reihenfolge, in der sie starten
+src/app/           Spiel-Engine als Module, jedes importiert, was es braucht. Was mehrere Teile ändern (Spielstand `meta`,
+                   laufendes Abenteuer `run`, Einheit `mode`), steht in state.js:
                    core (Einheiten, Lehrplan, Icons) · storage (Spielstand laden und reparieren) · progress (Stufen,
                    Stempel, Wochenziele) · ui (Anzeige, Zurück, Töne, Erklärungen) · tasks (Aufgaben-UI, Vorlesen) ·
                    title (Startseite, PIN, „Was ist neu?“) · backup (Spielstand-Code) · map (Held wählen, Karte) ·
