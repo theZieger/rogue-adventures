@@ -16,7 +16,9 @@ const check = (cond, msg) => {
 
 // A case works with at most a few pages at once: keep the last LIVE pages and close older ones (their storage
 // stays readable through dump()), which keeps the whole file within Node's default heap. opts: see tests/page.js
+// jsdom frees a closed page only once the event loop has turned, hence the tick() before each case.
 const LIVE = 4;
+const tick = () => new Promise(setImmediate);
 const pages = [];
 function open(storage, opts) {
   while (pages.length >= LIVE) pages.shift().close();
@@ -53,6 +55,7 @@ function startMathFight(opts) {
 }
 
 // 1. Parent area must not delete a saved adventure
+await tick();
 {
   const p1 = startMathFight();
   const saved = p1.dump();
@@ -81,6 +84,7 @@ function startMathFight(opts) {
 }
 
 // 2. "Neu" → "Zurück" and "Neu" → "Ja" → "Zurück" keep the saved adventure
+await tick();
 {
   const p = open(startMathFight().dump());
   p.click('[data-new="math"]');
@@ -94,6 +98,7 @@ function startMathFight(opts) {
 }
 
 // 3. A fight continues after reopening (same enemy, can't escape to another node)
+await tick();
 {
   const p1 = startMathFight();
   const enemy = p1.$('.plate.enemy .name') && p1.$('.plate.enemy .name').textContent;
@@ -107,6 +112,7 @@ function startMathFight(opts) {
 }
 
 // 4. Damaged storage never blocks the start
+await tick();
 {
   for (const bad of ['{"stats":null}', '{"stats":{"math":5},"dex":[1],"knowSeq":"x"}', 'not json', '[]']) {
     const p = open({ [META]: bad, [RUN]: '{"hero":null}' });
@@ -167,6 +173,7 @@ async function reloadCases() {
 }
 
 // 7. Stats are kept per mode and per task type
+await tick();
 {
   const p = open();
   p.click('#later');
@@ -178,6 +185,7 @@ async function reloadCases() {
 }
 
 // 8. Setup dialog: shown on first start only; old saves get the new fields with defaults
+await tick();
 {
   const p1 = open();
   check(
@@ -233,6 +241,7 @@ async function reloadCases() {
 const typePin = (p, pin) => {
   for (const ch of pin) p.click(`.numpad [data-k="${ch}"]`);
 };
+await tick();
 {
   const p1 = open();
   p1.click('#setpin');
@@ -297,6 +306,7 @@ const typePin = (p, pin) => {
 }
 
 // 10. A save from before division/rounding gains the new task types with empty stats; its adventure keeps loading
+await tick();
 {
   const oldStats = {
     add: { c: 5, t: 7, hist: [1, 0] },
@@ -333,6 +343,7 @@ const typePin = (p, pin) => {
 }
 
 // 11. A save from before the Kirchenjahr unit loads, and a Kirchenjahr adventure continues after reopening
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -355,6 +366,7 @@ const typePin = (p, pin) => {
 }
 
 // 19. Kaufladen (node type markt): no money of the child's own, three customers, a thank-you item, reload inside the shop
+await tick();
 {
   const skip = { setup: { done: false, skipped: true, at: 'x' } };
   const p1 = startMathFight();
@@ -1350,6 +1362,7 @@ function wardrobeCases() {
   }
 }
 // 14. Deutsch: a save from before the subject existed gets stats for it; a Deutsch adventure continues after reopening
+await tick();
 {
   const old = {
     runs: 2,
@@ -1385,6 +1398,7 @@ function wardrobeCases() {
 }
 
 // 14b. Englisch: a save from before the subject existed gets stats for it; an Englisch adventure continues after reopening
+await tick();
 {
   const old = { runs: 2, stats: { math: {}, woerterwerkstatt: {} }, setup: { done: false, skipped: true, at: '' } };
   const p1 = open({ [META]: JSON.stringify(old) });
@@ -1622,6 +1636,7 @@ function gardenCases() {
 }
 const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
 // 20. Step 17: new task types and the Lesestube keep old saves working
+await tick();
 {
   const p = open({ [META]: JSON.stringify({ runs: 2, stats: { math: { add: { c: 3, t: 4, hist: [1] } } } }) });
   const st = p.w.__mq.meta.stats.math;
@@ -1667,6 +1682,7 @@ const SKIPPED = { setup: { done: false, skipped: true, at: 'x' } };
   check(!p4.w.__mq.run.map.flat().some((n) => n.t === 'lesen'), 'a Zahlenquest map has no Lesestube');
 }
 // 22. Step 21: six new Zahlenquest task types; old saves and old heroes keep working, choice tasks run in a fight
+await tick();
 {
   const NEW = ['smul', 'teilbar', 'mauer', 'bruch', 'vorrang', 'zahlwort'];
   const p = open({
@@ -1839,6 +1855,7 @@ async function gardenWinCases() {
 }
 
 // 16. Sachkunde units: an old save gains their stats; reopening in the Forscherlabor or on the Schatzkarte keeps the state
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -1904,6 +1921,7 @@ async function gardenWinCases() {
 }
 // 19. Die fünf Sinne und Sicher im Verkehr: an old save gains their stats; reopening in the Sinnestäuschung keeps the
 // experiment; the Zeichenschule draws the eye on floor 2 and the ear on floor 5
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -1986,6 +2004,7 @@ async function gardenWinCases() {
 }
 // 17. Kirchenjahr Teil 2 and Gute Freunde: an old save without Gute Freunde stats loads, a Kirchenjahr adventure
 // started in world 1 continues in world 1, and Gute Freunde adventures are saved
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -2016,6 +2035,7 @@ async function gardenWinCases() {
     'Kirchenjahr adventure from world 1 continues on the map',
   );
 }
+await tick();
 {
   const p1 = open();
   if (p1.$('#later')) p1.click('#later');
@@ -2030,6 +2050,7 @@ async function gardenWinCases() {
   );
 }
 // 17b. Ich, wir und die Welt: an old save without its stats loads, an adventure is saved and continues
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -2361,6 +2382,7 @@ async function weeklyCases() {
   }
 }
 // 22. Materials and owned things: defaults, damaged values, the Bergwerk fills them and survives a reload
+await tick();
 {
   const p0 = open({ [META]: JSON.stringify({ runs: 2, wins: 0 }) });
   check(
@@ -2496,6 +2518,7 @@ async function weeklyCases() {
 }
 
 // 23. Die Baustelle: new unit on the title, adventure starts, stats exist for old saves
+await tick();
 {
   const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, stats: { math: {} } }) });
   check(!!p.$('[data-new="bau"]') && p.text().includes('Die Baustelle'), 'title lists Die Baustelle under Mathe');
@@ -2521,6 +2544,7 @@ async function weeklyCases() {
 }
 
 // 23b. Saves from before step 22: Baustelle and Jahrmarkt stats without the new task types, a running adventure with old tiers
+await tick();
 {
   const oldBau = { wz: { c: 5, t: 6, hist: [] }, netz: { c: 2, t: 3, hist: [] }, umfang: { c: 1, t: 1, hist: [] } },
     oldJm = { uhr: { c: 4, t: 4, hist: [] }, tafel: { c: 1, t: 2, hist: [] } };
@@ -2567,6 +2591,7 @@ async function weeklyCases() {
 }
 
 // 24. A save from before the Jahrmarkt unit loads; a Jahrmarkt adventure continues mid-fight after reopening
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -2591,6 +2616,7 @@ async function weeklyCases() {
 }
 // 28. Step 23: new Deutsch task types – a save from before them loads, gets empty stats and its adventure continues;
 // a Lesestube saved by text number keeps showing the same text now that more texts exist
+await tick();
 {
   const NEW = {
     woerterwerkstatt: ['stamm', 'trenn', 'komma'],
@@ -2649,6 +2675,7 @@ async function weeklyCases() {
   );
 }
 // 26. Werkbank, pantry and Meine Hütte (step 13)
+await tick();
 {
   const p0 = open({ [META]: JSON.stringify({ runs: 4, wins: 1, stamps: 3, setup: { skipped: true } }) });
   const m0 = p0.w.__mq.meta;
@@ -2811,6 +2838,7 @@ async function weeklyCases() {
     'after a reload the pantry stays empty and the adventure keeps the items',
   );
 }
+await tick();
 {
   // the hut: renders from an old save, furniture, shelf numbers, second room, moving furniture
   const p = open({ [META]: JSON.stringify({ runs: 1, setup: { skipped: true } }) });
@@ -2908,6 +2936,7 @@ async function weeklyCases() {
     'the device keeps its fuller pantry',
   );
 }
+await tick();
 {
   // Der Holzplatz: wood for a right answer; the event list only grows at the end
   const p = startMathFight();
@@ -3268,6 +3297,7 @@ function topCases() {
 }
 
 // 25. Musik: an old save gains the Konzertsaal stats; a run reloaded in the middle of a number task keeps it
+await tick();
 {
   const p0 = open();
   const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
@@ -3321,6 +3351,7 @@ function topCases() {
 }
 
 // 26. Parents hide subjects, games and heroes; weekly goals lead straight into their game
+await tick();
 {
   const base = { setup: { done: false, skipped: true, at: 'x' } };
   const p0 = open({ [META]: JSON.stringify(base) }, { now: W49 });
@@ -3399,6 +3430,7 @@ function topCases() {
     'merging a save code keeps the settings of a device that has them',
   );
 }
+await tick();
 {
   // „Jetzt loslegen“ on a goal: the hero choice gets the goal's task type, the attack shows the goal
   const p = open(null, { now: W49 });
@@ -3463,6 +3495,7 @@ function topCases() {
 }
 
 // Vorlesen: an old save gets the switch turned on; the button only appears with a German voice on the device
+await tick();
 {
   const toTask = (p) => {
     p.click('[data-new="math"]');
@@ -3513,6 +3546,7 @@ function topCases() {
   check(!none.d.querySelector('.task .speak') && none.errors.length === 0, 'a device without speech shows no button');
 }
 // Vorlesen: parents pick one of the device's German voices and the speed; network voices never appear
+await tick();
 {
   const A = { name: 'Anna', localService: true, lang: 'de-DE' },
     B = { name: 'Google Deutsch', localService: true, lang: 'de-DE' },
@@ -3603,6 +3637,7 @@ function topCases() {
   );
 }
 // Vorlesen in Klasse 1: tutorials, feedback, events and how a fight starts are read out; the Lesestube text is not
+await tick();
 {
   const V = { voice: { localService: true, lang: 'de-DE' } };
   const meta1 = (more) => ({
@@ -3703,6 +3738,7 @@ function topCases() {
 }
 
 // Vorlesen in English: English words and sentences get an English voice from the device, the rest the German one
+await tick();
 {
   const DE = { name: 'Anna', localService: true, lang: 'de-DE' },
     US = { name: 'Samantha', localService: true, lang: 'en-US' },
@@ -3812,6 +3848,7 @@ function topCases() {
   );
 }
 // Vorlesen in „Laute und Buchstaben“: the voice would say letter names, so letters are never read
+await tick();
 {
   const V = { voice: { localService: true, lang: 'de-DE' } };
   const p = open(
@@ -3850,6 +3887,7 @@ function topCases() {
 }
 
 // Shorter adventures for Klasse 1 and 2: 6 and 7 floors; an old 8-floor run keeps going to its own end
+await tick();
 {
   const fresh = (m, grade) => {
     const p = open({ [META]: JSON.stringify(Object.assign({ grade }, SKIPPED)) });
@@ -3940,6 +3978,7 @@ function topCases() {
 }
 
 // „Erster Buchstabe“ was removed from Laute und Buchstaben: an adventure saved with its attack goes on with another task type
+await tick();
 {
   const p0 = open({
     [META]: JSON.stringify(
@@ -3971,6 +4010,7 @@ function topCases() {
 }
 
 // Klasse 1 starts with fewer attacks (2, then 3, then 4 per theme) and never has a Kreisel-Arena
+await tick();
 {
   const old = open({ [META]: JSON.stringify(Object.assign({ runs: 3 }, SKIPPED)) });
   check(
@@ -4308,6 +4348,7 @@ async function backCases() {
 }
 
 // 29. Start order, English topics, hidden classes and extras (all in meta.hidden: 'en:<topic>', 'grade:<n>', 'extra:<name>')
+await tick();
 {
   const base = { setup: { done: false, skipped: true, at: 'x' } };
   const subjCard = (p, name) =>

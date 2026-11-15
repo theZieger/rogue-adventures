@@ -15,7 +15,7 @@ npm run typecheck    # tsc, strict, over every .ts file
 npm run format       # Biome formats JS, TS, CSS and JSON
 ```
 
-You need Node 22.18 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
+You need Node 22.22 or newer, nothing else. A pull request must be formatted and pass build, test, playtest
 and e2e; CI checks all five.
 
 ## Find your way

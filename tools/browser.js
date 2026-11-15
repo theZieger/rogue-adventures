@@ -53,7 +53,8 @@ function fixRandomAndClock() {
 // starts without a save
 async function withApp(use, root) {
   const server = await serve(root);
-  const browser = await chromium.launch();
+  // CHROMIUM=/path/to/chrome uses that browser instead of the one Playwright installs
+  const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const url = `http://localhost:${server.address().port}/`;
   const newPage = async (file = '') => {
     const context = await browser.newContext({
