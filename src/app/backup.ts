@@ -1,7 +1,7 @@
 import { MODES, MODE_KEYS } from '../curriculum.ts';
 import { KEY_RUN_FOR, type Meta, clear, isObj, load, normMeta, save } from '../save.ts';
 import { SAVECODE } from '../savecode.ts';
-import { $, esc } from './core.ts';
+import { html } from '../ui/html.ts';
 import { type Run, state } from './state.ts';
 import { loadRun, saveAll } from './storage.ts';
 import { MONTHS, askPin, screenTitle, setupDone } from './title.ts';
@@ -184,7 +184,7 @@ export function summaryHtml(s: Backup) {
     .map((g) => MODES[g].title)
     .concat(isObj(s.runs.turm) ? ['Turmwacht'] : []);
   const d = new Date(s.at);
-  return `<ul class="sumlist">${[
+  return html`<ul class="sumlist">${[
     Number.isFinite(s.meta.stamps) ? `🏷 ${s.meta.stamps} Stempel` : '',
     `${s.meta.wins} ${s.meta.wins === 1 ? 'Sieg' : 'Siege'}`,
     `${Object.keys(s.meta.dex).length} im Monsterbuch`,
@@ -192,20 +192,17 @@ export function summaryHtml(s: Backup) {
     isNaN(d as unknown as number) ? '' : `Gesichert am ${d.getDate()}. ${MONTHS[d.getMonth()]} ${d.getFullYear()}`,
   ]
     .filter(Boolean)
-    .map((t) => `<li>${esc(t)}</li>`)
-    .join('')}</ul>`;
+    .map((t) => html`<li>${t}</li>`)}</ul>`;
 }
 function askImport(s: Backup) {
-  const ov = modal(
-    `<h2>Spielstand gefunden</h2>${summaryHtml(s)}<p>Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.</p><div class="stack"><button class="btn" id="imerge">Zusammenlegen</button><button class="btn secondary" id="ireplace">Ersetzen</button><button class="btn secondary" id="ino">Nicht laden</button></div>`,
-  );
   const go = (how: 'merge' | 'replace') => () => {
     ov.remove();
     askPin(() => applySave(s, how));
   };
-  $('#imerge', ov).onclick = go('merge');
-  $('#ireplace', ov).onclick = go('replace');
-  $('#ino', ov).onclick = () => ov.remove();
+  const ov = modal(
+    html`<h2>Spielstand gefunden</h2>${summaryHtml(s)}<p>Zusammenlegen behält alles auf diesem Gerät und nimmt dazu, was im Code mehr ist. Ersetzen überschreibt alles auf diesem Gerät.</p><div class="stack"><button class="btn" id="imerge" data-action="merge">Zusammenlegen</button><button class="btn secondary" id="ireplace" data-action="replace">Ersetzen</button><button class="btn secondary" id="ino" data-action="no">Nicht laden</button></div>`,
+    { merge: go('merge'), replace: go('replace'), no: () => ov.remove() },
+  );
 }
 export function importFromLink() {
   const h = location.hash;
@@ -217,8 +214,8 @@ export function importFromLink() {
   }
   unpackSave(h).then(askImport, (e) => {
     const ov = modal(
-      `<h2>Spielstand nicht geladen</h2><p>${esc(e.message)}</p><button class="btn" id="iok">OK</button>`,
+      html`<h2>Spielstand nicht geladen</h2><p>${e.message}</p><button class="btn" id="iok" data-action="ok">OK</button>`,
+      { ok: () => ov.remove() },
     );
-    $('#iok', ov).onclick = () => ov.remove();
   });
 }
