@@ -66,12 +66,12 @@ window.__mq = {
     nextWave: turmNextWave,
     retry: turmRetry,
     screen: screenTurm,
-    board: (o) => screenTurmBoard(o || {}),
-    motion: (speed) => {
+    board: (o: any) => screenTurmBoard(o || {}),
+    motion: (speed: number | null) => {
       state.turmSpeed = speed == null ? null : speed;
     },
     say: {
-      lines: (ev, names) => turmLines(ev, names).all,
+      lines: (ev: any, names: any) => turmLines(ev, names).all,
       elite: turmEliteText,
       blocked: turmBlocked,
       gate: turmGateText,

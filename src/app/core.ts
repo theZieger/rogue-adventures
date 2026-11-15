@@ -14,9 +14,9 @@ export const $ = <T extends HTMLElement = HTMLElement>(sel: string, el?: ParentN
 export const app = $('#app');
 export const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 // svg, not emoji: emoji arrows differ in size between fonts
-export const arrow = (dir) =>
+export const arrow = (dir: string) =>
   `<svg class="arr arr-${dir}" viewBox="0 0 20 20" aria-label="${{ r: 'rechts', l: 'links', d: 'unten', u: 'oben' }[dir]}"><path d="M3 10h13M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-export const esc = (s) =>
+export const esc = (s: string | undefined) =>
   String(s).replace(
     /[&<>"]/g,
     (c) => (({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }) as Record<string, string>)[c],
@@ -25,7 +25,7 @@ export const esc = (s) =>
 /* ---------- Icons ---------- */
 // Emojis look different on every device and some are missing on older ones. Wherever one appears as text inside
 // #app, the drawn icon from icons.ts takes its place. Attributes (aria-label, data-*) keep the emoji.
-const emoId = (k) => 'i-' + [...k].map((c) => c.codePointAt(0).toString(16)).join('-');
+const emoId = (k: string) => 'i-' + [...k].map((c) => c.codePointAt(0).toString(16)).join('-');
 // not display:none, or Safari and Firefox lose the gradients inside <use>
 document.body.insertAdjacentHTML(
   'beforeend',
@@ -42,7 +42,7 @@ const EMO = new RegExp(
     ')\\uFE0F?',
   'gu',
 );
-function drawIcons(root) {
+function drawIcons(root: Node) {
   const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const hits: Text[] = [];
   while (walk.nextNode()) {

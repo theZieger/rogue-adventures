@@ -170,14 +170,7 @@ import type { TaskExtra } from './sachkunde.ts';
   // Zahlenmauer and Rechendreieck in the markup of src/logic.ts, so the bot reads them the same way
   const stone = (x: number, y: number, w: number, v: string | number) =>
     `<g data-v="${v}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="4" fill="${v === '?' ? '#FFE27A' : '#F3D9B1'}" stroke="${OUT}" stroke-width="2"/><text x="${x + w / 2}" y="${y + 24}" text-anchor="middle" font-size="20" font-weight="700" fill="${OUT}">${v}</text></g>`;
-  function mauerTask(
-    m: Maker,
-    mod: string,
-    t: number,
-    b: number[],
-    r: number,
-    c: number,
-  ) {
+  function mauerTask(m: Maker, mod: string, t: number, b: number[], r: number, c: number) {
     const rows = [b, [b[0] + b[1], b[1] + b[2]], [b[0] + 2 * b[1] + b[2]]];
     const show = rows.map((row, i) => row.map((v, j) => (i === r && j === c ? '?' : v)));
     const svg = `<svg class="mauer" viewBox="0 0 196 112" role="img" aria-label="Zahlenmauer">${show.map((row, i) => row.map((v, j) => stone(2 + i * 32 + j * 64, 2 + (2 - i) * 36, 64, v)).join('')).join('')}</svg>`;
@@ -187,13 +180,7 @@ import type { TaskExtra } from './sachkunde.ts';
       k12: false,
     });
   }
-  function triTask(
-    m: Maker,
-    mod: string,
-    t: number,
-    inner: number[],
-    k: number,
-  ) {
+  function triTask(m: Maker, mod: string, t: number, inner: number[], k: number) {
     const vals = inner.concat([inner[0] + inner[1], inner[1] + inner[2], inner[0] + inner[2]]);
     const show = vals.map((v, i) => (i === k ? '?' : v));
     const P = [
@@ -865,7 +852,11 @@ import type { TaskExtra } from './sachkunde.ts';
       'Regal mit drei Fächern',
       height(170),
     );
-  const SOLIDS: Record<string, string[]> = { wuerfel: ['Würfel', 'den'], quader: ['Quader', 'den'], kugel: ['Kugel', 'die'] };
+  const SOLIDS: Record<string, string[]> = {
+    wuerfel: ['Würfel', 'den'],
+    quader: ['Quader', 'den'],
+    kugel: ['Kugel', 'die'],
+  };
   // isometric view like Die Baustelle (src/logic.ts): x to the right, y to the front, z up; faces top, front, right
   type Corner = [x: number, y: number, z: number];
   const iso = (x: number, y: number, z: number, k: number) =>
@@ -2331,9 +2322,7 @@ import type { TaskExtra } from './sachkunde.ts';
     let b =
       `<rect x="1" y="1" width="298" height="${H}" rx="6" fill="#fff" stroke="${OUT}" stroke-width="2"/>` +
       rows
-        .map((_, i) =>
-          i % 2 ? `<rect x="2" y="${4 + i * 32}" width="296" height="32" fill="#F3F6FC"/>` : '',
-        )
+        .map((_, i) => (i % 2 ? `<rect x="2" y="${4 + i * 32}" width="296" height="32" fill="#F3F6FC"/>` : ''))
         .join('') +
       `<path d="M94 2 V${H}" stroke="#B8C2D9" stroke-width="1.5"/>`;
     rows.forEach(([label, n], i) => {
@@ -2681,18 +2670,10 @@ import type { TaskExtra } from './sachkunde.ts';
           return g.num(mod, t, 'strich', [vals[i]], { svg, ask: D.read(say(D.rows[i])), rows: D.rows, vals });
         }
         const i = vals.indexOf(Math.max(...vals));
-        return g.choice(
-          mod,
-          t,
-          'meiste',
-          D.top,
-          D.rows[i],
-          shuffle(D.rows.filter((_, j) => j !== i)).slice(0, 2),
-          {
-            pic: pic(svg),
-            why: `${D.rows[i]}: ${vals[i]} Striche, so viele hat keine andere Zeile.`,
-          },
-        );
+        return g.choice(mod, t, 'meiste', D.top, D.rows[i], shuffle(D.rows.filter((_, j) => j !== i)).slice(0, 2), {
+          pic: pic(svg),
+          why: `${D.rows[i]}: ${vals[i]} Striche, so viele hat keine andere Zeile.`,
+        });
       }
       const top = 2 * rnd(7, 10);
       do vals = D.rows.map(() => 2 * rnd(1, top / 2));
@@ -2984,7 +2965,12 @@ import type { TaskExtra } from './sachkunde.ts';
   const deg = (a: number) => [Math.cos((a * Math.PI) / 180), -Math.sin((a * Math.PI) / 180)];
   const r1 = (v: number) => Math.round(v * 10) / 10;
   // squares on a grid like Die Baustelle; axes: [name, colour, vertical] through the middle of the grid
-  function axisSVG(cells: number[][], R: number, Cn: number, axes: [label: string, colour: string, upright: boolean][]) {
+  function axisSVG(
+    cells: number[][],
+    R: number,
+    Cn: number,
+    axes: [label: string, colour: string, upright: boolean][],
+  ) {
     const P = 16,
       W = Cn + 2,
       H = R + 2;
@@ -3151,7 +3137,11 @@ import type { TaskExtra } from './sachkunde.ts';
       height(130),
     );
   }
-  const EKF: Record<string, [n: number, one: string]> = { Ecken: [8, 'Ecke'], Kanten: [12, 'Kante'], Flächen: [6, 'Fläche'] };
+  const EKF: Record<string, [n: number, one: string]> = {
+    Ecken: [8, 'Ecke'],
+    Kanten: [12, 'Kante'],
+    Flächen: [6, 'Fläche'],
+  };
   function genForm2(mod: string, t: number) {
     if (mod === 'spiegel') {
       if (t === 1) {

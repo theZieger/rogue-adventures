@@ -56,7 +56,12 @@ export const MS = (() => {
   const { shuffle, pick, rnd, weightedPick } = K;
   const NS = 'xmlns="http://www.w3.org/2000/svg"';
   const STROKE = '#1C2541';
-  const txt = (x: number | string, y: number | string, s: string | number, o?: { size?: number; fill?: string; anchor?: string }) =>
+  const txt = (
+    x: number | string,
+    y: number | string,
+    s: string | number,
+    o?: { size?: number; fill?: string; anchor?: string },
+  ) =>
     `<text x="${x}" y="${y}" font-size="${(o && o.size) || 12}" font-weight="700" text-anchor="${(o && o.anchor) || 'middle'}" fill="${(o && o.fill) || STROKE}">${s}</text>`;
   const minus = (n: number) => (n < 0 ? '−' + Math.abs(n) : String(n));
   const choice = (
@@ -85,12 +90,7 @@ export const MS = (() => {
     );
 
   /* ---------- Pflanzen-Bilder (gleiche Schnittstelle wie potatoSVG: highlight, clickable, labels, step) ---------- */
-  function partsSVG(
-    P: PartsPicture,
-    opts: PartsOpts | undefined,
-    body: (g: PartGroup) => string,
-    labels: PartLabel[],
-  ) {
+  function partsSVG(P: PartsPicture, opts: PartsOpts | undefined, body: (g: PartGroup) => string, labels: PartLabel[]) {
     opts = opts || {};
     const step = opts.step || 99;
     const g: PartGroup = (id, inner) =>
@@ -280,15 +280,7 @@ export const MS = (() => {
     );
   const PLANTS: Record<string, PartsPicture> = { getreide: GRAIN, kreislauf: CYCLE };
 
-  function plantTask(
-    cfg: Unit,
-    plantKey: string,
-    mod: string,
-    tier: number,
-    know: Know,
-    seq: number,
-    opts?: GenOpts,
-  ) {
+  function plantTask(cfg: Unit, plantKey: string, mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) {
     let cands = (cfg.pool as Question[]).filter((x) => x.mod === mod);
     if (opts && opts.g && cands.some((x) => x.g === opts.g)) cands = cands.filter((x) => x.g === opts.g);
     const e = weightedPick(cands, know, seq);
@@ -2086,16 +2078,18 @@ export const MS = (() => {
   function laborSet() {
     const fl = shuffle(FLOAT)
       .slice(0, 2)
-      .map((x): Experiment => ({
-        kind: 'float',
-        topic: 'schwimmen',
-        q: `Du legst ${x.acc} ${x.into || 'ins Wasser'}. Schwimmt es oder sinkt es?`,
-        opts: ['Schwimmt', 'Sinkt'],
-        a: x.f ? 0 : 1,
-        note: `${x.nom} ${x.f ? 'schwimmt' : 'sinkt'}. ${x.why}`,
-        pic: tankSVG(x.label, null),
-        after: tankSVG(x.label, x.f ? 'oben' : 'unten'),
-      }));
+      .map(
+        (x): Experiment => ({
+          kind: 'float',
+          topic: 'schwimmen',
+          q: `Du legst ${x.acc} ${x.into || 'ins Wasser'}. Schwimmt es oder sinkt es?`,
+          opts: ['Schwimmt', 'Sinkt'],
+          a: x.f ? 0 : 1,
+          note: `${x.nom} ${x.f ? 'schwimmt' : 'sinkt'}. ${x.why}`,
+          pic: tankSVG(x.label, null),
+          after: tankSVG(x.label, x.f ? 'oben' : 'unten'),
+        }),
+      );
     const st = shuffle(WATER)
       .slice(0, 2)
       .map((w) => ({
@@ -2241,12 +2235,7 @@ export const MS = (() => {
   function karteText(steps: Step[], metres: boolean) {
     return (
       'Gehe ' +
-      steps
-        .map(
-          (s, i) =>
-            `${metres ? s.n * 100 + ' m' : fields(s.n)} nach ${DIRS[s.d][2]}`,
-        )
-        .join(' und dann ') +
+      steps.map((s, i) => `${metres ? s.n * 100 + ' m' : fields(s.n)} nach ${DIRS[s.d][2]}`).join(' und dann ') +
       '.'
     );
   }
@@ -2535,9 +2524,7 @@ export const MS = (() => {
       // wrong options must not lie even roughly in that direction (a place north-north-east would also count as „im Norden“)
       const rough = (x: { rc: number[] }) =>
         [0, 1].every((k) => !DIRS[d][k] || Math.sign(x.rc[k] - a.rc[k]) === DIRS[d][k]);
-      const wrong = places
-        .filter((x) => x !== a && x !== b && !rough(x))
-        .map((x) => cap(x.p.name));
+      const wrong = places.filter((x) => x !== a && x !== b && !rough(x)).map((x) => cap(x.p.name));
       if (wrong.length < 2) continue;
       return choice(
         mod,
@@ -2705,326 +2692,328 @@ export const MS = (() => {
       ),
     },
   };
-  const KK_POOL = ([
-    {
-      id: 'kkri1',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'In welcher Himmelsrichtung geht die Sonne auf?',
-      o: ['Im Osten', 'Im Westen', 'Im Norden'],
-      a: 0,
-    },
-    {
-      id: 'kkri2',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'In welcher Himmelsrichtung geht die Sonne unter?',
-      o: ['Im Westen', 'Im Osten', 'Im Süden'],
-      a: 0,
-    },
-    {
-      id: 'kkri3',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'Wo steht die Sonne bei uns mittags?',
-      o: ['Im Süden', 'Im Norden', 'Im Osten'],
-      a: 0,
-    },
-    {
-      id: 'kkri4',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'Bei uns steht die Sonne mittags im Norden.',
-      rf: true,
-      a: false,
-      why: 'Mittags steht sie im Süden. Im Norden ist sie nie zu sehen.',
-    },
-    {
-      id: 'kkri5',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Wohin zeigt die rote Spitze der Kompassnadel?',
-      o: ['Nach Norden', 'Nach Süden', 'Nach Osten'],
-      a: 0,
-    },
-    {
-      id: 'kkri6',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Was bedeutet es, eine Karte einzunorden?',
-      o: [
-        'Die Karte so drehen, dass ihr Norden nach Norden zeigt',
-        'Die Karte zusammenfalten',
-        'Das Wort „Norden“ auf die Karte schreiben',
-      ],
-      a: 0,
-    },
-    {
-      id: 'kkri7',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Wie viele Haupthimmelsrichtungen gibt es?',
-      o: ['4', '8', '2'],
-      a: 0,
-    },
-    {
-      id: 'kkri8',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Was ist ein Kompass?',
-      o: ['Ein Gerät, das die Himmelsrichtungen zeigt', 'Eine Uhr für das Wetter', 'Ein Fernglas'],
-      a: 0,
-    },
-    {
-      id: 'kkri9',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Die Haupthimmelsrichtungen sind Norden, Osten, Süden und Westen.',
-      rf: true,
-      a: true,
-    },
-    {
-      id: 'kkri10',
-      mod: 'richtung',
-      g: 'neben',
-      q: 'Nordosten ist eine Haupthimmelsrichtung.',
-      rf: true,
-      a: false,
-      why: 'Nordosten ist eine Nebenhimmelsrichtung zwischen Norden und Osten.',
-    },
-    {
-      id: 'kkri11',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Mit welchem Merksatz kannst du dir die Himmelsrichtungen im Uhrzeigersinn merken?',
-      o: ['Nie ohne Seife waschen', 'Alle Kinder lernen lesen', 'Morgens um sieben'],
-      a: 0,
-    },
-    {
-      id: 'kkri12',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'Welcher helle Stern zeigt nachts die Richtung Norden?',
-      o: ['Der Polarstern', 'Der Abendstern', 'Die Sonne'],
-      a: 0,
-    },
-    {
-      id: 'kkri13',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'Im Norden ist die Sonne bei uns nie zu sehen.',
-      rf: true,
-      a: true,
-    },
-    {
-      id: 'kkri14',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'Morgens scheint die Sonne in dein Fenster. In welche Richtung zeigt das Fenster?',
-      o: ['Nach Osten', 'Nach Westen', 'Nach Norden'],
-      a: 0,
-    },
-    {
-      id: 'kkri15',
-      mod: 'richtung',
-      g: 'neben',
-      q: 'Wie viele Richtungen zeigt eine Windrose mit Haupt- und Nebenhimmelsrichtungen?',
-      o: ['8', '4', '6'],
-      a: 0,
-    },
-    {
-      id: 'kkri16',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Welche Himmelsrichtung liegt gegenüber von Norden?',
-      o: ['Süden', 'Osten', 'Westen'],
-      a: 0,
-    },
-    {
-      id: 'kkri17',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Wofür steht die Abkürzung „O“ auf dem Kompass?',
-      o: ['Osten', 'Oben', 'Ort'],
-      a: 0,
-    },
-    {
-      id: 'kkri18',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Mit dem Kompass findest du die Himmelsrichtungen auch bei Nebel.',
-      rf: true,
-      a: true,
-    },
-    {
-      id: 'kkri19',
-      mod: 'richtung',
-      g: 'sonne',
-      q: 'Abends scheint die Sonne in dein Zimmer. In welche Richtung zeigt das Fenster?',
-      o: ['Nach Westen', 'Nach Osten', 'Nach Norden'],
-      a: 0,
-    },
-    {
-      id: 'kkri20',
-      mod: 'richtung',
-      g: 'neben',
-      q: 'Welche Richtung liegt zwischen Süden und Westen?',
-      o: ['Südwesten', 'Südosten', 'Nordwesten'],
-      a: 0,
-    },
-    {
-      id: 'kkri21',
-      mod: 'richtung',
-      g: 'richtung',
-      q: 'Die Sonne geht im Westen auf.',
-      rf: true,
-      a: false,
-      why: 'Die Sonne geht im Osten auf und im Westen unter.',
-    },
-    {
-      id: 'kkpl7',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Was ist auf einem Plan meistens blau gezeichnet?',
-      o: ['Wasser wie Flüsse und Teiche', 'Wälder', 'Häuser'],
-      a: 0,
-    },
-    {
-      id: 'kkpl8',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Was brauchst du, um auf einer Karte die Zeichen zu verstehen?',
-      o: ['Die Legende', 'Den Maßstab', 'Einen Wecker'],
-      a: 0,
-    },
-    { id: 'kkpl9', mod: 'plan', g: 'plan', q: 'Ein Plan der Schule zeigt die Räume von oben.', rf: true, a: true },
-    {
-      id: 'kkpl10',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Was bedeutet der Maßstab „1 Kästchen = 100 m“?',
-      o: [
-        'Ein Kästchen auf dem Plan sind 100 m in Wirklichkeit',
-        'Der Plan ist 100 m groß',
-        'Man darf nur 100 m gehen',
-      ],
-      a: 0,
-    },
-    {
-      id: 'kkpl1',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Was ist die Legende einer Karte?',
-      o: ['Die Erklärung der Zeichen', 'Eine alte Sage', 'Der Name der Stadt'],
-      a: 0,
-    },
-    {
-      id: 'kkpl2',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Wie ist ein Plan gezeichnet?',
-      o: ['Von oben, wie ein Vogel es sieht', 'Von der Seite', 'Von unten'],
-      a: 0,
-    },
-    {
-      id: 'kkpl3',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Auf einem Plan ist alles kleiner gezeichnet als in Wirklichkeit.',
-      rf: true,
-      a: true,
-    },
-    {
-      id: 'kkpl4',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Auf den meisten Karten ist Süden oben.',
-      rf: true,
-      a: false,
-      why: 'Auf den meisten Karten ist Norden oben.',
-    },
-    {
-      id: 'kkpl5',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Was zeigt der Maßstab einer Karte?',
-      o: ['Wie stark alles verkleinert ist', 'Wie warm es ist', 'Wie alt die Karte ist'],
-      a: 0,
-    },
-    {
-      id: 'kkpl6',
-      mod: 'plan',
-      g: 'plan',
-      q: 'Auf einer Karte ist rechts Osten. Was ist links?',
-      o: ['Westen', 'Norden', 'Süden'],
-      a: 0,
-    },
-    {
-      id: 'kklt1',
-      mod: 'lt',
-      g: 'sonne',
-      q: 'Im Osten geht die Sonne auf, im ___ nimmt sie ihren Lauf.',
-      o: ['Süden', 'Norden', 'Westen'],
-      a: 0,
-    },
-    {
-      id: 'kklt2',
-      mod: 'lt',
-      g: 'sonne',
-      q: 'Im Westen will sie untergehn, im ___ ist sie nie zu sehn.',
-      o: ['Norden', 'Süden', 'Osten'],
-      a: 0,
-    },
-    { id: 'kklt3', mod: 'lt', g: 'sonne', q: 'Im ___ geht die Sonne auf.', o: ['Osten', 'Westen', 'Norden'], a: 0 },
-    {
-      id: 'kklt4',
-      mod: 'lt',
-      g: 'plan',
-      q: 'Die Erklärung der Zeichen auf einer Karte heißt ___.',
-      o: ['Legende', 'Märchen', 'Maßstab'],
-      a: 0,
-    },
-    {
-      id: 'kklt5',
-      mod: 'lt',
-      g: 'plan',
-      q: 'Der ___ zeigt, wie stark eine Karte verkleinert ist.',
-      o: ['Maßstab', 'Kompass', 'Fluss'],
-      a: 0,
-    },
-    {
-      id: 'kklt6',
-      mod: 'lt',
-      g: 'neben',
-      q: 'Zwischen Norden und Osten liegt ___.',
-      o: ['Nordosten', 'Südwesten', 'Nordwesten'],
-      a: 0,
-    },
-    {
-      id: 'kklt7',
-      mod: 'lt',
-      g: 'plan',
-      q: 'Auf den meisten Karten ist ___ oben.',
-      o: ['Norden', 'Süden', 'Osten'],
-      a: 0,
-    },
-    {
-      id: 'kklt8',
-      mod: 'lt',
-      g: 'richtung',
-      q: 'Ein ___ zeigt die Himmelsrichtungen an.',
-      o: ['Kompass', 'Thermometer', 'Wecker'],
-      a: 0,
-    },
-    {
-      id: 'kklt9',
-      mod: 'lt',
-      g: 'plan',
-      q: 'Ein Plan zeigt einen Ort von ___.',
-      o: ['oben', 'unten', 'der Seite'],
-      a: 0,
-    },
-  ] as Question[]).concat(landkreisPool(LANDKREIS));
+  const KK_POOL = (
+    [
+      {
+        id: 'kkri1',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'In welcher Himmelsrichtung geht die Sonne auf?',
+        o: ['Im Osten', 'Im Westen', 'Im Norden'],
+        a: 0,
+      },
+      {
+        id: 'kkri2',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'In welcher Himmelsrichtung geht die Sonne unter?',
+        o: ['Im Westen', 'Im Osten', 'Im Süden'],
+        a: 0,
+      },
+      {
+        id: 'kkri3',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'Wo steht die Sonne bei uns mittags?',
+        o: ['Im Süden', 'Im Norden', 'Im Osten'],
+        a: 0,
+      },
+      {
+        id: 'kkri4',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'Bei uns steht die Sonne mittags im Norden.',
+        rf: true,
+        a: false,
+        why: 'Mittags steht sie im Süden. Im Norden ist sie nie zu sehen.',
+      },
+      {
+        id: 'kkri5',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Wohin zeigt die rote Spitze der Kompassnadel?',
+        o: ['Nach Norden', 'Nach Süden', 'Nach Osten'],
+        a: 0,
+      },
+      {
+        id: 'kkri6',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Was bedeutet es, eine Karte einzunorden?',
+        o: [
+          'Die Karte so drehen, dass ihr Norden nach Norden zeigt',
+          'Die Karte zusammenfalten',
+          'Das Wort „Norden“ auf die Karte schreiben',
+        ],
+        a: 0,
+      },
+      {
+        id: 'kkri7',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Wie viele Haupthimmelsrichtungen gibt es?',
+        o: ['4', '8', '2'],
+        a: 0,
+      },
+      {
+        id: 'kkri8',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Was ist ein Kompass?',
+        o: ['Ein Gerät, das die Himmelsrichtungen zeigt', 'Eine Uhr für das Wetter', 'Ein Fernglas'],
+        a: 0,
+      },
+      {
+        id: 'kkri9',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Die Haupthimmelsrichtungen sind Norden, Osten, Süden und Westen.',
+        rf: true,
+        a: true,
+      },
+      {
+        id: 'kkri10',
+        mod: 'richtung',
+        g: 'neben',
+        q: 'Nordosten ist eine Haupthimmelsrichtung.',
+        rf: true,
+        a: false,
+        why: 'Nordosten ist eine Nebenhimmelsrichtung zwischen Norden und Osten.',
+      },
+      {
+        id: 'kkri11',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Mit welchem Merksatz kannst du dir die Himmelsrichtungen im Uhrzeigersinn merken?',
+        o: ['Nie ohne Seife waschen', 'Alle Kinder lernen lesen', 'Morgens um sieben'],
+        a: 0,
+      },
+      {
+        id: 'kkri12',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'Welcher helle Stern zeigt nachts die Richtung Norden?',
+        o: ['Der Polarstern', 'Der Abendstern', 'Die Sonne'],
+        a: 0,
+      },
+      {
+        id: 'kkri13',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'Im Norden ist die Sonne bei uns nie zu sehen.',
+        rf: true,
+        a: true,
+      },
+      {
+        id: 'kkri14',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'Morgens scheint die Sonne in dein Fenster. In welche Richtung zeigt das Fenster?',
+        o: ['Nach Osten', 'Nach Westen', 'Nach Norden'],
+        a: 0,
+      },
+      {
+        id: 'kkri15',
+        mod: 'richtung',
+        g: 'neben',
+        q: 'Wie viele Richtungen zeigt eine Windrose mit Haupt- und Nebenhimmelsrichtungen?',
+        o: ['8', '4', '6'],
+        a: 0,
+      },
+      {
+        id: 'kkri16',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Welche Himmelsrichtung liegt gegenüber von Norden?',
+        o: ['Süden', 'Osten', 'Westen'],
+        a: 0,
+      },
+      {
+        id: 'kkri17',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Wofür steht die Abkürzung „O“ auf dem Kompass?',
+        o: ['Osten', 'Oben', 'Ort'],
+        a: 0,
+      },
+      {
+        id: 'kkri18',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Mit dem Kompass findest du die Himmelsrichtungen auch bei Nebel.',
+        rf: true,
+        a: true,
+      },
+      {
+        id: 'kkri19',
+        mod: 'richtung',
+        g: 'sonne',
+        q: 'Abends scheint die Sonne in dein Zimmer. In welche Richtung zeigt das Fenster?',
+        o: ['Nach Westen', 'Nach Osten', 'Nach Norden'],
+        a: 0,
+      },
+      {
+        id: 'kkri20',
+        mod: 'richtung',
+        g: 'neben',
+        q: 'Welche Richtung liegt zwischen Süden und Westen?',
+        o: ['Südwesten', 'Südosten', 'Nordwesten'],
+        a: 0,
+      },
+      {
+        id: 'kkri21',
+        mod: 'richtung',
+        g: 'richtung',
+        q: 'Die Sonne geht im Westen auf.',
+        rf: true,
+        a: false,
+        why: 'Die Sonne geht im Osten auf und im Westen unter.',
+      },
+      {
+        id: 'kkpl7',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Was ist auf einem Plan meistens blau gezeichnet?',
+        o: ['Wasser wie Flüsse und Teiche', 'Wälder', 'Häuser'],
+        a: 0,
+      },
+      {
+        id: 'kkpl8',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Was brauchst du, um auf einer Karte die Zeichen zu verstehen?',
+        o: ['Die Legende', 'Den Maßstab', 'Einen Wecker'],
+        a: 0,
+      },
+      { id: 'kkpl9', mod: 'plan', g: 'plan', q: 'Ein Plan der Schule zeigt die Räume von oben.', rf: true, a: true },
+      {
+        id: 'kkpl10',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Was bedeutet der Maßstab „1 Kästchen = 100 m“?',
+        o: [
+          'Ein Kästchen auf dem Plan sind 100 m in Wirklichkeit',
+          'Der Plan ist 100 m groß',
+          'Man darf nur 100 m gehen',
+        ],
+        a: 0,
+      },
+      {
+        id: 'kkpl1',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Was ist die Legende einer Karte?',
+        o: ['Die Erklärung der Zeichen', 'Eine alte Sage', 'Der Name der Stadt'],
+        a: 0,
+      },
+      {
+        id: 'kkpl2',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Wie ist ein Plan gezeichnet?',
+        o: ['Von oben, wie ein Vogel es sieht', 'Von der Seite', 'Von unten'],
+        a: 0,
+      },
+      {
+        id: 'kkpl3',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Auf einem Plan ist alles kleiner gezeichnet als in Wirklichkeit.',
+        rf: true,
+        a: true,
+      },
+      {
+        id: 'kkpl4',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Auf den meisten Karten ist Süden oben.',
+        rf: true,
+        a: false,
+        why: 'Auf den meisten Karten ist Norden oben.',
+      },
+      {
+        id: 'kkpl5',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Was zeigt der Maßstab einer Karte?',
+        o: ['Wie stark alles verkleinert ist', 'Wie warm es ist', 'Wie alt die Karte ist'],
+        a: 0,
+      },
+      {
+        id: 'kkpl6',
+        mod: 'plan',
+        g: 'plan',
+        q: 'Auf einer Karte ist rechts Osten. Was ist links?',
+        o: ['Westen', 'Norden', 'Süden'],
+        a: 0,
+      },
+      {
+        id: 'kklt1',
+        mod: 'lt',
+        g: 'sonne',
+        q: 'Im Osten geht die Sonne auf, im ___ nimmt sie ihren Lauf.',
+        o: ['Süden', 'Norden', 'Westen'],
+        a: 0,
+      },
+      {
+        id: 'kklt2',
+        mod: 'lt',
+        g: 'sonne',
+        q: 'Im Westen will sie untergehn, im ___ ist sie nie zu sehn.',
+        o: ['Norden', 'Süden', 'Osten'],
+        a: 0,
+      },
+      { id: 'kklt3', mod: 'lt', g: 'sonne', q: 'Im ___ geht die Sonne auf.', o: ['Osten', 'Westen', 'Norden'], a: 0 },
+      {
+        id: 'kklt4',
+        mod: 'lt',
+        g: 'plan',
+        q: 'Die Erklärung der Zeichen auf einer Karte heißt ___.',
+        o: ['Legende', 'Märchen', 'Maßstab'],
+        a: 0,
+      },
+      {
+        id: 'kklt5',
+        mod: 'lt',
+        g: 'plan',
+        q: 'Der ___ zeigt, wie stark eine Karte verkleinert ist.',
+        o: ['Maßstab', 'Kompass', 'Fluss'],
+        a: 0,
+      },
+      {
+        id: 'kklt6',
+        mod: 'lt',
+        g: 'neben',
+        q: 'Zwischen Norden und Osten liegt ___.',
+        o: ['Nordosten', 'Südwesten', 'Nordwesten'],
+        a: 0,
+      },
+      {
+        id: 'kklt7',
+        mod: 'lt',
+        g: 'plan',
+        q: 'Auf den meisten Karten ist ___ oben.',
+        o: ['Norden', 'Süden', 'Osten'],
+        a: 0,
+      },
+      {
+        id: 'kklt8',
+        mod: 'lt',
+        g: 'richtung',
+        q: 'Ein ___ zeigt die Himmelsrichtungen an.',
+        o: ['Kompass', 'Thermometer', 'Wecker'],
+        a: 0,
+      },
+      {
+        id: 'kklt9',
+        mod: 'lt',
+        g: 'plan',
+        q: 'Ein Plan zeigt einen Ort von ___.',
+        o: ['oben', 'unten', 'der Seite'],
+        a: 0,
+      },
+    ] as Question[]
+  ).concat(landkreisPool(LANDKREIS));
   const KK_MODULES = {
     richtung: { name: 'Himmelsrichtungen', icon: '🧭', maxTier: 1, worldCap: [1], dmg: 12 },
     rose: { name: 'Windrose', icon: '✳️', maxTier: 1, worldCap: [1], dmg: 12 },

@@ -116,7 +116,7 @@ export const MS3 = (() => {
     sc?: string,
   ) =>
     `<g transform="translate(${cx} ${cy})" fill="${fill}" stroke="${sc || OUT}" stroke-width="${sw || 0.6}">${Array.from({ length: n }, (_, i) => `<ellipse cy="${f1(-(r0 || 0) - len / 2)}" rx="${w}" ry="${len / 2}" transform="rotate(${f1((360 / n) * i + (off || 0))})"/>`).join('')}</g>`;
-  const shine = (x: number, y: number, rx: number, ry: number, rot: number | undefined) =>
+  const shine = (x: number, y: number, rx: number, ry: number, rot?: number) =>
     `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".75" transform="rotate(${rot || 0} ${x} ${y})"/>`;
   const FL_DEFS = {
     Lf: '<linearGradient id="flLf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9FD162"/><stop offset="1" stop-color="#4A872C"/></linearGradient>',

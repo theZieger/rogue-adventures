@@ -253,10 +253,7 @@ export const MQ = (() => {
         : null,
     (d) => ({ text: `Mein Zehner ist ${d.z}.`, test: (x) => x.z === d.z }),
     (d) => ({ text: `Mein Einer ist ${d.e}.`, test: (x) => x.e === d.e }),
-    (d) =>
-      d.e === d.z
-        ? { text: `Mein Einer und mein Zehner sind gleich.`, test: (x) => x.e === x.z }
-        : null,
+    (d) => (d.e === d.z ? { text: `Mein Einer und mein Zehner sind gleich.`, test: (x) => x.e === x.z } : null),
     (d) => ({
       text: d.e % 2 === 0 ? `Ich bin eine gerade Zahl.` : `Ich bin eine ungerade Zahl.`,
       test: (x) => x.e % 2 === d.e % 2,
@@ -506,8 +503,7 @@ export const MQ = (() => {
   // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
   // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
   function columns(op: string, rows: number[]) {
-    const res =
-      op === '+' ? rows.reduce((a, b) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
+    const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
     const w = Math.max(...rows.concat(res).map((n) => String(n).length));
     const dig = (n: number, i: number) => Math.floor(n / 10 ** (w - 1 - i)) % 10;
     const carry: number[] = Array(w).fill(0);
@@ -2215,9 +2211,7 @@ export const MQ = (() => {
             )
             .filter((v) => v.join('').includes('#'))
         : sideHs[side](plan).flatMap((h, i, hs) =>
-            [h - 1, h + 1]
-              .filter((x) => x >= 1 && x <= 4)
-              .map((x) => colView(hs.map((y, j) => (j === i ? x : y)))),
+            [h - 1, h + 1].filter((x) => x >= 1 && x <= 4).map((x) => colView(hs.map((y, j) => (j === i ? x : y)))),
           ),
     );
     const views = [right],
@@ -2413,10 +2407,7 @@ export const MQ = (() => {
   }
   const overlap = (rs: Rect[]) =>
     rs.some((a, i) =>
-      rs.some(
-        (b, j) =>
-          j > i && a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3],
-      ),
+      rs.some((b, j) => j > i && a[0] < b[0] + b[2] && b[0] < a[0] + a[2] && a[1] < b[1] + b[3] && b[1] < a[1] + a[3]),
     );
   const rectKey = (rs: Rect[]) => JSON.stringify(rs.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]));
   function rectSVG(rs: Rect[], size: number) {
@@ -2462,9 +2453,7 @@ export const MQ = (() => {
         const leaves = cells
           .map((p, i) => i)
           .filter(
-            (i) =>
-              cells.filter((q) => Math.abs(q[0] - cells[i][0]) + Math.abs(q[1] - cells[i][1]) === 1)
-                .length === 1,
+            (i) => cells.filter((q) => Math.abs(q[0] - cells[i][0]) + Math.abs(q[1] - cells[i][1]) === 1).length === 1,
           );
         const i = pick(leaves);
         n = normRects(good.filter((_, j) => j !== i));
@@ -2618,14 +2607,7 @@ export const MQ = (() => {
     for (const a of used) for (const b of used) pairs.push([a, b]);
     const wrong = shuffle(pairs.filter((pr) => pr.map(tileKey).join('|') !== next.map(tileKey).join('|'))).slice(0, 2);
     const pairSVG = (pr: Tile[]) =>
-      svgFig(
-        -2,
-        -2,
-        48,
-        24,
-        pr.map((tl, i) => tileSVG(tl, i * 24)).join(''),
-        'zwei Teile des Musters',
-      );
+      svgFig(-2, -2, 48, 24, pr.map((tl, i) => tileSVG(tl, i * 24)).join(''), 'zwei Teile des Musters');
     const options = shuffle([next].concat(wrong)).map(pairSVG);
     const band =
       Array.from({ length: shown }, (_, i) => tileSVG(seq[i % p], i * 22)).join('') +
@@ -2875,8 +2857,7 @@ export const MQ = (() => {
           [r, c + 1],
           [r, c - 1],
         ])
-          if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !cells.some((q) => q.join() === p.join()))
-            free.push(p);
+          if (p[0] >= 0 && p[0] < R && p[1] >= 0 && p[1] < k && !cells.some((q) => q.join() === p.join())) free.push(p);
       if (free.length) return rest.concat([pick(free)]);
     }
   }
@@ -2929,9 +2910,7 @@ export const MQ = (() => {
     } while (opts.length < 3);
     const halves = shuffle(opts.slice(0, 3)),
       axisAt = (x: number) => AXIS(x, 0, x, (R + 2) * PS);
-    const options = halves.map((hf) =>
-      paperSVG(k + 1, R + 2, [{ cells: at(hf, 1, 0) }], axisAt(0), 'rechte Hälfte'),
-    );
+    const options = halves.map((hf) => paperSVG(k + 1, R + 2, [{ cells: at(hf, 1, 0) }], axisAt(0), 'rechte Hälfte'));
     const answer = options[halves.indexOf(right)];
     const pic = paperSVG(
       2 * k + 2,
@@ -3089,10 +3068,7 @@ export const MQ = (() => {
           [rnd(2, 4), rnd(4, 5)],
           [0, rnd(2, 4)],
         ];
-      while (
-        !convexOk(pts) ||
-        sides(pts).some((v, i, a) => cross(v, a[(i + 2) % 4]) === 0)
-      );
+      while (!convexOk(pts) || sides(pts).some((v, i, a) => cross(v, a[(i + 2) % 4]) === 0));
     // turned by a quarter turn now and then
     for (let i = rnd(0, 3); i > 0; i--) pts = pts.map(([x, y]) => [-y, x]);
     const x0 = Math.min(...pts.map((p) => p[0])),

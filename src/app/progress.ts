@@ -17,29 +17,47 @@ const shade = MONART.shade;
 export const heroName = () => heroSpec().names[state.run.hero.evo];
 export const heroSpec = () => CFG().starters.find((s) => s.id === state.run.hero.id);
 export const STATS = () => state.meta.stats[state.mode];
-export const tutKey = (k) => state.mode + ':' + k;
-export const typeChip = (t) =>
+export const tutKey = (k: string) => state.mode + ':' + k;
+export const typeChip = (t: string) =>
   `<span class="chip" style="background:${TYPES[t].color};color:var(--ink)">${TYPES[t].icon} ${TYPES[t].name}</span>`;
-export const xpNeeded = (lvl) => 20 + lvl * 15;
+export const xpNeeded = (lvl: number) => 20 + lvl * 15;
 // a Turm run keeps world, tiers and the repeat guard per unit: task-type keys repeat across units
 const taskBox = () => (state.run && state.run.mode === 'turm' ? state.run.turm.at[state.mode] : state.run);
-const worldCapFor = (mod) => {
+const worldCapFor = (mod: string | number) => {
   const M = MODULES_OF()[mod];
   return Math.min(M.maxTier || Infinity, M.worldCap[Math.min(taskBox().world, M.worldCap.length) - 1]);
 };
-export function tierFor(mod) {
+export function tierFor(mod: string) {
   return Math.max(1, Math.min(worldCapFor(mod), taskBox().tiers[mod] || 1));
 }
 // about every fourth task comes from the tier below, so the child keeps some easy wins
-export const taskTier = (mod) => {
+export const taskTier = (mod: string) => {
   const t = tierFor(mod);
   return t >= 2 && Math.random() < 0.25 ? t - 1 : t;
 };
 // the tier reached per unit and task type; a new adventure starts one tier below it
-export const levelOf = (m) => (state.meta.level[m] = isObj(state.meta.level[m]) ? state.meta.level[m] : {});
+export const levelOf = (m: string) => (state.meta.level[m] = isObj(state.meta.level[m]) ? state.meta.level[m] : {});
 // under 65 % right in this adventure (from 8 answers on), a wrong answer costs less
 export const struggling = () => state.run.answered >= 8 && state.run.solved / state.run.answered < 0.65;
-export function recordAnswer(mod, ok, task?) {
+export function recordAnswer(
+  mod: string,
+  ok: boolean,
+  task?:
+    | {
+        kind?: string;
+        mod?: string;
+        tier?: number;
+        group?: string;
+        note?: any;
+        q?: string;
+        part?: any;
+        options?: any[];
+        answer?: any;
+        qid: any;
+        plant?: any;
+      }
+    | undefined,
+) {
   const M = MODULES_OF()[mod];
   const s = STATS()[mod];
   s.t++;
@@ -63,7 +81,7 @@ export function recordAnswer(mod, ok, task?) {
     state.meta.knowSeq++;
     MK.record(state.meta.know, task.qid, ok, state.meta.knowSeq);
   }
-  const right = (n) => s.hist.slice(-n).reduce((a, b) => a + b, 0);
+  const right = (n: number) => s.hist.slice(-n).reduce((a, b) => a + b, 0);
   if (!state.run) return;
   // up at 5 of the last 6 right, down at 2 of the last 3 wrong; capped at the current world, otherwise the next world would start at its hardest tier
   const cur = tierFor(mod);
@@ -80,12 +98,12 @@ export function recordAnswer(mod, ok, task?) {
   }
 }
 /* ---------- Stamps ---------- */
-export const giveStamps = (n) => {
+export const giveStamps = (n: number) => {
   state.meta.stamps += n;
   state.meta.stampsTotal += n;
   return n;
 };
-export const addMat = (k, n) => {
+export const addMat = (k: string, n: number) => {
   state.meta.materials[k] = (state.meta.materials[k] || 0) + n;
   state.meta.progressAt = new Date().toISOString();
 };
@@ -150,9 +168,92 @@ export const REWARDS = [
     icon: '☀️',
   },
 ];
-export const owns = (r) => (r.has ? r.has() : !!state.meta.owned[r.id]);
-export const canBuy = (r) => state.meta.stamps >= r.price && (state.meta.materials.stein || 0) >= (r.stein || 0);
-export const heroLocked = (s) => REWARDS.some((r) => r.hero === s.id && !state.meta.owned[r.id]);
+export const owns = (
+  r:
+    | ({
+        id: string;
+        name: string;
+        desc: string;
+        price: number;
+        world: number;
+        bg: string;
+        hero?: undefined;
+        stein?: undefined;
+        icon?: undefined;
+        has?: undefined;
+        get?: undefined;
+      } & { price: number })
+    | ({
+        id: string;
+        name: string;
+        desc: string;
+        price: number;
+        hero: string;
+        world?: undefined;
+        bg?: undefined;
+        stein?: undefined;
+        icon?: undefined;
+        has?: undefined;
+        get?: undefined;
+      } & { price: number })
+    | ({
+        id: string;
+        name: string;
+        desc: string;
+        price: number;
+        stein: number;
+        icon: string;
+        has: () => boolean;
+        get: () => void;
+        world?: undefined;
+        bg?: undefined;
+        hero?: undefined;
+      } & { price: number }),
+) => (r.has ? r.has() : !!state.meta.owned[r.id]);
+export const canBuy = (
+  r:
+    | ({
+        id: string;
+        name: string;
+        desc: string;
+        price: number;
+        world: number;
+        bg: string;
+        hero?: undefined;
+        stein?: undefined;
+        icon?: undefined;
+        has?: undefined;
+        get?: undefined;
+      } & { price: number })
+    | ({
+        id: string;
+        name: string;
+        desc: string;
+        price: number;
+        hero: string;
+        world?: undefined;
+        bg?: undefined;
+        stein?: undefined;
+        icon?: undefined;
+        has?: undefined;
+        get?: undefined;
+      } & { price: number })
+    | ({
+        id: string;
+        name: string;
+        desc: string;
+        price: number;
+        stein: number;
+        icon: string;
+        has: () => boolean;
+        get: () => void;
+        world?: undefined;
+        bg?: undefined;
+        hero?: undefined;
+      } & { price: number }),
+) => state.meta.stamps >= r.price && (state.meta.materials.stein || 0) >= (r.stein || 0);
+export const heroLocked = (s: { id: string | undefined }) =>
+  REWARDS.some((r) => r.hero === s.id && !state.meta.owned[r.id]);
 /* ---------- Kleiderkammer ---------- */
 // bought pieces live in owned['outfit-<id>']; the others are earned and checked live, so old saves get them too
 export const OUTFITS = [
@@ -171,12 +272,18 @@ export const OUTFITS = [
   { id: 'aehrenkranz', name: 'Ährenkranz', need: () => 'Ernte zum ersten Mal im Schulgarten.' },
 ];
 const goldWeeks = () => Object.values(state.meta.stampCard).filter((v) => v === 2).length;
-export const hasOutfit = (o) => !!state.meta.owned['outfit-' + o.id] || !!(o.got && o.got());
-export const wornBy = (heroId) => {
+export const hasOutfit = (
+  o:
+    | { id: string; name: string; price: number; need?: undefined; got?: undefined }
+    | { id: string; name: string; need: () => string; got: () => boolean; price?: undefined }
+    | { id: string; name: string; need: () => string; price?: undefined; got?: undefined },
+) => !!state.meta.owned['outfit-' + o.id] || !!(o.got && o.got());
+export const wornBy = (heroId: string | number) => {
   const o = OUTFITS.find((x) => x.id === state.meta.worn[heroId]);
   return o && hasOutfit(o) ? o.id : null;
 };
-export const heroSVG = (s, evo, cls?) => monsterSVG(s.shape, TYPES[s.type].color, evo, cls, { outfit: wornBy(s.id) });
+export const heroSVG = (s: { shape: string; type: string | number; id: any }, evo: number, cls?: string | undefined) =>
+  monsterSVG(s.shape, TYPES[s.type].color, evo, cls, { outfit: wornBy(s.id) });
 /* ---------- Weekly goals ---------- */
 // a new week starts fresh; finished weeks stay on the stamp card, nothing is taken away
 export const weekly = () => {
@@ -198,11 +305,11 @@ interface WeeklyGoal {
 // replaced from its own seed, so the other subjects keep their goals. i is the goal's slot in weekly.progress.
 export function weeklyGoals() {
   const r = MQ.seeded(weekly().week);
-  const goal = (r, m) => {
+  const goal = (r: { (): number; (): number; (): number }, m: string) => {
     const on = enabledMods(m);
     const kinds = ['right', 'elite', 'boss'].concat(MODES[m].worlds <= 2 ? ['win'] : []); // three worlds are too long for one week
     const kind = kinds[Math.floor(r() * kinds.length)];
-    const mod = seededOrder(r, Object.keys(MODES[m].modules)).find((k) => on.includes(k));
+    const mod = seededOrder(r, Object.keys(MODES[m].modules)).find((k: string) => on.includes(k));
     const n = kind === 'right' ? 15 + Math.floor(r() * 11) : kind === 'elite' ? 2 + Math.floor(r() * 2) : (r(), 1);
     return { m, kind, mod, n };
   };
@@ -219,7 +326,7 @@ export function weeklyGoals() {
     })
     .filter(Boolean) as WeeklyGoal[];
 }
-export const seededOrder = (r, arr) => {
+export const seededOrder = (r: { (): number; (): number }, arr: string | any[]) => {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(r() * (i + 1));
@@ -227,7 +334,7 @@ export const seededOrder = (r, arr) => {
   }
   return a;
 };
-export const goalText = (g) => {
+export const goalText = (g: WeeklyGoal) => {
   const t = `„${MODES[g.m].title}“`;
   return g.kind === 'right'
     ? `Löse ${g.n} Aufgaben ${MODES[g.m].modules[g.mod].icon} ${MODES[g.m].modules[g.mod].name} richtig.`
@@ -237,9 +344,9 @@ export const goalText = (g) => {
         ? `Besiege ${g.n} Elitegegner in ${t}.`
         : `Besiege den Wochenboss in ${t}.`;
 };
-export const goalDone = (g) => (weekly().progress[g.i] || 0) >= g.n;
+export const goalDone = (g: WeeklyGoal) => (weekly().progress[g.i] || 0) >= g.n;
 let weeklyNews = false; // the card waits for the next calm screen (map or title)
-export function weeklyStep(kind, mod?) {
+export function weeklyStep(kind: string, mod?: string | undefined) {
   const w = weekly();
   if (w.done || !extraOn('wochenziele')) return;
   const goals = weeklyGoals();
@@ -264,7 +371,7 @@ export function showWeeklyNews() {
   );
   $('#tutok', ov).focus({ preventScroll: true });
 }
-export const stampLine = (n) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
+export const stampLine = (n: number) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');
 export function weakestModule() {
   let best: string | null = null,
     bestAcc = 2;
@@ -279,7 +386,7 @@ export function weakestModule() {
   return best!; // at least one task type is always on
 }
 // a running duel lives only in memory
-export function makeTask(mod, tier, opts?) {
+export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; zero?: boolean } | undefined) {
   const box = taskBox() || state.duel;
   box.recent = box.recent || {};
   const rec = (box.recent[mod] = box.recent[mod] || []);
@@ -317,16 +424,16 @@ export function makeTask(mod, tier, opts?) {
 // switched-off task types are replaced by enabled ones the hero doesn't have yet
 export function heroAttacks() {
   const on = enabledMods();
-  const used = state.run.hero.attacks.map((a) => a.mod).filter((k) => on.includes(k));
+  const used = state.run.hero.attacks.map((a: { mod: any }) => a.mod).filter((k: string) => on.includes(k));
   const spare = on.filter((k) => !used.includes(k));
   let i = 0;
-  return state.run.hero.attacks.map((a) => {
+  return state.run.hero.attacks.map((a: { mod: string }) => {
     if (on.includes(a.mod)) return Object.assign({}, a);
     const k = spare.length ? spare.shift()! : on[i++ % on.length];
     return { name: CFG().extra[k], mod: k };
   });
 }
-export function gainXp(n) {
+export function gainXp(n: number) {
   state.run.hero.xp += n;
   let msgs: any[] = [];
   while (state.run.hero.xp >= xpNeeded(state.run.hero.level)) {
@@ -339,6 +446,6 @@ export function gainXp(n) {
   if (msgs.length) setTimeout(SFX.levelup, 1400);
   return msgs;
 }
-export function heal(n) {
+export function heal(n: number) {
   state.run.hero.hp = Math.min(state.run.hero.maxHp, state.run.hero.hp + n);
 }

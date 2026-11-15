@@ -30,27 +30,11 @@ export const K12E = (() => {
     `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 3}" stroke-linecap="round" stroke-linejoin="round"/>`;
   const sh = (d: string, fill: string, w?: number) =>
     `<path d="${d}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w || 2.5}" stroke-linejoin="round"/>`;
-  const rect = (
-    x: number,
-    y: string | number,
-    w: number,
-    h: string | number,
-    fill: string,
-    rx?: number,
-    sw?: number,
-  ) =>
+  const rect = (x: number, y: number | string, w: number, h: number | string, fill: string, rx?: number, sw?: number) =>
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx || 0}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${sw || 2.5}"/>`;
   const circ = (cx: number, cy: number, r: number, fill: string, w?: number) =>
     `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"/>`;
-  const oval = (
-    cx: number,
-    cy: number,
-    rx: number,
-    ry: number,
-    fill: string,
-    w?: number,
-    rot?: number,
-  ) =>
+  const oval = (cx: number, cy: number, rx: number, ry: number, fill: string, w?: number, rot?: number) =>
     `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fl(fill)}" stroke="${INK}" stroke-width="${w === undefined ? 2.5 : w}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ''}/>`;
   // white gloss: a soft spot or a stroke along the lit edge
   const gloss = (cx: number, cy: number, rx: number, ry: number, rot?: number) =>
@@ -331,10 +315,8 @@ export const K12E = (() => {
         gloss(34, 30, 5, 10, 20),
     },
   ];
-  const symFits = (
-    a: { fest: string; not?: string[] },
-    b: { fest: string; not?: string[] },
-  ) => a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
+  const symFits = (a: { fest: string; not?: string[] }, b: { fest: string; not?: string[] }) =>
+    a.fest !== b.fest && !(a.not || []).includes(b.fest) && !(b.not || []).includes(a.fest);
 
   /* Instrumente */
   // Handtrommel: flat wooden frame with a skin, played with the hand or a soft beater
@@ -1339,7 +1321,7 @@ export const K12E = (() => {
         2,
       ),
     );
-    const opt = (x: string | number) => optPic(FACES[x].svg, 'Gesicht');
+    const opt = (x: string) => optPic(FACES[x].svg, 'Gesicht');
     return choice(
       'gefuehl',
       'gefuehle',
@@ -3585,10 +3567,8 @@ export const K12E = (() => {
         lit('M18 30 Q22 24 30 24', 2.5),
     },
   ];
-  const moodFits = (
-    a: { id: string; not: string[] },
-    b: { id: string; not: string[] },
-  ) => a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
+  const moodFits = (a: { id: string; not: string[] }, b: { id: string; not: string[] }) =>
+    a.id !== b.id && !a.not.includes(b.id) && !b.not.includes(a.id);
   const BODY: { id: string; noun: string; svg: string; word?: string }[] = [
     {
       id: 'klatschen',
@@ -3693,40 +3673,7 @@ export const K12E = (() => {
   );
   const SPIEL1 = ORFF.concat(INSTR.filter((i) => i.id === 'gitarre'));
   // a way of playing is only offered as wrong if it is neither the instrument's own nor also possible (notHow)
-  const wrongHow = (
-    i:
-      | {
-          id: string;
-          name: string;
-          acc: string;
-          fam: string;
-          how: string;
-          svg: string;
-          notHow?: undefined;
-          notFam?: undefined;
-        }
-      | {
-          id: string;
-          name: string;
-          acc: string;
-          fam: string;
-          how: string;
-          notHow: string[];
-          svg: string;
-          notFam?: undefined;
-        }
-      | {
-          id: string;
-          name: string;
-          acc: string;
-          fam: string;
-          how: string;
-          notFam: string[];
-          notHow: string[];
-          svg: string;
-        },
-    h: string,
-  ) => h !== i.how && !(i.notHow || []).includes(h);
+  const wrongHow = (i: (typeof INSTR)[number], h: string) => h !== i.how && !(i.notHow || []).includes(h);
   const NOTES4 = {
     instrumente: {
       title: 'Instrumente aus der Klangkiste',

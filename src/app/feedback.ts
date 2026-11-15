@@ -15,7 +15,7 @@ const thanks = () =>
 
 const KINDS = ['💡 Idee', '🐞 Fehler', '❤️ Lob'];
 
-export function screenFeedback(back) {
+export function screenFeedback(back: { (): void; (): void }) {
   state.depth++;
   back = typeof back === 'function' ? back : screenTitle;
   let kind = KINDS[0];
@@ -63,7 +63,7 @@ export function screenFeedback(back) {
 
   screen(
     html`<div class="screen">${raw(topbar('Idee oder Fehler melden'))}<div class="scroll"><div class="card"><p style="margin-top:0">Hast du eine Idee, einen Wunsch oder einen Fehler gefunden? Schreib es hier auf!</p>
-      <div class="toggles" role="group" aria-label="Was ist es?">${KINDS.map((name, i) => html`<button class="toggle ${i ? '' : 'on'}" data-action="choose" data-kind="${name}" aria-pressed="${!i}">${name}</button>`)}</div>
+      <div class="toggles" role="group" aria-label="Was ist es?">${KINDS.map((name, i) => html`<button class="toggle ${i ? '' : 'on'}" data-action="choose" data-kind="${name}" aria-pressed="${String(!i)}">${name}</button>`)}</div>
       <label for="fbtext" class="sr-only">Deine Nachricht</label><textarea id="fbtext" rows="6" maxlength="2000" placeholder="Zum Beispiel: Ich wünsche mir Aufgaben zum Einmaleins mit 7 …"></textarea>
       <p class="muted" style="color:var(--ink-soft);font-size:15px">Bitte keine Namen, Adressen oder Telefonnummern hineinschreiben.</p><p id="fbmsg" role="status" aria-live="polite" class="fbmsg"></p></div></div>
       <div class="bottom"><div class="stack"><button class="btn" id="fbsend" data-action="send">Absenden</button><button class="btn ghost" id="back" data-action="back">Zurück</button></div></div></div>`,

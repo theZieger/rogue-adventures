@@ -1,5 +1,7 @@
 // html`<p>${text}</p>` builds markup and escapes everything it is given, so text from a save, a word list or a
 // child's input can never become markup by accident. What is markup already goes in as another html`…` or raw().
+// null, undefined and false add nothing (so `${shown && html`…`}` works): an attribute that must say "false" takes
+// String(flag).
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 
 export class Markup {

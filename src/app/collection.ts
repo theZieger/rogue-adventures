@@ -25,7 +25,7 @@ import { screenTitle } from './title.ts';
 import { SFX, modal, screen, topbar } from './ui.ts';
 
 /* ---------- End screens ---------- */
-export function screenGameOver(b) {
+export function screenGameOver(b: { enemy: any; log?: any; logCls?: any; phase?: any; taken?: any; stamps: any }) {
   const world = state.run.world;
   const name = heroName();
   const multi = CFG().worlds > 1;
@@ -80,7 +80,7 @@ export function screenDex() {
     { back: screenTitle },
   );
 }
-export function screenStamps(jump?) {
+export function screenStamps(jump?: boolean | undefined) {
   state.depth = 1;
   const now = MQ.isoWeek(new Date());
   const weeks = MQ.schoolWeeks(new Date());
@@ -89,7 +89,16 @@ export function screenStamps(jump?) {
     const v = state.meta.stampCard[k];
     return html`<span class="wk${v === 2 ? ' gold' : v ? ' done' : ''}${k === now ? ' now' : ''}" role="img" aria-label="Woche ${+k.slice(6)}${v === 2 ? ', Wochenaufgabe geschafft' : v ? ', geübt' : ''}${k === now ? ', diese Woche' : ''}">${v === 2 ? '★' : v ? '✓' : ''}</span>`;
   });
-  const row = (r) => {
+  const row = (r: {
+    icon: unknown;
+    bg: unknown;
+    hero: string;
+    name: unknown;
+    desc: unknown;
+    price: unknown;
+    id: unknown;
+    stein: any;
+  }) => {
     const prev = r.icon
       ? html`<div class="rwprev" aria-hidden="true">${r.icon}</div>`
       : r.bg

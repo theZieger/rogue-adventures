@@ -55,8 +55,7 @@ export const MSK12 = (() => {
     worldCap: [maxTier || 1],
     dmg,
   });
-  const others = <T>(list: T[], keep: T, n?: number) =>
-    shuffle(list.filter((x) => x !== keep)).slice(0, n || 2);
+  const others = <T>(list: T[], keep: T, n?: number) => shuffle(list.filter((x) => x !== keep)).slice(0, n || 2);
   const HELP = 'Hol dir Hilfe bei einem Erwachsenen.';
   const minus = (n: number) => (n < 0 ? '−' + -n : String(n));
 
@@ -351,9 +350,7 @@ export const MSK12 = (() => {
     partsSVG(
       FACE,
       opts,
-      (
-        g,
-      ) => `<ellipse cx="100" cy="112" rx="66" ry="80" fill="${SKIN}" ${ln(2.5)}/>
+      (g) => `<ellipse cx="100" cy="112" rx="66" ry="80" fill="${SKIN}" ${ln(2.5)}/>
     ${g('ohr', `<ellipse cx="32" cy="112" rx="11" ry="18" fill="${SKIN}" ${ln(2.2)}/><path d="M34 104 q-6 8 0 16" fill="none" ${ln(1.6)}/><ellipse cx="168" cy="112" rx="11" ry="18" fill="${SKIN}" ${ln(2.2)}/><path d="M166 104 q6 8 0 16" fill="none" ${ln(1.6)}/>`)}
     ${g('kinn', `<path d="M78 180 Q100 194 122 180" fill="none" ${ln(2)}/><ellipse class="hitarea" cx="100" cy="182" rx="30" ry="12" fill="transparent"/>`)}
     ${g('auge', `<ellipse cx="74" cy="100" rx="14" ry="10" fill="#fff" ${ln(2)}/><circle cx="76" cy="100" r="6" fill="#4A7FC9"/><circle cx="76" cy="100" r="2.6" fill="${OUT}"/><ellipse cx="126" cy="100" rx="14" ry="10" fill="#fff" ${ln(2)}/><circle cx="124" cy="100" r="6" fill="#4A7FC9"/><circle cx="124" cy="100" r="2.6" fill="${OUT}"/>`)}
@@ -1100,9 +1097,7 @@ export const MSK12 = (() => {
       ['Es ist 7 Uhr. Wie spät ist es eine Stunde später?', ['8 Uhr', '6 Uhr', 'halb 8']],
       ['Womit siehst du, wie spät es ist?', ['Mit der Uhr', 'Mit dem Lineal', 'Mit dem Thermometer']],
       ['Wo stehen um 12 Uhr beide Zeiger?', ['Beide auf der 12', 'Beide auf der 6', 'Auf 3 und 9']],
-    ]).map((p) =>
-      ['sk1j_uh2', 'sk1j_uh6', 'sk1j_uh7', 'sk1j_uh8'].includes(p.id) ? Object.assign(p, { t: 2 }) : p,
-    ), // „halb“ comes on tier 2
+    ]).map((p) => (['sk1j_uh2', 'sk1j_uh6', 'sk1j_uh7', 'sk1j_uh8'].includes(p.id) ? Object.assign(p, { t: 2 }) : p)), // „halb“ comes on tier 2
     P('sk1j_we', 'wetter', 'wetter', [
       ['Womit misst man, wie warm es ist?', ['Mit dem Thermometer', 'Mit der Uhr', 'Mit der Waage']],
       ['Was fällt im Winter oft vom Himmel?', ['Schnee', 'Blätter', 'Sand']],
@@ -1771,11 +1766,7 @@ export const MSK12 = (() => {
     return out;
   }
   // leaf edge: the outline through pts, every point pushed outward by amp(i, x, y) (teeth, waves)
-  const rim = (
-    pts: number[][],
-    n: number,
-    amp: (i: number, x: number, y: number) => number,
-  ) => {
+  const rim = (pts: number[][], n: number, amp: (i: number, x: number, y: number) => number) => {
     const s = samp(pts, n, true);
     let A = 0;
     s.forEach((p, i) => {
@@ -1801,10 +1792,7 @@ export const MSK12 = (() => {
     let d =
       `M${P(0, 0, 1, 0)}` +
       segs
-        .map(
-          (g) =>
-            (g.length > 2 ? `Q${P(g[0], g[1], 1, 0)} ` : 'L') + P(g[g.length - 2], g[g.length - 1], 1, 0),
-        )
+        .map((g) => (g.length > 2 ? `Q${P(g[0], g[1], 1, 0)} ` : 'L') + P(g[g.length - 2], g[g.length - 1], 1, 0))
         .join('');
     for (let i = segs.length - 1; i >= 0; i--) {
       const g = segs[i];
@@ -3706,16 +3694,18 @@ export const MSK12 = (() => {
   function laborSet() {
     const sol = shuffle(SOLVE)
       .slice(0, 2)
-      .map(([x, l, not]): Experiment => ({
-        kind: 'loesen',
-        topic: 'loesen',
-        q: `Du rührst ${x} in ein Glas Wasser. Löst es sich auf?`,
-        opts: ['Löst sich auf', 'Löst sich nicht'],
-        a: l ? 0 : 1,
-        note: `${x} löst sich ${l ? 'im Wasser auf. Du siehst es nicht mehr, aber es ist noch da.' : not || 'nicht auf. Es sinkt auf den Boden.'}`,
-        pic: glass(x, 'oben'),
-        after: glass(x, l ? 'klar' : 'unten'),
-      }));
+      .map(
+        ([x, l, not]): Experiment => ({
+          kind: 'loesen',
+          topic: 'loesen',
+          q: `Du rührst ${x} in ein Glas Wasser. Löst es sich auf?`,
+          opts: ['Löst sich auf', 'Löst sich nicht'],
+          a: l ? 0 : 1,
+          note: `${x} löst sich ${l ? 'im Wasser auf. Du siehst es nicht mehr, aber es ist noch da.' : not || 'nicht auf. Es sinkt auf den Boden.'}`,
+          pic: glass(x, 'oben'),
+          after: glass(x, l ? 'klar' : 'unten'),
+        }),
+      );
     const li = shuffle(SHINE)
       .slice(0, 2)
       .map(([acc, nom, d]) => ({
@@ -4057,9 +4047,7 @@ export const MSK12 = (() => {
         [-1, 'links'],
       ]);
       const pairs = places.flatMap((a) =>
-        places
-          .filter((b) => b.rc[0] === a.rc[0] && b.rc[1] === a.rc[1] + side[0])
-          .map((b) => [a, b]),
+        places.filter((b) => b.rc[0] === a.rc[0] && b.rc[1] === a.rc[1] + side[0]).map((b) => [a, b]),
       );
       if (!pairs.length) continue;
       const [a, b] = pick(pairs);

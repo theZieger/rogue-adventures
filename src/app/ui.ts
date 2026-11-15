@@ -157,7 +157,7 @@ export const SFX = (() => {
       return null;
     }
   }
-  function play(k) {
+  function play(k: string) {
     const c = ensure();
     if (!c || !buffers[k]) return;
     try {
@@ -176,7 +176,15 @@ export const SFX = (() => {
   };
   for (const k of Object.keys(FILES)) api[k] = () => play(k);
   // short Turmwacht sounds made in code (no files); quiet on purpose, parents hear them too
-  const tone = (c, t, type, f0, f1, dur, vol) => {
+  const tone = (
+    c: { createOscillator: () => any; createGain: () => any; destination: any },
+    t: number,
+    type: string,
+    f0: number,
+    f1: number,
+    dur: number,
+    vol: number,
+  ) => {
     const o = c.createOscillator(),
       g = c.createGain();
     o.type = type;
@@ -190,7 +198,20 @@ export const SFX = (() => {
     o.start(t);
     o.stop(t + dur + 0.03);
   };
-  const hiss = (c, t, dur, vol, freq) => {
+  const hiss = (
+    c: {
+      createBuffer: (arg0: number, arg1: number, arg2: any) => any;
+      sampleRate: number;
+      createBufferSource: () => any;
+      createBiquadFilter: () => any;
+      createGain: () => any;
+      destination: any;
+    },
+    t: any,
+    dur: number,
+    vol: number,
+    freq: number,
+  ) => {
     const b = c.createBuffer(1, Math.ceil(c.sampleRate * dur), c.sampleRate),
       d = b.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length) ** 2;
@@ -207,33 +228,33 @@ export const SFX = (() => {
     s.start(t);
   };
   const SYN = {
-    pop: (c, t) => {
+    pop: (c: any, t: any) => {
       tone(c, t, 'sine', 700, 140, 0.13, 0.22);
       hiss(c, t, 0.08, 0.25, 1800);
     },
-    clink: (c, t, k = 0) => {
+    clink: (c: any, t: number, k = 0) => {
       const f = 1700 * 2 ** (k / 12);
       tone(c, t, 'triangle', f, f * 0.98, 0.09, 0.09);
       tone(c, t + 0.012, 'sine', f * 1.5, f * 1.5, 0.07, 0.05);
     },
-    shatter: (c, t) => {
+    shatter: (c: any, t: number) => {
       hiss(c, t, 0.4, 0.35, 4200);
       [2600, 3300, 2100, 3900].forEach((f, i) => tone(c, t + i * 0.035, 'sine', f, f * 0.9, 0.12, 0.05));
     },
-    bell: (c, t) => {
+    bell: (c: any, t: any) => {
       [
         [660, 0.12],
         [1320, 0.05],
         [1980, 0.03],
       ].forEach(([f, v]) => tone(c, t, 'sine', f, f * 0.995, 1.1, v));
     },
-    shot: (c, t, k = 1) => {
+    shot: (c: any, t: any, k = 1) => {
       tone(c, t, 'triangle', 900 + 150 * k, 320, 0.1, 0.07);
       if (k > 1) tone(c, t, 'sine', 180, 90, 0.12, 0.08);
     },
-    swish: (c, t) => hiss(c, t, 0.16, 0.18, 900),
-    chime: (c, t) => [784, 988, 1175].forEach((f, i) => tone(c, t + i * 0.08, 'sine', f, f, 0.35, 0.07)),
-    thud: (c, t) => {
+    swish: (c: any, t: any) => hiss(c, t, 0.16, 0.18, 900),
+    chime: (c: any, t: number) => [784, 988, 1175].forEach((f, i) => tone(c, t + i * 0.08, 'sine', f, f, 0.35, 0.07)),
+    thud: (c: any, t: any) => {
       tone(c, t, 'sine', 140, 55, 0.22, 0.25);
       hiss(c, t, 0.12, 0.2, 400);
     },
@@ -259,7 +280,7 @@ document.addEventListener(
   true,
 );
 window.__sfx = SFX;
-export function fx(sel, text, cls?) {
+export function fx(sel: string, text: string | null, cls?: string | undefined) {
   const el = $(sel);
   if (!el) return;
   const r = el.getBoundingClientRect();
@@ -281,13 +302,13 @@ live.className = 'sr-only';
 live.setAttribute('aria-live', 'polite');
 live.setAttribute('role', 'status');
 document.body.appendChild(live);
-export function announce(text) {
+export function announce(text: string | null) {
   live.textContent = '';
   setTimeout(() => {
     live.textContent = text;
   }, 50);
 }
-export function topbar(title, extra?) {
+export function topbar(title: string, extra?: string | undefined) {
   return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${state.run && state.run.floor ? `<div class="world">${CFG().worlds > 1 ? `Welt ${state.run.world} · ` : ''}Etage ${state.run.floor}</div>` : ''}</div>`;
 }
 let modals = 0;
@@ -320,7 +341,7 @@ export function modal(html: string | Markup, handlers?: Actions) {
 
 /* ---------- Tutorials ---------- */
 // maths tutorials also serve the Bergwerk's division tasks in other units
-function tutFor(group) {
+function tutFor(group: string) {
   if (group === 'lesen:1') return Object.assign({ icon: READ_MOD.icon }, READ_TUT);
   const [mod, tier] = group.split(':');
   const nt = CFG().numTut;
@@ -330,11 +351,16 @@ function tutFor(group) {
   const M = MODULES_OF()[mod];
   return Object.assign({ icon: M ? M.icon : '📖' }, t);
 }
-export function showTutorial(group, note?, onClose?, auto?) {
+export function showTutorial(
+  group: string,
+  note?: string | null | undefined,
+  onClose?: { (): void; (): void } | null | undefined,
+  auto?: boolean | undefined,
+) {
   const t = tutFor(group);
   const n = note && CFG().notes ? CFG().notes[note] : null;
   const ov = modal(
-    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
+    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:.8">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s: unknown) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:16px;color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l: unknown) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:12px">Verstanden</button>`,
     {
       understood() {
         ov.remove();
@@ -346,7 +372,7 @@ export function showTutorial(group, note?, onClose?, auto?) {
     },
   );
   const letter = /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/,
-    say = (list) => (CFG().noLetters ? list.filter((x) => !letter.test(x)) : list);
+    say = (list: any[]) => (CFG().noLetters ? list.filter((x: string) => !letter.test(x)) : list);
   const steps = () => joined(t.title, ...say(t.steps));
   speakBtn(
     $('h2', ov),
@@ -356,7 +382,10 @@ export function showTutorial(group, note?, onClose?, auto?) {
   );
   $('#tutok', ov).focus({ preventScroll: true });
 }
-export function ensureTutorial(task, then) {
+export function ensureTutorial(
+  task: unknown,
+  then: { (): void; (): void; (): void; (): void; (): void; (): void; (): void; (): void; (): void; (): void },
+) {
   const needGroup = !state.meta.seenTut[tutKey(task.group)];
   const needNote = task.note && !state.meta.seenTut[tutKey('note:' + task.note)];
   if (needGroup || needNote) showTutorial(task.group, task.note, then, true);

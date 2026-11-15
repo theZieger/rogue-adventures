@@ -928,7 +928,7 @@ export const MS2 = (() => {
   };
 
   /* ---------- Sinnestäuschungen: erst vermuten, dann Ergebnis (wie das Forscherlabor) ---------- */
-  const pic = (inner: string, label: string, box?: undefined) =>
+  const pic = (inner: string, label: string, box?: string) =>
     `<svg ${NS} class="pic" viewBox="${box || '0 0 240 150'}" aria-label="${label}"><rect width="${(box || '0 0 240 150').split(' ')[2]}" height="${(box || '0 0 240 150').split(' ')[3]}" rx="10" fill="#fff"/>${inner}</svg>`;
   const guide = (x: number, y1: number, y2: number) =>
     `<path d="M${x} ${y1} L${x} ${y2}" stroke="#E5484D" stroke-width="2" stroke-dasharray="5 4"/>`;
@@ -1481,7 +1481,7 @@ export const MS2 = (() => {
   ];
   // these two both mean „let the others go first“, so neither is a wrong option for the other
   const ALIKE = ['stopp', 'vorfahrtgewaehren'];
-  const signSVG = (id: string | number, opt?: boolean) =>
+  const signSVG = (id: string, opt?: boolean) =>
     `<svg ${NS} class="${opt ? '' : 'pic'}" viewBox="0 0 100 100" ${opt ? '' : 'style="max-width:140px"'} aria-label="Verkehrszeichen">${SIGN_ART[id]}</svg>`;
   function signTask(mod: string, tier: number) {
     const s = pick(SIGNS);

@@ -6,7 +6,7 @@ import { STATS } from './progress.ts';
 import { state } from './state.ts';
 
 /* ---------- Storage ---------- */
-export const hasPart = (slot, id) => ownsPart(state.meta, slot, id);
+export const hasPart = (slot: unknown, id: unknown) => ownsPart(state.meta, slot, id);
 (function migrate() {
   const old = load('mathquest_meta_v1', null);
   if (old && !load(KEY_META, null)) {
@@ -34,9 +34,10 @@ export const gradeTabs = () =>
         )
         .join('')}</div>`;
 // switched off in the parent area; at least two stay on per mode
-export const offList = (m) => (isObj(state.meta.off) && Array.isArray(state.meta.off[m]) ? state.meta.off[m] : []);
+export const offList = (m: string) =>
+  isObj(state.meta.off) && Array.isArray(state.meta.off[m]) ? state.meta.off[m] : [];
 // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
-export const shown = (m) => !state.meta.hidden.includes('mode:' + m);
+export const shown = (m: string) => !state.meta.hidden.includes('mode:' + m);
 export const EXTRAS = {
   garten: ['Schulgarten', 'Beete bepflanzen und ernten.'],
   huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'],
@@ -45,21 +46,21 @@ export const EXTRAS = {
   wochenziele: ['Wochenziele', 'Ziele für jede Woche und der Wochenboss auf der Karte.'],
   markt: ['Kaufladen in Zahlenquest', 'Im Kaufladen Kunden bedienen: Geld abzählen und Rückgeld geben.'],
 };
-export const extraOn = (k) => !state.meta.hidden.includes('extra:' + k);
+export const extraOn = (k: string) => !state.meta.hidden.includes('extra:' + k);
 export const enOff = () => state.meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
-export const heroShown = (m, s) => !state.meta.hidden.includes(`hero:${m}:${s.id}`);
+export const heroShown = (m: string | null, s: { id: any }) => !state.meta.hidden.includes(`hero:${m}:${s.id}`);
 export const visSubjects = () =>
   curGrade()
     .subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) }))
     .filter((sub) => sub.modes.length);
-export const fightMods = (m) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
+export const fightMods = (m: string) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
 // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
-const inWorld = (m, k) => {
+const inWorld = (m: string | number, k: string) => {
   const c = MODES[m].modules[k].worldCap;
   const b = state.run && (state.run.mode === m ? state.run : state.run.mode === 'turm' && state.run.turm.at[m]);
   return c[Math.min(b ? b.world : 1, c.length) - 1] > 0;
 };
-export const enabledMods = (m?) => {
+export const enabledMods = (m?: string | undefined) => {
   m = m || state.mode;
   const all = fightMods(m).filter((k) => inWorld(m, k));
   const on = all.filter((k) => !offList(m).includes(k));
@@ -67,7 +68,7 @@ export const enabledMods = (m?) => {
 };
 // the Kaufladen (node type `markt`) only exists in Zahlenquest, and only while parents leave „Geld“ on
 export const marketOn = () => state.mode === 'math' && !offList('math').includes('geld') && extraOn('markt');
-export const practice = (k) => (STATS()[k] ? STATS()[k].t : 0);
+export const practice = (k: string) => (STATS()[k] ? STATS()[k].t : 0);
 // a saved run is only removed by endRun or a new run, never as a side effect of saving
 export const saveAll = () => {
   save(KEY_META, state.meta);
@@ -80,7 +81,7 @@ export function endRun() {
   }
   save(KEY_META, state.meta);
 }
-export function loadRun(m) {
+export function loadRun(m: string) {
   const r = load(KEY_RUN_FOR(m), null);
   const ok =
     isObj(r) &&
@@ -102,7 +103,7 @@ export function loadRun(m) {
     if (r) clear(KEY_RUN_FOR(m));
     return null;
   }
-  r.map = r.map.map((fl, f, all) =>
+  r.map = r.map.map((fl: any[], f: number, all: string | any[]) =>
     Array.isArray(fl)
       ? fl.map((n, i) =>
           isObj(n)
@@ -110,14 +111,14 @@ export function loadRun(m) {
             : {
                 t: n,
                 c: 1.5 + (i - (fl.length - 1) / 2) * 1.1,
-                n: f < all.length - 1 && Array.isArray(all[f + 1]) ? all[f + 1].map((_, j) => j) : [],
+                n: f < all.length - 1 && Array.isArray(all[f + 1]) ? all[f + 1].map((_: any, j: any) => j) : [],
               },
         )
       : fl,
   );
   if (
     !r.map.every(
-      (fl) =>
+      (fl: any[]) =>
         Array.isArray(fl) &&
         fl.length &&
         fl.every((n) => isObj(n) && NODE_INFO[n.t] && Array.isArray(n.n) && Number.isFinite(n.c)),
@@ -127,8 +128,8 @@ export function loadRun(m) {
     return null;
   }
   if (isObj(r.node) && !NODE_INFO[r.node.type]) r.node = null;
-  r.items = r.items.filter((it) => ITEMS[it]);
-  r.hero.attacks.forEach((a) => {
+  r.items = r.items.filter((it: string | number) => ITEMS[it]);
+  r.hero.attacks.forEach((a: { name: string }) => {
     if (RENAMES[a.name]) a.name = RENAMES[a.name];
   });
   if (isObj(r.node) && isObj(r.node.enemy) && RENAMES[r.node.enemy.name])

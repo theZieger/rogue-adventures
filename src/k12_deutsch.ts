@@ -19,8 +19,7 @@ export const K12D = (() => {
     syl: string;
     svg: string;
   }
-  const others = (arr: string[], not: string[], n: number) =>
-    shuffle(arr.filter((x) => !not.includes(x))).slice(0, n);
+  const others = (arr: string[], not: string[], n: number) => shuffle(arr.filter((x) => !not.includes(x))).slice(0, n);
   const choice = (
     mod: string,
     tier: number,
@@ -75,12 +74,8 @@ export const K12D = (() => {
     `<path d="${d}" fill="none" stroke="${c || O}" stroke-width="${w || 2}"/>`;
   const shine = (x: number, y: number, rx: number, ry: number) =>
     `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="#fff" opacity=".6"/>`;
-  const around = (
-    n: number,
-    cx: number,
-    cy: number,
-    f: (x: number, y: number, a: number) => string,
-  ) => Array.from({ length: n }, (_, i) => f(cx, cy, (i / n) * Math.PI * 2)).join('');
+  const around = (n: number, cx: number, cy: number, f: (x: number, y: number, a: number) => string) =>
+    Array.from({ length: n }, (_, i) => f(cx, cy, (i / n) * Math.PI * 2)).join('');
   const r1 = (v: number) => Math.round(v * 10) / 10;
   const RED = '#E8344A',
     YEL = '#FFD43B',
@@ -383,9 +378,7 @@ export const K12D = (() => {
         line('M32 34 L32 60', O, 5) +
         line('M32 34 L32 60', GRN, 2.5) +
         p('M32 50 Q42 40 50 46 Q42 54 32 50 Z', GRN) +
-        around(6, 32, 22, (x, y, a) =>
-          ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7'),
-        ) +
+        around(6, 32, 22, (x, y, a) => ci(r1(x + Math.cos(a) * 11), r1(y + Math.sin(a) * 11), 8, '#FF8FC7')) +
         ci(32, 22, 6.5, YEL),
     },
     tiger: {
@@ -577,8 +570,7 @@ export const K12D = (() => {
   ];
   // Ei and Bein sound too alike to be wrong answers for each other
   const ALIKE = ['Ei', 'Bein'];
-  const alike = (g: string | string[], h: string | string[]) =>
-    ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
+  const alike = (g: string[], h: string[]) => ALIKE.some((w) => g.includes(w)) && ALIKE.some((w) => h.includes(w));
   const PIC_REIME = [
     ['haus', 'maus'],
     ['fisch', 'tisch'],
@@ -791,11 +783,7 @@ export const K12D = (() => {
           id: 'l1rb_' + id,
           make: (qid) => {
             const partner = pair.find((x) => x !== id)!;
-            const wrong = others(
-              PIC_IDS,
-              PIC_REIME.find((x) => x.includes(id))!,
-              2,
-            );
+            const wrong = others(PIC_IDS, PIC_REIME.find((x) => x.includes(id))!, 2);
             return choice(
               'reim',
               1,
@@ -1386,7 +1374,7 @@ export const K12D = (() => {
     P: ['Papa', 'Pferd', 'Pilz', 'Post', 'Puppe'],
   };
   const abcKey = (w: string) => w.slice(0, 2).toLowerCase();
-  function abcOrder(tier: string | number) {
+  function abcOrder(tier: number) {
     let words;
     if (tier === 2) {
       const g = pick(Object.values(ABC_WORDS).filter((x) => x.length >= 4));
