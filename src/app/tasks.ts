@@ -505,22 +505,23 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
     const pp = (plantOf(task.plant).parts as PlantPart[]).find((p) => p.id === task.part);
     bottom.innerHTML =
       html`<p class="center muted" style="margin:6px 0">Tippe auf ${(MS.PLANTS[task.plant!] && MS.PLANTS[task.plant!].tap) || 'den Teil in der Pflanze'}.</p>${opts.hint && pp ? html`<p class="center hintline">🌉 Tipp: ${pp.tip || `Der Teil ist ${pp.ground === 'unten' ? 'unter' : 'über'} der Erde.`}</p>` : ''}`.text;
+    const tapPart = (g: HTMLElement) => {
+      if (locked) return;
+      const ok = g.dataset.part === task.part;
+      g.classList.add(ok ? 'hit-part' : 'miss-part');
+      if (!ok) {
+        const el = container.querySelector<HTMLElement>('[data-part="' + task.part + '"]');
+        if (el) el.classList.add('reveal');
+      }
+      finish(ok, html`Hier leuchtet jetzt: ${task.answer}`);
+    };
+    on({ taskPart: tapPart });
     container.querySelectorAll<HTMLElement>('[data-part]').forEach((g) => {
       g.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          (g.onclick as () => void)();
+          tapPart(g);
         }
-      };
-      g.onclick = () => {
-        if (locked) return;
-        const ok = g.dataset.part === task.part;
-        g.classList.add(ok ? 'hit-part' : 'miss-part');
-        if (!ok) {
-          const el = container.querySelector<HTMLElement>('[data-part="' + task.part + '"]');
-          if (el) el.classList.add('reveal');
-        }
-        finish(ok, html`Hier leuchtet jetzt: ${task.answer}`);
       };
     });
   } else if (task.kind === 'karte') {
@@ -529,19 +530,20 @@ function runChoiceTask(task: ChoiceTask, opts: TaskOpts, done: TaskDone) {
       html`<div class="task">${head}<div class="question">${task.q}</div>${raw(MS.mapSVG({ start: task.start!, neben: task.neben, scale: task.scale, clickable: true }))}<div id="fb" role="status" aria-live="polite"></div></div>`.text;
     bottom.innerHTML =
       html`<p class="center muted" style="margin:6px 0">Tippe auf das Feld mit dem Schatz.</p>${opts.hint ? html`<p class="center hintline">🌉 Tipp: Norden ist oben, Osten rechts, Süden unten, Westen links.</p>` : ''}`.text;
+    const tapCell = (c: HTMLElement) => {
+      if (locked) return;
+      const ok = c.dataset.cell === goal;
+      c.classList.add(ok ? 'hit' : 'miss');
+      if (!ok) container.querySelector<HTMLElement>(`[data-cell="${goal}"]`)!.classList.add('reveal');
+      finish(ok, html`Der Schatz liegt auf dem gelben Feld.`);
+    };
+    on({ taskCell: tapCell });
     container.querySelectorAll<HTMLElement>('[data-cell]').forEach((c) => {
       c.onkeydown = (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          (c.onclick as () => void)();
+          tapCell(c);
         }
-      };
-      c.onclick = () => {
-        if (locked) return;
-        const ok = c.dataset.cell === goal;
-        c.classList.add(ok ? 'hit' : 'miss');
-        if (!ok) container.querySelector<HTMLElement>(`[data-cell="${goal}"]`)!.classList.add('reveal');
-        finish(ok, html`Der Schatz liegt auf dem gelben Feld.`);
       };
     });
   } else if (task.kind === 'order') {
@@ -634,7 +636,7 @@ function potatoSVG(opts: { step?: number; highlight?: string; clickable?: boolea
   const hl = (id: string) => (opts.highlight === id ? ' glow' : '');
   const g = (id: string, inner: string, cls?: string) =>
     step >= PART_STEP[id]
-      ? `<g data-part="${id}" class="part${hl(id)} ${cls || ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="Pflanzenteil ${Object.keys(PART_STEP).indexOf(id) + 1}"` : ''}>${inner}</g>`
+      ? `<g data-part="${id}" class="part${hl(id)} ${cls || ''}" ${opts.clickable ? `data-action="taskPart" tabindex="0" role="button" aria-label="Pflanzenteil ${Object.keys(PART_STEP).indexOf(id) + 1}"` : ''}>${inner}</g>`
       : '';
   const label = (id: string, x: number, y: number, anchor?: string) =>
     opts.labels && step >= PART_STEP[id]

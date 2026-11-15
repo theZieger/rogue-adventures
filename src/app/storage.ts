@@ -32,9 +32,15 @@ export const gradeTabs = () =>
     : `<div class="grades" role="group" aria-label="Klasse">${grades()
         .map(
           (g) =>
-            `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`,
+            `<button class="gradechip ${g === curGrade() ? 'on' : ''}" data-action="grade" data-grade="${g.grade}" aria-pressed="${g === curGrade()}">${esc(g.label)}</button>`,
         )
         .join('')}</div>`;
+// a tap on a grade chip: the grade is saved and the screen that showed the chips is drawn again
+export function chooseGrade(chip: HTMLElement, redraw: () => void) {
+  state.meta.grade = +chip.dataset.grade!;
+  saveAll();
+  redraw();
+}
 // switched off in the parent area; at least two stay on per mode
 export const offList = (m: string) =>
   isObj(state.meta.off) && Array.isArray(state.meta.off[m]) ? state.meta.off[m] : [];

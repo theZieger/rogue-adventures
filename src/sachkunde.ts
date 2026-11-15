@@ -95,7 +95,7 @@ export const MS = (() => {
     const step = opts.step || 99;
     const g: PartGroup = (id, inner) =>
       step >= (P.stepOf[id] || 1) && opts.omit !== id
-        ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p) => p.id === id) + 1}"` : ''}>${inner}</g>`
+        ? `<g data-part="${id}" class="part${opts.highlight === id ? ' glow' : ''}" ${opts.clickable ? `data-action="taskPart" tabindex="0" role="button" aria-label="${P.label} Teil ${P.parts.findIndex((p) => p.id === id) + 1}"` : ''}>${inner}</g>`
         : '';
     // optional fifth entry: the point a thin leader line runs to
     const lab = opts.labels
@@ -2297,7 +2297,7 @@ export const MS = (() => {
     let cells = '';
     for (let r = 0; r < SIZE; r++)
       for (let c = 0; c < SIZE; c++)
-        cells += `<rect class="cell" data-cell="${r}-${c}" x="${X0 + c * C}" y="${Y0 + r * C}" width="${C}" height="${C}" ${o.clickable ? `tabindex="0" role="button" aria-label="Feld in Zeile ${r + 1}, Spalte ${c + 1}"` : ''}/>`;
+        cells += `<rect class="cell" data-cell="${r}-${c}" x="${X0 + c * C}" y="${Y0 + r * C}" width="${C}" height="${C}" ${o.clickable ? `data-action="taskCell" tabindex="0" role="button" aria-label="Feld in Zeile ${r + 1}, Spalte ${c + 1}"` : ''}/>`;
     const at = ([r, c]: number[]) => [X0 + c * C + C / 2, Y0 + r * C + C / 2];
     const [sx, sy] = at(o.start);
     const tent = `<path d="M${sx - 15} ${sy + 12} L${sx} ${sy - 14} L${sx + 15} ${sy + 12} Z" fill="#2E7D32" stroke="${STROKE}" stroke-width="2"/><path d="M${sx} ${sy - 14} L${sx - 5} ${sy + 12} L${sx + 5} ${sy + 12} Z" fill="#1B4D1E"/>`;

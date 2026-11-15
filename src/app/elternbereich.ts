@@ -13,6 +13,7 @@ import { screenFeedback } from './feedback.ts';
 import { type Attack, REWARDS, goalText } from './progress.ts';
 import { state } from './state.ts';
 import {
+  chooseGrade,
   EXTRAS,
   curGrade,
   enOff,
@@ -821,12 +822,5 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
     sc.scrollTop = el.offsetTop - sc.offsetTop - 8;
     $('#pcodein').focus({ preventScroll: true });
   }
-  // the grade chips come from another file as finished markup without actions
-  app.querySelectorAll<HTMLElement>('[data-grade]').forEach((b) => {
-    b.onclick = () => {
-      state.meta.grade = +b.dataset.grade!;
-      saveAll();
-      again();
-    };
-  });
+  on({ grade: (chip) => chooseGrade(chip, again) });
 }

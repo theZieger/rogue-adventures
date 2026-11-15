@@ -11,10 +11,10 @@ import { screenHut } from './huette.ts';
 import { resumeRun, screenStarter } from './map.ts';
 import { type WeeklyGoal, goalDone, goalText, heroAttacks, showWeeklyNews, weekly, weeklyGoals } from './progress.ts';
 import { state } from './state.ts';
-import { curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.ts';
+import { chooseGrade, curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.ts';
 import { screenTurm } from './turm_screens.ts';
 import { TW_FLAG, loadTurm, turmOn } from './turm.ts';
-import { SFX, modal, screen, topbar } from './ui.ts';
+import { SFX, modal, on, screen, topbar } from './ui.ts';
 
 /* ---------- Screens ---------- */
 const GEAR = raw(
@@ -109,16 +109,7 @@ export function screenTitle() {
       weekly: screenWeekly,
     },
   );
-  // the garden card and the grade chips come from other files as finished markup without actions
-  const harvest = $('#harvest');
-  if (harvest) harvest.onclick = screenGarden;
-  app.querySelectorAll<HTMLElement>('[data-grade]').forEach((b) => {
-    b.onclick = () => {
-      state.meta.grade = +b.dataset.grade!;
-      saveAll();
-      screenTitle();
-    };
-  });
+  on({ harvest: screenGarden, grade: (chip) => chooseGrade(chip, screenTitle) });
   showWeeklyNews();
 }
 type SubjectTile = ReturnType<typeof visSubjects>[number];
@@ -247,13 +238,7 @@ function screenSetup() {
       },
     },
   );
-  app.querySelectorAll<HTMLElement>('[data-grade]').forEach((b) => {
-    b.onclick = () => {
-      state.meta.grade = +b.dataset.grade!;
-      saveAll();
-      screenSetup();
-    };
-  });
+  on({ grade: (chip) => chooseGrade(chip, screenSetup) });
 }
 // a parental gate, not encryption: four digits are guessed quickly anyway, the hash only keeps the PIN out of plain sight
 const pinHash = (p: string) => {

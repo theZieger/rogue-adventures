@@ -27,7 +27,7 @@ export function gardenCard() {
   const r = ripeBeds();
   if (!r.length) return '';
   const crops = [...new Set(r.map((b) => b.crop!))];
-  return `<div class="card gardencard"><p>${crops.length === 1 ? MK.CROPS[crops[0] as Crop].ripe : 'Im Schulgarten ist etwas reif.'}</p><button class="btn small" id="harvest">Ernten</button></div>`;
+  return `<div class="card gardencard"><p>${crops.length === 1 ? MK.CROPS[crops[0] as Crop].ripe : 'Im Schulgarten ist etwas reif.'}</p><button class="btn small" id="harvest" data-action="harvest">Ernten</button></div>`;
 }
 const PG_DEFS = `<defs>${lg('pg-soil', '#9A6640', '#6B4226')}${lg('pg-bd', '#C68B55', '#8A5530')}${lg('pg-lv', '#8DD16A', '#3E9640')}${lg('pg-dry', '#E6CE70', '#A8892E')}${rg('pg-tb', '#F3D48E', '#B88843')}</defs>`;
 const gLeaf = (x: number, y: number, rx: number, ry: number, a: number, f: string) =>
