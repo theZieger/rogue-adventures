@@ -21,20 +21,7 @@ test('starts and runs a fight offline, and never asks another server', () =>
     assert.deepStrictEqual(foreign, []);
   }));
 
-// Found when the check was introduced and not fixed yet. Remove a line when it is fixed; never add one.
-const KNOWN_PROBLEMS = [
-  'battle-tutorial: aria-dialog-name',
-  'battle: aria-prohibited-attr',
-  'battle: label-content-name-mismatch',
-  'task-tutorial: aria-dialog-name',
-  'dex: scrollable-region-focusable',
-  'news: color-contrast',
-  'news: scrollable-region-focusable',
-  'feedback: color-contrast',
-  'parents-reset: color-contrast',
-];
-
-test('no screen has a new serious accessibility problem', () =>
+test('no screen has a serious accessibility problem', () =>
   withApp(async (newPage) => {
     const problems = [];
     for (const [name, taps] of Object.entries(SCREENS)) {
@@ -48,5 +35,5 @@ test('no screen has a new serious accessibility problem', () =>
       }
       await page.context().close();
     }
-    assert.deepStrictEqual(problems.sort(), [...KNOWN_PROBLEMS].sort());
+    assert.deepStrictEqual(problems, []);
   }));

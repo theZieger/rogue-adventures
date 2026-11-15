@@ -6,6 +6,8 @@ function render(html, quiet) {
   backTo = null;
   if (window.speechSynthesis) speechSynthesis.cancel();
   app.innerHTML = html;
+  // a list with nothing to tab to must take the keyboard itself, or it cannot be scrolled without touch
+  for (const list of app.querySelectorAll('.scroll')) if (!$('button, a, input, [tabindex]', list)) list.tabIndex = 0;
   if (!quiet && app.firstElementChild) app.firstElementChild.classList.add('enter');
   syncHistory();
 }
@@ -248,10 +250,16 @@ function announce(text) {
 function topbar(title, extra) {
   return `<div class="topbar"><div class="title">${title}</div>${extra || ''}${run && run.floor ? `<div class="world">${CFG().worlds > 1 ? `Welt ${run.world} · ` : ''}Etage ${run.floor}</div>` : ''}</div>`;
 }
+let modals = 0;
 function modal(html) {
   const ov = document.createElement('div');
   ov.className = 'overlay';
   ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+  const heading = $('h2, h3', ov);
+  if (heading) {
+    heading.id = `modal-title-${++modals}`;
+    ov.firstElementChild.setAttribute('aria-labelledby', heading.id);
+  } else ov.firstElementChild.setAttribute('aria-label', 'Hinweis');
   const behind = [...app.children];
   behind.forEach((el) => {
     el.inert = true;
