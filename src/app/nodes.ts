@@ -3,8 +3,9 @@ import { MQ } from '../logic.ts';
 import { MONART } from '../monsters.ts';
 import { MS } from '../sachkunde.ts';
 import { TOP, isObj } from '../save.ts';
+import { type Markup, html, raw } from '../ui/html.ts';
 import { LOOT } from './battle.ts';
-import { $, CFG, ITEMS, MODULES_OF, TYPES, app, esc, euro, pick, shuffle } from './core.ts';
+import { $, CFG, ITEMS, MODULES_OF, TYPES, esc, euro, pick, shuffle } from './core.ts';
 import { partOf } from './huette.ts';
 import { NODE_INFO, advance, nodeDone } from './map.ts';
 import {
@@ -25,7 +26,7 @@ import {
 import { state } from './state.ts';
 import { enabledMods, extraOn, marketOn, saveAll } from './storage.ts';
 import { INK, POTATO, joined, lg, ln, plain, plantOf, rg, runTask, shadow, speakBtn } from './tasks.ts';
-import { SFX, ensureTutorial, render, showTutorial, topbar } from './ui.ts';
+import { SFX, ensureTutorial, screen, showTutorial, topbar } from './ui.ts';
 
 /* ---------- Event ---------- */
 export function screenEvent(resumeOpt?) {
@@ -40,8 +41,9 @@ export function screenEvent(resumeOpt?) {
     saveAll();
   }
   const ev = state.run.node ? EV[state.run.node.ev] : EV[pick(ids)];
-  render(
-    `<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card"><h2>${esc(ev.title)}</h2><p style="font-size:20px">${esc(ev.text)}</p>${ev.dilemma ? '<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>' : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => `<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-i="${i}">${esc(o.label)}</button>`).join('')}</div></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar('❓ Ereignis'))}<div class="scroll"><div class="card"><h2>${ev.title}</h2><p style="font-size:20px">${ev.text}</p>${ev.dilemma ? html`<p><b>Was würdest du tun?</b> Hier gibt es kein Richtig oder Falsch.</p>` : ''}</div></div><div class="bottom"><div class="stack">${ev.opts.map((o, i) => html`<button class="btn ${i || ev.dilemma ? 'secondary' : ''}" data-action="choose" data-i="${i}">${o.label}</button>`)}</div></div></div>`,
+    { choose: (button) => runOpt(+button.dataset.i!) },
   );
   const runOpt = (i) => {
     const o = ev.opts[i];
@@ -58,8 +60,9 @@ export function screenEvent(resumeOpt?) {
     const mod =
       o.task === 'geld' ? 'geld' : o.task === 'any' || !enabledMods().includes(o.task) ? pick(enabledMods()) : o.task;
     const t = makeTask(mod, taskTier(mod), { g: o.g });
-    render(
-      `<div class="screen">${topbar('❓ ' + esc(ev.title))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+    screen(
+      html`<div class="screen">${raw(topbar('❓ ' + esc(ev.title)))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+      {},
     );
     let won = false;
     ensureTutorial(t, () =>
@@ -82,9 +85,6 @@ export function screenEvent(resumeOpt?) {
   speakBtn($('.card'), 'afterbegin', () =>
     joined(ev.title, ev.text, ev.dilemma && 'Was würdest du tun?', ...ev.opts.map((o) => o.label)),
   );
-  app.querySelectorAll<HTMLElement>('.bottom .btn').forEach((btn) => {
-    btn.onclick = () => runOpt(+btn.dataset.i!);
-  });
 }
 function applyEffect(eff) {
   const lines: any[] = [];
@@ -123,13 +123,13 @@ function applyEffect(eff) {
 }
 function showEffect(title, opt?) {
   const lines = (state.run.node && state.run.node.lines) || [];
-  render(
-    `<div class="screen">${topbar('❓ Ereignis')}<div class="scroll"><div class="card center"><h2>${esc(title)}</h2>${opt && opt.then ? `<p>${esc(opt.then)}</p><p><b>Denk mal nach:</b> ${esc(opt.think)}</p>` : ''}${lines.map((l) => `<p>${l}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar('❓ Ereignis'))}<div class="scroll"><div class="card center"><h2>${title}</h2>${opt && opt.then ? html`<p>${opt.then}</p><p><b>Denk mal nach:</b> ${opt.think}</p>` : ''}${lines.map((l) => html`<p>${raw(l)}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+    { next: advance },
   );
   speakBtn($('.card'), 'afterbegin', () =>
     joined(title, opt && opt.then, opt && opt.then && 'Denk mal nach: ' + opt.think, ...lines.map(plain)),
   );
-  $('#next').onclick = advance;
 }
 
 /* ---------- Rest ---------- */
@@ -138,29 +138,34 @@ export function screenRest() {
   const s = STATS()[weak];
   const acc = s.t ? Math.round((s.c / s.t) * 100) : null;
   const MODULES = MODULES_OF();
-  render(`<div class="screen">${topbar('🔥 Rast')}<div class="scroll"><div class="card center"><h2>Am Lagerfeuer</h2>${heroSVG(heroSpec(), state.run.hero.evo)}<p>❤️ ${state.run.hero.hp} / ${state.run.hero.maxHp}</p></div></div>
-      <div class="bottom"><div class="stack"><button class="btn" id="heal">Ausruhen: +${Math.round(state.run.hero.maxHp * 0.4)} LP</button><button class="btn secondary" id="train">Training: ${MODULES[weak].icon} ${MODULES[weak].name}${acc !== null ? ` (${acc} % richtig)` : ''} – 3 Aufgaben, kein Risiko, +XP</button></div></div></div>`);
-  $('#heal').onclick = () => {
-    heal(Math.round(state.run.hero.maxHp * 0.4));
-    saveAll();
-    advance();
-  };
-  $('#train').onclick = () => training(weak, 3, 0);
+  screen(
+    html`<div class="screen">${raw(topbar('🔥 Rast'))}<div class="scroll"><div class="card center"><h2>Am Lagerfeuer</h2>${raw(heroSVG(heroSpec(), state.run.hero.evo))}<p>❤️ ${state.run.hero.hp} / ${state.run.hero.maxHp}</p></div></div>
+      <div class="bottom"><div class="stack"><button class="btn" id="heal" data-action="rest">Ausruhen: +${Math.round(state.run.hero.maxHp * 0.4)} LP</button><button class="btn secondary" id="train" data-action="train">Training: ${MODULES[weak].icon} ${MODULES[weak].name}${acc !== null ? ` (${acc} % richtig)` : ''} – 3 Aufgaben, kein Risiko, +XP</button></div></div></div>`,
+    {
+      rest: () => {
+        heal(Math.round(state.run.hero.maxHp * 0.4));
+        saveAll();
+        advance();
+      },
+      train: () => training(weak, 3, 0),
+    },
+  );
 }
 function training(mod, total, done) {
   if (done >= total) {
     const m = gainXp(15);
     nodeDone();
     saveAll();
-    render(
-      `<div class="screen">${topbar('🔥 Training')}<div class="scroll"><div class="card center"><h2>Training beendet</h2><p>⭐ +15 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`,
+    screen(
+      html`<div class="screen">${raw(topbar('🔥 Training'))}<div class="scroll"><div class="card center"><h2>Training beendet</h2><p>⭐ +15 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:800">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+      { next: advance },
     );
-    $('#next').onclick = advance;
     return;
   }
   const t = makeTask(mod, taskTier(mod));
-  render(
-    `<div class="screen">${topbar(`🔥 Training ${done + 1} / ${total}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar(`🔥 Training ${done + 1} / ${total}`))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+    {},
   );
   const s = STATS()[mod];
   const low = s.t >= 3 && s.c / s.t < 0.6;
@@ -233,51 +238,47 @@ export function screenTreasure(kind?) {
   const opts: Loot[] = elite
     ? [itemOpt(i1), itemOpt(i2), atkOpt || maxhp]
     : [itemOpt(i1), maxhp, atkOpt || itemOpt(i2)];
-  render(
-    `<div class="screen">${topbar(elite ? '💀 Beute' : '🎁 Schatz')}<div class="scroll"><p class="center">${elite ? `${state.run.node && state.run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${found ? `<div class="card center">${MONART.topSVG(TYPES[heroSpec().type].color, Object.assign({}, state.meta.top, { [found.slot]: found.id }))}<p>In der Truhe liegt noch etwas für deinen Kreisel: <b>${found.name}</b>. Einbauen kannst du es im Stempelheft.</p></div>` : ''}${opts.map((o, i) => `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`).join('')}</div></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar(elite ? '💀 Beute' : '🎁 Schatz'))}<div class="scroll"><p class="center">${elite ? `${state.run.node && state.run.node.type === 'weekboss' ? 'Der Wochenboss' : 'Der Elitegegner'} hat etwas dagelassen. Wähle eine Belohnung:` : 'Du findest eine Truhe. Wähle eine Belohnung:'}</p><div class="stack">${found ? html`<div class="card center">${raw(MONART.topSVG(TYPES[heroSpec().type].color, Object.assign({}, state.meta.top, { [found.slot]: found.id })))}<p>In der Truhe liegt noch etwas für deinen Kreisel: <b>${found.name}</b>. Einbauen kannst du es im Stempelheft.</p></div>` : ''}${opts.map((o, i) => html`<button class="choice" data-action="take" data-i="${i}"><div class="meta"><div class="name">${o.label}</div><div class="desc">${o.desc}</div></div></button>`)}</div></div></div>`,
+    {
+      take: (choice) => {
+        const o = opts[+choice.dataset.i!];
+        if (o.k === 'item') state.run.items.push(o.item);
+        if (o.k === 'maxhp') {
+          state.run.hero.maxHp += 10;
+          heal(10);
+        }
+        if (o.k === 'atk') {
+          chooseSlot(o.mod);
+          return;
+        }
+        saveAll();
+        advance();
+      },
+    },
   );
-  app.querySelectorAll<HTMLElement>('.choice').forEach((b) => {
-    b.onclick = () => {
-      const o = opts[+b.dataset.i!];
-      if (o.k === 'item') state.run.items.push(o.item);
-      if (o.k === 'maxhp') {
-        state.run.hero.maxHp += 10;
-        heal(10);
-      }
-      if (o.k === 'atk') {
-        chooseSlot(o.mod);
-        return;
-      }
-      saveAll();
-      advance();
-    };
-  });
 }
 function chooseSlot(mod) {
   const MODULES = MODULES_OF();
   const EXTRA_ATTACKS = CFG().extra;
-  render(
-    `<div class="screen">${topbar('🎁 Neue Attacke')}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks()
-      .map(
-        (a, i) =>
-          `<button class="choice" data-i="${i}"><div class="meta"><div class="name">${esc(a.name)}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`,
-      )
-      .join(
-        '',
-      )}<button class="btn ghost" id="skip">Doch lieber behalten – dafür gibt es einen 🧪 Trank</button></div></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar('🎁 Neue Attacke'))}<div class="scroll"><p class="center">Welche Attacke soll ${EXTRA_ATTACKS[mod]} ersetzen?</p><div class="stack">${heroAttacks().map(
+      (a, i) =>
+        html`<button class="choice" data-action="replace" data-i="${i}"><div class="meta"><div class="name">${a.name}</div><div class="desc">${MODULES[a.mod].icon} ${MODULES[a.mod].name} · Platz ${i + 1}</div></div></button>`,
+    )}<button class="btn ghost" id="skip" data-action="keep">Doch lieber behalten – dafür gibt es einen 🧪 Trank</button></div></div></div>`,
+    {
+      replace: (choice) => {
+        state.run.hero.attacks[+choice.dataset.i!] = { name: EXTRA_ATTACKS[mod], mod };
+        saveAll();
+        advance();
+      },
+      keep: () => {
+        state.run.items.push('trank');
+        saveAll();
+        advance();
+      },
+    },
   );
-  app.querySelectorAll<HTMLElement>('.choice').forEach((b) => {
-    b.onclick = () => {
-      state.run.hero.attacks[+b.dataset.i!] = { name: EXTRA_ATTACKS[mod], mod };
-      saveAll();
-      advance();
-    };
-  });
-  $('#skip').onclick = () => {
-    state.run.items.push('trank');
-    saveAll();
-    advance();
-  };
 }
 
 /* ---------- Bergwerk ---------- */
@@ -312,33 +313,35 @@ export function screenMine() {
   if (isObj(mn.task) && isObj(mn.task.t)) return mineTask(mn);
   const left = MINE_PICKS - mn.got.length;
   const haul = (k) => mn.got.filter((x) => x === k).length;
-  render(`<div class="screen">${topbar('⛏️ Bergwerk')}<div class="scroll"><div class="card"><p style="margin-top:0">Schlag ${MINE_PICKS} Blöcke auf. In jedem steckt eine Aufgabe zum Teilen mit Rest. Geht sie ohne Rest auf, findest du Erz, sonst Stein.</p>
-      <div class="mine">${mn.cells.map((k, i) => `<button class="mblock ${k ? 'open' : 'covered'}" data-i="${i}" ${k || !left ? 'disabled' : ''} aria-label="${k ? MINE_LABEL[k] : 'Block ' + (i + 1)}">${blockSVG(k)}${k ? `<small>${MINE_LABEL[k]}</small>` : ''}</button>`).join('')}</div>
-      <p class="center">${left ? `Noch ${left} ${left === 1 ? 'Block' : 'Blöcke'}.` : `Ausbeute: ${haul('erz')} Erz, ${haul('stein')} Stein.`}</p>${!left && mn.disc ? '<p class="center"><b>Aus deinem ersten Erz wird eine Eisenscheibe für den Kreisel.</b></p>' : ''}
+  screen(
+    html`<div class="screen">${raw(topbar('⛏️ Bergwerk'))}<div class="scroll"><div class="card"><p style="margin-top:0">Schlag ${MINE_PICKS} Blöcke auf. In jedem steckt eine Aufgabe zum Teilen mit Rest. Geht sie ohne Rest auf, findest du Erz, sonst Stein.</p>
+      <div class="mine">${mn.cells.map((k, i) => html`<button class="mblock ${k ? 'open' : 'covered'}" data-i="${i}" ${k || !left ? 'disabled' : raw('data-action="dig"')} aria-label="${k ? MINE_LABEL[k] : 'Block ' + (i + 1)}">${raw(blockSVG(k))}${k ? html`<small>${MINE_LABEL[k]}</small>` : ''}</button>`)}</div>
+      <p class="center">${left ? `Noch ${left} ${left === 1 ? 'Block' : 'Blöcke'}.` : `Ausbeute: ${haul('erz')} Erz, ${haul('stein')} Stein.`}</p>${!left && mn.disc ? html`<p class="center"><b>Aus deinem ersten Erz wird eine Eisenscheibe für den Kreisel.</b></p>` : ''}
       <p class="center muted" style="color:var(--ink-soft)">Im Lager: ${state.meta.materials.erz || 0} Erz, ${state.meta.materials.stein || 0} Stein</p></div></div>
-      <div class="bottom">${left ? '<p class="center muted" style="margin:6px 0">Tippe auf einen Block.</p>' : '<button class="btn" id="next">Weiter</button>'}</div></div>`);
-  app.querySelectorAll<HTMLElement>('.mblock.covered:not([disabled])').forEach((b) => {
-    b.onclick = () => {
-      const zero = Math.random() < 0.4;
-      const t = MQ.generate('rest', state.mode === 'math' ? tierFor('rest') : Math.min(2, state.run.world), { zero });
-      t.kind = 'num';
-      t.group = 'rest:' + t.tier;
-      mn.task = { i: +b.dataset.i!, t };
-      saveAll();
-      mineTask(mn);
-    };
-  });
-  if (!left)
-    $('#next').onclick = () => {
-      nodeDone();
-      saveAll();
-      advance();
-    };
+      <div class="bottom">${left ? html`<p class="center muted" style="margin:6px 0">Tippe auf einen Block.</p>` : html`<button class="btn" id="next" data-action="next">Weiter</button>`}</div></div>`,
+    {
+      dig: (block) => {
+        const zero = Math.random() < 0.4;
+        const t = MQ.generate('rest', state.mode === 'math' ? tierFor('rest') : Math.min(2, state.run.world), { zero });
+        t.kind = 'num';
+        t.group = 'rest:' + t.tier;
+        mn.task = { i: +block.dataset.i!, t };
+        saveAll();
+        mineTask(mn);
+      },
+      next: () => {
+        nodeDone();
+        saveAll();
+        advance();
+      },
+    },
+  );
 }
 function mineTask(mn) {
   const { i, t } = mn.task;
-  render(
-    `<div class="screen">${topbar(`⛏️ Block ${mn.got.length + 1} / ${MINE_PICKS}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar(`⛏️ Block ${mn.got.length + 1} / ${MINE_PICKS}`))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+    {},
   );
   ensureTutorial(t, () =>
     runTask(
@@ -403,8 +406,8 @@ const STALL = `<svg class="stall" viewBox="0 0 220 120" aria-hidden="true"><defs
     <rect x="14" y="82" width="192" height="7" rx="3" fill="#DDA86B" ${ln(2.5)}/><path d="M18 84h184" stroke="#F2CE98" stroke-width="1.2" stroke-linecap="round"/><rect x="18" y="89" width="184" height="25" rx="3" fill="url(#ms-w)" ${ln(3)}/>${[48, 79, 110, 141, 172].map((x) => `<path d="M${x} 90v23" stroke="#6E4526" stroke-width="1.6"/>`).join('')}<path d="M24 97q10-2 18 0M56 104q12 2 18-1M90 96q10 1 16-1M118 106q12-2 18 0M150 98q10 2 16 0M180 105q10-2 18 0" stroke="#7A4A26" stroke-width="1" fill="none" opacity=".55"/>
     ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${14 + i * 32} 12L${24 + i * 28.7} 3H${24 + (i + 1) * 28.7}L${14 + (i + 1) * 32} 12z" fill="url(#ms-${i % 2 ? 'c' : 'r'})" ${ln(2.2)}/>`).join('')}
     ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${14 + i * 32} 12h32v18a16 9 0 0 1-32 0z" fill="url(#ms-${i % 2 ? 'c' : 'r'})" ${ln(2.5)}/><path d="M${18 + i * 32} 15v13" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".35"/>`).join('')}<path d="M14 12h192" fill="none" ${ln(3)}/></svg>`;
-const coinBtn = (v, attr) =>
-  `<button class="coin ${v >= 500 ? 'note n' + v : v >= 100 ? 'euro' : v >= 10 ? 'brass' : 'copper'}" ${attr} aria-label="${euro(v)}">${euro(v)}</button>`;
+const coinBtn = (v: number, attr: Markup) =>
+  html`<button class="coin ${v >= 500 ? 'note n' + v : v >= 100 ? 'euro' : v >= 10 ? 'brass' : 'copper'}" ${attr} aria-label="${euro(v)}">${euro(v)}</button>`;
 // Kaufladen: the child serves three customers (world 1: count out the price, later: give the change) and gets a
 // thank-you item. Nobody owns money here; adventures saved with the old market (node.offers, run.coins) open this one.
 export function screenMarket(msg?) {
@@ -425,86 +428,87 @@ export function screenMarket(msg?) {
   if (!Number.isInteger(n.tries)) n.tries = 0;
   state.run.tiers.geld = tier;
   saveAll();
-  const seller = (t) =>
-    `<div class="card seller">${STALL}<div class="row"><p class="say" id="say" role="status">${esc(t)}</p><button class="tut" type="button" id="mtut" aria-label="Erklärung anzeigen">🛈</button></div></div>`;
+  const seller = (t: string) =>
+    html`<div class="card seller">${raw(STALL)}<div class="row"><p class="say" id="say" role="status">${t}</p><button class="tut" type="button" id="mtut" data-action="explain" aria-label="Erklärung anzeigen">🛈</button></div></div>`;
+  const explain = () => showTutorial('geld:' + tier);
   if (n.i >= 3) {
-    render(`<div class="screen market">${topbar('🧺 Kaufladen')}<div class="scroll"><div class="stack">${seller('Danke für deine Hilfe! Such dir zum Dank etwas aus.')}
-        ${n.gifts.map((id, i) => `<button class="choice offer" data-i="${i}"><span class="ic" aria-hidden="true">${ITEMS[id].icon}</span><div class="meta"><div class="name">${ITEMS[id].name}</div><div class="desc">${esc(ITEMS[id].desc)}</div></div></button>`).join('')}</div></div></div>`);
-    $('#mtut').onclick = () => showTutorial('geld:' + tier);
-    app.querySelectorAll<HTMLElement>('.offer').forEach((b) => {
-      b.onclick = () => {
-        state.run.items.push(n.gifts[+b.dataset.i!]);
-        nodeDone();
-        saveAll();
-        advance();
-      };
-    });
+    screen(
+      html`<div class="screen market">${raw(topbar('🧺 Kaufladen'))}<div class="scroll"><div class="stack">${seller('Danke für deine Hilfe! Such dir zum Dank etwas aus.')}
+        ${n.gifts.map((id, i) => html`<button class="choice offer" data-action="gift" data-i="${i}"><span class="ic" aria-hidden="true">${ITEMS[id].icon}</span><div class="meta"><div class="name">${ITEMS[id].name}</div><div class="desc">${ITEMS[id].desc}</div></div></button>`)}</div></div></div>`,
+      {
+        explain,
+        gift: (offer) => {
+          state.run.items.push(n.gifts[+offer.dataset.i!]);
+          nodeDone();
+          saveAll();
+          advance();
+        },
+      },
+    );
     return;
   }
   const c = n.cust[n.i];
   const paid = tier === 2 && c.paid > c.price ? c.paid : 0;
   const want = paid ? paid - c.price : c.price;
   const kinds = MQ.COINS.concat(state.run.world >= 3 ? [1000, 500] : []).sort((a, b) => b - a);
-  const counter: any[] = [];
+  const counter: number[] = [];
   const sum = () => counter.reduce((a, b) => a + b, 0);
   const hello = paid
     ? 'Heute ist viel los. Hilfst du mir an der Kasse? Gib jedem Kunden das Rückgeld.'
     : 'Heute ist viel los. Hilfst du mir? Zähle für jeden Kunden das Geld passend ab.';
-  render(`<div class="screen market" data-want="${want}">${topbar('🧺 Kaufladen')}<div class="scroll"><div class="stack">${seller(msg || hello)}
-      <div class="card till"><div class="lbl">Kunde ${n.i + 1} von 3</div><p class="cust">${esc(c.who)} kauft ${esc(c.ware)} für <b>${euro(c.price)}</b>${paid ? ` und bezahlt mit <b>${euro(paid)}</b>. Lege das Rückgeld hin.` : `. Zähle ${euro(c.price)} passend ab.`}</p>
-      <div class="lbl">Ladentisch</div><div class="counter" id="counter"></div><div class="lbl">${paid ? 'Kasse' : 'Münzen'}</div><div class="coins">${kinds.map((v) => coinBtn(v, `data-v="${v}"`)).join('')}</div></div>
-      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="leave">Weitergehen</button><button class="btn" id="pay" disabled>✓ Prüfen</button></div></div></div>`);
   const paint = () => {
     $('#counter').innerHTML = counter.length
-      ? counter.map((v, j) => coinBtn(v, `data-j="${j}"`)).join('')
+      ? counter.map((v, j) => coinBtn(v, html`data-action="take" data-j="${j}"`)).join('')
       : '<span class="muted">Tippe auf Münzen, um sie hinzulegen.</span>';
     $<HTMLButtonElement>('#pay').disabled = !counter.length;
-    $('#counter')
-      .querySelectorAll<HTMLElement>('.coin')
-      .forEach((b) => {
-        b.onclick = () => {
-          counter.splice(+b.dataset.j!, 1);
-          paint();
-        };
-      });
   };
+  screen(
+    html`<div class="screen market" data-want="${want}">${raw(topbar('🧺 Kaufladen'))}<div class="scroll"><div class="stack">${seller(msg || hello)}
+      <div class="card till"><div class="lbl">Kunde ${n.i + 1} von 3</div><p class="cust">${c.who} kauft ${c.ware} für <b>${euro(c.price)}</b>${paid ? html` und bezahlt mit <b>${euro(paid)}</b>. Lege das Rückgeld hin.` : `. Zähle ${euro(c.price)} passend ab.`}</p>
+      <div class="lbl">Ladentisch</div><div class="counter" id="counter"></div><div class="lbl">${paid ? 'Kasse' : 'Münzen'}</div><div class="coins">${kinds.map((v) => coinBtn(v, html`data-action="put" data-v="${v}"`))}</div></div>
+      </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="leave" data-action="leave">Weitergehen</button><button class="btn" id="pay" data-action="check" disabled>✓ Prüfen</button></div></div></div>`,
+    {
+      explain,
+      put: (coin) => {
+        counter.push(+coin.dataset.v!);
+        paint();
+      },
+      take: (coin) => {
+        counter.splice(+coin.dataset.j!, 1);
+        paint();
+      },
+      leave: () => {
+        nodeDone();
+        saveAll();
+        advance();
+      },
+      check: () => {
+        const ok = sum() === want;
+        // only the first try for a customer counts in the statistics: after a miss the answer is as good as given
+        if (!n.tries) recordAnswer('geld', ok);
+        if (ok) {
+          n.i++;
+          n.tries = 0;
+          saveAll();
+          return screenMarket(n.i < 3 ? 'Stimmt genau, danke! Da kommt schon der Nächste.' : '');
+        }
+        n.tries++;
+        saveAll();
+        const was = `Das sind ${euro(sum())}. `;
+        counter.length = 0;
+        paint();
+        $('#say').textContent =
+          was +
+          (!paid
+            ? `Gebraucht werden ${euro(c.price)}. Versuch es noch einmal.`
+            : n.tries === 1
+              ? `Prüfe mit Plus: ${euro(c.price)} und das Rückgeld sind zusammen ${euro(paid)}.`
+              : `Das Rückgeld sind ${euro(want)}. Lege sie auf den Ladentisch.`);
+        if ($('.seller').scrollIntoView) $('.seller').scrollIntoView({ block: 'nearest' });
+      },
+    },
+  );
   paint();
-  app.querySelectorAll<HTMLElement>('.coins .coin').forEach((b) => {
-    b.onclick = () => {
-      counter.push(+b.dataset.v!);
-      paint();
-    };
-  });
-  $('#mtut').onclick = () => showTutorial('geld:' + tier);
-  $('#leave').onclick = () => {
-    nodeDone();
-    saveAll();
-    advance();
-  };
-  $('#pay').onclick = () => {
-    const ok = sum() === want;
-    // only the first try for a customer counts in the statistics: after a miss the answer is as good as given
-    if (!n.tries) recordAnswer('geld', ok);
-    if (ok) {
-      n.i++;
-      n.tries = 0;
-      saveAll();
-      return screenMarket(n.i < 3 ? 'Stimmt genau, danke! Da kommt schon der Nächste.' : '');
-    }
-    n.tries++;
-    saveAll();
-    const was = `Das sind ${euro(sum())}. `;
-    counter.length = 0;
-    paint();
-    $('#say').textContent =
-      was +
-      (!paid
-        ? `Gebraucht werden ${euro(c.price)}. Versuch es noch einmal.`
-        : n.tries === 1
-          ? `Prüfe mit Plus: ${euro(c.price)} und das Rückgeld sind zusammen ${euro(paid)}.`
-          : `Das Rückgeld sind ${euro(want)}. Lege sie auf den Ladentisch.`);
-    if ($('.seller').scrollIntoView) $('.seller').scrollIntoView({ block: 'nearest' });
-  };
   if (!msg && !state.meta.seenTut[tutKey('geld:' + tier)]) showTutorial('geld:' + tier, null, null, true);
 }
 
@@ -518,27 +522,26 @@ export function screenSchool(step) {
   const P = plantOf(schoolKey());
   const n = P.steps.length;
   if (step > n) {
-    render(
-      `<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${P.svg({})}</div></div><div class="bottom"><button class="btn" id="go">Los!</button></div></div>`,
+    screen(
+      html`<div class="screen">${raw(topbar('✏️ Zeichenschule'))}<div class="scroll"><div class="card center"><h2>Merk-Check</h2><p>Jetzt verschwinden die Namen. Weißt du noch, wie alle Teile heißen?</p>${raw(P.svg({}))}</div></div><div class="bottom"><button class="btn" id="go" data-action="go">Los!</button></div></div>`,
+      { go: () => schoolCheck(MK.shuffle(P.parts.map((p) => p.id)), 0) },
     );
-    $('#go').onclick = () => schoolCheck(MK.shuffle(P.parts.map((p) => p.id)), 0);
     return;
   }
-  render(
-    `<div class="screen">${topbar(`✏️ Zeichenschule ${step} / ${n}`)}<div class="scroll"><div class="card"><h3>Schritt ${step}</h3><p>${esc(P.steps[step - 1])}</p>${P.svg({ step, labels: true })}<p class="muted" style="color:var(--ink-soft)">Zeichne mit auf Papier. Die Namen stehen dabei.</p></div></div><div class="bottom"><div class="row">${step > 1 ? `<button class="btn secondary" id="prev">Zurück</button>` : ''}<button class="btn" id="next">${step < n ? 'Nächster Schritt' : 'Zum Merk-Check'}</button></div></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar(`✏️ Zeichenschule ${step} / ${n}`))}<div class="scroll"><div class="card"><h3>Schritt ${step}</h3><p>${P.steps[step - 1]}</p>${raw(P.svg({ step, labels: true }))}<p class="muted" style="color:var(--ink-soft)">Zeichne mit auf Papier. Die Namen stehen dabei.</p></div></div><div class="bottom"><div class="row">${step > 1 ? html`<button class="btn secondary" id="prev" data-action="prev">Zurück</button>` : ''}<button class="btn" id="next" data-action="next">${step < n ? 'Nächster Schritt' : 'Zum Merk-Check'}</button></div></div></div>`,
+    { next: () => screenSchool(step + 1), prev: () => screenSchool(step - 1) },
   );
-  $('#next').onclick = () => screenSchool(step + 1);
-  if ($('#prev')) $('#prev').onclick = () => screenSchool(step - 1);
 }
 function schoolCheck(ids, i) {
   if (i >= ids.length) {
     const m = gainXp(20);
     nodeDone();
     saveAll();
-    render(
-      `<div class="screen">${topbar('✏️ Zeichenschule')}<div class="scroll"><div class="card center"><h2>Merk-Check bestanden</h2><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`,
+    screen(
+      html`<div class="screen">${raw(topbar('✏️ Zeichenschule'))}<div class="scroll"><div class="card center"><h2>Merk-Check bestanden</h2><p>⭐ +20 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:800">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+      { next: advance },
     );
-    $('#next').onclick = advance;
     return;
   }
   const P = plantOf(schoolKey());
@@ -559,8 +562,9 @@ function schoolCheck(ids, i) {
     qid: P.qid + part.id,
     plant: P === POTATO ? undefined : schoolKey(),
   };
-  render(
-    `<div class="screen">${topbar(`✏️ Merk-Check ${i + 1} / ${ids.length}`)}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar(`✏️ Merk-Check ${i + 1} / ${ids.length}`))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+    {},
   );
   ensureTutorial(t, () =>
     runTask(
@@ -593,30 +597,29 @@ export function screenLabor() {
   const guessed = Number.isInteger(L.guess);
   const ok = L.guess === ex.a;
   const result = guessed
-    ? `<p class="labres"><b>${ok ? 'Deine Vermutung stimmt.' : `Du hast „${esc(ex.opts[L.guess])}“ vermutet.`}</b> Ergebnis: ${esc(ex.opts[ex.a])}.</p><div class="notecard"><div class="eyebrow">Notiz</div>${esc(ex.note)}</div>`
-    : '<p>Was vermutest du? Tippe auf deine Vermutung.</p>';
-  render(`<div class="screen">${topbar(title)}<div class="scroll"><div class="card labor"><div class="eyebrow">Versuch ${L.i + 1} von ${L.list.length}</div><h3>${esc(ex.q)}</h3>${(guessed && ex.after) || ex.pic || ''}${result}</div></div>
-      <div class="bottom">${guessed ? '<button class="btn" id="next">Weiter</button>' : `<div class="options ${ex.opts.length === 2 ? 'two' : ''}">${ex.opts.map((o, i) => `<button class="opt guess" data-i="${i}">${esc(o)}</button>`).join('')}</div>`}</div></div>`);
-  if (guessed) {
-    $('#next').onclick = () => {
-      L.i++;
-      L.guess = null;
-      saveAll();
-      screenLabor();
-    };
-    return;
-  }
-  app.querySelectorAll<HTMLElement>('.opt.guess').forEach((b) => {
-    b.onclick = () => {
-      L.guess = +b.dataset.i!;
-      if (L.guess === ex.a) {
-        L.right++;
-        SFX.right();
-      }
-      saveAll();
-      screenLabor();
-    };
-  });
+    ? html`<p class="labres"><b>${ok ? 'Deine Vermutung stimmt.' : `Du hast „${ex.opts[L.guess]}“ vermutet.`}</b> Ergebnis: ${ex.opts[ex.a]}.</p><div class="notecard"><div class="eyebrow">Notiz</div>${ex.note}</div>`
+    : html`<p>Was vermutest du? Tippe auf deine Vermutung.</p>`;
+  screen(
+    html`<div class="screen">${raw(topbar(title))}<div class="scroll"><div class="card labor"><div class="eyebrow">Versuch ${L.i + 1} von ${L.list.length}</div><h3>${ex.q}</h3>${raw((guessed && ex.after) || ex.pic || '')}${result}</div></div>
+      <div class="bottom">${guessed ? html`<button class="btn" id="next" data-action="next">Weiter</button>` : html`<div class="options ${ex.opts.length === 2 ? 'two' : ''}">${ex.opts.map((o, i) => html`<button class="opt guess" data-action="guess" data-i="${i}">${o}</button>`)}</div>`}</div></div>`,
+    {
+      next: () => {
+        L.i++;
+        L.guess = null;
+        saveAll();
+        screenLabor();
+      },
+      guess: (option) => {
+        L.guess = +option.dataset.i!;
+        if (L.guess === ex.a) {
+          L.right++;
+          SFX.right();
+        }
+        saveAll();
+        screenLabor();
+      },
+    },
+  );
 }
 // same reward level as an event
 function laborEnd() {
@@ -625,10 +628,10 @@ function laborEnd() {
   const m = gainXp(20);
   nodeDone();
   saveAll();
-  render(
-    `<div class="screen">${topbar(title)}<div class="scroll"><div class="card"><h2>Deine Notizkarte</h2><p>${L.right} von ${L.list.length} Vermutungen ${L.right === 1 ? 'hat' : 'haben'} gestimmt.</p><div class="notecard">${L.list.map((x) => `<div>• ${esc(x.note)}</div>`).join('')}</div><p>⭐ +20 XP</p>${m.map((x) => `<p style="color:var(--orange);font-weight:800">${x}</p>`).join('')}</div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar(title))}<div class="scroll"><div class="card"><h2>Deine Notizkarte</h2><p>${L.right} von ${L.list.length} Vermutungen ${L.right === 1 ? 'hat' : 'haben'} gestimmt.</p><div class="notecard">${L.list.map((x) => html`<div>• ${x.note}</div>`)}</div><p>⭐ +20 XP</p>${m.map((x) => html`<p style="color:var(--orange);font-weight:800">${x}</p>`)}</div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+    { next: advance },
   );
-  $('#next').onclick = advance;
 }
 
 /* ---------- Schatzkarte: instead of a treasure; found = chest, two misses = a berry ---------- */
@@ -641,8 +644,9 @@ export function screenKarte() {
     saveAll();
   }
   const t = n.hunt.task;
-  render(
-    `<div class="screen">${topbar('🗺️ Schatzkarte')}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+  screen(
+    html`<div class="screen">${raw(topbar('🗺️ Schatzkarte'))}<div class="taskwrap" id="taskwrap"></div><div class="bottom" id="bottom"></div></div>`,
+    {},
   );
   ensureTutorial(t, () =>
     runTask(
@@ -667,10 +671,10 @@ export function screenKarte() {
       },
       (ok) => {
         if (ok || !n.done) return screenKarte();
-        render(
-          `<div class="screen">${topbar('🗺️ Schatzkarte')}<div class="scroll"><div class="card center"><h2>Der Schatz bleibt versteckt</h2><p>Unter einem Busch findest du ${ITEMS.beere.icon} eine Beere.</p></div></div><div class="bottom"><button class="btn" id="next">Weiter</button></div></div>`,
+        screen(
+          html`<div class="screen">${raw(topbar('🗺️ Schatzkarte'))}<div class="scroll"><div class="card center"><h2>Der Schatz bleibt versteckt</h2><p>Unter einem Busch findest du ${ITEMS.beere.icon} eine Beere.</p></div></div><div class="bottom"><button class="btn" id="next" data-action="next">Weiter</button></div></div>`,
+          { next: advance },
         );
-        $('#next').onclick = advance;
       },
     ),
   );
