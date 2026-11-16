@@ -9,7 +9,7 @@ Now `src/styles/tokens.css` holds decisions:
 - **Palette:** 35 colours, one ramp per hue. Rules use **roles** (`--ink`, `--card`, `--gold` …) and **tones**, a
   light ground with its dark ink (`--good-tint`/`--good-ink`, and the same for `bad`, `warn`, `hot`, `info`).
   A palette step appears in a rule only for a drawing (coins, maps, the Turmwacht board).
-- **Scales:** 10 text sizes, 4 line heights, 5 radii, 8 spaces, 3 line widths, 2 tap sizes, 7 durations, one bounce
+- **Scales:** 9 text sizes, 4 line heights, 5 radii, 8 spaces, 3 line widths, 2 tap sizes, 7 durations, one bounce
   curve, 3 lip shadows and 3 rings. A value between two steps is not added; the nearer step is used.
 - **See-through colours** are tokens (`--glass`, `--shade`, `--overlay` …) or `color-mix()` of a role, never `rgba()`.
 

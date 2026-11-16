@@ -147,9 +147,9 @@ ${section(
   `${block('card', 'Der Behälter für alles Helle.', `<div class="card"><h3>Karte</h3><p>Text auf einer Karte.</p></div><div class="card flat"><p><code>flat</code>: ohne Kante, in einer anderen Karte.</p></div>`)}
 ${block(
   'card subjtile · weekcard · modecard',
-  'Die Karten der Startseite. <code>subjects more</code>: die kleineren Karten unter den Fächern, drei nebeneinander, mit Abstand zu den Fächern.',
+  'Die Karten der Startseite. <code>subjects more</code>: Monsterbuch, Hütte und Co. unter den Fächern, gleich groß wie diese, mit Abstand davor; „neu“ zählt, was dazugekommen ist.',
   `<button class="card subjtile"><span class="subjicon" aria-hidden="true">🔢</span><span class="subjname">Mathe</span><span class="desc">3 Themen</span></button>
-<div class="subjects more"><button class="card subjtile"><span class="subjicon" aria-hidden="true">📗</span><span class="subjname">Monsterbuch</span><span class="pill new">3 neu</span></button><button class="card subjtile"><span class="subjicon" aria-hidden="true">🏷️</span><span class="subjname">Stempelheft</span></button><button class="card subjtile"><span class="subjicon" aria-hidden="true">🏰</span><span class="subjname">Turmwacht</span></button></div>
+<div class="subjects more"><button class="card subjtile"><span class="subjicon" aria-hidden="true">📗</span><span class="subjname">Monsterbuch</span><span class="desc">12 Monster</span><span class="pill new">3 neu</span></button><button class="card subjtile"><span class="subjicon" aria-hidden="true">🏡</span><span class="subjname">Meine Hütte</span><span class="desc">Möbel aufstellen</span></button></div>
 <button class="card weekcard"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>2 von 6 Zielen erledigt</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="33 %"><i style="width:33%"></i></span><span class="weekgo">Ziele ansehen und loslegen ›</span></button>
 <div class="card modecard"><h3>Zahlenquest</h3><div class="desc">Rechnen und Zahlen</div><span class="pill good">Hier anfangen</span><p class="callout">⭐ Wochenziel: Löse 15 Aufgaben.</p><div class="row"><button class="btn small">Starten</button></div></div>`,
 )}

@@ -11,7 +11,7 @@ const sheets = fs.readdirSync(path.join(SRC, 'styles')).map((name) => read('styl
 const tokens = [...new Set([...read('styles', 'tokens.css').matchAll(/^\s*(--[\w-]+):/gm)].map((match) => match[1]))];
 const LIMITS = {
   'palette colours': [/^--(navy|blue|cream|gold|green|moss|red|orange|violet)-\d+$|^--white$/, 35],
-  'text sizes': [/^--text-/, 10],
+  'text sizes': [/^--text-/, 9],
   'line heights': [/^--leading-/, 4],
   'corner radii': [/^--radius-/, 5],
   spaces: [/^--space-/, 8],

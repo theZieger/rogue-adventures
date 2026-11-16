@@ -25,6 +25,7 @@ export interface Meta {
   bestWorld: number;
   seenNews: string;
   seenDex: number; // monsters in the Monsterbuch when it was last opened
+  showcase: string; // the hero on the title screen
   grade: number;
   off: Record<string, string[]>;
   lastStarter: Record<string, string>;
@@ -104,6 +105,7 @@ export const defaultMeta = (): Meta => ({
   bestWorld: 0,
   seenNews: '',
   seenDex: -1,
+  showcase: 'fuchs',
   grade: 3,
   off: {},
   lastStarter: {},

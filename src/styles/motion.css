@@ -18,10 +18,83 @@
 .sprite#fe .mon:not(.top) {
   animation-delay: calc(var(--t-idle) / -2);
 }
-.hero .logo,
 .card.center > .mon,
-.choice.selected .mon {
+.choice.selected .mon,
+.showcase .mon {
   animation: bob var(--t-idle) ease-in-out infinite;
+}
+/* the title hero pops in, then hops now and then */
+.showcase {
+  transform-origin: 50% 90%;
+  animation:
+    popIn var(--t-slow) var(--ease-bounce) both,
+    hop calc(var(--t-idle) * 2) ease-in-out var(--t-show) infinite;
+}
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes hop {
+  0%,
+  14%,
+  100% {
+    transform: none;
+  }
+  3% {
+    transform: scale(1.06, 0.92);
+  }
+  7% {
+    transform: translateY(-16px) scale(0.96, 1.05);
+  }
+  11% {
+    transform: scale(1.04, 0.95);
+  }
+}
+/* the stamp in the title bar stamps now and then */
+.stampbtn .emo {
+  transform-origin: 50% 100%;
+  animation: stamp calc(var(--t-idle) * 2) ease-in-out var(--t-idle) infinite;
+}
+@keyframes stamp {
+  0%,
+  14%,
+  100% {
+    transform: none;
+  }
+  5% {
+    transform: translateY(-6px) rotate(-10deg);
+  }
+  9% {
+    transform: translateY(1px) scale(1.15, 0.8);
+  }
+}
+/* title cards rise in one after another as they come into view (title.ts adds .reveal, then .in) */
+.reveal {
+  opacity: 0;
+}
+.reveal.in {
+  animation: rise var(--t-move) var(--ease-bounce) calc(var(--i) * var(--t-instant)) both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* the week's bar fills up after its card has risen in */
+.weekcard.in .bar i {
+  animation: fill var(--t-long) ease-out var(--t-move) both;
+}
+@keyframes fill {
+  from {
+    width: 0;
+  }
 }
 @keyframes bob {
   0%,
@@ -129,7 +202,9 @@
 @media (prefers-reduced-motion: reduce) {
   .enter,
   .sprite .mon,
-  .hero .logo,
+  .showcase,
+  .showcase .mon,
+  .stampbtn .emo,
   .card.center > .mon,
   .choice.selected .mon,
   .node.open,

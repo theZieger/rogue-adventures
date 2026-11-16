@@ -9,11 +9,13 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-16
 
 ### Neu
+- Auf der Startseite steht jetzt dein Held mit seiner Kleidung; in der Kleiderkammer wählst du, welcher.
 - Das Monsterbuch zeigt, wie viele neue Monster du seit dem letzten Blick entdeckt hast.
+- Ist die Wochenaufgabe geschafft, regnet es Konfetti.
 
 ### Verbessert
-- Die Startseite ist aufgeräumt: Ton, Stempel, „Was ist neu?“ und das Eltern-Zahnrad bleiben oben stehen.
-- Monsterbuch, Stempelheft und Co. sind jetzt Karten mit Bild, mit Abstand zu den Fächern.
+- Ton, Stempel, „Was ist neu?“ und das Eltern-Zahnrad bleiben oben auf der Startseite stehen.
+- Alle Karten der Startseite sind gleich groß und gleiten beim Öffnen und Blättern herein.
 - „Idee senden“ gibt es nur noch im Elternbereich.
 
 ## 2026-11-15
