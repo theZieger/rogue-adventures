@@ -193,8 +193,8 @@ nur Anhaltspunkte. Sachunterricht, Ethik/Religion und Musik lassen sich mangels 
 ### Deutsch
 
 **Passt**
-- `laute1` (Stufen 01–03); `schreiben2.besonders` (sp, st, qu, ei, au, eu), `.gross`, `.satzz`, `.alphabet`, `.verl`;
-  `woerter2.wortart`, `.mehrzahl`, `.artikel`, `.zus`, `.satzart`.
+- `laute1` (Stufen 01–03); `schreiben2.besonders` (sp, st, qu, ei, au, eu), `.gross`, `.satzz`, `.alphabet`;
+  `woerter2.wortart`, `.mehrzahl`, `.artikel`, `.zus`.
 - `woerterwerkstatt.abc`, `.grund`, `.stamm`, `.zus`, `.rede`; `satzbaustelle.wortart`, `.zeit` (Präsens/Präteritum ist
   genau Stufe 07), `.umstell` (Umstellprobe 07), `.ersatz` (Personalpronomen 08), `.redensart` (09 nennt Redewendungen).
 
@@ -203,6 +203,8 @@ nur Anhaltspunkte. Sachunterricht, Ethik/Religion und Musik lassen sich mangels 
   `.dehn`, `.vokal`: „besondere Rechtschreibfälle“ (tz, ck, ie, ß, Dehnungs-h) stehen erst bei Stufe 09, also Kl. 4.
 - `satzbaustelle.satzglied` (Subjekt, Prädikat): Stufe 08, eher Anfang Kl. 4. `woerterwerkstatt.komma` vor „aber“/„denn“:
   Stufe 09; nur das Aufzählungskomma liegt bei Kl. 3.
+- `schreiben2.verl` (ä/äu ableiten in Kl. 2): die Ableitung steht bei Stufe 07 (Kl. 3). `woerter2.satzart`: drei Satzarten
+  erst um Stufe 07, und genannt ist „Ausrufesatz“, nicht „Aufforderungssatz“.
 - `woerter2.familie` (Wortfamilie, Vorsilben in Kl. 2): Stufe 07–08. `satzbaustelle.steig`, `.anrede`, `.begleiter`,
   `.praedikat`, `woerterwerkstatt.trenn`: nicht genannt.
 - `woerterwerkstatt.sachsen`: sächsische Mundart passt nicht.
