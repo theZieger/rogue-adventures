@@ -6,6 +6,16 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-16
+
+### Neu
+- Das Monsterbuch zeigt, wie viele neue Monster du seit dem letzten Blick entdeckt hast.
+
+### Verbessert
+- Die Startseite ist aufgeräumt: Ton, Stempel, „Was ist neu?“ und das Eltern-Zahnrad bleiben oben stehen.
+- Monsterbuch, Stempelheft und Co. sind jetzt Karten mit Bild, mit Abstand zu den Fächern.
+- „Idee senden“ gibt es nur noch im Elternbereich.
+
 ## 2026-11-15
 
 ### Verbessert

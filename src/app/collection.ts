@@ -63,6 +63,8 @@ export function screenVictory() {
 }
 export function screenDex() {
   state.depth = 1;
+  state.meta.seenDex = Object.keys(state.meta.dex).length;
+  saveAll();
   const all: (Foe & { elite?: boolean })[] = [];
   for (const m of MODE_KEYS) {
     const EN = MODES[m].enemies;

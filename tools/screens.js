@@ -26,7 +26,7 @@ const SCREENS = {
   garden: [...TITLE, '#garden'],
   duel: [...TITLE, '#duel'],
   news: [...TITLE, '#news'],
-  feedback: [...TITLE, '#feedback'],
+  feedback: [...PARENTS, '[data-pt="settings"]', '[data-ps="app"]', '#pfeedback'],
   'task-choice': [...GERMAN, '.atk[data-i="0"]', '#tutok'],
   'klasse1-title': KLASSE_1,
   'klasse1-task': [

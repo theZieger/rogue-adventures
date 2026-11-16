@@ -58,10 +58,6 @@
 }
 
 /* ---------- Title: grade & subject, sound toggle ---------- */
-.soundbtn {
-  left: 12px;
-  padding: 0;
-}
 .grades {
   display: flex;
   gap: var(--space-8);
@@ -91,6 +87,31 @@
 .subjname {
   font-family: var(--font-hand);
   font-size: var(--text-24);
+}
+.subjects.more {
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: var(--space-24);
+}
+.more .subjtile {
+  position: relative;
+  min-height: 0;
+  padding: var(--space-12) var(--space-6);
+}
+.more .subjicon {
+  font-size: var(--text-36);
+}
+.more .subjname {
+  font-size: var(--text-20);
+  line-height: var(--leading-tight);
+  text-align: center;
+}
+.more .subjtile .pill {
+  position: absolute;
+  top: -10px;
+  right: -6px;
+}
+.titlebar + .scroll .hero {
+  padding-top: 0;
 }
 .subjtile .desc {
   font-size: var(--text-16);

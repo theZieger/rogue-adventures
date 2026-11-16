@@ -319,13 +319,17 @@ p {
   font-weight: 700;
   cursor: pointer;
 }
-/* Glass button: the quiet buttons in the corners of the title screen. */
+/* Title bar: the quiet round buttons above the title screen; it stays put while the page scrolls. */
+.titlebar {
+  display: flex;
+  gap: var(--space-8);
+  padding: var(--space-12) var(--space-16) 0;
+}
 .soundbtn,
 .stampbtn,
+.newsbtn,
 .parentbtn {
-  position: absolute;
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  z-index: 2;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -340,4 +344,17 @@ p {
   font-size: var(--text-18);
   font-weight: 700;
   cursor: pointer;
+}
+.soundbtn,
+.newsbtn,
+.parentbtn {
+  padding: 0;
+}
+.newsbtn {
+  margin-left: auto;
+}
+.newsbtn .pill {
+  position: absolute;
+  top: -8px;
+  right: -12px;
 }

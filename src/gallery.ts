@@ -129,7 +129,7 @@ ${section(
   'Ein goldener Knopf pro Bildschirm: der nächste Schritt. Alles andere ist weiß oder nur umrandet.',
   `${block('btn', 'Größen: normal und <code>small</code>. Töne: Gold, <code>secondary</code>, <code>ghost</code> (nur auf dunklem Grund), <code>danger</code> (löschen). Gesperrt liegt er flach und grau.', `${BUTTONS}<button class="btn" disabled>btn disabled</button><button class="btn ghost" disabled>btn ghost disabled</button>`)}
 ${block('tut · speak', 'Kleine Helfer auf einer Karte: erklären und vorlesen.', row(`<button class="tut" type="button">🛈<span> Wie geht das?</span></button><button class="speak" type="button" aria-label="Vorlesen">🔊</button>`))}
-${block('soundbtn · stampbtn · parentbtn', 'Die leisen Knöpfe in den Ecken der Startseite.', `<div class="corner"><button class="soundbtn" aria-label="Töne ausschalten">🔊</button><button class="stampbtn" aria-label="Stempelheft, 12 Stempel">🏷️ 12</button><button class="parentbtn">Eltern</button></div>`)}`,
+${block('titlebar: soundbtn · stampbtn · newsbtn · parentbtn', 'Die leisen runden Knöpfe über der Startseite. Die Leiste bleibt stehen, wenn die Seite rollt; ein neuer Eintrag in „Was ist neu?“ zeigt „Neu!“, ein ungesicherter Spielstand einen goldenen Punkt am Zahnrad.', `<div class="titlebar"><button class="soundbtn" aria-label="Töne ausschalten">🔊</button><button class="stampbtn" aria-label="Stempelheft, 12 Stempel">🏷️ 12</button><button class="newsbtn" aria-label="Was ist neu?">✨<span class="pill new">Neu!</span></button><button class="parentbtn" aria-label="Eltern"><svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.4 3.35"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="3.2"/></svg><span class="dot" aria-hidden="true"></span></button></div>`)}`,
 )}
 ${section(
   'Marken, Auswahl, Hinweise',
@@ -147,8 +147,9 @@ ${section(
   `${block('card', 'Der Behälter für alles Helle.', `<div class="card"><h3>Karte</h3><p>Text auf einer Karte.</p></div><div class="card flat"><p><code>flat</code>: ohne Kante, in einer anderen Karte.</p></div>`)}
 ${block(
   'card subjtile · weekcard · modecard',
-  'Die Karten der Startseite.',
+  'Die Karten der Startseite. <code>subjects more</code>: die kleineren Karten unter den Fächern, drei nebeneinander, mit Abstand zu den Fächern.',
   `<button class="card subjtile"><span class="subjicon" aria-hidden="true">🔢</span><span class="subjname">Mathe</span><span class="desc">3 Themen</span></button>
+<div class="subjects more"><button class="card subjtile"><span class="subjicon" aria-hidden="true">📗</span><span class="subjname">Monsterbuch</span><span class="pill new">3 neu</span></button><button class="card subjtile"><span class="subjicon" aria-hidden="true">🏷️</span><span class="subjname">Stempelheft</span></button><button class="card subjtile"><span class="subjicon" aria-hidden="true">🏰</span><span class="subjname">Turmwacht</span></button></div>
 <button class="card weekcard"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>2 von 6 Zielen erledigt</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="33 %"><i style="width:33%"></i></span><span class="weekgo">Ziele ansehen und loslegen ›</span></button>
 <div class="card modecard"><h3>Zahlenquest</h3><div class="desc">Rechnen und Zahlen</div><span class="pill good">Hier anfangen</span><p class="callout">⭐ Wochenziel: Löse 15 Aufgaben.</p><div class="row"><button class="btn small">Starten</button></div></div>`,
 )}

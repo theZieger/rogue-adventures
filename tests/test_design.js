@@ -25,6 +25,7 @@ const BLOCKS = [
     'speak',
     'soundbtn',
     'stampbtn',
+    'newsbtn',
     'parentbtn',
     'pill',
     'chip',

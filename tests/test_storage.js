@@ -4464,13 +4464,24 @@ await tick();
     ),
     'a hidden class leaves the class tabs',
   );
+  {
+    // Monsterbuch „neu“: an old save without the counter counts its monsters as seen, opening the book clears it
+    const dex = { Sumpfbrocken: { type: 'erde', shape: 'blob', world: 1, mode: 'math' } };
+    const old = open({ [META]: JSON.stringify(Object.assign({}, base, { dex })) });
+    check(old.w.__mq.meta.seenDex === 1 && !old.$('#dex .pill'), 'an old save shows no new monsters');
+    const two = Object.assign({}, dex, { Regenwicht: { type: 'wasser', shape: 'drop', world: 1, mode: 'math' } });
+    const p = open({ [META]: JSON.stringify(Object.assign({}, base, { dex: two, seenDex: 0 })) });
+    check(p.$('#dex .pill')?.textContent === '2 neu', 'the Monsterbuch card counts new monsters');
+    p.click('#dex');
+    check(open(p.dump()).w.__mq.meta.seenDex === 2 && !open(p.dump()).$('#dex .pill'), 'opening the book clears it');
+  }
   // extras
   const ex = ['garten', 'huette', 'kreisel', 'duell', 'wochenziele', 'markt'].map((k) => 'extra:' + k);
   const p3 = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: ex })) }, { now: W49 });
   check(
     ['#hut', '#garden', '#duel', '#weekly'].every((s) => !p3.d.querySelector(s)) &&
       !!p3.d.querySelector('#news') &&
-      !!p3.d.querySelector('#feedback'),
+      !!p3.d.querySelector('#dex'),
     'hidden extras leave the title',
   );
   p3.click('#stamps');
