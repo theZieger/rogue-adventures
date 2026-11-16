@@ -9,7 +9,7 @@ import { screenFeedback } from './feedback.ts';
 import { gardenCard, screenGarden } from './garten.ts';
 import { screenHut } from './huette.ts';
 import { resumeRun, screenStarter } from './map.ts';
-import { type WeeklyGoal, goalDone, goalText, heroAttacks, showWeeklyNews, weekly, weeklyGoals } from './progress.ts';
+import { type WeeklyGoal, goalDone, goalText, showWeeklyNews, weekly, weeklyGoals } from './progress.ts';
 import { state } from './state.ts';
 import { chooseGrade, curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.ts';
 import { screenTurm } from './turm_screens.ts';
@@ -115,8 +115,6 @@ export function screenTitle() {
 type SubjectTile = ReturnType<typeof visSubjects>[number];
 export const subjectOf = (m: string) =>
   visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
-export const openGoals = (m: string) =>
-  extraOn('wochenziele') ? weeklyGoals().filter((g) => g.m === m && !goalDone(g)) : [];
 export const practised = (m: string) => Object.values(state.meta.stats[m]).some((x) => x.t > 0);
 // no locks: a ranked subject marks its easiest theme and points from a harder one to the easiest one not practised yet
 // undefined is not expected: the callers ask for the subject of a unit of this grade
@@ -131,17 +129,17 @@ export function screenSubject(sub: SubjectTile | undefined) {
     ];
   };
   screen(
-    html`<div class="screen">${raw(topbar(esc(sub!.subject)))}<div class="scroll"><div class="stack">${sub!.modes.map(
-      (m, i) => {
-        const r = loadRun(m);
-        const c = MODES[m];
-        return html`<div class="card modecard"><div class="row" style="align-items:center;gap:var(--space-12)"><div style="font-size:var(--text-36)" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}${openGoals(
-          m,
-        ).map(
-          (g) => html`<p class="callout">⭐ Wochenziel: ${goalText(g)}</p>`,
-        )}<div class="row" style="margin-top:var(--space-12)">${r ? html`<button class="btn small" data-cont="${m}" data-action="resume">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}" data-action="start">${r ? 'Neu' : 'Starten'}</button></div></div>`;
-      },
-    )}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
+    html`<div class="screen">${raw(topbar(esc(sub!.subject)))}<div class="scroll"><div class="stack">${
+      extraOn('wochenziele')
+        ? weeklyGoals()
+            .filter((g) => g.subject === sub!.subject && !goalDone(g))
+            .map((g) => html`<p class="callout">⭐ Wochenziel: ${goalText(g)}</p>`)
+        : ''
+    }${sub!.modes.map((m, i) => {
+      const r = loadRun(m);
+      const c = MODES[m];
+      return html`<div class="card modecard"><div class="row" style="align-items:center;gap:var(--space-12)"><div style="font-size:var(--text-36)" aria-hidden="true">${c.icon}</div><div style="flex:1"><h3>${c.title}</h3><div class="desc">${c.sub}</div></div></div>${path(m, i)}<div class="row" style="margin-top:var(--space-12)">${r ? html`<button class="btn small" data-cont="${m}" data-action="resume">Weiter${c.worlds > 1 ? ` (Welt ${r.world})` : ''}</button>` : ''}<button class="btn small ${r ? 'secondary' : ''}" data-new="${m}" data-action="start">${r ? 'Neu' : 'Starten'}</button></div></div>`;
+    })}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     {
       resume: (b) => {
         state.mode = b.dataset.cont!;
@@ -181,37 +179,14 @@ export function screenWeekly() {
   const goals = weeklyGoals();
   screen(
     html`<div class="screen">${raw(topbar('Wochenaufgabe'))}<div class="scroll"><div class="stack">
-      <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Schaffst du alle Ziele, bekommst du 10 Stempel und einen Stern auf der Stempelkarte.'}</p>
+      <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Für jedes Ziel gibt es 3 Stempel. Schaffst du alle, kommt ein Stern auf deine Stempelkarte.'}</p>
       ${goals.map((g) => {
         const c = goalCount(g);
-        const M = MODES[g.m];
-        return html`<div class="card goal${c >= g.n ? ' done' : ''}"><div class="eyebrow">${g.subject}</div><div class="goalgame"><span aria-hidden="true">${M.icon}</span>${M.title}</div><p>${goalText(g)}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n ? '' : html`<button class="btn goalplay" data-goal="${g.i}" data-action="goal">▶ ${loadRun(g.m) ? 'Weitermachen' : 'Jetzt loslegen'}</button>`}</div>`;
+        return html`<div class="card goal${c >= g.n ? ' done' : ''}"><p>${goalText(g)}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n || !g.subject ? '' : html`<button class="btn small secondary goalplay" data-subject="${g.subject}" data-action="goal">▶ ${g.subject} üben</button>`}</div>`;
       })}
       <p class="center">Nichts geht verloren, wenn du eine Woche aussetzt. Neue Aufgaben gibt es am Montag.</p>
       </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
-    { back: screenTitle, goal: (b) => playGoal(goals.find((g) => g.i === +b.dataset.goal!)!) },
-  );
-}
-// straight into the game of a goal; an adventure whose hero lacks the goal's task type asks first
-function playGoal(g: WeeklyGoal) {
-  state.mode = g.m;
-  state.run = loadRun(state.mode);
-  if (!state.run) return screenStarter(g);
-  if (g.kind !== 'right' || heroAttacks().some((a) => a.mod === g.mod)) return resumeRun();
-  const M = MODES[state.mode].modules[g.mod!];
-  const ov = modal(
-    html`<h2>${M.icon} ${M.name}</h2><p>Dein Held in „${MODES[state.mode].title}“ hat diese Attacke nicht. In einem neuen Abenteuer bekommt er sie. Dein laufendes Abenteuer wird dann gelöscht.</p><div class="stack"><button class="btn" id="yes" data-action="yes">Neues Abenteuer</button><button class="btn secondary" id="cont" data-action="cont">Altes Abenteuer fortsetzen</button><button class="btn secondary" id="no" data-action="no">Zurück</button></div>`,
-    {
-      yes: () => {
-        state.run = null;
-        screenStarter(g);
-      },
-      cont: resumeRun,
-      no: () => {
-        state.run = null;
-        ov.remove();
-      },
-    },
+    { back: screenTitle, goal: (b) => screenSubject(visSubjects().find((sub) => sub.subject === b.dataset.subject)) },
   );
 }
 

@@ -25,13 +25,11 @@ import {
   taskTier,
   typeChip,
   weekly,
-  weeklyStep,
   xpNeeded,
 } from './progress.ts';
 import { state } from './state.ts';
 import { endRun, saveAll } from './storage.ts';
 import { plain, runTask, sayCard, speakBtn } from './tasks.ts';
-import { openGoals } from './title.ts';
 import { SFX, announce, ensureTutorial, fx, modal, on, screen, topbar } from './ui.ts';
 
 /* ---------- Battle ---------- */
@@ -225,9 +223,8 @@ function noteAttackUsed(b: Battle, atk: Attack) {
 }
 // The name must hold what the button shows, in that order, so someone who speaks to their device can say it:
 // the tags follow the number, and the word „Schaden“ comes after them.
-function attackLabel(attack: Attack, info: ReturnType<typeof attackInfo>, moduleName: string, isGoal: boolean) {
+function attackLabel(attack: Attack, info: ReturnType<typeof attackInfo>, moduleName: string) {
   const tags = [
-    isGoal && 'Wochenziel',
     info.weak && 'Schwachstelle',
     info.tired && (info.tired > 1 ? 'sehr müde' : 'müde'),
     state.run.power && 'doppelt',
@@ -245,12 +242,9 @@ function renderAttackChoice(b: Battle) {
     b.enemy.weak = pickWeak();
     saveAll();
   } // older save or task types switched in the parent area
-  const goalMods = openGoals(state.mode)
-    .filter((g) => g.kind === 'right')
-    .map((g) => g.mod);
   $('#bottom').innerHTML = html`<div class="attacks">${atks.map((a, i) => {
     const inf = attackInfo(b, a);
-    return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name, goalMods.includes(a.mod))}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${goalMods.includes(a.mod) ? html`<span class="pill warn">⭐ Wochenziel</span>` : ''}${inf.weak ? html`<span class="pill">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="pill hot">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="pill warn">🌶️ doppelt</span>` : ''}</span></button>`;
+    return html`<button class="atk ${inf.tired ? 'tired' : ''} ${inf.weak ? 'weak' : ''}" data-action="attack" data-i="${i}" aria-label="${attackLabel(a, inf, MODULES[a.mod].name)}"><span class="n">${a.name}</span><span class="m">${MODULES[a.mod].icon} ${MODULES[a.mod].name}<span class="dmg">💥 ${inf.dmg}</span></span><span class="tags">${inf.weak ? html`<span class="pill">🎯 Schwachstelle</span>` : ''}${inf.tired ? html`<span class="pill hot">😮‍💨 ${inf.tired > 1 ? 'sehr müde' : 'müde'}</span>` : ''}${state.run.power ? html`<span class="pill warn">🌶️ doppelt</span>` : ''}</span></button>`;
   })}</div><div class="row" style="margin-top:var(--space-8)"><button class="btn secondary small" id="bag" data-action="bag">🎒 Beutel (${state.run.items.length})</button><span class="muted" style="align-self:center;font-size:var(--text-14)">Tipp: Nimm die 🎯 Schwachstelle und wechsle ab.</span></div>`.text;
   on({
     bag: () => showBag((it, lv) => useItemInBattle(b, it, lv)),
@@ -423,10 +417,7 @@ export function battleWon(b: Battle) {
   // the Monsterbuch stamps were given when the enemy appeared, they are only shown here
   const stamps = payAnswers() + (e.boss ? giveStamps(5) : 0) + (e.fresh ? 2 : 0);
   if (!(e.boss && state.run.world >= CFG().worlds)) setTimeout(SFX.win, 150);
-  if (e.weekboss) {
-    weekly().beaten.push(state.mode);
-    weeklyStep('boss');
-  } else if (e.elite) weeklyStep('elite');
+  if (e.weekboss) weekly().beaten.push(state.mode);
   if (e.elite && state.run.node) {
     state.run.node.enemy = null;
     state.run.node.reward = true;

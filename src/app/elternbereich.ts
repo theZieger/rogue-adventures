@@ -211,7 +211,9 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
         ),
         extraOn('wochenziele')
           ? card('Wochenziele', [
-              note(`${r.done} von ${r.goals.length} erledigt. Für alle Wochenziele zusammen gibt es 10 Stempel.`),
+              note(
+                `${r.done} von ${r.goals.length} erledigt. Für jedes Ziel gibt es 3 Stempel, für alle zusammen 10. Wer eine Woche aussetzt, verliert nichts.`,
+              ),
               r.goals.map((g) => stat(goalText(g), `${Math.min(goalCount(g), g.n)} von ${g.n}`)),
             ])
           : '',
