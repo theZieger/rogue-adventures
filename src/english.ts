@@ -1,32 +1,32 @@
 /*
-  Wörter und Sätze für das Fach Englisch (Die Teestube und Der Doppeldecker), nach dem Lehrplan Englisch
-  Grundschule Sachsen, Klasse 3. Eltern können hier die Wörter der Klasse ergänzen: eine Zeile kopieren, ändern,
-  speichern, dann `npm run build`. `npm test` prüft, ob jede Zeile die nötigen Felder hat.
+  Words and sentences for the subject Englisch (Die Teestube and Der Doppeldecker), following the Saxon primary-school
+  curriculum for English, grade 3. Parents can add their class's words here: copy a line, change it, save, then
+  `npm run build`. `npm test` checks that every line has the fields it needs.
 
-  Regeln für alle Listen:
-  - Erst Englisch, dann Deutsch. Deutsche Nomen immer mit Artikel: ['dog', 'der Hund'].
-    Tätigkeiten als Verb, nicht als Nomen: ['painting', 'malen'], nicht 'das Malen'.
-  - Britische Schreibweise: colour, favourite, grey.
-  - Texte in einfachen Anführungszeichen. Ein Apostroph im Text wird als ’ geschrieben (What’s), nie als '.
-  - Jedes englische Wort nur einmal in der ganzen Datei; innerhalb eines Themas jede deutsche Bedeutung nur einmal
-    (die falschen Antworten kommen aus demselben Thema).
-  - Kein Wort, das auch zu einem anderen Thema passt (orange steht nur bei den Farben, fish nur bei den Tieren).
+  Rules for all lists:
+  - English first, then German. German nouns always with their article: ['dog', 'der Hund'].
+    Activities as a verb, not as a noun: ['painting', 'malen'], not 'das Malen'.
+  - British spelling: colour, favourite, grey.
+  - Texts in single quotes. An apostrophe in a text is written ’ (What’s), never '.
+  - Every English word only once in the whole file; within a theme every German meaning only once
+    (the wrong answers come from the same theme).
+  - No word that also fits another theme (orange is only among the colours, fish only among the animals).
 
-  DIE TEESTUBE (Wortschatz)
-  woerter   { Thema: [[Englisch, Deutsch], …] } – ein neues Thema braucht mindestens vier Wörter
-  farben    [Englisch, Deutsch, Farbe als #RRGGBB für das Farbfeld]
-  zahlen    [Englisch, Deutsch, Zahl] – 1 bis 20 und die Zehner bis 100; Zahlen wie 42 baut das Spiel daraus
-  tage      die Wochentage, monate die Monate – jeweils in der richtigen Reihenfolge (für „Wochentage und Monate“)
+  DIE TEESTUBE (vocabulary)
+  woerter   { theme: [[English, German], …] } – a new theme needs at least four words
+  farben    [English, German, colour as #RRGGBB for the colour patch]
+  zahlen    [English, German, number] – 1 to 20 and the tens up to 100; the game builds numbers like 42 from them
+  tage      the days of the week, monate the months – each in the right order (for „Wochentage und Monate“)
 
-  DER DOPPELDECKER (Sätze und Wendungen)
-  luecken   [Satz mit ___ als Lücke, richtiges Wort, falsches Wort, falsches Wort] – die falschen Wörter dürfen
-            auf keinen Fall in die Lücke passen
-  saetze    [englischer Satz, deutsche Bedeutung] für „Was bedeutet das?“
-  fragen    [Frage, passende Antwort, unpassende Antwort, unpassende Antwort]
+  DER DOPPELDECKER (sentences and phrases)
+  luecken   [sentence with ___ as the gap, right word, wrong word, wrong word] – the wrong words must never
+            fit the gap
+  saetze    [English sentence, German meaning] for „Was bedeutet das?“
+  fragen    [question, fitting answer, unfitting answer, unfitting answer]
 
-  Themen im Elternbereich: Ein Satz gehört zu jedem Thema, dessen Wörter in ihm oder seinen Antworten vorkommen
-  (auch in der Mehrzahl). Ist eines davon ausgeschaltet, kommt der Satz nicht dran. Sätze ohne Themenwort sind
-  „Allgemein“ und immer an.
+  Themes in the parent area: a sentence belongs to every theme whose words occur in it or in its answers
+  (also in the plural). If one of them is switched off, the sentence does not come up. Sentences without a theme
+  word are „Allgemein“ and always on.
 */
 type Word = [en: string, de: string];
 type Choice = [text: string, right: string, wrong1: string, wrong2: string];

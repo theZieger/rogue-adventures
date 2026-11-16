@@ -1,11 +1,11 @@
-// Sachkunde Klasse 3 (Lehrplan Sachsen, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
+// Sachkunde grade 3 (Saxon curriculum, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
 // Registers its units in MK.MODES; src/units.ts picks them up from there.
 import type { Unit } from './curriculum.ts';
 import { MK as K, type GenOpts, type Know, type Question } from './knowledge.ts';
 import type { Task } from './logic.ts';
 
 // what a generator adds to its task: fields of Task, or ones only that task's screen and the tests read
-// (ask and next stay open: the Plan and the Muster task of Klasse 1/2 keep something else in them)
+// (ask and next stay open: the Plan and the Muster task of grade 1/2 keep something else in them)
 export type TaskExtra = Partial<Omit<Task, 'ask' | 'next'>> & Record<string, unknown>;
 type Dir = 'N' | 'NO' | 'O' | 'SO' | 'S' | 'SW' | 'W' | 'NW';
 // one leg of the way on the treasure map: n fields towards d
@@ -89,7 +89,7 @@ export const MS = (() => {
       extra || {},
     );
 
-  /* ---------- Pflanzen-Bilder (gleiche Schnittstelle wie potatoSVG: highlight, clickable, labels, step) ---------- */
+  /* ---------- plant pictures (same interface as potatoSVG: highlight, clickable, labels, step) ---------- */
   function partsSVG(P: PartsPicture, opts: PartsOpts | undefined, body: (g: PartGroup) => string, labels: PartLabel[]) {
     opts = opts || {};
     const step = opts.step || 99;
@@ -110,7 +110,7 @@ export const MS = (() => {
     return `<svg ${NS} class="plant ${opts.clickable ? 'clickable' : ''}" viewBox="${P.box}" aria-label="${P.label}">${body(g)}${lab}</svg>`;
   }
 
-  // Teile der Getreidepflanze (für Lehrkräfte anpassbar): id, name, desc (Notizkarte), tip (Hinweis beim Suchen)
+  // parts of the grain plant (teachers can adapt them): id, name, desc (Notizkarte), tip (hint while searching)
   const GRAIN_PARTS = [
     {
       id: 'wurzeln',
@@ -210,7 +210,7 @@ export const MS = (() => {
       ],
     );
 
-  // Wasserkreislauf: Stellen 1–5, beschriftbar wie eine Pflanze
+  // water cycle: places 1–5, labelled like a plant
   const CYCLE_PARTS = [
     {
       id: 'verdunsten',
@@ -361,7 +361,7 @@ export const MS = (() => {
   };
 
   /* ================= DIE KORNKAMMER (LB 3) ================= */
-  // Ähren-Bilder: Weizen dicht ohne lange Grannen, Roggen schmal mit Grannen, Gerste mit sehr langen Grannen und geneigt, Hafer als Rispe, Mais als Kolben
+  // pictures of the ears: wheat dense without long awns, rye slim with awns, barley with very long awns and bent over, oats as a panicle, maize as a cob
   const CEREALS = [
     { id: 'weizen', name: 'Weizen', stand: 'Ähre' },
     { id: 'roggen', name: 'Roggen', stand: 'Ähre' },
@@ -453,7 +453,7 @@ export const MS = (() => {
     },
   };
   const KO_POOL = partPool('getreide', 'parts', 'teile', 'kp_').concat([
-    // Getreidearten
+    // kinds of grain
     {
       id: 'koar1',
       mod: 'arten',
@@ -546,7 +546,7 @@ export const MS = (() => {
       a: 0,
     },
     { id: 'koar13', mod: 'arten', g: 'teile', q: 'Der Halm des Getreides ist innen hohl.', rf: true, a: true },
-    // Vom Korn zum Brot
+    // from grain to bread
     {
       id: 'kobr1',
       mod: 'brot',
@@ -644,7 +644,7 @@ export const MS = (() => {
       o: ['Im Sommer', 'Im Winter', 'Im Frühling'],
       a: 0,
     },
-    // Verwendung
+    // uses
     {
       id: 'konu1',
       mod: 'nutzen',
@@ -735,7 +735,7 @@ export const MS = (() => {
       o: ['Grob gemahlene Getreidekörner', 'Getrocknetes Gras', 'Gemahlener Zucker'],
       a: 0,
     },
-    // Wertschätzung
+    // valuing food
     {
       id: 'kowe1',
       mod: 'wert',
@@ -827,7 +827,7 @@ export const MS = (() => {
       a: false,
       why: 'Viele Menschen auf der Welt haben nicht genug zu essen.',
     },
-    // Lückentext
+    // gap text
     { id: 'kolt1', mod: 'lt', g: 'arten', q: 'Getreide gehört zu den ___.', o: ['Gräsern', 'Bäumen', 'Pilzen'], a: 0 },
     {
       id: 'kolt2',
@@ -1247,7 +1247,7 @@ export const MS = (() => {
     },
   };
   const WE_POOL = partPool('kreislauf', 'kreislauf', 'kreislauf', 'wk_').concat([
-    // Zustandsformen
+    // states of matter
     {
       id: 'wezu1',
       mod: 'zustand',
@@ -1388,7 +1388,7 @@ export const MS = (() => {
       ],
       a: 0,
     },
-    // Wettervorhersage
+    // weather forecast
     {
       id: 'wewe1',
       mod: 'vorhersage',
@@ -1455,7 +1455,7 @@ export const MS = (() => {
       o: ['Woher der Wind weht', 'Wie warm es ist', 'Wie spät es ist'],
       a: 0,
     },
-    // Bauernregeln
+    // country sayings about the weather
     {
       id: 'werg1',
       mod: 'regel',
@@ -1546,7 +1546,7 @@ export const MS = (() => {
       o: ['Ist der Himmel abends rot, wird das Wetter schön', 'Morgens regnet es immer', 'Im Mai ist es kalt'],
       a: 0,
     },
-    // Forschen: Schwimmen und Sinken, ein Versuch Schritt für Schritt
+    // experimenting: floating and sinking, one experiment step by step
     {
       id: 'wefo1',
       mod: 'forschen',
@@ -1706,7 +1706,7 @@ export const MS = (() => {
       'In der Wärme verdunstet Wasser schneller.',
     ],
   ].map((x, i) => x.map((text, j) => ({ id: `fx${i}_${j}`, text })));
-  // Wettervorhersage-Karte: vier Tage, jedes Symbol höchstens einmal, alle Temperaturen verschieden (sonst wären Fragen mehrdeutig)
+  // weather forecast card: four days, each symbol at most once, all temperatures different (otherwise questions would be ambiguous)
   const DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
   const WX = {
     sonne: { range: [12, 28], ask: 'scheint den ganzen Tag die Sonne' },
@@ -1929,7 +1929,7 @@ export const MS = (() => {
     };
   }
 
-  /* ---------- Forscherlabor: erst vermuten, dann Ergebnis ---------- */
+  /* ---------- Forscherlabor: guess first, then the result ---------- */
   const FLOAT = [
     { label: 'Kerze', acc: 'eine Kerze', nom: 'Die Kerze', f: true, why: 'Wachs ist leichter als gleich viel Wasser.' },
     {
@@ -2207,7 +2207,7 @@ export const MS = (() => {
   WE.gen = weGen(WE);
 
   /* ================= KOMPASS UND KARTE (LB 5) ================= */
-  // [Zeile, Spalte] je Schritt; Norden ist oben
+  // [row, column] per step; north is up
   const DIRS: Record<Dir, [dr: number, dc: number, name: string]> = {
     N: [-1, 0, 'Norden'],
     NO: [-1, 1, 'Nordosten'],
@@ -2289,7 +2289,7 @@ export const MS = (() => {
   }
   const roseSVG = (opts: { mark?: Dir }) =>
     `<svg ${NS} class="pic" viewBox="-4 -4 128 128" style="max-width:220px" aria-label="Windrose">${roseG(opts)}</svg>`;
-  // Schatzkarte: 5 × 5 Felder, Zelt = Start, ✕ = Schatz; clickable cells carry data-cell="Zeile-Spalte"
+  // Schatzkarte: 5 × 5 cells, tent = start, ✕ = treasure; clickable cells carry data-cell="row-column"
   function mapSVG(o: { start: number[]; goal?: number[]; scale?: boolean; clickable?: boolean; neben?: boolean }) {
     const C = 43,
       X0 = 6,
@@ -2375,7 +2375,7 @@ export const MS = (() => {
     }
   }
 
-  // Plan mit Legende: fünf Orte auf einem 3 × 3-Plan; icons fit x ±20, y −30…+16 around their spot
+  // plan with legend: five places on a 3 × 3 plan; icons fit x ±20, y −30…+16 around their spot
   const I = (d: string, fill: string, w?: number) =>
     `<path d="${d}" fill="${fill}" stroke="${STROKE}" stroke-width="${w || 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
   const PLACES = [
@@ -2595,9 +2595,9 @@ export const MS = (() => {
       'roseturn_' + m + turns[0],
     );
   }
-  // Orte im eigenen Landkreis für Heimat-Aufgaben. Nur mit echten Angaben aus dem Unterricht füllen (Ort, Kreisstadt
-  // ja/nein, Fluss, Lage im Landkreis als Haupthimmelsrichtung). Solange die Liste leer ist, gibt es keine Landkreis-Aufgaben.
-  // Beispiel: { ort: 'Musterstadt', kreisstadt: true, fluss: 'Musterbach', lage: 'Norden' },
+  // Places in the child's own district for local tasks. Fill in only real facts from class (place, district town
+  // yes/no, river, position in the district as a cardinal direction). While the list is empty there are no district tasks.
+  // Example: { ort: 'Musterstadt', kreisstadt: true, fluss: 'Musterbach', lage: 'Norden' },
   const LANDKREIS: { ort: string; kreisstadt?: boolean; fluss?: string; lage?: string }[] = [];
   function landkreisPool(list: typeof LANDKREIS) {
     if (list.length < 3) return [];

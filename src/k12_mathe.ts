@@ -1,4 +1,4 @@
-// Klasse 1 und 2, Mathe: Zahlen bis 20 und Formen (Klasse 1); Zahlen bis 100, Malnehmen und Teilen, Größen, Formen und Flächen (Klasse 2).
+// Grades 1 and 2, maths: Zahlen bis 20 and Formen und Lage (grade 1); Zahlen bis 100, Malnehmen und Teilen, Geld, Länge und Zeit, Formen und Flächen (grade 2).
 // Units register themselves in MK.MODES (pattern: src/sachkunde3.ts) and share hero and opponents (K12.SETS.mathe).
 // Number tasks marked k12 are typed in by the bot from task.answers; tests/test_k12_mathe.js recomputes those answers
 // from the text and the pictures. Unmarked ones (sums, Zahlenmauer, Bauplan, Zahlenfolge) the bot works out itself.
@@ -203,7 +203,7 @@ import type { TaskExtra } from './sachkunde.ts';
     });
   }
 
-  /* ================= ZAHLEN BIS 20 (Klasse 1) ================= */
+  /* ================= ZAHLEN BIS 20 (grade 1) ================= */
   const z = maker('z20');
   const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
   // Rechengeschichten: a things, b come or go. Numbers are digits, so only the words count towards the 12.
@@ -395,7 +395,7 @@ import type { TaskExtra } from './sachkunde.ts';
     if (mod === 'geschichte') {
       const plus = Math.random() < 0.5;
       let a, b;
-      // level 2 goes up to 20 but never across the ten: in Klasse 1 only „Plus und minus“ level 3 does that
+      // level 2 goes up to 20 but never across the ten: in grade 1 only „Plus und minus“ level 3 does that
       if (t === 1) {
         if (plus) {
           a = rnd(2, 8);
@@ -766,7 +766,7 @@ import type { TaskExtra } from './sachkunde.ts';
     genZ20,
   );
 
-  /* ================= FORMEN UND LAGE (Klasse 1) ================= */
+  /* ================= FORMEN UND LAGE (grade 1) ================= */
   const f = maker('form');
   const FILLS = ['#FFD84A', '#7CC2FF', '#FF8FA3', '#8FE3A0', '#C3A6FF', '#FFB870'];
   const FORMS: Record<string, { name: string; acc: string; many: string; ecken: number; draw: () => string }> = {
@@ -1290,9 +1290,9 @@ import type { TaskExtra } from './sachkunde.ts';
     genForm,
   );
 
-  /* ================= ZAHLEN BIS 100 (Klasse 2) ================= */
+  /* ================= ZAHLEN BIS 100 (grade 2) ================= */
   const h = maker('z100');
-  // Zehnerstangen and Einerwürfel
+  // tens rods and ones cubes
   function blocksSVG(n: number) {
     const tens = Math.floor(n / 10),
       ones = n % 10,
@@ -1822,7 +1822,7 @@ import type { TaskExtra } from './sachkunde.ts';
     genZ100,
   );
 
-  /* ================= MALNEHMEN UND TEILEN (Klasse 2) ================= */
+  /* ================= MALNEHMEN UND TEILEN (grade 2) ================= */
   const m = maker('mal');
   const CORE = [2, 5, 10];
   // neighbour tasks: the row asked for and the core row next to it
@@ -1965,7 +1965,7 @@ import type { TaskExtra } from './sachkunde.ts';
         ask: 'Welche Zahl fehlt?',
       });
     }
-    // sach: tier 1 malnehmen, tier 2 teilen
+    // sach: tier 1 multiplying, tier 2 dividing
     if (t === 1) {
       const a = rnd(2, 9),
         b = pick(CORE);
@@ -2148,7 +2148,7 @@ import type { TaskExtra } from './sachkunde.ts';
     genMal,
   );
 
-  /* ================= GELD, LÄNGE, ZEIT (Klasse 2) ================= */
+  /* ================= GELD, LÄNGE, ZEIT (grade 2) ================= */
   const g = maker('gr2');
   const pad = (n: number) => String(n).padStart(2, '0');
   const komma = (ct: number) => `${Math.floor(ct / 100)},${pad(ct % 100)}${NB}€`;
@@ -2438,7 +2438,7 @@ import type { TaskExtra } from './sachkunde.ts';
       }
       const vs = coins([200, 100], rnd(1, 2), 200).concat(coins([50, 20, 10, 5, 2, 1], rnd(1, 3), 99));
       const s = vs.reduce((a, b) => a + b, 0);
-      // two fields keep the numbers a child types within 100 (curriculum Kl. 2), though the amount is more
+      // two fields keep the numbers a child types within 100 (curriculum grade 2), though the amount is more
       return g.num(mod, t, 'gemischt', [Math.floor(s / 100), s % 100], {
         svg: moneySVG(vs),
         ask: 'Wie viel Geld ist das?',
@@ -2523,7 +2523,7 @@ import type { TaskExtra } from './sachkunde.ts';
       const hh = rnd(1, 12),
         mm = t === 1 ? pick([0, 30, 15, 45]) : 5 * rnd(0, 11);
       const show = `${hh}:${pad(mm)} Uhr`;
-      // spans stay inside one hour (Klasse 2 does not count across the full hour yet), or are whole hours
+      // spans stay inside one hour (grade 2 does not count across the full hour yet), or are whole hours
       if (t === 2 && Math.random() < 0.25) {
         const h0 = rnd(7, 14);
         if (Math.random() < 0.3) {
@@ -2960,7 +2960,7 @@ import type { TaskExtra } from './sachkunde.ts';
     genGr2,
   );
 
-  /* ================= FORMEN UND FLÄCHEN (Klasse 2) ================= */
+  /* ================= FORMEN UND FLÄCHEN (grade 2) ================= */
   const f2 = maker('form2');
   const deg = (a: number) => [Math.cos((a * Math.PI) / 180), -Math.sin((a * Math.PI) / 180)];
   const r1 = (v: number) => Math.round(v * 10) / 10;
@@ -3044,7 +3044,7 @@ import type { TaskExtra } from './sachkunde.ts';
     return `<g class="lin">${b}</g>`;
   }
   const lineSVG1 = (kind: string) => svgOf(140, 84, lineG(kind, pick([0, 15, -15, 30, -30]), 70, 42), 'Linie');
-  // a Würfel or Quader big enough to mark one corner, edge or face; the marked part is the only element with class="mark"
+  // a cube or cuboid big enough to mark one corner, edge or face; the marked part is the only element with class="mark"
   const CUBE = ['#8FD3FF', '#3FA0FF', '#2B78C2'];
   function solidMarkSVG(quader: boolean, mark?: string) {
     const [dx, dy, dz, k] = quader ? [2, 1, 1.2, 2.2] : [1, 1, 1, 3],
@@ -3272,7 +3272,7 @@ import type { TaskExtra } from './sachkunde.ts';
         k12: false,
       });
     }
-    // koerper: Ecke, Kante, Fläche of Würfel and Quader
+    // koerper: corner, edge and face of cube and cuboid
     const what = pick(Object.keys(EKF)),
       solid = pick(['Würfel', 'Quader']);
     if (t === 1) {

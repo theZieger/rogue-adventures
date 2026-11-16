@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Roguelike-Lernspiel für Grundschüler (Klasse 1 bis 3): Mathe, Deutsch, Englisch, Ethik und Sachkunde. Eine HTML-Datei, kein Server.",
+  "description": "Learning roguelike for German primary-school children (grades 1 to 3): maths, German, English, ethics and science. One HTML file, no server.",
   "scripts": {
     "build": "node tools/build.js",
     "test": "node --test --test-reporter=spec \"tests/test_*.js\"",

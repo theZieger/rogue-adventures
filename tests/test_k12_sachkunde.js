@@ -1,4 +1,4 @@
-// Klasse 1/2 sachkunde: checks beyond the generic ones in test_knowledge.js and test_data.js
+// grade 1/2 sachkunde: checks beyond the generic ones in test_knowledge.js and test_data.js
 const fails = [];
 const fail = (m) => fails.push(m);
 import '../src/units.ts';

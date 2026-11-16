@@ -1,4 +1,4 @@
-// Sachkunde Klasse 3 (Lehrplan Sachsen, LB 3 „Lebensraum Wiese“ und LB 1 „Zusammen leben und lernen“): Die Wiese, Früher und heute.
+// Sachkunde grade 3 (Saxon curriculum, LB 3 „Lebensraum Wiese“ and LB 1 „Zusammen leben und lernen“): Die Wiese, Früher und heute.
 // Registers its units in MK.MODES like sachkunde.ts; the Stockwerke picture goes into MS.PLANTS for the parts tasks.
 import { MK as K, type GenOpts, type Know } from './knowledge.ts';
 import type { Unit } from './curriculum.ts';
@@ -10,7 +10,7 @@ export const MS3 = (() => {
   const OUT = '#1C2541';
 
   /* ================= DIE WIESE (LB 3) ================= */
-  // Merkmale stehen in den Notizkarten und in TRAITS; das Bild zeigt sie
+  // the traits are in the Notizkarten and in TRAITS; the picture shows them
   const FLORA = [
     {
       id: 'loewenzahn',
@@ -53,7 +53,7 @@ export const MS3 = (() => {
       note: 'Sauerampfer: pfeilförmige Blätter, viele kleine rötliche Blüten. Die Blätter schmecken sauer.',
     },
   ];
-  // has: Pflanzen mit diesem Merkmal; skip: ähnlich genug, um als falsche Antwort zu verwirren
+  // has: plants with this trait; skip: similar enough to confuse as a wrong answer
   const TRAITS = [
     { q: 'Welche Pflanze hat gelbe Blüten?', has: ['loewenzahn', 'hahnenfuss'] },
     { q: 'Welche Pflanze hat weiße Blütenblätter und eine gelbe Mitte?', has: ['gaensebluemchen', 'margerite'] },
@@ -477,7 +477,7 @@ export const MS3 = (() => {
       .join('')}</defs><ellipse cx="60" cy="84" rx="58" ry="80" fill="url(#flBg)"/>${ROUND}${a}${GRASS}</g></svg>`;
   }
 
-  // Stockwerke der Wiese, von unten nach oben; als Bild beschriftbar wie der Wasserkreislauf
+  // layers of the meadow, bottom to top; labelled as a picture like the water cycle
   const LAYERS = [
     {
       id: 'wurzel',
@@ -597,7 +597,7 @@ export const MS3 = (() => {
       ],
     );
   S.PLANTS.wiese = WIESE;
-  // Tiere und ihr Stockwerk (Index in LAYERS): nur Tiere, deren Platz eindeutig ist
+  // animals and their layer (index in LAYERS): only animals whose place is unambiguous
   const ANIMALS = [
     { name: 'der Regenwurm', l: 0 },
     { name: 'der Maulwurf', l: 0 },
@@ -712,7 +712,7 @@ export const MS3 = (() => {
     },
   };
   const WI_POOL = [
-    // Pflanzen
+    // plants
     {
       id: 'wipf1',
       mod: 'pflanze',
@@ -819,7 +819,7 @@ export const MS3 = (() => {
       o: ['5', '4', '20'],
       a: 0,
     },
-    // Stockwerke
+    // layers
     { id: 'wist1', mod: 'stock', g: 'stock', q: 'Wie viele Stockwerke hat eine Wiese?', o: ['4', '2', '6'], a: 0 },
     {
       id: 'wist2',
@@ -889,7 +889,7 @@ export const MS3 = (() => {
       o: ['Blattläuse', 'Regenwürmer', 'Wurzeln'],
       a: 0,
     },
-    // Entwicklung
+    // development
     {
       id: 'wien1',
       mod: 'entw',
@@ -975,7 +975,7 @@ export const MS3 = (() => {
       o: ['Raupe', 'Puppe', 'Falter'],
       a: 0,
     },
-    // Herbarium
+    // herbarium
     {
       id: 'wihe1',
       mod: 'herbar',
@@ -1033,7 +1033,7 @@ export const MS3 = (() => {
       o: ['Damit die Pflanze nicht schimmelt', 'Damit die Pflanze grüner wird', 'Damit sie schneller wächst'],
       a: 0,
     },
-    // Schutz
+    // protection
     {
       id: 'wisc1',
       mod: 'schutz',
@@ -1103,7 +1103,7 @@ export const MS3 = (() => {
       o: ['Eine Ecke im Garten wild blühen lassen', 'Alle Blumen abpflücken', 'Den Rasen jede Woche mähen'],
       a: 0,
     },
-    // Sinne
+    // senses
     {
       id: 'wisi1',
       mod: 'sinne',
@@ -1489,7 +1489,7 @@ export const MS3 = (() => {
   WI.gen = wiGen(WI);
 
   /* ================= FRÜHER UND HEUTE (LB 1) ================= */
-  // [früher, heute]: jedes „heute“ kommt nur einmal vor, damit jede Frage genau eine richtige Antwort hat
+  // [then, now]: every „now“ occurs only once, so that every question has exactly one right answer
   const TOOLS = [
     ['Sense', 'Mähdrescher'],
     ['Pflug mit Pferden', 'Traktor mit Pflug'],
@@ -1561,7 +1561,7 @@ export const MS3 = (() => {
       ],
     },
   ];
-  // Wo schlägst du nach? a = Quelle, die passt; skip = Quellen, die hier auch passen könnten
+  // where do you look it up? a = the source that fits; skip = sources that could fit here too
   const SOURCES = [
     'Sachbuch',
     'Lexikon',
@@ -1702,7 +1702,7 @@ export const MS3 = (() => {
     },
   };
   const FR_POOL = [
-    // Geräte
+    // tools
     {
       id: 'frge1',
       mod: 'geraet',
@@ -1776,7 +1776,7 @@ export const MS3 = (() => {
       o: ['Im gemeinsamen Backofen des Dorfes', 'Im Supermarkt', 'Im Kühlschrank'],
       a: 0,
     },
-    // Alltag
+    // everyday life
     {
       id: 'fral1',
       mod: 'alltag',
@@ -1881,7 +1881,7 @@ export const MS3 = (() => {
       o: ['Im Heimatmuseum', 'Im Supermarkt', 'Im Schwimmbad'],
       a: 0,
     },
-    // Zeit
+    // time
     {
       id: 'frze1',
       mod: 'zeit',
@@ -1923,7 +1923,7 @@ export const MS3 = (() => {
       o: ['Mit einer Gänsefeder und Tinte', 'Mit dem Kugelschreiber', 'Mit dem Tablet'],
       a: 0,
     },
-    // Kultur
+    // culture
     {
       id: 'frku1',
       mod: 'kultur',
@@ -2085,7 +2085,7 @@ export const MS3 = (() => {
       o: ['Mexiko', 'Italien', 'Tschechien'],
       a: 0,
     },
-    // Medien
+    // media
     {
       id: 'frme1',
       mod: 'medien',
@@ -2159,7 +2159,7 @@ export const MS3 = (() => {
       o: ['Ob das Stichwort richtig geschrieben ist', 'Ob der Bildschirm sauber ist', 'Wie spät es ist'],
       a: 0,
     },
-    // Prüfen
+    // checking
     {
       id: 'frpr1',
       mod: 'pruefen',
@@ -2329,7 +2329,7 @@ export const MS3 = (() => {
       return null;
     };
   }
-  // Dilemma-Karten wie bei Gute Freunde: jede Wahl bekommt dieselbe Belohnung
+  // dilemma cards as in Gute Freunde: every choice gets the same reward
   const FR: Unit = {
     modules: FR_MODULES,
     tut: FR_TUT,

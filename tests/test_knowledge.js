@@ -220,7 +220,7 @@ for (const m of ['woerterwerkstatt', 'satzbaustelle'])
   for (const mod of Object.keys(K.MODES[m].modules))
     de(K.MODES[m].pool.some((e) => e.mod === mod) || ['abc', 'umstell'].includes(mod), 'no tasks for ' + mod);
 console.log('deutsch words and sentences', total);
-// Deutsch, step 23: Wortfamilie, Ableitungen, Trennung, Komma, Großschreibung im Satz, Ersatz-/Weglassprobe, Pronomen, Redensarten
+// Deutsch, step 23: word family, derivations, hyphenation, comma, capitals in a sentence, Ersatz-/Weglassprobe, pronouns, sayings
 const plain = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
 W.familien.forEach(([stem, word, fam, other]) => {
   de(
@@ -316,7 +316,7 @@ for (let i = 0; i < 300; i++) {
   const s = K.generate('woerterwerkstatt', 'stamm', 1, {}, i);
   de(s.group === 'stamm:1' && s.qid.startsWith('wf_'), 'stamm tier 1 asks families ' + s.qid);
 }
-// Grundform, doppelte Selbstlaute, sächsische Wörter, zweiteiliges Prädikat, Zeitwörter, Anrede, Artikelwörter
+// base form, double vowels, Saxon words, two-part predicate, time words, form of address, article words
 de(W.grundform.length >= 30, 'at least 30 Grundform items');
 pairs('grundform', W.grundform, 4);
 W.grundform.forEach(([f, r, f1, f2]) => {
@@ -404,7 +404,7 @@ for (let i = 0; i < 300; i++) {
     'praedikat task ' + p.qid,
   );
 }
-// Forschen: Schwimmen und Sinken stimmt mit dem Forscherlabor überein, Versuche in der Reihenfolge Frage → Ergebnis
+// experimenting: floating and sinking agrees with the Forscherlabor, experiments in the order question → result
 {
   const fl = (l) => S.FLOAT.find((x) => x.label === l);
   if (!fl('Knetkugel') || fl('Knetkugel').f || !fl('Knetschiffchen') || !fl('Knetschiffchen').f)
@@ -701,7 +701,7 @@ for (let i = 0; i < 300; i++) {
   if (u.a !== want) fails.push('urn outcome ' + u.r);
 }
 for (const f of S.FLOAT) if (!f.why || typeof f.f !== 'boolean') fails.push('float entry ' + f.label);
-// Die fünf Sinne und Sicher im Verkehr: 50+ questions each, notes per topic, pictures with exactly one answer
+// Die fünf Sinne and Sicher im Verkehr: 50+ questions each, notes per topic, pictures with exactly one answer
 for (const m of ['sinne', 'verkehr']) {
   const cfg = K.MODES[m];
   if (cfg.pool.length < 50) fails.push(m + ' has only ' + cfg.pool.length + ' questions');

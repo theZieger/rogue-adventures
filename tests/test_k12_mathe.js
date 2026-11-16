@@ -1,4 +1,4 @@
-// Klasse 1/2 mathe: checks beyond the generic ones in test_knowledge.js and test_data.js.
+// grade 1/2 mathe: checks beyond the generic ones in test_knowledge.js and test_data.js.
 // Every answer is worked out again from what the child sees (text and picture data), numbers stay in the grade's range.
 const fails = [];
 import '../src/units.ts';
@@ -428,7 +428,7 @@ for (const [mode, max] of Object.entries(UNITS)) {
           if (part.split(/\s+/).filter((w) => /[a-zäöüß]/i.test(w)).length > 12) fail(`more than 12 words: ${part}`);
         if (/\d,\d/.test(words + (q.text || '') + (q.options || []).join(' ')) && mode !== 'groessen2')
           fail(`comma number outside money and length: ${tag}`);
-        // Klasse 1 crosses ten only in rechnen tier 3
+        // grade 1 crosses ten only in rechnen tier 3
         if (mode === 'zahlen20' && t < 3 && ['zerlegen', 'vergleich'].includes(mod)) {
           const s = plain(q.text || q.q || '');
           let m;
@@ -438,7 +438,7 @@ for (const [mode, max] of Object.entries(UNITS)) {
           )
             fail('crosses ten: ' + s);
         }
-        // number stories: the result stays in the same ten as the start (no crossing in Klasse 1 outside „Plus und minus“ level 3)
+        // number stories: the result stays in the same ten as the start (no crossing in grade 1 outside „Plus und minus“ level 3)
         if (mode === 'zahlen20' && mod === 'geschichte') {
           const [x] = nums(q.ask || '');
           const r = q.answers[0];

@@ -1,10 +1,10 @@
 # Lernquest 🎒
 
-Ein Roguelike-Lernspiel für Grundschüler (Klasse 1 bis 3) – Monster, Karte, Attacken.
+Ein Lern-Abenteuer für Grundschüler (Klasse 1 bis 3) – Monster, Karte, Attacken.
 Jede Attacke ist eine Aufgabe: richtig gelöst = Treffer, falsch = der Gegner schlägt zu.
-Komplett in einer HTML-Datei, kein Server, kein Account. Deutsch.
+Kein Server, kein Konto, alles bleibt auf dem Gerät. Deutsch, nach dem sächsischen Lehrplan.
 
-**Spielen:** https://thezieger.github.io/rogue-adventures/
+**Loslegen:** https://thezieger.github.io/rogue-adventures/
 
 ## Als App installieren
 
@@ -19,9 +19,11 @@ Lernquest ist eine Web-App (PWA) – einmal installiert, startet es wie eine nor
 
 Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerweise sofort die neueste Version – bei sehr langsamer Verbindung startet nach 3–4 Sekunden die gespeicherte und das Update folgt beim nächsten Mal. Wird ein Update veröffentlicht, während die App offen ist, wird es eingespielt, sobald sie in den Hintergrund geht – nie mitten im Kampf. Ohne Internet startet die zuletzt geladene Version.
 
-## Modi
+## Themen
 
-| Modus | Inhalt |
+Klasse 3:
+
+| Thema | Inhalt |
 |---|---|
 | 🧮 Zahlenquest | Addition/Subtraktion bis 1000, Einmaleins, Zahlenrätsel, Zahlenfolgen, Nachbarzahlen, Zahlengitter, Teilen, Runden, Teilbarkeit und Quersumme, Zahlenmauern und Rechendreiecke, Bruchteile (auch von Größen), Punkt vor Strich, Zahlwörter und Stellenwerttafel, Kopfrechnen bis 1000, Malnehmen mit großen Zahlen, Zahlen vergleichen und ordnen, Überschlagen (Welt 3), schriftliches Addieren, Subtrahieren (Ergänzungsverfahren) und Multiplizieren (Welt 3) – 3 Welten, adaptive Schwierigkeit (Welt 1 unter 100) |
 | 🎪 Der Jahrmarkt | Mathe, Größen und Daten: Uhrzeit auf die Minute und Zeitspannen (Uhr als Bild), m/cm/km, g/kg mit Waage und Stützpunkten, Sekunden, Fahrplan lesen, Glücksrad (sicher, möglich, unmöglich, wahrscheinlicher), Kombinationen zählen, Säulen- und Balkendiagramm, Sachaufgaben mit „3 € 50 ct“ – 2 Welten |
@@ -44,9 +46,9 @@ Updates kommen automatisch: Beim Öffnen holt die App (mit Internet) normalerwei
 | 🚲 Sicher im Verkehr | Sachkunde: Verkehrszeichen als Bild (auch andersherum), Vorfahrt an der Kreuzung (rechts vor links, Stufe 2 mit Schildern und Ampel), das verkehrssichere Fahrrad mit Zeichenschule und „Was fehlt?“, Linksabbiegen und Straße überqueren als Reihenfolge, Helm, Sichtbarkeit, Gehweg und Radweg für Kinder |
 | 🎻 Der Konzertsaal | Musik, nur zum Anschauen (keine Töne): Notenwerte und Pausen (Bilder, in Stufe 2 rechnen), Takt ergänzen (2/4, 3/4, Stufe 2 auch 4/4 mit Pausen), Tonhöhen c bis c im Violinschlüssel, Instrumente und ihre Familien, wie der Ton entsteht, piano/forte/crescendo, Komponisten (Bach, Mozart, Beethoven, Robert und Clara Schumann, Wagner) mit Reihenfolge nach Geburtsjahr, Instrumente und Tänze anderer Länder |
 
-Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von selbst vorgelesen; je Fach ein gemeinsamer Held mit Gegnern in `src/klasse12.ts`):
+Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von selbst vorgelesen; je Fach ein gemeinsamer Held mit Gegnern):
 
-| Klasse | Modus | Inhalt |
+| Klasse | Thema | Inhalt |
 |---|---|---|
 | 1 | 🧮 Zahlen bis 20 | Punkte zählen (Zehnerfeld, Würfel), zerlegen, vergleichen, Nachbarzahlen, verdoppeln und halbieren, plus und minus bis 20 mit Zehnerübergang, Zahlenmauern |
 | 1 | 🔷 Formen und Lage | Links, rechts, oben, unten, zwischen; Dreieck, Viereck, Rechteck, Quadrat, Kreis; Würfel, Quader, Kugel; Muster fortsetzen; Würfeltürme |
@@ -67,126 +69,43 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 | 2 | 🕯️ Feste und die Welt | Geburtstag, Erntedank, St. Martin, Advent, Nikolaus, Weihnachten nach Lukas, Ostern; Staunen über die Natur, werden und wachsen – Dilemma-Karten |
 | 2 | 🥁 Der Musikraum | Welches Instrument ist das (als Bild)? Instrumentenfamilien, wie man es spielt, laut und leise, hoch und tief, Stimmen |
 
-- Lesestube: In Deutsch- und Ethik-Einheiten ersetzt sie einen Kampf pro Welt – ein kurzer Text (`src/texte.ts`), danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
-- Kreisel-Arena: ersetzt einmal pro Welt (Etage 4–6) einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten, erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel, in der die Kreisel umeinanderkreisen und bei jedem Treffer zusammenkrachen; verlieren kostet nichts. Den Kreisel baut man im Stempelheft unter „Kreisel bauen“ aus Spitze (Wucht), Ring (Panzer) und Scheibe (Schwung) – Teile und Werte in `TOP_PARTS` (`src/logic.ts`).
-- Kaufladen (Zahlenquest, einmal pro Welt, Kartenfeld `markt`): Das Kind bedient drei Kunden – in Welt 1 den Preis passend abzählen, ab Welt 2 das Rückgeld hinlegen – und sucht sich zum Dank einen Gegenstand aus. Eigenes Geld gibt es im ganzen Lernquest nicht: nichts wird verdient, nichts gekauft.
-- Duell zu zweit (Titel): zwei Kinder, ein Gerät, abwechselnd Aufgaben aus der eigenen Einheit. Nichts wird gespeichert, auch keine Statistik.
-- Turmwacht (Titel, Klasse 2 und 3): Wiederholen am Wissensturm. Das Kind wählt ein bis drei Fächer (vorgeschlagen werden die schwächsten), jedes Fach bekommt einen Weg (ein Fach allein: bis zu drei Wege nach Thema oder Aufgabenart), auf dem Monster zum Turm laufen; jede richtige Antwort trifft eins. Gefragt werden nur schon geübte Aufgabenarten, mindestens zwei je Fach (ein neues Fach beginnt mit seinem ersten Thema). Sechs Wellen, Boss in Welle 3, Elitemonster in Welle 5, Endboss in Welle 6; Klasse 2 mit weniger und keinen schnellen Monstern. Richtige Antworten bringen Ziegel 🧱, mit denen man in der Bauzeit nach jeder Welle Wachen aufstellt und verbessert, Stockwerke für die Fächer baut (jedes mit eigener Wirkung) oder die Mauer flickt; nach jeder Welle wird die Mauer außerdem bis 30 ❤️ geflickt. Fällt der Turm, geht es zweimal pro Turmwacht ab der letzten Bauzeit weiter. Kein Zeitdruck; die Antworten zählen in Statistik und Wochenbericht. Die Turmwacht ist noch in Erprobung und deshalb zuerst ausgeschaltet: Eltern schalten sie unter „Anzeigen“ ein (`meta.turm.on`) und können dort die Fächer festlegen. Regeln in `src/turm.ts`, Turm und Wege in `src/turmart.ts`.
-- Kein Zeitdruck. Alle vier Attacken sind von Anfang an da – nur in Klasse 1 beginnt das erste Abenteuer eines Themas mit zwei, das zweite mit drei Attacken; der Schaden steht als ganze Zahl auf dem Knopf.
+## So läuft ein Abenteuer
+
+- Startseite: Klasse → Fach → Thema. Wo Themen aufeinander aufbauen (Mathe und Englisch in Klasse 3), stehen sie von leicht nach schwer, und das erste trägt „Hier anfangen“. Gesperrt ist nichts.
+- Kein Zeitdruck. Der Schaden steht als ganze Zahl auf dem Knopf. Alle vier Attacken sind von Anfang an da – nur in Klasse 1 beginnt das erste Abenteuer eines Themas mit zwei, das zweite mit drei Attacken.
 - Abwechseln lohnt sich: Dieselbe Attacke direkt nochmal wird „müde“ und macht weniger Schaden. „stark!“ zeigt den Typ-Vorteil.
-- Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
-- Werkbank (im Stempelheft): Holz (Ereignis „Der Holzplatz“ in Zahlenquest, Siege in der Kartoffel-Werkstatt), Stein und Erz (Bergwerk) und Ernte (Schulgarten) werden nach einer Einmaleins-Sachaufgabe zu Trank, Großem Trank, Schild oder Chilischote (Vorrat, höchstens drei, kommt ins nächste Abenteuer) oder zu Möbeln.
-- Meine Hütte (Titel): Zimmer als Bild mit Tisch, Regal (zählt Monsterbuch, Kreiselteile, Notizkarten), Wandhaken, Bett und Fenster; Zweites Zimmer für 30 Stempel und 12 Stein, Dachfenster für einen Sieg durch alle drei Welten von Zahlenquest.
-- „Was ist neu?“ im Spiel zeigt `CHANGELOG.md`.
 - Jede Aufgabenart hat eine Erklärung („🛈 Wie geht das?“), die beim ersten Mal automatisch erscheint.
-- Falsch beantwortete Wissensfragen kommen schneller wieder (Spaced Repetition).
-- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN (beim ersten Start wird sie eingerichtet) in vier Reitern → Üben (Fächer, Spiele, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Reset). Unter „Anzeigen“ lassen sich ganze Klassen und Extras (Schulgarten, Hütte, Kreisel-Arena, Duell, Wochenziele, Markt) ausblenden, die Turmwacht einschalten und ihre Fächer festlegen, bei Englisch die Wortthemen aus dem Unterricht wählen; alles steht als `grade:<n>`, `extra:<name>` und `en:<Thema>` in `meta.hidden`.
-- Startseite: Klasse → Fach (Kachel) → Thema. Sie baut sich aus `grade` und `subject` der Einheiten selbst auf (siehe „Neue Einheit“). Haben die Themen eines Fachs ein `rank` (Mathe und Englisch in Klasse 3), stehen sie von leicht nach schwer: Das erste trägt „Hier anfangen“, ein schwereres verweist auf das leichteste noch nicht geübte. Gesperrt ist nichts.
-- „Idee senden“ schickt Ideen, Fehler und Lob direkt aus dem Spiel an ein Google-Formular (kein Konto nötig) – siehe „Feedback“.
-- Töne sind gemeinfreie Clips (CC0) in `docs/sounds/` (Quellen in `docs/sounds/SOURCES.md`); Animationen respektieren „Bewegung reduzieren“.
-- Fortschritt wird im Browser gespeichert (localStorage), pro Modus ein Spielstand – auch mitten im Kampf. Beim Fortsetzen geht es genau dort weiter. Über den Elternbereich lässt sich alles als Spielstand-Code auf ein anderes Gerät mitnehmen.
+- Falsch beantwortete Wissensfragen kommen schneller wieder.
+- Gegenstände: Trank, Großer Trank, Beere, Schild, Chilischote (doppelter Schaden), Eselsbrücke (Tipp), Schutzengel, Fleißbienchen (XP).
+- Der Fortschritt wird auf dem Gerät gespeichert, pro Thema ein Spielstand – auch mitten im Kampf. Beim Fortsetzen geht es genau dort weiter.
+- Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich. Animationen respektieren „Bewegung reduzieren“.
+
+## Extras
+
+- Lesestube: In Deutsch- und Ethik-Themen ersetzt sie einen Kampf pro Welt – ein kurzer Text, danach drei Fragen als Angriff. Klasse-1-Texte stehen in Silben, abwechselnd blau und rot (Silbenmethode).
+- Kreisel-Arena: ersetzt einmal pro Welt einen Kampf, nicht in Klasse 1. Schwung statt Lebenspunkten: erst drei Aufgaben zum Anschwingen, dann Runden in der Schüssel; verlieren kostet nichts. Den Kreisel baut man im Stempelheft aus Spitze, Ring und Scheibe.
+- Kaufladen (Zahlenquest, einmal pro Welt): Das Kind bedient drei Kunden – in Welt 1 den Preis passend abzählen, ab Welt 2 das Rückgeld hinlegen – und sucht sich zum Dank einen Gegenstand aus. Eigenes Geld gibt es in Lernquest nicht: nichts wird verdient, nichts gekauft.
+- Duell zu zweit: zwei Kinder, ein Gerät, abwechselnd Aufgaben aus dem eigenen Thema. Nichts wird gespeichert, auch keine Statistik.
+- Turmwacht (Klasse 2 und 3): Wiederholen am Wissensturm. Das Kind wählt ein bis drei Fächer (vorgeschlagen werden die schwächsten); Monster laufen auf Wegen zum Turm, jede richtige Antwort trifft eins. Gefragt werden nur schon geübte Aufgabenarten. Sechs Wellen, dazwischen Bauzeit: Mit Ziegeln 🧱 aus richtigen Antworten stellt man Wachen auf, baut Stockwerke oder flickt die Mauer. Die Turmwacht ist noch in Erprobung und deshalb zuerst ausgeschaltet; Eltern schalten sie unter „Anzeigen“ ein.
+- Werkbank (im Stempelheft): Holz, Stein, Erz und Ernte werden nach einer Einmaleins-Sachaufgabe zu Trank, Schild oder Chilischote für das nächste Abenteuer oder zu Möbeln.
+- Meine Hütte: ein Zimmer als Bild mit Tisch, Regal, Wandhaken, Bett und Fenster, das mit dem Üben wächst.
+- Schulgarten und Wochenziele mit Wochenbericht.
+
+## Für Eltern
+
+- Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN, in vier Reitern → Üben (Fächer, Themen, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (als Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Zurücksetzen). Unter „Anzeigen“ lassen sich ganze Klassen und Extras ausblenden und bei Englisch die Wortthemen aus dem Unterricht wählen.
+- Über den Spielstand-Code lässt sich alles auf ein anderes Gerät mitnehmen.
 - Keine Daten verlassen das Gerät: keine Konten, kein Tracking, keine externen Schriften. Einzige Ausnahme: eine Nachricht, die man selbst mit „Idee senden“ abschickt.
-- Bedienbar per Touch, Maus oder Tastatur (Ziffern, ⌫, Enter); hoch- und querformattauglich.
-
-## Projektstruktur
-
-```
-src/styles/        Design (Portrait-first, eingebauter Ziffernblock, hoher Kontrast): tokens.css mit allen Farben, Größen und Abständen, dann eine Datei
-                   je Bereich; die Reihenfolge steht in `STYLES` (tools/build.js)
-src/logic.ts       Mathe-Generatoren, Monster-/Gegnerdaten, Karte
-src/jahrmarkt.ts   Mathe-Einheit Der Jahrmarkt (Generatoren, Uhr/Glücksrad/Waage/Diagramm als SVG)
-src/woerter.ts     Wortlisten und Sätze für Deutsch – hier können Eltern Lernwörter ergänzen (Aufbau im Dateikopf)
-src/english.ts     Wörter und Sätze für Englisch – hier können Eltern Wörter der Klasse ergänzen (Aufbau im Dateikopf)
-src/texte.ts       Lesestube-Texte mit je drei Fragen (Fabeln nach Äsop, gemeinfreie Gedichte, Erzählungen, Anleitung, Rezept, Lexikon, Sachtexte auch über Sachsen, eine Sage, Witze, Sprichwörter)
-src/knowledge.ts   Wissensinhalte Ethik, Kartoffel, Deutsch und Englisch (Fragen, Notizkarten, Tutorials)
-src/ethik.ts       Ethik-Einheit Ich, wir und die Welt (Fragen, Drei Welten, Dilemma-Karten)
-src/sachkunde.ts   Sachkunde-Einheiten Kornkammer, Wetterstation, Kompass und Karte (Fragen, Bilder, Forscherlabor, Schatzkarte)
-src/sachkunde2.ts  Sachkunde-Einheiten Die fünf Sinne und Sicher im Verkehr (Auge, Ohr, Fahrrad, Verkehrszeichen, Kreuzung, Sinnestäuschungen)
-src/sachkunde3.ts  Sachkunde-Einheiten Die Wiese und Früher und heute (Fragen, Pflanzenbilder, Stockwerke, Dilemma-Karten)
-src/musik.ts       Musik-Einheit Der Konzertsaal (Fragen, Noten- und Takt-Bilder, Instrumente, Komponisten)
-src/klasse12.ts    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
-src/k12_*.ts       Klasse-1/2-Einheiten: Mathe, Deutsch, Sachkunde, Ethik (Musik steht mit in k12_ethik.ts)
-src/turm.ts        Turmwacht-Regeln (Wellen, Wachen, Stockwerke, Bauzeit, Neustart ab der letzten Bauzeit), ohne Oberfläche
-src/turmart.ts     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-Bilder
-src/monsters.ts    Handgezeichnete SVG-Monster (Zeichencode, das Spiel zeichnet sie beim Anzeigen)
-src/units.ts       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
-src/curriculum.ts  Reihenfolge der Einheiten, Fächer und Klassen (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) mit den Typen `Unit` und `TaskType`
-src/save.ts        der Spielstand: Typ `Meta`, Standardwerte, Laden/Speichern und die Reparatur beim Laden (`normMeta`)
-src/savecode.ts    Spielstand-Code (verkleinern, Base42); src/qr.ts zeichnet den QR-Code
-src/main.ts        Einstieg: lädt die Teile der Spiel-Engine in der Reihenfolge, in der sie starten
-src/app/           Spiel-Engine als Module, jedes importiert, was es braucht. Was mehrere Teile ändern (Spielstand `meta`,
-                   laufendes Abenteuer `run`, Einheit `mode`), steht in state.ts:
-                   core (Einheiten, Lehrplan, Icons) · storage (Spielstand laden und reparieren) · progress (Stufen,
-                   Stempel, Wochenziele) · ui (Anzeige, Zurück, Töne, Erklärungen) · tasks (Aufgaben-UI, Vorlesen) ·
-                   title (Startseite, PIN, „Was ist neu?“) · backup (Spielstand-Code) · map (Held wählen, Karte) ·
-                   battle (Kampf, Kreisel-Arena, Lesestube) · nodes (Kartenfelder) · collection (Abschluss, Monsterbuch,
-                   Stempelheft) · huette (Werkbank, Hütte, Kleiderkammer) · duell · turm, turm_screens (Turmwacht) ·
-                   garten · elternbereich · feedback · boot
-src/sw.js          Service Worker (Offline-Cache, Version wird beim Build gesetzt)
-src/manifest.webmanifest  App-Manifest (Name, Farben, Icons)
-CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu?“ angezeigt
-tools/build.js     baut docs/index.html (eine Datei, mit esbuild gebündelt) + docs/sw.js + docs/manifest.webmanifest
-GLOSSARY.md        die Begriffe des Projekts (Einheit, Abenteuer, Aufgabenart, Stufe …) und ihre Namen im Code
-adr/               festgehaltene Entscheidungen zur Architektur
-tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
-lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
-tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); page.js lädt die gebaute Seite für die Seitentests; Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
-docs/index.html    gebaute Spieldatei (nicht eingecheckt, die CI baut und veröffentlicht sie)
-docs/gallery.html  das Design-System auf einer Seite: alle Tokens, Bausteine und ihre Regeln (gebaut aus src/gallery.ts, nicht eingecheckt)
-docs/icons/        App-Icons (Android maskable, iOS, Desktop, Favicon)
-docs/splash/       iOS/iPadOS-Startbildschirme
-docs/screenshots/  Bilder für den Installieren-Dialog (Android/Desktop)
-docs/sounds/       Töne (CC0, Quellen in SOURCES.md)
-docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebunden, keine Verbindung zu Google
-```
-
-## Entwickeln
-
-```bash
-npm install          # nur Werkzeuge für Build und Tests (danach einmal: npx playwright install chromium)
-npm run build        # src/* -> docs/index.html
-npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, etwa eine halbe Minute)
-npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js), auf einer virtuellen Uhr:
-                     # gleicher SEED = gleicher Lauf; TRACE_DIR=ordner schreibt jede Seite mit, um zwei Stände zu vergleichen
-npm run e2e          # Browser-Tests (Playwright): Start ohne Internet, Barrierefreiheit jedes Bildschirms
-npm run screenshots vorher   # Bildschirmfotos aller Bildschirme aus tools/screens.js; mit zwei Ordnern: Vergleich
-npm run typecheck    # tsc prüft alle TypeScript-Dateien
-npm run lint         # Biome (nicht deklarierte Namen) und Stylelint (Farben, Größen und Abstände nur aus src/styles/tokens.css)
-npm run format       # formatiert JS, TS, CSS und JSON mit Biome (die CI prüft das)
-MODE=turm GRADE=3 SUBJECTS=Mathe,Deutsch ACC=0.9 RUNS=1 node tests/playtest.js   # nur die Turmwacht (SEED=n, NAIVE=1 tippt wie ein Kind beliebige Monster an)
-```
-
-Inhalte anpassen:
-- Pflanzenteil-Namen: `PARTS` in `src/knowledge.ts`
-- Getreide und Wasserkreislauf: `GRAIN_PARTS`, `CYCLE_PARTS` in `src/sachkunde.ts`; Auge, Ohr und Fahrrad: `EYE_PARTS`, `EAR_PARTS`, `BIKE_PARTS` in `src/sachkunde2.ts`; Orte im eigenen Landkreis: `LANDKREIS` (leer = keine Landkreis-Aufgaben)
-- Fragen: `L_POOL` (Luther), `KJ_POOL` (Kirchenjahr, Fragen mit `w: 2` nur in Welt 2), `F_POOL` (Gute Freunde) und `K_POOL` (Kartoffel) in `src/knowledge.ts`; Dilemma-Karten in `F_EVENTS`; Ich, wir und die Welt in `src/ethik.ts` (`POOL`, Dinge für Drei Welten in `DINGE`, Dilemma-Karten in `EVENTS`)
-- Deutsch-Wörter und -Sätze: `src/woerter.ts`, Englisch: `src/english.ts` (danach `npm run build && npm test`)
-- Schwierigkeitsstufen pro Welt: `worldCap` in `MODULES` (`src/logic.ts`) bzw. `K_MODULES`
-- Gegner/Balance: `ENEMIES` in `src/logic.ts`, `L_ENEMIES`/`KJ_ENEMIES`/`F_ENEMIES`/`K_ENEMIES` in `src/knowledge.ts`
-
-## Neue Einheit
-
-Jede Einheit trägt Klasse (`grade`) und Fach (`subject`) selbst und trägt sich in `MK.MODES` ein (Beispiel: `src/sachkunde3.ts`).
-`src/units.ts` macht daraus die eine Liste `UNITS`: Startseite, Klassen-Reiter, Statistik, Spielstand, Bot und Monster-Bilder lesen sie.
-Dazu gehören: eine neue Datei in `src/units.ts` importieren (die Reihenfolge dort ist die Reihenfolge der Themen), Elterntexte in `src/eltern.ts`, Zeichnungen für Held und Gegner in
-`src/monsters.ts`, neue Emojis in `src/icons.ts`. Die Tests melden, was fehlt. Ein neues Fach ist eine Zeile in `SUBJECTS` (`src/app/core.ts`).
-
-## Veröffentlichen (GitHub Pages)
-
-Repository → Settings → Pages → Source „GitHub Actions“.
-Die CI (`.github/workflows/ci.yml`) baut bei jedem Push auf `main`, prüft und veröffentlicht `docs/`. Die gebauten Dateien
-`docs/index.html`, `docs/sw.js` und `docs/manifest.webmanifest` werden nicht eingecheckt.
+- „Was ist neu?“ auf der Startseite zeigt die Änderungen nach Datum (`CHANGELOG.md`).
 
 ## Feedback
 
-„💡 Idee senden“ (Startseite und Elternbereich) schickt die Nachricht direkt aus dem Spiel an das Google-Formular „Feedback“ – kein Konto nötig, man verlässt das Spiel nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
+„💡 Idee senden“ (Startseite und Elternbereich) schickt Ideen, Fehler und Lob direkt an ein Google-Formular – kein Konto nötig, man verlässt Lernquest nicht. Klappt das Senden nicht (z. B. offline), bleibt der Text stehen und es gibt einen Link, der das Formular mit vorausgefülltem Text in einem neuen Tab öffnet.
 
-Ein anderes Formular verwenden: In `FEEDBACK` (`src/app/feedback.ts`) die Formular-Adresse (bis vor `/viewform`) und die Feld-ID eintragen. Die Feld-ID findet man über ⋮ → „Vorausgefüllten Link abrufen“ (Teil `entry.123456789` im Link). Das Formular darf keine Anmeldung verlangen und nur eine Pflichtfrage (Absatz) haben.
+## Mitmachen
 
-## Texte und Namen
-
-`tools/unslop-text.md` und `tools/unslop-visual.md` listen die Floskeln und Namensmuster, die im Spiel vermieden werden (Ergebnis einer Analyse von 40 generierten Text- und 20 Spielproben). Neue Gegner, Attacken, Gegenstände, Meldungen und Gestaltung bitte daran prüfen.
+Alles zum Entwickeln – Aufbau, Befehle, neue Themen, Veröffentlichen – steht auf Englisch in [CONTRIBUTING.md](CONTRIBUTING.md). Fehler in Lerninhalten und Ideen sind über „Idee senden“ oder als Issue willkommen.
 
 ## Lizenz
 
-MIT. Die Lerninhalte folgen den Arbeitsblättern der Klasse; das Kartoffelkäfergedicht (J. Guggenmos) ist bewusst nicht enthalten.
+MIT, Einzelheiten in `LICENSES.md`. Die Lerninhalte folgen den Arbeitsblättern der Klasse; das Kartoffelkäfergedicht (J. Guggenmos) ist bewusst nicht enthalten.

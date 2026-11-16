@@ -1,4 +1,4 @@
-// Klasse 1/2 deutsch: checks beyond the generic ones in test_knowledge.js and test_data.js
+// grade 1/2 deutsch: checks beyond the generic ones in test_knowledge.js and test_data.js
 import path from 'path';
 import fs from 'fs';
 const fails = [];
@@ -14,7 +14,7 @@ const parser = new new JSDOM('').window.DOMParser();
 const UNITS = { laute1: 1, schreiben2: 2, woerter2: 2 };
 const plain = (s) => s.replace(/<[^>]+>/g, ' ');
 const norm = (w) => w.toLowerCase().replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
-// Klasse 3/4 in the Rechtschreibrahmen: ck, tz; Komma and wörtliche Rede are not asked either
+// grade 3/4 in the Rechtschreibrahmen: ck, tz; Komma and wörtliche Rede are not asked either
 const K3 = /ck|tz/i;
 // what the read-aloud voice reads in a task: the selector is taken from readAloud in src/app/tasks.ts, so both stay in step;
 // task.say replaces the question, task.quiet leaves out the options
@@ -89,7 +89,7 @@ for (const [m, grade] of Object.entries(UNITS)) {
             tag + ': syllable order',
           );
         }
-        // the voice says letter names („Es“), not sounds, so Klasse 1 never hears a single letter
+        // the voice says letter names („Es“), not sounds, so grade 1 never hears a single letter
         if (m === 'laute1')
           f(
             !/(^|[^\p{L}])\p{L}(?!\p{L})/u.test(spoken(cfg, q)),
@@ -104,7 +104,7 @@ for (const [m, grade] of Object.entries(UNITS)) {
       }
 }
 
-// pictures and Klasse-1 word lists
+// pictures and grade-1 word lists
 for (const [id, p] of Object.entries(D.PICS)) {
   f(p.syl.replace(/-/g, '') === p.w, 'syllables of ' + id);
   f(!K3.test(p.w), 'picture word with ck/tz ' + id);
@@ -150,7 +150,7 @@ D.BESONDERS.forEach(([r, w, k]) => {
   f(KIND[k].test(r) && (k !== 'i' || !/ie/.test(r)), 'besonders without ' + k + ': ' + r);
   f(!KIND[k].test(w) || k === 'i', 'besonders wrong form keeps ' + k + ': ' + w);
 });
-// Merkwörter: the mark is in the right form only; no silbentrennendes h (Kl. 3/4) and no wrong form that is a real word
+// Merkwörter: the mark is in the right form only; no silbentrennendes h (grades 3/4) and no wrong form that is a real word
 const MARK = {
   v: [/v/i, /f/i],
   ß: [/ß/, /s/],

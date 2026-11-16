@@ -365,7 +365,7 @@ export const turmSubjAcc = (subject: string, grade: number) => {
   }
   return { subject, acc: t ? c / t : 0.6, t };
 };
-// starters of the units the child has practised (all units if none); Klasse-1/2 heroes are shared by a subject's units, each counts once
+// starters of the units the child has practised (all units if none); grade-1/2 heroes are shared by a subject's units, each counts once
 export function turmHeroes(grade: number) {
   const units = MODE_KEYS.filter((m) => MODES[m].grade === grade && shown(m));
   const of = (ms: string[]) =>

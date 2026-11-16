@@ -314,7 +314,7 @@ export function speak(text: string, v = voice(), en: string[] = [], ve = enVoice
     TTS.speak(u);
   }
 }
-// a 🔊 button at anchor that reads text(); units for Klasse 1 and 2 read first() on their own (no anchor: no button).
+// a 🔊 button at anchor that reads text(); units for grade 1 and 2 read first() on their own (no anchor: no button).
 // grade: Turmwacht passes its run's grade, the global mode there is just the unit that asked last
 export function speakBtn(
   anchor: Element | false | null,

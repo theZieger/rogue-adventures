@@ -108,9 +108,9 @@ export const MK = (() => {
     },
     { id: 'o8', text: 'Die Kirche spaltet sich in katholisch und evangelisch' },
   ];
-  // mod: rf = Richtig/Falsch, mc = Wähle aus, lt = Lückentext, def = Begriffe, ord = Reihenfolge
+  // mod: rf = true/false, mc = multiple choice, lt = gap text, def = terms, ord = order
   const L_POOL: Question[] = [
-    // Richtig / Falsch
+    // true / false
     { id: 'rf1', mod: 'rf', g: 'leben', q: 'Martin Luther wurde 1483 geboren.', a: true },
     {
       id: 'rf2',
@@ -216,7 +216,7 @@ export const MK = (() => {
       a: false,
       why: 'Viele waren begeistert, aber er machte sich auch viele Feinde.',
     },
-    // Wähle aus
+    // multiple choice
     {
       id: 'mc1',
       mod: 'mc',
@@ -362,7 +362,7 @@ export const MK = (() => {
       o: ['Er lehrte an der Universität und predigte', 'Er war Bauer auf einem Acker', 'Er war Ritter auf einer Burg'],
       a: 0,
     },
-    // Lückentext
+    // gap text
     {
       id: 'lt1',
       mod: 'lt',
@@ -491,7 +491,7 @@ export const MK = (() => {
       o: ['Gegner', 'Anhänger', 'Schüler'],
       a: 0,
     },
-    // Begriffe
+    // terms
     {
       id: 'def1',
       mod: 'def',
@@ -712,7 +712,7 @@ export const MK = (() => {
       },
     },
   };
-  // Gegner-Angriffe: „<Gegner> greift mit <Angriff> an“
+  // enemy attacks: „<Gegner> greift mit <Angriff> an“
   const L_MOVES = ['Bannspruch', 'Siegelstempel', 'Zweifelsnebel', 'Lateinvortrag', 'Drohbrief', 'Ablassrechnung'];
   const L_EVENTS = [
     {
@@ -765,9 +765,9 @@ export const MK = (() => {
     },
   ];
 
-  /* ---------- SACHKUNDE: Kartoffelpflanze ---------- */
-  // Teile der Pflanze (für Lehrkräfte anpassbar): id, name, ground ('oben' = über, 'unten' = unter der Erde), desc (Notizkarte)
-  // und wo = Frage für „Oben oder unten“ (fehlt sie, wird „Wo findest du „Name“ – über oder unter der Erde?“ gefragt).
+  /* ---------- SACHKUNDE: the potato plant ---------- */
+  // parts of the plant (teachers can adapt them): id, name, ground ('oben' = above, 'unten' = below ground), desc (Notizkarte)
+  // and wo = the question for „Oben oder unten“ (without it: „Wo findest du „Name“ – über oder unter der Erde?“).
   const PARTS = [
     {
       id: 'wurzeln',
@@ -974,7 +974,7 @@ export const MK = (() => {
       o: ['Im Herbst', 'Im Frühjahr', 'Im Winter'],
       a: 0,
     },
-    // Lückentext: Herkunft
+    // gap text: origin
     {
       id: 'lk1',
       mod: 'ltk',
@@ -1055,7 +1055,7 @@ export const MK = (() => {
       o: ['16.', '20.', '10.'],
       a: 0,
     },
-    // Lückentext: Ernte
+    // gap text: harvest
     {
       id: 'le1',
       mod: 'ltk',
@@ -1152,7 +1152,7 @@ export const MK = (() => {
       o: ['grüne', 'gelbe', 'saubere'],
       a: 0,
     },
-    // Wissen: Käfer + Herkunft + Ernte (rf / mc); kmc1–6 oben gehören auch dazu
+    // knowledge: beetle + origin + harvest (rf / mc); kmc1–6 above belong here too
     {
       id: 'kw1',
       mod: 'wissen',
@@ -1294,7 +1294,7 @@ export const MK = (() => {
       a: false,
       why: 'Früher mit großen Gabeln, heute mit Maschinen.',
     },
-    // Kartoffelwörter
+    // potato words
     {
       id: 'wo1',
       mod: 'woerter',
@@ -1415,7 +1415,7 @@ export const MK = (() => {
       o: ['die', 'der', 'das'],
       a: 0,
     },
-    // Märchen: Adjektive + Richtig/Falsch
+    // fairy tale: adjectives + true/false
     { id: 'ma1', mod: 'maerchen', g: 'maerchen', q: 'Wer ist klug?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
     { id: 'ma2', mod: 'maerchen', g: 'maerchen', q: 'Wer ist verschmitzt?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
     { id: 'ma3', mod: 'maerchen', g: 'maerchen', q: 'Wer ist listig?', o: ['Der Bauer', 'Der Teufel'], a: 0 },
@@ -1790,7 +1790,7 @@ export const MK = (() => {
       ],
     },
   };
-  // Zählung wie in Luthers Kleinem Katechismus (auch katholisch üblich)
+  // numbered as in Luther's Small Catechism (also usual among Catholics)
   const KJ_GEBOTE = [
     { id: 'g1', text: 'Du sollst keine anderen Götter haben neben Gott.' },
     { id: 'g2', text: 'Du sollst den Namen Gottes nicht missbrauchen.' },
@@ -1814,7 +1814,7 @@ export const MK = (() => {
   const INNER = 'Ein innerer Konflikt',
     OUTER = 'Ein äußerer Konflikt';
   const KJ_POOL: Question[] = [
-    // Richtig / Falsch
+    // true / false
     { id: 'kjrf1', mod: 'rf', g: 'busstag', q: 'Der Buß- und Bettag ist in Sachsen ein Feiertag.', a: true },
     {
       id: 'kjrf2',
@@ -1934,7 +1934,7 @@ export const MK = (() => {
       q: 'Im Fach Ethik denkt man darüber nach, wie Menschen gut zusammenleben.',
       a: true,
     },
-    // Wähle aus
+    // multiple choice
     {
       id: 'kjmc1',
       mod: 'mc',
@@ -2219,7 +2219,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Lückentext
+    // gap text
     {
       id: 'kjlt1',
       mod: 'lt',
@@ -2356,7 +2356,7 @@ export const MK = (() => {
       o: ['Ethik', 'Mathematik', 'Musik'],
       a: 0,
     },
-    // Begriffe
+    // terms
     {
       id: 'kjdef1',
       mod: 'def',
@@ -2729,7 +2729,7 @@ export const MK = (() => {
     },
   ];
 
-  // Teil 2 (Welt 2): Fragen und Reihenfolgen mit w: 2 kommen nur in Welt 2 dran, alle anderen nur in Welt 1
+  // part 2 (world 2): questions and orders with w: 2 only come up in world 2, all others only in world 1
   Object.assign(KJ_NOTES, {
     fastenzeit: {
       title: 'Fastenzeit',
@@ -2838,7 +2838,7 @@ export const MK = (() => {
   const FEST = 'Ein festes Fest',
     BEWEGLICH = 'Ein bewegliches Fest';
   KJ_POOL.push(
-    // Fastenzeit
+    // Lent
     { id: 'kj2rf1', w: 2, mod: 'rf', g: 'fastenzeit', q: 'Am Aschermittwoch beginnt die Fastenzeit.', a: true },
     {
       id: 'kj2rf2',
@@ -2937,7 +2937,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Symbole
+    // symbols
     {
       id: 'kj2rf4',
       w: 2,
@@ -3047,7 +3047,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Karwoche und Ostern
+    // Holy Week and Easter
     { id: 'kj2rf8', w: 2, mod: 'rf', g: 'ostern', q: 'Ostern ist das höchste Fest der Christen.', a: true },
     {
       id: 'kj2rf9',
@@ -3135,7 +3135,7 @@ export const MK = (() => {
       o: ['Trauer', 'Freude', 'Frühling'],
       a: 0,
     },
-    // Himmelfahrt
+    // Ascension
     {
       id: 'kj2rf11',
       w: 2,
@@ -3193,7 +3193,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Pfingsten
+    // Pentecost
     {
       id: 'kj2rf13',
       w: 2,
@@ -3261,7 +3261,7 @@ export const MK = (() => {
       o: ['Der fünfzigste Tag', 'Der erste Tag', 'Der heilige Wald'],
       a: 0,
     },
-    // Taufe
+    // baptism
     {
       id: 'kj2rf16',
       w: 2,
@@ -3328,7 +3328,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Feste und bewegliche Feste
+    // fixed and movable feasts
     { id: 'kj2rf18', w: 2, mod: 'rf', g: 'festkreis', q: 'Weihnachten ist jedes Jahr am selben Datum.', a: true },
     {
       id: 'kj2rf19',
@@ -3406,7 +3406,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Sorben
+    // the Sorbs
     {
       id: 'kj2rf20',
       w: 2,
@@ -3583,7 +3583,7 @@ export const MK = (() => {
   ];
   const GOLD = 'Behandle andere so, wie du selbst behandelt werden möchtest.';
   const F_POOL: Question[] = [
-    // Freundschaft
+    // friendship
     {
       id: 'gfrf1',
       mod: 'rf',
@@ -3652,7 +3652,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Wahre und falsche Freundschaft
+    // true and false friendship
     { id: 'gfrf4', mod: 'rf', g: 'echt', q: 'Ein wahrer Freund mag dich so, wie du bist.', a: true },
     {
       id: 'gfrf5',
@@ -3725,7 +3725,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Versprechen und Geheimnisse
+    // promises and secrets
     {
       id: 'gfrf7',
       mod: 'rf',
@@ -3800,7 +3800,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Streitregeln, Kompromiss, Schlichter
+    // rules for arguing, compromise, mediator
     { id: 'gfrf10', mod: 'rf', g: 'streit', q: 'Bei einem Kompromiss gibt jeder ein Stück nach.', a: true },
     {
       id: 'gfrf11',
@@ -3919,7 +3919,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Goldene Regel
+    // the Golden Rule
     {
       id: 'gfrf14',
       mod: 'rf',
@@ -3995,7 +3995,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Mobbing mit Worten
+    // bullying with words
     {
       id: 'gfrf16',
       mod: 'rf',
@@ -4056,7 +4056,7 @@ export const MK = (() => {
       ],
       a: 0,
     },
-    // Wahrheit
+    // truth
     { id: 'gfrf19', mod: 'rf', g: 'wahrheit', q: 'Wer oft lügt, dem vertraut man bald nicht mehr.', a: true },
     {
       id: 'gfrf20',
@@ -4214,7 +4214,7 @@ export const MK = (() => {
     },
   };
   const F_MOVES = ['Stichelei', 'Prahlerei', 'Getuschel', 'Türknallen', 'Schmollblick', 'Halbwahrheit'];
-  // Dilemma-Karten: kein Richtig oder Falsch, jede Wahl bekommt dieselbe Belohnung (reward)
+  // dilemma cards: no right or wrong, every choice gets the same reward
   const F_EVENTS = [
     {
       title: 'Das verratene Geheimnis',
@@ -4441,7 +4441,7 @@ export const MK = (() => {
     },
   ];
 
-  /* ---------- DEUTSCH: Wörterwerkstatt und Satzbaustelle (Wortlisten in woerter.ts) ---------- */
+  /* ---------- DEUTSCH: Wörterwerkstatt and Satzbaustelle (word lists in woerter.ts) ---------- */
   const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
   const noun = (w: string) => w.slice(w.indexOf(' ') + 1);
   const ARTS = ['der', 'die', 'das'];
@@ -5781,7 +5781,7 @@ export const MK = (() => {
     },
   ];
 
-  /* ---------- ENGLISCH: Die Teestube und Der Doppeldecker (Wörter und Sätze in english.ts) ---------- */
+  /* ---------- ENGLISCH: Die Teestube and Der Doppeldecker (words and sentences in english.ts) ---------- */
   // every theme as [[English, German], …]; numbers, colours, days and months count as themes for „Was passt nicht?“
   const EN_THEMES: Record<string, [en: string, de: string, ...more: unknown[]][]> = Object.assign({}, E.woerter, {
     Farben: E.farben,
@@ -6377,8 +6377,8 @@ export const MK = (() => {
     }
     return items[items.length - 1];
   }
-  // opts (optional): { g } = nur Fragen zu diesem Themengebiet (g der Pool-Fragen, z. B. 'herkunft'); gibt es keine, dann alle des Moduls.
-  // { world }: in Modi mit byWorld kommen nur Fragen und Reihenfolgen dieser Welt dran (w fehlt = Welt 1)
+  // opts (optional): { g } = only questions of this Themengebiet (g of the pool questions, e.g. 'herkunft'); if there are none, all of the module.
+  // { world }: in modes with byWorld only questions and orders of this world come up (no w = world 1)
   function generate(mode: string, mod: string, tier: number, know: Know, seqNow: number, opts?: GenOpts): Task {
     const cfg = MODES[mode];
     const world = (opts && opts.world) || 1;

@@ -289,7 +289,7 @@ for (const mod of M.MODULE_KEYS) {
     }
   }
 }
-// new Klasse-3 task types never reach world 1 (numbers there stay under 100); Überschlag only in world 3
+// new grade-3 task types never reach world 1 (numbers there stay under 100); Überschlag only in world 3
 for (const k of ['kopf', 'zmul', 'vergl'])
   check(M.MODULES[k].worldCap[0] === 0, k + ' not in world 1', M.MODULES[k].worldCap);
 check(M.MODULES.ueber.worldCap.join() === '0,0,1', 'ueber only in world 3', M.MODULES.ueber.worldCap);
@@ -828,7 +828,7 @@ for (const w of [1, 2, 3])
 const quiet = ['rest', 'treasure', 'elite', 'event'];
 if (M.FLOORS !== 8 || M.makeMap().length !== 8) fails.push('map: 8 floors by default');
 for (let i = 0; i < 3000; i++) {
-  const F = [6, 7, M.FLOORS][i % 3]; // Klasse 1, 2 and 3
+  const F = [6, 7, M.FLOORS][i % 3]; // grade 1, 2 and 3
   const m = M.makeMap(F);
   const bad = (msg) => fails.push('map: ' + msg + ' ' + JSON.stringify(m));
   if (m.length !== F) {

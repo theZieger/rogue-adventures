@@ -59,7 +59,7 @@ export function screenStarter(goal?: WeeklyGoal) {
   const last = state.meta.lastStarter[state.mode];
   let sel = S.length === 1 ? S[0].id : null;
   const want = goal && goal.kind === 'right' ? goal.mod : null;
-  // Klasse 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
+  // grade 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
   const kit = (s: Starter) => {
     if (CFG().grade !== 1) return s.attacks;
     const a = s.attacks.slice(),
@@ -215,7 +215,7 @@ function makeMapFor(world: number) {
       .filter((n) => n.t === 'fight');
     pick(fights.length ? fights : m[0]).t = 'lesen';
   }
-  // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite); never in Klasse 1
+  // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite); never in grade 1
   const tf =
     extraOn('kreisel') &&
     CFG().grade !== 1 &&

@@ -80,7 +80,7 @@ export interface TaskType {
   maxTier: number;
   dmg: number;
   shop?: boolean; // only in the Kaufladen, never an attack
-  atk?: string; // Klasse 1/2: the name of its attack (becomes `extra`)
+  atk?: string; // grade 1/2: the name of its attack (becomes `extra`)
 }
 // A unit (Thema) as its file registers it. The first block is what every unit has; the rest only some.
 export interface Unit {
