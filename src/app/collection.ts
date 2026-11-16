@@ -17,7 +17,6 @@ import {
   owns,
   stampLine,
   typeChip,
-  weeklyStep,
 } from './progress.ts';
 import { state } from './state.ts';
 import { endRun, extraOn, saveAll } from './storage.ts';
@@ -43,7 +42,6 @@ export const CONFETTI = `<div class="confetti" aria-hidden="true">${Array.from({
 export function screenVictory() {
   state.meta.wins++;
   giveStamps(10);
-  weeklyStep('win');
   state.meta.progressAt = new Date().toISOString();
   if (state.mode === 'kartoffel') state.meta.owned['beet-4'] = true;
   const roof = CFG().worlds >= 3 && !state.meta.owned['hut-dachfenster'];
@@ -78,7 +76,7 @@ export function screenDex() {
   screen(
     html`<div class="screen">${raw(topbar('Monsterbuch'))}<div class="scroll"><div class="stack">${all.map((e) => {
       const seen = state.meta.dex[e.name];
-      return html`<div class="choice" style="cursor:default">${seen ? raw(monsterSVG(e.shape, TYPES[e.type].color, 0, '', { elite: e.elite, boss: e.boss })) : html`<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:var(--text-48)">❔</div>`}<div class="meta"><div class="name">${seen ? e.name : '???'}</div>${seen ? raw(typeChip(e.type)) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`;
+      return html`<div class="choice" style="cursor:default">${seen ? raw(monsterSVG(e.shape, 0, '', { elite: e.elite, boss: e.boss })) : html`<div class="mon" style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:var(--text-48)">❔</div>`}<div class="meta"><div class="name">${seen ? e.name : '???'}</div>${seen ? raw(typeChip(e.type)) : ''}<div class="desc">${seen ? `Welt ${seen.world}${e.boss ? ' · Boss' : e.elite ? ' · Elite' : ''}` : 'Noch nicht gesehen'}</div></div></div>`;
     })}</div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     { back: screenTitle },
   );
@@ -97,15 +95,15 @@ export function screenStamps(jump?: boolean) {
       ? html`<div class="rwprev" aria-hidden="true">${r.icon}</div>`
       : r.bg
         ? html`<div class="rwprev" style="background:${r.bg}" aria-hidden="true">⚔️</div>`
-        : raw(monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero)!.shape, TYPES.normal.color, 0));
+        : raw(monsterSVG(MQ.STARTERS.find((s) => s.id === r.hero)!.shape, 0));
     return html`<div class="choice reward">${prev}<div class="meta"><div class="name">${r.name}</div><div class="desc">${r.desc}</div>${owns(r) ? html`<div class="rwhave">✔ Schon geholt</div>` : r.price ? html`<button class="btn small" data-action="buy" data-buy="${r.id}" ${canBuy(r) ? '' : 'disabled'}>Holen · ${r.price} 🏷️${r.stein ? ` + ${r.stein} Stein` : ''}</button>` : ''}</div></div>`;
   };
   screen(
     html`<div class="screen">${raw(topbar('Stempelheft'))}<div class="scroll"><div class="stack">
-      <div class="card center"><div class="stampbal">🏷️ ${state.meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenaufgabe: 10.</p></div>
+      <div class="card center"><div class="stampbal">🏷️ ${state.meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenziel: 3. Alle Wochenziele zusammen: 10.</p></div>
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du geübt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
-      <div class="choice reward">${raw(monsterSVG('fox', TYPES.feuer.color, 0, '', { outfit: 'strohhut' }))}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk" data-action="wardrobe">Öffnen</button></div></div>
+      <div class="choice reward">${raw(monsterSVG('fox', 0, '', { outfit: 'strohhut' }))}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk" data-action="wardrobe">Öffnen</button></div></div>
       ${extraOn('kreisel') ? html`<div class="choice reward">${raw(MONART.topSVG(TYPES.wasser.color, state.meta.top))}<div class="meta"><div class="name">Kreisel bauen</div><div class="desc">Spitze, Ring und Scheibe für die Kreisel-Arena.</div><button class="btn small" id="kb" data-action="top">Öffnen</button></div></div>` : ''}
       ${REWARDS.filter((r) => extraOn('huette') || !r.id.startsWith('hut-')).map(row)}
       ${extraOn('huette') ? benchHtml() : ''}

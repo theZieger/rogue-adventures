@@ -2,16 +2,7 @@ import { MODES, MODE_KEYS } from '../curriculum.ts';
 import { KEY_TURM, RENAMES, clear, isObj, load, nat, okScore, own } from '../save.ts';
 import { TW } from '../turm.ts';
 import { ITEMS, TYPES } from './core.ts';
-import {
-  giveStamps,
-  heroLocked,
-  levelOf,
-  makeTask,
-  payAnswers,
-  recordAnswer,
-  taskTier,
-  weeklyStep,
-} from './progress.ts';
+import { giveStamps, heroLocked, levelOf, makeTask, payAnswers, recordAnswer, taskTier } from './progress.ts';
 import { state } from './state.ts';
 import { curGrade, enabledMods, fightMods, heroShown, loadRun, saveAll, shown } from './storage.ts';
 import { practised } from './title.ts';
@@ -142,14 +133,7 @@ export function turmAnswer(ok: boolean) {
   state.mode = a.m;
   turmBox(a.m);
   recordAnswer(a.k, ok, a.task);
-  const elites = state.run.turm.monsters.filter((x: Monster) => x.elite),
-    ev = TW.answer(state.run, ok, turmCtx(state.run.hero), { task: a.task });
-  for (const x of elites)
-    if (ev.some((e) => e.t === 'beaten' && e.id === x.id)) {
-      state.mode = x.m;
-      weeklyStep('elite');
-    }
-  state.mode = a.m;
+  const ev = TW.answer(state.run, ok, turmCtx(state.run.hero), { task: a.task });
   return turmSync(ev);
 }
 // Stempel as in an adventure: the answers pay at the end of every wave and at the fall, +5 per boss wave, +10 for the victory

@@ -14,9 +14,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Ist die Wochenaufgabe geschafft, regnet es Konfetti.
 
 ### Verbessert
-- Oben auf der Startseite: Ton, Stempel, „Was ist neu?“ und das Eltern-Zahnrad als runde Knöpfe.
+- Wochenziele: drei kleine Ziele pro Woche, die du beim normalen Üben schaffst; jedes gibt 3 Stempel.
 - Alle Karten der Startseite sind gleich groß und gleiten beim Öffnen und Blättern herein.
-- „Idee senden“ gibt es nur noch im Elternbereich.
+- Ton, Stempel, Neuigkeiten und Eltern sind runde Knöpfe oben; „Idee senden“ steht im Elternbereich.
 
 ## 2026-11-15
 

@@ -5,12 +5,11 @@
   "type": "module",
   "description": "Learning roguelike for German primary-school children (grades 1 to 3): maths, German, English, ethics and science. One HTML file, no server.",
   "scripts": {
-    "build": "node tools/svg.js && node tools/build.js",
+    "build": "node tools/build.js",
     "test": "node --test --test-reporter=spec \"tests/test_*.js\"",
     "playtest": "node tools/build.js && node --test --test-reporter=spec tests/playtests.js",
     "e2e": "node --test --test-reporter=spec tests/e2e.js",
     "screenshots": "node tools/screenshots.js",
-    "svg": "node tools/svg.js",
     "format": "biome format --write .",
     "lint": "biome lint . && stylelint \"src/styles/*.css\"",
     "typecheck": "tsc"
@@ -25,7 +24,6 @@
     "jsdom": "^31.0.0",
     "playwright": "1.65.0",
     "stylelint": "18.0.0",
-    "svgo": "^4.1.0",
     "typescript": "7.0.2"
   },
   "license": "MIT"

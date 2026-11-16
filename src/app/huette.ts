@@ -338,7 +338,7 @@ export function screenWardrobe(heroId?: string) {
           : o.price
             ? html`<button class="btn small" data-action="buy" data-buy="${o.id}" ${state.meta.stamps < o.price ? 'disabled' : ''}>Holen · ${o.price} 🏷️</button>`
             : html`<div class="desc">${o.need!()}</div>`;
-    return html`<div class="kkitem${o.id === worn ? ' on' : ''}${has ? '' : ' locked'}">${raw(monsterSVG(hero.shape, TYPES[hero.type].color, 0, '', { outfit: o.id }))}<div class="name">${o.name}</div>${act}</div>`;
+    return html`<div class="kkitem${o.id === worn ? ' on' : ''}${has ? '' : ' locked'}">${raw(monsterSVG(hero.shape, 0, '', { outfit: o.id }))}<div class="name">${o.name}</div>${act}</div>`;
   };
   const wear = (id: string | null | undefined) => {
     if (id) state.meta.worn[hero.id] = id;

@@ -2079,46 +2079,56 @@ await tick();
 }
 
 // 18. Weekly goals, weekly boss, weekly report
-// weeks whose maths goal is in Zahlenquest (the seed also picks Die Baustelle): W48 the weekly boss, W49 right answers
+// W48 and W49 are two school weeks with different subjects in the subject goal
 const W48 = '2026-12-23T10:00:00',
   W49 = '2027-01-27T10:00:00';
 async function weeklyCases() {
   {
-    // same week key → same goals on two devices; one goal per subject, only enabled task types
+    // same week key → same goals on two devices: right answers anywhere, in one subject, and three subjects
     const a = open(null, { now: W49 }),
       b = open(null, { now: W49 });
     const ga = a.w.__mq.weeklyGoals(),
       gb = b.w.__mq.weeklyGoals();
-    const t = open(null, { now: W49 });
-    t.click('#later');
-    const subs = [...t.d.querySelectorAll('[data-sub]')].map((b) => b.textContent); // the subjects of the grade, from the title tiles
-    check(ga.length === subs.length && same(ga, gb), 'two devices show the same goals in the same week');
+    check(same(ga, gb), 'two devices show the same goals in the same week');
     check(
-      ga.map((g) => g.subject).every((x, i) => subs[i].includes(x)) &&
-        ga[0].subject === 'Mathe' &&
-        ga.some((g) => g.subject === 'Englisch'),
-      'one goal per subject of the grade',
+      same(
+        ga.map((g) => [g.kind, g.n, g.i]),
+        [
+          ['right', 30, 0],
+          ['subject', 10, 1],
+          ['subjects', 3, 2],
+        ],
+      ) && !ga.some((g) => 'mod' in g || 'm' in g),
+      'three goals: 30 right answers, 10 in one subject, three subjects; none asks for one task type or theme',
     );
+    a.w.__mq.meta.grade = 1;
+    check(a.w.__mq.weeklyGoals()[0].n === 20, 'grade 1 needs 20 right answers');
+    const weeks = ['2027-02-03', '2027-02-10', '2027-02-17', '2027-02-24', '2027-03-03'].map(
+      (d) => open(null, { now: d + 'T10:00:00' }).w.__mq.weeklyGoals()[1].subject,
+    );
+    check(new Set(weeks.concat(ga[1].subject)).size > 1, 'the subject of the goal changes over the weeks: ' + weeks);
+    const units = a.w.eval('MK.MODES');
+    const hide = (keep) =>
+      open(
+        {
+          [META]: JSON.stringify({
+            setup: { done: false, skipped: true, at: 'x' },
+            hidden: Object.keys(units)
+              .filter((m) => !keep(units[m].subject))
+              .map((m) => 'mode:' + m),
+          }),
+        },
+        { now: W49 },
+      ).w.__mq.weeklyGoals();
+    const others = hide((x) => x !== ga[1].subject);
     check(
-      ga.every((g) =>
-        g.kind === 'right' ? g.n >= 15 && g.n <= 25 : g.kind === 'elite' ? g.n >= 2 && g.n <= 3 : g.n === 1,
-      ),
-      'goal sizes: 15–25 right answers, 2–3 elites, one win or weekly boss',
+      others[1].subject !== ga[1].subject && others.length === 3,
+      'a hidden subject is never the goal: ' + others[1].subject,
     );
-    check(ga[0].kind === 'right' && ga[0].m === 'math', 'this week has a right-answers goal in maths');
-    const c = open(null, { now: '2027-02-03T10:00:00' });
-    check(!same(c.w.__mq.weeklyGoals(), ga), 'another week has other goals');
-    const off = open(
-      { [META]: JSON.stringify({ setup: { done: false, skipped: true, at: 'x' }, off: { math: [ga[0].mod] } }) },
-      { now: W49 },
-    );
-    const go = off.w.__mq.weeklyGoals();
+    const one = hide((x) => x === 'Mathe');
     check(
-      go[0].kind === 'right' &&
-        go[0].mod !== ga[0].mod &&
-        !off.w.__mq.meta.off.math.includes(go[0].mod) &&
-        same(go.slice(1), ga.slice(1)),
-      'a switched-off task type is never a goal, the other goals stay',
+      one.length === 2 && one[1].subject === 'Mathe',
+      'with one subject left there is no goal for several subjects',
     );
   }
   {
@@ -2138,50 +2148,51 @@ async function weeklyCases() {
         p.d.querySelectorAll('.goal').length === p.w.__mq.weeklyGoals().length &&
         p.text().includes('0 von') &&
         p.text().includes('Nichts geht verloren, wenn du eine Woche aussetzt.'),
-      'goal screen lists one goal per subject with whole-number progress',
+      'goal screen lists the goals with whole-number progress',
     );
   }
   {
-    // right answers count for the goal of their task type; all three goals → 10 stamps, gold week, one card
-    const p0 = startMathFight({ now: W49 });
-    const g = p0.w.__mq.weeklyGoals()[0];
-    const d = p0.dump();
-    const r = JSON.parse(d[RUN]);
-    r.hero.attacks[0].mod = g.mod;
-    d[RUN] = JSON.stringify(r);
-    const p = open(d, { now: W49 });
-    p.click('[data-cont="math"]');
+    // every right answer counts, whatever the task type; a goal pays 3 stamps, all of them make 10 and the gold week
+    const p = startMathFight({ now: W49 });
+    const goals = p.w.__mq.weeklyGoals();
+    const inMaths = goals[1].subject === 'Mathe' ? 1 : 0;
     const m = p.w.__mq.meta;
-    p.w.__mq.run.node.enemy.hp = 9999; // the fight must outlast three answers
+    const mod = p.w.__mq.run.hero.attacks[0].mod;
+    p.w.__mq.run.node.enemy.hp = 9999; // the fight must outlast four answers
     answer(p, true);
     check(
       m.weekly.week === '2027-W04' &&
-        m.weekly.progress[0] === 1 &&
-        same(m.weekly.tally['math:' + g.mod], { c: 1, t: 1 }),
-      'a right answer of the goal type counts',
+        same(m.weekly.progress, [1, inMaths, 1]) &&
+        same(m.weekly.tally['math:' + mod], { c: 1, t: 1 }),
+      'a right answer counts for the week, its subject and the subjects practised',
     );
     p.click('#next');
     await sleep(2200);
     answer(p, false);
     check(
-      m.weekly.progress[0] === 1 && same(m.weekly.tally['math:' + g.mod], { c: 1, t: 2 }),
+      same(m.weekly.progress, [1, inMaths, 1]) && same(m.weekly.tally['math:' + mod], { c: 1, t: 2 }),
       'a wrong answer counts for the report only',
     );
     p.click('#next');
     await sleep(2200);
-    const goals = p.w.__mq.weeklyGoals();
-    m.weekly.progress = goals.map((x, i) => (i ? x.n : x.n - 1));
-    const st = m.stamps;
+    m.weekly.progress[0] = goals[0].n - 1;
+    let st = m.stamps;
+    answer(p, true);
+    check(m.stamps === st + 3 && !m.weekly.done && m.stampCard['2027-W04'] === 1, 'a finished goal pays 3 stamps');
+    p.click('#next');
+    await sleep(2200);
+    m.weekly.progress = goals.map((x) => x.n);
+    st = m.stamps;
     answer(p, true);
     check(
-      m.weekly.done && m.stampCard['2027-W04'] === 2 && m.stamps === st + 10 && m.stampsTotal >= 10 && !!m.progressAt,
-      'all goals: gold week on the stamp card, 10 stamps, progress date',
+      m.weekly.done && m.stampCard['2027-W04'] === 2 && m.stamps === st + 1 && !!m.progressAt,
+      'all goals: gold week on the stamp card, one more stamp, progress date',
     );
     p.w.__mq.screenMap();
     check(
       !!p.$('.overlay') &&
         p.$('.overlay').textContent.includes('Wochenaufgabe geschafft') &&
-        p.$('.overlay').textContent.includes('+10'),
+        p.$('.overlay').textContent.includes('+4'),
       'a short card "Wochenaufgabe geschafft" shows once',
     );
     p.click('.overlay #tutok');
@@ -2195,8 +2206,8 @@ async function weeklyCases() {
     p2.click('#parents');
     check(
       p2.text().includes('Wochenbericht') &&
-        p2.text().includes(p2.w.eval('MQ.MODULES')[g.mod].name) &&
-        p2.text().includes('2 von 3 richtig') &&
+        p2.text().includes(p2.w.eval('MQ.MODULES')[mod].name) &&
+        p2.text().includes('3 von 4 richtig') &&
         p2.text().includes(`Wochenziele: ${goals.length} von ${goals.length} erledigt`),
       'parent area shows the weekly report',
     );
@@ -2228,7 +2239,7 @@ async function weeklyCases() {
     );
   }
   {
-    // weekly boss: a node on floor 5 or 6 once per adventure, 25 % more HP, fixed weak spot, elite reward, counts for the goal
+    // weekly boss: a node on floor 5 or 6 once per adventure, 25 % more HP, fixed weak spot, elite reward
     let p, r;
     for (let i = 0; i < 6 && !(r && r.wb); i++) {
       p = startMathFight({ now: W48 });
@@ -2294,10 +2305,7 @@ async function weeklyCases() {
         p.$('#next').textContent.includes('Beute'),
       'the beaten weekly boss pays like an elite',
     );
-    check(
-      m.weekly.beaten.includes('math') && m.weekly.progress[0] === 1 && p.w.__mq.weeklyGoals()[0].kind === 'boss',
-      'beating it counts for the weekly-boss goal',
-    );
+    check(m.weekly.beaten.includes('math'), 'the week remembers that it is beaten');
     p.click('#next');
     check(p.text().includes('Der Wochenboss hat etwas dagelassen'), 'then the reward is picked');
     const p2 = open(p.dump(), { now: W48 });
@@ -3418,7 +3426,8 @@ await tick();
   );
   p1.click('#back');
   check(
-    p1.d.querySelectorAll('[data-sub]').length === 1 && p1.w.__mq.weeklyGoals().length === 1,
+    p1.d.querySelectorAll('[data-sub]').length === 1 &&
+      p1.w.__mq.weeklyGoals().every((g) => (g.subject || 'Mathe') === 'Mathe'),
     'only Mathe is left on the title and in the weekly goals',
   );
   p1.click('[data-new="math"]');
@@ -3436,67 +3445,26 @@ await tick();
 }
 await tick();
 {
-  // „Jetzt loslegen“ on a goal: the hero choice gets the goal's task type, the attack shows the goal
+  // only the goal of a subject has a button; it leads to the themes of that subject, where the goal is named
   const p = open(null, { now: W49 });
   p.click('#later');
   p.click('#weekly');
-  const g = p.w.__mq.weeklyGoals()[0];
+  const g = p.w.__mq.weeklyGoals()[1];
   check(
-    p.d.querySelectorAll('.goal [data-goal]').length === p.w.__mq.weeklyGoals().length &&
-      p.$('.goal').textContent.includes('Zahlenquest'),
-    'every open goal has a play button and names its game',
+    p.d.querySelectorAll('.goal [data-action="goal"]').length === 1 &&
+      p.$('.goal [data-action="goal"]').textContent.includes(g.subject + ' üben'),
+    'the goal of a subject has a button that names the subject',
   );
-  p.click('[data-goal="0"]');
-  const lacks = p.w.eval('MQ.STARTERS').find((x) => x.id !== 'kauz' && !x.attacks.some((a) => a.mod === g.mod));
+  p.click('.goal [data-action="goal"]');
   check(
-    p.text().includes('Wochenziel') && !!p.$('.pill.warn'),
-    'the goal leads to the hero choice of its game, with the goal on top',
+    p.$('.topbar').textContent.includes(g.subject) &&
+      p.$('.callout').textContent.includes(`Löse 10 Aufgaben in ${g.subject} richtig.`) &&
+      !!p.$('[data-new]'),
+    'it opens the themes of the subject with the goal on top',
   );
-  if (lacks) {
-    p.click(`.choice[data-id="${lacks.id}"]`);
-    check(
-      !!p.$('#swap') && p.$('#swap').textContent.includes('Wochenziel'),
-      'a hero without the task type is offered it for the goal',
-    );
-  } else p.click('.choice[data-id]');
-  p.click('#go');
-  const r = p.w.__mq.run;
-  check(
-    r.mode === 'math' && r.hero.attacks.some((a) => a.mod === g.mod),
-    'the new adventure has the attack for the goal',
-  );
-  const fight = [...p.d.querySelectorAll('.node.open')].find((n) => n.getAttribute('aria-label') === 'Kampf');
-  if (fight) {
-    p.click(fight);
-    const ok = p.$('.overlay #tutok');
-    if (ok) ok.click();
-  }
-  check(
-    !fight ||
-      [...p.d.querySelectorAll('.atk')].some((b) => b.querySelector('.pill.warn')?.textContent.includes('Wochenziel')),
-    'in the fight the attack for the goal is marked',
-  );
-  // a running adventure without the attack: the child is asked, and can keep playing it
-  const d = p.dump();
-  const rr = JSON.parse(d[RUN]);
-  rr.hero.attacks = rr.hero.attacks.filter((a) => a.mod !== g.mod);
-  while (rr.hero.attacks.length < 2) rr.hero.attacks.push({ name: 'x', mod: 'sub' });
-  d[RUN] = JSON.stringify(rr);
-  const q = open(d, { now: W49 });
-  q.click('#weekly');
-  check(
-    q.$('[data-goal="0"]').textContent.includes('Weitermachen'),
-    'with a running adventure the button says „Weitermachen“',
-  );
-  q.click('[data-goal="0"]');
-  if (q.w.__mq.weeklyGoals()[0].mod !== 'sub') {
-    check(!!q.$('.overlay #yes') && !!q.$('.overlay #cont'), 'a running hero without the attack asks first');
-    q.click('.overlay #cont');
-  }
-  check(
-    q.errors.length === 0 && q.w.__mq.run && q.w.__mq.run.mode === 'math' && !!q.dump()[RUN],
-    'keep playing resumes the running adventure',
-  );
+  p.click('[data-new]');
+  p.click('.choice[data-id]');
+  check(!p.text().includes('Wochenziel') && p.errors.length === 0, 'the hero choice says nothing about goals');
 }
 
 // Vorlesen: an old save gets the switch turned on; the button only appears with a German voice on the device
@@ -4109,33 +4077,6 @@ await tick();
     big.w.__mq.run.hero.attacks.length === 4 && big.w.__mq.run.map.flat().some((n) => n.t === 'arena'),
     'a first Klasse-3 adventure has all 4 attacks and a Kreisel-Arena',
   );
-  // a grade-1 weekly goal: its attack is among the first two
-  let g, q;
-  for (let w = 0; w < 8 && !g; w++) {
-    q = open(
-      { [META]: JSON.stringify(Object.assign({ grade: 1 }, SKIPPED)) },
-      { now: new Date(Date.parse(W49) + w * 7 * 864e5).toISOString() },
-    );
-    g = q.w.__mq
-      .weeklyGoals()
-      .find(
-        (x) =>
-          x.kind === 'right' && q.w.__mq.subjectOf(x.m) && q.w.eval(`MK.MODES.${x.m} && MK.MODES.${x.m}.grade`) === 1,
-      );
-  }
-  if (!g) check(false, 'found a week with a Klasse-1 right-answers goal');
-  else {
-    q.click('#weekly');
-    q.click(`[data-goal="${g.i}"]`);
-    const c = q.$('.choice[data-id]');
-    if (c) c.click();
-    q.click('#go');
-    const a = q.w.__mq.run.hero.attacks;
-    check(
-      q.w.__mq.run.mode === g.m && a.length === 2 && a.some((x) => x.mod === g.mod) && q.errors.length === 0,
-      `a first Klasse-1 adventure for a weekly goal has the goal's attack (${g.m}: ${g.mod})`,
-    );
-  }
 }
 
 // Remembered level per task type: warm-up start, faster steps, save code and merge; a weaker counter-hit when it is hard going

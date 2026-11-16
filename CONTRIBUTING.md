@@ -9,7 +9,7 @@ content, `CHANGELOG.md`, `README.md`). German words in code are the product's ow
 
 ```bash
 npm install          # tools for build and tests only (once after it: npx playwright install chromium)
-npm run build        # bake and optimise the monster SVGs (npm run svg) + src/* -> docs/index.html (one file, open it in a browser)
+npm run build        # src/* -> docs/index.html (one file, open it in a browser)
 npm test             # generators, knowledge questions, saving and loading (needs the build, about half a minute)
 npm run playtest     # a bot plays every unit (the list is in tests/playtests.js) on a virtual clock:
                      # same SEED = same run; TRACE_DIR=folder records every page to compare two states
@@ -54,8 +54,7 @@ src/klasse12.ts    grades 1/2: one shared hero with opponents per subject
 src/k12_*.ts       grade 1/2 units: Mathe, Deutsch, Sachkunde, Ethik (Musik lives in k12_ethik.ts)
 src/turm.ts        Turmwacht rules (waves, guards, floors, Bauzeit, restart from the last Bauzeit), no UI
 src/turmart.ts     Turmwacht pictures: lanes, the tower with its floors, card pictures
-src/monsters.ts    hand-drawn SVG monsters (drawing code, the source for art/)
-art/monsters/      raw/ = baked SVGs per monster variant, svg/ = optimised with svgo (what the game uses), manifest.json = hashes
+src/monsters.ts    hand-drawn SVG monsters (drawing code, the game draws them when it shows them)
 src/units.ts       the one list of all units (`UNITS`) – game, tests, bot and monster art read it
 src/curriculum.ts  order of units, subjects and grades (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) with the types `Unit` and `TaskType`
 src/save.ts        the save: type `Meta`, defaults, loading/saving and the repair on load (`normMeta`)
@@ -73,8 +72,6 @@ src/sw.js          service worker (offline cache, the version is set at build ti
 src/manifest.webmanifest  app manifest (name, colours, icons)
 CHANGELOG.md       changes by date, in German – shown in the app under „Was ist neu?“
 tools/build.js     builds docs/index.html (one file, bundled with esbuild) + docs/sw.js + docs/manifest.webmanifest
-tools/svg.js       bakes the monsters to art/monsters/raw/ and optimises only changed ones with svgo (hash in manifest.json)
-tools/svg_compare.js  checks pixel by pixel that svgo changed nothing (needs Playwright)
 tools/make_icons.js  makes docs/icons/*, docs/favicon.ico, the iOS launch screens docs/splash/* and the install
                    screenshots docs/screenshots/* (needs Playwright with Chromium and ImageMagick; only when the
                    artwork changes, after `npm run build`)
@@ -124,7 +121,7 @@ new emojis in `src/icons.ts`. The tests tell you what is missing. A new subject 
 
 Repository → Settings → Pages → Source „GitHub Actions“. CI (`.github/workflows/ci.yml`) builds on every push to
 `main`, tests and publishes `docs/`. The built files `docs/index.html`, `docs/sw.js` and
-`docs/manifest.webmanifest` are not committed; `art/` is.
+`docs/manifest.webmanifest` are not committed.
 
 ## The feedback form
 
@@ -151,8 +148,7 @@ messages and designs against them.
 
 ## Making a change
 
-1. Edit `src/`. The built files in `docs/` are not committed; `art/` is (run `npm run build` and commit it when a
-   monster changes).
+1. Edit `src/`. The built files in `docs/` are not committed.
 2. A change a player or parent can notice gets one short German line in `CHANGELOG.md` under today's date
    (format in the file header).
 3. A change a player can see needs before and after screenshots in the pull request: `npm run screenshots before`,

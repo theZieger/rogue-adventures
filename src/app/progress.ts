@@ -7,7 +7,7 @@ import { html, raw } from '../ui/html.ts';
 import { CONFETTI } from './collection.ts';
 import { $, CFG, MODULES_OF, TYPES } from './core.ts';
 import { state } from './state.ts';
-import { curGrade, enOff, enabledMods, extraOn, shown } from './storage.ts';
+import { curGrade, enOff, enabledMods, extraOn, shown, visSubjects } from './storage.ts';
 import { SFX, modal } from './ui.ts';
 
 /* ---------- Monster art ---------- */
@@ -61,10 +61,8 @@ export function recordAnswer(
   const wt = weekly().tally;
   const ws = (wt[state.mode + ':' + mod] = wt[state.mode + ':' + mod] || { c: 0, t: 0 });
   ws.t++;
-  if (ok) {
-    ws.c++;
-    weeklyStep('right', mod);
-  }
+  if (ok) ws.c++;
+  weeklyStep(ok);
   if (task && task.qid) {
     state.meta.knowSeq++;
     MK.record(state.meta.know as Record<string, Required<Known>>, task.qid, ok, state.meta.knowSeq);
@@ -214,7 +212,7 @@ export const heroes = () =>
 export const showcase = () =>
   heroes().find((s) => s.id === state.meta.showcase) || heroes().find((s) => s.id === 'fuchs') || heroes()[0];
 export const heroSVG = (s: { shape: string; type: string; id: string }, evo: number, cls?: string) =>
-  monsterSVG(s.shape, TYPES[s.type].color, evo, cls, { outfit: wornBy(s.id) });
+  monsterSVG(s.shape, evo, cls, { outfit: wornBy(s.id) });
 /* ---------- Weekly goals ---------- */
 // a new week starts fresh; finished weeks stay on the stamp card, nothing is taken away
 export const weekly = () => {
@@ -223,39 +221,24 @@ export const weekly = () => {
   return state.meta.weekly;
 };
 export interface WeeklyGoal {
-  m: string;
-  kind: string;
-  // undefined if every task type of the unit is switched off
-  mod: string | undefined;
+  // right: any right answer; subject: a right answer in this week's subject; subjects: subjects practised this week
+  kind: 'right' | 'subject' | 'subjects';
   n: number;
-  subject: string;
+  subject?: string;
   i: number;
 }
-// one goal per shown subject of the grade, from the week key and the enabled task types only.
-// Every branch draws the same numbers, so switching a task type off changes no other goal. A hidden game is
-// replaced from its own seed, so the other subjects keep their goals. i is the goal's slot in weekly.progress.
+// three small goals a child finishes by practising as usual, the same on every device: nothing asks for one
+// task type or for luck on the map. i is the goal's slot in weekly.progress.
 export function weeklyGoals() {
-  const r = MQ.seeded(weekly().week);
-  const goal = (r: () => number, m: string) => {
-    const on = enabledMods(m);
-    const kinds = ['right', 'elite', 'boss'].concat(MODES[m].worlds <= 2 ? ['win'] : []); // three worlds are too long for one week
-    const kind = kinds[Math.floor(r() * kinds.length)];
-    const mod = seededOrder(r, Object.keys(MODES[m].modules)).find((k) => on.includes(k));
-    const n = kind === 'right' ? 15 + Math.floor(r() * 11) : kind === 'elite' ? 2 + Math.floor(r() * 2) : (r(), 1);
-    return { m, kind, mod, n };
-  };
-  return curGrade()
-    .subjects.map((sub, i) => {
-      let g = goal(r, sub.modes[Math.floor(r() * sub.modes.length)]);
-      if (!shown(g.m)) {
-        const vis = sub.modes.filter(shown);
-        if (!vis.length) return null;
-        const r2 = MQ.seeded(weekly().week + ':' + sub.subject);
-        g = goal(r2, vis[Math.floor(r2() * vis.length)]);
-      }
-      return Object.assign(g, { subject: sub.subject, i });
-    })
-    .filter(Boolean) as WeeklyGoal[];
+  const vis = visSubjects().map((sub) => sub.subject);
+  const subject = seededOrder(
+    MQ.seeded(weekly().week),
+    curGrade().subjects.map((sub) => sub.subject),
+  ).find((x) => vis.includes(x));
+  const goals: Omit<WeeklyGoal, 'i'>[] = [{ kind: 'right', n: curGrade().grade === 1 ? 20 : 30 }];
+  if (subject) goals.push({ kind: 'subject', n: 10, subject });
+  if (vis.length > 1) goals.push({ kind: 'subjects', n: Math.min(3, vis.length) });
+  return goals.map((g, i): WeeklyGoal => Object.assign(g, { i }));
 }
 export const seededOrder = <T>(r: () => number, arr: readonly T[]) => {
   const a = arr.slice();
@@ -265,42 +248,47 @@ export const seededOrder = <T>(r: () => number, arr: readonly T[]) => {
   }
   return a;
 };
-export const goalText = (g: WeeklyGoal) => {
-  const t = `„${MODES[g.m].title}“`;
-  return g.kind === 'right'
-    ? `Löse ${g.n} Aufgaben ${MODES[g.m].modules[g.mod!].icon} ${MODES[g.m].modules[g.mod!].name} richtig.`
-    : g.kind === 'win'
-      ? `Gewinne ein Abenteuer in ${t}.`
-      : g.kind === 'elite'
-        ? `Besiege ${g.n} Elitegegner in ${t}.`
-        : `Besiege den Wochenboss in ${t}.`;
-};
+export const goalText = (g: WeeklyGoal) =>
+  g.kind === 'right'
+    ? `Löse ${g.n} Aufgaben richtig.`
+    : g.kind === 'subject'
+      ? `Löse ${g.n} Aufgaben in ${g.subject} richtig.`
+      : `Übe in ${g.n} Fächern.`;
 export const goalDone = (g: WeeklyGoal) => (weekly().progress[g.i] || 0) >= g.n;
-let weeklyNews = false; // the card waits for the next calm screen (map or title)
-export function weeklyStep(kind: string, mod?: string) {
+const GOAL_STAMPS = 3;
+let weeklyNews = 0; // stamps for finished goals; the card waits for the next calm screen (map or title)
+// after every answer in a unit; every finished goal pays, all of them together make 10 stamps and the gold week
+export function weeklyStep(ok: boolean) {
   const w = weekly();
   if (w.done || !extraOn('wochenziele')) return;
   const goals = weeklyGoals();
-  goals.forEach((g) => {
-    if (g.m === state.mode && g.kind === kind && (kind !== 'right' || g.mod === mod))
-      w.progress[g.i] = Math.min(g.n, (w.progress[g.i] || 0) + 1);
-  });
+  const subject = MODES[state.mode].subject;
+  // a merged save may bring answers from a unit this version does not know
+  const practised = new Set(Object.keys(w.tally).flatMap((k) => MODES[k.split(':')[0]]?.subject || [])).size;
+  for (const g of goals) {
+    if (goalDone(g)) continue;
+    const had = w.progress[g.i] || 0;
+    w.progress[g.i] =
+      g.kind === 'subjects'
+        ? Math.min(g.n, practised)
+        : had + (ok && (g.kind === 'right' || g.subject === subject) ? 1 : 0);
+    if (goalDone(g)) weeklyNews += giveStamps(GOAL_STAMPS);
+  }
   if (goals.every(goalDone)) {
     w.done = true;
     state.meta.stampCard[w.week] = 2;
-    giveStamps(10);
+    weeklyNews += giveStamps(Math.max(0, 10 - GOAL_STAMPS * goals.length));
     state.meta.progressAt = new Date().toISOString();
-    weeklyNews = true;
   }
 }
 export function showWeeklyNews() {
   if (!weeklyNews) return;
-  weeklyNews = false;
   const ov = modal(
-    html`<h2>Wochenaufgabe geschafft</h2><p>Alle Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>${raw(stampLine(10))}<button class="btn" id="tutok" data-action="close">Weiter</button>`,
+    html`${weekly().done ? html`<h2>Wochenaufgabe geschafft</h2><p>Alle Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>` : html`<h2>Wochenziel geschafft</h2><p>Ein Ziel dieser Woche ist erledigt.</p>`}${raw(stampLine(weeklyNews))}<button class="btn" id="tutok" data-action="close">Weiter</button>`,
     { close: () => ov.remove() },
   );
-  ov.insertAdjacentHTML('afterbegin', CONFETTI);
+  if (weekly().done) ov.insertAdjacentHTML('afterbegin', CONFETTI);
+  weeklyNews = 0;
   $('#tutok', ov).focus({ preventScroll: true });
 }
 export const stampLine = (n: number) => (n ? `<p class="stampgain" aria-label="${n} Stempel">+${n} 🏷️</p>` : '');

@@ -228,7 +228,7 @@ function turmMon(x: Monster, cols: string[], right: boolean, ghost?: boolean) {
   // guided wave 1: the first monster is marked until it is tapped
   const guide = t.wave === 1 && t.turn === 0 && turmSel === null && t.phase === 'choose';
   // a ghost is only shown, so it has no action
-  return html`<button class="tw-mon${sel ? ' sel' : ''}${free ? '' : ' guarded'}${t.weak === x.id ? ' weak' : ''}${right ? ' r' : ''}${x.boss || x.elite ? ' big' : ''}${guide ? ' guide' : ''}${threat ? ' threat' : ''}" data-id="${x.id}" aria-pressed="${String(sel)}" aria-label="${turmMonLabel(x)}"${ghost ? '' : raw(' data-action="monster"')}>${raw(monsterSVG(x.shape, TYPES[x.type].color, 0, right ? '' : 'enemy', { elite: x.elite, boss: x.boss }))}${raw(ring)}${free ? '' : raw(TWART.bubble())}<span class="tw-stat">${x.steps > 1 || x.stun ? raw(TWART.feet(x.steps, x.stun as unknown as boolean)) : ''}<i class="tw-hp"><b class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></b></i></span>${tags.length ? html`<span class="tw-tags" aria-hidden="true">${tags}</span>` : ''}</button>`;
+  return html`<button class="tw-mon${sel ? ' sel' : ''}${free ? '' : ' guarded'}${t.weak === x.id ? ' weak' : ''}${right ? ' r' : ''}${x.boss || x.elite ? ' big' : ''}${guide ? ' guide' : ''}${threat ? ' threat' : ''}" data-id="${x.id}" aria-pressed="${String(sel)}" aria-label="${turmMonLabel(x)}"${ghost ? '' : raw(' data-action="monster"')}>${raw(monsterSVG(x.shape, 0, right ? '' : 'enemy', { elite: x.elite, boss: x.boss }))}${raw(ring)}${free ? '' : raw(TWART.bubble())}<span class="tw-stat">${x.steps > 1 || x.stun ? raw(TWART.feet(x.steps, x.stun as unknown as boolean)) : ''}<i class="tw-hp"><b class="${pct < 30 ? 'low' : pct < 60 ? 'mid' : ''}" style="width:${pct}%"></b></i></span>${tags.length ? html`<span class="tw-tags" aria-hidden="true">${tags}</span>` : ''}</button>`;
 }
 // guards: the three typed starters or a boss from the Monsterbuch (look = its shape)
 const GUARD_LOOK: Record<string, string[]> = {
@@ -236,10 +236,8 @@ const GUARD_LOOK: Record<string, string[]> = {
   kroete: ['toad', 'wasser'],
   baer: ['bear', 'pflanze'],
 };
-const turmGuardSVG = (g: Pick<Guard, 'look' | 'type'>) => {
-  const [shape, type] = GUARD_LOOK[g.look] || [g.look, g.type in TYPES ? g.type : 'normal'];
-  return monsterSVG(shape, TYPES[type].color, 0, '', { boss: !GUARD_LOOK[g.look] });
-};
+const turmGuardSVG = (g: Pick<Guard, 'look'>) =>
+  monsterSVG(GUARD_LOOK[g.look]?.[0] || g.look, 0, '', { boss: !GUARD_LOOK[g.look] });
 // outro: the last turn of a wave on the board, without the Bauzeit marks
 function turmBoardHtml(outro?: boolean) {
   const t = state.run.turm,
@@ -395,7 +393,7 @@ function turmPanel(say: boolean) {
         ? html`<p class="tw-shieldnow"><i class="dot" style="background:${cols[sh as number]}" aria-hidden="true"></i><span>Die Aufgabe kommt aus ${SUBJECTS[t.lanes[sh as number].subject as Subject]} ${laneName(sh as number)}. ${x.shields!.length === 1 ? 'Das ist der letzte Schild.' : `Noch ${x.shields!.length} Schilde.`}</span></p>`
         : '';
     bot.innerHTML =
-      html`<div class="card tw-card" id="twcard"><div class="tw-cardhead">${raw(monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss }))}<div class="tw-cardinfo"><div class="tw-namerow"><div class="name">${x.name}</div><span class="tw-cardhp" aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp}</span></div><div class="tw-from">Aufgabe aus: ${M.icon} ${M.title}</div></div></div>
+      html`<div class="card tw-card" id="twcard"><div class="tw-cardhead">${raw(monsterSVG(x.shape, 0, 'enemy', { elite: x.elite, boss: x.boss }))}<div class="tw-cardinfo"><div class="tw-namerow"><div class="name">${x.name}</div><span class="tw-cardhp" aria-label="${x.hp} von ${x.maxHp} Lebenspunkten">❤️ ${x.hp}</span></div><div class="tw-from">Aufgabe aus: ${M.icon} ${M.title}</div></div></div>
         ${tags.length ? html`<div class="tags">${tags}</div>` : ''}${shield}${by ? html`<p class="tw-guard">${turmBlocked(by)}</p>` : ''}</div>${row(html`<button class="btn" id="atk"${by ? ' disabled' : ''} data-action="attack">Angreifen</button>`)}`.text;
     const said = () =>
       joined(
@@ -656,7 +654,7 @@ function turmLooks(lane: number, spot: number) {
     looks = turmGuardLooks();
   const head = `Wache am Weg ${laneName(lane)}. ${p ? `Kostet ${p} 🧱.` : 'Die erste Wache ist geschenkt.'}${old ? ' Die Wache auf diesem Platz geht dafür weg.' : ''}`;
   const ov = modal(
-    html`<h2>Welche Wache?</h2><p class="pnote">${head}</p><div class="tw-looks">${looks.map((x, i) => html`<button class="choice tw-look" data-l="${i}" data-action="look">${raw(turmGuardSVG({ look: x.look, type: x.type }))}<span class="name">${x.name}</span></button>`)}</div><button class="btn secondary" id="no" data-action="close">Zurück</button>`,
+    html`<h2>Welche Wache?</h2><p class="pnote">${head}</p><div class="tw-looks">${looks.map((x, i) => html`<button class="choice tw-look" data-l="${i}" data-action="look">${raw(turmGuardSVG(x))}<span class="name">${x.name}</span></button>`)}</div><button class="btn secondary" id="no" data-action="close">Zurück</button>`,
     {
       close: () => ov.remove(),
       look: (button) => {
@@ -1535,7 +1533,7 @@ function turmHitTut(o: BoardOpts) {
   const text = `${w ? w.name : 'Ein Monster'} ist am Turm angekommen. Der Turm hat ${turmLost} ❤️ verloren.`,
     tip = 'Tipp: Greif zuerst das Monster mit ⚠️ an.';
   const ov = modal(
-    html`<div class="tw-banner">${x ? raw(monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss })) : ''}<h2>Oh nein!</h2></div><p>${text}</p><p>${tip}</p><button class="btn" id="tutok" data-action="close">Weiter</button>`,
+    html`<div class="tw-banner">${x ? raw(monsterSVG(x.shape, 0, 'enemy', { elite: x.elite, boss: x.boss })) : ''}<h2>Oh nein!</h2></div><p>${text}</p><p>${tip}</p><button class="btn" id="tutok" data-action="close">Weiter</button>`,
     {
       close: () => {
         ov.remove();
@@ -1563,7 +1561,7 @@ function turmBanner(x: Monster, slide?: boolean) {
     : '';
   const close = () => ov.remove();
   const ov = modal(
-    html`<div class="tw-banner">${raw(monsterSVG(x.shape, TYPES[x.type].color, 0, 'enemy', { elite: x.elite, boss: x.boss }))}<h2>${x.name} kommt.</h2></div><p>${text}</p>${list}<button class="btn" id="tutok" data-action="close">Weiter</button>`,
+    html`<div class="tw-banner">${raw(monsterSVG(x.shape, 0, 'enemy', { elite: x.elite, boss: x.boss }))}<h2>${x.name} kommt.</h2></div><p>${text}</p>${list}<button class="btn" id="tutok" data-action="close">Weiter</button>`,
     { close },
   );
   ov.classList.add('tw-bannerov');

@@ -30,7 +30,6 @@ import {
 import {
   REWARDS,
   gainXp,
-  goalText,
   heal,
   heroLocked,
   heroName,
@@ -41,46 +40,34 @@ import {
   monsterSVG,
   seededOrder,
   showWeeklyNews,
-  type WeeklyGoal,
   typeChip,
   weekly,
   xpNeeded,
 } from './progress.ts';
 import { state } from './state.ts';
 import { enabledMods, extraOn, heroShown, marketOn, offList, practice, saveAll } from './storage.ts';
-import { screenSubject, screenTitle, screenWeekly, subjectOf } from './title.ts';
+import { screenSubject, screenTitle, subjectOf } from './title.ts';
 import { modal, screen, topbar } from './ui.ts';
 
-// goal: the weekly goal this adventure was started for; its task type is offered as an attack
-export function screenStarter(goal?: WeeklyGoal) {
+export function screenStarter() {
   state.depth = 2;
   const vis: Starter[] = CFG().starters.filter((s) => heroShown(state.mode, s));
   const S = vis.filter((s) => !heroLocked(s));
   const last = state.meta.lastStarter[state.mode];
   let sel = S.length === 1 ? S[0].id : null;
-  const want = goal && goal.kind === 'right' ? goal.mod : null;
-  // grade 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4; a goal's attack comes first
-  const kit = (s: Starter) => {
-    if (CFG().grade !== 1) return s.attacks;
-    const a = s.attacks.slice(),
-      i = a.findIndex((x) => x.mod === want);
-    if (i > 0) a.unshift(a.splice(i, 1)[0]);
-    return a.slice(0, 2 + (state.meta.started[state.mode] || 0));
-  };
-  // recommend the monster whose attacks were practised least (and not the one played last time); for a goal one that has its task type
-  const score = (s: Starter) =>
-    s.attacks.reduce((n, a) => n + practice(a.mod), 0) +
-    (s.id === last ? 1e6 : 0) -
-    (want && s.attacks.some((a) => a.mod === want) ? 1e9 : 0);
+  // grade 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4
+  const kit = (s: Starter) =>
+    CFG().grade === 1 ? s.attacks.slice(0, 2 + (state.meta.started[state.mode] || 0)) : s.attacks;
+  // recommend the monster whose attacks were practised least (and not the one played last time)
+  const score = (s: Starter) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0);
   const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;
-  // offer to swap the most practised attack for the goal's task type or one that was hardly practised yet
-  let swap: { from: string; to: string; goal?: boolean } | null = null,
+  // offer to swap the most practised attack for one that was hardly practised yet
+  let swap: { from: string; to: string } | null = null,
     swapOn = true;
   const swapFor = (s: Starter | undefined) => {
     if (!s) return null;
     const have = kit(s).map((a) => a.mod);
     const most = have.filter((k) => enabledMods().includes(k)).sort((a, b) => practice(b) - practice(a))[0];
-    if (want) return have.includes(want) || !most ? null : { from: most, to: want, goal: true };
     const cand = enabledMods()
       .filter((k) => !have.includes(k))
       .sort((a, b) => practice(a) - practice(b))[0];
@@ -93,7 +80,7 @@ export function screenStarter(goal?: WeeklyGoal) {
     if (!box) return;
     const M = MODULES_OF();
     box.innerHTML = swap
-      ? html`<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" data-action="swap" aria-pressed="${String(swapOn)}"><div class="meta"><div class="name">${swap.goal ? '⭐ Für dein Wochenziel' : '🎯 Neues üben'}: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name}${swap.goal ? '' : ' (schon oft geübt)'} bekommst du die Attacke „${CFG().extra[swap.to]}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>`
+      ? html`<button class="choice swap ${swapOn ? 'selected' : ''}" id="swap" data-action="swap" aria-pressed="${String(swapOn)}"><div class="meta"><div class="name">🎯 Neues üben: ${M[swap.to].icon} ${M[swap.to].name}</div><div class="desc">Statt ${M[swap.from].name} (schon oft geübt) bekommst du die Attacke „${CFG().extra[swap.to]}“. 🐝 Bonus: Fleißbienchen</div></div><span class="tick" aria-hidden="true">${swapOn ? '✔' : ''}</span></button>`
           .text
       : '';
   };
@@ -145,19 +132,18 @@ export function screenStarter(goal?: WeeklyGoal) {
   };
   screen(
     html`<div class="screen">${raw(topbar(S.length === 1 ? 'Dein Held' : 'Wähle dein Monster'))}<div class="scroll"><div class="stack">
-      ${goal ? html`<p class="center goalbadge">⭐ Wochenziel: ${goalText(goal)}</p>` : ''}
-      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="pill warn">${want ? `⭐ Empfohlen: hat ${MODULES_OF()[want].name} · 🐝 Bonus` : '⭐ Empfohlen: übt Neues · 🐝 Bonus'}</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
+      ${S.map((s) => html`<button class="choice ${S.length === 1 ? 'selected' : ''}" data-action="choose" data-id="${s.id}">${raw(heroSVG(s, 0))}<div class="meta">${rec === s.id ? html`<div class="pill warn">⭐ Empfohlen: übt Neues · 🐝 Bonus</div>` : ''}<div class="name">${s.names[0]}</div>${raw(typeChip(s.type))}<div class="desc">${s.desc}<br>❤️ ${s.hp} LP · Attacken: ${[...new Set(kit(s).map((a) => MODULES_OF()[a.mod].name))].join(', ')}</div></div></button>`)}
       ${vis
         .filter(heroLocked)
         .map(
           (s) =>
-            html`<div class="choice locked">${raw(monsterSVG(s.shape, '#8A8FA3', 0))}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
+            html`<div class="choice locked">${raw(monsterSVG(s.shape, 0))}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
         )}
       <div id="swapbox"></div>
       ${state.meta.pantry.length ? html`<p class="center">Aus deinem Vorrat kommt mit: ${state.meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}
       </div></div><div class="bottom"><div class="row"><button class="btn secondary" id="back" data-action="back">Zurück</button><button class="btn" id="go" data-action="go" ${sel ? '' : 'disabled'}>Start</button></div></div></div>`,
     {
-      back: () => (goal ? screenWeekly() : screenSubject(subjectOf(state.mode))),
+      back: () => screenSubject(subjectOf(state.mode)),
       choose,
       swap() {
         swapOn = !swapOn;
