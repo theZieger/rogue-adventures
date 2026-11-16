@@ -8,10 +8,15 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ## 2026-11-16
 
+### Neu
+- Auf der Startseite steht jetzt dein Held mit seiner Kleidung; in der Kleiderkammer wählst du, welcher.
+- Das Monsterbuch zeigt, wie viele neue Monster du seit dem letzten Blick entdeckt hast.
+- Ist die Wochenaufgabe geschafft, regnet es Konfetti.
+
 ### Verbessert
-- Wochenziele: nur noch drei kleine Ziele pro Woche, die du beim normalen Üben schaffst.
-- Keine Ziele mehr für eine einzelne Aufgabenart, für Elitegegner oder ein ganzes Abenteuer.
-- Jedes geschaffte Wochenziel gibt gleich 3 Stempel, alle zusammen wie bisher 10 und den Stern.
+- Wochenziele: drei kleine Ziele pro Woche, die du beim normalen Üben schaffst; jedes gibt 3 Stempel.
+- Alle Karten der Startseite sind gleich groß und gleiten beim Öffnen und Blättern herein.
+- Ton, Stempel, Neuigkeiten und Eltern sind runde Knöpfe oben; „Idee senden“ steht im Elternbereich.
 
 ## 2026-11-15
 

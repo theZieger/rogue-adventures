@@ -1,4 +1,3 @@
-import { MODES, MODE_KEYS } from '../curriculum.ts';
 import { MK } from '../knowledge.ts';
 import { MONART } from '../monsters.ts';
 import { PANTRY_MAX, TOP } from '../save.ts';
@@ -7,7 +6,17 @@ import { TOP_KNOCK, topVal } from './battle.ts';
 import { screenStamps } from './collection.ts';
 import { $, CFG, ITEMS, TYPES, esc, rnd } from './core.ts';
 import { type Crop, screenGarden } from './garten.ts';
-import { OUTFITS, type Outfit, hasOutfit, heroLocked, heroSVG, markWeek, monsterSVG, wornBy } from './progress.ts';
+import {
+  OUTFITS,
+  type Outfit,
+  hasOutfit,
+  heroSVG,
+  heroes as allHeroes,
+  markWeek,
+  monsterSVG,
+  showcase,
+  wornBy,
+} from './progress.ts';
 import { state } from './state.ts';
 import { type TopSlot, extraOn, hasPart, saveAll } from './storage.ts';
 import { INK, lg, ln, rg, runTask, shadow } from './tasks.ts';
@@ -315,9 +324,7 @@ export function screenHut() {
 }
 export function screenWardrobe(heroId?: string) {
   state.depth = 2;
-  const heroes = MODE_KEYS.flatMap((m) => MODES[m].starters).filter(
-    (s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i,
-  );
+  const heroes = allHeroes();
   const hero =
     heroes.find((s) => s.id === heroId) || heroes.find((s) => s.id === state.meta.lastStarter[state.mode]) || heroes[0];
   const worn = wornBy(hero.id);
@@ -341,13 +348,18 @@ export function screenWardrobe(heroId?: string) {
   };
   screen(
     html`<div class="screen">${raw(topbar('Kleiderkammer'))}<div class="scroll"><div class="stack">
-      <div class="card center kkcard">${raw(heroSVG(hero, 0))}<div class="name">${hero.names[0]}</div><p>🏷️ ${state.meta.stamps} Stempel</p><p class="pnote">Kleidung ändert nichts am Kampf. Jeder Held trägt ein Teil.</p></div>
+      <div class="card center kkcard">${raw(heroSVG(hero, 0))}<div class="name">${hero.names[0]}</div>${showcase() === hero ? html`<span class="pill good">Auf der Startseite</span>` : html`<button class="btn small secondary" id="showcase" data-action="showcase">Auf der Startseite zeigen</button>`}<p>🏷️ ${state.meta.stamps} Stempel</p><p class="pnote">Kleidung ändert nichts am Kampf. Jeder Held trägt ein Teil.</p></div>
       ${heroes.length > 1 ? html`<div class="kkpick" role="group" aria-label="Held wählen">${heroes.map((s) => html`<button class="kkhero${s === hero ? ' on' : ''}" data-action="hero" data-hero="${s.id}" aria-pressed="${String(s === hero)}" aria-label="${s.names[0]}">${raw(heroSVG(s, 0))}</button>`)}</div>` : ''}
       <div class="kkgrid">${OUTFITS.map(tile)}</div>
       </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     {
       back: () => screenStamps(),
       hero: (button) => screenWardrobe(button.dataset.hero),
+      showcase: () => {
+        state.meta.showcase = hero.id;
+        saveAll();
+        screenWardrobe(hero.id);
+      },
       wear: (button) => wear(button.dataset.wear),
       off: () => wear(null),
       buy: (button) => {

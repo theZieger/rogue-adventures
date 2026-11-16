@@ -1,9 +1,10 @@
-import { type Attack, MODES } from '../curriculum.ts';
+import { type Attack, MODES, MODE_KEYS } from '../curriculum.ts';
 import { type Known, MK } from '../knowledge.ts';
 import { MQ, type Task } from '../logic.ts';
 import { MONART } from '../monsters.ts';
 import { isObj } from '../save.ts';
 import { html, raw } from '../ui/html.ts';
+import { CONFETTI } from './collection.ts';
 import { $, CFG, MODULES_OF, TYPES } from './core.ts';
 import { state } from './state.ts';
 import { curGrade, enOff, enabledMods, extraOn, shown, visSubjects } from './storage.ts';
@@ -203,6 +204,13 @@ export const wornBy = (heroId: string) => {
   const o = OUTFITS.find((x) => x.id === state.meta.worn[heroId]);
   return o && hasOutfit(o) ? o.id : null;
 };
+// every hero a child can pick (unlocked), each once, and the one shown on the title screen (the logo's fox by default)
+export const heroes = () =>
+  MODE_KEYS.flatMap((m) => MODES[m].starters).filter(
+    (s, i, all) => !heroLocked(s) && all.findIndex((x) => x.id === s.id) === i,
+  );
+export const showcase = () =>
+  heroes().find((s) => s.id === state.meta.showcase) || heroes().find((s) => s.id === 'fuchs') || heroes()[0];
 export const heroSVG = (s: { shape: string; type: string; id: string }, evo: number, cls?: string) =>
   monsterSVG(s.shape, evo, cls, { outfit: wornBy(s.id) });
 /* ---------- Weekly goals ---------- */
@@ -279,6 +287,7 @@ export function showWeeklyNews() {
     html`${weekly().done ? html`<h2>Wochenaufgabe geschafft</h2><p>Alle Ziele dieser Woche sind erledigt, dafür steht ein Stern auf deiner Stempelkarte.</p>` : html`<h2>Wochenziel geschafft</h2><p>Ein Ziel dieser Woche ist erledigt.</p>`}${raw(stampLine(weeklyNews))}<button class="btn" id="tutok" data-action="close">Weiter</button>`,
     { close: () => ov.remove() },
   );
+  if (weekly().done) ov.insertAdjacentHTML('afterbegin', CONFETTI);
   weeklyNews = 0;
   $('#tutok', ov).focus({ preventScroll: true });
 }

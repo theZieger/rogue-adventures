@@ -1,15 +1,23 @@
 import { MODES } from '../curriculum.ts';
-import { html, raw } from '../ui/html.ts';
+import { type Markup, html, raw } from '../ui/html.ts';
 import { backupDue } from './backup.ts';
 import { screenDex, screenStamps } from './collection.ts';
 import { $, app, esc, rnd } from './core.ts';
 import { screenDuel } from './duell.ts';
 import { pAt, screenParent } from './elternbereich.ts';
-import { screenFeedback } from './feedback.ts';
 import { gardenCard, screenGarden } from './garten.ts';
 import { screenHut } from './huette.ts';
 import { resumeRun, screenStarter } from './map.ts';
-import { type WeeklyGoal, goalDone, goalText, showWeeklyNews, weekly, weeklyGoals } from './progress.ts';
+import {
+  type WeeklyGoal,
+  goalDone,
+  goalText,
+  heroSVG,
+  showWeeklyNews,
+  showcase,
+  weekly,
+  weeklyGoals,
+} from './progress.ts';
 import { state } from './state.ts';
 import { chooseGrade, curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.ts';
 import { screenTurm } from './turm_screens.ts';
@@ -37,6 +45,33 @@ const evictable = () => {
     window.matchMedia('(display-mode: browser)').matches
   );
 };
+const newDex = () => Math.max(0, Object.keys(state.meta.dex).length - state.meta.seenDex);
+const tile = (id: string, icon: string, name: string, desc: string, pill: Markup | string = '') =>
+  html`<button class="card subjtile" id="${id}" data-action="${id}"><span class="subjicon" aria-hidden="true">${icon}</span><span class="subjname">${name}</span><span class="desc">${desc}</span>${pill}</button>`;
+// cards slide in one after another as they come into view; a redraw for the same visit (sound on/off) keeps them still
+let still = false;
+function reveal() {
+  if (still || !('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches)
+    return void (still = false);
+  const items = [...app.querySelectorAll<HTMLElement>('.hero, .scroll .card, .grades')];
+  const io = new IntersectionObserver(
+    (entries) => {
+      let i = 0;
+      for (const e of entries)
+        if (e.isIntersecting) {
+          const el = e.target as HTMLElement;
+          el.style.setProperty('--i', String(Math.min(i++, 6)));
+          el.classList.add('in');
+          io.unobserve(el);
+        }
+    },
+    { threshold: 0.1 },
+  );
+  for (const el of items) {
+    el.classList.add('reveal');
+    io.observe(el);
+  }
+}
 const showWarn = () => evictable() && !(Date.now() - Date.parse(state.meta.storage.warnedAt) < 30 * 864e5);
 export function screenTitle() {
   state.depth = 0;
@@ -47,7 +82,7 @@ export function screenTitle() {
     saveAll();
   };
   screen(
-    html`<div class="screen"><div class="scroll"><button class="soundbtn" id="snd" data-action="sound" aria-label="${state.meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${String(!!state.meta.sound)}">${state.meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" data-action="stamps" aria-label="Stempelheft, ${state.meta.stamps} Stempel">🏷️ ${state.meta.stamps}</button><button class="parentbtn" id="parents" data-action="parents">${GEAR} Eltern${backupDue() ? html`<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>` : ''}</button><div class="hero"><div class="logo">🎒</div><h1 id="logo" data-action="logo">Lern­quest</h1><div class="sub">Jede Attacke ist eine Aufgabe.</div></div>
+    html`<div class="screen"><div class="scroll"><div class="titlebar"><button class="soundbtn" id="snd" data-action="sound" aria-label="${state.meta.sound ? 'Töne ausschalten' : 'Töne einschalten'}" aria-pressed="${String(!!state.meta.sound)}">${state.meta.sound ? '🔊' : '🔇'}</button><button class="stampbtn" id="stampsTop" data-action="stamps" aria-label="Stempelheft, ${state.meta.stamps} Stempel">🏷️ ${state.meta.stamps}</button><button class="newsbtn" id="news" data-action="news" aria-label="Was ist neu?">✨${hasNews() ? html`<span class="pill new">Neu!</span>` : ''}</button><button class="parentbtn" id="parents" data-action="parents">${GEAR}<span class="sr-only">Eltern</span>${backupDue() ? html`<span class="dot" aria-hidden="true"></span><span class="sr-only">, bitte Spielstand sichern</span>` : ''}</button></div><div class="hero"><div class="showcase">${raw(heroSVG(showcase(), 2))}</div><h1 id="logo" data-action="logo">Lern­quest</h1></div>
       <div class="stack" style="margin-top:var(--space-16)">
         ${showWarn() ? html`<div class="card warncard"><button class="warnx" id="warnx" data-action="warnx" aria-label="Hinweis schließen">✕</button><p>Safari löscht deinen Fortschritt nach 7 Tagen Pause. Installiere Lernquest auf dem Startbildschirm oder sichere den Spielstand im Elternbereich.</p><button class="btn small secondary" id="warnp" data-action="warnp">Zum Elternbereich</button></div>` : ''}
         ${extraOn('wochenziele') ? weeklyCard() : ''}
@@ -57,19 +92,26 @@ export function screenTitle() {
             return html`<button class="card subjtile" data-sub="${i}" data-action="subject"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${sub.subject}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`;
           },
         )}</div>
-        ${[
-          html`<button class="btn ghost" id="dex" data-action="dex">Monsterbuch (${Object.keys(state.meta.dex).length})</button>`,
-          html`<button class="btn ghost" id="stamps" data-action="stamps">Stempelheft</button>`,
-          extraOn('huette') && html`<button class="btn ghost" id="hut" data-action="hut">Meine Hütte</button>`,
-          extraOn('garten') && html`<button class="btn ghost" id="garden" data-action="garden">Schulgarten</button>`,
-          extraOn('duell') && html`<button class="btn ghost" id="duel" data-action="duel">Duell zu zweit</button>`,
+        <div class="subjects more">${[
+          tile(
+            'dex',
+            '📗',
+            'Monsterbuch',
+            `${Object.keys(state.meta.dex).length} Monster`,
+            newDex() ? html`<span class="pill new">${newDex()} neu</span>` : '',
+          ),
+          extraOn('huette') && tile('hut', '🏡', 'Meine Hütte', 'Möbel aufstellen'),
+          extraOn('garten') && tile('garden', '🌼', 'Schulgarten', 'Beete und Ernte'),
+          extraOn('duell') && tile('duel', '👥', 'Duell', 'Zu zweit üben'),
           turmOn() &&
-            html`<button class="btn ghost" id="turm" data-action="turm"><span>🏰 Turmwacht</span>${loadTurm() ? html`<span class="pill">${raw(TW_FLAG)}läuft</span>` : ''}</button>`,
-          html`<button class="btn ghost" id="news" data-action="news">Was ist neu?${hasNews() ? html`<span class="pill new">Neu!</span>` : ''}</button>`,
-          html`<button class="btn ghost" id="feedback" data-action="feedback">Idee senden</button>`,
-        ]
-          .filter(Boolean)
-          .map((b, i, all) => (i % 2 ? '' : html`<div class="trow">${b}${all[i + 1]}</div>`))}
+            tile(
+              'turm',
+              '🏰',
+              'Turmwacht',
+              'Turm schützen',
+              loadTurm() ? html`<span class="pill">${raw(TW_FLAG)}läuft</span>` : '',
+            ),
+        ].filter(Boolean)}</div>
       </div></div></div>`,
     {
       logo: () => {
@@ -96,8 +138,8 @@ export function screenTitle() {
       turm: screenTurm,
       hut: screenHut,
       garden: screenGarden,
-      feedback: () => screenFeedback(screenTitle),
       sound: () => {
+        still = true;
         state.meta.sound = !state.meta.sound;
         saveAll();
         if (state.meta.sound) {
@@ -109,6 +151,7 @@ export function screenTitle() {
       weekly: screenWeekly,
     },
   );
+  reveal();
   on({ harvest: screenGarden, grade: (chip) => chooseGrade(chip, screenTitle) });
   showWeeklyNews();
 }
@@ -199,10 +242,10 @@ export const setupDone = (how: 'done' | 'skipped') => {
 function screenSetup() {
   state.depth = 0;
   screen(
-    html`<div class="screen setup"><div class="scroll"><div class="hero"><div class="logo">🎒</div><h1>Willkommen bei Lernquest</h1></div>
+    html`<div class="screen setup"><div class="scroll"><div class="hero"><div class="showcase">${raw(heroSVG(showcase(), 2))}</div><h1>Willkommen bei Lernquest</h1></div>
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:var(--space-16)"><button class="btn" id="setpin" data-action="setpin">PIN festlegen</button><button class="btn secondary" id="setload" data-action="setload">Spielstand laden</button><button class="btn secondary" id="later" data-action="later">Später</button></div>
-      <p class="hintsmall">Der Elternbereich ist jederzeit über den Knopf „Eltern“ oben rechts erreichbar.</p></div>
+      <p class="hintsmall">Der Elternbereich ist jederzeit über das Zahnrad oben rechts erreichbar.</p></div>
       <div class="card" style="margin-top:var(--space-12)"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${raw(gradeTabs())}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`,
     {
       setpin: () => setPin(screenTitle, screenSetup),

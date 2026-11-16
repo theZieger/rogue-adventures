@@ -1186,7 +1186,7 @@ async function stampCases() {
       'fourth hero is locked on the starter screen',
     );
     p.click('#back');
-    p.click('#stamps');
+    p.click('#stampsTop');
     check(
       p.text().includes('Stempelkarte') &&
         p.d.querySelectorAll('.wk').length >= 47 &&
@@ -1198,7 +1198,7 @@ async function stampCases() {
     m.stamps = 70;
     m.stampsTotal = 70;
     p.w.__mq.screenTitle();
-    p.click('#stamps');
+    p.click('#stampsTop');
     p.click('[data-buy="map-w1-winter"]');
     p.click('.overlay #no');
     check(m.stamps === 70 && !m.owned['map-w1-winter'], '"Zurück" in the buy dialog buys nothing');
@@ -1257,7 +1257,7 @@ function wardrobeCases() {
       JSON.stringify(m.worn) === '{}' && JSON.stringify(m.owned) === '{}' && p.errors.length === 0,
       'old save without worn/owned loads with nothing worn',
     );
-    p.click('#stamps');
+    p.click('#stampsTop');
     p.click('#kk');
     check(
       p.text().includes('Kleiderkammer') &&
@@ -2761,7 +2761,7 @@ await tick();
   };
   const p = open({ [META]: JSON.stringify({ setup: { skipped: true }, materials: { holz: 3, erz: 1, hafer: 1 } }) });
   const m = p.w.__mq.meta;
-  p.click('#stamps');
+  p.click('#stampsTop');
   check(
     p.text().includes('Werkbank') &&
       p.text().includes('Im Lager: 3 Holz, 1 Erz und 1 Hafer') &&
@@ -2817,7 +2817,7 @@ await tick();
       m2.materials.hafer === 19,
     'the pantry holds three things, a fourth is not built',
   );
-  p2.click('#stamps');
+  p2.click('#stampsTop');
   check(p2.$('[data-craft="trank"]').disabled && p2.text().includes('Der Vorrat ist voll.'), 'a full pantry is shown');
   check(
     p2.w.__mq.craft(R.find((r) => r.id === 'hut-tisch')) &&
@@ -2896,7 +2896,7 @@ await tick();
   );
   m.materials.stein = 12;
   p2.click('#back');
-  p2.click('#stamps');
+  p2.click('#stampsTop');
   p2.click('[data-buy="hut-zimmer2"]');
   check(p2.$('.overlay').textContent.includes('30 Stempel und 12 Stein'), 'the purchase names stamps and stone');
   p2.click('.overlay #yes');
@@ -3052,7 +3052,7 @@ function topCases() {
     // Kreisel bauen: values, three rows, buy with a confirm dialog, fit
     const p = open({ [META]: JSON.stringify(Object.assign({ stamps: 25, owned: { 'top-disc-eisen': true } }, skip)) });
     const m = p.w.__mq.meta;
-    p.click('#stamps');
+    p.click('#stampsTop');
     check(p.text().includes('Kreisel bauen') && !!p.$('#kb'), 'Stempelheft lists „Kreisel bauen“');
     p.click('#kb');
     const vals = () => p.$('.topvals').textContent;
@@ -4405,16 +4405,39 @@ await tick();
     ),
     'a hidden class leaves the class tabs',
   );
+  {
+    // Monsterbuch „neu“: an old save without the counter counts its monsters as seen, opening the book clears it
+    const dex = { Sumpfbrocken: { type: 'erde', shape: 'blob', world: 1, mode: 'math' } };
+    const old = open({ [META]: JSON.stringify(Object.assign({}, base, { dex })) });
+    check(old.w.__mq.meta.seenDex === 1 && !old.$('#dex .pill'), 'an old save shows no new monsters');
+    const two = Object.assign({}, dex, { Regenwicht: { type: 'wasser', shape: 'drop', world: 1, mode: 'math' } });
+    const p = open({ [META]: JSON.stringify(Object.assign({}, base, { dex: two, seenDex: 0 })) });
+    check(p.$('#dex .pill')?.textContent === '2 neu', 'the Monsterbuch card counts new monsters');
+    p.click('#dex');
+    check(open(p.dump()).w.__mq.meta.seenDex === 2 && !open(p.dump()).$('#dex .pill'), 'opening the book clears it');
+  }
+  {
+    // the title hero: the fox until another one is chosen in the Kleiderkammer
+    const p = open({ [META]: JSON.stringify(base) });
+    check(p.w.__mq.meta.showcase === 'fuchs' && !!p.$('.showcase svg'), 'the fox stands on the title by default');
+    p.click('#stampsTop');
+    p.click('#kk');
+    const other = [...p.d.querySelectorAll('[data-hero]')].find((b) => b.dataset.hero !== 'fuchs');
+    p.click(`[data-hero="${other.dataset.hero}"]`);
+    p.click('#showcase');
+    const q = open(p.dump());
+    check(q.w.__mq.meta.showcase === other.dataset.hero && !q.$('#showcase'), 'another hero can be shown on the title');
+  }
   // extras
   const ex = ['garten', 'huette', 'kreisel', 'duell', 'wochenziele', 'markt'].map((k) => 'extra:' + k);
   const p3 = open({ [META]: JSON.stringify(Object.assign({}, base, { hidden: ex })) }, { now: W49 });
   check(
     ['#hut', '#garden', '#duel', '#weekly'].every((s) => !p3.d.querySelector(s)) &&
       !!p3.d.querySelector('#news') &&
-      !!p3.d.querySelector('#feedback'),
+      !!p3.d.querySelector('#dex'),
     'hidden extras leave the title',
   );
-  p3.click('#stamps');
+  p3.click('#stampsTop');
   check(
     !p3.d.querySelector('#kb') && !p3.d.querySelector('#werkbank') && !p3.text().includes('Zweites Zimmer'),
     'Kreisel and Werkbank leave the Stempelheft',

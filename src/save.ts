@@ -24,6 +24,8 @@ export interface Meta {
   evoUnlocked: Record<string, boolean>;
   bestWorld: number;
   seenNews: string;
+  seenDex: number; // monsters in the Monsterbuch when it was last opened
+  showcase: string; // the hero on the title screen
   grade: number;
   off: Record<string, string[]>;
   lastStarter: Record<string, string>;
@@ -102,6 +104,8 @@ export const defaultMeta = (): Meta => ({
   evoUnlocked: {},
   bestWorld: 0,
   seenNews: '',
+  seenDex: -1,
+  showcase: 'fuchs',
   grade: 3,
   off: {},
   lastStarter: {},
@@ -206,6 +210,8 @@ export function normMeta(raw: unknown): Meta {
     for (const k of Object.keys(MODES[g].modules)) if (!okStat(m.stats[g][k])) m.stats[g][k] = { c: 0, t: 0, hist: [] };
   }
   if (!Number.isFinite(m.knowSeq)) m.knowSeq = 0;
+  // a save from before the counter counts every monster as seen, so nobody gets a pile of „neu“ at once
+  if (!Number.isInteger(m.seenDex) || m.seenDex < 0) m.seenDex = Object.keys(m.dex).length;
   m.level = Object.fromEntries(
     Object.entries(m.level)
       .filter(([, L]) => isObj(L))

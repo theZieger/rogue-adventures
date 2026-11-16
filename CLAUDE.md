@@ -64,7 +64,7 @@ shared building block in each state, and the rule for using it. Look there befor
 - **Roles, not palette.** A rule takes a role (`--ink`, `--card`, `--gold` …) or a tone pair (`--good-tint` with
   `--good-ink`; also `bad`, `warn`, `hot`, `info`). A palette step (`--navy-600`) is only for drawings (coins, maps,
   the Turmwacht board). A see-through colour is a token (`--glass`, `--shade` …) or `color-mix()` of a role.
-- **The scales are closed:** 10 text sizes, 4 line heights, 5 radii, 8 spaces, 3 line widths, 2 tap sizes
+- **The scales are closed:** 9 text sizes, 4 line heights, 5 radii, 8 spaces, 3 line widths, 2 tap sizes
   (`--tap` 44 px is the smallest thing a child taps), 7 durations, 35 palette colours. Need a value between two
   steps? Take the nearer step. A new step or colour changes `tests/test_design.js` and needs the owner's yes.
 - **One building block per job.** Before writing a class, find the job in the gallery:

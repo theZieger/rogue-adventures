@@ -840,7 +840,7 @@ async function step() {
     crafted = true;
     const m = w.__mq.meta;
     m.materials = Object.assign({ holz: 2, erz: 1 }, m.materials);
-    click($('#stamps'));
+    click($('#stampsTop'));
     click($('[data-craft="schild"]'));
     await solveTask(false);
     if (!text().includes('Gebaut: Schild')) throw new Error('Werkbank did not build: ' + text().slice(0, 200));

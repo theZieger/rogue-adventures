@@ -129,15 +129,6 @@ body {
 .gallery .node {
   position: static;
 }
-.gallery .corner {
-  position: relative;
-  height: 68px;
-}
-.gallery .corner .soundbtn,
-.gallery .corner .stampbtn,
-.gallery .corner .parentbtn {
-  top: 12px;
-}
 .gallery .choice .mon,
 .gallery .monsters .mon {
   width: 96px;

@@ -41,9 +41,6 @@
 }
 
 /* Stamps */
-.stampbtn {
-  left: 66px;
-}
 .stampgain {
   font-weight: 700;
   font-size: var(--text-24);
