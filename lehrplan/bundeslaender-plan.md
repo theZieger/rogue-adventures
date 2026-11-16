@@ -34,7 +34,8 @@ what is still unverified. Nothing in the app has been changed.
 | `sachsen-anhalt.md` | Official plan (new, 01.08.2026) read |
 | `thueringen.md` | **Partly.** Portal unreachable; describes the 2010/2015 plans, maths from secondary sources. A trial version 2026 applies to grades 1 and 3 and is unread |
 | `bremen.md` | **Partly.** The five new plans (2025) could not be downloaded; rests on older overviews |
-| `hessen.md`, `rheinland-pfalz.md`, `saarland.md` | HESSEN_RLP_SAAR_STATUS |
+| `hessen.md`, `rheinland-pfalz.md` | Official plans read (Sachunterricht and Ethik of Rheinland-Pfalz are scans read by OCR) |
+| `saarland.md` | **Weak.** The state site refused every download; only Sachunterricht 2010 and the superseded Deutsch 2009 were read. The new plans for Mathematik and Deutsch (2026) are unread |
 
 ## 3. The six axes of difference
 
@@ -43,7 +44,8 @@ what is still unverified. Nothing in the app has been changed.
 | Fixes content … | States |
 |---|---|
 | per grade (1/2 as a block, then 3 and 4) | Sachsen; Mecklenburg-Vorpommern (maths only); Hamburg (maths only); Schleswig-Holstein (numbers and operations only) |
-| only for end of grade 2 and end of grade 4 | Bayern, Baden-Württemberg, NRW, Niedersachsen, Sachsen-Anhalt, Thüringen, Bremen (old overviews name grades) |
+| only for end of grade 2 and end of grade 4 | Bayern, Baden-Württemberg, NRW, Niedersachsen, Sachsen-Anhalt, Thüringen, Rheinland-Pfalz (maths; Deutsch refuses any split), Saarland [sek], Bremen (old overviews name grades) |
+| only for end of grade 4, the school does the rest | Hessen (Kerncurricula 2011; the concrete Rahmenplan 1995 applies only where a school has no own curriculum) |
 | by levels, not grades | Berlin, Brandenburg |
 
 Consequence: most of what the state files list as „fehlt in der App“ is band 3/4 material and may be grade 4 in
@@ -54,9 +56,9 @@ Where a state does fix the grade, the app's grade 3 is ahead in a consistent set
 
 | App task type (grade 3) | Later or absent in |
 |---|---|
-| `math.smul` written multiplication | grade 4 in MV, HH, SH, HB |
-| `math.teilbar` divisibility, Quersumme | grade 4 in MV, SH; not in the plan in NRW, NI, BY, BW, HB; not in the national standards |
-| `math.vorrang` Punkt vor Strich | grade 4 in HH, SH; not in NRW, NI, BY, BW |
+| `math.smul` written multiplication | grade 4 in MV, HH, SH, HB, HE; SL (plan of 2009) |
+| `math.teilbar` divisibility, Quersumme | grade 4 in MV, SH; not in the plan in NRW, NI, BY, BW, HB, RP; not in the national standards |
+| `math.vorrang` Punkt vor Strich | grade 4 in HH, SH; not in NRW, NI, BY, BW, RP |
 | `math.rest` division with remainder | not in NI; only as notation in NRW; SH prefers another notation; fine in MV, HH, SN |
 | `math.bruch` with thirds | most states name only ½, ¼, ¾ with quantities (NRW, ST, BE, MV, HH); not in NI |
 | `bau.umfang`, `bau.flaeche` | grade 4 in MV, HH, HB; no Umfang in NI |
@@ -66,14 +68,14 @@ And the app's grades 1/2 are ahead here:
 
 | App task type (grade 1/2) | Later in |
 |---|---|
-| `groessen2.geld` money with comma | NRW, NI, BE/BB, MV, HH, BW, BY (comma notation only in 3/4); fits Bremen |
-| `groessen2.laenge` mm and dm | NRW, NI, ST, BE/BB, HH, SH, BW, BY |
-| clock to 5 minutes | NRW, SH, BW |
-| `formen2.lage`, `formen2.linien` (right angle, parallel, Gerade/Strecke/Strahl) | NRW, NI, ST, BE/BB, HH, SH, BW, BY |
+| `groessen2.geld` money with comma | NRW, NI, BE/BB, MV, HH, BW, BY, HE (comma notation only in 3/4); fits Bremen and Rheinland-Pfalz |
+| `groessen2.laenge` mm and dm | NRW, NI, ST, BE/BB, HH, SH, BW, BY, HE, RP |
+| clock to 5 minutes | NRW, SH, BW, RP; fits Hessen and the Saarland [sek] |
+| `formen2.lage`, `formen2.linien` (right angle, parallel, Gerade/Strecke/Strahl) | NRW, NI, ST, BE/BB, HH, SH, BW, BY, HE, RP |
 
 The opposite also occurs: `malteilen` (rows 2, 5, 10 first) is too cautious for Mecklenburg-Vorpommern and
 Thüringen [sek], where the whole Einmaleins belongs to grade 2. It matches the „Kernaufgaben“ wording of BY, NI,
-ST and SH closely.
+ST, SH and RP closely.
 
 ### 3.2 Written subtraction
 
@@ -82,9 +84,10 @@ The app shows one method: Ergänzen, with the carry under the next column (`src/
 | Rule | States |
 |---|---|
 | Abziehen (Entbündeln) prescribed or described | Bayern („Abziehverfahren“); **Sachsen 2025** („Veranschaulichen des Entbündelns im Minuenden“) |
+| Ergänzen prescribed | Hessen, in the Rahmenplan 1995 only („Bei der Subtraktion ist das Ergänzungsverfahren vorgeschrieben“); the Kerncurriculum 2011 names none |
 | School or teacher decides | Niedersachsen (plan's only example: Abziehen mit Entbündeln), Mecklenburg-Vorpommern, Bremen |
 | Either, stated | Baden-Württemberg („Abziehen oder Ergänzen“) |
-| Nothing prescribed | NRW, Sachsen-Anhalt, Berlin, Brandenburg, Hamburg, Schleswig-Holstein; the national standards |
+| Nothing prescribed | NRW, Sachsen-Anhalt, Berlin, Brandenburg, Hamburg, Schleswig-Holstein, Rheinland-Pfalz (says so explicitly); the national standards |
 
 Only the result is graded, so no child is marked wrong. But the tutorial explains a method that many classes do
 not use, and since 2025 probably including Saxon ones. This cannot be derived from the Bundesland: it needs its
@@ -99,7 +102,7 @@ Mehrstufe/Meiststufe). The national standards say the labels „können untersch
 |---|---|
 | Nomen | Substantiv in Thüringen; „Nomen/Substantiv“ in MV |
 | Selbstlaut, Mitlaut | Vokal, Konsonant in Niedersachsen and Bayern |
-| Präsens, Präteritum | Gegenwart, 1. Vergangenheit … in Bayern; Vergangenheit/Gegenwart/Zukunft in BW; German Zeitstufen in NRW |
+| Präsens, Präteritum | Gegenwart, 1. Vergangenheit … in Bayern; Vergangenheit/Gegenwart/Zukunft in BW; German Zeitstufen in NRW and RP |
 | Prädikat | Satzkern in Sachsen-Anhalt; „Satzkern (Prädikat)“ in NRW; both in Bayern |
 | Grundstufe, Mehrstufe, Meiststufe | Positiv/Komparativ/Superlativ in MV and NI; likely unfamiliar in most states |
 | „Zeitwörter“ for time adverbs | risky everywhere: many children know „Zeitwort“ as the word for verb |
@@ -112,8 +115,8 @@ Präposition (TH, BE/BB, MV, BW). Whether that is grade 3 or 4 is the school's d
 
 | Subject | Finding |
 |---|---|
-| **Ethik** | A substitute subject everywhere, never for the whole class. From grade 1 in SN, BY, ST, TH; as Philosophieren mit Kindern in MV, Philosophie in SH, Werte und Normen in NI (compulsory from 2026/27, rising from grade 1), Ethik in RP and partly HE. **No such subject in grades 1–4** in BW, BE, BB, HH, HB, SL; NRW has a curriculum but had not introduced the subject as of 2024 |
-| **Englisch** | From grade 3 in most states. Hamburg from grade 1. French instead of or beside English in the Saarland, Berlin (parents choose), MV (by school), parts of BW and RP |
+| **Ethik** | A substitute subject everywhere, never for the whole class. From grade 1 in SN, BY, ST, TH; as Philosophieren mit Kindern in MV, Philosophie in SH, Werte und Normen in NI (compulsory from 2026/27, rising from grade 1), Ethik in RP (from grade 1) and HE (how widely taught is unverified). **No such subject in grades 1–4** in BW, BE, BB, HH, HB, SL [sek]; NRW has a curriculum but had not introduced the subject as of 2024 |
+| **Englisch** | From grade 3 in most states. Hamburg from grade 1. French only in the Saarland (from grade 3 at the latest, from grade 1 at some schools [sek]); English or French in Berlin (parents choose), MV, HE and RP (by school), parts of BW. Rheinland-Pfalz moved its start from grade 1 to grade 3 in 2024/25 |
 | **Musik** | Own subject everywhere researched except Bremen (part of „Ästhetische Bildung“). The app's note values, metre and note names are binding content in ST, TH, MV, BY and BW – a better fit than in Saxony |
 | **Sachunterricht** | Called „Heimat- und Sachunterricht“ in Bayern, „Heimat- und Sachkunde“ in Thüringen, „Sachunterricht“ elsewhere. The app's child-facing word is „Sachkunde“ |
 
@@ -122,7 +125,9 @@ Präposition (TH, BE/BB, MV, BW). Whether that is grade 3 or 4 is the school's d
 Half of the app's grade 3 Ethik is Luther and the church year (236 of 455 questions, 2 of 4 units). That follows
 the Saxon Ethik plan, which names „christliche Feiertage in Sachsen“, Reformationstag and Luther. Elsewhere:
 
-- Religion content, not Ethik: NRW, MV, SH (Luther is in the Protestant Religion plan), BW, BE/BB, HH, HB.
+- Religion content, not Ethik: NRW, MV, SH (Luther is in the Protestant Religion plan), BW, BE/BB, HH, HB, HE, SL.
+- Rheinland-Pfalz: religious festivals and world religions are Ethik content; Luther appears only as an example of
+  Zivilcourage.
 - Not in the Ethik plan at all: Sachsen-Anhalt (full-text search: no Luther, Reformation, church year).
 - Fits loosely: Thüringen („ausgewählte Persönlichkeiten des Christentums“, „Ursprung der Feste“).
 - Wanted instead, and missing in the app: festivals of several religions and worldviews (NI, BY, ST, HH, NRW).
@@ -146,11 +151,11 @@ landscape), which the app does not have for any state, Saxony included (`LANDKRE
 
 The order differs more than the content:
 
-- `sinne` (app: grade 3) is grade 1/2 material in NRW, ST, TH, MV, HH, BW, BY.
+- `sinne` (app: grade 3) is grade 1/2 material in NRW, ST, TH, MV, HH, BW, BY, SL.
 - `wiese` (app: grade 3) is grade 1/2 in BY, TH, MV; grade 3/4 there is **Wald** and **Gewässer**, which the app
   lacks.
-- `kartoffel`, `kornkammer`: named literally only in Saxony and Sachsen-Anhalt; optional examples or absent
-  elsewhere.
+- `kartoffel`, `kornkammer`: named literally only in Saxony and Sachsen-Anhalt, as suggestions in the Saarland;
+  optional examples or absent elsewhere.
 - Missing in the app and required in many states by grade 4: Strom/Stromkreis, Magnetismus, Feuer/Verbrennung,
   Kinderrechte and Gemeinde, Müll, Sonnensystem, the state/Germany/Europe on the map.
 - Fits well in several states: `kompass`, `wetterstation`, `verkehr`, `baeume2`.
@@ -243,8 +248,8 @@ before/after screenshots and the owner's go-ahead, and a changelog entry.
 4. Grade 1/2 spelling follows the Sächsischer Rechtschreibrahmen (no ck, tz, silbentrennendes h), the cautious
    end. `schreiben2.doppel` is still too early for Niedersachsen and Bremen (double consonants there by grade 4):
    off by default there.
-5. Grundwortschatz practice per state where an official list exists (BY, BW ~870, BE/BB ~700, NRW 533,
-   SH 1429, MV). Check each list's licence first; this is the largest content job in Deutsch.
+5. Grundwortschatz practice per state where an official list exists (BY, BW ~870, HE ~850, RP ~850, BE/BB ~700,
+   NRW 533, SH 1429, MV). Check each list's licence first; this is the largest content job in Deutsch.
 6. Dialect pack: `sachsen` only in Saxony; a Niederdeutsch pack for NI, SH, MV, HB, HH is the obvious second one.
 
 ### Phase 4 – Ethik, Religion, festivals (M)
@@ -306,7 +311,9 @@ the most visible answer to the feedback), then 3.1 (word sets), then new units.
 
 - **Thüringen:** the 2026 trial version (grades 1 and 3), the maths plan 2010, the foreign-language plan.
 - **Bremen:** all five new plans (2025); Sachunterricht, Musik and Religion could not be compared.
-- **Saarland:** French from grade 1 or 3 – sources disagree.
+- **Saarland:** the new plans for Mathematik and Deutsch (2026), Musik and Französisch; whether an Ethik offer
+  exists. Needs someone to download the PDFs in a browser (URLs in `saarland.md`).
+- **Hessen:** how many primary schools teach Ethik; which schools still follow the Rahmenplan 1995.
 - **Holidays:** all from memory, not from the holiday laws.
 - **Ethik-type subjects:** the national overview dates from 2020; status in NRW, HE, BW for 2026/27 is open.
 - **Scripts and Grundwortschatz** for several states rest on secondary sources (`_uebersicht-tabellen.md`).
