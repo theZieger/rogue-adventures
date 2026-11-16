@@ -22,8 +22,8 @@ Herkunft der Angaben: **[off]** = im KMK-Dokument selbst gelesen, **[sek]** = Se
 
 ## 2. Vereinbarung zur Arbeit in der Grundschule (KMK, 15.03.2024) [off]
 
-Sie löst die „Empfehlungen zur Arbeit in der Grundschule“ (1970 i. d. F. 2015) ab und ist erstmals eine
-Vereinbarung statt einer Empfehlung [off; die Einordnung „erstmals verbindlich“ nach KMK-Pressemitteilung, sek].
+Sie „basiert auf den zuletzt 2015 überarbeiteten ‚Empfehlungen zur Arbeit in der Grundschule‘“ [off] und ist nun
+eine Vereinbarung statt einer Empfehlung (die Einordnung als verbindlicherer Rahmen nach Pressedarstellung, sek).
 
 **Aufbau der Grundschule**
 
@@ -87,7 +87,7 @@ und funktionaler Zusammenhang“ ist den anderen übergeordnet. Alles Folgende g
 - Lösungen kontrollieren („z. B. Überschlagsrechnung, Umkehroperation“); „runden und überschlagen sachadäquat“;
 - Sachaufgaben.
 
-Was die Standards hier **nicht** festlegen: die **schriftliche Division** (2022 nicht mehr unter den schriftlichen
+Was die Standards hier **nicht** festlegen: die **schriftliche Division** (weder 2004 noch 2022 unter den schriftlichen
 Verfahren genannt; ob ein Land sie in Kl. 4 verlangt, ist Ländersache), das **Verfahren der schriftlichen
 Subtraktion** (Abziehen/Entbündeln oder Ergänzen), Division mit Rest und Teilbarkeitsregeln (nicht genannt), die
 Reihenfolge der Einmaleinsreihen, die Zahlenräume der Klassen 1 bis 3.
@@ -261,7 +261,7 @@ Was daraus folgt:
   „Diese Fächer werden nicht in allen Ländern angeboten“ [off].
 - KMK-Bericht „Zur Situation des Unterrichts in den Fächern Ethik, Philosophie, Lebensgestaltung-Ethik-
   Religionskunde (LER), Werte und Normen“ (22.02.2008 i. d. F. 25.06.2020) [off, Länderübersicht und Abschnitte
-  1.1–1.3 gelesen]: sechs verschiedene Fachnamen; in mehreren Ländern beginnt das Fach erst in Kl. 5 oder 7. Details
+  1.1–1.3 gelesen]: mindestens sechs verschiedene Fachnamen; in mehreren Ländern beginnt das Fach erst in Kl. 5 oder 7. Details
   in `_uebersicht-tabellen.md`, Tabelle 2.
 - Gemeinsam sicher (Wortlaut der Vereinbarung): Werte, Zusammenleben, Sinnfragen, Begegnung mit Religionen und
   Weltanschauungen, Achtung und Toleranz. **Nicht gemeinsam:** Kirchenjahr, christliche Feste, Martin Luther,
@@ -304,7 +304,8 @@ Fächerverbunds [Praxis] – siehe Länderdateien.
 
 - KMK: Bildungsstandards für das Fach Mathematik Primarbereich, Beschluss vom 15.10.2004 i. d. F. vom 23.06.2022 –
   https://www.kmk.org/fileadmin/Dateien/veroeffentlichungen_beschluesse/2022/2022_06_23-Bista-Primarbereich-Mathe.pdf
-  (Kap. 4 „Inhaltsbezogene Kompetenzen“ vollständig; Kap. 3 nur Überschriften)
+  (Kap. 4 „Inhaltsbezogene Kompetenzen“ vollständig; Kap. 3 nur Überschriften; Fassung 2004 nur zur schriftlichen
+  Division gegengelesen)
 - KMK: Bildungsstandards für das Fach Deutsch Primarbereich, i. d. F. vom 23.06.2022 –
   https://www.kmk.org/fileadmin/Dateien/veroeffentlichungen_beschluesse/2022/2022_06_23-Bista-Primarbereich-Deutsch.pdf
   (Kap. 4.1 teilweise, 4.2–4.5 und Anhang vollständig)
@@ -326,10 +327,8 @@ Fächerverbunds [Praxis] – siehe Länderdateien.
 
 - **GDSU-Perspektivrahmen:** Volltext nicht gelesen; die Themenbereiche in Abschnitt 6 sind aus dem Gedächtnis.
   Ob die angekündigte Neufassung erschienen ist, ist offen.
-- Die „Empfehlungen zur Arbeit in der Grundschule“ in der Fassung 2015 wurden nicht gelesen (auf kmk.org nicht mehr
-  unter der alten Adresse); verglichen wurde nicht, was sich 2024 geändert hat.
+- Die „Empfehlungen zur Arbeit in der Grundschule“ in der Fassung 2015 wurden nicht gelesen; verglichen wurde
+  nicht, was sich 2024 geändert hat.
 - Ob alle Länder die 53/94 Stunden nach der Übergangsfrist (bis 2026) tatsächlich umgesetzt haben.
 - KMK-Empfehlung „Medienbildung und informatische Bildung in der Grundschule“ (28.11.2024) und die Empfehlung zum
   Übergang Kita–Grundschule (26.03.2026) sind auf kmk.org verlinkt, wurden aber nicht gelesen.
-- Die Aussage, schriftliche Division sei gegenüber 2004 entfallen, stützt sich nur auf den Wortlaut 2022; die
-  Fassung 2004 wurde nicht gegengelesen.

@@ -34,7 +34,8 @@ Zuordnung** [off, alle gelesenen Fachteile]:
 - Folge für die App: In Brandenburg ist Klasse 3 eindeutig Niveau C, und zwar die erste Hälfte davon. Welche
   Hälfte, steht auch hier nicht im Plan.
 - Sechsjährige Grundschule wie in Berlin. Klassen 1 und 2 bilden die Schuleingangsphase mit einem gemeinsamen
-  Stundenkontingent; Noten gibt es in der Regel ab Klasse 3 (GV §§ 7, 10) [off].
+  Stundenkontingent; Zeugnisse mit Noten gibt es ab Klasse 3, in 1/2 schriftliche Informationen zur
+  Lernentwicklung (GV §§ 7, 11) [off].
 
 ## 3. Eckdaten
 
@@ -47,7 +48,7 @@ vorgeschriebenes Subtraktionsverfahren, Brüche, Größen, Schrift, Fachbegriffe
 | Begegnung mit fremden Sprachen | In den Klassen 1/2 möglich, aus den Stunden für Schwerpunktgestaltung („Verwendung für den Unterricht in Begegnung mit fremden Sprachen“). Kein Pflichtfach. | [off] |
 | Sorbisch/Wendisch | Eigenes Fach im Siedlungsgebiet: Kontingent 4 (Kl. 1/2), 6 (Kl. 3/4), 6 (Kl. 5/6) Wochenstunden. | [off] |
 | Ethik-Fach | Keines in den Klassen 1–4. L-E-R beginnt in Klasse 5 (Kontingent 2 Stunden für 5/6). | [off] |
-| Religion / Lebenskunde | Freiwillig; die GV nennt „Religionsunterricht oder humanistischen Lebenskundeunterricht“ als Angebot einzelner Schulen. | [off] |
+| Religion / Lebenskunde | Die GV nennt „Religionsunterricht oder humanistischen Lebenskundeunterricht“ als Angebot einzelner Schulen (§ 4). Freiwilligkeit: nicht nachgelesen. | [off] / [Praxis] |
 | Grundwortschatz | „Der Grundwortschatz enthält etwa 700 Wörter. Er beinhaltet die 100 häufigsten Wörter (Funktionswörter) und etwa je 300 Wörter für die Jahrgangsstufen 1 und 2 sowie für die Jahrgangsstufen 3 und 4.“ „Alle Schülerinnen und Schüler beherrschen am Ende der jeweiligen Doppeljahrgangsstufe die dafür ausgewiesenen Wörter“. | [off, 5-Punkte-Programm des MBJS vom 26.09.2018] |
 | Stundenkontingent 3/4 | Deutsch 13, Mathematik 10, Sachunterricht 6, Ästhetik (Musik, Kunst) 8, Erste Fremdsprache 6, Sport 6, Schwerpunkt 2. Klassen 1/2: Deutsch, Mathematik, Sachunterricht, Kunst, Musik zusammen 34. | [off, Kontingentstundentafel des MBJS] |
 | Musik | Im Stundenkontingent Teil des „Lernbereichs Ästhetik (Musik, Kunst)“, im Rahmenlehrplan aber eigener Fachteil. | [off] |
@@ -98,8 +99,8 @@ Für Deutsch ist der Bezug der Brandenburger Grundwortschatz (etwa 700 Wörter) 
 
 - Alle Fachteile des RLP 1–10 wie in `berlin.md` aufgeführt; dort jeweils auch die Seiten „BRANDENBURG“ mit der
   Niveaustufen-Zuordnung (Mathematik, Deutsch, Sachunterricht, Musik, Moderne Fremdsprachen).
-- Grundschulverordnung Brandenburg: https://bravors.brandenburg.de/verordnungen/gv (§ 4 Aufnahme, § 7
-  Unterrichtsfächer/Kontingentstundentafel, §§ 9–10 Leistungsbewertung und Zeugnisse; Änderungsvermerk)
+- Grundschulverordnung Brandenburg: https://bravors.brandenburg.de/verordnungen/gv (§ 4 Anmeldung/Aufnahme, § 7
+  Unterrichtsfächer/Kontingentstundentafel, §§ 10–11 Leistungsbewertung und Zeugnisse; Änderungsvermerk)
 - Kontingentstundentafel im Bildungsgang der Grundschule: https://mbjs.brandenburg.de/sixcms/media.php/140/kontingentstundentafel_grundschule.pdf
 - 5-Punkte-Programm zur Verbesserung der Kompetenzen im Lesen und Schreiben, MBJS, 26.09.2018:
   https://mbjs.brandenburg.de/sixcms/media.php/140/159-18-anhang_5-punkte-programm_verbesserung_lesen_und_schreiben.pdf
@@ -112,8 +113,7 @@ Für Deutsch ist der Bezug der Brandenburger Grundwortschatz (etwa 700 Wörter) 
   Anlage 1 entsprechen, wurde nicht abgeglichen.
 - Ob die Programmpunkte von 2018 zum Grundwortschatz noch so gelten und ob Brandenburg die 2024 überarbeitete
   Berliner Wortliste übernommen hat. Die Brandenburger Wortliste selbst wurde nicht gelesen.
-- Welche verbundene Schrift Brandenburger Schulen wählen (die DDR-Tradition spräche für die Schulausgangsschrift –
-  nur Vermutung, nicht belegt).
+- Welche verbundene Schrift Brandenburger Schulen wählen; der Plan lässt es offen.
 - Klasse der Radfahrprüfung in Brandenburg; gesetzliche Feiertage (aus dem Gedächtnis).
 - An wie vielen Grundschulen eine andere erste Fremdsprache als Englisch läuft (z. B. Polnisch an der Grenze) und
   wo „Begegnung mit fremden Sprachen“ in Klasse 1/2 angeboten wird.
