@@ -303,7 +303,7 @@ Fachwerk-, Hängebrücke), Gleichgewicht (Wippe, Balkenwaage).
 
 **Passt**
 - `koerper1` (Körper, Pflege, Ernährung, Schutz, Erste Hilfe teils erst 3/4), `jahr1` (Tages- und Jahreslauf, Wetter,
-  Schulweg), `natur2.luft`, `natur2.wasser`, `natur2.plan` (HSU1/2 2.1, 3.3, 4.1, 5.1, 5.3).
+  Schulweg), `natur2.luft`, `natur2.wasser`, `natur2.plan` (HSU1/2 2.1, 3.2, 3.3, 4.1, 5.1, 5.3).
 - `tiere2.heim`, `tiere2.hof`, `baeume2.obst` (Haustiere, Nutztiere und -pflanzen, Obst nach Reifezeit, HSU1/2 3.1).
 - `wetterstation` (`zustand`, `begriff`, `kreislauf`, `forschen`): Wasser, Zustandsformen, Kreislauf, Auftrieb,
   Forscherfragen (HSU3/4 3.3).
