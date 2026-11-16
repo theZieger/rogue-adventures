@@ -206,7 +206,7 @@ export const wornBy = (heroId: string) => {
   return o && hasOutfit(o) ? o.id : null;
 };
 export const heroSVG = (s: { shape: string; type: string; id: string }, evo: number, cls?: string) =>
-  monsterSVG(s.shape, TYPES[s.type].color, evo, cls, { outfit: wornBy(s.id) });
+  monsterSVG(s.shape, evo, cls, { outfit: wornBy(s.id) });
 /* ---------- Weekly goals ---------- */
 // a new week starts fresh; finished weeks stay on the stamp card, nothing is taken away
 export const weekly = () => {

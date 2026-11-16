@@ -151,7 +151,7 @@ export function screenStarter(goal?: WeeklyGoal) {
         .filter(heroLocked)
         .map(
           (s) =>
-            html`<div class="choice locked">${raw(monsterSVG(s.shape, '#8A8FA3', 0))}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
+            html`<div class="choice locked">${raw(monsterSVG(s.shape, 0))}<div class="meta"><div class="name">🔒 ${s.names[0]}</div><div class="desc">Im Stempelheft für ${REWARDS.find((r) => r.hero === s.id)!.price} 🏷️ zu holen.</div></div></div>`,
         )}
       <div id="swapbox"></div>
       ${state.meta.pantry.length ? html`<p class="center">Aus deinem Vorrat kommt mit: ${state.meta.pantry.map((it) => `${ITEMS[it].icon} ${ITEMS[it].name}`).join(', ')}</p>` : ''}

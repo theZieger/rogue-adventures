@@ -140,7 +140,7 @@ export function renderBattle(b: Battle) {
         ${
           T
             ? html`<div class="dish ${b.clash ? 'clash' : quiet ? '' : 'launch'}" id="dish">${raw(SPIRAL)}${topSprite('enemy', e.hp, e.maxHp, TYPES[e.type].color, foeParts(), (b.clash === 'foe' ? 'attacker' : b.clash ? 'target' : '') + (T.spin <= 0 ? ' winner' : ''))}${topSprite('hero', T.spin, T.max, TYPES[heroSpec().type].color, T.parts, (b.clash === 'hero' ? 'attacker' : b.clash ? 'target' : b.boost ? 'boost' : '') + (e.hp <= 0 ? ' winner' : ''))}</div>`
-            : html`<div class="sprite enemy" id="fe">${raw(monsterSVG(e.shape, TYPES[e.type].color, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss }))}<i class="ground"></i></div>
+            : html`<div class="sprite enemy" id="fe">${raw(monsterSVG(e.shape, 0, 'enemy', { elite: e.elite, boss: e.boss || e.weekboss }))}<i class="ground"></i></div>
         <div class="sprite hero" id="fh">${raw(heroSVG(heroSpec(), h.evo))}<i class="ground"></i></div>`
         }
         <div class="plate hero"><div class="name">${heroName()} <span class="pill">Lv ${h.level}</span></div>${T ? html`<div class="bar hp"><i class="${hpcls(T.spin, T.max)}" style="width:${pct(T.spin, T.max)}%"></i></div><div class="hptext">🌀 ${T.spin} Schwung</div>` : html`<div class="bar hp"><i class="${hpcls(h.hp, h.maxHp)}" style="width:${pct(h.hp, h.maxHp)}%"></i></div><div class="hptext">❤️ ${h.hp} / ${h.maxHp} ${state.run.shield ? '🛡️' : ''}</div>`}<div class="bar xp" role="progressbar" aria-label="Erfahrung" aria-valuenow="${Math.round(Math.min(100, (h.xp / xpNeeded(h.level)) * 100))}"><i style="width:${Math.min(100, (h.xp / xpNeeded(h.level)) * 100)}%"></i></div></div>

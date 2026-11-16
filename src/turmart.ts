@@ -641,15 +641,15 @@ export const TWART = (() => {
     `<svg class="tw-bigshield" viewBox="0 0 40 46" aria-hidden="true"><path d="M20 3 L36 9 V22 C36 33 28 40 20 43 C12 40 4 33 4 22 V9 Z" fill="#7CC2FF" ${S(2.6)}/><path d="M20 8 L31 12 V22 C31 30 26 35 20 38 Z" fill="#2478D6" opacity=".5"/><path d="M9 13 Q9 10 13 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 
   /* ---------- Bauzeit card pictures (viewBox 0 0 80 56) ---------- */
-  const mini = (shape: string, color: string, x: number, y: number, s: number, o: { mirror?: boolean } = {}) =>
-    MONART.monsterSVG(shape, color, 0, o.mirror ? 'enemy' : '', o as object).replace(
+  const mini = (shape: string, x: number, y: number, s: number, o: { mirror?: boolean } = {}) =>
+    MONART.monsterSVG(shape, 0, o.mirror ? 'enemy' : '', o as object).replace(
       '<svg',
       `<svg x="${x}" y="${y}" width="${s}" height="${s}"`,
     );
   const bolt = (x0: number, y0: number, x1: number, y1: number, c?: string) =>
     `<path d="M${x0} ${y0} Q${(x0 + x1) / 2} ${Math.min(y0, y1) - 10} ${x1} ${y1}" fill="none" stroke="${c || '#FFE066'}" stroke-width="2.4" stroke-dasharray="1 4.5" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="3.6" fill="${c || '#FFE066'}" ${S(1.4)}/>`;
   const PEDESTAL = (D: Defs, x: number, y: number) => pedestal(D, x, y, '#FFC93C');
-  const ENEMY = ['schotterhaufen', '#9AA0B4'] as const;
+  const ENEMY = 'schotterhaufen';
   const plus = (x: number, y: number, c?: string | undefined) =>
     `<path d="M${x - 5} ${y} h10 M${x} ${y - 5} v10" stroke="${INK}" stroke-width="5.5" stroke-linecap="round"/><path d="M${x - 5} ${y} h10 M${x} ${y - 5} v10" stroke="${c || '#4FC96A'}" stroke-width="2.8" stroke-linecap="round"/>`;
   const towerMini = (D: Defs, x: number, y: number, k: number) =>
@@ -662,25 +662,22 @@ export const TWART = (() => {
   const PICS: Record<string, (D: Defs) => string> = {
     // a guard on its pedestal shooting at a monster
     guard: (D) =>
-      PEDESTAL(D, 18, 42) +
-      mini('fox', '#FF6A3D', 2, 6, 34) +
-      bolt(32, 22, 60, 28) +
-      mini(...ENEMY, 50, 16, 30, { mirror: true }),
+      PEDESTAL(D, 18, 42) + mini('fox', 2, 6, 34) + bolt(32, 22, 60, 28) + mini(ENEMY, 50, 16, 30, { mirror: true }),
     // a guard with chevrons and an arrow up
     up: (D) =>
       PEDESTAL(D, 30, 42) +
-      mini('fox', '#FF6A3D', 14, 6, 34) +
+      mini('fox', 14, 6, 34) +
       `<g transform="translate(43 1) scale(1.6)">${pips(2).replace(/<\/?svg[^>]*>/g, '')}</g><path d="M66 52 V30 M58 37 l8 -9 l8 9" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M66 52 V30 M58 37 l8 -9 l8 9" fill="none" stroke="#4FC96A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
     // Mathe: one hit, and a second spark jumps to the front monster of another path
     chain: (D) =>
-      mini(...ENEMY, 4, 14, 28, { mirror: true }) +
-      mini('regenwicht', '#3FA0FF', 48, 14, 28, { mirror: true }) +
+      mini(ENEMY, 4, 14, 28, { mirror: true }) +
+      mini('regenwicht', 48, 14, 28, { mirror: true }) +
       `<path d="M24 22 L34 14 L32 24 L44 20" fill="none" stroke="${INK}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M24 22 L34 14 L32 24 L44 20" fill="none" stroke="#FFE066" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>` +
       spark(18, 12, 5) +
       spark(62, 12, 4),
     // Ethik: the hit monster stops for a turn
     stun: (D) =>
-      mini(...ENEMY, 8, 12, 38, { mirror: true }) +
+      mini(ENEMY, 8, 12, 38, { mirror: true }) +
       `<circle cx="60" cy="24" r="13" fill="#FFF9EE" ${S(2.2)}/><rect x="54" y="17" width="4.4" height="14" rx="1.6" fill="${INK}"/><rect x="61.6" y="17" width="4.4" height="14" rx="1.6" fill="${INK}"/>` +
       spark(10, 14, 4) +
       spark(44, 8, 3.4),
@@ -695,15 +692,15 @@ export const TWART = (() => {
     // Musik: the bell rings and the front monster steps back
     push: (D) =>
       `<path d="M10 30 Q10 12 20 11 Q30 12 30 30 L32 32 L8 32 Z" fill="${D.rad('#F2C23C')}" ${S(1.8)}/><circle cx="20" cy="35" r="2.6" fill="#B8862A" ${S(1.2)}/><path d="M36 16 q4 6 0 12 M41 13 q6 9 0 18" fill="none" stroke="#E0507A" stroke-width="2.2" stroke-linecap="round"/>` +
-      mini(...ENEMY, 46, 12, 30, { mirror: true }) +
+      mini(ENEMY, 46, 12, 30, { mirror: true }) +
       `<path d="M50 48 H70 M64 43 l6 5 l-6 5" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 48 H70 M64 43 l6 5 l-6 5" fill="none" stroke="#FFF9EE" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`,
     // Englisch: the guards on that path shoot twice
     volley: (D) =>
       PEDESTAL(D, 16, 42) +
-      mini('toad', '#3FA0FF', 0, 8, 32) +
+      mini('toad', 0, 8, 32) +
       bolt(30, 22, 60, 22) +
       bolt(30, 30, 60, 34) +
-      mini(...ENEMY, 50, 14, 30, { mirror: true }),
+      mini(ENEMY, 50, 14, 30, { mirror: true }),
     // Mauer flicken: trowel and bricks on the wall
     fix: (D) =>
       towerMini(D, 24, 50, 1.1) +

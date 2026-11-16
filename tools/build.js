@@ -36,15 +36,6 @@ const files = (dir, ext = '') =>
     .sort();
 const inlineJson = (value) => JSON.stringify(value).replaceAll('</', '<\\/');
 
-function bakedMonsters() {
-  const dir = path.join(ROOT, 'art', 'monsters', 'svg');
-  const baked = Object.fromEntries(
-    files(dir, '.svg').map((name) => [path.basename(name, '.svg'), read(dir, name).trim()]),
-  );
-  assert(Object.keys(baked).length, 'art/monsters/svg/ is empty: run npm run svg');
-  return baked;
-}
-
 function bundle(entry) {
   const { outputFiles } = esbuild.buildSync({
     entryPoints: [path.join(SRC, entry)],
@@ -163,7 +154,6 @@ ${styles}
 <body>
 <div id="app"></div>
 <script>
-globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
 globalThis.CHANGELOG = ${inlineJson(parseChangelog(read(ROOT, 'CHANGELOG.md')))};
 </script>
 <script>
@@ -213,9 +203,6 @@ ${styles}${read(SRC, 'styles', 'gallery.css')}
 </head>
 <body>
 <div id="app"></div>
-<script>
-globalThis.MONBAKED = ${inlineJson(bakedMonsters())};
-</script>
 <script>
 ${bundle('gallery.ts')}</script>
 </body>
