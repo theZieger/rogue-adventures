@@ -1,7 +1,7 @@
 // The design system on one page (docs/gallery.html): every token with how often the stylesheets use it, and every
 // shared building block in each of its states with the rule for using it. It loads the engine's modules without
 // starting the game, so icons, monsters and the top bar are the real ones.
-import { app, TYPES } from './app/core.ts';
+import { app } from './app/core.ts';
 import { monsterSVG, typeChip } from './app/progress.ts';
 import { topbar } from './app/ui.ts';
 import { ICONS } from './icons.ts';
@@ -53,8 +53,8 @@ const ROLES = named(/^--(bg2?|card2?|ink(-soft)?|paper-ink|gold|green|red|blue|o
 const TONES = named(/^--(good|bad|warn|hot|info)-/);
 const ALPHAS = named(/^--(glass|shade|overlay|halo|.*-glow)/);
 
-const fox = monsterSVG('fox', TYPES.feuer.color, 0);
-const drop = monsterSVG('regenwicht', TYPES.wasser.color, 0, 'enemy');
+const fox = monsterSVG('fox', 0);
+const drop = monsterSVG('regenwicht', 0, 'enemy');
 const BUTTONS = ['btn', 'btn secondary', 'btn ghost', 'btn danger', 'btn small', 'btn small secondary']
   .map((cls) => `<button class="${cls}">${cls}</button>`)
   .join('');
@@ -198,6 +198,6 @@ ${section(
 ${section(
   'Bilder',
   'Kleine Zeichen sind gezeichnete Icons aus <code>src/icons.ts</code> (Umriss in Tinte, Verlauf, ein Glanzlicht), keine Geräte-Emojis. Monster kommen aus <code>src/monsters.ts</code>.',
-  `<div class="icons">${Object.keys(ICONS).join(' ')}</div><div class="row specimen monsters">${fox}${drop}${monsterSVG('fox', TYPES.feuer.color, 1)}</div>`,
+  `<div class="icons">${Object.keys(ICONS).join(' ')}</div><div class="row specimen monsters">${fox}${drop}${monsterSVG('fox', 1)}</div>`,
 )}
 </div>`;

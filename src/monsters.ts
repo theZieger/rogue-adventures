@@ -166,9 +166,6 @@ export const MONART = (() => {
     return s;
   }
   // gradient with free stops [[offset, color, opacity?]]; attrs e.g. 'x2="0" y2="1"' or 'cx=".4" cy=".3" r=".7"'
-  interface Palette {
-    c: string;
-  }
   interface DrawOpts {
     evo: number;
     elite: boolean;
@@ -182,7 +179,7 @@ export const MONART = (() => {
     lin(a: string, b: string): string;
     glyph(x: number, svg: string): string;
   }
-  type Draw = (P: Palette, o: DrawOpts, C: Defs) => string;
+  type Draw = (o: DrawOpts, C: Defs) => string;
   type Stop = [offset: number, color: string, opacity?: number];
   const gr = (C: Defs, kind: string, attrs: string, stops: Stop[]) =>
     `url(#${C.def(kind + 'Gradient', attrs, stops.map(([t, c, a]) => `<stop offset="${t}" stop-color="${c}"${a == null ? '' : ` stop-opacity="${a}"`}/>`).join(''))})`;
@@ -191,7 +188,7 @@ export const MONART = (() => {
   const qmark = (x: number, y: number, k: number, c?: string | undefined) =>
     `<g transform="translate(${x} ${y}) scale(${k})"><path d="M-5 -5 Q-5 -12 1 -12 Q7 -12 7 -6 Q7 -2 2 0 Q0 1 0 4" fill="none" stroke="${c || '#FFE066'}" stroke-width="3.4" stroke-linecap="round"/><circle cx="0" cy="9.5" r="2.1" fill="${c || '#FFE066'}"/></g>`;
 
-  function fox(P: Palette, o: DrawOpts, C: Defs) {
+  function fox(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const base = ['#FF6A3D', '#F24B2A', '#FF8A1F'][e];
     const body = C.grad(base),
@@ -241,7 +238,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function toad(P: Palette, o: DrawOpts, C: Defs) {
+  function toad(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const base = ['#3FA0FF', '#2E86E8', '#1E68C8'][e];
     const body = C.grad(base),
@@ -293,7 +290,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function bear(P: Palette, o: DrawOpts, C: Defs) {
+  function bear(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const fur = ['#9A6A40', '#865A35', '#6B4528'][e];
     const body = C.grad(fur),
@@ -338,7 +335,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function luther(P: Palette, o: DrawOpts, C: Defs) {
+  function luther(o: DrawOpts, C: Defs) {
     let s = '';
     const gown = C.grad('#3A3A46'),
       skin = C.grad('#F6CDA6');
@@ -361,7 +358,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function potato(P: Palette, o: DrawOpts, C: Defs) {
+  function potato(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const skin = C.grad('#D9B35E'),
       dot = '#8A6A3F',
@@ -408,7 +405,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function sumpfbrocken(P: Palette, o: DrawOpts, C: Defs) {
+  function sumpfbrocken(o: DrawOpts, C: Defs) {
     const mud = C.grad('#7B8A45'),
       moss = '#4E9A3A';
     return `<ellipse cx="60" cy="108" rx="54" ry="8" fill="#5B4A2E" opacity=".9"/>
@@ -423,7 +420,7 @@ export const MONART = (() => {
       ${pair(60, 76, 15, 8, { lid: '#6A7A3A', lidRot: 12, lidY: -0.15 })}
       <path d="M46 94 Q53 89 60 94 Q67 99 74 94" ${N(3)}/><path d="M64 96 L66 101 L69 96.5 Z" ${F('#fff', 1.6)}/>`;
   }
-  function regenwicht(P: Palette, o: DrawOpts, C: Defs) {
+  function regenwicht(o: DrawOpts, C: Defs) {
     const water = C.grad('#4DA8FF');
     let rain = '';
     [
@@ -445,7 +442,7 @@ export const MONART = (() => {
       ${M.smirk(60, 94, 8)}
       <path d="M44 112 L42 116 M76 112 L78 116" ${N(3)}/>`;
   }
-  function streichholzkopf(P: Palette, o: DrawOpts, C: Defs) {
+  function streichholzkopf(o: DrawOpts, C: Defs) {
     const wood = C.lin('#F4D7A1', '#D7A866'),
       head = C.grad('#E0413A'),
       fl = C.lin('#FFE066', '#FF6A3D');
@@ -462,7 +459,7 @@ export const MONART = (() => {
       ${pair(60, 49, 10, 6.5, { brow: 'angry', bw: 3 })}
       ${M.grin(60, 59, 8)}`;
   }
-  function krabbelstein(P: Palette, o: DrawOpts, C: Defs) {
+  function krabbelstein(o: DrawOpts, C: Defs) {
     const rock = C.grad('#9AA1AE');
     return `<path d="M30 92 L12 84 L4 98 M30 100 L14 102 L10 114 M90 92 L108 84 L116 98 M90 100 L106 102 L110 114" fill="none" stroke="${OUT}" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
       <path d="M32 74 Q16 66 16 50" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M88 74 Q104 66 104 50" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/>
@@ -476,7 +473,7 @@ export const MONART = (() => {
       ${eye(46, 28, 7, { dir: [0.2, 0.2] })}${eye(74, 28, 7, { dir: [0.2, 0.2] })}
       ${M.cat(60, 80, 7)}`;
   }
-  function dornenigel(P: Palette, o: DrawOpts, C: Defs) {
+  function dornenigel(o: DrawOpts, C: Defs) {
     const sp = C.lin('#3C6E2E', '#24451C'),
       face = C.grad('#E9C89A'),
       thorn = '#6B3B1F';
@@ -493,7 +490,7 @@ export const MONART = (() => {
     s += `<ellipse cx="60" cy="94" rx="6" ry="4" fill="${OUT}"/>${M.fangs(60, 100, 10)}`;
     return s;
   }
-  function moorschlund(P: Palette, o: DrawOpts, C: Defs) {
+  function moorschlund(o: DrawOpts, C: Defs) {
     const bog = C.grad('#3F8F7E'),
       dk = '#2A5E52';
     return `<ellipse cx="60" cy="110" rx="58" ry="9" fill="#4A3B22"/>
@@ -511,7 +508,7 @@ export const MONART = (() => {
       <circle cx="8" cy="44" r="4" ${F('none', 2)}/><circle cx="112" cy="40" r="3" ${F('none', 2)}/><circle cx="104" cy="28" r="2" ${F('none', 1.6)}/>`;
   }
 
-  function lavamolch(P: Palette, o: DrawOpts, C: Defs) {
+  function lavamolch(o: DrawOpts, C: Defs) {
     const skin = C.grad('#B8382A'),
       glow = '#FFB23F';
     return `<path d="M82 92 Q110 96 112 72 Q112 58 102 54 Q104 70 94 76 Q86 80 80 80 Z" ${F(skin)}/>
@@ -528,7 +525,7 @@ export const MONART = (() => {
       ${pair(60, 44, 20, 7.5, { iris: '#FF9A2E', brow: 'angry', bw: 3 })}
       <path d="M38 70 Q60 82 82 70" ${N(3)}/><path d="M50 74 L52 79 L55 75.5 Z M70 74 L68 79 L65 75.5 Z" ${F('#fff', 1.4)}/>`;
   }
-  function nebelqualle(P: Palette, o: DrawOpts, C: Defs) {
+  function nebelqualle(o: DrawOpts, C: Defs) {
     const bell = C.grad('#9DB6FF'),
       mist = '#E6ECFF';
     return `<path d="M4 50 Q14 40 24 48 Q32 40 40 46 M84 30 Q94 22 104 30 Q110 26 116 30 M2 92 Q12 84 22 90 M96 98 Q106 90 116 96" fill="none" stroke="${mist}" stroke-width="4" stroke-linecap="round" opacity=".55"/>
@@ -542,7 +539,7 @@ export const MONART = (() => {
       ${pair(60, 50, 13, 7.5, { lid: '#8AA3F0', lidRot: -6, lidY: 0.05, dir: [-0.1, 0.25] })}
       ${M.o(60, 62, 7)}`;
   }
-  function ranklerin(P: Palette, o: DrawOpts, C: Defs) {
+  function ranklerin(o: DrawOpts, C: Defs) {
     const leafG = C.grad('#4FC96A'),
       stem = '#2F8F45',
       petal = C.grad('#FF7FAF');
@@ -559,7 +556,7 @@ export const MONART = (() => {
       ${M.smirk(60, 53, 6)}
       ${blush(60, 49, 14, 3.5)}`;
   }
-  function nachtschwinge(P: Palette, o: DrawOpts, C: Defs) {
+  function nachtschwinge(o: DrawOpts, C: Defs) {
     const fur = C.grad('#5D4FA3'),
       wing = C.lin('#4A3D8A', '#2C2460');
     return `<path d="M42 56 Q20 30 2 40 Q6 52 4 62 Q12 58 16 66 Q22 60 28 70 Q34 64 42 74 Z" ${F(wing)}/>
@@ -577,7 +574,7 @@ export const MONART = (() => {
       ${M.fangs(60, 78, 8)}
       <path d="M100 6 A10 10 0 1 0 112 20 A8 8 0 1 1 100 6 Z" fill="#FFE8A0" ${S(1.8)}/>`;
   }
-  function glaspanzer(P: Palette, o: DrawOpts, C: Defs) {
+  function glaspanzer(o: DrawOpts, C: Defs) {
     const glass = C.lin('#E2FBFF', '#6CCBE0'),
       dark = C.grad('#3A4A70');
     return `<path d="M30 70 L8 58 L4 46 M28 86 L6 92 L2 106 M90 70 L112 58 L116 46 M92 86 L114 92 L118 106 M40 102 L28 116 M80 102 L92 116" fill="none" stroke="${OUT}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
@@ -593,7 +590,7 @@ export const MONART = (() => {
       <path d="M44 38 L56 43 M76 38 L64 43" ${N(3.4)}/>
       <path d="M52 56 L56 52 L60 56 L64 52 L68 56" ${N(2.4)}/>`;
   }
-  function ofenwurm(P: Palette, o: DrawOpts, C: Defs) {
+  function ofenwurm(o: DrawOpts, C: Defs) {
     const iron = C.grad('#C2452B'),
       band = '#7E2A1A',
       fire = C.lin('#FFE066', '#FF6A3D');
@@ -623,7 +620,7 @@ export const MONART = (() => {
       ${M.fangs(62, 58, 11)}`;
   }
 
-  function frostblitz(P: Palette, o: DrawOpts, C: Defs) {
+  function frostblitz(o: DrawOpts, C: Defs) {
     const ice = C.lin('#F2FCFF', '#7CCBF2');
     const flake = (x: number, y: number, r: number) =>
       `<path d="M${x - r} ${y} L${x + r} ${y} M${x} ${y - r} L${x} ${y + r} M${f1(x - r * 0.7)} ${f1(y - r * 0.7)} L${f1(x + r * 0.7)} ${f1(y + r * 0.7)} M${f1(x - r * 0.7)} ${f1(y + r * 0.7)} L${f1(x + r * 0.7)} ${f1(y - r * 0.7)}" stroke="#DFF6FF" stroke-width="2.2" stroke-linecap="round"/>`;
@@ -637,7 +634,7 @@ export const MONART = (() => {
       ${pair(62, 46, 9, 6, { iris: '#3FA0FF', brow: 'angry', bw: 3 })}
       ${M.grin(64, 58, 7)}`;
   }
-  function dschungelbrueller(P: Palette, o: DrawOpts, C: Defs) {
+  function dschungelbrueller(o: DrawOpts, C: Defs) {
     const mane = C.grad('#3DAE55'),
       face = C.grad('#E8B44E'),
       leafL = '#7EDB7A';
@@ -657,7 +654,7 @@ export const MONART = (() => {
       ${M.roar(60, 68, 13, 14)}
       <path d="M36 112 L36 116 M42 110 L42 116 M78 110 L78 116 M84 112 L84 116" ${N(2)}/><path d="M50 96 l3.3 5 l3.3 -5 l3.3 5 l3.3 -5 l3.3 5" fill="none" stroke="#B9852E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
   }
-  function magmagolem(P: Palette, o: DrawOpts, C: Defs) {
+  function magmagolem(o: DrawOpts, C: Defs) {
     const rock = C.grad('#5B4A52'),
       lava = '#FF8A2A',
       hot = '#FFD23F';
@@ -676,7 +673,7 @@ export const MONART = (() => {
       <ellipse cx="52" cy="29" rx="8" ry="5" fill="${lava}" opacity=".35"/><ellipse cx="68" cy="29" rx="8" ry="5" fill="${lava}" opacity=".35"/>
       <path d="M50 50 L54 54 L60 50 L66 54 L70 50" fill="none" stroke="${lava}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
   }
-  function schattenwolf(P: Palette, o: DrawOpts, C: Defs) {
+  function schattenwolf(o: DrawOpts, C: Defs) {
     const fur = C.grad('#4B4782'),
       smoke = '#6E66B8';
     return `<path d="M100 8 A12 12 0 1 0 114 24 A9 9 0 1 1 100 8 Z" fill="#FFE8A0" ${S(1.8)}/>
@@ -692,7 +689,7 @@ export const MONART = (() => {
       <path d="M38 46 L52 52 M82 46 L68 52" ${N(3.4)}/>
       ${M.fangs(60, 84, 9)}`;
   }
-  function sturmreiter(P: Palette, o: DrawOpts, C: Defs) {
+  function sturmreiter(o: DrawOpts, C: Defs) {
     const cloud = C.lin('#A9B4CC', '#5A6684'),
       steel = C.grad('#C9D2E3'),
       cape = '#B0303C';
@@ -712,7 +709,7 @@ export const MONART = (() => {
       <path d="M76 60 L104 24 L98 40 L112 34 L84 72 Z" ${F('#FFE066', 2.4)}/>
       <circle cx="74" cy="62" r="5" ${F(steel, 2.2)}/>`;
   }
-  function rechenkoenig(P: Palette, o: DrawOpts, C: Defs) {
+  function rechenkoenig(o: DrawOpts, C: Defs) {
     const robe = C.grad('#7446B8'),
       gold = '#FFC93C',
       face = C.grad('#F6CDA6');
@@ -740,7 +737,7 @@ export const MONART = (() => {
       ${M.frown(60, 64, 6)}`;
   }
 
-  function zweifler(P: Palette, o: DrawOpts, C: Defs) {
+  function zweifler(o: DrawOpts, C: Defs) {
     const body = C.grad('#9CA9CC');
     return `${C.glyph(18, qmark(18, 30, 1.3))}${C.glyph(102, qmark(102, 22, 1))}${C.glyph(96, qmark(96, 50, 0.7, '#C9D2EA'))}
       <path d="M24 66 A36 36 0 0 1 96 66 L98 108 Q90 100 84 110 Q76 100 70 110 Q62 100 56 110 Q48 100 42 110 Q34 100 26 108 Z" ${F(body)}/>
@@ -752,7 +749,7 @@ export const MONART = (() => {
       ${pair(58, 64, 12, 7.5, { brow: 'worried', bw: 3, dir: [-0.2, -0.3] })}
       ${M.wavy(58, 84, 7)}`;
   }
-  function vergesslicher(P: Palette, o: DrawOpts, C: Defs) {
+  function vergesslicher(o: DrawOpts, C: Defs) {
     const body = C.grad('#B79BDB');
     return `<path d="M90 30 Q86 14 100 12 Q104 2 114 8 Q122 16 116 26 Q118 36 104 36 Q94 40 90 30 Z" fill="#fff" ${S(2)}/>
       <circle cx="84" cy="44" r="3" fill="#fff" ${S(1.6)}/><circle cx="78" cy="52" r="2" fill="#fff" ${S(1.4)}/>
@@ -766,7 +763,7 @@ export const MONART = (() => {
       ${M.o(60, 92, 7)}
       <path d="M20 82 Q10 76 12 68 M100 82 Q110 76 108 68" ${N(3)}/>`;
   }
-  function verwechsler(P: Palette, o: DrawOpts, C: Defs) {
+  function verwechsler(o: DrawOpts, C: Defs) {
     const a = C.grad('#FF9A3D'),
       b = C.grad('#38BFB0');
     return `<path d="M36 40 Q22 12 30 6 Q40 6 46 34 Z" ${F(a)}/><path d="M33 34 Q28 16 32 12 Q36 14 40 32 Z" fill="#FFD3A8"/>
@@ -784,7 +781,7 @@ export const MONART = (() => {
       <path d="M30 108 L28 116 L42 116 M88 108 L92 116 L100 112" fill="none" stroke="${OUT}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
       <ellipse cx="34" cy="116" rx="8" ry="3" fill="#E8516F"/><ellipse cx="96" cy="114" rx="7" ry="3" fill="#3FA0FF"/>`;
   }
-  function schwindler(P: Palette, o: DrawOpts, C: Defs) {
+  function schwindler(o: DrawOpts, C: Defs) {
     const body = C.grad('#8A63C9');
     return `<path d="M26 112 Q14 64 38 46 Q60 34 82 46 Q106 64 94 112 Z" ${F(body)}/>
       ${shine(40, 58, 8, 4.5, -25)}
@@ -795,7 +792,7 @@ export const MONART = (() => {
       ${M.smirk(62, 90, 9)}<circle cx="60" cy="100" r="2.2" ${F('#FFC93C', 1.4)}/><circle cx="60" cy="108" r="2.2" ${F('#FFC93C', 1.4)}/>
       <path d="M96 92 L108 72" ${N(3)}/><ellipse cx="110" cy="66" rx="9" ry="7" ${F('#FFE066', 2.2)}/><circle cx="107" cy="65" r="1.6" fill="${OUT}"/><circle cx="113" cy="65" r="1.6" fill="${OUT}"/><path d="M106 69 Q110 72 114 69" ${N(1.6)}/>`;
   }
-  function richter(P: Palette, o: DrawOpts, C: Defs) {
+  function richter(o: DrawOpts, C: Defs) {
     const robe = C.grad('#3A3550'),
       skin = C.grad('#F2C9A0'),
       cap = C.grad('#C0303C');
@@ -812,7 +809,7 @@ export const MONART = (() => {
       <path d="M54 50 Q51 58 56 58" ${N(2.2)}/>
       ${M.frown(54, 63, 8)}`;
   }
-  function ablasshaendler(P: Palette, o: DrawOpts, C: Defs) {
+  function ablasshaendler(o: DrawOpts, C: Defs) {
     const robe = C.grad('#8A5A3A'),
       skin = C.grad('#F2C9A0'),
       box = C.lin('#B07A42', '#7A4E26'),
@@ -836,7 +833,7 @@ export const MONART = (() => {
       ${blush(44, 58, 18, 4)}`;
   }
 
-  function blattlaus(P: Palette, o: DrawOpts, C: Defs) {
+  function blattlaus(o: DrawOpts, C: Defs) {
     const body = C.grad('#8EDB6A');
     return `<path d="M4 108 Q60 82 116 108 Q60 120 4 108 Z" ${F('#3E9A47', 2.2)}/><path d="M10 107 Q60 98 112 106" fill="none" stroke="#2C7A36" stroke-width="2"/>
       <path d="M44 48 Q30 18 14 14 M76 48 Q90 18 106 14" ${N(2.4)}/>
@@ -849,7 +846,7 @@ export const MONART = (() => {
       ${pair(60, 52, 8, 5.5, { brow: 'angry', bw: 2.8, iris: '#C0303C' })}
       ${M.cat(60, 62, 5)}`;
   }
-  function drahtwurm(P: Palette, o: DrawOpts, C: Defs) {
+  function drahtwurm(o: DrawOpts, C: Defs) {
     const seg = C.grad('#E3A93C');
     const segs = along(
       [100, 106],
@@ -867,7 +864,7 @@ export const MONART = (() => {
       ${pair(60, 44, 8, 5.5, { brow: 'angry', bw: 2.8 })}
       ${M.flat(60, 56, 5)}`;
   }
-  function wuehlmaus(P: Palette, o: DrawOpts, C: Defs) {
+  function wuehlmaus(o: DrawOpts, C: Defs) {
     const fur = C.grad('#9C6B44'),
       snout = C.grad('#EBD3B2'),
       dirt = C.lin('#8A5C36', '#4A2F1A'),
@@ -913,7 +910,7 @@ export const MONART = (() => {
     s += `<path d="M104 96 Q102 86 106 80 M104 96 Q110 88 114 86" fill="none" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M104 96 Q102 86 106 80 M104 96 Q110 88 114 86" fill="none" stroke="#7DBE4A" stroke-width="2.4" stroke-linecap="round"/>`;
     return s;
   }
-  function faeulewolke(P: Palette, o: DrawOpts, C: Defs) {
+  function faeulewolke(o: DrawOpts, C: Defs) {
     const cl = C.grad('#9DB36A');
     const fly = (x: number, y: number) =>
       `<ellipse cx="${x - 4}" cy="${y - 4}" rx="4" ry="2.6" fill="#E6F4FF" ${S(1.4)} transform="rotate(-25 ${x - 4} ${y - 4})"/><ellipse cx="${x + 4}" cy="${y - 4}" rx="4" ry="2.6" fill="#E6F4FF" ${S(1.4)} transform="rotate(25 ${x + 4} ${y - 4})"/><ellipse cx="${x}" cy="${y}" rx="2.8" ry="3.6" fill="#2A3A2A" ${S(1.2)}/>`;
@@ -926,7 +923,7 @@ export const MONART = (() => {
       ${pair(60, 62, 13, 7, { lid: '#8AA058', lidRot: 6, lidY: -0.1, dir: [0, 0.2] })}
       ${M.tongue(60, 78, 10)}`;
   }
-  function larve(P: Palette, o: DrawOpts, C: Defs, big: boolean) {
+  function larve(o: DrawOpts, C: Defs, big: boolean) {
     const body = C.grad(big ? '#C2352C' : '#E8613E'),
       spot = '#2A2230';
     if (!big) {
@@ -983,7 +980,7 @@ export const MONART = (() => {
       <path d="M42 26 L48 22 M50 18 L54 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".6"/>
       ${M.fangs(60, 44, 9)}`;
   }
-  function kaefer(P: Palette, o: DrawOpts, C: Defs, queen: boolean) {
+  function kaefer(o: DrawOpts, C: Defs, queen: boolean) {
     const shell = C.grad(queen ? '#FFE07A' : '#F4D56E'),
       orange = C.grad('#EE8F3A'),
       black = '#1E1A26';
@@ -1025,7 +1022,7 @@ export const MONART = (() => {
       s += `<path d="M44 20 L46 4 L54 14 L60 0 L66 14 L74 4 L76 20 Z" ${F('#FFC93C', 2.2)}/><circle cx="60" cy="13" r="2.8" ${F('#E0304A', 1.4)}/>`;
     return s;
   }
-  function blattfresser(P: Palette, o: DrawOpts, C: Defs) {
+  function blattfresser(o: DrawOpts, C: Defs) {
     const seg = C.grad('#7ED957');
     const body = along(
       [104, 104],
@@ -1045,7 +1042,7 @@ export const MONART = (() => {
       ${pair(40, 66, 8, 6, { brow: 'angry', bw: 3 })}
       <path d="M28 80 Q40 92 52 80 Q46 86 40 86 Q34 86 28 80 Z" ${F('#7A2340', 2.2)}/><path d="M34 81 L36 85 L38 81.5 M42 81.5 L44 85 L46 81" fill="#fff"/>`;
   }
-  function hagelwolke(P: Palette, o: DrawOpts, C: Defs) {
+  function hagelwolke(o: DrawOpts, C: Defs) {
     const cl = C.lin('#AFC0DD', '#5E7096');
     const hail = (x: number, y: number, r: number) =>
       `<circle cx="${x}" cy="${y}" r="${r}" ${F('#F2FAFF', 2)}/><circle cx="${f1(x - r * 0.35)}" cy="${f1(y - r * 0.35)}" r="${f1(r * 0.3)}" fill="#fff"/>`;
@@ -1057,7 +1054,7 @@ export const MONART = (() => {
       ${M.frown(60, 72, 9)}
       <path d="M92 86 L86 100 L94 98 L88 112" fill="none" stroke="#FFE066" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
   }
-  function ackerteufel(P: Palette, o: DrawOpts, C: Defs) {
+  function ackerteufel(o: DrawOpts, C: Defs) {
     const red = C.grad('#E2463A'),
       soil = C.lin('#8A5E3A', '#5E3E22');
     return `<path d="M2 116 L2 106 Q60 96 118 106 L118 116 Z" ${F(soil)}/><path d="M14 108 Q60 100 106 108" fill="none" stroke="#4A3220" stroke-width="2"/>
@@ -1078,7 +1075,7 @@ export const MONART = (() => {
       <path d="M44 60 Q60 72 76 58" ${N(3)}/><path d="M68 62 L70 68 L72 61.5 Z" ${F('#fff', 1.4)}/>
       <path d="M54 72 Q60 80 66 72" fill="none" stroke="${OUT}" stroke-width="2"/>`;
   }
-  function eierhaufen(P: Palette, o: DrawOpts, C: Defs) {
+  function eierhaufen(o: DrawOpts, C: Defs) {
     const egg = C.grad('#F7BE45');
     const e = (x: number, y: number, rx: number, ry: number, rot: number) =>
       `<g transform="rotate(${rot || 0} ${x} ${y + ry})"><ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" ${F(egg)}/><circle cx="${f1(x + rx * 0.45)}" cy="${f1(y + ry * 0.5)}" r="1.2" fill="#D98A1E"/><circle cx="${f1(x - rx * 0.5)}" cy="${f1(y + ry * 0.2)}" r="1" fill="#D98A1E"/>${shine(f1(x - rx * 0.35), f1(y - ry * 0.45), f1(rx * 0.25), f1(ry * 0.16), -20)}</g>`;
@@ -1124,7 +1121,7 @@ export const MONART = (() => {
     return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${k})"><path d="M0 0 Q-6 -2 -10 -4 Q-14 -10 -8 -12 Q-6 -18 0 -20 Q6 -18 8 -12 Q14 -10 10 -4 Q6 -2 0 0 Z" ${F(fill, 2 / k)}/><path d="M0 -1 L0 -14 M0 -4 L-6 -9 M0 -4 L6 -9" fill="none" stroke="#B9E8A0" stroke-width="${f1(1.2 / k)}" stroke-linecap="round"/></g>`;
   }
 
-  function owl(P: Palette, o: DrawOpts, C: Defs) {
+  function owl(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const base = ['#9C8466', '#A8693A', '#8E5E34'][e];
     const body = C.grad(base),
@@ -1203,7 +1200,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function beaver(P: Palette, o: DrawOpts, C: Defs) {
+  function beaver(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const fur = ['#9A6438', '#8C5A32', '#7E502C'][e];
     const body = C.grad(fur),
@@ -1262,7 +1259,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function moertelbatzen(P: Palette, o: DrawOpts, C: Defs) {
+  function moertelbatzen(o: DrawOpts, C: Defs) {
     const mud = C.grad('#A9AEB7'),
       grain = '#7F8590';
     return `<ellipse cx="60" cy="110" rx="50" ry="6" fill="#8A909A" opacity=".55"/>
@@ -1288,7 +1285,7 @@ export const MONART = (() => {
       ${M.frown(58, 95, 8)}`;
   }
 
-  function schweissfunke(P: Palette, o: DrawOpts, C: Defs) {
+  function schweissfunke(o: DrawOpts, C: Defs) {
     const fl = C.lin('#FFE066', '#FF6A3D'),
       core = C.grad('#FFB23F');
     let s = `<ellipse cx="60" cy="112" rx="26" ry="4" fill="#FF8A3D" opacity=".35"/>`;
@@ -1312,7 +1309,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schotterhaufen(P: Palette, o: DrawOpts, C: Defs) {
+  function schotterhaufen(o: DrawOpts, C: Defs) {
     const pile = C.grad('#A39C90'),
       g = ['#B8B2A6', '#8E887C', '#C9C2B4', '#9AA1AE', '#7C766C'];
     let s = `<ellipse cx="60" cy="110" rx="54" ry="6" fill="#6E675C" opacity=".6"/>`;
@@ -1353,7 +1350,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function pfuetzenmolch(P: Palette, o: DrawOpts, C: Defs) {
+  function pfuetzenmolch(o: DrawOpts, C: Defs) {
     const skin = C.grad('#3E8FD6'),
       belly = '#FF9A3D',
       spot = '#FFB23F';
@@ -1383,7 +1380,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function brennnesselwall(P: Palette, o: DrawOpts, C: Defs) {
+  function brennnesselwall(o: DrawOpts, C: Defs) {
     const lf = C.grad('#4E9F3D'),
       lf2 = C.grad('#3D8A34'),
       brick = C.grad('#C0603A');
@@ -1412,7 +1409,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function mischtrommel(P: Palette, o: DrawOpts, C: Defs) {
+  function mischtrommel(o: DrawOpts, C: Defs) {
     const drum = C.grad('#F28C28'),
       steel = C.grad('#8C95A6'),
       mortar = C.grad('#A9AEB7');
@@ -1434,7 +1431,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kabelnatter(P: Palette, o: DrawOpts, C: Defs) {
+  function kabelnatter(o: DrawOpts, C: Defs) {
     const cab = '#E0503A',
       plug = C.grad('#C2352C');
     const tube = (d: string, w: number) =>
@@ -1456,7 +1453,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function staubfahne(P: Palette, o: DrawOpts, C: Defs) {
+  function staubfahne(o: DrawOpts, C: Defs) {
     const dust = C.lin('#F0E2C6', '#C7AE86'),
       dk = '#A88E66';
     let s = `<ellipse cx="54" cy="112" rx="40" ry="5" fill="#8A7454" opacity=".45"/>`;
@@ -1481,7 +1478,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function efeuranke(P: Palette, o: DrawOpts, C: Defs) {
+  function efeuranke(o: DrawOpts, C: Defs) {
     const leaf = C.grad('#3F9A45'),
       small = C.grad('#4FB04F'),
       vine = '#6B4A2B';
@@ -1506,7 +1503,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function rostkaefer(P: Palette, o: DrawOpts, C: Defs) {
+  function rostkaefer(o: DrawOpts, C: Defs) {
     const shell = C.grad('#B5602E'),
       iron = C.grad('#6E6A72'),
       rust = '#8A3E1C';
@@ -1552,7 +1549,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function abrissbirne(P: Palette, o: DrawOpts, C: Defs) {
+  function abrissbirne(o: DrawOpts, C: Defs) {
     const ball = C.grad('#535A6B');
     let s = `<ellipse cx="60" cy="112" rx="50" ry="6" fill="#5B4A2E" opacity=".5"/>`;
     // swing lines and dust where it hit
@@ -1588,7 +1585,7 @@ export const MONART = (() => {
   const jm_limb = (d: string, col: string, w: number) =>
     `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${w + 4}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
 
-  function horse(P: Palette, o: DrawOpts, C: Defs) {
+  function horse(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const coat = ['#C68A4E', '#F6EEE0', '#FFF8EE'][e],
       body = C.grad(coat),
@@ -1648,7 +1645,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schaustellerin(P: Palette, o: DrawOpts, C: Defs) {
+  function schaustellerin(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const skin = C.grad('#F6CDA6'),
       jacket = '#D9343F',
@@ -1694,7 +1691,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function jahrmarktwespe(P: Palette, o: DrawOpts, C: Defs) {
+  function jahrmarktwespe(o: DrawOpts, C: Defs) {
     const yel = C.grad('#FFC93C'),
       amber = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [
         [0, '#FFE36A'],
@@ -1743,7 +1740,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function bratwurstglut(P: Palette, o: DrawOpts, C: Defs) {
+  function bratwurstglut(o: DrawOpts, C: Defs) {
     const wurst = C.grad('#C8562E'),
       coal = C.grad('#3A2E2E');
     let s = '';
@@ -1772,7 +1769,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function pfuetzenspritzer(P: Palette, o: DrawOpts, C: Defs) {
+  function pfuetzenspritzer(o: DrawOpts, C: Defs) {
     const water = C.grad('#3FA0FF'),
       lt = '#BFE6FF';
     let s = '';
@@ -1803,7 +1800,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kuerbiskopf(P: Palette, o: DrawOpts, C: Defs) {
+  function kuerbiskopf(o: DrawOpts, C: Defs) {
     const rib = '#B8541A',
       leaf = C.grad('#5FB04F'),
       vine = '#4F8A33';
@@ -1843,7 +1840,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function autoscooter(P: Palette, o: DrawOpts, C: Defs) {
+  function autoscooter(o: DrawOpts, C: Defs) {
     const car = C.grad('#E8344A'),
       bump = C.lin('#3A3445', '#1E1A26'),
       gold = '#FFC93C';
@@ -1869,7 +1866,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function ausrufer(P: Palette, o: DrawOpts, C: Defs) {
+  function ausrufer(o: DrawOpts, C: Defs) {
     const coat = C.grad('#B0233A'),
       skin = C.grad('#F2C9A0'),
       hat = C.grad('#2E2A40'),
@@ -1903,7 +1900,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kirmesnebel(P: Palette, o: DrawOpts, C: Defs) {
+  function kirmesnebel(o: DrawOpts, C: Defs) {
     const fog = C.lin('#E4EAFA', '#9AA9D6');
     let s = '';
     // coloured stage lights shining into the fog
@@ -1922,7 +1919,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function funkenrakete(P: Palette, o: DrawOpts, C: Defs) {
+  function funkenrakete(o: DrawOpts, C: Defs) {
     const red = C.grad('#E8344A'),
       stick = C.lin('#E8C38A', '#B07A42');
     let s = '';
@@ -1956,7 +1953,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function zerrbild(P: Palette, o: DrawOpts, C: Defs) {
+  function zerrbild(o: DrawOpts, C: Defs) {
     const gold = C.lin('#FFE58A', '#D99A1E'),
       glass = C.lin('#E6F4FF', '#9DB6E0');
     // funhouse mirror: wide top, pinched waist, wide bottom
@@ -1979,7 +1976,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function zaunranke(P: Palette, o: DrawOpts, C: Defs) {
+  function zaunranke(o: DrawOpts, C: Defs) {
     const wood = C.lin('#D9B48A', '#A97A4A'),
       vine = '#3E8E41',
       leaf = C.grad('#5CC96A');
@@ -2010,7 +2007,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function haudenlukas(P: Palette, o: DrawOpts, C: Defs) {
+  function haudenlukas(o: DrawOpts, C: Defs) {
     const red = C.grad('#D9343F'),
       wood = C.lin('#C08A52', '#7A4E26'),
       bell = C.grad('#FFC93C');
@@ -2038,7 +2035,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function herrdergeisterbahn(P: Palette, o: DrawOpts, C: Defs) {
+  function herrdergeisterbahn(o: DrawOpts, C: Defs) {
     const ghost = C.grad('#EDE6FF'),
       cart = C.grad('#5E2E9A'),
       gold = '#FFC93C';
@@ -2082,7 +2079,7 @@ export const MONART = (() => {
     return `<g transform="translate(${x} ${y}) scale(${k})"><ellipse cx="0" cy="-2" rx="9" ry="11" fill="#FFE066" opacity=".3"/><path d="M0 -12 Q7 -3 4 2 Q0 5 -4 2 Q-7 -3 0 -12 Z" fill="#FFB23F" ${S(1.8)}/><path d="M0 -6 Q3 -1 1.5 1.5 Q0 2.5 -1.5 1.5 Q-3 -1 0 -6 Z" fill="#FFF3B0"/></g>`;
   }
 
-  function kuesterin(P: Palette, o: DrawOpts, C: Defs) {
+  function kuesterin(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const dress = C.grad(['#4F7BB5', '#3F68A0', '#35598C'][e]),
       skin = C.grad('#F6CDA6'),
@@ -2146,7 +2143,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function friends(P: Palette, o: DrawOpts, C: Defs) {
+  function friends(o: DrawOpts, C: Defs) {
     const e = o.evo,
       up = e >= 1;
     const skin = C.grad('#F6CDA6'),
@@ -2233,7 +2230,7 @@ export const MONART = (() => {
     }
     return d + ' Z';
   }
-  function neidhammel(P: Palette, o: DrawOpts, C: Defs) {
+  function neidhammel(o: DrawOpts, C: Defs) {
     const wool = C.grad('#A9DC86'),
       face = C.grad('#6E8466'),
       horn = C.lin('#F0DDB2', '#B48E5E'),
@@ -2292,7 +2289,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function novembernebel(P: Palette, o: DrawOpts, C: Defs) {
+  function novembernebel(o: DrawOpts, C: Defs) {
     const fog = C.grad('#A9B8D6'),
       fog2 = C.lin('#C9D3E8', '#94A4C6');
     let s = '';
@@ -2309,7 +2306,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function zugluft(P: Palette, o: DrawOpts, C: Defs) {
+  function zugluft(o: DrawOpts, C: Defs) {
     const air = C.grad('#BFE3F2');
     let s = '';
     s += `<path d="M30 60 Q14 60 12 46 Q12 32 26 32 Q36 34 34 44" fill="none" stroke="${OUT}" stroke-width="9" stroke-linecap="round"/><path d="M30 60 Q14 60 12 46 Q12 32 26 32 Q36 34 34 44" fill="none" stroke="#D9F0FA" stroke-width="5" stroke-linecap="round"/>`;
@@ -2326,7 +2323,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kerzenloescher(P: Palette, o: DrawOpts, C: Defs) {
+  function kerzenloescher(o: DrawOpts, C: Defs) {
     const brass = C.grad('#E0AE3C'),
       wax = C.lin('#FFFDF5', '#E8DCC0');
     let s = '';
@@ -2349,7 +2346,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function laengstenacht(P: Palette, o: DrawOpts, C: Defs) {
+  function laengstenacht(o: DrawOpts, C: Defs) {
     const night = C.grad('#3B4BA6'),
       cap = C.lin('#6B7DD8', '#3A48A0'),
       moon = C.grad('#FFE9A0'),
@@ -2401,7 +2398,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function spaetfrost(P: Palette, o: DrawOpts, C: Defs) {
+  function spaetfrost(o: DrawOpts, C: Defs) {
     const ice = C.grad('#9FD8F5');
     let s = '';
     // a branch with a frozen blossom
@@ -2422,7 +2419,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function maerzsturm(P: Palette, o: DrawOpts, C: Defs) {
+  function maerzsturm(o: DrawOpts, C: Defs) {
     const cloud = C.grad('#8C93B8');
     let s = '';
     s += `<path d="M24 74 Q8 72 10 56 Q10 42 26 42 Q30 22 52 24 Q62 10 80 18 Q98 18 100 36 Q114 40 112 56 Q112 72 96 74 Z" ${F(cloud)}/>`;
@@ -2439,7 +2436,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function morgenmuffel(P: Palette, o: DrawOpts, C: Defs) {
+  function morgenmuffel(o: DrawOpts, C: Defs) {
     const fur = C.grad('#7CB85A');
     let s = `<ellipse cx="60" cy="113" rx="34" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M22 104 Q14 70 34 50 Q46 38 62 40 Q86 40 96 60 Q106 82 98 104 Q80 112 60 110 Q38 112 22 104 Z" ${F(fur)}/>`;
@@ -2461,7 +2458,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function mauer(P: Palette, o: DrawOpts, C: Defs) {
+  function mauer(o: DrawOpts, C: Defs) {
     const brick = C.grad('#C8654A');
     let s = `<ellipse cx="60" cy="114" rx="46" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M30 108 L26 114 M90 108 L94 114" ${N(4)}/><ellipse cx="24" cy="114" rx="8" ry="3" fill="${OUT}"/><ellipse cx="96" cy="114" rx="8" ry="3" fill="${OUT}"/>`;
@@ -2490,7 +2487,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function zankapfel(P: Palette, o: DrawOpts, C: Defs) {
+  function zankapfel(o: DrawOpts, C: Defs) {
     const apple = C.grad('#E2412F');
     let s = `<ellipse cx="60" cy="113" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M44 100 L40 112 M76 100 L80 112" ${N(4.5)}/><ellipse cx="38" cy="113" rx="7" ry="3" fill="${OUT}"/><ellipse cx="82" cy="113" rx="7" ry="3" fill="${OUT}"/>`;
@@ -2507,7 +2504,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function neidwurm(P: Palette, o: DrawOpts, C: Defs) {
+  function neidwurm(o: DrawOpts, C: Defs) {
     const body = C.grad('#A2D044'),
       belly = '#E4F4A8',
       apple = C.grad('#E8463A');
@@ -2557,7 +2554,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function flunkerei(P: Palette, o: DrawOpts, C: Defs) {
+  function flunkerei(o: DrawOpts, C: Defs) {
     const body = C.grad('#5AA0E0');
     let s = `<ellipse cx="54" cy="113" rx="28" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M42 100 L40 112 M66 100 L68 112" ${N(4.5)}/><ellipse cx="38" cy="113" rx="7" ry="3" fill="${OUT}"/><ellipse cx="70" cy="113" rx="7" ry="3" fill="${OUT}"/>`;
@@ -2576,7 +2573,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function geruecht(P: Palette, o: DrawOpts, C: Defs) {
+  function geruecht(o: DrawOpts, C: Defs) {
     const body = C.grad('#9A6FC0');
     let s = `<ellipse cx="60" cy="113" rx="34" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     // big ears that hear everything
@@ -2600,7 +2597,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function keil(P: Palette, o: DrawOpts, C: Defs) {
+  function keil(o: DrawOpts, C: Defs) {
     const steel = C.lin('#B9C2D2', '#6E7890'),
       steelG = C.grad('#9AA4B8');
     let s = '';
@@ -2622,7 +2619,7 @@ export const MONART = (() => {
   }
 
   // Ethik „Ich, wir und die Welt“: the scout and the enemies of „Ich im Wir“ and „Wir in der Welt“
-  function pfadfinderin(P: Palette, o: DrawOpts, C: Defs) {
+  function pfadfinderin(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const shirt = C.grad(['#5E9E4A', '#4F8F3E', '#3F7F34'][e]),
       skin = C.grad('#E9B98E'),
@@ -2684,7 +2681,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function lampenfieber(P: Palette, o: DrawOpts, C: Defs) {
+  function lampenfieber(o: DrawOpts, C: Defs) {
     const glass = C.grad('#FFC46A'),
       metal = C.lin('#E4E8F0', '#7E879A');
     let s = `<path d="M44 0 L76 0 L106 112 L14 112 Z" fill="#FFF2B8" opacity=".45"/>`;
@@ -2707,7 +2704,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function trotzkopf(P: Palette, o: DrawOpts, C: Defs) {
+  function trotzkopf(o: DrawOpts, C: Defs) {
     const head = C.grad('#8C96B8');
     let s = `<ellipse cx="60" cy="113" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M44 96 L42 110 M76 96 L80 106" ${N(5)}/><ellipse cx="40" cy="111" rx="8" ry="3.5" fill="${OUT}"/><ellipse cx="82" cy="107" rx="8" ry="3.5" fill="${OUT}"/>`;
@@ -2726,7 +2723,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function ausrede(P: Palette, o: DrawOpts, C: Defs) {
+  function ausrede(o: DrawOpts, C: Defs) {
     const body = C.grad('#5AB8D9');
     let s = `<ellipse cx="58" cy="113" rx="34" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     // slippery S-shaped body
@@ -2749,7 +2746,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schubladendenken(P: Palette, o: DrawOpts, C: Defs) {
+  function schubladendenken(o: DrawOpts, C: Defs) {
     const wood = C.grad('#7BAE5A'),
       front = C.lin('#8FC46A', '#5E9444');
     let s = `<ellipse cx="60" cy="113" rx="36" ry="3.5" fill="${OUT}" opacity=".15"/>`;
@@ -2772,7 +2769,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schadenfreude(P: Palette, o: DrawOpts, C: Defs) {
+  function schadenfreude(o: DrawOpts, C: Defs) {
     const body = C.grad('#B06FD0');
     let s = `<ellipse cx="60" cy="113" rx="34" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M44 100 L40 112 M76 100 L80 112" ${N(4.5)}/><ellipse cx="38" cy="113" rx="7" ry="3" fill="${OUT}"/><ellipse cx="82" cy="113" rx="7" ry="3" fill="${OUT}"/>`;
@@ -2790,7 +2787,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function grosseangst(P: Palette, o: DrawOpts, C: Defs) {
+  function grosseangst(o: DrawOpts, C: Defs) {
     const shadow = C.grad('#3E3A6E');
     let s = `<ellipse cx="60" cy="114" rx="44" ry="4" fill="${OUT}" opacity=".2"/>`;
     // a looming shadow with a ragged hem and raised claws
@@ -2805,7 +2802,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function muellberg(P: Palette, o: DrawOpts, C: Defs) {
+  function muellberg(o: DrawOpts, C: Defs) {
     const bag = C.grad('#5E6470');
     let s = `<ellipse cx="60" cy="114" rx="42" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M10 112 Q14 86 30 82 Q24 64 40 58 Q38 36 60 32 Q82 36 80 58 Q96 64 90 82 Q106 86 110 112 Z" ${F(bag)}/>`;
@@ -2831,7 +2828,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function duerre(P: Palette, o: DrawOpts, C: Defs) {
+  function duerre(o: DrawOpts, C: Defs) {
     const clay = C.grad('#D9864A');
     let s = `<path d="M4 116 L4 106 Q60 98 116 106 L116 116 Z" ${F(C.lin('#E8B070', '#C88A4A'), 2.2)}/>`;
     s += `<path d="M20 110 L28 106 L34 112 M70 108 L78 112 L86 106 L94 110" fill="none" stroke="#8A5A2E" stroke-width="2"/>`;
@@ -2848,7 +2845,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function hochwasser(P: Palette, o: DrawOpts, C: Defs) {
+  function hochwasser(o: DrawOpts, C: Defs) {
     const water = C.grad('#3F8FD8');
     let s = `<path d="M4 116 Q4 98 18 94 Q12 70 26 52 Q40 30 64 26 Q92 22 104 40 Q114 54 104 62 Q96 52 86 58 Q96 64 98 78 Q112 84 116 116 Z" ${F(water)}/>`;
     s += `<path d="M104 40 Q96 30 84 34 M92 46 Q96 42 102 44" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`;
@@ -2869,7 +2866,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function stromfresser(P: Palette, o: DrawOpts, C: Defs) {
+  function stromfresser(o: DrawOpts, C: Defs) {
     const plug = C.grad('#FFC93C');
     let s = `<ellipse cx="60" cy="113" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     // cable tail to a socket
@@ -2886,7 +2883,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function orkan(P: Palette, o: DrawOpts, C: Defs) {
+  function orkan(o: DrawOpts, C: Defs) {
     const air = C.grad('#9FB8D0');
     let s = `<ellipse cx="60" cy="114" rx="20" ry="3" fill="${OUT}" opacity=".18"/>`;
     // a spinning funnel, wide at the top
@@ -2901,7 +2898,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kohlequalm(P: Palette, o: DrawOpts, C: Defs) {
+  function kohlequalm(o: DrawOpts, C: Defs) {
     const smoke = C.grad('#5A5A66'),
       brick = C.lin('#B5503A', '#7E3424');
     let s = `<ellipse cx="60" cy="114" rx="40" ry="4" fill="${OUT}" opacity=".2"/>`;
@@ -2980,7 +2977,7 @@ export const MONART = (() => {
     `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${(w || 3.5) + 3.5}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${c}" stroke-width="${w || 3.5}" stroke-linecap="round" stroke-linejoin="round"/>`;
   const de_ground = (rx: number) => `<ellipse cx="60" cy="113" rx="${rx || 30}" ry="4.5" fill="${OUT}" opacity=".16"/>`;
 
-  function pencil(P: Palette, o: DrawOpts, C: Defs) {
+  function pencil(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const yel = C.grad('#FFC93C'),
       wood = C.lin('#F7DDA8', '#DDAE6C');
@@ -3004,7 +3001,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function ruler(P: Palette, o: DrawOpts, C: Defs) {
+  function ruler(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const wood = C.grad('#EDBB6E'),
       blue = C.lin('#9FD8FF', '#3A8AD8');
@@ -3033,7 +3030,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function buchstabendreher(P: Palette, o: DrawOpts, C: Defs) {
+  function buchstabendreher(o: DrawOpts, C: Defs) {
     const body = C.grad('#C46BD6'),
       lt = '#E7B3F0';
     const arrow = (d: string, tip: string) =>
@@ -3053,7 +3050,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function eselsohr(P: Palette, o: DrawOpts, C: Defs) {
+  function eselsohr(o: DrawOpts, C: Defs) {
     const cover = C.grad('#F2994A');
     let s = de_ground(34);
     s +=
@@ -3073,7 +3070,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function stummel(P: Palette, o: DrawOpts, C: Defs) {
+  function stummel(o: DrawOpts, C: Defs) {
     const red = C.grad('#E8553A'),
       wood = C.lin('#F7DDA8', '#DDAE6C');
     let s = de_ground(30);
@@ -3098,7 +3095,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kritzelei(P: Palette, o: DrawOpts, C: Defs) {
+  function kritzelei(o: DrawOpts, C: Defs) {
     const ink = gr(C, 'linear', 'x1="0" y1="0" x2="1" y2="1"', [
       [0, '#3D7BE8'],
       [1, '#1E3A9A'],
@@ -3141,7 +3138,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function radierer(P: Palette, o: DrawOpts, C: Defs) {
+  function radierer(o: DrawOpts, C: Defs) {
     const front = C.grad('#5CC96A'),
       top = '#9BE38E',
       side = '#2F8F45';
@@ -3175,7 +3172,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function fehlerteufel(P: Palette, o: DrawOpts, C: Defs) {
+  function fehlerteufel(o: DrawOpts, C: Defs) {
     const red = C.grad('#E8443A'),
       wing = C.lin('#B5304A', '#6E1A35');
     let s = `<path d="M40 56 Q20 30 4 34 Q12 42 8 50 Q18 50 16 60 Q26 56 30 66 Z M80 56 Q100 30 116 34 Q108 42 112 50 Q102 50 104 60 Q94 56 90 66 Z" ${F(wing)}/>`;
@@ -3203,7 +3200,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function satzverdreher(P: Palette, o: DrawOpts, C: Defs) {
+  function satzverdreher(o: DrawOpts, C: Defs) {
     const body = C.grad('#FF9A6A');
     let s = `<ellipse cx="60" cy="112" rx="30" ry="4.5" fill="${OUT}" opacity=".16"/>`;
     s +=
@@ -3223,7 +3220,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function wortsalat(P: Palette, o: DrawOpts, C: Defs) {
+  function wortsalat(o: DrawOpts, C: Defs) {
     const bowl = C.grad('#C98A4E'),
       leaf = C.grad('#6BCB4E'),
       leafD = '#3E9A47';
@@ -3248,7 +3245,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function knickheft(P: Palette, o: DrawOpts, C: Defs) {
+  function knickheft(o: DrawOpts, C: Defs) {
     const cover = C.grad('#3F8BE0'),
       dark = '#2A66B0';
     let s = de_ground(34);
@@ -3271,7 +3268,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function punktdieb(P: Palette, o: DrawOpts, C: Defs) {
+  function punktdieb(o: DrawOpts, C: Defs) {
     const body = C.grad('#9AA6C9');
     let s = `<ellipse cx="60" cy="113" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
     s += `<path d="M70 50 Q86 20 108 30 Q120 46 112 70 Q104 86 84 80 Z" ${F(C.grad('#E8D3A8'))}/><path d="M78 46 Q90 52 98 38" fill="none" stroke="#B89A66" stroke-width="2" stroke-linecap="round"/>`;
@@ -3301,7 +3298,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function spitzer(P: Palette, o: DrawOpts, C: Defs) {
+  function spitzer(o: DrawOpts, C: Defs) {
     const metal = C.grad('#B8C2D4'),
       topC = '#E3E8F0',
       sideC = '#7E8AA0';
@@ -3323,7 +3320,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function rotstift(P: Palette, o: DrawOpts, C: Defs) {
+  function rotstift(o: DrawOpts, C: Defs) {
     const red = C.grad('#D9343F'),
       wood = C.lin('#F7DDA8', '#DDAE6C'),
       redMark = '#E0304A';
@@ -3356,7 +3353,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function zeilenspringer(P: Palette, o: DrawOpts, C: Defs) {
+  function zeilenspringer(o: DrawOpts, C: Defs) {
     const body = C.grad('#FF9A3D');
     let s = `<path d="M6 90 L104 78 L114 110 L12 116 Z" ${F('#FFFDF5')}/>`;
     s += [0, 1, 2, 3]
@@ -3397,7 +3394,7 @@ export const MONART = (() => {
   const sk_bolt = (x: number, y: number, k: number, rot: number) =>
     `<path d="M0 0 L-7 16 L1 15 L-5 32 L11 10 L3 11 L8 0 Z" ${F('#FFE066', 2)} transform="translate(${x} ${y}) rotate(${rot || 0}) scale(${k})"/>`;
 
-  function muellerin(P: Palette, o: DrawOpts, C: Defs) {
+  function muellerin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#F6CDA6'),
       dress = C.grad('#4F7FC4'),
       apron = C.lin('#FFFFFF', '#E6DDCB'),
@@ -3449,7 +3446,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function wetterwart(P: Palette, o: DrawOpts, C: Defs) {
+  function wetterwart(o: DrawOpts, C: Defs) {
     const skin = C.grad('#F2C49C'),
       coat = C.grad('#3E6E8E'),
       hat = C.grad('#FFC93C'),
@@ -3484,7 +3481,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kartenzeichnerin(P: Palette, o: DrawOpts, C: Defs) {
+  function kartenzeichnerin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#E9B48A'),
       vest = C.grad('#4E9A5A'),
       hair = C.grad('#A0522D'),
@@ -3523,7 +3520,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kornkaefer(P: Palette, o: DrawOpts, C: Defs) {
+  function kornkaefer(o: DrawOpts, C: Defs) {
     const chitin = gr(C, 'radial', 'cx=".34" cy=".24" r=".85"', [
         [0, '#E39A62'],
         [0.3, '#A85A2C'],
@@ -3665,7 +3662,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function mehlmotte(P: Palette, o: DrawOpts, C: Defs) {
+  function mehlmotte(o: DrawOpts, C: Defs) {
     const inner = C.lin('#F2E6CC', '#D9C9A6'),
       outer = C.lin('#C98A4E', '#9A5E2E'),
       body = C.grad('#B8A88A');
@@ -3710,7 +3707,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function getreiderost(P: Palette, o: DrawOpts, C: Defs) {
+  function getreiderost(o: DrawOpts, C: Defs) {
     const rust = C.grad('#D9622B'),
       leaf = C.lin('#8CCB5A', '#5E9A3A');
     let s = `<path d="M4 112 Q50 92 116 108 Q60 104 4 112 Z" ${F(leaf, 2.2)}/>`;
@@ -3755,7 +3752,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function mutterkorn(P: Palette, o: DrawOpts, C: Defs) {
+  function mutterkorn(o: DrawOpts, C: Defs) {
     const spur = C.grad('#5A3A6E'),
       husk = C.grad('#E8C25A');
     let s = `<path d="M60 116 L60 92" stroke="${OUT}" stroke-width="6" stroke-linecap="round"/><path d="M60 116 L60 92" stroke="#B59A3A" stroke-width="3" stroke-linecap="round"/>`;
@@ -3794,7 +3791,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function nieselregen(P: Palette, o: DrawOpts, C: Defs) {
+  function nieselregen(o: DrawOpts, C: Defs) {
     const cl = C.lin('#E4ECF6', '#A9B9CF');
     let s = '';
     for (let i = 0; i < 9; i++) {
@@ -3811,7 +3808,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function glatteis(P: Palette, o: DrawOpts, C: Defs) {
+  function glatteis(o: DrawOpts, C: Defs) {
     const ice = C.grad('#BDE6FF'),
       sheet = C.lin('#E8F7FF', '#9CD3F2');
     let s = `<path d="M2 108 Q4 96 30 96 L92 94 Q118 96 118 106 Q116 116 90 116 L28 116 Q2 116 2 108 Z" ${F(sheet, 2.2)}/>`;
@@ -3827,7 +3824,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function sturmboee(P: Palette, o: DrawOpts, C: Defs) {
+  function sturmboee(o: DrawOpts, C: Defs) {
     const air = C.grad('#CFE6F7');
     let s = `<path d="M18 78 Q4 70 10 56 Q16 46 26 52 Q20 58 26 62" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M18 78 Q4 70 10 56 Q16 46 26 52 Q20 58 26 62" fill="none" stroke="#CFE6F7" stroke-width="3" stroke-linecap="round"/>`;
     s += `<path d="M24 98 Q8 100 6 88 Q6 80 16 82" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M24 98 Q8 100 6 88 Q6 80 16 82" fill="none" stroke="#CFE6F7" stroke-width="3" stroke-linecap="round"/>`;
@@ -3844,7 +3841,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function hitzeflimmern(P: Palette, o: DrawOpts, C: Defs) {
+  function hitzeflimmern(o: DrawOpts, C: Defs) {
     const heat = C.lin('#FFE48A', '#FF8A3D'),
       sand = C.lin('#F2C97A', '#D9A050');
     let s = `<circle cx="96" cy="22" r="12" ${F(C.grad('#FFD23F'), 2.2)}/><path d="${spikes(96, 22, 15, 21, 0, 360, 10)}" fill="#FFC93C" ${S(1.8)}/><circle cx="96" cy="22" r="12" ${F(C.grad('#FFD23F'), 2.2)}/>`;
@@ -3863,7 +3860,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function gewitterzelle(P: Palette, o: DrawOpts, C: Defs) {
+  function gewitterzelle(o: DrawOpts, C: Defs) {
     const cl = C.lin('#8E9CC0', '#3E4A72');
     let s = sk_bolt(38, 86, 0.9, 10) + sk_bolt(78, 84, 1.1, -8);
     s += [
@@ -3883,7 +3880,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function unwetter(P: Palette, o: DrawOpts, C: Defs) {
+  function unwetter(o: DrawOpts, C: Defs) {
     const cl = C.lin('#6E6A9E', '#2A2850');
     let s = '';
     for (let i = 0; i < 10; i++) {
@@ -3904,7 +3901,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function nebelbank(P: Palette, o: DrawOpts, C: Defs) {
+  function nebelbank(o: DrawOpts, C: Defs) {
     const fog = C.lin('#F6F6FC', '#B9BCD2');
     let s = `<path d="M92 104 L92 14" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M92 104 L92 14" stroke="#A86B3A" stroke-width="3.5" stroke-linecap="round"/>`;
     s += `<path d="M92 18 L110 17 L116 23 L110 29 L92 29 Z" ${F('#E8C38A', 2.2)}/><path d="M92 33 L74 32 L68 38 L74 44 L92 44 Z" ${F('#E8C38A', 2.2)}/><path d="M96 23 L108 23 M76 38 L88 38" stroke="#B58A50" stroke-width="2" stroke-linecap="round"/>`;
@@ -3917,7 +3914,7 @@ export const MONART = (() => {
     s += M.cat(58, 96, 7);
     return s;
   }
-  function dornengestruepp(P: Palette, o: DrawOpts, C: Defs) {
+  function dornengestruepp(o: DrawOpts, C: Defs) {
     const bush = C.grad('#3E8E41'),
       vine = '#7A4A2A';
     let s = `<ellipse cx="60" cy="112" rx="50" ry="5" fill="#2C5E2E" opacity=".35"/>`;
@@ -3975,7 +3972,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function morast(P: Palette, o: DrawOpts, C: Defs) {
+  function morast(o: DrawOpts, C: Defs) {
     const mud = C.grad('#6E5A3E'),
       pool = C.lin('#6E7A5A', '#3E4A34');
     let s = `<path d="M2 100 Q10 86 40 88 Q60 84 80 88 Q112 86 118 100 Q116 116 60 116 Q4 116 2 100 Z" ${F(pool)}/>`;
@@ -3993,7 +3990,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function elster(P: Palette, o: DrawOpts, C: Defs) {
+  function elster(o: DrawOpts, C: Defs) {
     const black = C.grad('#2E3448'),
       white = C.grad('#FFFFFF'),
       sheen = gr(C, 'linear', 'x1=".2" y1="0" x2=".8" y2="1"', [
@@ -4033,7 +4030,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kartendieb(P: Palette, o: DrawOpts, C: Defs) {
+  function kartendieb(o: DrawOpts, C: Defs) {
     const skin = C.grad('#E9B48A'),
       shirt = C.grad('#FFFFFF'),
       cap = C.grad('#3A3550'),
@@ -4062,7 +4059,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function magnetberg(P: Palette, o: DrawOpts, C: Defs) {
+  function magnetberg(o: DrawOpts, C: Defs) {
     const rock = C.grad('#8A8FA0');
     let s = `<path d="M30 30 Q12 46 14 70 M90 30 Q108 46 106 70 M22 22 Q0 44 4 76 M98 22 Q120 44 116 76" fill="none" stroke="#C04A5A" stroke-width="2.2" stroke-dasharray="5 4" stroke-linecap="round" opacity=".7"/>`;
     s += `<path d="M2 114 L30 46 L44 56 L60 30 L76 56 L90 46 L118 114 Z" ${F(rock)}/>`;
@@ -4082,7 +4079,7 @@ export const MONART = (() => {
 
   /* ---------- Englisch: Teestube (heroine Teapot) and Doppeldecker (hero Big Red) ---------- */
   const BLUE = '#2F5DAA';
-  function teapot(P: Palette, o: DrawOpts, C: Defs) {
+  function teapot(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const china = C.grad('#FFFFFF'),
       gold = '#E6B422';
@@ -4115,7 +4112,7 @@ export const MONART = (() => {
     if (e === 2) s += spark(18, 92, 3.5, gold);
     return s;
   }
-  function bus(P: Palette, o: DrawOpts, C: Defs) {
+  function bus(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const red = C.grad('#E0302C'),
       glass = C.lin('#CFEFFF', '#7FB8E8'),
@@ -4139,7 +4136,7 @@ export const MONART = (() => {
     if (e === 2) s += spark(10, 28, 4) + spark(112, 70, 3);
     return s;
   }
-  function moewe(P: Palette, o: DrawOpts, C: Defs) {
+  function moewe(o: DrawOpts, C: Defs) {
     const white = C.lin('#FFFFFF', '#DCE2EC'),
       head = C.lin('#FFFFFF', '#E6EAF2'),
       wing = C.lin('#D6DCE6', '#A9B2C4'),
@@ -4182,7 +4179,7 @@ export const MONART = (() => {
     s += `<path d="M106 62 l2 2 M100 66 l1 2" stroke="#C88A44" stroke-width="2.4" stroke-linecap="round"/>`;
     return s;
   }
-  function teefleck(P: Palette, o: DrawOpts, C: Defs) {
+  function teefleck(o: DrawOpts, C: Defs) {
     const tea = C.lin('#ECB86A', '#B8722E'),
       china = C.grad('#FFFFFF'),
       saucer = C.lin('#FFFFFF', '#D3DAEE');
@@ -4213,7 +4210,7 @@ export const MONART = (() => {
     s += M.smirk(48, 97, 6);
     return s;
   }
-  function umklappschirm(P: Palette, o: DrawOpts, C: Defs) {
+  function umklappschirm(o: DrawOpts, C: Defs) {
     const cloth = C.grad('#3A3F5C');
     let s = `<ellipse cx="60" cy="113" rx="16" ry="3.5" fill="${OUT}" opacity=".16"/>`;
     s += `<path d="M60 52 L60 100 Q60 110 70 110 Q78 110 78 102" fill="none" stroke="${OUT}" stroke-width="8" stroke-linecap="round"/><path d="M60 52 L60 100 Q60 110 70 110 Q78 110 78 102" fill="none" stroke="#9A6A45" stroke-width="4" stroke-linecap="round"/>`;
@@ -4227,7 +4224,7 @@ export const MONART = (() => {
     s += M.wavy(54, 56, 6);
     return s;
   }
-  function bulldogge(P: Palette, o: DrawOpts, C: Defs) {
+  function bulldogge(o: DrawOpts, C: Defs) {
     const fawn = C.grad('#D9A066'),
       fawnD = '#A8743F',
       cream = C.grad('#FBF3E6'),
@@ -4282,7 +4279,7 @@ export const MONART = (() => {
     });
     return s;
   }
-  function pfeifkessel(P: Palette, o: DrawOpts, C: Defs) {
+  function pfeifkessel(o: DrawOpts, C: Defs) {
     const steel = C.grad('#C9D1DE');
     let s = `<ellipse cx="60" cy="113" rx="40" ry="5" fill="${OUT}" opacity=".18"/>`;
     s += `<path d="M30 104 Q34 112 60 112 Q86 112 90 104" fill="none" stroke="#FF8A3D" stroke-width="5" stroke-linecap="round" opacity=".8"/>`;
@@ -4298,7 +4295,7 @@ export const MONART = (() => {
     s += M.roar(60, 86, 11, 10);
     return s;
   }
-  function wappenloewe(P: Palette, o: DrawOpts, C: Defs) {
+  function wappenloewe(o: DrawOpts, C: Defs) {
     const gold = C.grad('#F2B632'),
       mane = C.grad('#D9771E');
     let s = `<circle cx="60" cy="62" r="54" fill="#C2263F" opacity=".12"/>`;
@@ -4315,7 +4312,7 @@ export const MONART = (() => {
     s += M.roar(60, 70, 11, 11);
     return s;
   }
-  function taube(P: Palette, o: DrawOpts, C: Defs) {
+  function taube(o: DrawOpts, C: Defs) {
     const grey = C.grad('#A9B3C6'),
       wing = C.grad('#C3CBDA'),
       tail = C.lin('#8C96AA', '#5E687C'),
@@ -4345,7 +4342,7 @@ export const MONART = (() => {
       .join('');
     return s;
   }
-  function telefonzelle(P: Palette, o: DrawOpts, C: Defs) {
+  function telefonzelle(o: DrawOpts, C: Defs) {
     const red = C.grad('#D9302C'),
       glass = C.lin('#D7EFFF', '#8FC0E8');
     let s = `<ellipse cx="60" cy="113" rx="30" ry="4" fill="${OUT}" opacity=".16"/>`;
@@ -4365,7 +4362,7 @@ export const MONART = (() => {
     s += M.open(60, 74, 9);
     return s;
   }
-  function ampel(P: Palette, o: DrawOpts, C: Defs) {
+  function ampel(o: DrawOpts, C: Defs) {
     const box = C.grad('#3A3F52');
     let s = `<ellipse cx="60" cy="113" rx="18" ry="3.5" fill="${OUT}" opacity=".16"/>`;
     s += `<rect x="55" y="88" width="10" height="24" ${F('#7A8296')}/>`;
@@ -4380,7 +4377,7 @@ export const MONART = (() => {
     s += shine(44, 22, 3, 7, 0);
     return s;
   }
-  function hecke(P: Palette, o: DrawOpts, C: Defs) {
+  function hecke(o: DrawOpts, C: Defs) {
     const leaf = C.grad('#3E9A44');
     let s = `<ellipse cx="60" cy="112" rx="44" ry="5" fill="${OUT}" opacity=".16"/>`;
     s += `<rect x="20" y="96" width="80" height="14" rx="2" ${F('#B5683A')}/><path d="M24 103 L96 103" stroke="#8A4A26" stroke-width="2"/>`;
@@ -4408,7 +4405,7 @@ export const MONART = (() => {
     s += M.fangs(60, 80, 9);
     return s;
   }
-  function zugbruecke(P: Palette, o: DrawOpts, C: Defs) {
+  function zugbruecke(o: DrawOpts, C: Defs) {
     const stone = C.grad('#A8A090'),
       wood = C.lin('#B5824A', '#7A5230');
     let s = `<path d="M0 104 Q30 98 60 104 Q90 110 120 104 L120 120 L0 120 Z" fill="#3B7DD8" opacity=".55"/><path d="M8 108 Q20 104 32 108 M84 110 Q96 106 108 110" fill="none" stroke="#9EC3EE" stroke-width="2" stroke-linecap="round"/>`;
@@ -4422,7 +4419,7 @@ export const MONART = (() => {
     s += pair(60, 60, 14, 6.5, { look: 'glow', glow: '#FFD24A', brow: 'angry', bw: 3.6 });
     return s;
   }
-  function uhrturm(P: Palette, o: DrawOpts, C: Defs) {
+  function uhrturm(o: DrawOpts, C: Defs) {
     const stone = C.grad('#D8C48A'),
       roof = C.grad('#3E6A5A');
     let s = `<ellipse cx="60" cy="113" rx="34" ry="5" fill="${OUT}" opacity=".2"/>`;
@@ -4443,7 +4440,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schulaerztin(P: Palette, o: DrawOpts, C: Defs) {
+  function schulaerztin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#E8B590'),
       coat = C.grad('#FFFFFF'),
       hair = C.grad('#3B2A24'),
@@ -4472,7 +4469,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function verkehrspolizistin(P: Palette, o: DrawOpts, C: Defs) {
+  function verkehrspolizistin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#F2C49C'),
       uni = C.grad('#2F4A7A'),
       vest = C.grad('#E6F03A'),
@@ -4502,7 +4499,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function laerm(P: Palette, o: DrawOpts, C: Defs) {
+  function laerm(o: DrawOpts, C: Defs) {
     const horn = C.lin('#FFC65C', '#E07A1F'),
       bell = C.grad('#F0454E'),
       mouth = C.grad('#3A1A2A'),
@@ -4532,7 +4529,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function blendlicht(P: Palette, o: DrawOpts, C: Defs) {
+  function blendlicht(o: DrawOpts, C: Defs) {
     const halo = gr(C, 'radial', '', [
       [0, '#FFFDE8', 0.95],
       [0.42, '#FFE45C', 0.5],
@@ -4599,7 +4596,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function qualmwolke(P: Palette, o: DrawOpts, C: Defs) {
+  function qualmwolke(o: DrawOpts, C: Defs) {
     const smoke = C.grad('#8E8A94'),
       dark = C.grad('#5E5A66');
     let s = `<path d="M30 112 Q22 100 34 94 Q28 80 44 78 Q48 66 62 72 Q74 64 82 76 Q98 74 96 90 Q108 98 96 108 Q90 116 30 112 Z" ${F(dark)}/>`;
@@ -4618,7 +4615,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function gruppendruck(P: Palette, o: DrawOpts, C: Defs) {
+  function gruppendruck(o: DrawOpts, C: Defs) {
     const a = C.grad('#7A6A9A'),
       b = C.grad('#5E4E80'),
       c = C.grad('#8E7CB0');
@@ -4646,7 +4643,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schlagloch(P: Palette, o: DrawOpts, C: Defs) {
+  function schlagloch(o: DrawOpts, C: Defs) {
     const road = C.lin('#8A8F98', '#6E737C'),
       hole = C.grad('#3A3440');
     let s = `<path d="M2 116 L8 52 Q60 40 112 52 L118 116 Z" ${F(road)}/>`;
@@ -4670,7 +4667,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function daemmerung(P: Palette, o: DrawOpts, C: Defs) {
+  function daemmerung(o: DrawOpts, C: Defs) {
     const sky = C.lin('#F7A35C', '#3E3A7A'),
       sun = C.grad('#FF8A3D');
     let s = `<circle cx="60" cy="60" r="46" ${F(sky)}/>`;
@@ -4692,7 +4689,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function totwinkel(P: Palette, o: DrawOpts, C: Defs) {
+  function totwinkel(o: DrawOpts, C: Defs) {
     const shade1 = C.lin('#4A4E66', '#23263A');
     let s = `<path d="M4 112 L60 18 L116 112 Z" ${F(shade1)}/>`;
     s += `<path d="M18 104 L60 34 L102 104" fill="none" stroke="#6A6F8C" stroke-width="2" stroke-dasharray="6 5"/>`;
@@ -4705,7 +4702,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function raser(P: Palette, o: DrawOpts, C: Defs) {
+  function raser(o: DrawOpts, C: Defs) {
     const body = C.grad('#E0304A'),
       glass = C.lin('#CFE8FF', '#7FB3E0');
     let s = `<path d="M2 66 L16 66 M0 78 L18 78 M4 90 L16 90" stroke="${OUT}" stroke-width="3" stroke-linecap="round" opacity=".6"/>`;
@@ -4728,7 +4725,7 @@ export const MONART = (() => {
   const sk_bee = (x: number, y: number, k: number) =>
     `<g transform="translate(${x} ${y}) scale(${k})"><ellipse cx="-3" cy="-7" rx="5" ry="7" fill="#EAF6FF" ${S(1.4)} transform="rotate(-25 -3 -7)"/><ellipse cx="4" cy="-7" rx="5" ry="7" fill="#EAF6FF" ${S(1.4)} transform="rotate(25 4 -7)"/><ellipse cx="0" cy="0" rx="9" ry="6.5" ${F('#FFC93C', 1.8)}/><path d="M-3 -6 L-3 6 M3 -6 L3 6" stroke="${OUT}" stroke-width="2.6"/><circle cx="8" cy="-1" r="1.3" fill="${OUT}"/></g>`;
 
-  function imkerin(P: Palette, o: DrawOpts, C: Defs) {
+  function imkerin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#E2A57A'),
       suit = C.grad('#F6F3EA'),
       hat = C.grad('#E9DDB0'),
@@ -4770,7 +4767,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function heimatforscherin(P: Palette, o: DrawOpts, C: Defs) {
+  function heimatforscherin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#C98E68'),
       coat = C.grad('#8E3B46'),
       hair = C.grad('#3A2A22'),
@@ -4796,7 +4793,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function trampelpfad(P: Palette, o: DrawOpts, C: Defs) {
+  function trampelpfad(o: DrawOpts, C: Defs) {
     const dirt = C.grad('#B88A5A'),
       grass = '#6FAE3E';
     let s = `<path d="M8 112 Q4 80 30 68 Q60 56 90 68 Q116 80 112 112 Z" ${F(dirt)}/>`;
@@ -4831,7 +4828,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function trockenheit(P: Palette, o: DrawOpts, C: Defs) {
+  function trockenheit(o: DrawOpts, C: Defs) {
     const earth = C.grad('#D9A35E');
     let s = `<circle cx="100" cy="18" r="10" ${F(C.grad('#FFD23F'), 2.2)}/><path d="${spikes(100, 18, 13, 19, 0, 360, 10)}" fill="#FFC93C" ${S(1.6)}/><circle cx="100" cy="18" r="10" ${F(C.grad('#FFD23F'), 2.2)}/>`;
     s += `<path d="M10 112 Q4 74 34 60 Q60 48 86 60 Q116 74 110 112 Z" ${F(earth)}/>`;
@@ -4846,7 +4843,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function plastiktuete(P: Palette, o: DrawOpts, C: Defs) {
+  function plastiktuete(o: DrawOpts, C: Defs) {
     const bag = C.lin('#F4F8FF', '#C9D6EA');
     let s = `<path d="M4 116 l4 -12 l3 12 M108 116 l3 -14 l4 14" stroke="#6FAE3E" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
     s += `<path d="M34 38 Q30 14 42 14 Q52 14 48 38 M72 38 Q68 14 78 14 Q90 14 86 38" fill="none" ${S(7)}/><path d="M34 38 Q30 14 42 14 Q52 14 48 38 M72 38 Q68 14 78 14 Q90 14 86 38" fill="none" stroke="#F4F8FF" stroke-width="3.4"/>`;
@@ -4858,7 +4855,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function spritzmittel(P: Palette, o: DrawOpts, C: Defs) {
+  function spritzmittel(o: DrawOpts, C: Defs) {
     const tank = C.grad('#5FA8D3'),
       mist = '#C9E86A';
     let s = `<ellipse cx="88" cy="40" rx="20" ry="12" fill="${mist}" opacity=".45"/><ellipse cx="104" cy="28" rx="12" ry="9" fill="${mist}" opacity=".4"/>`;
@@ -4881,7 +4878,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function maehmaschine(P: Palette, o: DrawOpts, C: Defs) {
+  function maehmaschine(o: DrawOpts, C: Defs) {
     const body = C.grad('#D9453B'),
       metal = C.lin('#E4E9F0', '#9AA3B5');
     let s = `<path d="M4 108 L116 108" stroke="#6FAE3E" stroke-width="3" stroke-linecap="round"/>`;
@@ -4906,7 +4903,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function strassenwalze(P: Palette, o: DrawOpts, C: Defs) {
+  function strassenwalze(o: DrawOpts, C: Defs) {
     const body = C.grad('#F2B12E'),
       drum = C.lin('#C9CED8', '#7A8294');
     let s = `<rect x="0" y="104" width="120" height="12" fill="#3A3F52"/><path d="M8 110 L24 110 M40 110 L56 110 M72 110 L88 110" stroke="#fff" stroke-width="2.4"/>`;
@@ -4921,7 +4918,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function spinnennetz(P: Palette, o: DrawOpts, C: Defs) {
+  function spinnennetz(o: DrawOpts, C: Defs) {
     const bark = C.lin('#A87A4C', '#6E4A2A'),
       hub = C.grad('#F4F6FB'),
       cx = 60,
@@ -4960,7 +4957,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schimmelfleck(P: Palette, o: DrawOpts, C: Defs) {
+  function schimmelfleck(o: DrawOpts, C: Defs) {
     const mold = C.grad('#8FAE7A'),
       paper = C.lin('#FFF8E8', '#E9D9B8');
     let s = `<path d="M8 116 L8 70 L60 64 L112 72 L112 116 Z" ${F(paper, 2.2)}/><path d="M18 82 L50 80 M18 92 L44 91 M70 86 L102 88" stroke="#C9B58A" stroke-width="2" stroke-linecap="round"/>`;
@@ -4994,7 +4991,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function stromausfall(P: Palette, o: DrawOpts, C: Defs) {
+  function stromausfall(o: DrawOpts, C: Defs) {
     const glass = C.grad('#B9C2CF');
     let s = `<path d="M60 116 Q40 112 30 116" fill="none" ${S(5)}/><path d="M60 116 Q40 112 30 116" fill="none" stroke="#3A3F52" stroke-width="2"/>`;
     s += `<rect x="46" y="88" width="28" height="20" rx="3" ${F('#9AA3B5')}/><path d="M46 94 L74 94 M46 100 L74 100" ${N(2)}/><path d="M52 108 Q60 116 68 108" ${F('#5E6E8E', 2)}/>`;
@@ -5008,7 +5005,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function vorurteil(P: Palette, o: DrawOpts, C: Defs) {
+  function vorurteil(o: DrawOpts, C: Defs) {
     const fog = C.grad('#BDC1D8'),
       leather = C.lin('#7A4E32', '#4E2E1C'),
       arm = C.grad('#A9AECA');
@@ -5032,7 +5029,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function falschmeldung(P: Palette, o: DrawOpts, C: Defs) {
+  function falschmeldung(o: DrawOpts, C: Defs) {
     const paper = C.lin('#FFFFFF', '#E3E6EE');
     let s = `<g transform="rotate(-6 60 64)"><path d="M18 14 L102 14 L106 112 L22 112 Z" ${F(paper)}/>`;
     s += `<path d="M26 22 L98 22" stroke="${OUT}" stroke-width="2"/><rect x="28" y="26" width="64" height="14" rx="2" fill="#E0304A"/><path d="M34 33 L48 33 M54 33 L70 33 M76 33 L86 33" stroke="#fff" stroke-width="4" stroke-linecap="round"/>`;
@@ -5044,7 +5041,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function vergessen(P: Palette, o: DrawOpts, C: Defs) {
+  function vergessen(o: DrawOpts, C: Defs) {
     const fog = C.lin('#5E6A9E', '#232A52');
     let s = `<path d="M6 76 Q-4 56 14 46 Q10 20 36 20 Q46 2 66 8 Q86 0 96 18 Q120 18 114 44 Q126 60 112 76 Q116 100 94 104 Q60 118 26 104 Q4 100 6 76 Z" ${F(fog)}/>`;
     s += `<path d="M84 30 Q98 30 98 42 Q98 52 88 52 Q80 52 80 44 Q80 38 86 38 M24 42 Q32 30 44 34 M18 84 Q30 94 44 90" fill="none" stroke="#8E98CC" stroke-width="3" stroke-linecap="round"/>`;
@@ -5066,7 +5063,7 @@ export const MONART = (() => {
     ).join('');
   const k12_flake = (x: number, y: number, r: number, c?: string | undefined) =>
     `<path d="M${x} ${f1(y - r)} L${x} ${f1(y + r)} M${f1(x - r * 0.87)} ${f1(y - r / 2)} L${f1(x + r * 0.87)} ${f1(y + r / 2)} M${f1(x - r * 0.87)} ${f1(y + r / 2)} L${f1(x + r * 0.87)} ${f1(y - r / 2)}" fill="none" stroke="${c || '#fff'}" stroke-width="${c ? 4.5 : 2}" stroke-linecap="round"/>`;
-  function lotte(P: Palette, o: DrawOpts, C: Defs) {
+  function lotte(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const coat = C.grad('#FFC93C'),
       skin = C.grad('#F0C29A'),
@@ -5127,7 +5124,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function karies(P: Palette, o: DrawOpts, C: Defs) {
+  function karies(o: DrawOpts, C: Defs) {
     const tooth = C.lin('#FFFFFF', '#DCE3EE'),
       germ = C.grad('#6B4A3A');
     // a big molar with a dark hole; the germ stands on the crown and hacks the hole deeper
@@ -5156,7 +5153,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schlammpfuetze(P: Palette, o: DrawOpts, C: Defs) {
+  function schlammpfuetze(o: DrawOpts, C: Defs) {
     const mud = C.grad('#8A6236'),
       boot = C.grad('#E0304A');
     // a red rubber boot stuck in the mud
@@ -5178,7 +5175,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function sonnenbrand(P: Palette, o: DrawOpts, C: Defs) {
+  function sonnenbrand(o: DrawOpts, C: Defs) {
     const sun = C.grad('#FF6A3D');
     let s = `<path d="${spikes(60, 58, 32, 50, -90, 270, 14)}" ${F('#FFB23F', 2.2)}/>`;
     s += `<path d="M10 40 q4 -4 8 0 t8 0 M94 92 q4 -4 8 0 t8 0" fill="none" stroke="#FF8A3D" stroke-width="2.4" stroke-linecap="round"/>`;
@@ -5195,7 +5192,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function klette(P: Palette, o: DrawOpts, C: Defs) {
+  function klette(o: DrawOpts, C: Defs) {
     const burr = C.grad('#9A8A3E'),
       n = 18;
     let hooks = '';
@@ -5215,7 +5212,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schnupfen(P: Palette, o: DrawOpts, C: Defs) {
+  function schnupfen(o: DrawOpts, C: Defs) {
     const body = C.grad('#A9CF86'),
       nose = C.grad('#E8516F');
     let s = `<ellipse cx="60" cy="113" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
@@ -5245,7 +5242,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schneesturm(P: Palette, o: DrawOpts, C: Defs) {
+  function schneesturm(o: DrawOpts, C: Defs) {
     const cl = C.lin('#F4F8FC', '#B9CDE2'),
       flake = (x: number, y: number, r: number) => k12_flake(x, y, r, OUT) + k12_flake(x, y, r);
     let s = [
@@ -5273,7 +5270,7 @@ export const MONART = (() => {
   }
 
   // Klasse 1/2 Ethik: Mats and his opponents
-  function mats(P: Palette, o: DrawOpts, C: Defs) {
+  function mats(o: DrawOpts, C: Defs) {
     const e = o.evo;
     const jumper = C.grad('#3B7DD8'),
       skin = C.grad('#C98E68'),
@@ -5306,7 +5303,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function knalltuer(P: Palette, o: DrawOpts, C: Defs) {
+  function knalltuer(o: DrawOpts, C: Defs) {
     const wood = C.lin('#C08A4C', '#8A5A2A'),
       frame = C.lin('#7A4E26', '#5A3418');
     let s = `<ellipse cx="60" cy="115" rx="40" ry="3" fill="${OUT}" opacity=".15"/>`;
@@ -5322,7 +5319,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schlechtelaune(P: Palette, o: DrawOpts, C: Defs) {
+  function schlechtelaune(o: DrawOpts, C: Defs) {
     const cl = C.lin('#9AA2B6', '#5E6680'),
       arm = C.grad('#7E879C');
     let s = '';
@@ -5346,7 +5343,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function wutanfall(P: Palette, o: DrawOpts, C: Defs) {
+  function wutanfall(o: DrawOpts, C: Defs) {
     const body = C.grad('#E8453A');
     let s = `<ellipse cx="60" cy="114" rx="32" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     s += `<path d="M46 100 L40 112 M74 100 L80 112" ${N(5)}/><ellipse cx="38" cy="113" rx="8" ry="3.5" fill="${OUT}"/><ellipse cx="82" cy="113" rx="8" ry="3.5" fill="${OUT}"/>`;
@@ -5366,7 +5363,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function langeweile(P: Palette, o: DrawOpts, C: Defs) {
+  function langeweile(o: DrawOpts, C: Defs) {
     const pot = C.grad('#D9744A'),
       leaf = '#9AAE4A',
       stalk = (d: string) =>
@@ -5383,7 +5380,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function heimweh(P: Palette, o: DrawOpts, C: Defs) {
+  function heimweh(o: DrawOpts, C: Defs) {
     const caseG = C.grad('#3F8FA0'),
       fur = C.grad('#B5793F');
     let s = `<ellipse cx="60" cy="115" rx="40" ry="3" fill="${OUT}" opacity=".15"/>`;
@@ -5402,7 +5399,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function grosserstreit(P: Palette, o: DrawOpts, C: Defs) {
+  function grosserstreit(o: DrawOpts, C: Defs) {
     const dust = C.grad('#D9CBB4');
     let s = `<ellipse cx="60" cy="115" rx="40" ry="3.5" fill="${OUT}" opacity=".15"/>`;
     // arms and legs of the two who are fighting stick out of the dust cloud
@@ -5454,14 +5451,14 @@ export const MONART = (() => {
     drahtwurm,
     wuehlmaus,
     faeulewolke,
-    kaeferlarve: (P, o, C) => larve(P, o, C, false),
-    kartoffelkaefer: (P, o, C) => kaefer(P, o, C, false),
+    kaeferlarve: (o, C) => larve(o, C, false),
+    kartoffelkaefer: (o, C) => kaefer(o, C, false),
     blattfresser,
     hagelwolke,
     ackerteufel,
     eierhaufen,
-    riesenlarve: (P, o, C) => larve(P, o, C, true),
-    kaeferkoenigin: (P, o, C) => kaefer(P, o, C, true),
+    riesenlarve: (o, C) => larve(o, C, true),
+    kaeferkoenigin: (o, C) => kaefer(o, C, true),
     owl,
     beaver,
     moertelbatzen,
@@ -5769,7 +5766,7 @@ export const MONART = (() => {
     plain?: boolean;
     outfit?: string | null;
   }
-  function render(shape: string, color: string, evo: number, cls?: string, opts?: MonsterOpts) {
+  function render(shape: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
     shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
     const id = opts.id || 'mg' + uid++;
@@ -5807,8 +5804,7 @@ export const MONART = (() => {
       boss = !hero && (!!opts.boss || (!opts.elite && evo >= 1));
     LW = elite || boss ? 3 : 2.5;
     CLASSIC = CLASSIC_SHAPES.includes(shape);
-    const P = { c: color };
-    const body = SHAPES[shape](P, { evo: e, elite, boss, bare: !!opts.bare }, C);
+    const body = SHAPES[shape]({ evo: e, elite, boss, bare: !!opts.bare }, C);
     LW = 2.5;
     CLASSIC = false;
     // heroes grow with each stage; normal enemies are a bit smaller than elites and bosses
@@ -5839,10 +5835,10 @@ export const MONART = (() => {
     return svg.replace(/<\/svg>$/, `${g(o.front)}</svg>`);
   }
   // opts: { elite, boss } for enemies, { outfit } for heroes
-  function monsterSVG(shape: string, color: string, evo: number, cls?: string, opts?: MonsterOpts) {
+  function monsterSVG(shape: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
     const bare = !!(OUTFIT[opts.outfit!] && OUTFIT[opts.outfit!].head && OWN_HAT.includes(shape));
-    return dress(render(shape, color, evo, cls, { ...opts, bare }), shape, evo, opts.outfit);
+    return dress(render(shape, evo, cls, { ...opts, bare }), shape, evo, opts.outfit);
   }
   // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
   // with a plain CSS rotation (class spin); parts = { tip, ring, disc } ids from MQ.TOP_PARTS.
@@ -5982,7 +5978,7 @@ export const MONART = (() => {
   /* ---------- Der Konzertsaal (musik.ts) ---------- */
   const mu_note = (x: number, y: number, k: number, c?: string | undefined) =>
     `<g transform="translate(${x} ${y}) scale(${k})"><ellipse cx="0" cy="0" rx="5" ry="3.6" transform="rotate(-20)" fill="${c || OUT}"/><path d="M4.4 -1 V-18 Q9 -14 10 -9" fill="none" stroke="${c || OUT}" stroke-width="2" stroke-linecap="round"/></g>`;
-  function dirigentin(P: Palette, o: DrawOpts, C: Defs) {
+  function dirigentin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#F0C29A'),
       coat = C.grad('#2E3350'),
       hair = C.grad('#3A2A22'),
@@ -6008,7 +6004,7 @@ export const MONART = (() => {
     s += mu_note(20, 30, 0.9) + (o.evo >= 2 ? mu_note(96, 40, 0.8, '#3B7DD8') : '');
     return s;
   }
-  function misston(P: Palette, o: DrawOpts, C: Defs) {
+  function misston(o: DrawOpts, C: Defs) {
     const head = C.grad('#5A4E8A');
     let s = `<ellipse cx="54" cy="112" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
     s += `<path d="M14 54 q6 -6 0 -12 q-6 -6 0 -12 M24 60 q5 -5 0 -10 q-5 -5 0 -10" fill="none" stroke="#9A8FD0" stroke-width="2.4" stroke-linecap="round"/>`;
@@ -6021,7 +6017,7 @@ export const MONART = (() => {
     s += M.wavy(48, 100, 8);
     return s;
   }
-  function holzwurm(P: Palette, o: DrawOpts, C: Defs) {
+  function holzwurm(o: DrawOpts, C: Defs) {
     const varnish = gr(C, 'radial', 'cx=".38" cy=".3" r=".8"', [
         [0, '#F0A85A'],
         [0.45, '#C8702A'],
@@ -6087,7 +6083,7 @@ export const MONART = (() => {
     s += blush(58, 31, 12, 3);
     return s;
   }
-  function quietschgeige(P: Palette, o: DrawOpts, C: Defs) {
+  function quietschgeige(o: DrawOpts, C: Defs) {
     const wood = C.grad('#D9782E');
     let s = `<ellipse cx="58" cy="114" rx="30" ry="4" fill="${OUT}" opacity=".16"/>`;
     s += `<rect x="53" y="8" width="10" height="44" rx="3" ${F('#3A2A22')}/><path d="M58 10 q8 -6 8 2 q0 6 -6 4" ${N(2.2)}/>`;
@@ -6102,7 +6098,7 @@ export const MONART = (() => {
     s += `<path d="M90 18 l8 -6 l-2 8 l8 -4 M100 30 l10 -2 l-6 6 l10 0 M16 30 l-8 -6 l2 8 l-8 -2" fill="none" stroke="#E0304A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
     return s;
   }
-  function hustenreiz(P: Palette, o: DrawOpts, C: Defs) {
+  function hustenreiz(o: DrawOpts, C: Defs) {
     const body = C.grad('#E8667A');
     let s = `<ellipse cx="56" cy="112" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
     s += `<path d="M24 104 Q8 102 12 86 Q4 72 18 64 Q16 46 34 44 Q42 30 60 36 Q76 28 86 44 Q102 46 100 64 Q110 76 98 90 Q100 106 82 106 Z" ${F(body)}/>`;
@@ -6115,7 +6111,7 @@ export const MONART = (() => {
     s += sk_drop(108, 74, 2.6) + sk_drop(114, 100, 2.2) + sk_drop(100, 104, 1.8);
     return s;
   }
-  function donnerpauke(P: Palette, o: DrawOpts, C: Defs) {
+  function donnerpauke(o: DrawOpts, C: Defs) {
     const copper = C.grad('#D9823A');
     let s = `<ellipse cx="60" cy="114" rx="40" ry="4" fill="${OUT}" opacity=".18"/>`;
     s += `<path d="M34 92 L28 114 M86 92 L92 114 M60 100 L60 114" ${N(3)}/>`;
@@ -6132,7 +6128,7 @@ export const MONART = (() => {
     s += sk_bolt(52, 4, 0.5, 10) + sk_bolt(4, 54, 0.5, -10);
     return s;
   }
-  function krachmacher(P: Palette, o: DrawOpts, C: Defs) {
+  function krachmacher(o: DrawOpts, C: Defs) {
     const brass = C.grad('#E8B23A'),
       lacquer = C.grad('#C8402E'),
       skin = gr(C, 'radial', 'cx=".38" cy=".32" r=".75"', [
@@ -6201,7 +6197,7 @@ export const MONART = (() => {
     a: 'M3 -3 L3 4 M3 0.5 Q3 -3 0 -3 Q-3 -3 -3 0.5 Q-3 4 0 4 Q3 4 3 0.5',
   };
 
-  function kauffrau(P: Palette, o: DrawOpts, C: Defs) {
+  function kauffrau(o: DrawOpts, C: Defs) {
     const skin = C.grad('#F2C49C'),
       hair = C.grad('#A8582A'),
       shirt = C.grad('#F2B33A'),
@@ -6256,7 +6252,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function lesepatin(P: Palette, o: DrawOpts, C: Defs) {
+  function lesepatin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#F0C8A8'),
       hair = C.grad('#D3D6DE'),
       wool = C.grad('#7A5AA8'),
@@ -6287,7 +6283,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function musiklehrerin(P: Palette, o: DrawOpts, C: Defs) {
+  function musiklehrerin(o: DrawOpts, C: Defs) {
     const skin = C.grad('#9A643E'),
       hair = C.grad('#2A1E1A'),
       shirt = C.grad('#2E9AA0'),
@@ -6324,7 +6320,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function wackelturm(P: Palette, o: DrawOpts, C: Defs) {
+  function wackelturm(o: DrawOpts, C: Defs) {
     // plugged-together counting cubes, the tower leaning further with each one
     type Cube = [x: number, y: number, width: number, rot: number, color: string];
     const cube = ([x, y, w, r, c]: Cube) => {
@@ -6349,7 +6345,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function massband(P: Palette, o: DrawOpts, C: Defs) {
+  function massband(o: DrawOpts, C: Defs) {
     // a tape measure whose tape has sprung out and curled up
     const tape = 'M66 92 Q96 100 102 80 Q108 58 90 56 Q76 56 80 68 Q84 76 92 70';
     let s = `<ellipse cx="54" cy="112" rx="36" ry="4" fill="${OUT}" opacity=".16"/>`;
@@ -6364,7 +6360,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schummelwuerfel(P: Palette, o: DrawOpts, C: Defs) {
+  function schummelwuerfel(o: DrawOpts, C: Defs) {
     // a die with seven dots on top
     const top = (a: number, b: number) => [24 + a * 60 + b * 20, 48 - b * 20],
       side = (a: number, b: number) => [84 + a * 20, 48 - a * 20 + b * 60];
@@ -6401,7 +6397,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kuckuck(P: Palette, o: DrawOpts, C: Defs) {
+  function kuckuck(o: DrawOpts, C: Defs) {
     // a cuckoo clock: the bird shoots out of the door in the gable, pendulum and pine-cone weights below
     const wood = C.lin('#A87444', '#7A4E2A'),
       roof = C.lin('#6B4528', '#3E2614'),
@@ -6451,7 +6447,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function schiefewaage(P: Palette, o: DrawOpts, C: Defs) {
+  function schiefewaage(o: DrawOpts, C: Defs) {
     // a balance scale that is rigged: the heavy side stays up
     const brass = C.grad('#E8B23A'),
       a = (14 * Math.PI) / 180,
@@ -6474,7 +6470,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function kaugummiautomat(P: Palette, o: DrawOpts, C: Defs) {
+  function kaugummiautomat(o: DrawOpts, C: Defs) {
     let s = `<ellipse cx="60" cy="115" rx="40" ry="4" fill="${OUT}" opacity=".2"/>`;
     s += `<rect x="40" y="104" width="40" height="10" rx="2" ${F('#3A3F52')}/>`;
     s += `<path d="M28 64 L92 64 L98 106 L22 106 Z" ${F(C.grad('#D9302E'))}/>`;
@@ -6509,7 +6505,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function spiegels(P: Palette, o: DrawOpts, C: Defs) {
+  function spiegels(o: DrawOpts, C: Defs) {
     // an S written the wrong way round; stays mirrored however the sprite is turned
     const d = 'M92 32 Q86 14 60 14 Q30 14 30 37 Q30 55 60 61 Q90 67 90 88 Q90 110 58 110 Q32 110 26 92';
     let s = `<ellipse cx="60" cy="115" rx="34" ry="4" fill="${OUT}" opacity=".16"/>`;
@@ -6535,7 +6531,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function bastelschere(P: Palette, o: DrawOpts, C: Defs) {
+  function bastelschere(o: DrawOpts, C: Defs) {
     const steel = C.lin('#F4F7FB', '#9AA3B5'),
       grip = C.grad('#3B7DD8');
     // a paper strip with OMA, cut in the wrong place
@@ -6571,7 +6567,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function buchstabensuppe(P: Palette, o: DrawOpts, C: Defs) {
+  function buchstabensuppe(o: DrawOpts, C: Defs) {
     let s = `<ellipse cx="60" cy="114" rx="40" ry="4" fill="${OUT}" opacity=".18"/>`;
     s += `<path d="M38 40 q-6 -8 0 -16 q6 -8 0 -16 M60 36 q-6 -8 0 -16 q6 -8 0 -16 M82 40 q-6 -8 0 -16 q6 -8 0 -16" fill="none" stroke="#C9D2E2" stroke-width="3" stroke-linecap="round"/>`;
     s += `<path d="M86 66 L108 22" stroke="${OUT}" stroke-width="8" stroke-linecap="round"/><path d="M86 66 L108 22" stroke="#C9CED8" stroke-width="4" stroke-linecap="round"/>`;
@@ -6597,7 +6593,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function papierflieger(P: Palette, o: DrawOpts, C: Defs) {
+  function papierflieger(o: DrawOpts, C: Defs) {
     const paper = C.lin('#FFFFFF', '#E3E6EE');
     let s = `<path d="M2 84 L22 80 M6 94 L26 90 M14 104 L32 98" stroke="#9AA3C2" stroke-width="2.4" stroke-linecap="round"/>`;
     s += `<path d="M36 66 L116 56 L48 94 Z" ${F(C.lin('#D7DCE8', '#AEB6C8'))}/>`;
@@ -6610,7 +6606,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function wackelzahn(P: Palette, o: DrawOpts, C: Defs) {
+  function wackelzahn(o: DrawOpts, C: Defs) {
     let s = `<path d="M8 116 Q12 92 34 94 Q60 100 86 94 Q108 92 112 116 Z" ${F(C.grad('#F28AA0'))}/>`;
     s += `<path d="M26 34 Q16 46 20 60 M18 26 Q4 44 10 66 M94 34 Q104 46 100 60 M102 26 Q116 44 110 66" fill="none" stroke="#9AA3C2" stroke-width="2.6" stroke-linecap="round"/>`;
     s += `<g transform="rotate(10 60 98)"><path d="M30 38 Q28 16 46 16 Q54 16 60 22 Q66 16 74 16 Q92 16 90 38 Q90 58 84 72 Q82 94 76 102 Q70 106 68 94 Q66 82 60 82 Q54 82 52 94 Q50 106 44 102 Q38 94 36 72 Q30 58 30 38 Z" ${F(C.grad('#FFFFFF'))}/>`;
@@ -6622,7 +6618,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function buecherlawine(P: Palette, o: DrawOpts, C: Defs) {
+  function buecherlawine(o: DrawOpts, C: Defs) {
     const book = (x: number, y: number, w: number, h: number, r: number, c: string) =>
       `<g transform="rotate(${r} ${x + w / 2} ${y + h / 2})"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" ${F(C.grad(c))}/><path d="M${x + 4} ${y + 3} L${x + 4} ${y + h - 3}" stroke="${shade(c, 0.4)}" stroke-width="2"/><rect x="${x + w * 0.3}" y="${y + h / 2 - 2.5}" width="${w * 0.5}" height="5" rx="1" fill="#F2C23C"/></g>`;
     let s = `<ellipse cx="60" cy="115" rx="52" ry="4" fill="${OUT}" opacity=".2"/>`;
@@ -6647,7 +6643,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function knarrtuer(P: Palette, o: DrawOpts, C: Defs) {
+  function knarrtuer(o: DrawOpts, C: Defs) {
     const wood = C.grad('#B5793E');
     let s = `<rect x="22" y="6" width="80" height="110" rx="2" fill="#3A2A22" ${S()}/>`;
     s += `<path d="M30 10 L94 6 L94 116 L30 116 Z" ${F(wood)}/>`;
@@ -6668,7 +6664,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function gerissenesaite(P: Palette, o: DrawOpts, C: Defs) {
+  function gerissenesaite(o: DrawOpts, C: Defs) {
     const neck = C.lin('#6B4528', '#4A2E18'),
       head = C.grad('#8A5A32');
     // guitar neck and head: six strings from the nut to the tuning pegs, the top one snapped
@@ -6711,7 +6707,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function laubblaeser(P: Palette, o: DrawOpts, C: Defs) {
+  function laubblaeser(o: DrawOpts, C: Defs) {
     const body = C.grad('#F28A2E');
     let s = `<ellipse cx="56" cy="114" rx="44" ry="4" fill="${OUT}" opacity=".16"/>`;
     s += `<path d="M66 74 L104 92" stroke="${OUT}" stroke-width="17" stroke-linecap="round"/><path d="M66 74 L104 92" stroke="${C.lin('#C9CED8', '#7A8494')}" stroke-width="12" stroke-linecap="round"/><path d="M76 74 L100 85" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".6"/><ellipse cx="106" cy="93" rx="5" ry="9" ${F('#5E6878', 2.4)} transform="rotate(25 106 93)"/>`;
@@ -6742,7 +6738,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function wasserhahn(P: Palette, o: DrawOpts, C: Defs) {
+  function wasserhahn(o: DrawOpts, C: Defs) {
     const chrome = C.lin('#F4F7FB', '#9AA3B5');
     let s = `<path d="M4 34 L4 66 M4 50 L24 50" stroke="${OUT}" stroke-width="3"/><rect x="2" y="40" width="22" height="20" rx="3" ${F(chrome)}/>`;
     s += `<path d="M82 46 Q100 46 100 64 L100 72" fill="none" stroke="${OUT}" stroke-width="17" stroke-linecap="round"/><path d="M82 46 Q100 46 100 64 L100 72" fill="none" stroke="#DDE3EC" stroke-width="12" stroke-linecap="round"/>`;
@@ -6758,7 +6754,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function pausenklingel(P: Palette, o: DrawOpts, C: Defs) {
+  function pausenklingel(o: DrawOpts, C: Defs) {
     let s = `<rect x="54" y="2" width="12" height="28" rx="2" ${F('#8A8F9E')}/>`;
     s += `<path d="M16 84 Q16 30 60 28 Q104 30 104 84 Z" ${F(C.grad('#E0303A'))}/><ellipse cx="60" cy="84" rx="46" ry="8" ${F(C.lin('#B8262E', '#8E1A22'))}/>`;
     s += `<circle cx="60" cy="28" r="5" ${F('#C9CED8', 2)}/>`;
@@ -6772,7 +6768,7 @@ export const MONART = (() => {
     return s;
   }
 
-  function presslufthammer(P: Palette, o: DrawOpts, C: Defs) {
+  function presslufthammer(o: DrawOpts, C: Defs) {
     const body = C.grad('#F2B12E'),
       steel = C.lin('#F4F7FB', '#7A8494');
     // jackhammer: T-handle, motor housing, ribbed barrel and a long chisel cracking the pavement

@@ -9,12 +9,11 @@ import { MONART } from '../src/monsters.ts';
 const OUT = path.join(import.meta.dirname, '..', 'docs', 'icons');
 const BG_TOP = '#2A3A73';
 const BG_BOT = '#141B33';
-const FOX = '#FF6A3D';
 
 // Sonnenfuchs (stage 3) without its own sparkles (the icon draws its stars), zoomed 1.1× around the head
 // so it reads at small sizes; the artwork then spans roughly x 0..120, y 0..120 of its 120x120 viewBox.
 function fox() {
-  const art = MONART.render('fox', FOX, 2, '', { plain: true, id: 'icon' })
+  const art = MONART.render('fox', 2, '', { plain: true, id: 'icon' })
     .replace(/^<svg[^>]*>/, '')
     .replace(/<\/svg>$/, '');
   return `<g transform="translate(-6 -4.4) scale(1.1)">${art}</g>`;

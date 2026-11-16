@@ -173,8 +173,8 @@ for (const cfg of Object.values(modes)) {
   for (const shape of MONART.dressable)
     for (const o of MONART.outfits)
       for (const evo of [0, 2]) {
-        const bare = MONART.monsterSVG(shape, '#4FC96A', evo).replace(/mg\d+/g, ''),
-          svg = MONART.monsterSVG(shape, '#4FC96A', evo, '', { outfit: o });
+        const bare = MONART.monsterSVG(shape, evo).replace(/mg\d+/g, ''),
+          svg = MONART.monsterSVG(shape, evo, '', { outfit: o });
         const doc = parser.parseFromString(
           svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" '),
           'image/svg+xml',
@@ -189,8 +189,8 @@ for (const cfg of Object.values(modes)) {
       }
   const enemy = MONART.shapes.find((s) => !dressable.has(s));
   if (
-    MONART.monsterSVG(enemy, '#4FC96A', 0, '', { outfit: 'krone' }).replace(/mg\d+/g, '') !==
-    MONART.monsterSVG(enemy, '#4FC96A', 0).replace(/mg\d+/g, '')
+    MONART.monsterSVG(enemy, 0, '', { outfit: 'krone' }).replace(/mg\d+/g, '') !==
+    MONART.monsterSVG(enemy, 0).replace(/mg\d+/g, '')
   )
     fail('enemies must not wear clothes');
 }
