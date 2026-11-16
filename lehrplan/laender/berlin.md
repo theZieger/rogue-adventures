@@ -216,8 +216,9 @@ bzw. A/B (Klassen 1/2). Ob es an einer Schule in Klasse 3 oder 4 liegt, bestimmt
   `woerter2`: `wortart`, `mehrzahl`, `artikel`, `zus`.
 - `woerterwerkstatt`: `doppel`, `verl`, `dehn`, `gross`, `zus`, `abc`, `rede`, `stamm`, `trenn`, `vokal`;
   Komma bei Aufzählungen aus `komma`.
-- `satzbaustelle`: `wortart`, `zeit`, `steig`, `satzglied`, `umstell`, `praedikat`, `ersatz`, `weglass`,
-  `pronomen`, `teekessel`, `redensart`.
+- `satzbaustelle`: `wortart`, `zeit`, `steig`, `satzglied`, `umstell`, `praedikat`, `pronomen`.
+- Im Plan nicht eigens genannt, aber unkritisch (Wortschatzarbeit, Proben): `ersatz`, `weglass`, `teekessel`,
+  `redensart`.
 
 **Zu früh / steht hier nicht im Plan**
 - `woerterwerkstatt.sachsen` (sächsische Mundartwörter): in Berlin fehl am Platz.
