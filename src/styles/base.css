@@ -319,11 +319,10 @@ p {
   font-weight: 700;
   cursor: pointer;
 }
-/* Title bar: the quiet round buttons above the title screen; it stays put while the page scrolls. */
+/* Title bar: the quiet round buttons at the top of the title screen; they scroll away with the page. */
 .titlebar {
   display: flex;
   gap: var(--space-8);
-  padding: var(--space-12) var(--space-16) 0;
 }
 .soundbtn,
 .stampbtn,

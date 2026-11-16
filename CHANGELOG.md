@@ -14,7 +14,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Ist die Wochenaufgabe geschafft, regnet es Konfetti.
 
 ### Verbessert
-- Ton, Stempel, „Was ist neu?“ und das Eltern-Zahnrad bleiben oben auf der Startseite stehen.
+- Oben auf der Startseite: Ton, Stempel, „Was ist neu?“ und das Eltern-Zahnrad als runde Knöpfe.
 - Alle Karten der Startseite sind gleich groß und gleiten beim Öffnen und Blättern herein.
 - „Idee senden“ gibt es nur noch im Elternbereich.
 
