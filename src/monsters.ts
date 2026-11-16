@@ -1,7 +1,3 @@
-declare global {
-  var MONBAKED: Record<string, string> | undefined;
-}
-
 export const MONART = (() => {
   const OUT = '#1C2541';
   let uid = 0;
@@ -5830,17 +5826,7 @@ export const MONART = (() => {
     return `<svg class="mon ${cls || ''}" viewBox="0 0 120 120" aria-hidden="true"><defs>${defs.join('')}</defs>${back}<g${tf}>${body}</g>${front}</svg>`;
   }
 
-  /* Baked art: tools/build.js inlines the svgo-optimised files from art/monsters/svg/ as MONBAKED.
-     Keys: hero "<shape>-<stage>", enemy "<shape>[-elite|-boss]", plus "-enemy" when the mirrored battle sprite differs. */
-  const BAKED = globalThis.MONBAKED ?? null;
-  function bakedKey(shape: string, evo: number, cls?: string, opts?: MonsterOpts) {
-    opts = opts || {};
-    shape = SHAPES[shape] ? shape : ALIAS[shape] || 'sumpfbrocken';
-    if (HEROES.includes(shape)) return `${shape}-${Math.max(0, Math.min(2, evo || 0))}`;
-    const boss = !!opts.boss || (!opts.elite && evo >= 1);
-    return shape + (opts.elite ? '-elite' : boss ? '-boss' : '');
-  }
-  // clothes go on top of the drawing (baked or live), scaled like the hero's stage
+  // clothes go on top of the drawing, scaled like the hero's stage
   function dress(svg: string, shape: string, evo: number, outfit?: string | null) {
     const o = FIT[shape] && OUTFIT[outfit!];
     if (!o) return svg;
@@ -5856,22 +5842,6 @@ export const MONART = (() => {
   function monsterSVG(shape: string, color: string, evo: number, cls?: string, opts?: MonsterOpts) {
     opts = opts || {};
     const bare = !!(OUTFIT[opts.outfit!] && OUTFIT[opts.outfit!].head && OWN_HAT.includes(shape));
-    if (BAKED && !bare) {
-      const k = bakedKey(shape, evo, cls, opts),
-        mirrored = /\benemy\b/.test(cls || '') && BAKED[k + '-enemy'] ? k + '-enemy' : k,
-        svg = BAKED[mirrored];
-      // ids are "m-<key>__…" in the file; make them unique per copy on the page
-      if (svg)
-        return dress(
-          svg
-            .replace('<svg', `<svg class="mon ${cls || ''}"`)
-            .split(`m-${mirrored}__`)
-            .join(`m-${mirrored}-${uid++}__`),
-          shape,
-          evo,
-          opts.outfit,
-        );
-    }
     return dress(render(shape, color, evo, cls, { ...opts, bare }), shape, evo, opts.outfit);
   }
   // spinning top seen from the side: the disc face is a circle squashed into perspective, so its inner group can turn
@@ -6873,7 +6843,6 @@ export const MONART = (() => {
     monsterSVG,
     topSVG,
     render,
-    bakedKey,
     heroes: HEROES,
     shapes: Object.keys(SHAPES),
     shade,

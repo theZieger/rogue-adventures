@@ -108,8 +108,7 @@ src/klasse12.ts    Klasse 1/2: je Fach ein gemeinsamer Held mit Gegnern
 src/k12_*.ts       Klasse-1/2-Einheiten: Mathe, Deutsch, Sachkunde, Ethik (Musik steht mit in k12_ethik.ts)
 src/turm.ts        Turmwacht-Regeln (Wellen, Wachen, Stockwerke, Bauzeit, Neustart ab der letzten Bauzeit), ohne Oberfläche
 src/turmart.ts     Turmwacht-Bilder: Wege, Wissensturm mit Stockwerken, Karten-Bilder
-src/monsters.ts    Handgezeichnete SVG-Monster (Zeichencode, Quelle für art/)
-art/monsters/      raw/ = gebackene SVGs je Monster-Variante, svg/ = mit svgo optimiert (kommt ins Spiel), manifest.json = Hashes
+src/monsters.ts    Handgezeichnete SVG-Monster (Zeichencode, das Spiel zeichnet sie beim Anzeigen)
 src/units.ts       die eine Liste aller Einheiten (`UNITS`) – Spiel, Tests, Bot und Monster-Bilder lesen sie
 src/curriculum.ts  Reihenfolge der Einheiten, Fächer und Klassen (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) mit den Typen `Unit` und `TaskType`
 src/save.ts        der Spielstand: Typ `Meta`, Standardwerte, Laden/Speichern und die Reparatur beim Laden (`normMeta`)
@@ -129,8 +128,6 @@ CHANGELOG.md       Änderungen nach Datum – wird im Spiel unter „Was ist neu
 tools/build.js     baut docs/index.html (eine Datei, mit esbuild gebündelt) + docs/sw.js + docs/manifest.webmanifest
 GLOSSARY.md        die Begriffe des Projekts (Einheit, Abenteuer, Aufgabenart, Stufe …) und ihre Namen im Code
 adr/               festgehaltene Entscheidungen zur Architektur
-tools/svg.js       backt die Monster nach art/monsters/raw/ und optimiert nur geänderte mit svgo (Hash in manifest.json)
-tools/svg_compare.js  prüft Pixel für Pixel, dass svgo nichts verändert hat (braucht Playwright)
 tools/make_icons.js  erzeugt docs/icons/*, docs/favicon.ico, die iOS-Startbildschirme docs/splash/* und die Installations-Screenshots docs/screenshots/* (braucht Playwright mit Chromium und ImageMagick; nur bei Grafik-Änderungen, nach `npm run build`)
 lehrplan/          Auszüge aus den sächsischen Lehrplänen (Recherche für neue Klassen)
 tests/             Generator-Tests + automatischer Bot-Durchlauf (jsdom); page.js lädt die gebaute Seite für die Seitentests; Turmwacht: test_turm.js (Regeln + Balance-Tabelle), test_turm_pages.js (Bildschirme, Spielstand)
@@ -147,7 +144,7 @@ docs/fonts/        Schriften Patrick Hand und Andika (SIL OFL) – lokal eingebu
 
 ```bash
 npm install          # nur Werkzeuge für Build und Tests (danach einmal: npx playwright install chromium)
-npm run build        # Monster-SVGs backen/optimieren (npm run svg) + src/* -> docs/index.html
+npm run build        # src/* -> docs/index.html
 npm test             # Generatoren, Wissensfragen, Speichern/Laden prüfen (braucht gebautes docs/, etwa eine halbe Minute)
 npm run playtest     # Bot spielt alle Modi durch (die Liste steht in tests/playtests.js), auf einer virtuellen Uhr:
                      # gleicher SEED = gleicher Lauf; TRACE_DIR=ordner schreibt jede Seite mit, um zwei Stände zu vergleichen
@@ -178,7 +175,7 @@ Dazu gehören: eine neue Datei in `src/units.ts` importieren (die Reihenfolge do
 
 Repository → Settings → Pages → Source „GitHub Actions“.
 Die CI (`.github/workflows/ci.yml`) baut bei jedem Push auf `main`, prüft und veröffentlicht `docs/`. Die gebauten Dateien
-`docs/index.html`, `docs/sw.js` und `docs/manifest.webmanifest` werden nicht eingecheckt; `art/` schon (siehe oben).
+`docs/index.html`, `docs/sw.js` und `docs/manifest.webmanifest` werden nicht eingecheckt.
 
 ## Feedback
 

@@ -2,7 +2,6 @@
 import { ELTERN } from '../src/eltern.ts';
 import { ICONS } from '../src/icons.ts';
 import { JSDOM } from 'jsdom';
-import path from 'path';
 import { open as openPage } from './page.js';
 import { MQ } from '../src/logic.ts';
 import { MK } from '../src/knowledge.ts';
@@ -11,8 +10,6 @@ import { MONART } from '../src/monsters.ts';
 const fails = [];
 const fail = (msg) => fails.push(msg);
 const shapes = new Set(MONART.shapes);
-import fs from 'fs';
-const baked = (key) => fs.existsSync(path.join(import.meta.dirname, '../art/monsters/svg', key + '.svg'));
 
 for (const [mode, cfg] of Object.entries(modes)) {
   const mods = new Set(Object.keys(cfg.modules));
@@ -53,9 +50,6 @@ for (const [mode, cfg] of Object.entries(modes)) {
   for (const [w, set] of Object.entries(cfg.enemies)) {
     for (const e of set.normal.concat([set.elite, set.boss])) {
       if (!shapes.has(e.shape)) fail(`${mode} world ${w}: enemy ${e.name} has unknown shape ${e.shape}`);
-      const key = MONART.bakedKey(e.shape, 0, '', { elite: e === cfg.enemies[w].elite, boss: !!e.boss });
-      if (!baked(key))
-        fail(`${mode} world ${w}: no baked art for ${e.name} (art/monsters/svg/${key}.svg) – run npm run svg`);
       if (!MQ.TYPES[e.type]) fail(`${mode} world ${w}: enemy ${e.name} has unknown type ${e.type}`);
     }
   }
@@ -63,10 +57,6 @@ for (const [mode, cfg] of Object.entries(modes)) {
   // attacks: starters and world attacks need 4 distinct, existing modules
   const lists = cfg.starters.map((s) => [`starter ${s.id}`, s.attacks]);
   for (const s of cfg.starters) if (!shapes.has(s.shape)) fail(`${mode} starter ${s.id}: unknown shape ${s.shape}`);
-  for (const s of cfg.starters)
-    for (let e = 0; e < 3; e++)
-      if (!baked(MONART.bakedKey(s.shape, e)))
-        fail(`${mode} starter ${s.id}: no baked art for stage ${e + 1} – run npm run svg`);
   for (const [w, list] of Object.entries(cfg.worldAttacks || {})) lists.push([`world ${w} attacks`, list]);
   for (const [name, list] of lists) {
     const ms = list.map((a) => a.mod);

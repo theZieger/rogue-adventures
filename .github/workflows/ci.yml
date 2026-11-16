@@ -16,9 +16,6 @@ jobs:
       - run: npx stylelint "src/styles/*.css"
       - run: npm run typecheck
       - run: npm run build
-      # svgo runs only on monsters whose hash in art/monsters/manifest.json changed, so art/ is committed.
-      - name: art/ must match src/monsters.ts (run "npm run build" and commit art/)
-        run: test -z "$(git status --porcelain -- art/)" || { git status --porcelain -- art/; exit 1; }
       - run: npm test
       - run: npm run playtest
       - run: npx playwright install --with-deps chromium
