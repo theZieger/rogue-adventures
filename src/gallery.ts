@@ -62,7 +62,7 @@ const PILLS = [
   ['pill', 'Lv 3'],
   ['pill new', 'Neu!'],
   ['pill good', 'Hier anfangen'],
-  ['pill warn', '⭐ Wochenziel'],
+  ['pill warn', '⭐ Empfohlen'],
   ['pill hot', '😮‍💨 müde'],
   ['pill bad', '⚠️ gesperrt'],
   ['pill info', '🔁 von vorhin'],
@@ -137,7 +137,7 @@ ${section(
   `${block('pill', 'Ein kurzes Wort, das einen Zustand markiert. Nie antippbar. <code>lg</code> für Typen und Turmwacht-Karten.', row(`${PILLS}${typeChip('wasser')}${typeChip('feuer')}`))}
 ${block('chip', 'Eine Wahl unter wenigen; die gewählte ist gold. Auf einer Karte ist der Rand in Tinte.', `${row(`<button class="chip on" aria-pressed="true">Klasse 3</button><button class="chip" aria-pressed="false">Klasse 2</button>`)}${onCard(`<div class="toggles"><button class="chip on" aria-pressed="true">Idee</button><button class="chip" aria-pressed="false">Fehler</button></div>`)}`)}
 ${block('switch', 'An oder aus, wirkt sofort. Nur im Elternbereich.', onCard(row(`<button class="switch" role="switch" aria-checked="true" aria-label="an"><i></i></button><button class="switch" role="switch" aria-checked="false" aria-label="aus"><i></i></button>`)))}
-${block('callout · notecard', 'Ein Satz Rat in einer Karte; die Notizkarte für das, was man sich merken soll.', onCard(`<p class="callout">⭐ Wochenziel: Löse 15 Aufgaben.</p><p class="callout center">🌉 Tipp: Lies die Frage noch einmal.</p><div class="notecard">Der Zehner bleibt, der Einer wächst.</div>`))}
+${block('callout · notecard', 'Ein Satz Rat in einer Karte; die Notizkarte für das, was man sich merken soll.', onCard(`<p class="callout">⭐ Wochenziel: Löse 10 Aufgaben in Mathe richtig.</p><p class="callout center">🌉 Tipp: Lies die Frage noch einmal.</p><div class="notecard">Der Zehner bleibt, der Einer wächst.</div>`))}
 ${block('bar', 'Wie viel von etwas da ist. <code>hp</code> ist Leben (erst gold, dann rot), <code>xp</code> Erfahrung.', `${onCard(`<span class="bar" role="img" aria-label="33 %"><i style="width:33%"></i></span>`)}<div class="bar hp"><i style="width:80%"></i></div><div class="bar hp"><i class="mid" style="width:45%"></i></div><div class="bar hp"><i class="low" style="width:15%"></i></div><div class="bar xp"><i style="width:40%"></i></div>`)}
 ${block('ptabs · psubtabs', 'Bereiche des Elternbereichs und ihre Unterseiten.', `<nav class="ptabs" role="tablist" aria-label="Bereiche"><button role="tab" aria-selected="true"><span>Überblick</span></button><button role="tab" aria-selected="false"><span>Inhalte</span></button><button role="tab" aria-selected="false"><span>Einstellungen</span></button></nav><div class="psubtabs" role="tablist" aria-label="Zeitraum"><button role="tab" aria-selected="true">Diese Woche</button><button role="tab" aria-selected="false">Insgesamt</button></div>`)}`,
 )}
@@ -150,7 +150,7 @@ ${block(
   'Die Karten der Startseite.',
   `<button class="card subjtile"><span class="subjicon" aria-hidden="true">🔢</span><span class="subjname">Mathe</span><span class="desc">3 Themen</span></button>
 <button class="card weekcard"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>2 von 6 Zielen erledigt</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="33 %"><i style="width:33%"></i></span><span class="weekgo">Ziele ansehen und loslegen ›</span></button>
-<div class="card modecard"><h3>Zahlenquest</h3><div class="desc">Rechnen und Zahlen</div><span class="pill good">Hier anfangen</span><p class="callout">⭐ Wochenziel: Löse 15 Aufgaben.</p><div class="row"><button class="btn small">Starten</button></div></div>`,
+<div class="card modecard"><h3>Zahlenquest</h3><div class="desc">Rechnen und Zahlen</div><span class="pill good">Hier anfangen</span><p class="callout">⭐ Wochenziel: Löse 10 Aufgaben in Mathe richtig.</p><div class="row"><button class="btn small">Starten</button></div></div>`,
 )}
 ${block('choice', 'Eine Wahl mit Bild. <code>selected</code> trägt den goldenen Ring, <code>locked</code> ist noch nicht zu haben.', `<button class="choice selected">${fox}<span class="meta"><span class="name">Glutfuchs</span><span class="desc">Ein Fuchs mit warmem Fell.</span></span></button><button class="choice locked">${drop}<span class="meta"><span class="name">Regenwicht</span><span class="desc">Kommt später dazu.</span></span></button>`)}
 ${block('overlay · modal', 'Ein Dialog von unten: eine Frage, höchstens drei Knöpfe, der goldene zuerst.', `<div class="modal"><h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer wird gelöscht.</p><div class="stack"><button class="btn">Ja, neu starten</button><button class="btn secondary">Zurück</button></div></div>`)}`,
@@ -171,7 +171,7 @@ ${block(
   `<div class="attacks"><button class="atk" aria-label="Funkenbiss: Addition, 12 Schaden"><span class="n">Funkenbiss</span><span class="m">➕ Addition<span class="dmg">💥 12</span></span><span class="tags"></span></button>
 <button class="atk weak" aria-label="Feuerreihe: Zahlenfolgen, 24, Schwachstelle – Schaden 24"><span class="n">Feuerreihe</span><span class="m">🔢 Zahlenfolgen<span class="dmg">💥 24</span></span><span class="tags"><span class="pill">🎯 Schwachstelle</span></span></button>
 <button class="atk tired" aria-label="Flammenstoß: Subtraktion, 7, müde – Schaden 7"><span class="n">Flammenstoß</span><span class="m">➖ Subtraktion<span class="dmg">💥 7</span></span><span class="tags"><span class="pill hot">😮‍💨 müde</span></span></button>
-<button class="atk locked" aria-label="Glutgitter: Zahlengitter, 18, Wochenziel – Schaden 18" disabled><span class="n">Glutgitter</span><span class="m">🔢 Zahlengitter<span class="dmg">💥 18</span></span><span class="tags"><span class="pill warn">⭐ Wochenziel</span></span></button></div>`,
+<button class="atk locked" aria-label="Glutgitter: Zahlengitter, 18 – Schaden 18" disabled><span class="n">Glutgitter</span><span class="m">🔢 Zahlengitter<span class="dmg">💥 18</span></span></button></div>`,
 )}
 ${block('node', 'Ein Ort auf der Karte: <code>open</code> ist dran, <code>taken</code> gegangen, <code>past</code> vorbei, <code>future</code> kommt noch, <code>dead</code> ist versperrt.', row(['open', 'taken', 'future', 'past', 'dead'].map((state) => `<button class="node ${state}" ${state === 'open' ? '' : 'disabled tabindex="-1"'}>⚔️<small>${state}</small></button>`).join('')))}`,
 )}

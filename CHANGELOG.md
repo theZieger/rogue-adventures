@@ -6,6 +6,13 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-16
+
+### Verbessert
+- Wochenziele: nur noch drei kleine Ziele pro Woche, die du beim normalen Üben schaffst.
+- Keine Ziele mehr für eine einzelne Aufgabenart, für Elitegegner oder ein ganzes Abenteuer.
+- Jedes geschaffte Wochenziel gibt gleich 3 Stempel, alle zusammen wie bisher 10 und den Stern.
+
 ## 2026-11-15
 
 ### Verbessert
