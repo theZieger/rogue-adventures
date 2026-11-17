@@ -201,18 +201,17 @@ function makeMapFor(world: number) {
       .filter((n) => n.t === 'fight');
     pick(fights.length ? fights : m[0]).t = 'lesen';
   }
-  // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite); never in grade 1
+  // last, so the Kreisel-Arena only takes a fight on floors 4–6 that no other special node took (else an event or an elite,
+  // else a fight from floor 2 on: special nodes can fill floors 4–6); never in grade 1
+  const free = (from: number, t: string) =>
+    m
+      .slice(from, -2)
+      .flat()
+      .filter((n) => n.t === t);
   const tf =
     extraOn('kreisel') &&
     CFG().grade !== 1 &&
-    ['fight', 'event', 'elite']
-      .map((t) =>
-        m
-          .slice(-5, -2)
-          .flat()
-          .filter((n) => n.t === t),
-      )
-      .find((c) => c.length);
+    [free(-5, 'fight'), free(-5, 'event'), free(-5, 'elite'), free(1, 'fight')].find((c) => c.length);
   if (tf) pick(tf).t = 'arena';
   return m;
 }
