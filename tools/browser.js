@@ -57,8 +57,10 @@ async function withApp(use, root) {
   const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const url = `http://localhost:${server.address().port}/`;
   const newPage = async (file = '') => {
+    // VIEWPORT=1180x820 shoots another device size, e.g. a tablet held sideways
+    const [width, height] = (process.env.VIEWPORT || '390x844').split('x').map(Number);
     const context = await browser.newContext({
-      viewport: { width: 390, height: 844 },
+      viewport: { width, height },
       deviceScaleFactor: 2,
       reducedMotion: 'reduce',
       locale: 'de-DE',

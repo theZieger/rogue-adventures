@@ -89,6 +89,9 @@
   font-weight: 700;
   margin-top: var(--space-2);
 }
+.mapstats {
+  padding: var(--space-8) var(--space-16) 0;
+}
 .maphint {
   margin: var(--space-4) 0 0;
   font-size: var(--text-14);

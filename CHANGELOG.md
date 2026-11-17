@@ -8,6 +8,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ## 2026-11-17
 
+### Verbessert
+- Auf dem Tablet im Querformat nutzt Lernquest die ganze Breite: Aufgabe links, Tasten rechts.
+
 ### Behoben
 - Die Kreisel-Arena fehlt auf der Karte nicht mehr, wenn die oberen Etagen schon voll sind.
 

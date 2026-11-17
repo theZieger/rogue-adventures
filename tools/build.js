@@ -25,6 +25,7 @@ const STYLES = [
   'units',
   'kreisel',
   'turmwacht',
+  'wide',
 ];
 const GROUPS = ['Neu', 'Verbessert', 'Behoben'];
 
