@@ -51,6 +51,10 @@
 .screen.tasking .plate .bar.hp {
   height: 10px;
 }
+/* .hero is also the title's block with its padding, which would squeeze the sprite in this row */
+.screen.tasking .sprite.hero {
+  padding: 0;
+}
 .screen.tasking .sprite .mon {
   width: 48px;
   height: 48px;

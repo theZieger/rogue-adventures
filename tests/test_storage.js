@@ -3130,7 +3130,13 @@ function topCases() {
         const at = map.flatMap((fl, f) => fl.filter((n) => n.t === 'arena').map(() => f));
         maps++;
         arenas += at.length;
-        if (at.length > 1 || at.some((f) => f < 3 || f > 5)) check(false, 'arena on the wrong floor or twice: ' + at);
+        // floors 4–6 full of other special nodes: the arena takes a fight from floor 2 on instead
+        const full = !map
+          .slice(-5, -2)
+          .flat()
+          .some((n) => ['fight', 'event', 'elite'].includes(n.t));
+        if (at.length > 1 || at.some((f) => f < (full ? 1 : 3) || f > 5))
+          check(false, 'arena on the wrong floor or twice: ' + at);
         for (const t of specials) if (map.flat().filter((n) => n.t === t).length !== 1) other = false;
         if (map.flat().filter((n) => n.t === 'weekboss').length > 1) other = false;
       }

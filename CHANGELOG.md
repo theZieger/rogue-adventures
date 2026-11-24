@@ -6,6 +6,15 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-24
+
+### Verbessert
+- Auf dem Tablet im Querformat nutzt Lernquest die ganze Breite: Aufgabe links, Tasten rechts.
+
+### Behoben
+- Während einer Aufgabe ist dein Monster oben wieder gut zu sehen.
+- „Kreisel bauen“ nennt beim Ring jetzt die richtige Zahl.
+
 ## 2026-11-17
 
 ### Behoben
