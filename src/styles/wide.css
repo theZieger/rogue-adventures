@@ -17,15 +17,33 @@
   .screen > .bottom > .btn {
     display: flex;
   }
+  .screen > .bottom > p {
+    max-width: none;
+  }
   .topbar {
     padding-inline: var(--space-24);
+  }
+  /* a dialog sits in the middle, not at the bottom edge where a thumb would reach it on a phone */
+  .overlay {
+    align-items: center;
+  }
+  /* a monster shown alone in a card keeps its size instead of filling the wide card */
+  .card.center > .mon:not(.top) {
+    display: block;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+  /* the hut is whole on the screen: as wide as the height allows */
+  .hutroom {
+    max-width: calc((100vh - 230px) * 360 / 290);
+    margin-inline: auto;
   }
 
   /* lists of cards: two columns, everything that is not a card spans both */
   .scroll > .stack:has(> .card + .card, > .choice + .choice) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
   }
   .scroll > .stack > :not(.card, .choice),
   .scroll > .stack > .card:not(.card + .card, :has(+ .card)) {
@@ -43,9 +61,10 @@
   .scroll > .titlebar {
     grid-column: 1 / -1;
   }
+  /* the fox stays in the middle of the height while the right side scrolls */
   .scroll > .titlebar + .hero {
     position: sticky;
-    top: 0;
+    top: max(0px, 50% - 250px);
     padding-top: var(--space-32);
   }
   .titlebar + .hero .showcase {
@@ -59,14 +78,36 @@
     padding-top: var(--space-16);
   }
 
+  /* first start: the same split, the welcome on the left, what the parents decide on the right */
+  .setup > .scroll {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    column-gap: var(--space-32);
+    row-gap: var(--space-12);
+    align-content: center;
+  }
+  .setup > .scroll > .hero {
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+  .setup > .scroll > .card {
+    grid-column: 2;
+  }
+  .setup .hero .showcase {
+    width: 240px;
+    height: 240px;
+  }
+
   /* fight: the arena on the left, attacks and keypad in a panel on the right */
   .screen:has(> .arena),
+  .screen:not(.tasking):has(> .bottom > .numpad),
   .screen.tasking {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(360px, 40%);
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
   .screen:has(> .arena) > .topbar,
+  .screen:not(.tasking):has(> .bottom > .numpad) > .topbar,
   .screen.tasking > .topbar {
     grid-column: 1 / -1;
   }
@@ -82,10 +123,21 @@
     grid-row: 3;
     margin: var(--space-8) var(--space-24) var(--space-24);
   }
+  /* choosing or typing the PIN: the dots on the left, the keys on the right */
+  .screen:not(.tasking):has(> .bottom > .numpad) > .scroll {
+    grid-column: 1;
+    grid-row: 2 / -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-inline: var(--space-24);
+  }
   .screen:has(> .arena) > .bottom,
+  .screen:not(.tasking):has(> .bottom > .numpad) > .bottom,
   .screen.tasking > .bottom {
     grid-column: 2;
     grid-row: 2 / -1;
+    margin-top: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -112,8 +164,34 @@
   .screen.tasking {
     grid-template-rows: auto auto minmax(0, 1fr);
   }
-  .screen.tasking > .arena {
-    padding: var(--space-12) var(--space-24) var(--space-4);
+  /* while a task is open the two monsters stay in a row above it, big enough to recognise */
+  .screen.tasking > .arena:not(.kreisel) {
+    grid-template-columns: 72px 1fr 72px 1fr;
+    gap: var(--space-12);
+    padding: var(--space-16) var(--space-24) var(--space-4);
+  }
+  .screen.tasking .arena:not(.kreisel) .sprite .mon {
+    width: 72px;
+    height: 72px;
+  }
+  .screen.tasking .arena:not(.kreisel) .plate {
+    padding: var(--space-8) var(--space-12);
+    gap: var(--space-4);
+  }
+  .screen.tasking .arena:not(.kreisel) .plate .name {
+    font-size: var(--text-20);
+  }
+  .screen.tasking > .arena.kreisel {
+    padding: var(--space-16) var(--space-24) var(--space-4);
+  }
+  /* answers to choose from: one under the other, as big as the keys */
+  .screen.tasking > .bottom .options:not(.sentence) {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+  .screen.tasking > .bottom .opt {
+    min-height: 72px;
+    font-size: var(--text-24);
   }
   .screen.tasking > .taskwrap {
     grid-column: 1;
@@ -157,6 +235,15 @@
     padding: var(--space-24) var(--space-24) 0;
     background: var(--bg2);
     border-left: var(--line) solid var(--glass);
+  }
+  .wmap {
+    max-width: 560px;
+  }
+  .mapface {
+    display: block;
+    width: 180px;
+    height: 180px;
+    margin-bottom: var(--space-16);
   }
   .mapstats .maphint {
     text-align: left;

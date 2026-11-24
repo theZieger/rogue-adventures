@@ -399,7 +399,8 @@ export const partOf = (key: string) => {
   const p = TOP[slot] && TOP[slot].find((x) => x.id === id);
   return p ? Object.assign({ slot }, p) : null;
 };
-const TOP_ROWS: [TopSlot, string, string, string][] = [
+// a function: TOP_KNOCK comes from battle.ts, which is not ready yet when this module loads
+const topRows = (): [TopSlot, string, string, string][] => [
   ['tip', 'Spitze', 'Wucht', 'So viel Schwung verliert der andere Kreisel bei jeder richtigen Antwort.'],
   ['ring', 'Ring', 'Panzer', `Bei einer falschen Antwort verliert dein Kreisel ${TOP_KNOCK} Schwung minus Panzer.`],
   ['disc', 'Scheibe', 'Schwung', 'Mit so viel Schwung startet dein Kreisel in die Arena.'],
@@ -432,7 +433,7 @@ export function screenTop() {
   screen(
     html`<div class="screen">${raw(topbar('Kreisel bauen'))}<div class="scroll"><div class="stack">
       <div class="card center kkcard">${raw(MONART.topSVG(color, state.meta.top, 'live'))}<p class="topvals"><span>💥 Wucht ${topVal('tip')}</span><span>🛡️ Panzer ${topVal('ring')}</span><span>🌀 Schwung ${topVal('disc')}</span></p><p>🏷️ ${state.meta.stamps} Stempel</p><p class="pnote">Mit diesem Kreisel trittst du in der Kreisel-Arena an. Er hat den Typ deines Helden.</p></div>
-      ${TOP_ROWS.map(([slot, title, label, text]) => html`<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p) => tile(slot, label, p))}</div></div>`)}
+      ${topRows().map(([slot, title, label, text]) => html`<div><h3>${title}: ${label}</h3><p class="toptext">${text}</p><div class="kkgrid topgrid">${TOP[slot].map((p) => tile(slot, label, p))}</div></div>`)}
       </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
     {
       back: screenStamps as () => void, // the button it is handed counts as jump

@@ -92,6 +92,10 @@
 .mapstats {
   padding: var(--space-8) var(--space-16) 0;
 }
+/* the hero's portrait: only where the map has a side panel (wide.css) */
+.mapface {
+  display: none;
+}
 .maphint {
   margin: var(--space-4) 0 0;
   font-size: var(--text-14);
