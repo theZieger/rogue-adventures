@@ -84,7 +84,7 @@ export const ELTERN = (() => {
     },
     satzbaustelle: {
       wortart: 'Ihr Kind bestimmt, ob ein Wort Nomen, Verb, Adjektiv, Pronomen oder Artikel ist.',
-      zeit: 'Passiert es jetzt (Präsens) oder ist es schon vorbei (Präteritum)? Später helfen Zeitwörter wie gestern und jetzt.',
+      zeit: 'Passiert es jetzt (Präsens) oder ist es schon vorbei (Präteritum)? Später helfen Zeitangaben wie gestern und jetzt.',
       steig: 'Adjektive steigern: klein, kleiner, am kleinsten. Dazu „als“ und „wie“.',
       satzglied: 'Im Satz finden: Wer tut etwas (Subjekt) und was tut er (Prädikat)?',
       umstell: 'Die Teile eines Satzes umstellen, sodass wieder ein richtiger Satz entsteht.',
