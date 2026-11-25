@@ -12,6 +12,8 @@ const SEED = +(process.env.SEED || 20261108);
 const W3 = process.env.W3 === '1';
 // OFF=a,b: these task types are switched off in the parent area, so the hero fights with the others
 const OFF = process.env.OFF || '';
+// LAND=HH: the family has chosen this Bundesland, so the bot plays with what it hides and renames
+const LAND = process.env.LAND || '';
 const w3run = () => {
   return JSON.stringify({
     mode: 'math',
@@ -67,6 +69,7 @@ const dom = new JSDOM(html, {
     if (W3) win.localStorage.setItem('mathquest_run_v1', w3run());
     if (OFF)
       win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ off: { [process.env.MODE]: OFF.split(',') } }));
+    if (LAND) win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ land: LAND }));
   },
 });
 let runNo = 0; // each run picks the next starter, so all monsters (and their attacks) get played
@@ -858,7 +861,7 @@ async function step() {
       click(g[gradeTry++ % g.length]);
       return;
     }
-    click($$('[data-sub]').find((b) => b.textContent.includes(sub.subject)));
+    click($$('[data-sub]').find((b) => b.textContent.includes(w.__mq.land.subjectLabel(sub.subject))));
     return;
   }
   if ($('[data-new]') && !$('.choice') && !$('.wmap')) {

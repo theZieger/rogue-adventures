@@ -218,7 +218,7 @@ function makeMapFor(world: number) {
 // one Lesestube per world replaces a fight in every Deutsch and Ethik unit
 // texts carry their grade (default 3); a unit only gets a Lesestube when there are texts for its grade
 export const textsFor = (m: string) => TEXTE.map((t, i) => i).filter((i) => (TEXTE[i].grade || 3) === MODES[m].grade);
-const readsIn = (m: string) => ['Deutsch', 'Ethik'].includes(MODES[m].subject) && textsFor(m).length > 0;
+export const readsIn = (m: string) => ['Deutsch', 'Ethik'].includes(MODES[m].subject) && textsFor(m).length > 0;
 // same enemy, weak spot and HP on every device in this week
 function weekBossSpec(world: number) {
   const r = MQ.seeded(weekly().week + ':' + state.mode + ':' + world);

@@ -7,7 +7,7 @@ import { html, raw } from '../ui/html.ts';
 import { CONFETTI } from './collection.ts';
 import { $, CFG, MODULES_OF, TYPES } from './core.ts';
 import { state } from './state.ts';
-import { curGrade, enOff, enabledMods, extraOn, shown, visSubjects } from './storage.ts';
+import { curGrade, enOff, enabledMods, extraOn, shown, subjectLabel, visSubjects } from './storage.ts';
 import { SFX, modal } from './ui.ts';
 
 /* ---------- Monster art ---------- */
@@ -252,7 +252,7 @@ export const goalText = (g: WeeklyGoal) =>
   g.kind === 'right'
     ? `Löse ${g.n} Aufgaben richtig.`
     : g.kind === 'subject'
-      ? `Löse ${g.n} Aufgaben in ${g.subject} richtig.`
+      ? `Löse ${g.n} Aufgaben in ${subjectLabel(g.subject!)} richtig.`
       : `Übe in ${g.n} Fächern.`;
 export const goalDone = (g: WeeklyGoal) => (weekly().progress[g.i] || 0) >= g.n;
 const GOAL_STAMPS = 3;

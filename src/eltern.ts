@@ -419,5 +419,46 @@ export const ELTERN = (() => {
       'Gefragt werden die Aufgabenarten, die Ihr Kind im Fach schon geübt hat, mindestens zwei: Fehlt eine, kommt sie aus dem ersten geübten Thema, bei einem neuen Fach aus dem ersten Thema. Antworten aus der Turmwacht zählen bei den Themen und im Wochenbericht mit, genau wie im Abenteuer.',
     level: 'Die Turmwacht stellt ihre Aufgaben auf denselben Stufen und verschiebt sie nach denselben Regeln.',
   };
-  return { INFO, PLAN, TURM };
+  // The Bundesland (src/laender.ts). The claim says what was done and by whom it was not checked, never more.
+  const base =
+    'Lernquest ist nach dem sächsischen Lehrplan und den Arbeitsblättern einer Klasse entstanden. Eine Lehrkraft hat die Inhalte nicht geprüft. Was gerade dran ist, entscheidet die Schule: Im Zweifel gilt das Heft Ihres Kindes.';
+  const LAND = {
+    none: 'Allgemein (kein Bundesland)',
+    later: 'Thüringen, Bremen und das Saarland kommen später dazu.',
+    ask: 'In welchem Bundesland geht Ihr Kind zur Schule?',
+    change: 'Antippen zum Ändern',
+    invite: 'Neu: Wählen Sie Ihr Bundesland. Dann steht bei jedem Thema, wie es zum Lehrplan dort passt.',
+    base,
+    // all: every unit has been compared with the state's plan
+    claim: (name: string, all: boolean) =>
+      `Lernquest ist nach dem sächsischen Lehrplan und den Arbeitsblättern einer Klasse entstanden. Für ${name} wurde der Lehrplan gelesen${all ? ' und jedes Thema damit verglichen' : ''} (Stand November 2026).${all ? '' : ' Bei jedem Thema steht, wie es dazu passt oder dass es noch nicht verglichen ist.'} Eine Lehrkraft hat das nicht geprüft. Was gerade dran ist, entscheidet die Schule: Im Zweifel gilt das Heft Ihres Kindes.`,
+    what: 'Das Bundesland ändert nur Voreinstellungen: wie die Fächer heißen und was zuerst ausgeblendet ist. Jeden Schalter können Sie selbst umstellen. Der Fortschritt Ihres Kindes bleibt dabei erhalten.',
+    feedback: 'Stimmt etwas nicht? Schreiben Sie uns.',
+    fit: {
+      passt: 'passt.',
+      frueher: 'hier meist früher dran.',
+      spaeter: 'hier meist später dran.',
+      nicht: 'steht hier nicht im Plan.',
+      offen: 'noch nicht verglichen.',
+    },
+    hidden: {
+      religion: (name: string) =>
+        `In ${name} ist dieses Thema zuerst ausgeblendet: Es ist Wissen über das Christentum und dort meist Stoff des Religionsunterrichts. Mit dem Schalter zeigen Sie es an.`,
+      spaeter: (name: string) =>
+        `In ${name} ist dieses Thema zuerst ausgeblendet: Es steht dort erst später im Lehrplan. Mit dem Schalter zeigen Sie es an.`,
+    },
+    off: {
+      mundart: (name: string) => `In ${name} zuerst ausgeschaltet: Wörter aus der sächsischen Mundart.`,
+      spaeter: (name: string) => `In ${name} zuerst ausgeschaltet: steht dort erst später im Lehrplan.`,
+    },
+    french:
+      'Lernquest hat Englisch, kein Französisch. Lernt Ihr Kind in der Schule Französisch, schalten Sie das Fach hier aus.',
+    noSubject: (name: string) =>
+      `In ${name} gibt es in den Klassen 1 bis 3 meist kein eigenes Fach dafür. Die Themen passen trotzdem: Freundschaft, Gefühle, Regeln, Feste.`,
+    wordlist: (name: string) =>
+      `Die amtliche Wörterliste (Grundwortschatz) von ${name} ist nicht eingebaut. Geübt werden die Wörter aus Lernquest.`,
+    also: (grade: number) =>
+      `Manche Klassen behandeln ein Thema früher. Eingeschaltete Themen erscheinen zusätzlich bei Klasse ${grade}, mit der Marke „Klasse ${grade + 1}“. Der Fortschritt bleibt beim Thema. Themen mit Lesestube lassen sich nicht vorziehen. In der Turmwacht kommen die Themen erst in Klasse ${grade + 1} vor.`,
+  };
+  return { INFO, PLAN, TURM, LAND };
 })();

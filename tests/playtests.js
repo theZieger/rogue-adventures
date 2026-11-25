@@ -33,6 +33,15 @@ const RUNS = [
   { MODE: 'turm', GRADE: '3', ACC: '0.9', RUNS: '1' },
   { MODE: 'turm', GRADE: '2', ACC: '0.9', RUNS: '1' },
   { SEED: '1', MODE: 'turm', GRADE: '3', SUBJECTS: 'Mathe', ACC: '0.65', RUNS: '1' },
+  // Hamburg switches off the most; the written methods are attacks of the world 3 hero and must be swapped
+  { MODE: 'math', LAND: 'HH', ACC: '0.9', RUNS: '1' },
+  { MODE: 'math', LAND: 'HH', W3: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'bau', LAND: 'HH', ACC: '0.9', RUNS: '1' },
+  { MODE: 'woerterwerkstatt', LAND: 'HH', ACC: '0.9', RUNS: '1' },
+  { MODE: 'freunde', LAND: 'HH', ACC: '0.9', RUNS: '1' },
+  { MODE: 'turm', LAND: 'HH', GRADE: '3', ACC: '0.9', RUNS: '1' },
+  // hidden everywhere but in Sachsen
+  { MODE: 'kirchenjahr', LAND: 'SN', ACC: '0.9', RUNS: '1' },
 ];
 
 const named = new Set(RUNS.map((run) => run.MODE));
