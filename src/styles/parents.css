@@ -1,7 +1,4 @@
 /* ---------- Eltern: title button, setup, PIN, parent area ---------- */
-.parentbtn {
-  right: 12px;
-}
 .parentbtn .gear {
   width: 20px;
   height: 20px;
@@ -459,6 +456,9 @@
   margin-top: var(--space-6);
 }
 .parentbtn .dot {
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 12px;
   height: 12px;
   border-radius: 50%;

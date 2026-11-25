@@ -38,7 +38,7 @@ test('the feedback screen: choose a kind, an empty message is not sent, a failed
     assert.equal(await page.inputValue('#fbtext'), 'Die Uhr <zeigt> falsch');
     assert.equal(await page.textContent('#fbsend'), 'Nochmal versuchen');
     await page.click('#back');
-    assert.ok(await page.isVisible('#parents'), 'back on the title');
+    assert.ok(await page.isVisible('#pfeedback'), 'back in the parent area');
   }));
 
 test('no screen has a serious accessibility problem', () =>

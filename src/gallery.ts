@@ -62,7 +62,7 @@ const PILLS = [
   ['pill', 'Lv 3'],
   ['pill new', 'Neu!'],
   ['pill good', 'Hier anfangen'],
-  ['pill warn', '⭐ Wochenziel'],
+  ['pill warn', '⭐ Empfohlen'],
   ['pill hot', '😮‍💨 müde'],
   ['pill bad', '⚠️ gesperrt'],
   ['pill info', '🔁 von vorhin'],
@@ -129,7 +129,7 @@ ${section(
   'Ein goldener Knopf pro Bildschirm: der nächste Schritt. Alles andere ist weiß oder nur umrandet.',
   `${block('btn', 'Größen: normal und <code>small</code>. Töne: Gold, <code>secondary</code>, <code>ghost</code> (nur auf dunklem Grund), <code>danger</code> (löschen). Gesperrt liegt er flach und grau.', `${BUTTONS}<button class="btn" disabled>btn disabled</button><button class="btn ghost" disabled>btn ghost disabled</button>`)}
 ${block('tut · speak', 'Kleine Helfer auf einer Karte: erklären und vorlesen.', row(`<button class="tut" type="button">🛈<span> Wie geht das?</span></button><button class="speak" type="button" aria-label="Vorlesen">🔊</button>`))}
-${block('soundbtn · stampbtn · parentbtn', 'Die leisen Knöpfe in den Ecken der Startseite.', `<div class="corner"><button class="soundbtn" aria-label="Töne ausschalten">🔊</button><button class="stampbtn" aria-label="Stempelheft, 12 Stempel">🏷️ 12</button><button class="parentbtn">Eltern</button></div>`)}`,
+${block('titlebar: soundbtn · stampbtn · newsbtn · parentbtn', 'Die leisen runden Knöpfe oben auf der Startseite; sie rollen mit der Seite weg. ein neuer Eintrag in „Was ist neu?“ zeigt „Neu!“, ein ungesicherter Spielstand einen goldenen Punkt am Zahnrad.', `<div class="titlebar"><button class="soundbtn" aria-label="Töne ausschalten">🔊</button><button class="stampbtn" aria-label="Stempelheft, 12 Stempel">🏷️ 12</button><button class="newsbtn" aria-label="Was ist neu?">✨<span class="pill new">Neu!</span></button><button class="parentbtn" aria-label="Eltern"><svg class="gear" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="3.6" stroke-dasharray="3.4 3.35"/><circle cx="12" cy="12" r="6.2" fill="none" stroke="currentColor" stroke-width="3.2"/></svg><span class="dot" aria-hidden="true"></span></button></div>`)}`,
 )}
 ${section(
   'Marken, Auswahl, Hinweise',
@@ -137,7 +137,7 @@ ${section(
   `${block('pill', 'Ein kurzes Wort, das einen Zustand markiert. Nie antippbar. <code>lg</code> für Typen und Turmwacht-Karten.', row(`${PILLS}${typeChip('wasser')}${typeChip('feuer')}`))}
 ${block('chip', 'Eine Wahl unter wenigen; die gewählte ist gold. Auf einer Karte ist der Rand in Tinte.', `${row(`<button class="chip on" aria-pressed="true">Klasse 3</button><button class="chip" aria-pressed="false">Klasse 2</button>`)}${onCard(`<div class="toggles"><button class="chip on" aria-pressed="true">Idee</button><button class="chip" aria-pressed="false">Fehler</button></div>`)}`)}
 ${block('switch', 'An oder aus, wirkt sofort. Nur im Elternbereich.', onCard(row(`<button class="switch" role="switch" aria-checked="true" aria-label="an"><i></i></button><button class="switch" role="switch" aria-checked="false" aria-label="aus"><i></i></button>`)))}
-${block('callout · notecard', 'Ein Satz Rat in einer Karte; die Notizkarte für das, was man sich merken soll.', onCard(`<p class="callout">⭐ Wochenziel: Löse 15 Aufgaben.</p><p class="callout center">🌉 Tipp: Lies die Frage noch einmal.</p><div class="notecard">Der Zehner bleibt, der Einer wächst.</div>`))}
+${block('callout · notecard', 'Ein Satz Rat in einer Karte; die Notizkarte für das, was man sich merken soll.', onCard(`<p class="callout">⭐ Wochenziel: Löse 10 Aufgaben in Mathe richtig.</p><p class="callout center">🌉 Tipp: Lies die Frage noch einmal.</p><div class="notecard">Der Zehner bleibt, der Einer wächst.</div>`))}
 ${block('bar', 'Wie viel von etwas da ist. <code>hp</code> ist Leben (erst gold, dann rot), <code>xp</code> Erfahrung.', `${onCard(`<span class="bar" role="img" aria-label="33 %"><i style="width:33%"></i></span>`)}<div class="bar hp"><i style="width:80%"></i></div><div class="bar hp"><i class="mid" style="width:45%"></i></div><div class="bar hp"><i class="low" style="width:15%"></i></div><div class="bar xp"><i style="width:40%"></i></div>`)}
 ${block('ptabs · psubtabs', 'Bereiche des Elternbereichs und ihre Unterseiten.', `<nav class="ptabs" role="tablist" aria-label="Bereiche"><button role="tab" aria-selected="true"><span>Überblick</span></button><button role="tab" aria-selected="false"><span>Inhalte</span></button><button role="tab" aria-selected="false"><span>Einstellungen</span></button></nav><div class="psubtabs" role="tablist" aria-label="Zeitraum"><button role="tab" aria-selected="true">Diese Woche</button><button role="tab" aria-selected="false">Insgesamt</button></div>`)}`,
 )}
@@ -147,10 +147,11 @@ ${section(
   `${block('card', 'Der Behälter für alles Helle.', `<div class="card"><h3>Karte</h3><p>Text auf einer Karte.</p></div><div class="card flat"><p><code>flat</code>: ohne Kante, in einer anderen Karte.</p></div>`)}
 ${block(
   'card subjtile · weekcard · modecard',
-  'Die Karten der Startseite.',
+  'Die Karten der Startseite. <code>subjects more</code>: Monsterbuch, Hütte und Co. unter den Fächern, gleich groß wie diese, mit Abstand davor; „neu“ zählt, was dazugekommen ist.',
   `<button class="card subjtile"><span class="subjicon" aria-hidden="true">🔢</span><span class="subjname">Mathe</span><span class="desc">3 Themen</span></button>
+<div class="subjects more"><button class="card subjtile"><span class="subjicon" aria-hidden="true">📗</span><span class="subjname">Monsterbuch</span><span class="desc">12 Monster</span><span class="pill new">3 neu</span></button><button class="card subjtile"><span class="subjicon" aria-hidden="true">🏡</span><span class="subjname">Meine Hütte</span><span class="desc">Möbel aufstellen</span></button></div>
 <button class="card weekcard"><span class="eyebrow">Diese Woche</span><span class="weekline"><b>2 von 6 Zielen erledigt</b><span>Neue Aufgaben am Montag</span></span><span class="bar" role="img" aria-label="33 %"><i style="width:33%"></i></span><span class="weekgo">Ziele ansehen und loslegen ›</span></button>
-<div class="card modecard"><h3>Zahlenquest</h3><div class="desc">Rechnen und Zahlen</div><span class="pill good">Hier anfangen</span><p class="callout">⭐ Wochenziel: Löse 15 Aufgaben.</p><div class="row"><button class="btn small">Starten</button></div></div>`,
+<div class="card modecard"><h3>Zahlenquest</h3><div class="desc">Rechnen und Zahlen</div><span class="pill good">Hier anfangen</span><p class="callout">⭐ Wochenziel: Löse 10 Aufgaben in Mathe richtig.</p><div class="row"><button class="btn small">Starten</button></div></div>`,
 )}
 ${block('choice', 'Eine Wahl mit Bild. <code>selected</code> trägt den goldenen Ring, <code>locked</code> ist noch nicht zu haben.', `<button class="choice selected">${fox}<span class="meta"><span class="name">Glutfuchs</span><span class="desc">Ein Fuchs mit warmem Fell.</span></span></button><button class="choice locked">${drop}<span class="meta"><span class="name">Regenwicht</span><span class="desc">Kommt später dazu.</span></span></button>`)}
 ${block('overlay · modal', 'Ein Dialog von unten: eine Frage, höchstens drei Knöpfe, der goldene zuerst.', `<div class="modal"><h2>Neues Abenteuer?</h2><p>Dein laufendes Abenteuer wird gelöscht.</p><div class="stack"><button class="btn">Ja, neu starten</button><button class="btn secondary">Zurück</button></div></div>`)}`,
@@ -171,7 +172,7 @@ ${block(
   `<div class="attacks"><button class="atk" aria-label="Funkenbiss: Addition, 12 Schaden"><span class="n">Funkenbiss</span><span class="m">➕ Addition<span class="dmg">💥 12</span></span><span class="tags"></span></button>
 <button class="atk weak" aria-label="Feuerreihe: Zahlenfolgen, 24, Schwachstelle – Schaden 24"><span class="n">Feuerreihe</span><span class="m">🔢 Zahlenfolgen<span class="dmg">💥 24</span></span><span class="tags"><span class="pill">🎯 Schwachstelle</span></span></button>
 <button class="atk tired" aria-label="Flammenstoß: Subtraktion, 7, müde – Schaden 7"><span class="n">Flammenstoß</span><span class="m">➖ Subtraktion<span class="dmg">💥 7</span></span><span class="tags"><span class="pill hot">😮‍💨 müde</span></span></button>
-<button class="atk locked" aria-label="Glutgitter: Zahlengitter, 18, Wochenziel – Schaden 18" disabled><span class="n">Glutgitter</span><span class="m">🔢 Zahlengitter<span class="dmg">💥 18</span></span><span class="tags"><span class="pill warn">⭐ Wochenziel</span></span></button></div>`,
+<button class="atk locked" aria-label="Glutgitter: Zahlengitter, 18 – Schaden 18" disabled><span class="n">Glutgitter</span><span class="m">🔢 Zahlengitter<span class="dmg">💥 18</span></span></button></div>`,
 )}
 ${block('node', 'Ein Ort auf der Karte: <code>open</code> ist dran, <code>taken</code> gegangen, <code>past</code> vorbei, <code>future</code> kommt noch, <code>dead</code> ist versperrt.', row(['open', 'taken', 'future', 'past', 'dead'].map((state) => `<button class="node ${state}" ${state === 'open' ? '' : 'disabled tabindex="-1"'}>⚔️<small>${state}</small></button>`).join('')))}`,
 )}

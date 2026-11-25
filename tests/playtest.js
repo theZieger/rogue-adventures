@@ -45,7 +45,7 @@ function prng(seed) {
   };
 }
 Math.random = prng(SEED + 1);
-// a fixed day too: 2026-W52 has the weekly boss in Zahlenquest as its maths goal (the seed can also pick Die Baustelle), so the bot can finish a goal in a math run
+// a fixed day too, so every run has the same weekly goals and the same weekly boss
 const NOW = Date.parse(process.env.NOW || '2026-12-23T10:00:00');
 const errors = [];
 const dom = new JSDOM(html, {
@@ -840,7 +840,7 @@ async function step() {
     crafted = true;
     const m = w.__mq.meta;
     m.materials = Object.assign({ holz: 2, erz: 1 }, m.materials);
-    click($('#stamps'));
+    click($('#stampsTop'));
     click($('[data-craft="schild"]'));
     await solveTask(false);
     if (!text().includes('Gebaut: Schild')) throw new Error('Werkbank did not build: ' + text().slice(0, 200));

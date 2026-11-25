@@ -559,9 +559,12 @@ const turn = (p, ok) => {
     dex.length >= 8 && dex.every((e) => e.mode !== 'turm' && f.w.__mq.subjectOf(e.mode) && Number.isInteger(e.world)),
     'every monster seen is in the Monsterbuch under its own unit',
   );
+  const weekStamps = FM.weekly.done
+    ? 10
+    : 3 * f.w.__mq.weeklyGoals().filter((g) => FM.weekly.progress[g.i] >= g.n).length;
   check(
-    FM.stamps - stamps0 === 2 * dex.length + 5 + 5 + 10 + Math.floor(right / 10),
-    'Stempel as in an adventure: new entries, two boss waves, the victory, 1 per 10 right answers',
+    FM.stamps - stamps0 === 2 * dex.length + 5 + 5 + 10 + Math.floor(right / 10) + weekStamps,
+    'Stempel as in an adventure: new entries, two boss waves, the victory, 1 per 10 right answers, the weekly goals',
   );
   f.click('#home');
   check(

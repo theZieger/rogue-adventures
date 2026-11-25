@@ -17,7 +17,6 @@ import {
   owns,
   stampLine,
   typeChip,
-  weeklyStep,
 } from './progress.ts';
 import { state } from './state.ts';
 import { endRun, extraOn, saveAll } from './storage.ts';
@@ -43,7 +42,6 @@ export const CONFETTI = `<div class="confetti" aria-hidden="true">${Array.from({
 export function screenVictory() {
   state.meta.wins++;
   giveStamps(10);
-  weeklyStep('win');
   state.meta.progressAt = new Date().toISOString();
   if (state.mode === 'kartoffel') state.meta.owned['beet-4'] = true;
   const roof = CFG().worlds >= 3 && !state.meta.owned['hut-dachfenster'];
@@ -63,6 +61,8 @@ export function screenVictory() {
 }
 export function screenDex() {
   state.depth = 1;
+  state.meta.seenDex = Object.keys(state.meta.dex).length;
+  saveAll();
   const all: (Foe & { elite?: boolean })[] = [];
   for (const m of MODE_KEYS) {
     const EN = MODES[m].enemies;
@@ -100,7 +100,7 @@ export function screenStamps(jump?: boolean) {
   };
   screen(
     html`<div class="screen">${raw(topbar('Stempelheft'))}<div class="scroll"><div class="stack">
-      <div class="card center"><div class="stampbal">🏷️ ${state.meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenaufgabe: 10.</p></div>
+      <div class="card center"><div class="stampbal">🏷️ ${state.meta.stamps}</div><p>Je 10 richtige Aufgaben in einem Abenteuer: 1 Stempel. Neues Monster im Monsterbuch: 2. Boss besiegt: 5. Abenteuer gewonnen: 10. Wochenziel: 3. Alle Wochenziele zusammen: 10.</p></div>
       <div class="card"><h3>Stempelkarte ${y}/${String(y + 1).slice(2)}</h3><p class="pnote">Ein Feld für jede Schulwoche. ✓ heißt: In dieser Woche hast du geübt. ★ heißt: Wochenaufgabe geschafft.</p><div class="wkgrid">${cells}</div></div>
       <h2 id="rewards">Belohnungen</h2>
       <div class="choice reward">${raw(monsterSVG('fox', 0, '', { outfit: 'strohhut' }))}<div class="meta"><div class="name">Kleiderkammer</div><div class="desc">Hut, Schal, Brille und mehr für deine Helden.</div><button class="btn small" id="kk" data-action="wardrobe">Öffnen</button></div></div>

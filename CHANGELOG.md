@@ -6,6 +6,32 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-24
+
+### Verbessert
+- Auf dem Tablet im Querformat nutzt Lernquest die ganze Breite: Aufgabe links, Tasten rechts.
+
+### Behoben
+- Während einer Aufgabe ist dein Monster oben wieder gut zu sehen.
+- „Kreisel bauen“ nennt beim Ring jetzt die richtige Zahl.
+
+## 2026-11-17
+
+### Behoben
+- Die Kreisel-Arena fehlt auf der Karte nicht mehr, wenn die oberen Etagen schon voll sind.
+
+## 2026-11-16
+
+### Neu
+- Auf der Startseite steht jetzt dein Held mit seiner Kleidung; in der Kleiderkammer wählst du, welcher.
+- Das Monsterbuch zeigt, wie viele neue Monster du seit dem letzten Blick entdeckt hast.
+- Ist die Wochenaufgabe geschafft, regnet es Konfetti.
+
+### Verbessert
+- Wochenziele: drei kleine Ziele pro Woche, die du beim normalen Üben schaffst; jedes gibt 3 Stempel.
+- Alle Karten der Startseite sind gleich groß und gleiten beim Öffnen und Blättern herein.
+- Ton, Stempel, Neuigkeiten und Eltern sind runde Knöpfe oben; „Idee senden“ steht im Elternbereich.
+
 ## 2026-11-15
 
 ### Verbessert

@@ -41,9 +41,6 @@
 }
 
 /* Stamps */
-.stampbtn {
-  left: 66px;
-}
 .stampgain {
   font-weight: 700;
   font-size: var(--text-24);
@@ -218,17 +215,6 @@
   margin: var(--space-2) 0 0;
   font-size: var(--text-20);
   font-weight: 700;
-}
-.goalgame {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  font-size: var(--text-24);
-  font-weight: 700;
-  margin: var(--space-2) 0 var(--space-4);
-}
-.goalgame span {
-  font-size: var(--text-30);
 }
 .goal.done {
   opacity: var(--soft);

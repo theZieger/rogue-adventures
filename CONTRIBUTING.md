@@ -15,6 +15,7 @@ npm run playtest     # a bot plays every unit (the list is in tests/playtests.js
                      # same SEED = same run; TRACE_DIR=folder records every page to compare two states
 npm run e2e          # browser tests (Playwright): start without a network, accessibility of every screen
 npm run screenshots before   # screenshots of every screen in tools/screens.js; with two folders: what changed
+VIEWPORT=1180x820 npm run screenshots tablet   # the same at another size, e.g. a tablet held sideways
 npm run typecheck    # tsc, strict, over every .ts file
 npm run lint         # Biome (undeclared names) and Stylelint (colours, sizes and spaces only from src/styles/tokens.css)
 npm run format       # Biome formats JS, TS, CSS and JSON (CI checks it)

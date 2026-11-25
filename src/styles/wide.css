@@ -1,0 +1,305 @@
+/* Tablets held sideways (and computers): the app takes the whole width. What a screen is about sits on the left,
+   what the child taps sits in a panel on the right, the same split as on a phone held sideways. Lists flow into two
+   columns; buttons and text keep a width the eye can follow. */
+@media (orientation: landscape) and (min-width: 900px) and (min-height: 540px) {
+  #app {
+    max-width: 1366px;
+  }
+  .scroll {
+    --column: 1040px;
+    padding-inline: max(var(--space-24), (100% - var(--column)) / 2);
+  }
+  .screen > .bottom > * {
+    width: 100%;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+  .screen > .bottom > .btn {
+    display: flex;
+  }
+  .screen > .bottom > p {
+    max-width: none;
+  }
+  .topbar {
+    padding-inline: var(--space-24);
+  }
+  /* a dialog sits in the middle, not at the bottom edge where a thumb would reach it on a phone */
+  .overlay {
+    align-items: center;
+  }
+  /* a monster shown alone in a card keeps its size instead of filling the wide card */
+  .card.center > .mon:not(.top) {
+    display: block;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+  /* the hut is whole on the screen: as wide as the height allows */
+  .hutroom {
+    max-width: calc((100vh - 230px) * 360 / 290);
+    margin-inline: auto;
+  }
+
+  /* lists of cards: two columns, everything that is not a card spans both */
+  .scroll > .stack:has(> .card + .card, > .choice + .choice) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .scroll > .stack > :not(.card, .choice),
+  .scroll > .stack > .card:not(.card + .card, :has(+ .card)) {
+    grid-column: 1 / -1;
+  }
+
+  /* title: the fox stays on the left, subjects and extras scroll on the right */
+  .scroll:has(> .titlebar) {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-rows: auto 1fr;
+    column-gap: var(--space-32);
+    align-items: start;
+  }
+  .scroll > .titlebar {
+    grid-column: 1 / -1;
+  }
+  /* the fox stays in the middle of the height while the right side scrolls */
+  .scroll > .titlebar + .hero {
+    position: sticky;
+    top: max(0px, 50% - 250px);
+    padding-top: var(--space-32);
+  }
+  .titlebar + .hero .showcase {
+    width: 240px;
+    height: 240px;
+  }
+  .titlebar + .hero h1 {
+    font-size: calc(var(--text-48) * 1.5);
+  }
+  .scroll > .titlebar ~ .stack {
+    padding-top: var(--space-16);
+  }
+
+  /* first start: the same split, the welcome on the left, what the parents decide on the right */
+  .setup > .scroll {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    column-gap: var(--space-32);
+    row-gap: var(--space-12);
+    align-content: center;
+  }
+  .setup > .scroll > .hero {
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+  .setup > .scroll > .card {
+    grid-column: 2;
+  }
+  .setup .hero .showcase {
+    width: 240px;
+    height: 240px;
+  }
+
+  /* fight: the arena on the left, attacks and keypad in a panel on the right */
+  .screen:has(> .arena),
+  .screen:not(.tasking):has(> .bottom > .numpad),
+  .screen.tasking {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 40%);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .screen:has(> .arena) > .topbar,
+  .screen:not(.tasking):has(> .bottom > .numpad) > .topbar,
+  .screen.tasking > .topbar {
+    grid-column: 1 / -1;
+  }
+  .screen > .arena {
+    grid-column: 1;
+    grid-row: 2;
+    align-content: space-between;
+    padding: var(--space-24) var(--space-24) var(--space-12);
+    gap: var(--space-12) var(--space-24);
+  }
+  .screen > .arena ~ .log {
+    grid-column: 1;
+    grid-row: 3;
+    margin: var(--space-8) var(--space-24) var(--space-24);
+  }
+  /* choosing or typing the PIN: the dots on the left, the keys on the right */
+  .screen:not(.tasking):has(> .bottom > .numpad) > .scroll {
+    grid-column: 1;
+    grid-row: 2 / -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-inline: var(--space-24);
+  }
+  .screen:has(> .arena) > .bottom,
+  .screen:not(.tasking):has(> .bottom > .numpad) > .bottom,
+  .screen.tasking > .bottom {
+    grid-column: 2;
+    grid-row: 2 / -1;
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-12);
+    overflow-y: auto;
+    padding: var(--space-24);
+    border-top: 0;
+    border-left: var(--line) solid var(--glass);
+  }
+  .attacks {
+    grid-template-columns: 1fr;
+  }
+  .atk {
+    min-height: 84px;
+  }
+  .sprite.hero .mon {
+    width: 200px;
+    height: 200px;
+  }
+  .sprite.enemy .mon {
+    width: 168px;
+    height: 168px;
+  }
+  .screen.tasking {
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  /* while a task is open the two monsters stay in a row above it, big enough to recognise */
+  .screen.tasking > .arena:not(.kreisel) {
+    grid-template-columns: 72px 1fr 72px 1fr;
+    gap: var(--space-12);
+    padding: var(--space-16) var(--space-24) var(--space-4);
+  }
+  .screen.tasking .arena:not(.kreisel) .sprite .mon {
+    width: 72px;
+    height: 72px;
+  }
+  .screen.tasking .arena:not(.kreisel) .plate {
+    padding: var(--space-8) var(--space-12);
+    gap: var(--space-4);
+  }
+  .screen.tasking .arena:not(.kreisel) .plate .name {
+    font-size: var(--text-20);
+  }
+  .screen.tasking > .arena.kreisel {
+    padding: var(--space-16) var(--space-24) var(--space-4);
+  }
+  /* answers to choose from: one under the other, as big as the keys */
+  .screen.tasking > .bottom .options:not(.sentence) {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+  .screen.tasking > .bottom .opt {
+    min-height: 72px;
+    font-size: var(--text-24);
+  }
+  .screen.tasking > .taskwrap {
+    grid-column: 1;
+    grid-row: 3;
+    justify-content: center;
+    padding: var(--space-12) var(--space-24) var(--space-24);
+  }
+  .screen.tasking:not(:has(> .arena)) > .taskwrap {
+    grid-row: 2 / -1;
+  }
+  .task {
+    padding: var(--space-24);
+  }
+  .task .expr {
+    font-size: var(--text-48);
+  }
+  .numpad {
+    gap: var(--space-12);
+  }
+  .numpad button {
+    min-height: 72px;
+    font-size: var(--text-36);
+  }
+
+  /* map: the path on the left, life points, hint and buttons on the right */
+  .screen:has(> .scroll > .wmap) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 34%);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .screen:has(> .scroll > .wmap) > .topbar {
+    grid-column: 1 / -1;
+  }
+  .screen:has(> .scroll > .wmap) > .scroll {
+    grid-column: 1;
+    grid-row: 2 / -1;
+  }
+  .screen > .mapstats {
+    grid-column: 2;
+    grid-row: 2;
+    padding: var(--space-24) var(--space-24) 0;
+    background: var(--bg2);
+    border-left: var(--line) solid var(--glass);
+  }
+  .wmap {
+    max-width: 560px;
+  }
+  .mapface {
+    display: block;
+    width: 180px;
+    height: 180px;
+    margin-bottom: var(--space-16);
+  }
+  .mapstats .maphint {
+    text-align: left;
+    font-size: var(--text-18);
+    margin-top: var(--space-16);
+  }
+  .screen:has(> .scroll > .wmap) > .bottom {
+    grid-column: 2;
+    grid-row: 3;
+    border-top: 0;
+    border-left: var(--line) solid var(--glass);
+    padding: var(--space-24);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .screen:has(> .scroll > .wmap) > .bottom > .row {
+    flex-direction: column;
+    max-width: none;
+  }
+  .screen:has(> .scroll > .wmap) > .bottom > .row > .btn {
+    flex: none;
+    min-height: var(--tap-lg);
+  }
+
+  /* Turmwacht: the board takes the whole height on the left */
+  .tw-screen:not(.tasking) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 34%);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .tw-screen:not(.tasking) > .topbar {
+    grid-column: 1 / -1;
+  }
+  .tw-screen:not(.tasking) .tw-main {
+    grid-column: 1;
+    grid-row: 2 / -1;
+    max-height: none;
+    min-height: 0;
+    margin-top: 0;
+  }
+  .tw-screen:not(.tasking) .tw-log {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .tw-screen:not(.tasking) .tw-panel {
+    grid-column: 2;
+    grid-row: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    max-height: 100%;
+    overflow-y: auto;
+    border-top: 0;
+    border-left: var(--line) solid var(--glass);
+    margin-top: 0;
+    padding: var(--space-24);
+  }
+}
