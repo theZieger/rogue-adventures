@@ -4802,6 +4802,58 @@ async function landCases() {
     check(p.errors.length === 0, 'no page errors in the parent area ' + p.errors.join(' '));
   }
   await tick();
+  // what parents read about the plan
+  {
+    const card = (land, subject, unit) => {
+      const p = parents(withMeta(land ? { land } : {}));
+      p.subj(subject, unit);
+      return p.text();
+    };
+    const none = card('', 'Mathe', 'math');
+    check(
+      none.includes('Grundlage (Lehrplan Sachsen): Mathematik, Klasse 3') && !none.includes('noch nicht verglichen'),
+      'without a state the unit card names the Saxon plan as the basis',
+    );
+    const sn = card('SN', 'Mathe', 'math');
+    check(
+      sn.includes('Lehrplan Sachsen: Mathematik, Klasse 3') && !sn.includes('Grundlage'),
+      'in Sachsen it reads as before',
+    );
+    const by = card('BY', 'Deutsch', 'woerterwerkstatt');
+    check(
+      by.includes('Lehrplan Bayern: noch nicht verglichen.') &&
+        by.includes('Grundlage (Lehrplan Sachsen): Deutsch') &&
+        by.includes('Wörterliste (Grundwortschatz) von Bayern ist nicht eingebaut') &&
+        by.includes('Wörter aus der sächsischen Mundart'),
+      'in Bayern: the verdict, the basis, the word list that is not built in, the dialect words switched off',
+    );
+    check(
+      !card('NI', 'Deutsch', 'woerterwerkstatt').includes('Wörterliste'),
+      'no word list line where the state has none',
+    );
+    check(
+      card('BE', 'Englisch').includes('kein Französisch') && !card('BY', 'Englisch').includes('Französisch'),
+      'the French note shows only where French may be the first language',
+    );
+    check(
+      card('MV', 'Philosophieren').includes('Philosophieren mit Kindern') &&
+        card('BY', 'HSU').includes('Heimat- und Sachunterricht'),
+      'the parent area gives the subject its full name',
+    );
+    check(
+      card('NW', 'Miteinander').includes('kein eigenes Fach') && !card('RP', 'Ethik').includes('kein eigenes Fach'),
+      'where there is no such subject the parents are told',
+    );
+    const claim = parents(withMeta({ land: 'ST' }));
+    claim.click('[data-pt="practice"]');
+    check(
+      claim.text().includes('Für Sachsen-Anhalt wurde der Lehrplan gelesen (Stand November 2026)') &&
+        claim.text().includes('Eine Lehrkraft hat das nicht geprüft') &&
+        !/geprüft von|orientiert sich|deckt/.test(claim.text()),
+      'the claim says what was done and that no teacher checked it',
+    );
+  }
+  await tick();
   // what the child has practised is never hidden by a Bundesland
   {
     const p = withMeta({ land: 'HH', started: { ethik: 1 }, stats: { math: { smul: { c: 2, t: 3, hist: [] } } } });
