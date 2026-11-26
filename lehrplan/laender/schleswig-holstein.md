@@ -196,7 +196,7 @@ Holidays and festivals (Christmas, Easter).
 **Fehlt in der App**
 - Kl. 3: Fachbegriffe Summe, Differenz, Produkt, Quotient als eigene Aufgabenart (Zuordnen).
 - Band 3/4: Liter und Milliliter, Tonne, Millimeter; Dezimalbrüche bei Größen (0,5 l; 0,25 kg); Zylinder schon in der
-  Eingangsphase; Digitaluhr; Stadtplan/Lageskizze. Nicht für das Handy: Zirkel, Geodreieck, Schrägbilder.
+  Eingangsphase; Digitaluhr; Stadtplan/Lageskizze. Nicht für das Handy: Zirkel, Geodreieck, Schrägbilder. (2026-11-26: jetzt in der App – Liter und Milliliter.)
 
 ### Deutsch
 

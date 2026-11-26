@@ -201,8 +201,8 @@ bzw. A/B (Klassen 1/2). Ob es an einer Schule in Klasse 3 oder 4 liegt, bestimmt
 
 **Fehlt in der App**
 - Zahlen über 1000 bis 1 Million (C; Aufteilung auf 3/4 schulintern).
-- Hohlmaße ml und l, Tonne, Sekunde (C).
-- Klammeraufgaben (C: „Punkt-vor-Strich-Regel und der Klammerregeln“).
+- Hohlmaße ml und l, Tonne, Sekunde (C). (2026-11-26: jetzt in der App – ml und l.)
+- Klammeraufgaben (C: „Punkt-vor-Strich-Regel und der Klammerregeln“). (2026-11-26: jetzt in der App – Klammeraufgaben.)
 - Vielfache, Teiler, Quadratzahlen bis 100 (C).
 - Trapez, Drachenviereck, Raute; Radius und Durchmesser (C).
 - Vergrößern und Verkleinern auf Kästchenpapier; Volumen mit Einheitswürfeln (C).
@@ -268,7 +268,7 @@ bzw. A/B (Klassen 1/2). Ob es an einer Schule in Klasse 3 oder 4 liegt, bestimmt
 - Sonnensystem, Tag und Nacht.
 - Markt: Einkaufen, Werbung, Geld und Tauschen, Lebensmittelkennzeichnung, woher Produkte kommen.
 - Kinderrechte, Klassenrat, Wahlen.
-- Stromkreis (Fahrradlampe).
+- Stromkreis (Fahrradlampe). (2026-11-26: jetzt in der App – der Stromkreis im Thema „Strom und Magnete“.)
 - Dinosaurier; Leben im und am Wasser; Müll und Versorgung des Hauses.
 - Nur eine Zeile: Sexualerziehung, Versuche, Erkundungen.
 

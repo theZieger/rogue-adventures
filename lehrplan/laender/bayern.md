@@ -263,7 +263,7 @@ Fachwerk-, Hängebrücke), Gleichgewicht (Wippe, Balkenwaage).
   (9 € 30 ct, 2 m 15 cm).
 - Klasse 3/4: schriftliche Subtraktion nach dem Abziehverfahren (Entbündeln); Liter und Milliliter; Sekunden;
   Maßstab (Vergrößern/Verkleinern im Gitternetz, 2 : 1); Rauminhalt mit Einheitswürfeln; Baumdiagramm; Begriffe Summe,
-  Differenz, addieren … ; Brüche an Größen (½ l = 500 ml, Viertelstunde); schriftliche Division (Klasse 4).
+  Differenz, addieren … ; Brüche an Größen (½ l = 500 ml, Viertelstunde); schriftliche Division (Klasse 4). (2026-11-26: jetzt in der App – schriftliches Abziehen mit Entbündeln (Eltern wählen das Verfahren), Liter und Milliliter.)
 - Nicht fürs Handy: Zeichnen mit Zirkel und Geodreieck, Parkettieren, Fermi-Aufgaben, Rechenkonferenzen.
 
 ### Deutsch
@@ -329,7 +329,7 @@ Fachwerk-, Hängebrücke), Gleichgewicht (Wippe, Balkenwaage).
   Verbrennung**, Löschen; **Wald und Gewässer** (Arten, Stockwerke, Nahrungsbeziehungen); das Auge; **Gemeinde,
   Bürgermeister, Wahl, Kinderrechte**; **Gemeinde – Landkreis – Bayern – Deutschland – Europa**, Gebirge, Flüsse,
   Kontinente; Karte mit Maßstab und Höhen; Werbung und Konsum; Zeitbegriffe Jahrzehnt/Jahrhundert/Epoche; Hebel,
-  Zahnrad; Brückenarten; Wolf und Hund; regionale und saisonale Lebensmittel.
+  Zahnrad; Brückenarten; Wolf und Hund; regionale und saisonale Lebensmittel. (2026-11-26: jetzt in der App – Strom und Stromkreis (als Bild, ohne Schaltzeichen) und der Wald als eigene Themen.)
 - Nicht fürs Handy: Versuche, Modelle bauen, Pubertät und Sexualerziehung, Ortsgeschichte der eigenen Gemeinde.
 
 ### Ethik
@@ -348,7 +348,7 @@ Fachwerk-, Hängebrücke), Gleichgewicht (Wippe, Balkenwaage).
 
 **Fehlt in der App**
 - 1/2: muslimische und jüdische Feste (Opferfest, Zuckerfest, Laubhüttenfest, Pessach), regionales Brauchtum
-  (Maibaum, Fasching), Rituale im Alltag, mit Wünschen umgehen, Helfen.
+  (Maibaum, Fasching), Rituale im Alltag, mit Wünschen umgehen, Helfen. (2026-11-26: jetzt in der App – diese Feste im Thema „Der Festkalender“.)
 - 3/4: Merkmale von Judentum, Christentum und Islam (Gotteshaus, heilige Schrift, Symbole, Feste), Goldene Regel;
   soziales Engagement; Medien verantwortlich nutzen (Cybermobbing, Privatsphäre).
 

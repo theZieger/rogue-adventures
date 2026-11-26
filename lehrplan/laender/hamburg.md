@@ -231,7 +231,7 @@ Kompetenzen Leseverstehen und Schreiben verbindlich hinzu.“ Ziel Ende Kl. 4: A
 
 **Fehlt in der App**
 - Bis Ende Kl. 2: Magnetismus; Skelett, Gelenke, Verdauung; Stoffe und Abfalltrennung; Tag und Nacht, Entstehung der
-  Jahreszeiten; Kinder der Welt und Kinderrechte; Werkzeuge.
+  Jahreszeiten; Kinder der Welt und Kinderrechte; Werkzeuge. (2026-11-26: jetzt in der App – Magnetismus im Thema „Strom und Magnete“.)
 - Kl. 3 (Band 3/4): Feuer und Feuerwehr; Mittelalter, Burgen, Hansezeit; Wetter und Klima mit Treibhauseffekt; Brücken;
   Hamburgs Stadtteile. Alles als Quiz machbar, aber Hamburg-spezifisch.
 
@@ -249,7 +249,7 @@ Kompetenzen Leseverstehen und Schreiben verbindlich hinzu.“ Ziel Ende Kl. 4: A
 
 **Fehlt in der App**
 - Feste anderer Religionen (Ramadanfest, Opferfest, Pessach, Chanukka, Nevruz, Vesakh); Räume der Religionen (Kirche,
-  Moschee, Synagoge …); Tod und Sterben, Schöpfung (kaum als Quiz).
+  Moschee, Synagoge …); Tod und Sterben, Schöpfung (kaum als Quiz). (2026-11-26: jetzt in der App – Feste mehrerer Religionen und ihre Gotteshäuser im Thema „Der Festkalender“.)
 
 ### Musik
 

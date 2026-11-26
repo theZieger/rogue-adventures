@@ -200,7 +200,7 @@ Hessen hat zwei Schichten, die nebeneinander gelten:
 - `bau.koerper`/`formen1.koerper`: RP 1995 nennt den Zylinder „Rundsäule“; Kegel und Pyramide nur als Zusatz.
 
 **Fehlt in der App**
-- Rauminhalte mit Einheitswürfeln und Hohlmaße (l, ml) – Ende Klasse 4, eher nicht Klasse 3.
+- Rauminhalte mit Einheitswürfeln und Hohlmaße (l, ml) – Ende Klasse 4, eher nicht Klasse 3. (2026-11-26: jetzt in der App – Liter und Milliliter.)
 - Bruchteile bei Größen (1/4 m, 3/4 Stunde) als eigene Aufgabenart.
 - Proportionale Zuordnungen in Tabellen (KC „Proportionalität“), Ende Klasse 4.
 
@@ -239,7 +239,7 @@ Hessen hat zwei Schichten, die nebeneinander gelten:
 
 **Fehlt in der App**
 - Hessen als Raum: Lage, Städte, Flüsse, Landschaften (3./4.).
-- Einfacher Stromkreis und Magnete als eigene Aufgabenart.
+- Einfacher Stromkreis und Magnete als eigene Aufgabenart. (2026-11-26: jetzt in der App – Stromkreis und Magnete im Thema „Strom und Magnete“.)
 - Demokratie im Kleinen: Klassenrat, Kinderrechte (Inhaltsfeld Gesellschaft und Politik).
 
 ### Ethik
@@ -254,7 +254,7 @@ Hessen hat zwei Schichten, die nebeneinander gelten:
 - Hinweise auf Reformationstag und Buß- und Bettag als freie Tage stimmen für Hessen nicht [Praxis].
 
 **Fehlt in der App**
-- „Goldene Regel“ als Begriff; Umgang mit Trauer und Lebensende; Feste anderer Religionen.
+- „Goldene Regel“ als Begriff; Umgang mit Trauer und Lebensende; Feste anderer Religionen. (2026-11-26: jetzt in der App – Feste anderer Religionen im Thema „Der Festkalender“.)
 
 ### Musik
 

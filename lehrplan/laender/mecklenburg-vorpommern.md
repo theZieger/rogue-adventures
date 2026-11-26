@@ -205,9 +205,9 @@ Fünf Leitthemen, jedes Thema einmal für die Schuleingangsphase und einmal für
   Einmaleins am Ende von Klasse 2 automatisiert sein. Die Aufgabenart `math.mul` wäre also schon Stoff der Klasse 2.
 
 **Fehlt in der App**
-- Liter und Milliliter, Sekunde (Klasse 3).
+- Liter und Milliliter, Sekunde (Klasse 3). (2026-11-26: jetzt in der App – Liter und Milliliter.)
 - Kreis: Mittelpunkt, Radius, Durchmesser (Klasse 3).
-- Rechnen mit Klammern (Klasse 3).
+- Rechnen mit Klammern (Klasse 3). (2026-11-26: jetzt in der App – Rechnen mit Klammern.)
 - Größen als Bruch lesen: ¾ l, 1 ½ h (Klasse 3).
 - Vergrößern und Verkleinern einfacher Figuren (Klasse 3).
 - „Je mehr …, desto …“; „wahrscheinlich/unwahrscheinlich“ auf einer Skala (Klasse 3).
@@ -262,9 +262,9 @@ Fünf Leitthemen, jedes Thema einmal für die Schuleingangsphase und einmal für
   (Sonne, Mond und Sterne stehen bei Philosophieren 1/2).
 
 **Fehlt in der App**
-- Lebensraum Wald: Waldarten, Stockwerke, Pilze, Tiere (Klasse 3).
+- Lebensraum Wald: Waldarten, Stockwerke, Pilze, Tiere (Klasse 3). (2026-11-26: jetzt in der App – der Lebensraum Wald als eigenes Thema.)
 - Bundesland Mecklenburg-Vorpommern: Landkreise, Kreisstädte, Schwerin, Hansestädte, Flüsse/Seen/Meer (Klasse 3).
-- Feuer (Verbrennungsdreieck, Verhalten im Brandfall) und Magnetismus (Klasse 3).
+- Feuer (Verbrennungsdreieck, Verhalten im Brandfall) und Magnetismus (Klasse 3). (2026-11-26: jetzt in der App – Magnetismus im Thema „Strom und Magnete“.)
 - Lebensraum Wasser: Uferzonen und ihre Arten (Klasse 3).
 - Müll und Recycling, Trinkwasser und Kläranlage, Energien.
 - Kinderrechte, Klassenrat, Wahlen.

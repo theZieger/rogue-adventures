@@ -89,13 +89,13 @@ export const LAENDER: Record<string, Land> = {
     gloss: { ...ZEIT, ...STUFEN },
     fit: fits({
       passt:
-        'math bau jahrmarkt satzbaustelle freunde wetterstation kompass verkehr frueher musik teestube doppeldecker ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 koerper1 jahr1 baeume2',
+        'strom math bau jahrmarkt satzbaustelle freunde wetterstation kompass verkehr frueher musik teestube doppeldecker ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 koerper1 jahr1 baeume2',
       frueher: 'sinne',
       nicht: 'ethik kirchenjahr wiese feste2',
-      offen: 'wald strom religionen woerterwerkstatt ichwelt kartoffel kornkammer formen2 tiere2 natur2',
+      offen: 'religionen wald woerterwerkstatt ichwelt kartoffel kornkammer formen2 tiere2 natur2',
     }),
     note: {
-      math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel von Mengen stehen hier nicht im Plan.',
+      math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel stehen hier nicht im Plan; ob schriftlich abgezogen oder ergänzt wird, stellt er frei.',
       bau: 'Kegel, Pyramide, Parallelogramm sowie Verschieben und Drehen stehen hier nicht im Plan.',
       woerterwerkstatt:
         'Für doppelte Mitlaute, Verlängern, Dehnungs-h und Trennen war die Klassenstufe im Plan nicht nachzulesen.',
@@ -135,6 +135,11 @@ export const LAENDER: Record<string, Land> = {
       tiere2: 'Tierhaltung steht im Plan; bestimmte Vogelarten und Kleintiere schreibt er nicht vor.',
       natur2:
         'Licht, Luft und Pläne stehen im Plan; Sonne, Mond und Sterne, Thermometer und Warnzeichen nennt er nicht.',
+      wald: 'Der Plan verlangt einen Lebensraum nach Wahl der Schule; der Wald ist möglich, aber nicht vorgeschrieben.',
+      strom: 'Stromkreis, Leiter und Energie stehen hier in Klasse 3/4; Magnete nennt der Plan nicht.',
+      religionen:
+        'In Baden-Württemberg gibt es in der Grundschule kein Fach Ethik; Feste anderer Kulturen stehen im Sachunterricht der Klassen 1/2.',
+      kompass: 'Baden-Württemberg auf der Karte steht hier im Plan der Klassen 3/4.',
     },
   },
   BY: {
@@ -148,10 +153,10 @@ export const LAENDER: Record<string, Land> = {
     gloss: { ...ZEIT_BY, ...KERN, ...STUFEN },
     fit: fits({
       passt:
-        'math bau jahrmarkt woerterwerkstatt satzbaustelle wetterstation kompass verkehr frueher musik teestube doppeldecker feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1',
+        'religionen strom wald math bau jahrmarkt woerterwerkstatt satzbaustelle wetterstation kompass verkehr frueher musik teestube doppeldecker feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1',
       frueher: 'wiese sinne',
       nicht: 'ethik kirchenjahr kartoffel kornkammer',
-      offen: 'wald strom religionen freunde ichwelt ichdu1 baeume2 tiere2 natur2',
+      offen: 'freunde ichwelt ichdu1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Vorgeschrieben ist hier das Abziehverfahren; Punkt vor Strich, Teilbarkeitsregeln und Drittel von Mengen stehen nicht im Plan.',
@@ -185,6 +190,11 @@ export const LAENDER: Record<string, Land> = {
       tiere2: 'Im Plan stehen Haus- und Nutztiere; Vögel und Kleintiere nennt er nicht.',
       natur2:
         'Luft, Wasser und Pläne stehen im Plan; Licht und Schatten, Sonne, Mond und Sterne und Warnzeichen nennt er nicht.',
+      wald: 'Wald und Gewässer stehen hier im Plan der Klassen 3/4, mit Arten und Nahrungsbeziehungen.',
+      strom: 'Magnete nennt der Plan nicht. Er verlangt Schaltzeichen; Lernquest zeigt den Stromkreis als Bild.',
+      religionen:
+        'Feste der Religionen stehen hier schon in Klasse 1/2; Gotteshäuser, Schriften und Zeichen in Klasse 3/4.',
+      kompass: 'Bayern auf der Karte steht hier im Plan der Klassen 3/4.',
     },
   },
   BE: {
@@ -201,7 +211,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2',
       nicht: 'ethik kirchenjahr kartoffel kornkammer wiese kompass feste2',
       offen:
-        'wald strom religionen freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
+        'religionen strom wald freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Ein Drittel und Bruchteile von Mengen stehen hier nicht im Plan.',
@@ -223,7 +233,8 @@ export const LAENDER: Record<string, Land> = {
       wiese:
         'Die Wiese ist hier nur ein Lebensraum unter mehreren; Schichten der Wiese und Pflanzensammlung sind nicht verlangt.',
       wetterstation: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
-      kompass: 'Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; das Lesen von Stadtplänen steht im Plan.',
+      kompass:
+        'Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; Stadtpläne und die Lage Berlins in Deutschland stehen im Plan.',
       verkehr: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       frueher: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       sinne: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
@@ -246,6 +257,10 @@ export const LAENDER: Record<string, Land> = {
       baeume2: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       tiere2: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       natur2: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
+      wald: 'Der Wald ist im Plan nur ein Stichwort zum Lebensraum, ohne feste Klasse; das legt die Schule fest.',
+      strom: 'Den Stromkreis nennt der Plan beim Fahrrad, ohne feste Klasse; Magnete nennt er nicht.',
+      religionen:
+        'In Berlin gibt es in der Grundschule kein Fach Ethik; der Sachunterricht nennt Feste und Feiertage nur allgemein.',
     },
   },
   BB: {
@@ -261,7 +276,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2',
       nicht: 'ethik kirchenjahr kartoffel kornkammer wiese kompass feste2',
       offen:
-        'wald strom religionen freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
+        'religionen strom wald freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Ein Drittel und Bruchteile von Mengen stehen hier nicht im Plan.',
@@ -283,7 +298,8 @@ export const LAENDER: Record<string, Land> = {
       wiese:
         'Die Wiese ist hier nur ein Lebensraum unter mehreren; Schichten der Wiese und Pflanzensammlung sind nicht verlangt.',
       wetterstation: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
-      kompass: 'Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; das Lesen von Stadtplänen steht im Plan.',
+      kompass:
+        'Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; Karten und die Lage Brandenburgs in Deutschland stehen im Plan.',
       verkehr: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       frueher: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       sinne: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
@@ -306,6 +322,10 @@ export const LAENDER: Record<string, Land> = {
       baeume2: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       tiere2: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
       natur2: 'Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest.',
+      wald: 'Der Wald ist im Plan nur ein Stichwort zum Lebensraum, ohne feste Klasse; das legt die Schule fest.',
+      strom: 'Den Stromkreis nennt der Plan beim Fahrrad, ohne feste Klasse; Magnete nennt er nicht.',
+      religionen:
+        'In Brandenburg gibt es in den Klassen 1 bis 4 kein Fach Ethik; der Sachunterricht nennt Feste nur allgemein.',
     },
   },
   HH: {
@@ -318,13 +338,13 @@ export const LAENDER: Record<string, Land> = {
     fit: fits({
       passt:
         'math jahrmarkt woerterwerkstatt satzbaustelle wetterstation kompass verkehr doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 zahlen100 malteilen groessen2 formen2 jahr1 baeume2',
-      frueher: 'sinne teestube',
+      frueher: 'religionen sinne teestube',
       spaeter: 'bau',
       nicht: 'ethik kirchenjahr wiese natur2',
-      offen: 'wald strom religionen freunde ichwelt kartoffel kornkammer frueher musik formen1 koerper1 tiere2',
+      offen: 'strom wald freunde ichwelt kartoffel kornkammer frueher musik formen1 koerper1 tiere2',
     }),
     note: {
-      math: 'Schriftliches Malnehmen und Punkt vor Strich stehen hier erst in Klasse 4; Teilbarkeitsregeln und Drittel nennt der Plan nicht.',
+      math: 'Schriftliches Malnehmen, Punkt vor Strich und Klammern stehen hier erst in Klasse 4; Teilbarkeitsregeln und Drittel nennt der Plan nicht.',
       bau: 'Faltvorlagen, Ansichten, parallel und senkrecht, Umfang und Fläche stehen hier erst in Klasse 4; Körper und Symmetrie in Klasse 3.',
       woerterwerkstatt: 'Das Komma vor „aber“ und „denn“ steht hier nicht im Plan.',
       satzbaustelle:
@@ -364,6 +384,11 @@ export const LAENDER: Record<string, Land> = {
       jahr1: 'Halbe Stunden liest man hier erst in Klasse 2 ab.',
       tiere2: 'Vögel und Nutztiere stehen im Plan; Heimtiere und Kleintiere nennt er nicht.',
       natur2: 'Licht, Luft und Warnzeichen stehen hier nicht im Plan; das Thermometer folgt in Klasse 3/4.',
+      wald: 'Der Wald ist in Hamburg kein eigenes Unterrichtsvorhaben; Bäume stehen in Klasse 1/2 bei den Jahreszeiten.',
+      strom: 'Magnetismus steht hier in Klasse 1/2, Stromkreise beim Thema Energie meist in Klasse 4.',
+      religionen:
+        'Feste aus mehreren Religionen stehen hier im Fach Religion schon in Klasse 1/2; Gotteshäuser in Klasse 3/4.',
+      jahrmarkt: 'Liter und Milliliter stehen hier erst in Klasse 4.',
     },
   },
   HE: {
@@ -380,12 +405,12 @@ export const LAENDER: Record<string, Land> = {
       spaeter: 'formen2',
       nicht: 'ethik kirchenjahr',
       offen:
-        'wald strom religionen woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
+        'religionen strom wald woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
-      math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel nennt der Plan nicht; schriftliches Malnehmen steht im älteren Plan erst in Klasse 4.',
+      math: 'Der ältere Plan schreibt beim schriftlichen Abziehen das Ergänzen vor, Malnehmen erst in Klasse 4; Punkt vor Strich nennt er nicht.',
       bau: 'Faltvorlagen stehen hier am Ende der Grundschulzeit; Parallelogramm, Verschieben und Drehen nennen die Pläne nicht.',
-      jahrmarkt: 'Gewichte ordnet der Plan der Stufe bis Klasse 4 zu.',
+      jahrmarkt: 'Gewichte, Liter und Milliliter ordnet der Plan dem Ende der Klasse 4 zu.',
       woerterwerkstatt:
         'Der Plan beschreibt nur den Stand am Ende von Klasse 4; was wann drankommt, legt die Schule fest.',
       satzbaustelle:
@@ -399,7 +424,8 @@ export const LAENDER: Record<string, Land> = {
       kornkammer: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
       wiese: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
       wetterstation: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
-      kompass: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
+      kompass:
+        'Karten und das Bundesland Hessen nennt der ältere Plan für Klasse 3/4; meist legt die Schule fest, was wann drankommt.',
       verkehr: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
       frueher: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
       sinne: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
@@ -422,6 +448,10 @@ export const LAENDER: Record<string, Land> = {
       baeume2: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
       tiere2: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
       natur2: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
+      wald: 'Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt.',
+      strom: 'Der ältere Plan nennt Stromquellen für Klasse 1/2 und Magnete ohne feste Klasse.',
+      religionen:
+        'Feste und das Miteinander der Religionen stehen im Plan bis Ende Klasse 4; was wann drankommt, legt die Schule fest.',
     },
   },
   MV: {
@@ -436,13 +466,13 @@ export const LAENDER: Record<string, Land> = {
     gloss: POSITIV,
     fit: fits({
       passt:
-        'math bau jahrmarkt woerterwerkstatt satzbaustelle freunde wetterstation kompass verkehr frueher teestube doppeldecker ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 tiere2 natur2',
+        'wald math bau jahrmarkt woerterwerkstatt satzbaustelle freunde wetterstation kompass verkehr frueher teestube doppeldecker ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 tiere2 natur2',
       frueher: 'wiese sinne',
       nicht: 'ethik kirchenjahr feste2',
-      offen: 'wald strom religionen ichwelt kartoffel kornkammer musik',
+      offen: 'religionen strom ichwelt kartoffel kornkammer musik',
     }),
     note: {
-      math: 'Schriftliches Malnehmen und Teilbarkeitsregeln stehen hier erst in Klasse 4; Drittel und Bruchteile von Mengen nicht im Plan.',
+      math: 'Schriftliches Malnehmen und Teilbarkeitsregeln erst in Klasse 4, Drittel gar nicht; das Verfahren beim Abziehen wählt die Lehrkraft.',
       bau: 'Umfang, Fläche und das Drehen stehen hier erst in Klasse 4; parallel und senkrecht schon in Klasse 1/2.',
       woerterwerkstatt: 'Das Komma vor „aber“ und „denn“ nennt der Plan nicht, nur das Komma bei Aufzählungen.',
       satzbaustelle: 'Die Steigerung der Adjektive steht hier schon in Klasse 1/2.',
@@ -471,6 +501,13 @@ export const LAENDER: Record<string, Land> = {
       koerper1: 'Erste Hilfe und Rettungskette stehen hier erst in Klasse 3/4.',
       natur2:
         'Warnzeichen stehen nicht im Sachunterricht; Sonne, Mond und Sterne gehören hier zum Philosophieren mit Kindern.',
+      wald: 'Der Wald mit Waldarten, Stockwerken und Pilzen steht hier im Plan der Klassen 3/4.',
+      strom:
+        'Magnetismus steht hier im Plan der Klassen 1/2 und laut Jahresübersicht in Klasse 3; den Stromkreis nennt der Plan nicht.',
+      religionen:
+        'Die Vielfalt der Religionen steht hier im Sachunterricht der Klassen 3/4; einzelne Feste nennt der Plan nicht.',
+      kompass:
+        'Mecklenburg-Vorpommern mit Landeshauptstadt, Flüssen, Seen und Meer steht hier im Plan der Klassen 3/4.',
     },
   },
   NI: {
@@ -486,10 +523,10 @@ export const LAENDER: Record<string, Land> = {
       frueher: 'sinne',
       spaeter: 'formen2',
       nicht: 'ethik kirchenjahr kartoffel kornkammer',
-      offen: 'wald strom religionen freunde ichwelt wiese verkehr doppeldecker feste2',
+      offen: 'religionen strom wald freunde ichwelt wiese verkehr doppeldecker feste2',
     }),
     note: {
-      math: 'Teilen mit Rest, Brüche, Punkt vor Strich und Teilbarkeitsregeln stehen hier nicht im Plan.',
+      math: 'Teilen mit Rest, Brüche, Punkt vor Strich und Teilbarkeit stehen nicht im Plan; wie schriftlich abgezogen wird, legt die Schule fest.',
       bau: 'Umfang, Kegel, Parallelogramm und Dreiecksarten nennt der Plan nicht.',
       woerterwerkstatt: 'Komma vor „aber“ und „denn“ und das Trennen am Zeilenende nennt der Plan nicht ausdrücklich.',
       satzbaustelle:
@@ -521,6 +558,12 @@ export const LAENDER: Record<string, Land> = {
       formen1: 'Den Quader nennt der Plan erst bis Ende Klasse 4; in Klasse 1/2 stehen Würfel, Kugel und Zylinder.',
       groessen2: 'Kommabeträge nennt der Plan nicht; Millimeter und Säulendiagramme folgen bis Ende Klasse 4.',
       formen2: 'Rechter Winkel, parallel, senkrecht, Kanten und Flächen stehen hier erst bis Ende Klasse 4.',
+      wald: 'Der Wald ist im Plan nur ein Beispiel für einen Lebensraum, bis Ende Klasse 2.',
+      strom: 'Strom mit Licht, Wärme und Gefahren steht hier im Plan bis Ende Klasse 4; Magnete nennt er nicht.',
+      religionen:
+        'Verglichen wurden die Vorgaben von 2022; den neuen Plan für Werte und Normen von 2026 haben wir noch nicht gelesen.',
+      kompass:
+        'Karten und Kompass stehen hier bis Ende Klasse 4 im Plan; Niedersachsen selbst ist dort kein eigenes Thema.',
     },
   },
   NW: {
@@ -536,7 +579,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle freunde kompass verkehr frueher musik ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 tiere2 natur2',
       frueher: 'sinne',
       nicht: 'ethik kirchenjahr kartoffel kornkammer wiese wetterstation',
-      offen: 'wald strom religionen ichwelt teestube doppeldecker feste2',
+      offen: 'religionen strom wald ichwelt teestube doppeldecker feste2',
     }),
     note: {
       math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel stehen hier nicht im Plan.',
@@ -569,6 +612,12 @@ export const LAENDER: Record<string, Land> = {
       groessen2: 'Kommabeträge und Millimeter stehen hier erst bis Ende Klasse 4; Dezimeter kommt nicht vor.',
       formen2:
         'Rechter Winkel, parallel und senkrecht stehen hier erst bis Ende Klasse 4; Gerade, Strecke und Strahl nennt der Plan nicht.',
+      wald: 'Der Wald steht hier bis Ende Klasse 4 als Beispiel dafür, wie Tiere und Pflanzen an ihren Lebensraum angepasst sind.',
+      strom:
+        'Magnetismus steht hier schon bis Ende Klasse 2, einfache Stromkreise und Energieträger bis Ende Klasse 4.',
+      religionen:
+        'Feste und Merkmale der Religionen stehen in Praktischer Philosophie bis Ende Klasse 2; nicht jede Schule bietet das Fach an.',
+      kompass: 'Karten, Kompass und Nordrhein-Westfalen stehen hier im Plan bis Ende Klasse 4.',
     },
   },
   RP: {
@@ -585,10 +634,10 @@ export const LAENDER: Record<string, Land> = {
       spaeter: 'formen2',
       nicht: 'ethik kirchenjahr',
       offen:
-        'wald strom religionen woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
+        'religionen strom wald woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
-      math: 'Punkt vor Strich und Teilbarkeitsregeln nennt der Plan nicht; bei Brüchen nur Hälfte und Viertel von Größen.',
+      math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel nennt der Plan nicht; wie schriftlich abgezogen wird, wählt die Schule.',
       woerterwerkstatt: 'Der Plan für Deutsch nennt keine Klassenstufen, nur den Stand am Ende von Klasse 4.',
       satzbaustelle: 'Der Plan für Deutsch nennt keine Klassenstufen, nur den Stand am Ende von Klasse 4.',
       ethik: 'Martin Luther kommt im Plan für Ethik nur als ein Beispiel für Zivilcourage vor, nicht als Lebensbild.',
@@ -600,7 +649,7 @@ export const LAENDER: Record<string, Land> = {
       kornkammer: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
       wiese: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
       wetterstation: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
-      kompass: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
+      kompass: 'Karten, Kompass und Rheinland-Pfalz nennt der Plan bis Ende Klasse 4; die Klasse legt die Schule fest.',
       verkehr: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
       frueher: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
       sinne: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
@@ -625,6 +674,10 @@ export const LAENDER: Record<string, Land> = {
       baeume2: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
       tiere2: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
       natur2: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
+      wald: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
+      strom: 'Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest.',
+      religionen:
+        'Feste und Merkmale der Weltreligionen stehen im Plan für Ethik bis Ende Klasse 4; die Klasse legt die Schule fest.',
     },
   },
   SN: {
@@ -650,10 +703,10 @@ export const LAENDER: Record<string, Land> = {
     gloss: { ...kern('Der Lehrplan hier sagt Satzkern statt Prädikat.'), ...KOMPARATIV },
     fit: fits({
       passt:
-        'math bau jahrmarkt woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer kompass verkehr frueher musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 natur2',
+        'religionen wald math bau jahrmarkt woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer kompass verkehr frueher musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 natur2',
       frueher: 'sinne',
-      nicht: 'ethik kirchenjahr wiese',
-      offen: 'wald strom religionen wetterstation tiere2',
+      nicht: 'strom ethik kirchenjahr wiese',
+      offen: 'wetterstation tiere2',
     }),
     note: {
       math: 'Ein Drittel ist hier nicht vorgesehen, nur Viertel, Hälfte und drei Viertel bei Größen.',
@@ -681,6 +734,11 @@ export const LAENDER: Record<string, Land> = {
       koerper1: 'Erste Hilfe und Notruf stehen hier erst in Klasse 3/4.',
       tiere2: 'Nutz- und Heimtiere stehen hier in Klasse 3/4; Vögel werden nicht namentlich verlangt.',
       natur2: 'Licht und Schatten, Schall und Warnzeichen kommen im Plan nicht ausdrücklich vor.',
+      wald: 'Der Wald als Natur-, Lebens- und Wirtschaftsraum steht hier im Plan der Klassen 3/4.',
+      strom: 'Magnete und Stromkreis stehen hier nicht im Plan; elektrische Energie kommt in Klasse 3/4 vor.',
+      religionen:
+        'Zeichen, Rituale und Gegenstände aus Judentum, Christentum und Islam stehen hier in Klasse 3/4; andere Religionen nicht.',
+      kompass: 'Das Bundesland mit Magdeburg, den Nachbarländern und dem Harz steht hier im Plan der Klassen 3/4.',
     },
   },
   SH: {
@@ -694,12 +752,12 @@ export const LAENDER: Record<string, Land> = {
     fit: fits({
       passt:
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2',
-      nicht: 'ethik kirchenjahr musik feste2',
+      nicht: 'religionen ethik kirchenjahr musik feste2',
       offen:
-        'wald strom religionen freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
+        'strom wald freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
-      math: 'Schriftliches Malnehmen, halbschriftliches Teilen, Punkt vor Strich und Teilbarkeit stehen hier erst in Klasse 4.',
+      math: 'Schriftliches Malnehmen, halbschriftliches Teilen, Punkt vor Strich, Klammern und Teilbarkeit stehen hier erst in Klasse 4.',
       bau: 'Verschieben und Drehen nennt der Plan nicht; ob die Geometrie in Klasse 3 oder 4 liegt, legt die Schule fest.',
       woerterwerkstatt:
         'Doppelte Mitlaute, Dehnungs-h und Trennen nennt der Plan nicht einzeln; beim Komma nur die Aufzählung.',
@@ -737,6 +795,10 @@ export const LAENDER: Record<string, Land> = {
       baeume2: 'Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt.',
       tiere2: 'Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt.',
       natur2: 'Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt.',
+      wald: 'Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt.',
+      strom: 'Magnete und Stromkreis nennt der Plan nicht; erneuerbare Energien stehen dort für Klasse 3/4.',
+      religionen:
+        'Feste der Religionen sind hier kein Thema des Fachs Philosophie; christliche Feste stehen im Plan für Religion.',
     },
   },
 };

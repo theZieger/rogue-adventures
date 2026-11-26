@@ -262,7 +262,7 @@ ihre Folgen, Quellen.
   `formen2.bauen`); Ergebnisse abschätzen.
 - 3/4: Liter und Milliliter; Sekunden; Größen in benachbarte Einheiten umwandeln (alle Bereiche); einfache Brüche an
   Größen; Rauminhalt mit Einheitswürfeln; Figuren vergrößern und verkleinern; Terme vergleichen; Rechengesetze;
-  proportionale Aufgaben (Anzahl – Preis); schriftliche Division; Kombinatorik mit/ohne Reihenfolge.
+  proportionale Aufgaben (Anzahl – Preis); schriftliche Division; Kombinatorik mit/ohne Reihenfolge. (2026-11-26: jetzt in der App – Liter und Milliliter.)
 - Nicht fürs Handy: Zeichnen mit Zirkel und Geodreieck, Körper bauen, Befragungen planen.
 
 ### Deutsch
@@ -324,7 +324,7 @@ ihre Folgen, Quellen.
   unbegrenzt); Trinkwasser und Abwasser, Lösen von Stoffen; **Brückenarten**; **Kinderrechte, Gemeinderat,
   Bürgermeister, Wahl**; **Baden-Württemberg, Deutschland, Europa auf der Karte**, Höhenlinien, Maßstabsleiste;
   Gelenke und Wirbelsäule; Nährstoffe in Lebensmitteln; Werbung; Berufe; Migration und Lebenswelten anderer Kinder;
-  Wetter messen (Niederschlag, Wind).
+  Wetter messen (Niederschlag, Wind). (2026-11-26: jetzt in der App – Stromkreis, Leiter und Energieträger im Thema „Strom und Magnete“.)
 - Nicht fürs Handy: die verbindlichen Experimente, Bauen, Pubertät, Ortsgeschichte.
 
 ### Ethik

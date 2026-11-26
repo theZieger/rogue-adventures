@@ -242,7 +242,7 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
 **Fehlt in der App**
 - Ende 4: Hohlmaße ml und l; Tonne; Sekunden; **Datenmengen Byte, kB, MB**; **Binärzahlen** umwandeln; Zahlen bis
   1 000 000; maßstäbliches Vergrößern/Verkleinern auf Gitterpapier; Rauminhalt mit Einheitswürfeln (nahe an
-  `bau.wz`); Sechseck, Achteck; Fachwörter Summe, Differenz, Produkt, Quotient; Digitaluhr.
+  `bau.wz`); Sechseck, Achteck; Fachwörter Summe, Differenz, Produkt, Quotient; Digitaluhr. (2026-11-26: jetzt in der App – ml und l.)
 - Ende 2: Dreiviertelstunde; Ergänzen auf Stufenzahlen (teilweise in `zahlen100.plus`).
 - Nicht per Quiz: Zeichnen mit Zirkel und Geodreieck, Mathekonferenzen.
 
@@ -285,10 +285,10 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
 - `wiese.stock`, `herbar`: nicht genannt (Lebensraum-Beispiel im Plan ist der Wald).
 
 **Fehlt in der App**
-- Ende 2: Magnetismus; Wünsche und Bedürfnisse, Werbung, Taschengeld; Berufe; Familienformen im Sachunterricht.
+- Ende 2: Magnetismus; Wünsche und Bedürfnisse, Werbung, Taschengeld; Berufe; Familienformen im Sachunterricht. (2026-11-26: jetzt in der App – Magnetismus im Thema „Strom und Magnete“.)
 - Ende 4: Stromkreis und Sicherheit; Energieträger; Verbrennung und Löschen; Blutkreislauf und Verdauung;
   Nordrhein-Westfalen/Deutschland/Europa auf der Karte; Rathaus, Wahlen, Kinderrechte; Steinzeit und Zeitleiste;
-  EVA-Prinzip, Codierung, eine Befehlsfolge programmieren; Medien- und Datenschutz; Wald als Lebensraum.
+  EVA-Prinzip, Codierung, eine Befehlsfolge programmieren; Medien- und Datenschutz; Wald als Lebensraum. (2026-11-26: jetzt in der App – Stromkreis, Sicherheit und Energieträger („Strom und Magnete“) und der Wald als Lebensraum.)
 - Nicht per Quiz: Fahrradparcours, Bauen und Konstruieren, Sexualerziehung im Gespräch.
 
 ### Ethik / Praktische Philosophie
@@ -307,7 +307,7 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
 
 **Fehlt in der App**
 - Feste und Merkmale von Judentum und Islam (Gotteshaus, heilige Schrift); Wünsche; Rechte und Pflichten,
-  Kinderrechte; Umgang mit Tieren; Mediennutzung; Gerechtigkeit; Vorurteile.
+  Kinderrechte; Umgang mit Tieren; Mediennutzung; Gerechtigkeit; Vorurteile. (2026-11-26: jetzt in der App – Feste und Merkmale von Judentum und Islam im Thema „Der Festkalender“.)
 
 ### Musik
 

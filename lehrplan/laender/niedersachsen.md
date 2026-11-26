@@ -253,7 +253,7 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
   Gleichheitsaufgaben (7 + 4 = 10 + _); Menge – Preis.
 - Ende 4: ml und l; Tonne; Sekunden; Maßstab (2:1) auf Gitterpapier; Rauminhalt mit Einheitswürfeln; Kantenmodell;
   Malkreuz; Tabellen zu Weg – Zeit; Baumdiagramm; Zahlen bis 1 000 000; Fachwörter Summe, Differenz, Produkt,
-  Quotient.
+  Quotient. (2026-11-26: jetzt in der App – ml und l.)
 - Nicht per Quiz: Zeichnen mit dem Geodreieck, Geobrett, eigene Befragungen.
 
 ### Deutsch
@@ -308,7 +308,7 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
 - Ende 4, mit Landesbezug: **Wattenmeer, Watt, Ebbe und Flut**; Deutschland, Europa, Welt auf der Karte; physische
   und politische Karten, Globus.
 - Ende 4 sonst: Elektrizität und Gefahren; Verbrennung und Rost; Knochen und Gelenke; Brücken; Erfindungen;
-  Kinderrechte; Werbung und fairer Handel; Treibhauseffekt; Regenwald, Arktis, Meer; Schule vor 100 Jahren.
+  Kinderrechte; Werbung und fairer Handel; Treibhauseffekt; Regenwald, Arktis, Meer; Schule vor 100 Jahren. (2026-11-26: jetzt in der App – Elektrizität und ihre Gefahren im Thema „Strom und Magnete“.)
 - Nicht per Quiz: Bauen, Versuche durchführen, Sexualerziehung im Gespräch.
 
 ### Werte und Normen

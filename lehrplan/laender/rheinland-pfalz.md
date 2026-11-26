@@ -208,7 +208,7 @@ schreiben; Texte verfassen; Sprache untersuchen. [off]
 **Fehlt in der App**
 - Stützpunktaufgaben des großen Einmaleins (· 11, · 12, · 25) – Ende 4.
 - Drehsymmetrie und Rauten (Ende 4).
-- Rauminhalte (l, ml, Kubikdezimeter) und Tonne.
+- Rauminhalte (l, ml, Kubikdezimeter) und Tonne. (2026-11-26: jetzt in der App – l und ml.)
 - Proportionalität (Menge – Preis in Tabellen), Gleichungen und Ungleichungen mit Platzhalter.
 
 ### Deutsch
@@ -245,8 +245,8 @@ schreiben; Texte verfassen; Sprache untersuchen. [off]
 
 **Fehlt in der App**
 - Rheinland-Pfalz, Deutschland, Europa auf der Karte; Maßstab und Höhendarstellung.
-- Einfacher Stromkreis, Magnetismus, Hebel/Wippe als Aufgabenarten.
-- Kinderrechte, Klassenrat, Gemeinderat; Nahrungsketten; Erde im Sonnensystem.
+- Einfacher Stromkreis, Magnetismus, Hebel/Wippe als Aufgabenarten. (2026-11-26: jetzt in der App – einfacher Stromkreis und Magnetismus im Thema „Strom und Magnete“.)
+- Kinderrechte, Klassenrat, Gemeinderat; Nahrungsketten; Erde im Sonnensystem. (2026-11-26: jetzt in der App – Nahrungsketten im Thema „Der Wald“.)
 
 ### Ethik
 
@@ -259,7 +259,7 @@ schreiben; Texte verfassen; Sprache untersuchen. [off]
 - Reformationstag und Buß- und Bettag als freie Tage stimmen hier nicht [Praxis].
 
 **Fehlt in der App**
-- Weltreligionen im Überblick (Feste, Gebote, heilige Stätten), „goldene Regel“.
+- Weltreligionen im Überblick (Feste, Gebote, heilige Stätten), „goldene Regel“. (2026-11-26: jetzt in der App – Feste und heilige Stätten der Weltreligionen im Thema „Der Festkalender“.)
 - Vorbilder wie Martin Luther King, Gandhi, Sophie Scholl; Umgang mit Tod und Trauer.
 
 ### Musik

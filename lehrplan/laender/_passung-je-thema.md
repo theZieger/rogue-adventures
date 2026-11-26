@@ -23,7 +23,7 @@ Regeln:
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Punkt vor Strich, Teilbarkeitsregeln und Drittel von Mengen stehen hier nicht im Plan. | lehrplan/laender/baden-wuerttemberg.md §5 Mathematik Z.239–241, 257–258; §4 Z.90–114 |  |
+| `math` | passt | Punkt vor Strich, Teilbarkeitsregeln und Drittel stehen hier nicht im Plan; ob schriftlich abgezogen oder ergänzt wird, stellt er frei. | lehrplan/laender/baden-wuerttemberg.md §5 Mathematik Z.239–241, 257–258; §4 Z.90–114; §3 Z.59 |  |
 | `bau` | passt | Kegel, Pyramide, Parallelogramm sowie Verschieben und Drehen stehen hier nicht im Plan. | lehrplan/laender/baden-wuerttemberg.md §5 Mathematik Z.242–243, 255–256; §4 Z.98–101, 113 |  |
 | `jahrmarkt` | passt |  | lehrplan/laender/baden-wuerttemberg.md §5 Mathematik Z.244; §4 Z.102–106 |  |
 | `woerterwerkstatt` | offen | Für doppelte Mitlaute, Verlängern, Dehnungs-h und Trennen war die Klassenstufe im Plan nicht nachzulesen. | lehrplan/laender/baden-wuerttemberg.md §5 Deutsch Z.274, 283–285; §7 Z.401–402 | aus „passt“: fast die Hälfte der Aufgabenarten hängt am nicht gelesenen Rechtschreibrahmen (§7) |
@@ -36,7 +36,7 @@ Regeln:
 | `kornkammer` | offen | Der Plan verlangt eine Nutzpflanze nach Wahl der Schule; dieses Thema ist möglich, aber nicht vorgeschrieben. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.307–308, 313; §4 Z.171, 185–187 | aus „passt“: „zulässig, aber nicht vorgeschrieben“ (§5) |
 | `wiese` | nicht | Die Wiese ist kein Pflichtthema, die Schule wählt den Lebensraum; Tierentwicklung und Naturschutz stehen im Plan. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.307, 314; §4 Z.185–187 |  |
 | `wetterstation` | passt | Bauernregeln stehen hier nicht im Plan. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.303–304, 317; §4 Z.171–174 |  |
-| `kompass` | passt |  | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.305; §4 Z.176–178 |  |
+| `kompass` | passt | Baden-Württemberg auf der Karte steht hier im Plan der Klassen 3/4. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.305; §4 Z.176–178 |  |
 | `verkehr` | passt |  | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.306; §4 Z.178–179 |  |
 | `frueher` | passt |  | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.306; §4 Z.166–168, 179–180 |  |
 | `sinne` | frueher | Sinnesorgane und ihr Schutz sind hier Stoff der Klassen 1/2; Rauchen, Alkohol und Medikamente stehen nicht im Sachunterricht. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.311–312; §4 Z.157–158 |  |
@@ -61,6 +61,9 @@ Regeln:
 | `baeume2` | passt | Bestimmte Baumarten, Frühblüher und Obstsorten schreibt der Plan nicht vor. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.301, 315; §4 Z.158–159 |  |
 | `tiere2` | offen | Tierhaltung steht im Plan; bestimmte Vogelarten und Kleintiere schreibt er nicht vor. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.302, 315; §4 Z.158–160 | aus „passt“: nur zwei von fünf Aufgabenarten gestützt |
 | `natur2` | offen | Licht, Luft und Pläne stehen im Plan; Sonne, Mond und Sterne, Thermometer und Warnzeichen nennt er nicht. | lehrplan/laender/baden-wuerttemberg.md §5 Sachunterricht Z.300, 316–317; §4 Z.160–162 | aus „passt“: nur drei von sieben Aufgabenarten gestützt |
+| `wald` | offen | Der Plan verlangt einen Lebensraum nach Wahl der Schule; der Wald ist möglich, aber nicht vorgeschrieben. | lehrplan/laender/baden-wuerttemberg.md §4 Sachunterricht Z.169–170, 185–186 (Wald nicht genannt) | Lebensraum nach Wahl der Schule, der Wald ist nicht genannt |
+| `strom` | passt | Stromkreis, Leiter und Energie stehen hier in Klasse 3/4; Magnete nennt der Plan nicht. | lehrplan/laender/baden-wuerttemberg.md §4 Sachunterricht Z.175–176 (Stromkreis, Leitfähigkeit, Wirkungen des Stroms, Energieträger), Z.185 (Magnete nicht genannt) |  |
+| `religionen` | offen | In Baden-Württemberg gibt es in der Grundschule kein Fach Ethik; Feste anderer Kulturen stehen im Sachunterricht der Klassen 1/2. | lehrplan/laender/baden-wuerttemberg.md §4 Ethik und Religion Z.191–195; Sachunterricht Z.156 | kein Fach Ethik; nur die pauschale Zeile „Feste anderer Kulturen“ (1/2) |
 
 ## Bayern (BY)
 
@@ -79,7 +82,7 @@ Regeln:
 | `kornkammer` | nicht | Getreide ist hier nur ein Beispiel für regionale Lebensmittel; Getreidearten sind nicht verlangt. | lehrplan/laender/bayern.md §5 HSU Z.317; §4 Z.160, 173 |  |
 | `wiese` | frueher | Wiese oder Hecke ist hier Stoff der Klassen 1/2; in Klasse 3/4 folgen Wald und Gewässer. | lehrplan/laender/bayern.md §5 HSU Z.318; §4 Z.149–150, 159 |  |
 | `wetterstation` | passt | Wetter beobachten ist hier Stoff der Klassen 1/2; Bauernregeln stehen nicht im Plan. | lehrplan/laender/bayern.md §5 HSU Z.308–309, 321; §4 Z.161–163 |  |
-| `kompass` | passt |  | lehrplan/laender/bayern.md §5 HSU Z.310; §4 Z.164–165 |  |
+| `kompass` | passt | Bayern auf der Karte steht hier im Plan der Klassen 3/4. | lehrplan/laender/bayern.md §5 HSU Z.310; §4 Z.164–165 |  |
 | `verkehr` | passt | Die Radfahrausbildung liegt hier in Klasse 4. | lehrplan/laender/bayern.md §5 HSU Z.311; §4 Z.166, 170 |  |
 | `frueher` | passt |  | lehrplan/laender/bayern.md §5 HSU Z.312; §4 Z.157–158, 163–164 |  |
 | `sinne` | frueher | Die Sinne sind hier Stoff der Klassen 1/2, in Klasse 3/4 folgt nur das Auge; Ohr und Suchtmittel stehen nicht im Plan. | lehrplan/laender/bayern.md §5 HSU Z.319–320; §4 Z.148–149, 158, 173 |  |
@@ -104,6 +107,9 @@ Regeln:
 | `baeume2` | offen | Laub- und Nadelbäume gehören hier zum Wald in Klasse 3/4; Obst steht in Klasse 1/2. | lehrplan/laender/bayern.md §5 HSU Z.307, 322; §4 Z.150, 159 | aus „hier meist später“: ruht auf einer einzigen Zeile, vier Aufgabenarten sind nicht erwähnt |
 | `tiere2` | offen | Im Plan stehen Haus- und Nutztiere; Vögel und Kleintiere nennt er nicht. | lehrplan/laender/bayern.md §5 HSU Z.307; §4 Z.149–150 | aus „passt“: nur zwei von fünf Aufgabenarten gestützt |
 | `natur2` | offen | Luft, Wasser und Pläne stehen im Plan; Licht und Schatten, Sonne, Mond und Sterne und Warnzeichen nennt er nicht. | lehrplan/laender/bayern.md §5 HSU Z.306, 322–323; §4 Z.150–153 | aus „passt“: nur drei von sieben Aufgabenarten gestützt |
+| `wald` | passt | Wald und Gewässer stehen hier im Plan der Klassen 3/4, mit Arten und Nahrungsbeziehungen. | lehrplan/laender/bayern.md §4 HSU Z.159 (3/4: Wald und Gewässer – Arten, Angepasstheit, Nahrungsbeziehungen: stock, baum, spur, kreislauf, pilz) |  |
+| `strom` | passt | Magnete nennt der Plan nicht. Er verlangt Schaltzeichen; Lernquest zeigt den Stromkreis als Bild. | lehrplan/laender/bayern.md §4 HSU Z.160–161 (3/4: Leiter, Stromkreis mit Schaltzeichen, Stromerzeugung, Energiesparen), Z.173 (Magnete nicht genannt) |  |
+| `religionen` | passt | Feste der Religionen stehen hier schon in Klasse 1/2; Gotteshäuser, Schriften und Zeichen in Klasse 3/4. | lehrplan/laender/bayern.md §4 Ethik und Religion Z.183–185 (1/2: religiöse Feste), Z.188–190 (3/4: Merkmale der Religionen mit Räumen, Schriften, Symbolen, Festen) |  |
 
 ## Berlin (BE)
 
@@ -122,7 +128,7 @@ Regeln:
 | `kornkammer` | nicht | Getreide kommt im Plan nicht vor. | lehrplan/laender/berlin.md §5 Sachunterricht Z.255–256; §4 Z.134–135 |  |
 | `wiese` | nicht | Die Wiese ist hier nur ein Lebensraum unter mehreren; Schichten der Wiese und Pflanzensammlung sind nicht verlangt. | lehrplan/laender/berlin.md §5 Sachunterricht Z.259–260; §4 Z.134–135 |  |
 | `wetterstation` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.249, 261; §4 Z.119, 130 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
-| `kompass` | nicht | Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; das Lesen von Stadtplänen steht im Plan. | lehrplan/laender/berlin.md §5 Sachunterricht Z.257–258; §4 Z.134–135 |  |
+| `kompass` | nicht | Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; Stadtpläne und die Lage Berlins in Deutschland stehen im Plan. | lehrplan/laender/berlin.md §5 Sachunterricht Z.257–258; §4 Z.134–135; §4 Z.119–120 |  |
 | `verkehr` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.247; §4 Z.126–128 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `frueher` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.250; §4 Z.123, 126–127, 132–133 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `sinne` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.248; §4 Z.122, 125 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
@@ -147,6 +153,9 @@ Regeln:
 | `baeume2` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.251, 263; §4 Z.124 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `tiere2` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.251; §4 Z.129 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `natur2` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/berlin.md §5 Sachunterricht Z.251–252, 262; §4 Z.119, 130 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
+| `wald` | offen | Der Wald ist im Plan nur ein Stichwort zum Lebensraum, ohne feste Klasse; das legt die Schule fest. | lehrplan/laender/berlin.md §4 Sachunterricht Z.116–117, 135 | Themenfelder ohne Klassenzuordnung; Wald nur als Lebensraum-Stichwort |
+| `strom` | offen | Den Stromkreis nennt der Plan beim Fahrrad, ohne feste Klasse; Magnete nennt er nicht. | lehrplan/laender/berlin.md §4 Sachunterricht Z.116–117, 127, 134 | Themenfelder ohne Klassenzuordnung; Magnete nicht im Text |
+| `religionen` | offen | In Berlin gibt es in der Grundschule kein Fach Ethik; der Sachunterricht nennt Feste und Feiertage nur allgemein. | lehrplan/laender/berlin.md §4 Ethik / Religion Z.139–143 | kein Fach Ethik; der Sachunterricht nennt Feste nur allgemein |
 
 ## Brandenburg (BB)
 
@@ -165,7 +174,7 @@ Regeln:
 | `kornkammer` | nicht | Getreide kommt im Plan nicht vor. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.255–256; §4 Z.134–135 |  |
 | `wiese` | nicht | Die Wiese ist hier nur ein Lebensraum unter mehreren; Schichten der Wiese und Pflanzensammlung sind nicht verlangt. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.259–260; §4 Z.134–135 |  |
 | `wetterstation` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.249, 261; §4 Z.119, 130 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
-| `kompass` | nicht | Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; das Lesen von Stadtplänen steht im Plan. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.257–258; §4 Z.134–135 |  |
+| `kompass` | nicht | Himmelsrichtungen, Windrose und Kompass nennt der Plan nicht; Karten und die Lage Brandenburgs in Deutschland stehen im Plan. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.257–258; §4 Z.134–135; brandenburg.md §4 Z.62–63 |  |
 | `verkehr` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.247; §4 Z.126–128 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `frueher` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.250; §4 Z.123, 126–127, 132–133 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `sinne` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.248; §4 Z.122, 125 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
@@ -190,14 +199,17 @@ Regeln:
 | `baeume2` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.251, 263; §4 Z.124 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `tiere2` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.251; §4 Z.129 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
 | `natur2` | offen | Der Plan ordnet dieses Thema keiner Klasse zu; das legt die Schule fest. | lehrplan/laender/brandenburg.md §5 Z.74–96 → berlin.md §5 Sachunterricht Z.251–252, 262; §4 Z.119, 130 | aus „passt“: Sachunterricht: Themenfelder „ohne Zuordnung zu Klassen“ (berlin.md §4) |
+| `wald` | offen | Der Wald ist im Plan nur ein Stichwort zum Lebensraum, ohne feste Klasse; das legt die Schule fest. | lehrplan/laender/brandenburg.md §4 Z.62–64 → berlin.md §4 Sachunterricht Z.116–117, 135 | Themenfelder ohne Klassenzuordnung; Wald nur als Lebensraum-Stichwort |
+| `strom` | offen | Den Stromkreis nennt der Plan beim Fahrrad, ohne feste Klasse; Magnete nennt er nicht. | lehrplan/laender/brandenburg.md §4 Z.62–64 → berlin.md §4 Sachunterricht Z.116–117, 127, 134 | Themenfelder ohne Klassenzuordnung; Magnete nicht im Text |
+| `religionen` | offen | In Brandenburg gibt es in den Klassen 1 bis 4 kein Fach Ethik; der Sachunterricht nennt Feste nur allgemein. | lehrplan/laender/brandenburg.md §3 Z.50 → berlin.md §4 Ethik / Religion Z.142–143 | kein Fach Ethik in Klasse 1–4; der Sachunterricht nennt Feste nur allgemein |
 
 ## Hamburg (HH)
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Schriftliches Malnehmen und Punkt vor Strich stehen hier erst in Klasse 4; Teilbarkeitsregeln und Drittel nennt der Plan nicht. | lehrplan/laender/hamburg.md §5 Mathematik Z.173–174, 184–186; §4.1 Z.86–96 |  |
+| `math` | passt | Schriftliches Malnehmen, Punkt vor Strich und Klammern stehen hier erst in Klasse 4; Teilbarkeitsregeln und Drittel nennt der Plan nicht. | lehrplan/laender/hamburg.md §5 Mathematik Z.173–174, 184–186; §4.1 Z.86–96; §4.1 Z.94 |  |
 | `bau` | spaeter | Faltvorlagen, Ansichten, parallel und senkrecht, Umfang und Fläche stehen hier erst in Klasse 4; Körper und Symmetrie in Klasse 3. | lehrplan/laender/hamburg.md §5 Mathematik Z.175, 187–188; §4.1 Z.89–96 |  |
-| `jahrmarkt` | passt |  | lehrplan/laender/hamburg.md §5 Mathematik Z.175; §4.1 Z.88–92 |  |
+| `jahrmarkt` | passt | Liter und Milliliter stehen hier erst in Klasse 4. | lehrplan/laender/hamburg.md §5 Mathematik Z.175; §4.1 Z.88–92; §3 Z.60; §4.1 Z.95 |  |
 | `woerterwerkstatt` | passt | Das Komma vor „aber“ und „denn“ steht hier nicht im Plan. | lehrplan/laender/hamburg.md §5 Deutsch Z.201–202, 207; §4.2 Z.105–108 |  |
 | `satzbaustelle` | passt | Wörter wie dieser, jeder und kein nennt der Plan nicht; er kennt nur Personal- und Possessivpronomen. | lehrplan/laender/hamburg.md §5 Deutsch Z.202, 209–210; §4.2 Z.109–112 |  |
 | `ethik` | nicht | In Hamburg gibt es in der Grundschule kein Fach Ethik; Martin Luther kommt im Plan für Religion nicht vor. | lehrplan/laender/hamburg.md §4.4 Z.134–144; §5 Ethik / Religion Z.245–246 |  |
@@ -233,14 +245,17 @@ Regeln:
 | `baeume2` | passt |  | lehrplan/laender/hamburg.md §5 Sachunterricht Z.219–220; §4.3 Z.120–121, 124 |  |
 | `tiere2` | offen | Vögel und Nutztiere stehen im Plan; Heimtiere und Kleintiere nennt er nicht. | lehrplan/laender/hamburg.md §5 Sachunterricht Z.220; §4.3 Z.120–121, 124–125 | aus „passt“: nur zwei von fünf Aufgabenarten gestützt |
 | `natur2` | nicht | Licht, Luft und Warnzeichen stehen hier nicht im Plan; das Thermometer folgt in Klasse 3/4. | lehrplan/laender/hamburg.md §5 Sachunterricht Z.220, 227–228 |  |
+| `wald` | offen | Der Wald ist in Hamburg kein eigenes Unterrichtsvorhaben; Bäume stehen in Klasse 1/2 bei den Jahreszeiten. | lehrplan/laender/hamburg.md §4.3 Z.117–129 (Wald kein Vorhaben; Bäume in 1.4) | Vorhaben 4.x nur als Titel gelesen; Bäume stehen in 1.4 (1/2) |
+| `strom` | offen | Magnetismus steht hier in Klasse 1/2, Stromkreise beim Thema Energie meist in Klasse 4. | lehrplan/laender/hamburg.md §4.3 Z.122 (2.1 Magnetismus), Z.129 (4.4 Energie: Stromkreise); §2 Z.43–46 | zwei von sechs Aufgabenarten in 1/2, Stromkreise nur als Titel eines Vorhabens 4.x gelesen |
+| `religionen` | frueher | Feste aus mehreren Religionen stehen hier im Fach Religion schon in Klasse 1/2; Gotteshäuser in Klasse 3/4. | lehrplan/laender/hamburg.md §4.4 Religion Z.139–142 (1/2: Feste aus mindestens drei Religionen), Z.140 (3/4: Räume und Orte der Religionen) |  |
 
 ## Hessen (HE)
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Punkt vor Strich, Teilbarkeitsregeln und Drittel nennt der Plan nicht; schriftliches Malnehmen steht im älteren Plan erst in Klasse 4. | lehrplan/laender/hessen.md §5 Mathematik Z.179–184, 190, 196–197; §3 Z.63 |  |
+| `math` | passt | Der ältere Plan schreibt beim schriftlichen Abziehen das Ergänzen vor, Malnehmen erst in Klasse 4; Punkt vor Strich nennt er nicht. | lehrplan/laender/hessen.md §5 Mathematik Z.179–184, 190, 196–197; §3 Z.63; §3 Z.64 |  |
 | `bau` | passt | Faltvorlagen stehen hier am Ende der Grundschulzeit; Parallelogramm, Verschieben und Drehen nennen die Pläne nicht. | lehrplan/laender/hessen.md §5 Mathematik Z.186–187, 198–200; §4 Z.93–98 |  |
-| `jahrmarkt` | passt | Gewichte ordnet der Plan der Stufe bis Klasse 4 zu. | lehrplan/laender/hessen.md §5 Mathematik Z.184–185, 195; §4 Z.78–87, 99–100 |  |
+| `jahrmarkt` | passt | Gewichte, Liter und Milliliter ordnet der Plan dem Ende der Klasse 4 zu. | lehrplan/laender/hessen.md §5 Mathematik Z.184–185, 195; §4 Z.78–87, 99–100; §4 Z.78, 87 |  |
 | `woerterwerkstatt` | offen | Der Plan beschreibt nur den Stand am Ende von Klasse 4; was wann drankommt, legt die Schule fest. | lehrplan/laender/hessen.md §5 Deutsch Z.210–212, 217, 220; §4 Z.109–115 | aus „passt“: Kerncurriculum beschreibt nur das Ende von Klasse 4 (§2) |
 | `satzbaustelle` | offen | Der Plan beschreibt nur den Stand am Ende von Klasse 4; was wann drankommt, legt die Schule fest. | lehrplan/laender/hessen.md §5 Deutsch Z.212–213, 218–219; §4 Z.116–118 | aus „passt“: Kerncurriculum beschreibt nur das Ende von Klasse 4 (§2) |
 | `ethik` | nicht | Martin Luther ist im hessischen Plan für Ethik nicht enthalten; das ist Stoff des Religionsunterrichts. | lehrplan/laender/hessen.md §4 Ethik / Religion Z.149–150; §5 Ethik Z.252–253 |  |
@@ -251,7 +266,7 @@ Regeln:
 | `kornkammer` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.235–236; §4 Z.134–135 | aus „steht hier nicht im Plan“: gestützt nur vom Rahmenplan 1995, der nur noch für Schulen ohne Schulcurriculum gilt; das Kerncurriculum nennt keine Themen |
 | `wiese` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.125–126, 134–135 |  |
 | `wetterstation` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232, 237; §4 Z.132 |  |
-| `kompass` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.128–129, 132 (Rahmenplan 1995) | aus „passt“: gestützt nur vom Rahmenplan 1995, der nur noch für Schulen ohne Schulcurriculum gilt; das Kerncurriculum nennt keine Themen |
+| `kompass` | offen | Karten und das Bundesland Hessen nennt der ältere Plan für Klasse 3/4; meist legt die Schule fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.128–129, 132 (Rahmenplan 1995); §4 Z.129 | aus „passt“: gestützt nur vom Rahmenplan 1995, der nur noch für Schulen ohne Schulcurriculum gilt; das Kerncurriculum nennt keine Themen |
 | `verkehr` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–231; §4 Z.136–138 (Rahmenplan 1995) | aus „passt“: gestützt nur vom Rahmenplan 1995, der nur noch für Schulen ohne Schulcurriculum gilt; das Kerncurriculum nennt keine Themen |
 | `frueher` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232, 237; §4 Z.130–131 (Rahmenplan 1995) | aus „passt“: gestützt nur vom Rahmenplan 1995, der nur noch für Schulen ohne Schulcurriculum gilt; das Kerncurriculum nennt keine Themen |
 | `sinne` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.125–126 |  |
@@ -276,12 +291,15 @@ Regeln:
 | `baeume2` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.134–135 |  |
 | `tiere2` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.134–135 |  |
 | `natur2` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §5 Sachunterricht Z.230–232; §4 Z.128–133 |  |
+| `wald` | offen | Der Plan nennt keine Themenliste und keinen Jahrgang; die Schule legt fest, was wann drankommt. | lehrplan/laender/hessen.md §4 Sachunterricht Z.125–126 | Kerncurriculum ohne Themenliste und Jahrgang (§2) |
+| `strom` | offen | Der ältere Plan nennt Stromquellen für Klasse 1/2 und Magnete ohne feste Klasse. | lehrplan/laender/hessen.md §4 Sachunterricht Z.132–133 (Rahmenplan 1995) | nur Rahmenplan 1995; Stromkreis nicht genannt, Magnete ohne Jahrgang |
+| `religionen` | offen | Feste und das Miteinander der Religionen stehen im Plan bis Ende Klasse 4; was wann drankommt, legt die Schule fest. | lehrplan/laender/hessen.md §4 Ethik / Religion Z.146–148 | Kerncurriculum beschreibt nur das Ende von Klasse 4 (§2) |
 
 ## Mecklenburg-Vorpommern (MV)
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Schriftliches Malnehmen und Teilbarkeitsregeln stehen hier erst in Klasse 4; Drittel und Bruchteile von Mengen nicht im Plan. | lehrplan/laender/mecklenburg-vorpommern.md §5 Mathematik Z.188–189, 195–196, 200; §3 Z.53, 55 |  |
+| `math` | passt | Schriftliches Malnehmen und Teilbarkeitsregeln erst in Klasse 4, Drittel gar nicht; das Verfahren beim Abziehen wählt die Lehrkraft. | lehrplan/laender/mecklenburg-vorpommern.md §5 Mathematik Z.188–189, 195–196, 200; §3 Z.53, 55; §3 Z.54 |  |
 | `bau` | passt | Umfang, Fläche und das Drehen stehen hier erst in Klasse 4; parallel und senkrecht schon in Klasse 1/2. | lehrplan/laender/mecklenburg-vorpommern.md §5 Mathematik Z.190–191, 197–199; §3 Z.57–58 |  |
 | `jahrmarkt` | passt |  | lehrplan/laender/mecklenburg-vorpommern.md §5 Mathematik Z.192; §3 Z.57; §4 Z.88–91 |  |
 | `woerterwerkstatt` | passt | Das Komma vor „aber“ und „denn“ nennt der Plan nicht, nur das Komma bei Aufzählungen. | lehrplan/laender/mecklenburg-vorpommern.md §5 Deutsch Z.222–223, 230; §4 Z.100–107 |  |
@@ -294,7 +312,7 @@ Regeln:
 | `kornkammer` | offen | Im Plan steht „Pflanzen auf dem Feld“ für Klasse 3/4; Kartoffel und Getreide sind dort nur Beispiele. | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.257–259; §4 Z.124–125, 139 | aus „passt“: nur Beispiele in der Hinweisspalte |
 | `wiese` | frueher | Wiesenpflanzen stehen hier in Klasse 1/2; Stockwerke kennt der Plan nur beim Wald. | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.255; §4 Z.120–121, 126 |  |
 | `wetterstation` | passt | Schmelzen, Verdampfen, Kondensieren und Gefrieren stehen hier schon in Klasse 1/2. | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.246–247, 256; §4 Z.122–129 |  |
-| `kompass` | passt |  | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.245; §4 Z.127–128, 133 |  |
+| `kompass` | passt | Mecklenburg-Vorpommern mit Landeshauptstadt, Flüssen, Seen und Meer steht hier im Plan der Klassen 3/4. | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.245; §4 Z.127–128, 133; §4 Z.132–134 |  |
 | `verkehr` | passt |  | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.248; §4 Z.131–132 |  |
 | `frueher` | passt |  | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.249; §4 Z.115–116, 131, 135 |  |
 | `sinne` | frueher | Sinnesorgane und Hilfsmittel sind hier Stoff der Klassen 1/2; Süchte stehen in Klasse 3/4. | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.249, 254; §4 Z.117–119 |  |
@@ -319,12 +337,15 @@ Regeln:
 | `baeume2` | passt |  | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.250–251; §4 Z.120–121 |  |
 | `tiere2` | passt |  | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.251; §4 Z.121 |  |
 | `natur2` | passt | Warnzeichen stehen nicht im Sachunterricht; Sonne, Mond und Sterne gehören hier zum Philosophieren mit Kindern. | lehrplan/laender/mecklenburg-vorpommern.md §5 Sachunterricht Z.251, 261–262; §4 Z.122–123 |  |
+| `wald` | passt | Der Wald mit Waldarten, Stockwerken und Pilzen steht hier im Plan der Klassen 3/4. | lehrplan/laender/mecklenburg-vorpommern.md §4 Sachunterricht Z.125 (3/4: Lebensraum Wald – Waldarten, Stockwerke, Pilze: stock, baum, pilz, spur), Z.137 (Jahresübersicht 3: Wald) |  |
+| `strom` | offen | Magnetismus steht hier im Plan der Klassen 1/2 und laut Jahresübersicht in Klasse 3; den Stromkreis nennt der Plan nicht. | lehrplan/laender/mecklenburg-vorpommern.md §4 Sachunterricht Z.120–123 (1/2: Magnetismus), Z.137 (Jahresübersicht 3) | nur zwei von sechs Aufgabenarten (Magnete) gestützt, Stromkreis nicht genannt |
+| `religionen` | offen | Die Vielfalt der Religionen steht hier im Sachunterricht der Klassen 3/4; einzelne Feste nennt der Plan nicht. | lehrplan/laender/mecklenburg-vorpommern.md §4 Sachunterricht Z.115–116; Philosophieren Z.151–154 | nur die pauschale Zeile „Vielfalt der Kulturen und Religionen“ |
 
 ## Niedersachsen (NI)
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Teilen mit Rest, Brüche, Punkt vor Strich und Teilbarkeitsregeln stehen hier nicht im Plan. | lehrplan/laender/niedersachsen.md §5 Mathematik Z.230–231, 238–240; §4 Z.79–88 |  |
+| `math` | passt | Teilen mit Rest, Brüche, Punkt vor Strich und Teilbarkeit stehen nicht im Plan; wie schriftlich abgezogen wird, legt die Schule fest. | lehrplan/laender/niedersachsen.md §5 Mathematik Z.230–231, 238–240; §4 Z.79–88; §3 Z.59 |  |
 | `bau` | passt | Umfang, Kegel, Parallelogramm und Dreiecksarten nennt der Plan nicht. | lehrplan/laender/niedersachsen.md §5 Mathematik Z.231–232, 248–249; §4 Z.107–111 |  |
 | `jahrmarkt` | passt |  | lehrplan/laender/niedersachsen.md §5 Mathematik Z.232; §4 Z.96–97, 116 |  |
 | `woerterwerkstatt` | passt | Komma vor „aber“ und „denn“ und das Trennen am Zeilenende nennt der Plan nicht ausdrücklich. | lehrplan/laender/niedersachsen.md §5 Deutsch Z.264–265, 274–275; §4 Z.124–132 |  |
@@ -337,7 +358,7 @@ Regeln:
 | `kornkammer` | nicht | Weder Kartoffel noch Getreide sind im niedersächsischen Plan genannt. | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.298–299; §4 Z.164–165 |  |
 | `wiese` | offen | Die Wiese ist im Plan nur ein Beispiel für einen Lebensraum, bis Ende Klasse 2. | lehrplan/laender/niedersachsen.md §4 Sachunterricht Z.148–152 („Ende 2“); §5 Z.291 führt wiese unter „Passt“ | aus „hier meist früher“: Wiese steht nur als Beispiel in Klammern („etc.“); §5 und §4 widersprechen sich |
 | `wetterstation` | passt | Wetterkarte und Bauernregeln stehen hier nicht im Plan. | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.291–292, 300; §4 Z.158–160 |  |
-| `kompass` | passt |  | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.293; §4 Z.160–161 |  |
+| `kompass` | passt | Karten und Kompass stehen hier bis Ende Klasse 4 im Plan; Niedersachsen selbst ist dort kein eigenes Thema. | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.293; §4 Z.160–161; §4 Z.164–165 |  |
 | `verkehr` | offen | Verkehrszeichen und Fahrrad stehen hier nicht im Sachunterricht, sondern in den Vorgaben zu Mobilität und Sport. | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.301–302 [sek]; §4 Z.166–167 [sek] |  |
 | `frueher` | passt |  | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.293; §4 Z.162–163 |  |
 | `sinne` | frueher | Die Sinne und ihr Schutz stehen hier bis Ende Klasse 2; Sucht ist Thema bis Ende Klasse 4. | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.293, 296–297; §4 Z.149–150, 157 |  |
@@ -362,6 +383,9 @@ Regeln:
 | `baeume2` | passt |  | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.289; §4 Z.150–151, 154–155 |  |
 | `tiere2` | passt |  | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.289; §4 Z.150–152 |  |
 | `natur2` | passt |  | lehrplan/laender/niedersachsen.md §5 Sachunterricht Z.290; §4 Z.152 |  |
+| `wald` | offen | Der Wald ist im Plan nur ein Beispiel für einen Lebensraum, bis Ende Klasse 2. | lehrplan/laender/niedersachsen.md §4 Sachunterricht Z.151 („Ende 2“, Beispiel in Klammern) | Wald nur als Beispiel in Klammern („etc.“) |
+| `strom` | offen | Strom mit Licht, Wärme und Gefahren steht hier im Plan bis Ende Klasse 4; Magnete nennt er nicht. | lehrplan/laender/niedersachsen.md §4 Sachunterricht Z.156 (Ende 4: Elektrizität in Licht und Wärme, Gefahren), Z.164 (Magnete nicht genannt) | gestützt sind energie und sicher, der Stromkreis nur mittelbar; weniger als die Hälfte sicher |
+| `religionen` | offen | Verglichen wurden die Vorgaben von 2022; den neuen Plan für Werte und Normen von 2026 haben wir noch nicht gelesen. | lehrplan/laender/niedersachsen.md §4 Werte und Normen Z.182–185; §7 Z.393–395 (geltendes Kerncurriculum 2026 nicht gelesen) | wie feste2: das geltende Kerncurriculum 2026 ist nicht gelesen |
 
 ## Nordrhein-Westfalen (NW)
 
@@ -380,7 +404,7 @@ Regeln:
 | `kornkammer` | nicht | Weder Kartoffel noch Getreide sind im nordrhein-westfälischen Plan genannt. | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.281–282; §4 Z.158–159 |  |
 | `wiese` | nicht | Die Wiese ist im Plan nicht genannt; das Beispiel für einen Lebensraum ist dort der Wald. | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.276, 285; §4 Z.158–159 |  |
 | `wetterstation` | nicht | Wetter, Wasserkreislauf und die Zustände des Wassers stehen nicht im nordrhein-westfälischen Plan. | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.283–284; §4 Z.158–159 |  |
-| `kompass` | passt |  | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.275; §4 Z.155–156 |  |
+| `kompass` | passt | Karten, Kompass und Nordrhein-Westfalen stehen hier im Plan bis Ende Klasse 4. | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.275; §4 Z.155–156 |  |
 | `verkehr` | passt | Verkehrsregeln und Verkehrszeichen stehen hier schon bis Ende Klasse 2, die Fahrradausbildung bis Ende Klasse 4. | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.275; §4 Z.149–150, 156–157 |  |
 | `frueher` | passt |  | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.276; §4 Z.150–153 |  |
 | `sinne` | frueher | Die Sinne stehen hier bis Ende Klasse 2; der Bau von Auge und Ohr ist nicht verlangt, Drogen sind Thema bis Ende Klasse 4. | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.276, 279–280; §4 Z.146, 153 |  |
@@ -405,12 +429,15 @@ Regeln:
 | `baeume2` | passt |  | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.274; §4 Z.146–147 |  |
 | `tiere2` | passt |  | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.274; §4 Z.146–147 |  |
 | `natur2` | passt |  | lehrplan/laender/nordrhein-westfalen.md §5 Sachunterricht Z.274; §4 Z.148–149 |  |
+| `wald` | offen | Der Wald steht hier bis Ende Klasse 4 als Beispiel dafür, wie Tiere und Pflanzen an ihren Lebensraum angepasst sind. | lehrplan/laender/nordrhein-westfalen.md §4 Sachunterricht Z.154 (Ende 4: Angepasstheit „(u. a. Wald)“) | ruht auf einer Zeile zur Angepasstheit; weniger als die Hälfte der Aufgabenarten gestützt |
+| `strom` | offen | Magnetismus steht hier schon bis Ende Klasse 2, einfache Stromkreise und Energieträger bis Ende Klasse 4. | lehrplan/laender/nordrhein-westfalen.md §4 Sachunterricht Z.148 (Ende 2: Magnetismus), Z.154–155 (Ende 4: einfache Stromkreise, Energieträger) | gemischt: zwei Aufgabenarten bis Ende 2, zwei bis Ende 4, zwei nicht genannt |
+| `religionen` | offen | Feste und Merkmale der Religionen stehen in Praktischer Philosophie bis Ende Klasse 2; nicht jede Schule bietet das Fach an. | lehrplan/laender/nordrhein-westfalen.md §4 Praktische Philosophie Z.166–168 [sek], 174–176 (Ende 2), Z.179 (Ende 4: Judentum, Christentum, Islam) | Ende 2 nennt Feste und Merkmale, Ende 4 nennt die Religionen erneut; Fach an Grundschulen noch nicht eingeführt |
 
 ## Rheinland-Pfalz (RP)
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Punkt vor Strich und Teilbarkeitsregeln nennt der Plan nicht; bei Brüchen nur Hälfte und Viertel von Größen. | lehrplan/laender/rheinland-pfalz.md §5 Mathematik Z.187–190, 195, 203–204; §4 Z.82–87 |  |
+| `math` | passt | Punkt vor Strich, Teilbarkeitsregeln und Drittel nennt der Plan nicht; wie schriftlich abgezogen wird, wählt die Schule. | lehrplan/laender/rheinland-pfalz.md §5 Mathematik Z.187–190, 195, 203–204; §4 Z.82–87; §3 Z.65 |  |
 | `bau` | passt |  | lehrplan/laender/rheinland-pfalz.md §5 Mathematik Z.193–194; §4 Z.96–99 |  |
 | `jahrmarkt` | passt |  | lehrplan/laender/rheinland-pfalz.md §5 Mathematik Z.193–194; §4 Z.91–92, 100–101 |  |
 | `woerterwerkstatt` | offen | Der Plan für Deutsch nennt keine Klassenstufen, nur den Stand am Ende von Klasse 4. | lehrplan/laender/rheinland-pfalz.md §5 Deutsch Z.217–220, 226–227; §2 Z.47–49 | aus „passt“: Deutsch: „keine Jahrgangsziele“ (§2) |
@@ -423,7 +450,7 @@ Regeln:
 | `kornkammer` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.241–242; §4 Z.133 | aus „steht hier nicht im Plan“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `wiese` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.236–238; §4 Z.129–131 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `wetterstation` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.236–237; §4 Z.130–133 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
-| `kompass` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.237; §4 Z.137–138 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
+| `kompass` | offen | Karten, Kompass und Rheinland-Pfalz nennt der Plan bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.237; §4 Z.137–138; §4 Z.137–138 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `verkehr` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.238, 243; §4 Z.136, 142 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `frueher` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.237–238; §4 Z.140–141 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `sinne` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.237 (in §4 nur „eigener Körper“, Z.130) | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
@@ -448,6 +475,9 @@ Regeln:
 | `baeume2` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.236; §4 Z.130–133 (keine Art vorgeschrieben) | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `tiere2` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.236; §4 Z.133 (keine Art vorgeschrieben) | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
 | `natur2` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §5 Sachunterricht Z.236; §4 Z.130–132, 138 | aus „passt“: Sachunterricht, Ethik, Musik: nur Ende Klasse 4, Themen als Beispiele (§2) |
+| `wald` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §4 Sachunterricht Z.130–132; §2 Z.50 | Sachunterricht nur Ende Klasse 4, Themen als Beispiele (§2) |
+| `strom` | offen | Der Plan nennt Themen nur als Beispiele bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §4 Sachunterricht Z.130–132; §2 Z.50 | Sachunterricht nur Ende Klasse 4, Themen als Beispiele (§2) |
+| `religionen` | offen | Feste und Merkmale der Weltreligionen stehen im Plan für Ethik bis Ende Klasse 4; die Klasse legt die Schule fest. | lehrplan/laender/rheinland-pfalz.md §4 Ethik / Religion Z.151–153; §2 Z.50 | Ethik nur Ende Klasse 4 (§2) |
 
 ## Sachsen-Anhalt (ST)
 
@@ -466,7 +496,7 @@ Regeln:
 | `kornkammer` | passt | Getreidearten und Kartoffel mit Anbau und Verwendung stehen hier ausdrücklich im Plan für Klasse 3/4. | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.264; §4 Z.142 |  |
 | `wiese` | nicht | Die Wiese wird nicht namentlich verlangt; die Schule wählt einen Lebensraum, genannt ist nur der Wald. | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.272; §4 Z.157–158 |  |
 | `wetterstation` | offen | Wettererscheinungen und die Zustandsformen von Wasser stehen hier schon in Klasse 1/2. | lehrplan/laender/sachsen-anhalt.md §4 Sachunterricht Z.136–137; §5 Z.265–266, 271, 274 | aus „hier meist früher“: §5 führt die Wasser- und Wetterteile unter „Passt“, §4 legt beides in 1/2 |
-| `kompass` | passt |  | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.265; §4 Z.146–147 |  |
+| `kompass` | passt | Das Bundesland mit Magdeburg, den Nachbarländern und dem Harz steht hier im Plan der Klassen 3/4. | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.265; §4 Z.146–147; §4 Z.145–146 |  |
 | `verkehr` | passt |  | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.265; §4 Z.148–149 |  |
 | `frueher` | passt | Kindheit früher und heute steht hier schon in Klasse 1/2; Erfindungen und Medien in Klasse 3/4. | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.265; §4 Z.139, 152–155 |  |
 | `sinne` | frueher | Sinnesorgane und ihr Schutz gehören hier in Klasse 1/2; Rauchen, Alkohol und Medikamente sind nicht genannt. | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.269–270; §4 Z.134–135 |  |
@@ -491,12 +521,15 @@ Regeln:
 | `baeume2` | passt |  | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.262; §4 Z.133–134 |  |
 | `tiere2` | offen | Nutz- und Heimtiere stehen hier in Klasse 3/4; Vögel werden nicht namentlich verlangt. | lehrplan/laender/sachsen-anhalt.md §4 Sachunterricht Z.142–143, 157–158; §5 Z.272 (unter „Passt“ nicht aufgeführt) | aus „hier meist später“: in §5 nicht geführt; nur zwei von fünf Aufgabenarten gestützt |
 | `natur2` | passt | Licht und Schatten, Schall und Warnzeichen kommen im Plan nicht ausdrücklich vor. | lehrplan/laender/sachsen-anhalt.md §5 Sachunterricht Z.262–263, 273; §4 Z.136–138 |  |
+| `wald` | passt | Der Wald als Natur-, Lebens- und Wirtschaftsraum steht hier im Plan der Klassen 3/4. | lehrplan/laender/sachsen-anhalt.md §4 Sachunterricht Z.141–143 (3/4: Nahrungskette; Wald als Natur-, Lebens- und Wirtschaftsraum: stock, baum, spur, kreislauf, nutzen) |  |
+| `strom` | nicht | Magnete und Stromkreis stehen hier nicht im Plan; elektrische Energie kommt in Klasse 3/4 vor. | lehrplan/laender/sachsen-anhalt.md §4 Sachunterricht Z.150–151 (3/4: „Magnetismus und Stromkreis kommen nicht vor“; elektrische Energie) |  |
+| `religionen` | passt | Zeichen, Rituale und Gegenstände aus Judentum, Christentum und Islam stehen hier in Klasse 3/4; andere Religionen nicht. | lehrplan/laender/sachsen-anhalt.md §4 Ethik und Religion Z.166, 171–172 (3/4: Symbole, Rituale, Objekte im Christentum, Judentum, Islam); Z.169 (1/2: Feste im Jahreskreis) |  |
 
 ## Schleswig-Holstein (SH)
 
 | Thema | Urteil | Hinweis für Eltern | Quelle | Herabgestuft, weil |
 |---|---|---|---|---|
-| `math` | passt | Schriftliches Malnehmen, halbschriftliches Teilen, Punkt vor Strich und Teilbarkeit stehen hier erst in Klasse 4. | lehrplan/laender/schleswig-holstein.md §5 Mathematik Z.180–181, 185–188; §4.1 Z.87–94 |  |
+| `math` | passt | Schriftliches Malnehmen, halbschriftliches Teilen, Punkt vor Strich, Klammern und Teilbarkeit stehen hier erst in Klasse 4. | lehrplan/laender/schleswig-holstein.md §5 Mathematik Z.180–181, 185–188; §4.1 Z.87–94; §4.1 Z.93 |  |
 | `bau` | passt | Verschieben und Drehen nennt der Plan nicht; ob die Geometrie in Klasse 3 oder 4 liegt, legt die Schule fest. | lehrplan/laender/schleswig-holstein.md §5 Mathematik Z.193–194; §4.1 Z.96–101 |  |
 | `jahrmarkt` | passt |  | lehrplan/laender/schleswig-holstein.md §5 Mathematik Z.182, 193–194; §4.1 Z.90, 96–101 |  |
 | `woerterwerkstatt` | passt | Doppelte Mitlaute, Dehnungs-h und Trennen nennt der Plan nicht einzeln; beim Komma nur die Aufzählung. | lehrplan/laender/schleswig-holstein.md §5 Deutsch Z.205, 210, 213–214; §4.2 Z.106–109 |  |
@@ -534,3 +567,6 @@ Regeln:
 | `baeume2` | offen | Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt. | lehrplan/laender/schleswig-holstein.md §5 Sachunterricht Z.222–224; §4.3 Z.126–127; §2 Z.45–47 | aus „passt“: Sachunterricht: Inhalte „fakultativ gestellt“ (§2) |
 | `tiere2` | offen | Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt. | lehrplan/laender/schleswig-holstein.md §5 Sachunterricht Z.222–223; §4.3 Z.126–127; §2 Z.45–47 | aus „passt“: Sachunterricht: Inhalte „fakultativ gestellt“ (§2) |
 | `natur2` | offen | Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt. | lehrplan/laender/schleswig-holstein.md §5 Sachunterricht Z.222–224; §4.3 Z.127, 133–135; §2 Z.45–47 | aus „passt“: Sachunterricht: Inhalte „fakultativ gestellt“ (§2) |
+| `wald` | offen | Im Plan ist das ein mögliches Thema ohne feste Klasse; die Schule legt fest, ob und wann es drankommt. | lehrplan/laender/schleswig-holstein.md §2 Z.45–47; §4.3 Z.121 | Sachunterricht: Inhalte „fakultativ gestellt“ (§2); Wald nicht genannt |
+| `strom` | offen | Magnete und Stromkreis nennt der Plan nicht; erneuerbare Energien stehen dort für Klasse 3/4. | lehrplan/laender/schleswig-holstein.md §4.3 Z.134, 138; §2 Z.45–47 | Sachunterricht: Inhalte „fakultativ gestellt“ (§2) |
+| `religionen` | nicht | Feste der Religionen sind hier kein Thema des Fachs Philosophie; christliche Feste stehen im Plan für Religion. | lehrplan/laender/schleswig-holstein.md §4.4 Philosophie Z.142–147 (Themenlisten ohne Feste), Z.150–152 (Feste im Plan für Religion) |  |

@@ -222,11 +222,11 @@ Pronomen, Präpositionen, to be / to have.
 - Jede feste Aussage „Klasse 3 rechnet bis 1000“ ist hier nicht belegbar (nur „bis 1 000 000 am Ende von Klasse 4“).
 
 **Fehlt in der App**
-- Hohlmaße: Milliliter und Liter (kein Aufgabentyp in `jahrmarkt`).
+- Hohlmaße: Milliliter und Liter (kein Aufgabentyp in `jahrmarkt`). (2026-11-26: jetzt in der App – Milliliter und Liter.)
 - Tonne und Sekunde; Kommaschreibweise bei Längen (2,5 km).
 - Primzahl, Teiler und Vielfaches als Begriffe (Quersumme und Teilbarkeit durch 3 deckt `teilbar` schon ab).
 - Römische Zahlen (oder ein anderes Zahlensystem).
-- Schriftliche Division; Rechnen mit Klammern.
+- Schriftliche Division; Rechnen mit Klammern. (2026-11-26: jetzt in der App – Rechnen mit Klammern.)
 - Kreis: Mittelpunkt, Radius, Durchmesser; Rauminhalt mit Einheitswürfeln; maßstäbliches Vergrößern/Verkleinern.
 - Kreisdiagramm und Baumdiagramm lesen.
 - Nicht für ein Quiz geeignet: Programmieren, Zeichnen mit Zirkel und Geodreieck.
@@ -275,7 +275,7 @@ Pronomen, Präpositionen, to be / to have.
 
 **Fehlt in der App**
 - Sachsen-Anhalt-Wissen: Landeshauptstadt Magdeburg, Nachbarländer, Harz, Elbe, Landkreise (quizfähig).
-- Wald mit Nahrungskette; Nutz- und Wildtiere.
+- Wald mit Nahrungskette; Nutz- und Wildtiere. (2026-11-26: jetzt in der App – Wald mit Nahrungskette als eigenes Thema.)
 - Skelett, Gelenke, Muskeln.
 - Sonnensystem, Mondphasen (1/2); Feuerdreieck und Brandschutz; Energieformen.
 - Kinderrechte, Wahl und Mehrheitsprinzip; Computer-Grundbegriffe und sicheres Passwort.
@@ -292,7 +292,7 @@ Jahreskreis“ (1/2).
 - Aussagen wie „Feiertag in Sachsen“ und zum Buß- und Bettag sind hier falsch.
 
 **Fehlt in der App:** Judentum und Islam (Symbole, Rituale); goldene Regel; Kinder- und Menschenrechte; Glück;
-Begriffe des Philosophierens. Gedankenexperimente sind kein Quizstoff.
+Begriffe des Philosophierens. Gedankenexperimente sind kein Quizstoff. (2026-11-26: jetzt in der App – Symbole und Rituale von Judentum und Islam im Thema „Der Festkalender“.)
 
 ### Musik
 
