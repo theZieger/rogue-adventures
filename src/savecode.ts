@@ -73,7 +73,9 @@ const WORDS = (
   'kerze|brennbar|brandfall|notruf|feuerwehr|feuerwehrfrau|Die Rauchwolke|rauchwolke|Das Feuerzeug|feuerzeug|Die vergessene Kerze|' +
   'vergessenekerze|Der Funkenflug|funkenflug|Der Fettbrand|fettbrand|Der Dachstuhlbrand|dachstuhlbrand|' +
   'gewaesser|zone|tier|bach|biologin|Der Ölfleck|oelfleck|Die Plastikflasche|plastikflasche|Das dünne Eis|duenneseis|' +
-  'Der Düngersack|duengersack|Die Algenblüte|algenbluete|Das Abwasserrohr|abwasserrohr'
+  'Der Düngersack|duengersack|Die Algenblüte|algenbluete|Das Abwasserrohr|abwasserrohr|' +
+  'mond|planeten|sterne|raumfahrt|astronomin|Die Wolkendecke|wolkendecke|Die Straßenlaterne|strassenlaterne|' +
+  'Der Weltraumschrott|weltraumschrott|Der Staubsturm|staubsturm|Der Sonnensturm|sonnensturm|Der Asteroid|asteroid'
 ).split('|');
 const NUM = new Map(WORDS.map((w, i) => [w, i]));
 const isObj = (v: Json): v is JsonObject => !!v && typeof v === 'object' && !Array.isArray(v);

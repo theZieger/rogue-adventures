@@ -416,6 +416,14 @@ export const ELTERN = (() => {
       bach: 'Fließende und stehende Gewässer unterscheiden, den Weg von der Quelle zur Mündung, und an kleinen Tieren im Bach ablesen, wie sauber das Wasser ist.',
       schutz: 'Die Baderegeln, sicheres Verhalten auf dem Eis und wie man Tiere und Pflanzen am Wasser schützt.',
     },
+    himmel: {
+      tag: 'Warum es Tag und Nacht gibt: Die Erde dreht sich. Im Bild ablesen, ob an einem Ort Tag oder Nacht ist; der Weg der Sonne am Himmel.',
+      jahr: 'Das Jahr als Weg der Erde um die Sonne, das Schaltjahr und die Jahreszeiten durch die schiefe Erdachse, auch im Bild.',
+      mond: 'Der Mond und seine Phasen: im Bild benennen, später zunehmend oder abnehmend erkennen, auch als Reihenfolge.',
+      planeten: 'Die acht Planeten der Reihe nach, im Bild erkennen und je ein, zwei Merkmale.',
+      sterne: 'Die Sonne als Stern, Sternbilder wie der Große Wagen und wie man den Polarstern findet.',
+      raumfahrt: 'Leben auf der Raumstation ISS, die ersten Menschen im All und der Flug zur ISS als Reihenfolge.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -483,6 +491,8 @@ export const ELTERN = (() => {
       'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommt das Feuer nicht vor; Brandschutz steht dort in Klasse 1/2. Feuer, Kerze, Verbrennungsdreieck und Löschen nennen die Pläne von Baden-Württemberg, Bayern und Sachsen-Anhalt (dort mit Brandschutz und Feuerwehr) für die Klassen 3/4, Hamburg und Mecklenburg-Vorpommern für Klasse 3, Niedersachsen und Nordrhein-Westfalen bis Ende Klasse 4. Die Regeln zum Verhalten im Brandfall folgen den Empfehlungen der Feuerwehren. Versuche mit Feuer zeigt die App nur als Vorhersage: Durchführen darf sie nur ein Erwachsener. Eine Lehrkraft hat die Inhalte nicht geprüft.',
     gewaesser:
       'Sachunterricht, Lebensraum Gewässer. Im sächsischen Lehrplan der Klasse 3 ist die Wiese der Lebensraum, Teich und Bach stehen dort nicht. Ausdrücklich genannt werden Gewässer in Bayern („Wald und Gewässer“, dazu die Entwicklung des Froschs), Mecklenburg-Vorpommern („Lebensraum Wasser“ mit den Uferzonen), Thüringen, Berlin und Brandenburg („Leben am Wasser“, ohne feste Klasse) und Rheinland-Pfalz („Bach“ als Beispiel bis Ende Klasse 4), meist als Stoff der Klassen 3 und 4. In Niedersachsen und Baden-Württemberg kann der Teich schon in Klasse 1/2 als Lebensraum drankommen. Die Baderegeln sind die zehn Regeln, auf die sich die Schwimmverbände 2024 geeinigt haben. Welche Teile davon in Klasse 3 behandelt werden, entscheidet die Schule.',
+    himmel:
+      'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Sonne, Mond und Planeten nicht vor. Genannt werden sie in Berlin und Brandenburg (Sonnensystem, Tag und Nacht, ohne feste Klasse), Rheinland-Pfalz (Erde im Sonnensystem, bis Ende Klasse 4) und Schleswig-Holstein (astronomische Grundkenntnisse, Klasse 3/4). Sachsen-Anhalt nennt Sonne, Mond, Planeten und Mondphasen schon in Klasse 1/2, Hamburg Tag und Nacht in Klasse 1/2. In vielen Klassen ist das Thema Stoff der Klassen 3 und 4.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {

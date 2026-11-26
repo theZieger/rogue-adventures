@@ -10,6 +10,7 @@ import './strom.ts';
 import './gemeinde.ts';
 import './feuer.ts';
 import './gewaesser.ts';
+import './himmel.ts';
 import './ethik.ts';
 import './religionen.ts';
 import './musik.ts';

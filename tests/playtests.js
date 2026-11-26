@@ -23,6 +23,7 @@ const RUNS = [
   { MODE: 'strom', ACC: '0.9', RUNS: '2' },
   { MODE: 'gemeinde', ACC: '0.9', RUNS: '2' },
   { MODE: 'feuer', ACC: '0.9', RUNS: '2' },
+  { MODE: 'himmel', ACC: '0.9', RUNS: '2' },
   { MODE: 'kompass', ACC: '0.9', RUNS: '2' },
   { MODE: 'wiese', ACC: '0.9', RUNS: '1' },
   { MODE: 'wald', ACC: '0.9', RUNS: '2' },
