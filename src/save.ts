@@ -2,6 +2,7 @@
 // Saves must always load: a missing or wrong-typed field falls back to its default, old names map to new ones.
 import { CURRICULUM, MODE_KEYS, MODES, SUBJECTS, type Subject } from './curriculum.ts';
 import { type Know, MK } from './knowledge.ts';
+import { isLand } from './laender.ts';
 import { MQ } from './logic.ts';
 import { TW } from './turm.ts';
 
@@ -34,7 +35,7 @@ export interface Meta {
   voiceName: string;
   voiceEn: string;
   speakRate: number;
-  setup: { done: boolean; skipped: boolean; at: string };
+  setup: { done: boolean; skipped: boolean; at: string; land: boolean }; // land: the parents have seen the Bundesland choice
   pin: string;
   storage: { persisted: boolean; warnedAt: string };
   stamps: number;
@@ -53,6 +54,11 @@ export interface Meta {
   hidden: string[];
   level: Record<string, Record<string, number>>;
   started: Record<string, number>;
+  land: string; // the Bundesland, a key of LAENDER; '' = none chosen („Allgemein“)
+  minus: string; // written subtraction: 'abz', 'erg' or '' = as the Bundesland usually does it
+  // what parents switched on although the Bundesland hides it ('mode:<unit>', 'mod:<unit>:<task type>'), and units
+  // of the next grade they added to a grade ('also:<grade>:<unit>'); the Bundesland's own defaults are never saved
+  forced: string[];
   // subjects: fixed by parents per grade, { [grade]: [1–3 subjects] } (null: the child chooses);
   // last: right/total per subject of the latest Turmwacht
   turm: {
@@ -114,7 +120,7 @@ export const defaultMeta = (): Meta => ({
   voiceName: '',
   voiceEn: '',
   speakRate: 1,
-  setup: { done: false, skipped: false, at: '' },
+  setup: { done: false, skipped: false, at: '', land: false },
   pin: '',
   storage: { persisted: false, warnedAt: '' },
   stamps: 0,
@@ -133,6 +139,9 @@ export const defaultMeta = (): Meta => ({
   hidden: [],
   level: {},
   started: {},
+  land: '',
+  minus: '',
+  forced: [],
   turm: { on: false, runs: 0, wins: 0, best: 0, subjects: null, last: {} },
 });
 export const isObj = (v: unknown): v is Record<string, Unchecked> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -226,6 +235,11 @@ export function normMeta(raw: unknown): Meta {
   m.started = Object.fromEntries(
     Object.entries(m.started).filter(([, n]: [string, Unchecked]) => Number.isInteger(n) && n > 0),
   );
+  if (!isLand(m.land)) m.land = '';
+  // a save from before the choice existed keeps Ergänzen, the method its child has learned here
+  if (isObj(raw) && typeof raw.minus !== 'string') m.minus = 'erg';
+  else if (m.minus !== 'abz' && m.minus !== 'erg') m.minus = '';
+  m.forced = [...new Set<string>(m.forced.filter(okForced))];
   m.hut.rooms = m.hut.rooms >= 2 ? 2 : 1;
   m.hut.items = m.hut.items.filter((id: unknown) => typeof id === 'string');
   const beds = isObj(m.garden) && Array.isArray(m.garden.beds) ? m.garden.beds : [];
@@ -254,6 +268,14 @@ export function normMeta(raw: unknown): Meta {
   };
   return m;
 }
+// a token about a unit or task type that no longer exists is dropped; other tokens are kept as they are
+const okForced = (x: unknown) => {
+  if (typeof x !== 'string') return false;
+  const [kind, a, b] = x.split(':');
+  const unit = kind === 'also' ? b : a;
+  if (kind !== 'mode' && kind !== 'mod' && kind !== 'also') return true;
+  return own(MODES, unit) && (kind !== 'mod' || own(MODES[unit].modules, b)) && (kind !== 'also' || /^[1-9]$/.test(a));
+};
 export const nat = (n: unknown) => (typeof n === 'number' && Number.isInteger(n) && n >= 0 ? n : 0);
 // an early save had one list for every grade: each grade keeps the subjects it has
 export function turmFixed(subs: Unchecked): Meta['turm']['subjects'] {

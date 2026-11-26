@@ -1,5 +1,6 @@
 import { CURRICULUM, MODES, MODE_KEYS, SUBJECTS, type Subject } from '../curriculum.ts';
 import { ELTERN } from '../eltern.ts';
+import { LAENDER, fitOf, landName, whyHides, whyOff } from '../laender.ts';
 import { MK } from '../knowledge.ts';
 import { MQ, type Tutorial } from '../logic.ts';
 import { QR } from '../qr.ts';
@@ -13,6 +14,7 @@ import { screenFeedback } from './feedback.ts';
 import { type Attack, REWARDS, goalText } from './progress.ts';
 import { state } from './state.ts';
 import {
+  canBorrow,
   chooseGrade,
   EXTRAS,
   curGrade,
@@ -22,13 +24,18 @@ import {
   gradeTabs,
   grades,
   heroShown,
+  land,
+  landHides,
+  landOff,
   loadRun,
   offList,
   saveAll,
+  setOn,
   shown,
+  subjectLabel,
 } from './storage.ts';
 import { TTS, chosenVoice, enVoice, enVoices, speak, voice, voiceGuide, voices } from './tasks.ts';
-import { MONTHS, goalCount, screenTitle, setPin } from './title.ts';
+import { MONTHS, goalCount, screenLand, screenTitle, setPin } from './title.ts';
 import { SFX, modal, on, screen, topbar } from './ui.ts';
 
 // svg, not emoji: the parent area looks the same on every device
@@ -176,11 +183,41 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
                 sw(
                   fixed(g.grade).includes(s.subject),
                   html`data-tsub="${g.grade}:${s.subject}" data-action="turmSubject"`,
-                  html`${s.icon} ${s.subject}`,
+                  html`${s.icon} ${subjectLabel(s.subject)}`,
                 ),
               ),
           ]),
           msg,
+        ])
+      : '';
+  };
+  const landCard = () => {
+    const L = land(),
+      T = ELTERN.LAND,
+      all = !!L && MODE_KEYS.every((m) => fitOf(L, m) !== 'offen');
+    return card('Bundesland', [
+      L || state.meta.setup.land ? '' : html`<p class="callout">${T.invite}</p>`,
+      html`<button class="pnav" id="pland" data-action="land"><span class="ptext"><b>${landName(L) || T.none}</b><span>${T.change}</span></span>${ico('next')}</button>`,
+      note(!L || L === 'SN' ? T.base : T.claim(landName(L), all)),
+      note(T.what),
+      html`<button class="linkbtn" id="plandfb" data-action="landFeedback">${T.feedback}</button>`,
+    ]);
+  };
+  // units of the next grade that may also be shown in this one
+  const alsoCard = () => {
+    const g = curGrade().grade,
+      cand = MODE_KEYS.filter((m) => canBorrow(m, g));
+    return cand.length
+      ? card(`Themen aus Klasse ${g + 1} dazunehmen`, [
+          note(ELTERN.LAND.also(g)),
+          cand.map((m) =>
+            sw(
+              state.meta.forced.includes(`also:${g}:${m}`),
+              html`data-also="${m}" data-action="also"`,
+              html`${MODES[m].icon} ${MODES[m].title}`,
+              html`<span>${subjectLabel(MODES[m].subject)}</span>`,
+            ),
+          ),
         ])
       : '';
   };
@@ -267,7 +304,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
                 Object.values(state.meta.turm.last).some((v) => v.t)
                   ? html`<p class="plead">Letzte Turmwacht</p>${Object.entries(state.meta.turm.last)
                       .filter(([, v]) => v.t)
-                      .map(([s, v]) => srow(SUBJECTS[s as Subject], s, v.c, v.t))}`
+                      .map(([s, v]) => srow(SUBJECTS[s as Subject], subjectLabel(s), v.c, v.t))}`
                   : ''
               }${note(ELTERN.TURM.counts)}`,
             )
@@ -296,26 +333,37 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
             html`<p class="plead">Lernquest merkt, was Ihr Kind schon kann, und stellt passende Aufgaben: nicht zu leicht und nicht zu schwer.</p><button class="linkbtn" data-ps="how" data-action="subtab">So lernt Ihr Kind mit Lernquest</button>`,
           ),
           grades().length > 1 ? card('Klasse', raw(gradeTabs())) : '',
+          landCard(),
           card(
             'Was soll geübt werden?',
             html`${note('Tippen Sie auf ein Fach. Dort sehen Sie, was jede Aufgabenart übt, und können Themen, Helden und Aufgabenarten ein- oder ausschalten.')}${S.map(
               (s, i) => {
                 const vis = s.modes.filter(shown).length;
-                return html`<button class="pnav" data-pf="${i}" data-action="subject"><span class="ptext"><b>${s.icon} ${s.subject}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`;
+                return html`<button class="pnav" data-pf="${i}" data-action="subject"><span class="ptext"><b>${s.icon} ${subjectLabel(s.subject)}</b><span>${!vis ? 'ausgeblendet' : s.modes.length === 1 ? gameState(s.modes[0]) : `${vis} von ${s.modes.length} Themen`}</span></span>${ico('next')}</button>`;
               },
             )}`,
           ),
+          alsoCard(),
         ];
       const s = S[pAt.subj];
       const m = s.modes.includes(pAt.mode) ? pAt.mode : s.modes[0];
       const c = MODES[m];
       const keys = Object.keys(c.modules);
       const plan = (ELTERN.PLAN as Texts<string>)[m];
+      const L = land(),
+        fit = fitOf(L, m),
+        T = ELTERN.LAND;
+      // what parents should know about this subject in their Bundesland
+      const subjNotes = [
+        L && s.subject === 'Englisch' && LAENDER[L].french ? html`<p class="callout">${T.french}</p>` : '',
+        L && subjectLabel(s.subject) === 'Miteinander' ? note(T.noSubject(landName(L))) : '',
+      ];
       return [
         html`<button class="pback" id="pback" data-action="subjects">${ico('back')}Alle Fächer</button>`,
         s.modes.length > 1
           ? [
-              card(`${s.icon} ${s.subject}`, [
+              card(`${s.icon} ${subjectLabel(s.subject, true)}`, [
+                subjNotes,
                 sw(
                   s.modes.some(shown),
                   html`data-hidesub="${pAt.subj}" data-action="hideSubject"`,
@@ -347,7 +395,13 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
           : '',
         card(
           `${c.icon} ${c.title}`,
-          html`<p>${c.sub}</p>${plan ? html`<p class="pplan"><b>Lehrplan Sachsen:</b> ${plan}</p>` : ''}${sw(shown(m), html`data-hide="mode:${m}" data-action="hide"`, 'Thema anzeigen', html`<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>`)}${msg}`,
+          html`<p>${c.sub}</p>${s.modes.length > 1 ? '' : subjNotes}${
+            !L
+              ? html`<p class="pplan"><b>Grundlage (Lehrplan Sachsen):</b> ${plan}</p>`
+              : L === 'SN' && fit === 'passt'
+                ? html`<p class="pplan"><b>Lehrplan Sachsen:</b> ${plan}</p>`
+                : html`<p class="pplan"><b>Lehrplan ${landName(L)}:</b> ${T.fit[fit]}</p><p class="pplan"><b>Grundlage (Lehrplan Sachsen):</b> ${plan}</p>`
+          }${L && c.subject === 'Deutsch' && LAENDER[L].wordlist ? html`<p class="pplan">${T.wordlist(landName(L))}</p>` : ''}${landHides(m) ? html`<p class="callout">${T.hidden[whyHides(m)](landName(L))}</p>` : ''}${sw(shown(m), html`data-hide="mode:${m}" data-action="hide"`, 'Thema anzeigen', html`<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>`)}${msg}`,
         ),
         c.starters.length > 1
           ? card(
@@ -357,7 +411,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
           : '',
         card(
           'Aufgabenarten',
-          html`${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), html`data-m="${m}" data-k="${k}" data-action="module"`, html`${c.modules[k].icon} ${c.modules[k].name}`, html`<span>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</span><button class="linkbtn" data-info="${k}" data-action="info">Beispiel ansehen</button>`))}${msg}`,
+          html`${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), html`data-m="${m}" data-k="${k}" data-action="module"`, html`${c.modules[k].icon} ${c.modules[k].name}`, html`<span>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</span>${landOff(m, k) ? html`<span>${T.off[whyOff(m, k)](landName(L))}</span>` : ''}<button class="linkbtn" data-info="${k}" data-action="info">Beispiel ansehen</button>`))}${msg}`,
         ),
       ];
     },
@@ -443,7 +497,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
     show: () => [
       card(
         'Klassen',
-        html`${note('Ausgeschaltete Klassen verschwinden von der Startseite. Mindestens eine bleibt an.')}${CURRICULUM.map((g) => sw(grades().includes(g), html`data-hide="grade:${g.grade}" data-action="hide"`, g.label, html`<span>${g.subjects.map((x) => x.subject).join(', ')}</span>`))}${msg}`,
+        html`${note('Ausgeschaltete Klassen verschwinden von der Startseite. Mindestens eine bleibt an.')}${CURRICULUM.map((g) => sw(grades().includes(g), html`data-hide="grade:${g.grade}" data-action="hide"`, g.label, html`<span>${g.subjects.map((x) => subjectLabel(x.subject)).join(', ')}</span>`))}${msg}`,
       ),
       card(
         'Extras',
@@ -731,22 +785,17 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
       module: (b) => {
         const m = b.dataset.m!,
           k = b.dataset.k!;
-        const off = offList(m).slice();
-        const i = off.indexOf(k);
-        if (i >= 0) off.splice(i, 1);
-        else {
-          if (!MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2)
-            return say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.');
-          off.push(k);
-        }
-        state.meta.off[m] = off;
+        const off = offList(m);
+        if (!off.includes(k) && !MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2)
+          return say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.');
+        setOn(`mod:${m}:${k}`, off.includes(k));
         saveAll();
         again();
       },
       hide: (b) => {
         const key = b.dataset.hide!;
-        const hide = !state.meta.hidden.includes(key);
         const [kind, m, id] = key.split(':');
+        const hide = kind === 'mode' ? shown(m) : !state.meta.hidden.includes(key);
         if (hide && kind === 'mode' && noGameLeft([key])) return say(b, 'Mindestens ein Thema muss sichtbar bleiben.');
         if (hide && kind === 'en' && Object.keys(MK.EN_THEMES).every((t) => t === m || enOff().includes(t)))
           return say(b, 'Mindestens ein Thema muss an bleiben.');
@@ -760,11 +809,21 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
           !MODES[m].starters.some((x) => x.id !== id && heroShown(m, x) && !REWARDS.some((r) => r.hero === x.id))
         )
           return say(b, 'Mindestens ein Held muss bleiben.');
-        setHidden([key], hide);
+        if (kind === 'mode') setOn(key, !hide);
+        else setHidden([key], hide);
         state.meta.grade = curGrade().grade;
         saveAll();
         again();
       },
+      also: (b) => {
+        const token = `also:${curGrade().grade}:${b.dataset.also}`,
+          on = state.meta.forced.includes(token);
+        state.meta.forced = state.meta.forced.filter((x) => x !== token).concat(on ? [] : token);
+        saveAll();
+        again();
+      },
+      land: () => screenLand(() => screenParent(null, back, true)),
+      landFeedback: () => screenFeedback(() => screenParent(null, back, true)),
       turm: () => {
         state.meta.turm.on = !state.meta.turm.on;
         saveAll();
@@ -782,10 +841,16 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
         again();
       },
       hideSubject: (b) => {
-        const keys = curGrade().subjects[+b.dataset.hidesub!].modes.map((m) => 'mode:' + m);
-        const hide = keys.some((k) => !state.meta.hidden.includes(k));
+        const modes = curGrade().subjects[+b.dataset.hidesub!].modes;
+        const keys = modes.map((m) => 'mode:' + m);
+        const hide = modes.some(shown);
         if (hide && noGameLeft(keys)) return say(b, 'Mindestens ein Fach muss sichtbar bleiben.');
-        setHidden(keys, hide);
+        if (hide) for (const m of modes.filter(shown)) setOn('mode:' + m, false);
+        else {
+          setHidden(keys, false);
+          // what is still hidden is hidden by the Bundesland: the parents want the subject, so all of it
+          if (!modes.some(shown)) for (const k of keys) setOn(k, true);
+        }
         saveAll();
         again();
       },

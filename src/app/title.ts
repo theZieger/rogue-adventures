@@ -1,4 +1,6 @@
 import { MODES } from '../curriculum.ts';
+import { ELTERN } from '../eltern.ts';
+import { LAENDER, LAND_CODES, landName } from '../laender.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
 import { backupDue } from './backup.ts';
 import { screenDex, screenStamps } from './collection.ts';
@@ -19,7 +21,18 @@ import {
   weeklyGoals,
 } from './progress.ts';
 import { state } from './state.ts';
-import { chooseGrade, curGrade, extraOn, gradeTabs, loadRun, saveAll, visSubjects } from './storage.ts';
+import {
+  chooseGrade,
+  curGrade,
+  extraOn,
+  gradeTabs,
+  land,
+  loadRun,
+  saveAll,
+  setLand,
+  subjectLabel,
+  visSubjects,
+} from './storage.ts';
 import { screenTurm } from './turm_screens.ts';
 import { TW_FLAG, loadTurm, turmOn } from './turm.ts';
 import { SFX, modal, on, screen, topbar } from './ui.ts';
@@ -73,8 +86,11 @@ function reveal() {
   }
 }
 const showWarn = () => evictable() && !(Date.now() - Date.parse(state.meta.storage.warnedAt) < 30 * 864e5);
+// the page's title names the subjects, so it follows the Bundesland like every other place that prints them
+const PAGE_TITLE = document.title;
 export function screenTitle() {
   state.depth = 0;
+  document.title = PAGE_TITLE.replace(/Ethik|Sachkunde/g, (subject) => subjectLabel(subject));
   if (!state.meta.setup.done && !state.meta.setup.skipped) return screenSetup();
   let taps = 0;
   const seen = () => {
@@ -89,7 +105,7 @@ export function screenTitle() {
         ${raw(gradeTabs())}${extraOn('garten') ? raw(gardenCard()) : ''}<div class="subjects">${visSubjects().map(
           (sub, i) => {
             const live = sub.modes.some((m) => loadRun(m));
-            return html`<button class="card subjtile" data-sub="${i}" data-action="subject"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${sub.subject}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span></button>`;
+            return html`<button class="card subjtile" data-sub="${i}" data-action="subject"><span class="subjicon" aria-hidden="true">${sub.icon}</span><span class="subjname">${subjectLabel(sub.subject)}</span><span class="desc">${live ? '▶ Abenteuer läuft' : `${sub.modes.length} ${sub.modes.length === 1 ? 'Thema' : 'Themen'}`}</span>${sub.modes.every(fromNext) ? nextPill(sub.modes[0]) : ''}</button>`;
           },
         )}</div>
         <div class="subjects more">${[
@@ -155,6 +171,9 @@ export function screenTitle() {
   on({ harvest: screenGarden, grade: (chip) => chooseGrade(chip, screenTitle) });
   showWeeklyNews();
 }
+// a unit of the next grade that parents added to this one carries its own grade
+const fromNext = (m: string) => MODES[m].grade !== curGrade().grade;
+const nextPill = (m: string) => html`<span class="pill">Klasse ${MODES[m].grade}</span>`;
 type SubjectTile = ReturnType<typeof visSubjects>[number];
 export const subjectOf = (m: string) =>
   visSubjects().find((sub) => sub.modes.includes(m)) || curGrade().subjects.find((sub) => sub.modes.includes(m));
@@ -167,12 +186,13 @@ export function screenSubject(sub: SubjectTile | undefined) {
   const path = (m: string, i: number) => {
     const e = ranked && sub!.modes.slice(0, i).find((x) => !practised(x));
     return [
+      fromNext(m) ? nextPill(m) : '',
       ranked && !i ? html`<span class="pill good">Hier anfangen</span>` : '',
       e ? html`<p class="pathhint">Leichter geht es mit „${MODES[e].title}“ los.</p>` : '',
     ];
   };
   screen(
-    html`<div class="screen">${raw(topbar(esc(sub!.subject)))}<div class="scroll"><div class="stack">${
+    html`<div class="screen">${raw(topbar(esc(subjectLabel(sub!.subject))))}<div class="scroll"><div class="stack">${
       extraOn('wochenziele')
         ? weeklyGoals()
             .filter((g) => g.subject === sub!.subject && !goalDone(g))
@@ -225,7 +245,7 @@ export function screenWeekly() {
       <p class="center">${weekly().done ? 'Alle Ziele dieser Woche sind erledigt.' : 'Für jedes Ziel gibt es 3 Stempel. Schaffst du alle, kommt ein Stern auf deine Stempelkarte.'}</p>
       ${goals.map((g) => {
         const c = goalCount(g);
-        return html`<div class="card goal${c >= g.n ? ' done' : ''}"><p>${goalText(g)}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n || !g.subject ? '' : html`<button class="btn small secondary goalplay" data-subject="${g.subject}" data-action="goal">▶ ${g.subject} üben</button>`}</div>`;
+        return html`<div class="card goal${c >= g.n ? ' done' : ''}"><p>${goalText(g)}</p><div class="goalrow"><span class="bar" aria-hidden="true"><i style="width:${(c / g.n) * 100}%"></i></span><b>${c >= g.n ? '✔ ' : ''}${c} von ${g.n}</b></div>${c >= g.n || !g.subject ? '' : html`<button class="btn small secondary goalplay" data-subject="${g.subject}" data-action="goal">▶ ${subjectLabel(g.subject)} üben</button>`}</div>`;
       })}
       <p class="center">Nichts geht verloren, wenn du eine Woche aussetzt. Neue Aufgaben gibt es am Montag.</p>
       </div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
@@ -246,8 +266,10 @@ function screenSetup() {
       <div class="card"><div class="eyebrow">Für Eltern</div><p>Lernquest speichert alles nur auf diesem Gerät, ohne Konto. Im Elternbereich stellen Sie ein, was geübt wird, und sehen, was schon gut klappt.</p><p>Mit einer vierstelligen PIN können nur Sie dort etwas ändern.</p>
       <div class="stack" style="margin-top:var(--space-16)"><button class="btn" id="setpin" data-action="setpin">PIN festlegen</button><button class="btn secondary" id="setload" data-action="setload">Spielstand laden</button><button class="btn secondary" id="later" data-action="later">Später</button></div>
       <p class="hintsmall">Der Elternbereich ist jederzeit über das Zahnrad oben rechts erreichbar.</p></div>
-      <div class="card" style="margin-top:var(--space-12)"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${raw(gradeTabs())}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div></div></div>`,
+      <div class="card" style="margin-top:var(--space-12)"><div class="eyebrow">In welche Klasse geht Ihr Kind?</div>${raw(gradeTabs())}<p class="hintsmall">Das lässt sich jederzeit auf der Startseite ändern.</p></div>
+      <div class="card" style="margin-top:var(--space-12)"><div class="eyebrow">${ELTERN.LAND.ask}</div><p><b>${landName(land()) || 'Noch nicht gewählt'}</b></p><button class="btn small secondary" id="setland" data-action="setland">Bundesland wählen</button><p class="hintsmall">Sie können das überspringen und jederzeit im Elternbereich ändern.</p></div></div></div>`,
     {
+      setland: () => screenLand(screenSetup),
       setpin: () => setPin(screenTitle, screenSetup),
       setload: () => screenParent('load', screenSetup),
       later: () => {
@@ -257,6 +279,27 @@ function screenSetup() {
     },
   );
   on({ grade: (chip) => chooseGrade(chip, screenSetup) });
+}
+// The Bundesland, asked on the first start and in the parent area. A tap chooses and goes back: the choice only
+// sets defaults (storage.ts), so it is safe at any time, also in the middle of an adventure.
+export function screenLand(back: () => void) {
+  state.depth++;
+  const row = (code: string, name: string) =>
+    html`<button class="choice${code === land() ? ' selected' : ''}" data-land="${code}" data-action="land" aria-pressed="${String(code === land())}"><span class="meta"><span class="name">${name}</span></span></button>`;
+  screen(
+    html`<div class="screen">${raw(topbar('Bundesland'))}<div class="scroll"><div class="stack"><p class="center">${ELTERN.LAND.ask}</p>${row('', ELTERN.LAND.none)}${LAND_CODES.map((code) => row(code, LAENDER[code].name))}<p class="center">${ELTERN.LAND.later}</p></div></div><div class="bottom"><button class="btn secondary" id="back" data-action="back">Zurück</button></div></div>`,
+    {
+      land: (b) => {
+        setLand(b.dataset.land!);
+        back();
+      },
+      back: () => {
+        state.meta.setup.land = true;
+        saveAll();
+        back();
+      },
+    },
+  );
 }
 // a parental gate, not encryption: four digits are guessed quickly anyway, the hash only keeps the PIN out of plain sight
 const pinHash = (p: string) => {
