@@ -66,7 +66,9 @@ const WORDS = (
   'religionen|welche|kalendermacherin|Die Wimpelkette|wimpelkette|Der Konfettiregen|konfettiregen|Der Papierhut|papierhut|Die Luftschlange|' +
   'luftschlange|Die Tröte|troete|Die große Trommel|grossetrommel|Der Luftballon|luftballon|Die Wunderkerze|wunderkerze|Das Windrad|windrad|' +
   'Die Girlande|girlande|Das Knallbonbon|knallbonbon|Das Feuerwerk|feuerwerk|' +
-  'klammer|liter'
+  'klammer|liter|' +
+  'kerze|brennbar|brandfall|notruf|feuerwehr|feuerwehrfrau|Die Rauchwolke|rauchwolke|Das Feuerzeug|feuerzeug|Die vergessene Kerze|' +
+  'vergessenekerze|Der Funkenflug|funkenflug|Der Fettbrand|fettbrand|Der Dachstuhlbrand|dachstuhlbrand'
 ).split('|');
 const NUM = new Map(WORDS.map((w, i) => [w, i]));
 const isObj = (v: Json): v is JsonObject => !!v && typeof v === 'object' && !Array.isArray(v);
