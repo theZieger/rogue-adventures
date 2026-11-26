@@ -21,6 +21,7 @@ const RUNS = [
   { MODE: 'kornkammer', ACC: '0.9', RUNS: '1' },
   { MODE: 'wetterstation', ACC: '0.9', RUNS: '2' },
   { MODE: 'strom', ACC: '0.9', RUNS: '2' },
+  { MODE: 'gemeinde', ACC: '0.9', RUNS: '2' },
   { MODE: 'kompass', ACC: '0.9', RUNS: '2' },
   { MODE: 'wiese', ACC: '0.9', RUNS: '1' },
   { MODE: 'wald', ACC: '0.9', RUNS: '2' },
