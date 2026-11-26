@@ -1,5 +1,6 @@
 // Sachkunde grade 3 (Saxon curriculum, Lernbereiche 3–5): Kornkammer, Wetterstation, Kompass und Karte.
 // Registers its units in MK.MODES; src/units.ts picks them up from there.
+import { LAND_PACKS, landNote, landQuestions } from './bundesland.ts';
 import type { Unit } from './curriculum.ts';
 import { MK as K, type GenOpts, type Know, type Question } from './knowledge.ts';
 import type { Task } from './logic.ts';
@@ -2640,7 +2641,21 @@ export const MS = (() => {
     });
     return out;
   }
+  // „Mein Bundesland“: every state's questions are in the pool under their own Themengebiet land_<code>, so the
+  // answers are remembered like any Wissensfrage; landTask is the only way to them
+  const LAND_POOL: Question[] = LAND_PACKS.flatMap((code) =>
+    landQuestions(code).map((x) => ({ ...x, mod: 'land', g: 'land_' + code })),
+  );
+  // No „nothing left, ask everything“ here (adr/0010): another state's facts are wrong answers waiting to happen.
+  // Without a Bundesland the task type is off everywhere (fightMods), so this is never asked with an empty set.
+  function landTask(land: string | undefined, know: Know, seq: number) {
+    const cands = LAND_POOL.filter((x) => x.g === 'land_' + land);
+    if (!cands.length) throw new Error('kompass.land needs a Bundesland');
+    const e = weightedPick(cands, know, seq);
+    return choice('land', e.g, e.q, e.o![0], e.o!.slice(1), e.id, { why: e.why });
+  }
   const KK_NOTES = {
+    ...Object.fromEntries(LAND_PACKS.map((code) => ['land_' + code, landNote(code)])),
     richtung: {
       title: 'Die Himmelsrichtungen',
       lines: [
@@ -3013,13 +3028,14 @@ export const MS = (() => {
         a: 0,
       },
     ] as Question[]
-  ).concat(landkreisPool(LANDKREIS));
+  ).concat(landkreisPool(LANDKREIS), LAND_POOL);
   const KK_MODULES = {
     richtung: { name: 'Himmelsrichtungen', icon: '🧭', maxTier: 1, worldCap: [1], dmg: 12 },
     rose: { name: 'Windrose', icon: '✳️', maxTier: 1, worldCap: [1], dmg: 12 },
     plan: { name: 'Plan mit Legende', icon: '🏘️', maxTier: 1, worldCap: [1], dmg: 14 },
     karte: { name: 'Schatzkarte', icon: '🗺️', maxTier: 3, worldCap: [3], dmg: 14 },
     lt: { name: 'Lückentext', icon: '✏️', maxTier: 1, worldCap: [1], dmg: 10 },
+    land: { name: 'Mein Bundesland', icon: '📌', maxTier: 1, worldCap: [1], dmg: 12 },
   };
   const KK_TUT = {
     'richtung:1': {
@@ -3078,9 +3094,18 @@ export const MS = (() => {
         'Tippe auf das Wort, das passt.',
       ],
     },
+    'land:1': {
+      title: 'Mein Bundesland',
+      steps: [
+        'Deutschland hat 16 Bundesländer. Hier geht es um deins.',
+        'Du wirst nach der Hauptstadt, den Nachbarn, Flüssen, Städten und anderem gefragt, das auf der Landkarte steht.',
+        'Schau ruhig auf einer Landkarte nach. Tippe dann auf die richtige Antwort.',
+      ],
+    },
   };
   function kkGen(cfg: Unit) {
     return (mod: string, tier: number, know: Know, seq: number, opts?: GenOpts) => {
+      if (mod === 'land') return landTask(opts && opts.land, know, seq);
       if (mod === 'karte') return makeKarte(tier);
       if (mod === 'rose') return roseTask(mod);
       if (wantsPool(cfg, mod, opts)) return null;
@@ -3117,7 +3142,14 @@ export const MS = (() => {
         ],
       },
     ],
-    extra: { richtung: 'Polarstern', rose: 'Wetterfahne', plan: 'Grenzstein', karte: 'Wegweiser', lt: 'Merkvers' },
+    extra: {
+      richtung: 'Polarstern',
+      rose: 'Wetterfahne',
+      plan: 'Grenzstein',
+      karte: 'Wegweiser',
+      lt: 'Merkvers',
+      land: 'Heimatkarte',
+    },
     enemies: {
       1: {
         normal: [
@@ -3209,6 +3241,7 @@ export const MS = (() => {
     FLOAT,
     DIRS,
     LANDKREIS,
+    LAND_POOL,
     PLACES,
     PLAN_DEFS,
     PLAN_BG,

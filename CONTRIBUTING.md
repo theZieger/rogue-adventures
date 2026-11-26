@@ -58,6 +58,8 @@ src/turm.ts        Turmwacht rules (waves, guards, floors, Bauzeit, restart from
 src/turmart.ts     Turmwacht pictures: lanes, the tower with its floors, card pictures
 src/monsters.ts    hand-drawn SVG monsters (drawing code, the game draws them when it shows them)
 src/laender.ts     the Bundesländer a family can choose: subject names, what is hidden by default, how units fit the plan
+src/bundesland.ts  „Mein Bundesland“ in Kompass und Karte: the facts per state and the questions made from them; a fact
+                   goes into tests/fixtures/bundesland-fakten.json with its source (lehrplan/quellen-bundeslaender.md) first
 src/units.ts       the one list of all units (`UNITS`) – game, tests, bot and monster art read it
 src/curriculum.ts  order of units, subjects and grades (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) with the types `Unit` and `TaskType`
 src/save.ts        the save: type `Meta`, defaults, loading/saving and the repair on load (`normMeta`)

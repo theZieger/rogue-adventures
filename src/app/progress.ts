@@ -332,6 +332,7 @@ export function makeTask(mod: string, tier: number, opts?: { elite?: boolean; ze
         g: opts && opts.g,
         world: taskBox() ? taskBox().world : 1,
         enOff: enOff(),
+        land: state.meta.land,
       });
       sig = [t.qid, t.text || t.q, t.answer, t.answers].join('|');
     }

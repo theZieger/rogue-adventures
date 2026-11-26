@@ -39,11 +39,13 @@ export interface Known {
   last?: number;
 }
 export type Know = Record<string, Known>;
-// g: only questions on this topic, world: only questions of this world, enOff: English topics the parents switched off
+// g: only questions on this topic, world: only questions of this world, enOff: English topics the parents switched off,
+// land: the chosen Bundesland ('' for none)
 export interface GenOpts {
   g?: string;
   world?: number;
   enOff?: string[];
+  land?: string;
 }
 export const MK = (() => {
   const rnd = (a: number, b: number) => a + Math.floor(Math.random() * (b - a + 1));

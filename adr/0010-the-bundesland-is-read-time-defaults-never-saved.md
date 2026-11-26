@@ -40,5 +40,9 @@ table alone; subject keys (`Ethik`, `Sachkunde`) stay in data, saves and compari
 turns them into the shown name. The cost is that every place that prints a subject must call it, and that code
 asking „is this off?“ must ask `offList`/`shown`, never the saved lists (`parentOff` is only what parents saved).
 
+One task type is about the state itself („Mein Bundesland“, `kompass.land`, facts in `src/bundesland.ts`). It is
+the one place where rules 1 and 2 do not hold: without a state there is nothing to ask, so `fightMods` leaves it
+out whatever was switched or practised, and its generator takes only the questions of the chosen state.
+
 Thüringen, Bremen and the Saarland are not in the table. An entry that says „not read yet“ would still be offered
 as a choice.

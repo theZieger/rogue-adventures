@@ -6,6 +6,7 @@ const BATTLE = [...MAP, '.node:not([disabled])', '#tutok'];
 const GERMAN = [...TITLE, '[data-sub="1"]', '[data-new]', '.choice', '#go', '.node:not([disabled])'];
 const KLASSE_1 = [...TITLE, '.chip[data-grade="1"]'];
 const PARENTS = [...TITLE, '#parents'];
+const LAND_UNIT = ['[data-sub="3"]', '[data-new="kompass"]'];
 
 const SCREENS = {
   // the design system page, docs/gallery.html
@@ -50,6 +51,13 @@ const SCREENS = {
   // a Bundesland is chosen: the subject names on the title, and a unit the Bundesland hides until parents show it
   'title-ni': [],
   'parents-unit-by': ['#parents', '[data-pt="practice"]', '[data-pf="2"]'],
+  // „Mein Bundesland“ in Kompass und Karte: the hero's fourth attack once a Bundesland is chosen
+  'land-starter': LAND_UNIT,
+  'land-tutorial': [...LAND_UNIT, '#go', '.node:not([disabled])', '.atk[data-i="3"]'],
+  'land-task': [...LAND_UNIT, '#go', '.node:not([disabled])', '.atk[data-i="3"]', '#tutok'],
+  'land-task-hh': [...LAND_UNIT, '#go', '.node:not([disabled])', '.atk[data-i="3"]', '#tutok'],
+  'parents-unit-land': ['#parents', '[data-pt="practice"]', '[data-pf="3"]', '[data-pm="kompass"]'],
+  'parents-unit-noland': [...PARENTS, '[data-pt="practice"]', '[data-pf="3"]', '[data-pm="kompass"]'],
   'parents-save': [...PARENTS, '[data-pt="settings"]'],
   'parents-app': [...PARENTS, '[data-pt="settings"]', '[data-ps="app"]'],
   'parents-show': [...PARENTS, '[data-pt="settings"]', '[data-ps="show"]'],
@@ -80,6 +88,11 @@ const IN = (land) => ({ setup: { done: false, skipped: true, at: 'x' }, grade: 3
 const SAVES = {
   'title-ni': IN('NI'),
   'parents-unit-by': IN('BY'),
+  'land-starter': IN('SN'),
+  'land-tutorial': IN('SN'),
+  'land-task': IN('SN'),
+  'land-task-hh': IN('HH'),
+  'parents-unit-land': IN('SN'),
   turm: TURM_ON,
   'turm-tutorial': TURM_ON,
   'turm-board': TURM_ON,

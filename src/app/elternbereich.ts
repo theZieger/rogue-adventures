@@ -28,6 +28,7 @@ import {
   landHides,
   landOff,
   loadRun,
+  noLand,
   offList,
   saveAll,
   setOn,
@@ -786,6 +787,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
         const m = b.dataset.m!,
           k = b.dataset.k!;
         const off = offList(m);
+        if (noLand(m, k)) return say(b, 'Wählen Sie zuerst unter „Alle Fächer“ ein Bundesland.');
         if (!off.includes(k) && !MODES[m].modules[k].shop && fightMods(m).filter((x) => !off.includes(x)).length <= 2)
           return say(b, 'Mindestens zwei Aufgabenarten müssen an bleiben.');
         setOn(`mod:${m}:${k}`, off.includes(k));
