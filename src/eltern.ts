@@ -68,6 +68,11 @@ export const ELTERN = (() => {
     ichwelt: Object.assign(facts('über sich, die anderen und die Welt'), {
       welten: 'Gehört etwas zur Natur, wurde es von Menschen gemacht oder gibt es das nur in Gedanken?',
     }),
+    religionen: Object.assign(facts('zu Festen und Religionen'), {
+      welche:
+        'Ihr Kind ordnet ein Fest, ein Gebäude oder eine Schrift zu: Judentum, Christentum oder Islam, in Welt 2 Hinduismus, Buddhismus oder keine Religion.',
+      bild: 'Ihr Kind sieht ein Bild, zum Beispiel einen Leuchter, eine Moschee oder eine Mondphase, und beantwortet eine Frage dazu.',
+    }),
     woerterwerkstatt: {
       doppel: 'Nach kurzem Selbstlaut folgt ein doppelter Mitlaut, ck oder tz: Sonne, nicht Sone.',
       verl: 'd oder t, g oder k, b oder p am Wortende? Verlängern hilft: Hund – Hunde.',
@@ -387,6 +392,8 @@ export const ELTERN = (() => {
     kirchenjahr: 'Ethik, Klasse 3, Lernbereich 3 „Voneinander“: christliche Feiertage und das Kirchenjahr.',
     freunde: 'Ethik, Klasse 3, Lernbereich 2 „Miteinander“.',
     ichwelt: 'Ethik, Klasse 3, Lernbereich 1 „Ich im Wir“ und Lernbereich 4 „Wir in der Welt“.',
+    religionen:
+      'Im sächsischen Lehrplan Ethik der Klasse 3 steht dieses Thema nicht; dort geht es in Lernbereich 3 „Voneinander“ um das Christentum. Feste und Merkmale mehrerer Religionen nennen die Pläne anderer Länder: Bayern (Ethik), Niedersachsen (Werte und Normen), Hamburg (Religion), Nordrhein-Westfalen (Praktische Philosophie), Rheinland-Pfalz und Sachsen-Anhalt (Ethik). Die Feste stehen dort meist schon in Klasse 1/2; Gotteshäuser, heilige Schriften und Zeichen der Religionen sind Stoff der Klassen 3/4. Die Texte beschreiben, was Menschen feiern, und werten nicht. Die Angaben wurden mit je zwei Quellen abgeglichen; eine Lehrkraft hat sie nicht geprüft.',
     kartoffel: SU(3, 'Begegnungen mit Pflanzen und Tieren'),
     kornkammer: SU(3, 'Begegnungen mit Pflanzen und Tieren'),
     wiese: SU(3, 'Begegnungen mit Pflanzen und Tieren'),

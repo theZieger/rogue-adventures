@@ -11,6 +11,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ### Neu
 - Eltern können das Bundesland wählen: Fächer heißen dann wie dort, und es steht, wie jedes Thema zum Lehrplan passt.
 - Neue Themen in Sachkunde Klasse 3: Der Wald sowie Strom und Magnete mit Stromkreis und sicherem Umgang.
+- Neues Thema in Ethik Klasse 3: Der Festkalender mit Festen aus Judentum, Christentum, Islam, Hinduismus, Buddhismus und ohne Religion.
 
 ## 2026-11-25
 

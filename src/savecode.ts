@@ -62,7 +62,10 @@ const WORDS = (
   'wald|spur|pilz|foersterin|Der Borkenkäfer|borkenkaefer|Die Zigarettenkippe|zigarettenkippe|Die Getränkedose|getraenkedose|Der Sturmschaden|' +
   'sturmschaden|Der Kahlschlag|kahlschlag|Der Waldbrand|waldbrand|' +
   'strom|kreis|leiter|energie|sicher|pole|magnet|elektrikerin|Der Kabelsalat|kabelsalat|Der Wackelkontakt|wackelkontakt|Die leere Batterie|' +
-  'leerebatterie|Der Schrottmagnet|schrottmagnet|Der Kurzschluss|kurzschluss|Der Strommast|strommast'
+  'leerebatterie|Der Schrottmagnet|schrottmagnet|Der Kurzschluss|kurzschluss|Der Strommast|strommast|' +
+  'religionen|welche|kalendermacherin|Die Wimpelkette|wimpelkette|Der Konfettiregen|konfettiregen|Der Papierhut|papierhut|Die Luftschlange|' +
+  'luftschlange|Die Tröte|troete|Die große Trommel|grossetrommel|Der Luftballon|luftballon|Die Wunderkerze|wunderkerze|Das Windrad|windrad|' +
+  'Die Girlande|girlande|Das Knallbonbon|knallbonbon|Das Feuerwerk|feuerwerk'
 ).split('|');
 const NUM = new Map(WORDS.map((w, i) => [w, i]));
 const isObj = (v: Json): v is JsonObject => !!v && typeof v === 'object' && !Array.isArray(v);

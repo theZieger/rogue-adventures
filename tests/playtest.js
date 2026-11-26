@@ -1234,6 +1234,10 @@ function trace() {
     console.error('PLAYTEST FAIL: never sorted into the three worlds');
     process.exit(1);
   }
+  if (mode === 'religionen' && !(m.stats.religionen.welche.t && m.stats.religionen.bild.t)) {
+    console.error('PLAYTEST FAIL: never sorted by religion or never saw a picture task');
+    process.exit(1);
+  }
   if (mode === 'math' && !W3 && !arenas) {
     console.error('PLAYTEST FAIL: never played the Kreisel-Arena');
     process.exit(1);

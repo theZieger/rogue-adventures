@@ -62,6 +62,16 @@ const SCREENS = {
   'turm-board': ['#turm', '#go', '#tutok'],
   'turm-monster': ['#turm', '#go', '#tutok', '.tw-mon[data-action="monster"]'],
   'turm-task': ['#turm', '#go', '#tutok', '.tw-mon[data-action="monster"]', '#atk'],
+  'task-picture': [
+    ...TITLE,
+    '[data-sub="2"]',
+    '[data-new="religionen"]',
+    '.choice',
+    '#go',
+    '.node:not([disabled])',
+    '.atk[data-i="3"]',
+    '#tutok',
+  ],
 };
 
 // screens that need more than a first start: what is in the save before the taps

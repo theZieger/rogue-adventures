@@ -8,6 +8,7 @@ import './sachkunde3.ts';
 import './wald.ts';
 import './strom.ts';
 import './ethik.ts';
+import './religionen.ts';
 import './musik.ts';
 import './k12_mathe.ts';
 import './k12_deutsch.ts';
