@@ -6,6 +6,12 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-26
+
+### Neu
+- Eltern können das Bundesland wählen: Fächer heißen dann wie dort, und es steht, wie jedes Thema zum Lehrplan passt.
+- Neues Thema in Sachkunde Klasse 3: Der Wald mit Stockwerken, Bäumen, Tierspuren und Pilzen.
+
 ## 2026-11-25
 
 ### Verbessert
