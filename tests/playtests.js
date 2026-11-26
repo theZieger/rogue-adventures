@@ -56,6 +56,27 @@ const RUNS = [
   // „Mein Bundesland“ is an attack of the hero as soon as a Bundesland is chosen; a city state has the fewest questions
   { MODE: 'kompass', LAND: 'SN', ACC: '0.9', RUNS: '2' },
   { MODE: 'kompass', LAND: 'HH', ACC: '0.9', RUNS: '2' },
+  // one unit per remaining state, chosen for what that state changes (every unit in every state: tests/test_profiles.js)
+  { MODE: 'satzbaustelle', LAND: 'BW', ACC: '0.9', RUNS: '1' },
+  { MODE: 'satzbaustelle', LAND: 'NW', ACC: '0.9', RUNS: '1' },
+  { MODE: 'satzbaustelle', LAND: 'RP', ACC: '0.9', RUNS: '1' },
+  { MODE: 'satzbaustelle', LAND: 'ST', ACC: '0.9', RUNS: '1' },
+  { MODE: 'woerterwerkstatt', LAND: 'HE', ACC: '0.9', RUNS: '1' },
+  { MODE: 'woerterwerkstatt', LAND: 'SN', ACC: '0.9', RUNS: '1' },
+  { MODE: 'ethik', LAND: 'SN', ACC: '0.9', RUNS: '1' },
+  { MODE: 'schreiben2', LAND: 'NI', ACC: '0.9', RUNS: '1' },
+  { MODE: 'freunde', LAND: 'BE', ACC: '0.9', RUNS: '1' },
+  { MODE: 'ichwelt', LAND: 'BB', ACC: '0.9', RUNS: '1' },
+  { MODE: 'math', LAND: 'MV', W3: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'math', LAND: 'SH', W3: '1', ACC: '0.9', RUNS: '1' },
+  // the parents change the Bundesland again and again while an adventure runs
+  { MODE: 'math', SWITCH: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'math', SWITCH: '1', W3: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'bau', SWITCH: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'ethik', SWITCH: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'woerterwerkstatt', SWITCH: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'jahrmarkt', SWITCH: '1', LITER: '1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'turm', SWITCH: '1', GRADE: '3', ACC: '0.9', RUNS: '1' },
 ];
 
 const named = new Set(RUNS.map((run) => run.MODE));
