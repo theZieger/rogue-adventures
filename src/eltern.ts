@@ -406,6 +406,16 @@ export const ELTERN = (() => {
       feuerwehr:
         'Die Aufgaben der Feuerwehr (Retten, Löschen, Bergen, Schützen), ihre Ausrüstung und das Feuer in der Geschichte.',
     },
+    gewaesser: {
+      zone: 'Die Zonen eines Teiches vom Ufer bis zum Grund kennen und wissen, welche Pflanzen und Tiere wo leben.',
+      pflanze:
+        'Schilf, Rohrkolben, Seerose, Wasserlinse und Wasserpest am Bild und an Merkmalen erkennen und wissen, wie sie im Wasser leben.',
+      tier: 'Frosch, Molch, Libelle, Wasserläufer, Teichmuschel und Stockente erkennen und wissen, wie sie ans Leben am Wasser angepasst sind.',
+      entw: 'Vom Laich über die Kaulquappe zum Frosch, dazu wie Molch, Libelle und Stockente groß werden.',
+      kreislauf: 'Wer frisst wen am Teich? Nahrungsketten von den Algen bis zum Graureiher ordnen.',
+      bach: 'Fließende und stehende Gewässer unterscheiden, den Weg von der Quelle zur Mündung, und an kleinen Tieren im Bach ablesen, wie sauber das Wasser ist.',
+      schutz: 'Die Baderegeln, sicheres Verhalten auf dem Eis und wie man Tiere und Pflanzen am Wasser schützt.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -471,6 +481,8 @@ export const ELTERN = (() => {
       'Sachunterricht. Im sächsischen Lehrplan stehen Rechte und Pflichten und das demokratische Aushandeln in Klasse 1/2, die UN-Kinderrechtskonvention in Klasse 4; die Gemeinde kommt dort nicht vor. Kinderrechte, Klassenrat, Abstimmen und die Gemeinde nennen die Pläne von Baden-Württemberg, Bayern, Berlin, Brandenburg, Hessen, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Rheinland-Pfalz, Sachsen-Anhalt und Schleswig-Holstein, meist als Stoff der Klassen 3/4 oder ohne feste Klasse (Mecklenburg-Vorpommern: Klasse 3). In Hamburg und Sachsen-Anhalt stehen Kinderrechte schon in Klasse 1/2. Weil die Regeln von Land zu Land verschieden sind, fehlt hier, wie die Bürgermeisterin gewählt wird und wie der Rat genau heißt. Eine Lehrkraft hat die Inhalte nicht geprüft.',
     feuer:
       'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommt das Feuer nicht vor; Brandschutz steht dort in Klasse 1/2. Feuer, Kerze, Verbrennungsdreieck und Löschen nennen die Pläne von Baden-Württemberg, Bayern und Sachsen-Anhalt (dort mit Brandschutz und Feuerwehr) für die Klassen 3/4, Hamburg und Mecklenburg-Vorpommern für Klasse 3, Niedersachsen und Nordrhein-Westfalen bis Ende Klasse 4. Die Regeln zum Verhalten im Brandfall folgen den Empfehlungen der Feuerwehren. Versuche mit Feuer zeigt die App nur als Vorhersage: Durchführen darf sie nur ein Erwachsener. Eine Lehrkraft hat die Inhalte nicht geprüft.',
+    gewaesser:
+      'Sachunterricht, Lebensraum Gewässer. Im sächsischen Lehrplan der Klasse 3 ist die Wiese der Lebensraum, Teich und Bach stehen dort nicht. Ausdrücklich genannt werden Gewässer in Bayern („Wald und Gewässer“, dazu die Entwicklung des Froschs), Mecklenburg-Vorpommern („Lebensraum Wasser“ mit den Uferzonen), Thüringen, Berlin und Brandenburg („Leben am Wasser“, ohne feste Klasse) und Rheinland-Pfalz („Bach“ als Beispiel bis Ende Klasse 4), meist als Stoff der Klassen 3 und 4. In Niedersachsen und Baden-Württemberg kann der Teich schon in Klasse 1/2 als Lebensraum drankommen. Die Baderegeln sind die zehn Regeln, auf die sich die Schwimmverbände 2024 geeinigt haben. Welche Teile davon in Klasse 3 behandelt werden, entscheidet die Schule.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {
