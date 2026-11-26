@@ -230,7 +230,7 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
   nicht genannt. `formen2.koerper` (Ecken, Kanten, Flächen zählen): Begriffe ja, Zählen nicht ausdrücklich.
 - `math.sadd`, `ssub`, `smul`: nur „bis Ende 4“; ob Klasse 3, entscheidet die Schule. Schriftliche Multiplikation
   liegt meist in Klasse 4 [Praxis].
-- `math.ssub` rechnet nach dem Ergänzungsverfahren mit Übertrag am Subtrahenden (`src/logic.ts`, Kommentar „Saxon
+- (2026-11-26: Die App kann jetzt auch Abziehen mit Entbündeln; Eltern wählen das Verfahren.) `math.ssub` rechnet nach dem Ergänzungsverfahren mit Übertrag am Subtrahenden (`src/logic.ts`, Kommentar „Saxon
   Ergänzungsverfahren“). NRW schreibt kein Verfahren vor; viele Schulen rechnen mit Abziehen und Entbündeln
   [Praxis]. Die Übertragsdarstellung kann also vom Unterricht abweichen.
 - `math.rest`: Rest nur als „Restschreibweise“ der schriftlichen Division bis Ende 4.

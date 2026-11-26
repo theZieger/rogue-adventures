@@ -232,7 +232,7 @@ Unit- und Aufgabenkürzel wie in `src/eltern.ts`. „Ende 2“/„Ende 4“ = St
   `ansicht`, `wz`, `fq`; `jahrmarkt.uhr`, `laenge`, `masse`, `rad`, `los`, `tafel`, `sach`, `fahrplan`.
 
 **Zu früh / steht hier nicht im Plan**
-- `math.ssub`: Die App rechnet nach dem Ergänzungsverfahren mit Übertrag am Subtrahenden (`src/logic.ts`,
+- (2026-11-26: Die App kann jetzt auch Abziehen mit Entbündeln; Eltern wählen das Verfahren.) `math.ssub`: Die App rechnet nach dem Ergänzungsverfahren mit Übertrag am Subtrahenden (`src/logic.ts`,
   Kommentar „Saxon Ergänzungsverfahren“). In Niedersachsen legt die Fachkonferenz das Verfahren fest; das einzige
   Beispiel im Plan ist „Abziehen mit Entbündeln“. Die Darstellung kann dem Unterricht widersprechen.
 - `math.sadd`, `ssub`, `smul`: nur „bis Ende 4“; die Jahrgangszuordnung macht die Schule.

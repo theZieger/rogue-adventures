@@ -245,7 +245,7 @@ Fachwerk-, Hängebrücke), Gleichgewicht (Wippe, Balkenwaage).
 - `jahrmarkt`: alle acht Aufgabenarten; Fahrpläne und Glücksrad nennt der Lehrplan selbst (M3/4 4.1, 4.2).
 
 **Zu früh / steht hier nicht im Plan**
-- `math.ssub`: Lernquest rechnet nach dem **Ergänzungsverfahren** (Übertrag in die nächste Spalte des Subtrahenden,
+- (2026-11-26: Die App kann jetzt auch Abziehen mit Entbündeln; Eltern wählen das Verfahren.) `math.ssub`: Lernquest rechnet nach dem **Ergänzungsverfahren** (Übertrag in die nächste Spalte des Subtrahenden,
   Erklärtext „ergänzt von unten nach oben“). Bayern schreibt das **Abziehverfahren** vor. Größter inhaltlicher Konflikt.
 - `math.smul` und schriftliches Rechnen überhaupt: im Band 3/4, in Klasse 3 üblich nur Addition und Subtraktion. [Praxis]
 - `formen2.lage` (rechter Winkel, parallel, senkrecht in Klasse 2): rechter Winkel erst 3/4; parallel und senkrecht
