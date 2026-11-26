@@ -5695,6 +5695,129 @@ export const MONART = (() => {
     return s;
   }
 
+  /* ---------- Sachkunde: Am Wasser (heroine Biologin) ---------- */
+  function biologin(o: DrawOpts, C: Defs) {
+    const skin = C.grad('#C98E62'),
+      coat = C.grad('#3E8AA0'),
+      hair = C.grad('#2E2A30'),
+      waders = C.grad('#4A6A3A');
+    // curly hair behind the head
+    let s = `<path d="M30 64 Q22 40 40 28 Q60 18 80 28 Q98 40 90 64 Q94 78 84 84 L36 84 Q26 78 30 64 Z" ${F(hair, 2)}/>`;
+    // waders with braces over the jacket
+    s += `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(coat)}/><path d="M38 92 Q60 88 82 92 L84 116 L36 116 Z" ${F(waders, 2.2)}/>`;
+    s += `<path d="M44 80 L42 94 M76 80 L78 94" stroke="#2E4A26" stroke-width="3.4" stroke-linecap="round"/><circle cx="42" cy="94" r="2" ${F('#C9CEDD', 1.2)}/><circle cx="78" cy="94" r="2" ${F('#C9CEDD', 1.2)}/>`;
+    // the net on its long pole, held on the right
+    s += `<path d="M96 116 L104 30" stroke="${OUT}" stroke-width="5.5" stroke-linecap="round"/><path d="M96 116 L104 30" stroke="#B5763A" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<ellipse cx="106" cy="20" rx="12" ry="9" fill="none" ${S(2.4)}/><path d="M95 22 Q100 44 108 40 Q116 34 117 22" fill="#E8F4F0" fill-opacity=".7" ${S(1.6)}/><path d="M99 26 L113 36 M103 24 L116 30 M100 32 L110 24" stroke="#9AB8B0" stroke-width="1" stroke-linecap="round"/>`;
+    s += `<ellipse cx="100" cy="72" rx="6" ry="5" ${F(skin, 2)}/>`;
+    // a white tray with a small water creature, held on the left
+    s += `<path d="M10 96 L40 96 L37 106 L13 106 Z" ${F('#F4F7FB', 2)}/><path d="M14 99 L36 99" stroke="#9AD0F0" stroke-width="2.4"/><ellipse cx="24" cy="101" rx="4" ry="1.6" fill="#5E4A34"/><ellipse cx="38" cy="100" rx="6" ry="5" ${F(skin, 2)}/>`;
+    s += `<ellipse cx="60" cy="57" rx="25" ry="26" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    s += `<path d="M35 52 Q34 30 60 30 Q86 30 85 52 Q78 40 68 42 Q60 36 52 42 Q42 40 35 52 Z" ${F(hair)}/><path d="M46 36 Q54 32 62 33" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".3"/>`;
+    s += shine(47, 54, 5, 3, -20);
+    s += pair(60, 59, 11, 5.5, { brow: 'up', bw: 2.4, iris: '#5A3A22', browColor: '#2E2A30' });
+    s += `<path d="M60 63 Q58 69 61 70" ${N(2.2)}/>${M.smile(60, 75, 7)}`;
+    s += blush(60, 69, 16, 4);
+    return s;
+  }
+
+  // oil on the water, shining in rainbow colours
+  function oelfleck(o: DrawOpts, C: Defs) {
+    let s = `<path d="M2 102 Q30 96 60 102 T118 102" fill="none" stroke="#5FA8D3" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<path d="M14 92 Q8 70 26 60 Q30 40 52 42 Q70 30 86 44 Q108 46 106 68 Q116 86 98 96 Q80 108 58 102 Q34 108 14 92 Z" ${F(C.grad('#3A3446'))}/>`;
+    s += `<path d="M30 70 Q46 56 64 62 Q82 56 92 72" fill="none" stroke="#B66AE0" stroke-width="3" stroke-linecap="round" opacity=".75"/><path d="M28 78 Q46 66 64 72 Q82 66 94 80" fill="none" stroke="#4AC0A0" stroke-width="3" stroke-linecap="round" opacity=".7"/><path d="M34 86 Q50 78 66 82 Q80 78 90 88" fill="none" stroke="#F2C230" stroke-width="2.6" stroke-linecap="round" opacity=".7"/>`;
+    s += shine(36, 54, 7, 3, -20);
+    s += pair(60, 60, 10, 6.5, { brow: 'angry', bw: 3, dir: [0.2, 0.2] }) + M.smirk(60, 76, 6);
+    s += sk_drop(16, 40, 4, '#3A3446') + sk_drop(104, 30, 3.4, '#3A3446');
+    return s;
+  }
+
+  // an empty bottle drifting in the reeds
+  function plastikflasche(o: DrawOpts, C: Defs) {
+    const pet = C.lin('#D6F0FA', '#7CC2E0');
+    let s = `<path d="M2 104 Q30 98 60 104 T118 104" fill="none" stroke="#5FA8D3" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<path d="M8 104 Q10 80 6 62 M16 104 Q18 76 22 56 M106 104 Q104 78 110 58" fill="none" stroke="#9A9A4A" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<g transform="rotate(-62 60 70)">`;
+    s += `<rect x="52" y="14" width="16" height="12" rx="2" ${F('#3B82F6', 2)}/><path d="M54 26 L66 26 L70 36 Q80 42 80 56 L80 104 Q80 112 72 112 L48 112 Q40 112 40 104 L40 56 Q40 42 50 36 Z" fill="${pet}" fill-opacity=".9" ${S()}/>`;
+    s += `<rect x="40" y="64" width="40" height="18" fill="#F2F2F6" stroke="${OUT}" stroke-width="1.6"/><path d="M44 104 Q60 96 76 104" fill="none" stroke="#fff" stroke-width="2" opacity=".6"/>`;
+    s += shine(48, 92, 3, 8);
+    s += pair(60, 50, 7, 5, { brow: 'flat', bw: 2.6, dir: [0.3, 0] }) + M.wavy(60, 94, 5);
+    s += `</g>`;
+    return s;
+  }
+
+  // a thin sheet of ice with a crack running through it
+  function duenneseis(o: DrawOpts, C: Defs) {
+    const ice = C.lin('#F4FBFF', '#A8D4EE');
+    let s = `<path d="M4 96 Q60 88 116 96 L116 112 Q60 118 4 112 Z" fill="#3F86B8" stroke="${OUT}" stroke-width="2"/>`;
+    s += `<path d="M10 92 L22 46 Q60 30 98 46 L110 92 Q60 102 10 92 Z" ${F(ice)}/>`;
+    s += `<path d="M58 36 L54 54 L64 64 L56 80 L62 98" fill="none" stroke="${OUT}" stroke-width="3" stroke-linejoin="round"/><path d="M54 54 L40 58 M64 64 L80 60 M56 80 L44 86" fill="none" stroke="${OUT}" stroke-width="1.8" stroke-linecap="round"/>`;
+    s += `<path d="M26 50 Q40 42 52 42" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>`;
+    s += pair(60, 68, 11, 6.5, { brow: 'worried', bw: 3, dir: [0, 0.2], iris: '#3F86B8' }) + M.wavy(60, 84, 7);
+    s += `<path d="M18 30 L22 24 M100 26 L96 20 M60 16 L60 10" stroke="#9AD0F0" stroke-width="2.4" stroke-linecap="round"/>`;
+    return s;
+  }
+
+  // a sack of fertiliser spilling its pellets towards the water
+  function duengersack(o: DrawOpts, C: Defs) {
+    const bag = C.grad('#E8DCC0');
+    let s =
+      de_ground(38) +
+      `<path d="M70 112 Q94 106 118 112" fill="none" stroke="#5FA8D3" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<path d="M24 108 Q18 70 26 34 L34 22 L46 30 L58 20 L70 30 L82 22 L92 34 Q100 70 94 108 Q60 116 24 108 Z" ${F(bag)}/>`;
+    s += `<rect x="34" y="70" width="50" height="22" rx="3" fill="#4E9A32" stroke="${OUT}" stroke-width="1.8"/><path d="M42 81 h.1 M52 81 h.1 M62 81 h.1 M72 81 h.1" stroke="#F2C230" stroke-width="5" stroke-linecap="round"/>`;
+    s += [
+      [98, 100],
+      [104, 106],
+      [110, 98],
+      [96, 108],
+      [108, 110],
+    ]
+      .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" ${F('#F2F2F6', 1.2)}/>`)
+      .join('');
+    s += shine(34, 52, 4, 9);
+    s += pair(60, 48, 10, 6.5, { brow: 'angry', bw: 3, dir: [0.3, 0.2] }) + M.grin(60, 62, 7);
+    return s;
+  }
+
+  // green scum that covers the pond, a fish below gasping for air
+  function algenbluete(o: DrawOpts, C: Defs) {
+    const scum = C.grad('#7EC24A');
+    let s = `<ellipse cx="60" cy="108" rx="54" ry="8" fill="#3F86B8" stroke="${OUT}" stroke-width="2"/>`;
+    s += `<path d="${burst(60, 62, 40, 50, 14)}" ${F(scum)}/>`;
+    s += `<path d="M24 54 q8 -8 16 -2 M70 36 q10 -6 18 2 M78 86 q8 6 16 0 M28 84 q6 6 14 2" fill="none" stroke="#C9EC8A" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += [
+      [30, 66, 4],
+      [92, 58, 5],
+      [80, 34, 3.4],
+      [40, 36, 3],
+      [88, 84, 3.6],
+    ]
+      .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#B8E070" stroke="${OUT}" stroke-width="1.2"/>`)
+      .join('');
+    s += `<g transform="translate(20 108)"><path d="M-10 0 Q0 -6 10 0 Q0 6 -10 0 Z M10 0 L16 -4 L16 4 Z" fill="#C9B48E" stroke="${OUT}" stroke-width="1.2"/><circle cx="-6" cy="-1" r="1" fill="${OUT}"/></g>`;
+    s += shine(42, 46, 8, 4, -20);
+    s += pair(60, 60, 12, 7.5, { brow: 'angry', bw: 3.6, dir: [0, 0.2], iris: '#4E9A32' }) + M.fangs(60, 78, 9);
+    return s;
+  }
+
+  // a pipe that pours dirty water into the stream
+  function abwasserrohr(o: DrawOpts, C: Defs) {
+    const pipe = C.lin('#C9CED8', '#7E88A2'),
+      dirty = C.lin('#A0906A', '#6A5A3A');
+    let s = `<path d="M0 96 Q60 88 120 96 L120 120 L0 120 Z" fill="${dirty}" stroke="${OUT}" stroke-width="2"/>`;
+    s += `<path d="M58 70 Q66 84 62 100 Q74 104 86 100 Q82 84 88 70 Z" fill="${dirty}" ${S(2)}/>`;
+    s += `<rect x="2" y="24" width="64" height="46" rx="6" ${F(pipe)}/><ellipse cx="70" cy="47" rx="20" ry="27" ${F(pipe)}/><ellipse cx="72" cy="47" rx="13" ry="19" fill="#3A3446" stroke="${OUT}" stroke-width="2"/>`;
+    s += `<path d="M14 24 L14 70 M40 24 L40 70" stroke="#6A7088" stroke-width="2.4"/><circle cx="8" cy="30" r="2" fill="#6A7088"/><circle cx="8" cy="64" r="2" fill="#6A7088"/>`;
+    s += `<path d="M66 60 Q76 70 74 80 Q88 74 92 86" fill="none" stroke="#C9B48E" stroke-width="3" stroke-linecap="round"/>`;
+    s += pair(72, 42, 6, 4.5, { look: 'glow', glow: '#E8F06A', brow: 'angry', bw: 3 });
+    s += M.roar(72, 54, 6, 7);
+    s += `<circle cx="96" cy="104" r="4" fill="#E8E0C8" stroke="${OUT}" stroke-width="1.2"/><circle cx="106" cy="100" r="3" fill="#E8E0C8" stroke="${OUT}" stroke-width="1.2"/><circle cx="40" cy="106" r="3.4" fill="#E8E0C8" stroke="${OUT}" stroke-width="1.2"/>`;
+    s += shine(20, 34, 10, 3);
+    return s;
+  }
+
   const SHAPES: Record<string, Draw> = {
     fox,
     toad,
@@ -5893,6 +6016,13 @@ export const MONART = (() => {
     schrottmagnet,
     kurzschluss,
     strommast,
+    biologin,
+    oelfleck,
+    plastikflasche,
+    duenneseis,
+    duengersack,
+    algenbluete,
+    abwasserrohr,
   };
   // old shape names (saved games from before the redraw)
   const ALIAS: Record<string, string> = {
@@ -5942,6 +6072,7 @@ export const MONART = (() => {
     'mats',
     'foersterin',
     'elektrikerin',
+    'biologin',
   ];
 
   // where clothes sit on each hero (drawing coordinates before the stage scaling): head top [x, y, scale],
@@ -5984,6 +6115,7 @@ export const MONART = (() => {
     mats: { top: [60, 30, 1.1], eyes: [60, 58, 10, 6], neck: [60, 81, 46], pack: [24, 84] },
     foersterin: { top: [60, 30, 1.1], eyes: [60, 59, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
     elektrikerin: { top: [60, 34, 1.1], eyes: [60, 62, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
+    biologin: { top: [60, 30, 1.1], eyes: [60, 59, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
   };
   const at = (p: number[], body: string) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
   const STRAW = '#E8C25A';

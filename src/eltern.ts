@@ -383,6 +383,16 @@ export const ELTERN = (() => {
       magnet:
         'Ein Magnet zieht Eisen, Nickel und Kobalt an, nicht alle Metalle. Er wirkt durch Papier, Glas und Wasser. Magnete im Alltag.',
     },
+    gewaesser: {
+      zone: 'Die Zonen eines Teiches vom Ufer bis zum Grund kennen und wissen, welche Pflanzen und Tiere wo leben.',
+      pflanze:
+        'Schilf, Rohrkolben, Seerose, Wasserlinse und Wasserpest am Bild und an Merkmalen erkennen und wissen, wie sie im Wasser leben.',
+      tier: 'Frosch, Molch, Libelle, Wasserläufer, Teichmuschel und Stockente erkennen und wissen, wie sie ans Leben am Wasser angepasst sind.',
+      entw: 'Vom Laich über die Kaulquappe zum Frosch, dazu wie Molch, Libelle und Stockente groß werden.',
+      kreislauf: 'Wer frisst wen am Teich? Nahrungsketten von den Algen bis zum Graureiher ordnen.',
+      bach: 'Fließende und stehende Gewässer unterscheiden, den Weg von der Quelle zur Mündung, und an kleinen Tieren im Bach ablesen, wie sauber das Wasser ist.',
+      schutz: 'Die Baderegeln, sicheres Verhalten auf dem Eis und wie man Tiere und Pflanzen am Wasser schützt.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -444,6 +454,8 @@ export const ELTERN = (() => {
     natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
     strom:
       'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Stromkreis und Magnete nicht vor. Den einfachen Stromkreis nennen die Lehrpläne von Bayern, Baden-Württemberg, Hamburg und Nordrhein-Westfalen für die Klassen 3/4 (Hamburg: Klasse 4), Berlin und Rheinland-Pfalz ohne feste Klasse. Magnetismus steht in Mecklenburg-Vorpommern in Klasse 3, in Hamburg und Nordrhein-Westfalen schon in Klasse 1/2. In vielen Klassen ist das Thema also Stoff der Klasse 4.',
+    gewaesser:
+      'Sachunterricht, Lebensraum Gewässer. Im sächsischen Lehrplan der Klasse 3 ist die Wiese der Lebensraum, Teich und Bach stehen dort nicht. Ausdrücklich genannt werden Gewässer in Bayern („Wald und Gewässer“, dazu die Entwicklung des Froschs), Mecklenburg-Vorpommern („Lebensraum Wasser“ mit den Uferzonen), Thüringen, Berlin und Brandenburg („Leben am Wasser“, ohne feste Klasse) und Rheinland-Pfalz („Bach“ als Beispiel bis Ende Klasse 4), meist als Stoff der Klassen 3 und 4. In Niedersachsen und Baden-Württemberg kann der Teich schon in Klasse 1/2 als Lebensraum drankommen. Die Baderegeln sind die zehn Regeln, auf die sich die Schwimmverbände 2024 geeinigt haben. Welche Teile davon in Klasse 3 behandelt werden, entscheidet die Schule.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {

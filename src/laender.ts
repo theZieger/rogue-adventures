@@ -92,7 +92,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt satzbaustelle freunde wetterstation kompass verkehr frueher musik teestube doppeldecker ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 koerper1 jahr1 baeume2',
       frueher: 'sinne',
       nicht: 'ethik kirchenjahr wiese feste2',
-      offen: 'wald strom religionen woerterwerkstatt ichwelt kartoffel kornkammer formen2 tiere2 natur2',
+      offen: 'wald strom gewaesser religionen woerterwerkstatt ichwelt kartoffel kornkammer formen2 tiere2 natur2',
     }),
     note: {
       math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel von Mengen stehen hier nicht im Plan.',
@@ -151,7 +151,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle wetterstation kompass verkehr frueher musik teestube doppeldecker feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1',
       frueher: 'wiese sinne',
       nicht: 'ethik kirchenjahr kartoffel kornkammer',
-      offen: 'wald strom religionen freunde ichwelt ichdu1 baeume2 tiere2 natur2',
+      offen: 'wald strom gewaesser religionen freunde ichwelt ichdu1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Vorgeschrieben ist hier das Abziehverfahren; Punkt vor Strich, Teilbarkeitsregeln und Drittel von Mengen stehen nicht im Plan.',
@@ -201,7 +201,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2',
       nicht: 'ethik kirchenjahr kartoffel kornkammer wiese kompass feste2',
       offen:
-        'wald strom religionen freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
+        'wald strom gewaesser religionen freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Ein Drittel und Bruchteile von Mengen stehen hier nicht im Plan.',
@@ -261,7 +261,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2',
       nicht: 'ethik kirchenjahr kartoffel kornkammer wiese kompass feste2',
       offen:
-        'wald strom religionen freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
+        'wald strom gewaesser religionen freunde ichwelt wetterstation verkehr frueher sinne musik ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Ein Drittel und Bruchteile von Mengen stehen hier nicht im Plan.',
@@ -321,7 +321,8 @@ export const LAENDER: Record<string, Land> = {
       frueher: 'sinne teestube',
       spaeter: 'bau',
       nicht: 'ethik kirchenjahr wiese natur2',
-      offen: 'wald strom religionen freunde ichwelt kartoffel kornkammer frueher musik formen1 koerper1 tiere2',
+      offen:
+        'wald strom gewaesser religionen freunde ichwelt kartoffel kornkammer frueher musik formen1 koerper1 tiere2',
     }),
     note: {
       math: 'Schriftliches Malnehmen und Punkt vor Strich stehen hier erst in Klasse 4; Teilbarkeitsregeln und Drittel nennt der Plan nicht.',
@@ -380,7 +381,7 @@ export const LAENDER: Record<string, Land> = {
       spaeter: 'formen2',
       nicht: 'ethik kirchenjahr',
       offen:
-        'wald strom religionen woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
+        'wald strom gewaesser religionen woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel nennt der Plan nicht; schriftliches Malnehmen steht im älteren Plan erst in Klasse 4.',
@@ -439,7 +440,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle freunde wetterstation kompass verkehr frueher teestube doppeldecker ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 tiere2 natur2',
       frueher: 'wiese sinne',
       nicht: 'ethik kirchenjahr feste2',
-      offen: 'wald strom religionen ichwelt kartoffel kornkammer musik',
+      offen: 'wald strom gewaesser religionen ichwelt kartoffel kornkammer musik',
     }),
     note: {
       math: 'Schriftliches Malnehmen und Teilbarkeitsregeln stehen hier erst in Klasse 4; Drittel und Bruchteile von Mengen nicht im Plan.',
@@ -486,7 +487,7 @@ export const LAENDER: Record<string, Land> = {
       frueher: 'sinne',
       spaeter: 'formen2',
       nicht: 'ethik kirchenjahr kartoffel kornkammer',
-      offen: 'wald strom religionen freunde ichwelt wiese verkehr doppeldecker feste2',
+      offen: 'wald strom gewaesser religionen freunde ichwelt wiese verkehr doppeldecker feste2',
     }),
     note: {
       math: 'Teilen mit Rest, Brüche, Punkt vor Strich und Teilbarkeitsregeln stehen hier nicht im Plan.',
@@ -536,7 +537,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle freunde kompass verkehr frueher musik ichdu1 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 tiere2 natur2',
       frueher: 'sinne',
       nicht: 'ethik kirchenjahr kartoffel kornkammer wiese wetterstation',
-      offen: 'wald strom religionen ichwelt teestube doppeldecker feste2',
+      offen: 'wald strom gewaesser religionen ichwelt teestube doppeldecker feste2',
     }),
     note: {
       math: 'Punkt vor Strich, Teilbarkeitsregeln und Drittel stehen hier nicht im Plan.',
@@ -585,7 +586,7 @@ export const LAENDER: Record<string, Land> = {
       spaeter: 'formen2',
       nicht: 'ethik kirchenjahr',
       offen:
-        'wald strom religionen woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
+        'wald strom gewaesser religionen woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Punkt vor Strich und Teilbarkeitsregeln nennt der Plan nicht; bei Brüchen nur Hälfte und Viertel von Größen.',
@@ -634,7 +635,7 @@ export const LAENDER: Record<string, Land> = {
     off: { jahrmarkt: ['liter'] },
     minus: 'abz',
     fit: fits({
-      nicht: 'wald strom',
+      nicht: 'wald strom gewaesser',
       spaeter: 'religionen',
       passt:
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker ethik kirchenjahr freunde ichwelt kartoffel kornkammer wetterstation kompass sinne verkehr wiese frueher musik zahlen20 formen1 zahlen100 malteilen groessen2 formen2 laute1 schreiben2 woerter2 koerper1 jahr1 baeume2 tiere2 natur2 ichdu1 feste2 instrumente2 musik1',
@@ -653,7 +654,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle freunde ichwelt kartoffel kornkammer kompass verkehr frueher musik teestube doppeldecker ichdu1 feste2 instrumente2 musik1 laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2 koerper1 jahr1 baeume2 natur2',
       frueher: 'sinne',
       nicht: 'ethik kirchenjahr wiese',
-      offen: 'wald strom religionen wetterstation tiere2',
+      offen: 'wald strom gewaesser religionen wetterstation tiere2',
     }),
     note: {
       math: 'Ein Drittel ist hier nicht vorgesehen, nur Viertel, Hälfte und drei Viertel bei Größen.',
@@ -696,7 +697,7 @@ export const LAENDER: Record<string, Land> = {
         'math bau jahrmarkt woerterwerkstatt satzbaustelle teestube doppeldecker laute1 schreiben2 woerter2 zahlen20 formen1 zahlen100 malteilen groessen2 formen2',
       nicht: 'ethik kirchenjahr musik feste2',
       offen:
-        'wald strom religionen freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
+        'wald strom gewaesser religionen freunde ichwelt kartoffel kornkammer wiese wetterstation kompass verkehr frueher sinne ichdu1 instrumente2 musik1 koerper1 jahr1 baeume2 tiere2 natur2',
     }),
     note: {
       math: 'Schriftliches Malnehmen, halbschriftliches Teilen, Punkt vor Strich und Teilbarkeit stehen hier erst in Klasse 4.',

@@ -7,6 +7,7 @@ import './sachkunde2.ts';
 import './sachkunde3.ts';
 import './wald.ts';
 import './strom.ts';
+import './gewaesser.ts';
 import './ethik.ts';
 import './religionen.ts';
 import './musik.ts';

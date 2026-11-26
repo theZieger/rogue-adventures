@@ -24,6 +24,7 @@ const RUNS = [
   { MODE: 'kompass', ACC: '0.9', RUNS: '2' },
   { MODE: 'wiese', ACC: '0.9', RUNS: '1' },
   { MODE: 'wald', ACC: '0.9', RUNS: '2' },
+  { MODE: 'gewaesser', ACC: '0.9', RUNS: '2' },
   { MODE: 'frueher', ACC: '0.9', RUNS: '2' },
   { MODE: 'freunde', ACC: '0.9', RUNS: '2' },
   { MODE: 'ichwelt', ACC: '0.9', RUNS: '2' },
