@@ -461,5 +461,22 @@ export const ELTERN = (() => {
     also: (grade: number) =>
       `Manche Klassen behandeln ein Thema früher. Eingeschaltete Themen erscheinen zusätzlich bei Klasse ${grade}, mit der Marke „Klasse ${grade + 1}“. Der Fortschritt bleibt beim Thema. Themen mit Lesestube lassen sich nicht vorziehen. In der Turmwacht kommen die Themen erst in Klasse ${grade + 1} vor.`,
   };
-  return { INFO, PLAN, TURM, LAND };
+  // written subtraction: the two ways a class may write it, and what each Bundesland's plan says about it
+  // (lehrplan/laender/*.md, row „Subtraktionsverfahren“); a Bundesland without a line fixes no method
+  const MINUS = {
+    title: 'So rechnet die Klasse',
+    note: 'Schriftlich subtrahieren lernen Klassen auf zwei Wegen. Schauen Sie ins Heft Ihres Kindes und wählen Sie den Weg, der dort steht. Das Ergebnis ist bei beiden gleich.',
+    abz: ['Abziehen', 'Oben wird entbündelt: Die Ziffer ist durchgestrichen, die neue steht klein darüber.'],
+    erg: ['Ergänzen', 'Von unten nach oben ergänzen. Der Übertrag steht klein unter der nächsten Spalte.'],
+    land: {
+      SN: 'Der sächsische Lehrplan von 2025 beschreibt das Abziehen. Manche Klassen rechnen mit Ergänzen.',
+      BY: 'Der bayerische Lehrplan schreibt das Abziehen vor.',
+      NI: 'In Niedersachsen legt die Schule den Weg fest. Das Beispiel im Lehrplan ist Abziehen.',
+      HE: 'Der hessische Rahmenplan von 1995 schreibt das Ergänzen vor. Der neuere Plan nennt keinen Weg.',
+    } as Record<string, string>,
+    free: (name: string) => `Der Lehrplan für ${name} legt keinen Weg fest. Voreingestellt ist Ergänzen.`,
+    none: 'Ohne Bundesland ist Ergänzen voreingestellt.',
+    was: 'Die Aufgabenart kommt in Zahlenquest ab der dritten Welt vor. Nach dem Umstellen sieht Ihr Kind einmal die Erklärung zum neuen Weg.',
+  };
+  return { INFO, PLAN, TURM, LAND, MINUS };
 })();

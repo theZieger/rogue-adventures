@@ -6,11 +6,21 @@ import { type Markup, html, raw } from '../ui/html.ts';
 import { READ_MOD } from './battle.ts';
 import { $, CFG, MODULES_OF, app, arrow, esc, euro, reducedMotion } from './core.ts';
 import { state } from './state.ts';
+import { minusMethod } from './storage.ts';
 import { SFX, on, showTutorial } from './ui.ts';
 
 /* ---------- Task UI ---------- */
 const PLACES = ['Einer', 'Zehner', 'Hunderter', 'Tausender'];
-function colHtml(c: NonNullable<Task['col']>, text: string) {
+type Col = NonNullable<Task['col']>;
+// Abziehen: column i of the minuend gave one away, so its digit is one less (a 0 was 10 first and is 9)
+const reduced = (c: Col, i: number) => (+String(c.rows[0])[i] + 9 * c.carry[i]) % 10;
+// The small 1 in front of a digit that got ten from its left neighbour. It stands before the big digit, or
+// before the small one above it if the column had already given one away itself (4 → 3 → 13). A 0 gets its
+// ten first and gives then, so there the 1 stays with the big digit (0 → 10 → 9).
+const tenAt = (c: Col, i: number, got: boolean, gave: boolean) =>
+  !got ? '' : gave && String(c.rows[0])[i] !== '0' ? 'up' : 'min';
+// abz: subtraction is written by Abziehen (Entbündeln), with the small fields above the minuend
+function colHtml(c: Col, text: string, abz: boolean) {
   const place = (i: number) => PLACES[c.w - 1 - i];
   const cells = (f: (i: number) => Markup) => Array.from({ length: c.w }, (_, i) => f(i));
   // multiplication is written in one line (213 · 3) with the result under the first factor
@@ -18,9 +28,27 @@ function colHtml(c: NonNullable<Task['col']>, text: string) {
   const end = mul ? html`<span></span>` : '';
   const rows = (mul ? c.rows.slice(0, 1) : c.rows).map((n, r) => {
     const s = String(n).padStart(c.w, ' ');
-    return html`<span class="op">${r ? c.op : ''}</span>${cells((i) => html`<span>${s[i].trim()}</span>`)}${mul ? html`<span class="op">· ${c.rows[1]}</span>` : ''}`;
+    return html`<span class="op">${r ? c.op : ''}</span>${cells((i) => (abz && !r ? html`<span class="min">${s[i]}</span>` : html`<span>${s[i].trim()}</span>`))}${mul ? html`<span class="op">· ${c.rows[1]}</span>` : ''}`;
   });
-  return html`<div class="colcalc${mul ? ' mul' : ''}" style="--w:${c.w}" role="group" aria-label="${text.replace(' = ?', '')}">${rows}<span class="op"></span>${cells((i) => (i < c.w - 1 ? html`<div class="inp carry" data-action="taskField" data-i="${c.w + i}" aria-label="Übertrag ${place(i)}"></div>` : html`<span></span>`))}${end}<i class="colline"></i><span class="op"></span>${cells((i) => html`<div class="inp dig" data-action="taskField" data-i="${i}" aria-label="${place(i)}"></div>`)}${end}</div><div class="prompt">Rechne von rechts nach links. Den Übertrag schreibst du in das kleine Feld.</div>`;
+  // the fields are groups because a div without a role may not carry a name
+  const small = html`<span class="op"></span>${cells((i) => (i < c.w - 1 ? (abz ? html`<div class="inp carry up" data-action="taskField" data-i="${c.w + i}" role="group" aria-label="${place(i)} nach dem Entbündeln"></div>` : html`<div class="inp carry" data-action="taskField" data-i="${c.w + i}" role="group" aria-label="Übertrag ${place(i)}"></div>`) : html`<span></span>`))}`;
+  return html`<div class="colcalc${mul ? ' mul' : ''}" style="--w:${c.w}" role="group" aria-label="${text.replace(' = ?', '')}">${abz ? small : ''}${rows}${abz ? '' : small}${end}<i class="colline"></i><span class="op"></span>${cells((i) => html`<div class="inp dig" data-action="taskField" data-i="${i}" role="group" aria-label="${place(i)}"></div>`)}${end}</div><div class="prompt">${abz ? 'Rechne von rechts nach links. Wenn du entbündelst, schreibst du die neue Ziffer in das kleine Feld darüber.' : 'Rechne von rechts nach links. Den Übertrag schreibst du in das kleine Feld.'}</div>`;
+}
+// a finished written subtraction as a picture, by either method: for the explanation and for the parents' choice
+export function colSolved(rows: number[], abz: boolean) {
+  const c = MQ.columns('−', rows).col!;
+  const text = `${rows.join(' − ')} = ${rows[0] - rows[1]}`;
+  const cells = (f: (i: number) => Markup | string) =>
+    Array.from({ length: c.w }, (_, i) => html`<span>${f(i)}</span>`);
+  const line = (n: number, op = '') => {
+    const s = String(n).padStart(c.w, ' ');
+    return html`<span class="op">${op}</span>${cells((i) => s[i].trim())}`;
+  };
+  const ten = (i: number) => tenAt(c, i, !!c.carry[i - 1], !!c.carry[i]);
+  const top = abz
+    ? html`<span class="op"></span>${cells((i) => (c.carry[i] ? html`<small class="${ten(i) === 'up' ? 'ten' : ''}">${reduced(c, i)}</small>` : ''))}<span class="op"></span>${Array.from({ length: c.w }, (_, i) => html`<span class="min${c.carry[i] ? ' cut' : ''}${ten(i) === 'min' ? ' ten' : ''}">${String(rows[0])[i]}</span>`)}${line(rows[1], '−')}`
+    : html`${line(rows[0])}${line(rows[1], '−')}<span class="op"></span>${cells((i) => (c.carry[i] ? html`<small>1</small>` : ''))}`;
+  return html`<div class="colcalc solved" style="--w:${c.w}" role="img" aria-label="${text}">${top}<i class="colline"></i>${line(rows[0] - rows[1])}</div>`;
 }
 declare global {
   interface Window {
@@ -56,7 +84,9 @@ export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
   const mod = task.mod!;
   const M = MODULES_OF()[mod] || MQ.MODULES[mod];
   const C = task.col;
-  // written methods: one field per result digit (0 … w−1), then the carry fields (w + column)
+  const abz = !!C && C.op === '−' && minusMethod() === 'abz';
+  // written methods: one field per result digit (0 … w−1), then the small fields (w + column): the carries,
+  // by Abziehen the minuend's new digits
   const nAns = C ? 2 * C.w - 1 : task.answers!.length;
   const values: string[] = Array(nAns).fill('');
   let active = C ? C.w - 1 : 0;
@@ -91,7 +121,7 @@ export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
           );
         }
       body = html`<div class="grid">${cells}</div><div class="legend" data-step-r="${g.stepR}" data-step-d="${g.stepD}"><span>${raw(arrow('r'))} +${g.stepR}</span><span>${raw(arrow('l'))} −${g.stepR}</span><span>${raw(arrow('d'))} +${g.stepD}</span><span>${raw(arrow('u'))} −${g.stepD}</span></div><div class="prompt">Welche Zahl steht im Zielfeld?</div>`;
-    } else if (C) body = colHtml(C, task.text!);
+    } else if (C) body = colHtml(C, task.text!, abz);
     else if (task.word)
       body = html`<div class="prompt">Schreibe die Zahl:</div><div class="numword">${raw(esc(task.text).replace(/hundert|tausend/g, '$&<wbr>'))}</div>`;
     else if (task.svg) body = html`<div class="figure">${raw(task.svg)}</div><div class="prompt">${task.ask}</div>`;
@@ -121,10 +151,19 @@ export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
   container.querySelectorAll<HTMLElement>('.inp').forEach((el) => {
     inps[+el.dataset.i!] = el;
   });
+  const mins = abz ? [...container.querySelectorAll<HTMLElement>('.colcalc .min')] : [];
   function paint() {
     inps.forEach((el, i) => {
       el.textContent = values[i];
       el.classList.toggle('active', i === active && !locked);
+    });
+    // a new digit in a small field strikes the one below it and hands ten to the column on its right
+    mins.forEach((el, i) => {
+      const gave = !!values[C!.w + i],
+        ten = tenAt(C!, i, i > 0 && !!values[C!.w + i - 1], gave);
+      el.classList.toggle('cut', gave);
+      el.classList.toggle('ten', ten === 'min');
+      if (inps[C!.w + i]) inps[C!.w + i].classList.toggle('ten', ten === 'up');
     });
     const a = inps[active];
     if (a && a.scrollIntoView && !locked) a.scrollIntoView({ block: 'nearest' });
@@ -187,7 +226,9 @@ export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
     } else if (C) {
       values[active] = k;
       const p = order!.indexOf(active);
-      if (p < nAns - 1) active = order![p + 1];
+      // Abziehen: after a new digit comes the column that got its ten; the result runs on to the left by itself
+      if (abz) active = active < C.w ? Math.max(active - 1, 0) : active - C.w + 1;
+      else if (p < nAns - 1) active = order![p + 1];
     } else if (k === 'ok') {
       if (values.some((v) => v === '')) {
         const idx = values.findIndex((v) => v === '');
@@ -214,7 +255,7 @@ export function runTask(task: ScreenTask, opts: TaskOpts, done: TaskDone) {
           ? v === want[i] || (want[i] === ' ' && (v === '' || v === '0'))
           : v === ''
             ? null
-            : +v === C.carry[i - C.w];
+            : +v === (abz ? reduced(C, i - C.w) : C.carry[i - C.w]);
     const ok = C
       ? parseInt(values.slice(0, C.w).join(''), 10) === task.answers![0]
       : values.every((v, i) => parseInt(v, 10) === task.answers![i]);

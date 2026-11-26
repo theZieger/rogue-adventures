@@ -2,10 +2,10 @@ import type { Note } from '../curriculum.ts';
 import { MQ, type Task, type Tutorial } from '../logic.ts';
 import { READ_MOD, READ_TUT } from './battle.ts';
 import { $, CFG, MODULES_OF, app } from './core.ts';
-import { tutKey } from './progress.ts';
+import { abzTut, tutKey } from './progress.ts';
 import { state } from './state.ts';
 import { saveAll } from './storage.ts';
-import { joined, speakBtn } from './tasks.ts';
+import { colSolved, joined, speakBtn } from './tasks.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
 
 /* ---------- Rendering primitives ---------- */
@@ -326,6 +326,7 @@ function tutFor(group: string): Tutorial & { icon: string } {
   const [mod, tier] = group.split(':');
   const nt = CFG().numTut;
   if (nt) return Object.assign({ icon: MODULES_OF()[mod].icon }, nt[mod][+tier] || nt[mod][1]);
+  if (abzTut(group)) return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT_ABZ[+tier] || MQ.TUT_ABZ[1]);
   const t = CFG().tut && CFG().tut![group];
   if (!t) return Object.assign({ icon: MQ.MODULES[mod].icon }, MQ.TUT[mod][+tier] || MQ.TUT[mod][1]);
   const M = MODULES_OF()[mod];
@@ -335,7 +336,7 @@ export function showTutorial(group: string, note?: string | null, onClose?: (() 
   const t = tutFor(group);
   const n: Note | null = note && CFG().notes ? CFG().notes![note] : null;
   const ov = modal(
-    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:var(--soft)">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:var(--text-16);color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Verstanden</button>`,
+    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:var(--soft)">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p>${t.col ? colSolved(t.col, true) : ''}<ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${t.more ? html`<p class="hintsmall">${t.more}</p>` : ''}${n ? html`<div class="ex"><div style="font-size:var(--text-16);color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Verstanden</button>`,
     {
       understood() {
         ov.remove();
@@ -348,7 +349,7 @@ export function showTutorial(group: string, note?: string | null, onClose?: (() 
   );
   const letter = /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/,
     say = (list: string[]) => (CFG().noLetters ? list.filter((x) => !letter.test(x)) : list);
-  const steps = () => joined(t.title, ...say(t.steps));
+  const steps = () => joined(t.title, ...say(t.steps), t.more);
   speakBtn(
     $('h2', ov),
     'afterbegin',

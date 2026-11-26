@@ -21,6 +21,7 @@ import {
   subjectLabel,
   visSubjects,
 } from './storage.ts';
+import { colSolved } from './tasks.ts';
 import { screenTitle, subjectOf } from './title.ts';
 import { screenTurm, screenTurmBoard, turmLines } from './turm_screens.ts';
 import {
@@ -114,4 +115,5 @@ window.__mq = {
   screenTop,
   RECIPES,
   craft,
+  colSolved,
 };

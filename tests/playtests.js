@@ -40,6 +40,8 @@ const RUNS = [
   { MODE: 'woerterwerkstatt', LAND: 'HH', ACC: '0.9', RUNS: '1' },
   { MODE: 'freunde', LAND: 'HH', ACC: '0.9', RUNS: '1' },
   { MODE: 'turm', LAND: 'HH', GRADE: '3', ACC: '0.9', RUNS: '1' },
+  // a family that starts in Bayern subtracts by Abziehen (Entbündeln)
+  { MODE: 'math', LAND: 'BY', MINUS: 'new', W3: '1', ACC: '0.9', RUNS: '1' },
   // hidden everywhere but in Sachsen
   { MODE: 'kirchenjahr', LAND: 'SN', ACC: '0.9', RUNS: '1' },
 ];

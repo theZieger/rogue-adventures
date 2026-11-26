@@ -3,6 +3,7 @@
 // starting the game, so icons, monsters and the top bar are the real ones.
 import { app } from './app/core.ts';
 import { monsterSVG, typeChip } from './app/progress.ts';
+import { colSolved } from './app/tasks.ts';
 import { topbar } from './app/ui.ts';
 import { ICONS } from './icons.ts';
 
@@ -180,6 +181,7 @@ ${section(
   'Aufgabe',
   'Die Aufgabe steht auf Karopapier. Blau ist, wo man gerade schreibt; Grün und Rot kommen erst nach der Antwort.',
   `${block('task · inp', 'Die Karte mit der Frage und den Feldern: <code>active</code>, <code>ok</code>, <code>bad</code>.', `<div class="task"><div class="head">➕ Addition · Funkenbiss<button class="tut" type="button" aria-label="Erklärung anzeigen">🛈<span class="lbl"> Wie geht das?</span></button></div><div class="expr">60 + 5 = ?</div><div class="inputs"><div class="inp active">6</div><div class="inp ok">65</div><div class="inp bad">56</div></div></div>`)}
+${block('colcalc', 'Schriftlich rechnen, Ziffer für Ziffer. Subtrahieren gibt es in zwei Schreibweisen, die Eltern wählen: beim Ergänzen stehen die kleinen Felder (<code>carry</code>) unter der Zeile, beim Abziehen darüber (<code>carry up</code>). Dort ist die entbündelte Ziffer durchgestrichen (<code>min cut</code>) und die Ziffer rechts daneben bekommt eine kleine 1 (<code>ten</code>). <code>solved</code> ist die fertige Rechnung als Bild.', `<div class="task"><div class="colcalc" style="--w:3"><span class="op"></span><div class="inp carry up"></div><div class="inp carry up">3</div><span></span><span class="op"></span><span class="min">7</span><span class="min cut">4</span><span class="min ten">2</span><span class="op">−</span><span>3</span><span>1</span><span>8</span><i class="colline"></i><span class="op"></span><div class="inp dig"></div><div class="inp dig"></div><div class="inp dig active"></div></div></div>${onCard(`<div class="row specimen" style="gap:var(--space-24)">${colSolved([503, 276], true).text}${colSolved([503, 276], false).text}</div>`)}`)}
 ${block('options · opt', 'Antworten zum Antippen: <code>right</code>, <code>wrong</code>, <code>struck</code> (vom Tipp gestrichen).', `<div class="options two"><button class="opt">backen</button><button class="opt struck">bakken</button><button class="opt right">backen</button><button class="opt wrong">baken</button></div>`)}
 ${block('orderlist · oitem', 'In die richtige Reihenfolge tippen: <code>picked</code>, <code>right</code>, <code>wrong</code>.', onCard(`<div class="orderlist"><button class="oitem"><span class="num"></span>Samen</button><button class="oitem picked"><span class="num">1</span>Keimling</button><button class="oitem right"><span class="num">2</span>Pflanze</button><button class="oitem wrong"><span class="num">3</span>Blüte</button></div>`))}
 ${block('feedback', 'Die Rückmeldung nach der Antwort, mit der richtigen Lösung, wenn es daneben ging.', onCard(`<div class="feedback good">Richtig! ✔</div><div class="feedback bad">Daneben<small>Richtig wäre: 65</small></div>`))}
