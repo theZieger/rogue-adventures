@@ -69,7 +69,9 @@ const WORDS = (
   'klammer|liter|' +
   'gemeinde|rechte|regeln|klassenrat|abstimmen|rathaus|buergermeisterin|Der Vordrängler|vordraengler|Der Dazwischenrufer|' +
   'dazwischenrufer|Die kaputte Schaukel|kaputteschaukel|Die Schmiererei|schmiererei|Der Zettelfresser|zettelfresser|' +
-  'Der große Bestimmer|bestimmer'
+  'Der große Bestimmer|bestimmer|' +
+  'kerze|brennbar|brandfall|notruf|feuerwehr|feuerwehrfrau|Die Rauchwolke|rauchwolke|Das Feuerzeug|feuerzeug|Die vergessene Kerze|' +
+  'vergessenekerze|Der Funkenflug|funkenflug|Der Fettbrand|fettbrand|Der Dachstuhlbrand|dachstuhlbrand'
 ).split('|');
 const NUM = new Map(WORDS.map((w, i) => [w, i]));
 const isObj = (v: Json): v is JsonObject => !!v && typeof v === 'object' && !Array.isArray(v);

@@ -393,6 +393,19 @@ export const ELTERN = (() => {
       rathaus:
         'Wer im Ort entscheidet, was eine geheime, freie und gleiche Wahl ist, und was Klasse, Gemeinde, Bundesland und Bund bestimmen.',
     },
+    feuer: {
+      dreieck:
+        'Das Verbrennungsdreieck: Brennstoff, Sauerstoff und Hitze. Im Bild fehlt eine Seite; später sagt Ihr Kind, was eine Löschart dem Feuer wegnimmt.',
+      kerze: 'Wachs, Docht, Brennschüssel und die Zonen der Flamme im Bild benennen, dazu sicherer Umgang mit Kerzen.',
+      brennbar:
+        'Was brennt und was nicht, dazu Brandgefahren im Alltag: Streichhölzer und Feuerzeuge nur mit Erwachsenen.',
+      brandfall:
+        'Verhalten im Brandfall nach den Regeln der Feuerwehren: nicht verstecken, Tür schließen, im Rauch kriechen, nie den Aufzug, Rauchmelder.',
+      notruf:
+        'Den Notruf 112 absetzen: wo, was, wer, Verletzte, und erst auflegen, wenn die Leitstelle das Gespräch beendet.',
+      feuerwehr:
+        'Die Aufgaben der Feuerwehr (Retten, Löschen, Bergen, Schützen), ihre Ausrüstung und das Feuer in der Geschichte.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -456,6 +469,8 @@ export const ELTERN = (() => {
       'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Stromkreis und Magnete nicht vor. Den einfachen Stromkreis nennen die Lehrpläne von Bayern, Baden-Württemberg, Hamburg und Nordrhein-Westfalen für die Klassen 3/4 (Hamburg: Klasse 4), Berlin und Rheinland-Pfalz ohne feste Klasse. Magnetismus steht in Mecklenburg-Vorpommern in Klasse 3, in Hamburg und Nordrhein-Westfalen schon in Klasse 1/2. In vielen Klassen ist das Thema also Stoff der Klasse 4.',
     gemeinde:
       'Sachunterricht. Im sächsischen Lehrplan stehen Rechte und Pflichten und das demokratische Aushandeln in Klasse 1/2, die UN-Kinderrechtskonvention in Klasse 4; die Gemeinde kommt dort nicht vor. Kinderrechte, Klassenrat, Abstimmen und die Gemeinde nennen die Pläne von Baden-Württemberg, Bayern, Berlin, Brandenburg, Hessen, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Rheinland-Pfalz, Sachsen-Anhalt und Schleswig-Holstein, meist als Stoff der Klassen 3/4 oder ohne feste Klasse (Mecklenburg-Vorpommern: Klasse 3). In Hamburg und Sachsen-Anhalt stehen Kinderrechte schon in Klasse 1/2. Weil die Regeln von Land zu Land verschieden sind, fehlt hier, wie die Bürgermeisterin gewählt wird und wie der Rat genau heißt. Eine Lehrkraft hat die Inhalte nicht geprüft.',
+    feuer:
+      'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommt das Feuer nicht vor; Brandschutz steht dort in Klasse 1/2. Feuer, Kerze, Verbrennungsdreieck und Löschen nennen die Pläne von Baden-Württemberg, Bayern und Sachsen-Anhalt (dort mit Brandschutz und Feuerwehr) für die Klassen 3/4, Hamburg und Mecklenburg-Vorpommern für Klasse 3, Niedersachsen und Nordrhein-Westfalen bis Ende Klasse 4. Die Regeln zum Verhalten im Brandfall folgen den Empfehlungen der Feuerwehren. Versuche mit Feuer zeigt die App nur als Vorhersage: Durchführen darf sie nur ein Erwachsener. Eine Lehrkraft hat die Inhalte nicht geprüft.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {

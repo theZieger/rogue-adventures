@@ -7558,6 +7558,154 @@ export const MONART = (() => {
     buergermeisterin: { top: [60, 26, 1.1], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
   });
 
+  /* ---------- Sachkunde: Feuer und Feuerwehr (heroine Feuerwehrfrau) ---------- */
+  // a flame standing on (cx|by), h high, outer colour and core
+  const fe_flame = (cx: number, by: number, h: number, fill: string, core = '#FFE066') => {
+    const p = (k: number) =>
+      `M${cx} ${by} Q${f1(cx - 0.5 * h * k)} ${by} ${f1(cx - 0.36 * h * k)} ${f1(by - 0.42 * h * k)} Q${f1(cx - 0.22 * h * k)} ${f1(by - 0.72 * h * k)} ${cx} ${f1(by - h * k)} Q${f1(cx + 0.22 * h * k)} ${f1(by - 0.72 * h * k)} ${f1(cx + 0.36 * h * k)} ${f1(by - 0.42 * h * k)} Q${f1(cx + 0.5 * h * k)} ${by} ${cx} ${by} Z`;
+    return `<path d="${p(1)}" ${F(fill, 2.2)}/><path d="${p(0.58)}" fill="${core}"/>`;
+  };
+
+  function feuerwehrfrau(o: DrawOpts, C: Defs) {
+    const skin = C.grad('#C98E62'),
+      coat = C.grad('#2E3E6E'),
+      hair = C.grad('#2A1C14'),
+      helmet = C.grad('#E8F04A'),
+      brass = C.lin('#F4D27A', '#B8862E');
+    let s = `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(coat)}/>`;
+    // reflective stripes and the zip of the jacket
+    s += `<path d="M22 100 L98 100" stroke="${OUT}" stroke-width="7"/><path d="M22 100 L98 100" stroke="#D8F04A" stroke-width="3.6"/><path d="M23 108 L97 108" stroke="#C9CEDD" stroke-width="2.2"/><path d="M60 80 L60 116" ${N(2)}/>`;
+    // the hose with its brass nozzle on the right
+    s += `<path d="M64 116 Q78 100 86 90" fill="none" stroke="${OUT}" stroke-width="10" stroke-linecap="round"/><path d="M64 116 Q78 100 86 90" fill="none" stroke="#C0453A" stroke-width="6" stroke-linecap="round"/>`;
+    s += `<g transform="rotate(-38 92 82)"><rect x="84" y="72" width="16" height="22" rx="3" ${F(brass, 2)}/><rect x="87" y="62" width="10" height="12" rx="2" ${F('#3A3F52', 2)}/></g>`;
+    s += `<ellipse cx="84" cy="94" rx="6" ry="5.5" ${F(skin, 2)}/>`;
+    s += `<path d="M100 62 Q108 52 114 50 M102 68 Q112 62 118 62 M98 56 Q102 46 108 42" fill="none" stroke="#7FC4F0" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<ellipse cx="60" cy="57" rx="25" ry="25" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="61" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="61" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    if (o.bare)
+      s += `<path d="M33 58 Q28 26 60 26 Q92 26 87 58 Q84 44 74 40 Q62 46 50 40 Q38 44 33 58 Z" ${F(hair)}/><path d="M80 44 Q96 52 92 70 Q88 62 84 58 Z" ${F(hair, 2)}/>`;
+    else {
+      // helmet with neck guard, a stripe and the visor pushed up
+      s += `<path d="M30 52 Q28 64 34 70 L38 54 Z M90 52 Q92 64 86 70 L82 54 Z" ${F('#3A3F52', 2)}/>`;
+      s += `<path d="M31 50 Q30 16 60 16 Q90 16 89 50 Z" ${F(helmet)}/><path d="M33 40 Q60 34 87 40" fill="none" stroke="#D9DEE8" stroke-width="3.4"/><path d="M33 40 Q60 34 87 40" fill="none" stroke="${OUT}" stroke-width="1" opacity=".5"/>`;
+      s += `<path d="M36 22 Q60 10 84 22 L82 28 Q60 18 38 28 Z" fill="#9AD0F0" fill-opacity=".7" stroke="${OUT}" stroke-width="2"/>`;
+      s += `<path d="M28 51 Q60 44 92 51 Q94 55 88 55 L32 55 Q26 55 28 51 Z" ${F(helmet)}/><path d="M42 30 Q48 25 56 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>`;
+    }
+    s += shine(47, 63, 5, 3, -20);
+    s += pair(60, 63, 11, 5.5, { brow: 'up', bw: 2.4, iris: '#5A3A22', browColor: '#2A1C14' });
+    s += `<path d="M60 66 Q58 72 61 73" ${N(2.2)}/>${M.smile(60, 77, 6)}`;
+    s += blush(60, 72, 16, 4);
+    return s;
+  }
+
+  function rauchwolke(o: DrawOpts, C: Defs) {
+    const cloud = C.grad('#8E8A98');
+    let s = `<path d="M40 112 Q34 100 44 92 M60 114 Q58 102 62 94 M80 112 Q86 100 76 92" fill="none" stroke="#6E6A78" stroke-width="5" stroke-linecap="round" opacity=".6"/>`;
+    s += `<path d="${mb_puff(60, 58, 46, 36, 11, 14, -Math.PI / 2)}" ${F(cloud)}/>`;
+    s += `<path d="M28 44 Q40 30 58 34 M70 86 Q86 88 94 76" fill="none" stroke="#B4B0BE" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += shine(38, 40, 8, 4, -20);
+    s += pair(60, 56, 10, 6.5, { brow: 'angry', bw: 3, lid: '#6E6A78', lidY: 0.15, dir: [0.2, 0.2] });
+    s += M.smirk(60, 74, 8);
+    s += `<circle cx="104" cy="24" r="6" fill="#8E8A98" opacity=".5"/><circle cx="14" cy="30" r="4.5" fill="#8E8A98" opacity=".45"/><circle cx="110" cy="40" r="3.5" fill="#8E8A98" opacity=".4"/>`;
+    return s;
+  }
+
+  function feuerzeug(o: DrawOpts, C: Defs) {
+    const body = C.lin('#5AC8E8', '#2A7CC6'),
+      metal = C.lin('#F4F7FB', '#9AA3B5');
+    let s = de_ground(26);
+    s += fe_flame(52, 24, 22, '#FF8A3D');
+    s += `<path d="M38 26 L72 26 L72 40 L38 40 Z" ${F(metal, 2.2)}/><path d="M44 30 h.1 M50 30 h.1 M56 30 h.1 M62 30 h.1 M44 36 h.1 M50 36 h.1 M56 36 h.1 M62 36 h.1" stroke="${OUT}" stroke-width="2" stroke-linecap="round"/>`;
+    s += `<circle cx="80" cy="34" r="7" ${F('#C9CEDD', 2)}/><path d="M74 34 L86 34 M80 28 L80 40" stroke="#7A8299" stroke-width="1.4"/>`;
+    s += `<rect x="36" y="40" width="48" height="70" rx="8" ${F(body)}/>`;
+    s += `<rect x="40" y="88" width="40" height="18" rx="4" fill="#BFE8F7" opacity=".55"/><path d="M42 98 Q60 94 78 98" fill="none" stroke="#7FC4F0" stroke-width="2"/>`;
+    s += shine(44, 56, 3, 10);
+    s += pair(60, 62, 8, 5.5, { brow: 'angry', bw: 2.8, dir: [0.3, 0] });
+    s += M.grin(60, 75, 7);
+    s += spark(92, 18, 3.5, '#FFE066') + spark(24, 22, 3, '#FFB347');
+    return s;
+  }
+
+  function vergessenekerze(o: DrawOpts, C: Defs) {
+    const wax = C.lin('#FFFFFF', '#E3D6B4');
+    let s = `<ellipse cx="60" cy="112" rx="40" ry="6" ${F('#C9A25A', 2.2)}/>`;
+    // the curtain that has caught fire behind it
+    s += `<path d="M90 4 Q96 30 92 56 Q98 76 94 100 L118 100 L118 4 Z" ${F(C.grad('#C04A6A'), 2.2)}/><path d="M100 10 Q104 40 100 70 M110 8 Q112 40 110 96" fill="none" stroke="#8A2A4A" stroke-width="2"/>`;
+    s += fe_flame(104, 56, 26, '#FF6A3D');
+    s += `<path d="M38 40 L82 40 L82 108 L38 108 Z" ${F(wax)}/><ellipse cx="60" cy="40" rx="22" ry="5" ${F('#F2D27A', 2)}/>`;
+    s += `<path d="M42 44 Q40 60 44 68 Q46 60 46 46 M78 44 Q80 54 76 62" ${F('#F6EBCB', 1.8)}/>`;
+    s += `<path d="M60 40 L60 30" stroke="#3A2A1E" stroke-width="3" stroke-linecap="round"/>`;
+    s += fe_flame(60, 34, 30, '#FF8A3D');
+    s += shine(46, 76, 3, 12);
+    s += pair(60, 66, 9, 6, { brow: 'worried', bw: 2.6, dir: [0.5, -0.2] });
+    s += M.o(60, 86, 8);
+    return s;
+  }
+
+  function funkenflug(o: DrawOpts, C: Defs) {
+    const glow = C.grad('#FFB347');
+    let s = '';
+    for (const [x, y, r] of [
+      [16, 24, 5],
+      [102, 18, 6],
+      [10, 76, 4],
+      [108, 86, 5],
+      [30, 104, 3.5],
+      [92, 108, 3],
+    ] as [number, number, number][])
+      s += `<path d="M${x - r * 2.6} ${y + r * 2.6} L${x} ${y}" stroke="#FFB347" stroke-width="${r * 0.8}" stroke-linecap="round" opacity=".5"/><circle cx="${x}" cy="${y}" r="${r}" ${F('#FFD23F', 1.6)}/>`;
+    s += `<path d="${burst(60, 60, 30, 42, 9)}" ${F('#FF6A3D')}/><circle cx="60" cy="60" r="28" ${F(glow)}/>`;
+    s += shine(48, 46, 7, 4, -30);
+    s += pair(60, 58, 9, 6, { look: 'glow', glow: '#FFF6B0', brow: 'angry', bw: 3 });
+    s += M.grin(60, 70, 8);
+    return s;
+  }
+
+  function fettbrand(o: DrawOpts, C: Defs) {
+    const pan = C.lin('#5A5F72', '#2E3242');
+    let s = de_ground(44);
+    s += `<path d="M86 92 L116 84" stroke="${OUT}" stroke-width="9" stroke-linecap="round"/><path d="M86 92 L116 84" stroke="#2E3242" stroke-width="5" stroke-linecap="round"/>`;
+    s += `<path d="M10 82 L94 82 Q92 110 52 110 Q12 110 10 82 Z" ${F(pan)}/><ellipse cx="52" cy="82" rx="42" ry="7" ${F('#E8B84A', 2.2)}/>`;
+    s += fe_flame(52, 84, 80, '#FF6A3D', '#FFD23F');
+    s += fe_flame(26, 84, 40, '#FF8A3D') + fe_flame(80, 84, 46, '#FF8A3D');
+    s += sk_drop(100, 64, 3, '#F2D27A') + sk_drop(8, 60, 2.6, '#F2D27A');
+    s += pair(52, 58, 9, 6, { look: 'glow', glow: '#FFF3A0', brow: 'angry', bw: 3.4 });
+    s += M.roar(52, 68, 8, 9);
+    s += spark(108, 30, 4, '#FFE066') + spark(14, 34, 3.4, '#FFB347');
+    return s;
+  }
+
+  function dachstuhlbrand(o: DrawOpts, C: Defs) {
+    const wall = C.lin('#F2E2C4', '#D2B88E'),
+      roof = C.lin('#C0503A', '#7A2A20');
+    let s = `<path d="M60 0 Q50 10 58 18 Q66 26 56 34" fill="none" stroke="#6E6A78" stroke-width="7" stroke-linecap="round" opacity=".55"/>`;
+    s += `<path d="M20 116 L20 66 L100 66 L100 116 Z" ${F(wall)}/>`;
+    // the two windows glow as its eyes, the door is its mouth
+    s += `<rect x="28" y="76" width="22" height="20" rx="3" ${F('#3A2A30', 2)}/><rect x="70" y="76" width="22" height="20" rx="3" ${F('#3A2A30', 2)}/>`;
+    s += pair(60, 86, 21, 7, { look: 'glow', glow: '#FFD23F', brow: 'angry', bw: 3.4 });
+    s += M.roar(60, 100, 9, 13);
+    s += `<path d="M8 70 L60 26 L112 70 Z" ${F(roof)}/>`;
+    s += `<path d="M28 58 L92 58 M40 48 L80 48" stroke="#5A1E16" stroke-width="2"/>`;
+    s += fe_flame(36, 54, 40, '#FF6A3D') + fe_flame(84, 54, 46, '#FF6A3D') + fe_flame(60, 44, 42, '#FF8A3D');
+    s += spark(14, 20, 4, '#FFE066') + spark(106, 14, 3.6, '#FFB347') + spark(100, 36, 3, '#FFE066');
+    return s;
+  }
+
+  Object.assign(SHAPES, {
+    feuerwehrfrau,
+    rauchwolke,
+    feuerzeug,
+    vergessenekerze,
+    funkenflug,
+    fettbrand,
+    dachstuhlbrand,
+  });
+  HEROES.push('feuerwehrfrau');
+  OWN_HAT.push('feuerwehrfrau');
+  Object.assign(FIT, {
+    feuerwehrfrau: { top: [60, 32, 1.1], eyes: [60, 63, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
+  });
+
   return {
     monsterSVG,
     topSVG,
