@@ -79,6 +79,12 @@ const SCREENS = {
   bench: [...TITLE, '#hut', '#bench'],
   wardrobe: [...TITLE, '#stampsTop', '#kk'],
   'top-build': [...TITLE, '#stampsTop', '#kb'],
+  // the task types learned in world 2: Klammern in Zahlenquest, the Messbecher at the Jahrmarkt
+  'task-klammer-tutorial': ['[data-sub="0"]', '[data-cont="math"]', '.node:not([disabled])', '.atk[data-i="0"]'],
+  'task-klammer': ['[data-sub="0"]', '[data-cont="math"]', '.node:not([disabled])', '.atk[data-i="0"]', '#tutok'],
+  'task-liter-tutorial': ['[data-sub="0"]', '[data-cont="jahrmarkt"]', '.node:not([disabled])', '.atk[data-i="0"]'],
+  'task-liter': ['[data-sub="0"]', '[data-cont="jahrmarkt"]', '.node:not([disabled])', '.atk[data-i="0"]', '#tutok'],
+  'parents-liter-sn': ['#parents', '[data-pt="practice"]', '[data-pf="0"]', '[data-pm="jahrmarkt"]'],
   turm: ['#turm'],
   'turm-tutorial': ['#turm', '#go'],
   'turm-board': ['#turm', '#go', '#tutok'],
@@ -99,7 +105,13 @@ const SCREENS = {
 // screens that need more than a first start: what is in the save before the taps
 const TURM_ON = { setup: { done: false, skipped: true, at: 'x' }, grade: 3, turm: { on: true } };
 const IN = (land) => ({ setup: { done: false, skipped: true, at: 'x' }, grade: 3, land });
+const SKIPPED = IN('');
 const SAVES = {
+  'task-klammer-tutorial': SKIPPED,
+  'task-klammer': SKIPPED,
+  'task-liter-tutorial': SKIPPED,
+  'task-liter': SKIPPED,
+  'parents-liter-sn': IN('SN'),
   'title-ni': IN('NI'),
   'parents-unit-by': IN('BY'),
   'land-starter': IN('SN'),
@@ -119,6 +131,43 @@ const SAVES = {
   'turm-task': TURM_ON,
 };
 
+// an adventure in world 2 whose first attack is the task type the screen shows: [storage key, adventure]
+const WORLD_2 = (mode, id, attacks) => ({
+  mode,
+  world: 2,
+  floor: 1,
+  map: [[{ t: 'fight', c: 1.5, n: [0] }], [{ t: 'boss', c: 1.5, n: [] }]],
+  hero: { id, evo: 1, level: 5, xp: 0, hp: 110, maxHp: 110, attacks },
+  items: [],
+  tiers: {},
+  path: [],
+  shield: false,
+});
+const KLAMMER = [
+  'mathquest_run_v1',
+  WORLD_2('math', 'fuchs', [
+    { name: 'Klammergriff', mod: 'klammer' },
+    { name: 'Funkenbiss', mod: 'add' },
+    { name: 'Flammenstoß', mod: 'sub' },
+    { name: 'Feuerreihe', mod: 'seq' },
+  ]),
+];
+const LITER = [
+  'mathquest_run_jahrmarkt',
+  WORLD_2('jahrmarkt', 'holzpferd', [
+    { name: 'Schöpfkelle', mod: 'liter' },
+    { name: 'Glockenschlag', mod: 'uhr' },
+    { name: 'Galoppsprung', mod: 'laenge' },
+    { name: 'Hufeisen', mod: 'masse' },
+  ]),
+];
+const ADVENTURES = {
+  'task-klammer-tutorial': KLAMMER,
+  'task-klammer': KLAMMER,
+  'task-liter-tutorial': LITER,
+  'task-liter': LITER,
+};
+
 // a fight's first-time explanation („Alles klar“) is tapped away wherever it shows, so a list need not name it
 async function visit(page, taps) {
   for (const tap of taps) {
@@ -132,7 +181,13 @@ async function visit(page, taps) {
 async function open(newPage, name) {
   const page = await newPage(name === 'gallery' ? 'gallery.html' : '');
   if (SAVES[name]) {
-    await page.evaluate((save) => localStorage.setItem('mathquest_meta_v2', JSON.stringify(save)), SAVES[name]);
+    await page.evaluate(
+      ([save, adventure]) => {
+        localStorage.setItem('mathquest_meta_v2', JSON.stringify(save));
+        if (adventure) localStorage.setItem(adventure[0], JSON.stringify(adventure[1]));
+      },
+      [SAVES[name], ADVENTURES[name]],
+    );
     await page.reload();
   }
   await visit(page, SCREENS[name]);

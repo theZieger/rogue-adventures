@@ -1,4 +1,5 @@
 import { MQ as M } from '../src/logic.ts';
+import { evalExpr as bracketExpr } from './expr.js';
 const fails = [];
 function check(cond, msg, t) {
   if (!cond) {
@@ -290,7 +291,7 @@ for (const mod of M.MODULE_KEYS) {
   }
 }
 // new grade-3 task types never reach world 1 (numbers there stay under 100); Überschlag only in world 3
-for (const k of ['kopf', 'zmul', 'vergl'])
+for (const k of ['kopf', 'zmul', 'vergl', 'klammer'])
   check(M.MODULES[k].worldCap[0] === 0, k + ' not in world 1', M.MODULES[k].worldCap);
 check(M.MODULES.ueber.worldCap.join() === '0,0,1', 'ueber only in world 3', M.MODULES.ueber.worldCap);
 for (const mod of M.MODULE_KEYS)
@@ -1108,6 +1109,42 @@ for (const mod of ['sadd', 'ssub']) {
       check(res === tk.answers[0] && Number.isInteger(res), 'vorrang result', tk);
       if (t === 2) check([m[1], m[3], m[5]].filter((x) => +x % 10 === 0).length >= 2, 'vorrang2 tens', tk);
     }
+  // Klammern: one pair of brackets that holds a plus or minus; worked out here step by step, brackets first, no step
+  // is negative or a fraction; tier 1 stays within 100 with two steps, tier 2 within 1000 with a third step or tens
+  for (let t = 1; t <= 2; t++) {
+    const hi = t === 1 ? 100 : 1000;
+    const forms = new Set();
+    for (let i = 0; i < 4000; i++) {
+      const tk = M.generate('klammer', t);
+      const m = tk.text.match(
+        /^((?:\d+ [+−·:] )?\((\d+) ([+−]) (\d+)\)(?: [+−·:] \d+){0,2}|\d+ [+−] \d+ · \(\d+ [+−] \d+\)) =\u00a0\?$/,
+      );
+      if (!m) {
+        check(false, 'klammer form', tk);
+        continue;
+      }
+      const { value, steps } = bracketExpr(m[1]);
+      const ops = m[1].match(/[+−·:]/g);
+      forms.add(m[1].replace(/\d+/g, 'n'));
+      check(tk.answers.length === 1 && value === tk.answers[0], 'klammer result', tk);
+      check(
+        steps.length === ops.length && steps.every((v) => Number.isInteger(v) && v >= 0 && v <= hi),
+        'klammer: every step whole, not negative, in range',
+        { text: tk.text, steps },
+      );
+      check(
+        m[1].match(/\d+/g).every((n) => +n >= 1 && +n <= hi),
+        'klammer numbers in range',
+        tk,
+      );
+      check(!/\d[,.]\d/.test(tk.text), 'klammer: no comma numbers', tk);
+      const tens = m[1].match(/\(\d+0 [+−] \d+0\)/);
+      check(t === 1 ? ops.length === 2 : ops.length === 3 || (ops.length === 2 && tens), 'klammer steps per tier', tk);
+      // without the brackets the task would be a different one (or the same one only for a plus before the bracket)
+      check(/\) [·:]|· \(|− \(/.test(m[1]), 'klammer: the brackets matter', tk);
+    }
+    check(forms.size >= (t === 1 ? 8 : 12), 'klammer variety', [...forms]);
+  }
   for (const [n, wd] of [
     [13, 'dreizehn'],
     [16, 'sechzehn'],

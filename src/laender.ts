@@ -312,7 +312,7 @@ export const LAENDER: Record<string, Land> = {
     name: 'Hamburg',
     labels: { Ethik: 'Miteinander', Sachkunde: SU },
     hide: CHRISTIAN,
-    off: { ...SAXON, math: ['smul', 'vorrang'], bau: ['umfang', 'flaeche', 'lage'] },
+    off: { ...SAXON, math: ['smul', 'vorrang', 'klammer'], bau: ['umfang', 'flaeche', 'lage'], jahrmarkt: ['liter'] },
     minus: 'erg',
     gloss: FORMEN,
     fit: fits({
@@ -631,7 +631,7 @@ export const LAENDER: Record<string, Land> = {
     name: 'Sachsen',
     labels: {},
     hide: [],
-    off: {},
+    off: { jahrmarkt: ['liter'] },
     minus: 'abz',
     fit: fits({
       nicht: 'wald strom',
@@ -687,7 +687,7 @@ export const LAENDER: Record<string, Land> = {
     name: 'Schleswig-Holstein',
     labels: { Ethik: 'Philosophie', Sachkunde: SU },
     hide: CHRISTIAN,
-    off: { ...SAXON, math: ['smul', 'vorrang', 'teilbar'] },
+    off: { ...SAXON, math: ['smul', 'vorrang', 'teilbar', 'klammer'] },
     minus: 'erg',
     wordlist: true,
     gloss: FORMEN,

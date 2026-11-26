@@ -4772,7 +4772,7 @@ async function landCases() {
       !L.shown('ethik') &&
         !L.shown('kirchenjahr') &&
         L.shown('freunde') &&
-        same(L.offList('math'), ['smul', 'vorrang']) &&
+        same(L.offList('math'), ['smul', 'vorrang', 'klammer']) &&
         same(L.offList('woerterwerkstatt'), ['sachsen']),
       'Hamburg hides Luther and Kirchenjahr and switches off what its plan has in grade 4',
     );
@@ -4786,7 +4786,7 @@ async function landCases() {
     check(
       same(m.forced, ['mod:math:smul']) &&
         same(m.off.math, []) &&
-        same(L.offList('math'), ['vorrang']) &&
+        same(L.offList('math'), ['vorrang', 'klammer']) &&
         p.$('.switch[data-k="smul"]').getAttribute('aria-checked') === 'true',
       'a parent switches it on: saved as forced, not as off',
     );
@@ -4909,7 +4909,7 @@ async function landCases() {
     const p = withMeta({ land: 'HH', started: { ethik: 1 }, stats: { math: { smul: { c: 2, t: 3, hist: [] } } } });
     const L = p.w.__mq.land;
     check(L.shown('ethik') && !L.shown('kirchenjahr'), 'a unit with an adventure behind it stays visible');
-    check(same(L.offList('math'), ['vorrang']), 'a practised task type stays on');
+    check(same(L.offList('math'), ['vorrang', 'klammer']), 'a practised task type stays on');
     check(
       p.text().includes('Miteinander') && p.text().includes('Sachunterricht') && !p.text().includes('Sachkunde'),
       'the title screen uses Hamburg’s subject names',
@@ -5046,6 +5046,166 @@ async function landCases() {
   }
 }
 
+// Klammern (Zahlenquest) and Messbecher (Jahrmarkt) joined later, from world 2 on: a save from before them loads and
+// plays as it did, and an adventure that has learned one of them keeps it
+async function laterTypeCases() {
+  await tick();
+  const L = (p) => p.w.__mq.land;
+  const p0 = startMathFight();
+  check(
+    !L(p0).enabledMods('math').includes('klammer') && !L(p0).enabledMods('jahrmarkt').includes('liter'),
+    'in world 1 neither Klammern nor the Messbecher is offered',
+  );
+  // the save as an older version wrote it: no statistics, no level and no tier for the two task types
+  const d = p0.dump();
+  const meta = JSON.parse(d[META]),
+    run = JSON.parse(d[RUN]);
+  delete meta.stats.math.klammer;
+  delete meta.stats.jahrmarkt.liter;
+  meta.stats.math.add = { c: 3, t: 4, hist: [1, 1, 0, 1] };
+  meta.level = { math: { add: 2 } };
+  delete run.tiers.klammer;
+  run.world = 2;
+  const attacks = run.hero.attacks.map((a) => a.name + ':' + a.mod).join();
+  d[META] = JSON.stringify(meta);
+  d[RUN] = JSON.stringify(run);
+  const p1 = open(d);
+  const m1 = p1.w.__mq.meta;
+  check(
+    p1.errors.length === 0 &&
+      m1.stats.math.add.c === 3 &&
+      m1.stats.math.klammer.t === 0 &&
+      Array.isArray(m1.stats.math.klammer.hist) &&
+      m1.stats.jahrmarkt.liter.t === 0 &&
+      m1.level.math.add === 2,
+    'an old save gets empty statistics for Klammern and the Messbecher and keeps the rest',
+  );
+  p1.click('[data-cont="math"]');
+  check(
+    L(p1)
+      .heroAttacks()
+      .map((a) => a.name + ':' + a.mod)
+      .join() === attacks && L(p1).enabledMods('math').includes('klammer'),
+    'its adventure in world 2 continues with the same four attacks',
+  );
+  answer(p1, true);
+  check(
+    !!p1.$('.feedback.good') && p1.errors.length === 0 && m1.stats.math.klammer.t === 0,
+    'and its attacks ask what they asked before ' + p1.errors.join(' '),
+  );
+  // the hero has learned Klammergriff from a chest in world 2
+  const d2 = p1.dump();
+  const run2 = JSON.parse(d2[RUN]);
+  run2.hero.attacks[0] = { name: 'Klammergriff', mod: 'klammer' };
+  run2.node = null;
+  d2[RUN] = JSON.stringify(run2);
+  const p2 = open(d2);
+  p2.click('[data-cont="math"]');
+  p2.click('.node.open');
+  answer(p2, true);
+  const m2 = p2.w.__mq.meta;
+  check(m2.seenTut['math:klammer:1'] === true, 'the first Klammern task brings its explanation');
+  check(
+    /\(\d+ [+−] \d+\)/.test(p2.w.__task.text) &&
+      !!p2.$('.feedback.good') &&
+      m2.stats.math.klammer.c === 1 &&
+      p2.errors.length === 0,
+    'a right Klammern answer counts ' + p2.errors.join(' '),
+  );
+  const p3 = open(p2.dump());
+  check(
+    JSON.parse(p3.dump()[RUN]).hero.attacks[0].mod === 'klammer' && p3.w.__mq.meta.stats.math.klammer.c === 1,
+    'the learned attack and its statistics survive a reload',
+  );
+  const back = SAVECODE.grow(SAVECODE.shrink(JSON.parse(p3.dump()[META])));
+  check(
+    same(back.stats.math.klammer, p3.w.__mq.meta.stats.math.klammer) && same(back.stats.jahrmarkt.liter.hist, []),
+    'the save code carries the new statistics',
+  );
+  await tick();
+  // Jahrmarkt: the same with the Messbecher
+  const j0 = open({ [META]: JSON.stringify(Object.assign({}, meta, SKIPPED)) });
+  j0.click('[data-new="jahrmarkt"]');
+  j0.click('.choice');
+  j0.click('#go');
+  const kit = j0.w.__mq.run.hero.attacks.map((a) => a.mod);
+  check(
+    !kit.includes('liter') && !L(j0).enabledMods('jahrmarkt').includes('liter') && !j0.text().includes('Messbecher'),
+    'a new Jahrmarkt adventure starts without the Messbecher',
+  );
+  const dj = j0.dump();
+  const jrun = JSON.parse(dj.mathquest_run_jahrmarkt);
+  jrun.world = 2;
+  delete jrun.tiers.liter;
+  jrun.hero.attacks[0] = { name: 'Schöpfkelle', mod: 'liter' };
+  dj.mathquest_run_jahrmarkt = JSON.stringify(jrun);
+  const j1 = open(dj);
+  j1.click('[data-cont="jahrmarkt"]');
+  check(L(j1).enabledMods('jahrmarkt').includes('liter'), 'in world 2 the Messbecher can be learned');
+  j1.click('.node.open');
+  answer(j1, true);
+  check(j1.w.__mq.meta.seenTut['jahrmarkt:liter:1'] === true, 'the first Messbecher task brings its explanation');
+  check(
+    / ml/.test(j1.$('.task').textContent) &&
+      !!j1.$('.feedback.good') &&
+      j1.w.__mq.meta.stats.jahrmarkt.liter.c === 1 &&
+      j1.errors.length === 0,
+    'a right Messbecher answer counts ' + j1.errors.join(' '),
+  );
+  await tick();
+  // parents see both with a switch, where they belong and an example
+  const pa = open({ [META]: JSON.stringify(Object.assign({ land: 'SN' }, SKIPPED)) });
+  pa.click('#parents');
+  pa.subj('Mathe', 'jahrmarkt');
+  check(
+    pa.$('.switch[data-k="liter"]').getAttribute('aria-checked') === 'false' &&
+      pa.text().includes('in Sachsen und Hamburg erst in Klasse 4') &&
+      pa.text().includes('In Sachsen zuerst ausgeschaltet'),
+    'the parent area shows the Messbecher, off in Sachsen, and says where it belongs',
+  );
+  pa.click('[data-info="liter"]');
+  check(
+    pa.text().includes('Liter und Milliliter') && pa.errors.length === 0,
+    'with its example ' + pa.errors.join(' '),
+  );
+  const pb = open({ [META]: JSON.stringify(SKIPPED) });
+  pb.click('#parents');
+  pb.subj('Mathe', 'math');
+  check(
+    pb.$('.switch[data-k="klammer"]').getAttribute('aria-checked') === 'true' && pb.text().includes('(4 + 6) · 3'),
+    'and Klammern, on without a Bundesland',
+  );
+  pb.click('[data-info="klammer"]');
+  check(
+    pb.text().includes('Rechnen mit Klammern') && pb.errors.length === 0,
+    'with its example ' + pb.errors.join(' '),
+  );
+  await tick();
+  // the Bundesland: off where the plan has it in grade 4, never once it has been practised
+  const land = (code, stats) =>
+    L(open({ [META]: JSON.stringify(Object.assign({ land: code, stats: stats || {} }, SKIPPED)) }));
+  check(
+    same(land('').offList('jahrmarkt'), []) && same(land('').offList('math'), []),
+    'without a Bundesland both are on',
+  );
+  check(
+    same(land('SN').offList('jahrmarkt'), ['liter']) && same(land('SN').offList('math'), []),
+    'Sachsen: the Messbecher is off, Klammern are on',
+  );
+  check(
+    same(land('HH').offList('jahrmarkt'), ['liter']) &&
+      land('HH').offList('math').includes('klammer') &&
+      land('SH').offList('math').includes('klammer') &&
+      same(land('MV').offList('jahrmarkt'), []) &&
+      !land('MV').offList('math').includes('klammer'),
+    'Hamburg and Schleswig-Holstein keep Klammern for grade 4, Mecklenburg-Vorpommern has both in grade 3',
+  );
+  check(
+    same(land('SN', { jahrmarkt: { liter: { c: 1, t: 2, hist: [] } } }).offList('jahrmarkt'), []),
+    'a child in Sachsen who has practised the Messbecher keeps it',
+  );
+}
+
 reloadCases()
   .then(backCases)
   .then(readCases)
@@ -5060,6 +5220,7 @@ reloadCases()
   .then(topCases)
   .then(levelCases)
   .then(landCases)
+  .then(laterTypeCases)
   .then(() => {
     console.log('storage fails', fails);
     if (fails) process.exit(1);
