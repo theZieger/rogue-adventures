@@ -175,6 +175,7 @@ export const LAENDER: Record<string, Land> = {
       feste2: 'passt',
       instrumente2: 'passt',
       musik1: 'passt',
+      strom: 'nicht',
     },
   },
   ST: {

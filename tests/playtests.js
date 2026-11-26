@@ -19,6 +19,7 @@ const RUNS = [
   { MODE: 'satzbaustelle', OFF: 'wortart,zeit,steig,satzglied,umstell,ober,teekessel', ACC: '0.9', RUNS: '1' },
   { MODE: 'kornkammer', ACC: '0.9', RUNS: '1' },
   { MODE: 'wetterstation', ACC: '0.9', RUNS: '2' },
+  { MODE: 'strom', ACC: '0.9', RUNS: '2' },
   { MODE: 'kompass', ACC: '0.9', RUNS: '2' },
   { MODE: 'wiese', ACC: '0.9', RUNS: '1' },
   { MODE: 'wald', ACC: '0.9', RUNS: '2' },

@@ -1186,7 +1186,7 @@ function trace() {
     done,
     JSON.stringify(m.weekly.progress),
   );
-  if (mode === 'wetterstation' && !labs) {
+  if (['wetterstation', 'strom'].includes(mode) && !labs) {
     console.error('PLAYTEST FAIL: the bot never reached the Forscherlabor');
     process.exit(1);
   }

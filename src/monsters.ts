@@ -5549,6 +5549,152 @@ export const MONART = (() => {
     return s;
   }
 
+  /* ---------- Sachkunde: Strom und Magnete (heroine Elektrikerin) ---------- */
+  // a cable as a thick coloured line with the outline around it
+  const st_cable = (d: string, col: string, w = 5) =>
+    `<path d="${d}" fill="none" stroke="${OUT}" stroke-width="${w + 4}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  function elektrikerin(o: DrawOpts, C: Defs) {
+    const skin = C.grad('#E9B48A'),
+      suit = C.grad('#3B6FB5'),
+      bib = C.grad('#F08A2E'),
+      hat = C.grad('#FFC93C'),
+      hair = C.grad('#5A3A22');
+    let s = `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(suit)}/>`;
+    // bib of the dungarees with a screwdriver in the pocket
+    s += `<path d="M46 80 L42 76 M74 80 L78 76" ${N(4)}/><path d="M44 84 L76 84 L80 116 L40 116 Z" ${F(bib, 2.2)}/><rect x="51" y="96" width="18" height="13" rx="2" ${F('#D9731C', 1.8)}/>`;
+    s += `<path d="M64 97 L64 87" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/><path d="M64 96 L64 88" stroke="#E0304A" stroke-width="2.4" stroke-linecap="round"/><circle cx="46" cy="86" r="2.2" ${F('#FFC93C', 1.4)}/><circle cx="74" cy="86" r="2.2" ${F('#FFC93C', 1.4)}/>`;
+    // horseshoe magnet in the left hand
+    s += `<g transform="rotate(-20 26 96)"><path d="M12 110 L12 94 Q12 80 26 80 Q40 80 40 94 L40 110 L31 110 L31 94 Q31 89 26 89 Q21 89 21 94 L21 110 Z" ${F(C.grad('#E0304A'), 2.2)}/><rect x="12" y="103" width="9" height="8" rx="1" ${F('#D9DEE8', 1.8)}/><rect x="31" y="103" width="9" height="8" rx="1" ${F('#D9DEE8', 1.8)}/><path d="M16 90 Q19 84 25 83" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/></g>`;
+    s += `<ellipse cx="34" cy="92" rx="6" ry="5" ${F(skin, 2)}/>`;
+    // a lit lamp on its battery, held up on the right
+    s += `<circle cx="98" cy="58" r="16" fill="#FFE45C" opacity=".35"/><path d="${spikes(98, 58, 13, 19, 150, 390, 7)}" fill="#FFC93C" ${S(1.6)}/><circle cx="98" cy="58" r="11" ${F('#FFE45C', 2.2)}/><path d="M94 68 L94 60 Q96 55 98 60 Q100 55 102 60 L102 68" fill="none" stroke="#F08A00" stroke-width="1.6"/><circle cx="94" cy="54" r="2.4" fill="#fff" opacity=".7"/>`;
+    s += `<rect x="93" y="68" width="10" height="8" rx="1.5" ${F('#C9CEDD', 1.8)}/><rect x="87" y="76" width="22" height="32" rx="3" ${F('#3A3F52', 2.2)}/><path d="M88.5 86 L88.5 80 Q88.5 77.5 91 77.5 L105 77.5 Q107.5 77.5 107.5 80 L107.5 86 Z" fill="#F0A500"/><path d="M98 93 L98 101 M94 97 L102 97" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>`;
+    s += `<ellipse cx="88" cy="100" rx="6" ry="5.5" ${F(skin, 2)}/>`;
+    s += `<ellipse cx="60" cy="56" rx="25" ry="25" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    if (o.bare)
+      s += `<path d="M33 58 Q28 26 60 26 Q92 26 87 58 Q84 46 76 42 Q70 48 60 44 Q50 48 44 42 Q36 46 33 58 Z" ${F(hair)}/>`;
+    else {
+      // hard hat with a ridge, hair showing below it
+      s += `<path d="M36 50 Q33 60 36 68 L40 54 Z M84 50 Q87 60 84 68 L80 54 Z" ${F(hair, 2)}/>`;
+      s += `<path d="M33 46 Q33 18 60 18 Q87 18 87 46 Z" ${F(hat)}/><path d="M56 19 L56 44 M64 19 L64 44" fill="none" stroke="#D99A1E" stroke-width="1.8"/><path d="M26 47 Q60 38 94 47 Q97 53 90 53 L30 53 Q23 53 26 47 Z" ${F(hat)}/><path d="M40 28 Q46 22 54 21" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>`;
+    }
+    s += shine(47, 62, 5, 3, -20);
+    s += pair(60, 62, 11, 5.5, { brow: 'up', bw: 2.4, iris: '#3B6FB5', browColor: '#5A3A22' });
+    s += `<path d="M60 65 Q58 71 61 72" ${N(2.2)}/>${M.smile(60, 76, 6)}`;
+    s += blush(60, 71, 16, 4);
+    return s;
+  }
+
+  function kabelsalat(o: DrawOpts, C: Defs) {
+    let s = de_ground(38);
+    // loose ends: one with a plug, one with bare copper
+    s += st_cable('M92 50 Q108 40 104 24', '#3B82F6');
+    s += `<rect x="96" y="10" width="16" height="15" rx="4" ${F(C.lin('#FFFFFF', '#D5DAE6'), 2.2)}/><path d="M100.5 10 L100.5 3 M107.5 10 L107.5 3" ${N(2.6)}/>`;
+    s +=
+      st_cable('M26 92 Q8 100 6 112', '#E5484D') +
+      `<path d="M6 112 L3 117 M6 112 L9 117" stroke="#D98A3D" stroke-width="2" stroke-linecap="round"/>`;
+    s += st_cable('M22 94 Q2 60 32 42 Q70 22 98 52 Q114 82 84 102 Q52 116 30 96', '#3B82F6');
+    s += st_cable('M30 74 Q28 30 66 32 Q106 38 98 80 Q90 110 52 106 Q24 102 30 74', '#E5484D');
+    s += st_cable('M42 102 Q16 80 36 56 Q60 34 86 58 Q102 80 78 96', '#F0A500');
+    s += st_cable('M36 84 Q44 50 70 52 Q92 60 80 84', '#2E9E4C');
+    s += st_cable('M44 96 Q60 106 78 94', '#3B82F6');
+    s += `<path d="M30 52 Q44 36 62 36" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".45"/>`;
+    s += pair(60, 66, 12, 7.5, { brow: 'angry', bw: 3.2, dir: [0.2, 0.2] });
+    s += M.wavy(60, 86, 6);
+    return s;
+  }
+
+  function wackelkontakt(o: DrawOpts, C: Defs) {
+    const body = C.lin('#FFFFFF', '#C9D0DF'),
+      pin = C.lin('#F4F7FB', '#9AA3B5');
+    let s = de_ground(26);
+    s += st_cable('M60 96 Q62 112 40 110 Q22 108 12 116', '#3A3F52');
+    // the two pins of the plug, one bent
+    s += `<rect x="45" y="8" width="8" height="26" rx="3" ${F(pin, 2.2)}/><rect x="67" y="10" width="8" height="24" rx="3" ${F(pin, 2.2)} transform="rotate(12 71 34)"/>`;
+    s += `<path d="M34 46 Q34 30 50 30 L70 30 Q86 30 86 46 L86 78 Q86 100 60 100 Q34 100 34 78 Z" ${F(body)}/>`;
+    s += `<path d="M40 78 Q42 92 56 96" fill="none" stroke="#9AA3B5" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += shine(44, 42, 5, 8, -15);
+    s +=
+      sk_bolt(18, 14, 0.7, -25) +
+      sk_bolt(92, 6, 0.8, 20) +
+      spark(104, 50, 4, '#FFE066') +
+      spark(16, 60, 3.5, '#FFE066');
+    s += `<path d="M30 28 L24 22 M90 30 L98 26 M60 4 L60 0" stroke="#FFC93C" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += pair(60, 58, 11, 7, { look: 'dizzy' });
+    s += M.wavy(60, 80, 6);
+    return s;
+  }
+
+  function leerebatterie(o: DrawOpts, C: Defs) {
+    const body = C.grad('#7C8399');
+    let s = `<ellipse cx="66" cy="114" rx="34" ry="4.5" fill="#8FD8A0" opacity=".7"/><path d="M44 114 Q66 108 90 114" fill="none" stroke="#4FA868" stroke-width="1.4"/>`;
+    s += `<rect x="50" y="10" width="20" height="12" rx="3" ${F(C.lin('#F4F7FB', '#9AA3B5'), 2.2)}/>`;
+    s += `<path d="M34 28 Q34 20 42 20 L78 20 Q86 20 86 28 L88 102 Q88 110 80 110 L40 110 Q32 110 32 102 Z" ${F(body)}/>`;
+    s += `<path d="M35.5 38 L35.5 28 Q35.5 21.5 42 21.5 L78 21.5 Q84.5 21.5 84.5 28 L84.5 38 Z" fill="#C98A2E"/><path d="M34 38 L86 38" ${N(2)}/>`;
+    // charge window: one last red bar
+    s += `<rect x="42" y="84" width="36" height="16" rx="3" ${F('#F4F7FB', 2)}/><rect x="45" y="87" width="6" height="10" rx="1" fill="#E0304A"/><path d="M56 87 L56 97 M64 87 L64 97 M72 87 L72 97" stroke="#C9CEDD" stroke-width="2"/>`;
+    s += shine(42, 52, 4, 12, 0);
+    s += pair(60, 58, 10, 6.5, { lid: '#6A7088', lidY: 0.1, dir: [0, 0.4], brow: 'worried', bw: 2.6 });
+    s += M.frown(60, 74, 6);
+    s += sk_drop(92, 96, 3.4, '#8FD8A0') + sk_drop(26, 104, 2.6, '#8FD8A0');
+    return s;
+  }
+
+  function schrottmagnet(o: DrawOpts, C: Defs) {
+    const red = C.grad('#D9364A'),
+      pole = C.lin('#F4F7FB', '#9AA3B5');
+    let s = de_ground(40);
+    s += `<path d="M10 40 Q0 62 6 84 M110 40 Q120 62 114 84" fill="none" stroke="#C04A5A" stroke-width="2.2" stroke-dasharray="5 4" stroke-linecap="round" opacity=".7"/>`;
+    s += `<path d="M18 96 L18 56 Q18 10 60 10 Q102 10 102 56 L102 96 L78 96 L78 62 Q78 52 60 52 Q42 52 42 62 L42 96 Z" ${F(red)}/>`;
+    s += `<rect x="18" y="82" width="24" height="16" rx="2" ${F(pole, 2.4)}/><rect x="78" y="82" width="24" height="16" rx="2" ${F(pole, 2.4)}/>`;
+    s += `<path d="M28 34 Q36 20 52 16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>`;
+    // scrap that hangs on the poles: two nails, a gear, a nut, a hook
+    s += `<path d="M24 98 L20 114 M32 98 L34 112" stroke="${OUT}" stroke-width="4.5" stroke-linecap="round"/><path d="M24 98 L20 114 M32 98 L34 112" stroke="#B4BCC8" stroke-width="2" stroke-linecap="round"/><path d="M21 98 L27 98 M29 98 L35 98" stroke="${OUT}" stroke-width="3" stroke-linecap="round"/>`;
+    s += `<path d="${burst(88, 107, 6, 9, 7)}" ${F('#9AA3B5', 2)}/><circle cx="88" cy="107" r="2.6" fill="${OUT}"/>`;
+    s += `<path d="M99 98 L104 98 L106.5 102.5 L104 107 L99 107 L96.5 102.5 Z" ${F('#C9A25A', 1.8)}/>`;
+    s += `<path d="M38 100 Q44 108 40 116" fill="none" stroke="${OUT}" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += pair(60, 30, 11, 6.5, { brow: 'angry', bw: 3.2, dir: [0, 0.3] });
+    s += M.smirk(60, 43, 6);
+    return s;
+  }
+
+  function kurzschluss(o: DrawOpts, C: Defs) {
+    const fire = C.grad('#FFC93C');
+    // the two bare cable ends that touch
+    let s = st_cable('M2 112 Q26 112 44 86', '#3B82F6', 6) + st_cable('M118 112 Q94 112 76 86', '#E5484D', 6);
+    s += `<path d="M44 86 L50 78 M76 86 L70 78" stroke="#D98A3D" stroke-width="4" stroke-linecap="round"/>`;
+    s += `<path d="${burst(60, 56, 30, 52, 11)}" ${F('#FF8A3D')}/><path d="${burst(60, 56, 26, 42, 11)}" fill="${fire}"/><path d="${burst(60, 56, 16, 28, 9)}" fill="#FFF6C4" opacity=".85"/>`;
+    s += pair(60, 52, 10, 6.5, { brow: 'angry', bw: 3.6, iris: '#E0304A' });
+    s += M.roar(60, 64, 9, 11);
+    s += sk_bolt(14, 26, 0.7, -30) + sk_bolt(98, 20, 0.8, 25);
+    s += spark(108, 70, 4, '#FFE066') + spark(12, 68, 3.5, '#FFE066') + spark(60, 6, 3, '#fff');
+    s += `<circle cx="26" cy="100" r="4" fill="#5E6272" opacity=".5"/><circle cx="96" cy="98" r="5" fill="#5E6272" opacity=".45"/><circle cx="104" cy="90" r="3" fill="#5E6272" opacity=".35"/>`;
+    return s;
+  }
+
+  function strommast(o: DrawOpts, C: Defs) {
+    const steel = C.lin('#D5DBE8', '#7E88A2');
+    const iso = (x: number, y: number) =>
+      [0, 5, 10].map((d) => `<ellipse cx="${x}" cy="${y + d}" rx="4.5" ry="2.6" ${F('#6FA8A0', 1.6)}/>`).join('');
+    // the lines sag away to both sides
+    let s = `<path d="M14 62 Q4 74 -6 70 M106 62 Q116 74 126 70 M24 88 Q8 100 -6 94 M96 88 Q112 100 126 94" fill="none" stroke="${OUT}" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += sk_bolt(6, 10, 1, 14) + sk_bolt(100, 8, 1.1, -12);
+    s += `<path d="M40 116 L52 28 L60 8 L68 28 L80 116 L70 116 L60 84 L50 116 Z" ${F(steel)}/>`;
+    s += `<path d="M51 40 L69 54 M69 40 L51 54 M48 70 L72 84 M72 70 L48 84 M46 92 L60 84 L74 92" fill="none" stroke="#5E6687" stroke-width="2" stroke-linecap="round"/>`;
+    s += `<path d="M10 40 L110 40 L102 49 L18 49 Z" ${F(steel)}/><path d="M20 66 L100 66 L94 74 L26 74 Z" ${F(steel)}/>`;
+    s += `<path d="M22 40 L30 49 L38 40 L46 49 M74 49 L82 40 L90 49 L98 40" fill="none" stroke="#5E6687" stroke-width="1.6"/>`;
+    s += iso(14, 51) + iso(106, 51) + iso(24, 76) + iso(96, 76);
+    s += `<path d="M56 16 Q58 12 60 11" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
+    s += pair(60, 57, 9, 6, { look: 'glow', glow: '#FFE45C', brow: 'angry', bw: 3.8 });
+    s += M.roar(60, 92, 8, 10);
+    // warning sign at the foot
+    s += `<path d="M60 100 L69 115 L51 115 Z" ${F('#FFD23F', 2)}/><path d="M61 104 L57 110 L61 110 L59 114" fill="none" stroke="${OUT}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += spark(20, 26, 3.5, '#FFE066') + spark(112, 30, 4, '#FFE066');
+    return s;
+  }
+
   const SHAPES: Record<string, Draw> = {
     fox,
     toad,
@@ -5740,6 +5886,13 @@ export const MONART = (() => {
     sturmschaden,
     kahlschlag,
     waldbrand,
+    elektrikerin,
+    kabelsalat,
+    wackelkontakt,
+    leerebatterie,
+    schrottmagnet,
+    kurzschluss,
+    strommast,
   };
   // old shape names (saved games from before the redraw)
   const ALIAS: Record<string, string> = {
@@ -5788,11 +5941,12 @@ export const MONART = (() => {
     'lotte',
     'mats',
     'foersterin',
+    'elektrikerin',
   ];
 
   // where clothes sit on each hero (drawing coordinates before the stage scaling): head top [x, y, scale],
   // eyes [cx, cy, gap, r] (gap 0 = one eye seen from the side), neck [x, y, width], school bag [x, y]
-  const OWN_HAT = ['beaver', 'wetterwart', 'schaustellerin', 'imkerin', 'verkehrspolizistin'];
+  const OWN_HAT = ['beaver', 'wetterwart', 'schaustellerin', 'imkerin', 'verkehrspolizistin', 'elektrikerin'];
   interface Fit {
     top: number[];
     eyes: number[];
@@ -5829,6 +5983,7 @@ export const MONART = (() => {
     lotte: { top: [60, 30, 1.1], eyes: [60, 59, 10, 6], neck: [60, 81, 44], pack: [24, 84] },
     mats: { top: [60, 30, 1.1], eyes: [60, 58, 10, 6], neck: [60, 81, 46], pack: [24, 84] },
     foersterin: { top: [60, 30, 1.1], eyes: [60, 59, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
+    elektrikerin: { top: [60, 34, 1.1], eyes: [60, 62, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
   };
   const at = (p: number[], body: string) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
   const STRAW = '#E8C25A';

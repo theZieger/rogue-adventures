@@ -10,7 +10,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Neu
 - Eltern können das Bundesland wählen: Fächer heißen dann wie dort, und es steht, wie jedes Thema zum Lehrplan passt.
-- Neues Thema in Sachkunde Klasse 3: Der Wald mit Stockwerken, Bäumen, Tierspuren und Pilzen.
+- Neue Themen in Sachkunde Klasse 3: Der Wald sowie Strom und Magnete mit Stromkreis und sicherem Umgang.
 
 ## 2026-11-25
 
