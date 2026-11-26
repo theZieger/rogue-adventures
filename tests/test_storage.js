@@ -4662,6 +4662,375 @@ async function turmCases() {
   );
 }
 
+// The Bundesland: three save fields, defaults that are read and never saved, a parent's switch wins both ways
+async function landCases() {
+  const withMeta = (m, opts) => open({ [META]: JSON.stringify(Object.assign(m, SKIPPED)) }, opts);
+  const parents = (p) => {
+    p.click('#parents');
+    return p;
+  };
+  const fresh = open();
+  check(
+    fresh.w.__mq.meta.land === '' && fresh.w.__mq.meta.minus === '' && same(fresh.w.__mq.meta.forced, []),
+    'a first start has no Bundesland, follows its subtraction method and forces nothing',
+  );
+  const old = withMeta({ runs: 3, off: { math: ['add'] }, hidden: ['mode:bau'] });
+  const om = old.w.__mq.meta;
+  check(
+    om.land === '' && om.minus === 'erg' && same(om.forced, []) && om.setup.land === false && old.errors.length === 0,
+    'a save from before the Bundesland loads without one and keeps Ergänzen',
+  );
+  check(
+    same(om.off, { math: ['add'] }) && same(om.hidden, ['mode:bau']) && old.w.__mq.land.minusMethod() === 'erg',
+    'the old save keeps what its parents switched off',
+  );
+  const v1 = open({ mathquest_meta_v1: JSON.stringify({ runs: 2, wins: 1, stats: {}, seenTut: { add: true } }) });
+  check(
+    v1.w.__mq.meta.runs === 2 && v1.w.__mq.meta.minus === 'erg' && v1.w.__mq.meta.land === '',
+    'a v1 save migrates and keeps Ergänzen',
+  );
+  for (const bad of ['TH', 'HB', 'SL', 'xx', 'sn', 5, null, ['SN'], 'constructor']) {
+    const p = withMeta({ land: bad });
+    check(
+      p.w.__mq.meta.land === '' && p.errors.length === 0,
+      `unknown Bundesland ${JSON.stringify(bad)} loads as none`,
+    );
+  }
+  const junk = withMeta({
+    land: 'BY',
+    minus: 'foo',
+    forced: [
+      'mode:nope',
+      'mod:math:nope',
+      'mod:math:smul',
+      'also:2:nope',
+      'also:x:sinne',
+      'also:2:sinne',
+      3,
+      null,
+      'mode:ethik',
+      'mode:ethik',
+      'words:vokal',
+    ],
+  });
+  check(
+    junk.w.__mq.meta.land === 'BY' &&
+      junk.w.__mq.meta.minus === '' &&
+      same(junk.w.__mq.meta.forced, ['mod:math:smul', 'also:2:sinne', 'mode:ethik', 'words:vokal']) &&
+      junk.errors.length === 0,
+    'junk in minus and forced is dropped, known and future tokens stay',
+  );
+  check(withMeta({ minus: 7, forced: 'x' }).w.__mq.meta.minus === 'erg', 'a wrong-typed minus counts as an old save');
+  check(withMeta({ minus: 'abz' }).w.__mq.meta.minus === 'abz', 'a chosen subtraction method stays');
+  {
+    const src = withMeta({ land: 'NI', minus: 'abz', forced: ['mode:ethik', 'also:2:sinne'] }, { zip: true });
+    const q = src.w.__mq;
+    const back = await q.unpackSave(await q.packSave({ v: 1, at: '', meta: q.meta, runs: {} }));
+    check(
+      back.meta.land === 'NI' && back.meta.minus === 'abz' && same(back.meta.forced, ['mode:ethik', 'also:2:sinne']),
+      'the save code carries Bundesland, subtraction method and switches',
+    );
+    const dev = withMeta({ land: 'SH' }).w.__mq;
+    check(dev.mergeMeta(dev.meta, back.meta).land === 'SH', '„Zusammenlegen“ keeps this device’s Bundesland');
+  }
+  await tick();
+  // choosing in the parent area: the invitation shows once, the choice changes names and defaults, not the save's switches
+  {
+    const p = parents(withMeta({ runs: 1 }));
+    p.click('[data-pt="practice"]');
+    check(
+      !!p.d.querySelector('.pcard .callout') && !!p.d.querySelector('#pland'),
+      'an existing player is invited to choose',
+    );
+    p.click('#pland');
+    check(
+      p.d.querySelectorAll('.choice').length === 14 &&
+        p.d.querySelector('.choice.selected').dataset.land === '' &&
+        p.text().includes('Thüringen, Bremen und das Saarland kommen später dazu.') &&
+        !/Thüringen|Bremen|Saarland/.test([...p.d.querySelectorAll('.choice')].map((b) => b.textContent).join()),
+      'the picker offers Allgemein and the 13 states, the three others only as a note',
+    );
+    p.click('#back');
+    check(
+      !p.d.querySelector('.pcard .callout') && p.w.__mq.meta.land === '',
+      'back chooses nothing, the invitation is gone',
+    );
+    p.click('#pland');
+    p.click('[data-land="HH"]');
+    const m = p.w.__mq.meta;
+    check(
+      m.land === 'HH' && same(m.hidden, []) && same(m.off, {}) && same(m.forced, []) && m.minus === 'erg',
+      'choosing Hamburg writes the Bundesland and nothing else',
+    );
+    check(JSON.parse(p.dump()[META]).land === 'HH', 'the choice is saved');
+    check(
+      p.text().includes('Hamburg') && p.text().includes('Miteinander') && p.text().includes('Sachunterricht'),
+      'the parent area names the subjects as in Hamburg',
+    );
+    const L = p.w.__mq.land;
+    check(
+      !L.shown('ethik') &&
+        !L.shown('kirchenjahr') &&
+        L.shown('freunde') &&
+        same(L.offList('math'), ['smul', 'vorrang']) &&
+        same(L.offList('woerterwerkstatt'), ['sachsen']),
+      'Hamburg hides Luther and Kirchenjahr and switches off what its plan has in grade 4',
+    );
+    p.subj('Mathe', 'math');
+    check(
+      p.$('.switch[data-k="smul"]').getAttribute('aria-checked') === 'false' &&
+        p.text().includes('In Hamburg zuerst ausgeschaltet'),
+      'the switch shows what Hamburg switched off, and why',
+    );
+    p.click('.switch[data-k="smul"]');
+    check(
+      same(m.forced, ['mod:math:smul']) &&
+        same(m.off.math, []) &&
+        same(L.offList('math'), ['vorrang']) &&
+        p.$('.switch[data-k="smul"]').getAttribute('aria-checked') === 'true',
+      'a parent switches it on: saved as forced, not as off',
+    );
+    p.click('.switch[data-k="smul"]');
+    check(same(m.forced, []) && same(m.off.math, ['smul']), 'and off again: now it is the parent’s own choice');
+    p.click('.switch[data-k="add"]');
+    check(
+      same(m.off.math, ['smul', 'add']),
+      'switching another task type off never copies Hamburg’s defaults into the save',
+    );
+    p.subj('Miteinander', 'ethik');
+    check(
+      p.$('[data-hide="mode:ethik"]').getAttribute('aria-checked') === 'false' &&
+        p.text().includes('Religionsunterricht'),
+      'the unit card says why Luther is hidden in Hamburg',
+    );
+    p.click('[data-hide="mode:ethik"]');
+    check(same(m.forced, ['mode:ethik']) && same(m.hidden, []) && L.shown('ethik'), 'a parent shows the unit: forced');
+    p.click('[data-hide="mode:ethik"]');
+    check(
+      same(m.forced, []) && same(m.hidden, ['mode:ethik']) && !L.shown('ethik'),
+      'and hides it again: hidden by the parent',
+    );
+    p.click('[data-hide="mode:ethik"]');
+    p.click('[data-hidesub]');
+    check(
+      same([...m.hidden].sort(), ['mode:ethik', 'mode:freunde', 'mode:ichwelt']) &&
+        !m.hidden.includes('mode:kirchenjahr') &&
+        same(m.forced, []),
+      'hiding the subject hides what was shown, not what Hamburg hides anyway',
+    );
+    p.click('[data-hidesub]');
+    check(
+      same(m.hidden, []) && same(m.forced, []) && L.shown('freunde') && !L.shown('kirchenjahr') && !L.shown('ethik'),
+      'showing the subject again leaves Hamburg’s defaults alone',
+    );
+    // back to no state: everything is as the parents left it
+    p.click('#pback');
+    p.click('#pland');
+    p.click('[data-land=""]');
+    check(
+      m.land === '' &&
+        L.shown('ethik') &&
+        same(L.offList('math'), ['smul', 'add']) &&
+        L.subjectLabel('Ethik') === 'Ethik',
+      'without a state only the parents’ own switches count',
+    );
+    check(p.errors.length === 0, 'no page errors in the parent area ' + p.errors.join(' '));
+  }
+  await tick();
+  // what parents read about the plan
+  {
+    const card = (land, subject, unit) => {
+      const p = parents(withMeta(land ? { land } : {}));
+      p.subj(subject, unit);
+      return p.text();
+    };
+    const none = card('', 'Mathe', 'math');
+    check(
+      none.includes('Grundlage (Lehrplan Sachsen): Mathematik, Klasse 3') && !none.includes('noch nicht verglichen'),
+      'without a state the unit card names the Saxon plan as the basis',
+    );
+    const sn = card('SN', 'Mathe', 'math');
+    check(
+      sn.includes('Lehrplan Sachsen: Mathematik, Klasse 3') && !sn.includes('Grundlage'),
+      'in Sachsen it reads as before',
+    );
+    const by = card('BY', 'Deutsch', 'woerterwerkstatt');
+    check(
+      by.includes('Lehrplan Bayern: noch nicht verglichen.') &&
+        by.includes('Grundlage (Lehrplan Sachsen): Deutsch') &&
+        by.includes('Wörterliste (Grundwortschatz) von Bayern ist nicht eingebaut') &&
+        by.includes('Wörter aus der sächsischen Mundart'),
+      'in Bayern: the verdict, the basis, the word list that is not built in, the dialect words switched off',
+    );
+    check(
+      !card('NI', 'Deutsch', 'woerterwerkstatt').includes('Wörterliste'),
+      'no word list line where the state has none',
+    );
+    check(
+      card('BE', 'Englisch').includes('kein Französisch') && !card('BY', 'Englisch').includes('Französisch'),
+      'the French note shows only where French may be the first language',
+    );
+    check(
+      card('MV', 'Philosophieren').includes('Philosophieren mit Kindern') &&
+        card('BY', 'HSU').includes('Heimat- und Sachunterricht'),
+      'the parent area gives the subject its full name',
+    );
+    check(
+      card('NW', 'Miteinander').includes('kein eigenes Fach') && !card('RP', 'Ethik').includes('kein eigenes Fach'),
+      'where there is no such subject the parents are told',
+    );
+    const claim = parents(withMeta({ land: 'ST' }));
+    claim.click('[data-pt="practice"]');
+    check(
+      claim.text().includes('Für Sachsen-Anhalt wurde der Lehrplan gelesen (Stand November 2026)') &&
+        claim.text().includes('Eine Lehrkraft hat das nicht geprüft') &&
+        !/geprüft von|orientiert sich|deckt/.test(claim.text()),
+      'the claim says what was done and that no teacher checked it',
+    );
+  }
+  await tick();
+  // what the child has practised is never hidden by a Bundesland
+  {
+    const p = withMeta({ land: 'HH', started: { ethik: 1 }, stats: { math: { smul: { c: 2, t: 3, hist: [] } } } });
+    const L = p.w.__mq.land;
+    check(L.shown('ethik') && !L.shown('kirchenjahr'), 'a unit with an adventure behind it stays visible');
+    check(same(L.offList('math'), ['vorrang']), 'a practised task type stays on');
+    check(
+      p.text().includes('Miteinander') && p.text().includes('Sachunterricht') && !p.text().includes('Sachkunde'),
+      'the title screen uses Hamburg’s subject names',
+    );
+    check(p.d.title.includes('Miteinander und Sachunterricht'), 'and so does the page title');
+  }
+  // the names agree everywhere: tile, top bar, weekly goal
+  {
+    const p = withMeta({ land: 'SH' }, { now: '2026-12-23T10:00:00' });
+    const goal = p.w.__mq.weeklyGoals().find((g) => g.subject);
+    const label = p.w.__mq.land.subjectLabel(goal.subject);
+    const i = p.w.__mq.land.visSubjects().findIndex((sub) => sub.subject === 'Ethik');
+    const tile = p.d.querySelectorAll('[data-sub]')[i];
+    check(
+      tile.querySelector('.subjname').textContent === 'Philosophie',
+      'Schleswig-Holstein: the tile says Philosophie',
+    );
+    tile.click();
+    check(p.d.querySelector('.topbar').textContent.includes('Philosophie'), 'and so does the subject screen');
+    p.click('#back');
+    p.click('#weekly');
+    check(
+      p.text().includes(`in ${label} richtig`) && p.text().includes(`${label} üben`),
+      'the weekly goal names the subject the same way',
+    );
+  }
+  await tick();
+  // subtraction: the state's usual method for a new child, the known one for a child who has done it here
+  {
+    const a = open();
+    a.click('#setland');
+    check(a.d.querySelectorAll('.choice').length === 14, 'the first start offers the Bundesland');
+    a.click('[data-land="SN"]');
+    check(
+      a.w.__mq.meta.land === 'SN' && !!a.$('#later') && a.text().includes('Sachsen'),
+      'choosing leads back to the first-start screen, nothing is blocked',
+    );
+    check(
+      a.w.__mq.land.minusMethod() === 'abz' && a.w.__mq.meta.minus === '',
+      'a new child in Sachsen gets Abziehen by default',
+    );
+    a.click('#later');
+    check(a.text().includes('Sachkunde') && a.w.__mq.land.shown('ethik'), 'Sachsen keeps Sachkunde and every unit');
+    const b = open();
+    b.w.__mq.meta.stats.math.ssub.t = 4;
+    b.w.__mq.land.set('BY');
+    check(
+      b.w.__mq.meta.minus === 'erg' && b.w.__mq.land.minusMethod() === 'erg',
+      'a child who has subtracted in writing keeps Ergänzen when Bayern is chosen',
+    );
+    check(
+      withMeta({ land: 'HE' }).w.__mq.land.minusMethod() === 'erg' &&
+        withMeta({ land: 'NI', minus: '' }).w.__mq.land.minusMethod() === 'abz',
+      'Hessen: Ergänzen, Niedersachsen: Abziehen',
+    );
+  }
+  await tick();
+  // changing the Bundesland in the middle of an adventure
+  {
+    const p1 = startMathFight();
+    const saved = p1.dump();
+    const meta = JSON.parse(saved[META]);
+    meta.land = 'SH';
+    const run = JSON.parse(saved[RUN]);
+    run.hero.attacks[0] = { name: 'x', mod: 'teilbar' };
+    const p2 = open({ ...saved, [META]: JSON.stringify(meta), [RUN]: JSON.stringify(run) });
+    p2.click('[data-cont="math"]');
+    const atk = [...p2.d.querySelectorAll('.atk')];
+    check(atk.length === 4 && p2.errors.length === 0, 'a running adventure continues under another Bundesland');
+    check(
+      !p2.w.__mq.land.heroAttacks().some((a) => a.mod === 'teilbar'),
+      'an attack whose task type is now off is swapped for another',
+    );
+    check(JSON.parse(p2.dump()[RUN]).hero.attacks[0].mod === 'teilbar', 'the saved adventure itself is not rewritten');
+  }
+  await tick();
+  // a unit of the next grade, added by the parents
+  {
+    const p = parents(withMeta({ grade: 2 }));
+    p.click('[data-pt="practice"]');
+    const offered = [...p.d.querySelectorAll('[data-also]')].map((b) => b.dataset.also);
+    check(
+      offered.includes('sinne') &&
+        offered.includes('teestube') &&
+        !offered.includes('woerterwerkstatt') &&
+        !offered.includes('freunde') &&
+        !offered.includes('zahlen20'),
+      'grade 2 can take units of grade 3, but none with a Lesestube',
+    );
+    check(
+      same(p.w.__mq.meta.forced, []) && p.d.querySelectorAll('[data-also][aria-checked="true"]').length === 0,
+      'none is on by default',
+    );
+    p.click('[data-also="sinne"]');
+    p.click('[data-also="teestube"]');
+    check(same(p.w.__mq.meta.forced, ['also:2:sinne', 'also:2:teestube']), 'the switches save a token each');
+    p.click('#back');
+    const subs = p.w.__mq.land.visSubjects();
+    check(
+      subs.find((x) => x.subject === 'Sachkunde').modes.includes('sinne') &&
+        same(subs.find((x) => x.subject === 'Englisch').modes, ['teestube']),
+      'the units appear in grade 2, Englisch as a subject of its own',
+    );
+    const tiles = [...p.d.querySelectorAll('[data-sub]')];
+    const en = tiles.find((b) => b.textContent.includes('Englisch'));
+    check(
+      !!en &&
+        en.querySelector('.pill').textContent === 'Klasse 3' &&
+        !tiles.find((b) => b.textContent.includes('Sachkunde')).querySelector('.pill'),
+      'a subject that only has borrowed units says „Klasse 3“',
+    );
+    tiles.find((b) => b.textContent.includes('Sachkunde')).click();
+    const card = [...p.d.querySelectorAll('.modecard')].find((c) => c.textContent.includes(p.w.UNITS.sinne.title));
+    check(
+      !!card &&
+        card.querySelector('.pill').textContent === 'Klasse 3' &&
+        p.d.querySelectorAll('.modecard .pill').length === 1,
+      'the borrowed unit carries „Klasse 3“, the others nothing',
+    );
+    p.click('[data-new="sinne"]');
+    p.click('.choice');
+    p.click('#go');
+    check(!!p.d.querySelector('.node') && p.errors.length === 0, 'its adventure starts from grade 2');
+    p.click('#home');
+    p.click('.chip[data-grade="3"]');
+    check(
+      p.w.__mq.land
+        .visSubjects()
+        .find((x) => x.subject === 'Sachkunde')
+        .modes.includes('sinne') && !p.d.querySelector('[data-sub] .pill'),
+      'in grade 3 the unit is where it always was',
+    );
+    check(p.w.__mq.weeklyGoals().length >= 2 && p.errors.length === 0, 'weekly goals still work ' + p.errors.join(' '));
+  }
+}
+
 reloadCases()
   .then(backCases)
   .then(readCases)
@@ -4675,6 +5044,7 @@ reloadCases()
   .then(wardrobeCases)
   .then(topCases)
   .then(levelCases)
+  .then(landCases)
   .then(() => {
     console.log('storage fails', fails);
     if (fails) process.exit(1);

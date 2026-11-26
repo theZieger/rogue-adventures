@@ -41,10 +41,15 @@ const SCREENS = {
   ],
   'setup-pin': ['#setpin'],
   'setup-load': ['#setload'],
+  'setup-land': ['#setland'],
   parents: PARENTS,
   'parents-subjects': [...PARENTS, '[data-pt="practice"]'],
   'parents-how': [...PARENTS, '[data-pt="practice"]', '[role="tab"][data-ps="how"]'],
   'parents-subject': [...PARENTS, '[data-pt="practice"]', '[data-pf="0"]'],
+  'parents-land': [...PARENTS, '[data-pt="practice"]', '#pland'],
+  // a Bundesland is chosen: the subject names on the title, and a unit the Bundesland hides until parents show it
+  'title-ni': [],
+  'parents-unit-by': ['#parents', '[data-pt="practice"]', '[data-pf="2"]'],
   'parents-save': [...PARENTS, '[data-pt="settings"]'],
   'parents-app': [...PARENTS, '[data-pt="settings"]', '[data-ps="app"]'],
   'parents-show': [...PARENTS, '[data-pt="settings"]', '[data-ps="show"]'],
@@ -71,7 +76,10 @@ const SCREENS = {
 
 // screens that need more than a first start: what is in the save before the taps
 const TURM_ON = { setup: { done: false, skipped: true, at: 'x' }, grade: 3, turm: { on: true } };
+const IN = (land) => ({ setup: { done: false, skipped: true, at: 'x' }, grade: 3, land });
 const SAVES = {
+  'title-ni': IN('NI'),
+  'parents-unit-by': IN('BY'),
   turm: TURM_ON,
   'turm-tutorial': TURM_ON,
   'turm-board': TURM_ON,

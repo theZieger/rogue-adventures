@@ -1,7 +1,8 @@
-import { CURRICULUM, MODES } from '../curriculum.ts';
+import { CURRICULUM, MODES, SUBJECTS, type Subject } from '../curriculum.ts';
+import { type Minus, labelOf, minusDefault, profileHides, profileOff } from '../laender.ts';
 import { KEY_META, KEY_RUN_FOR, RENAMES, type TOP, clear, isObj, load, normMeta, ownsPart, save } from '../save.ts';
 import { ITEMS, esc } from './core.ts';
-import { NODE_INFO } from './map.ts';
+import { NODE_INFO, readsIn } from './map.ts';
 import { STATS } from './progress.ts';
 import { type Adventure, state } from './state.ts';
 
@@ -18,6 +19,7 @@ export const hasPart = (slot: TopSlot, id: string) => ownsPart(state.meta, slot,
     state.meta.bestWorld = old.bestWorld || 0;
     for (const k in old.stats || {}) if (state.meta.stats.math[k]) state.meta.stats.math[k] = old.stats[k];
     for (const k in old.seenTut || {}) state.meta.seenTut['math:' + k] = true;
+    state.meta.minus = 'erg'; // as normMeta does for every save from before the choice
     save(KEY_META, state.meta);
   }
 })();
@@ -41,11 +43,59 @@ export function chooseGrade(chip: HTMLElement, redraw: () => void) {
   saveAll();
   redraw();
 }
-// switched off in the parent area; at least two stay on per mode
-export const offList = (m: string) =>
+/* ---------- Bundesland ---------- */
+// The Bundesland only sets defaults, and they are read here each time (adr/0010): meta.hidden and meta.off stay
+// „a parent switched this off“, meta.forced is „a parent switched this on although the Bundesland hides it“.
+// Without a Bundesland nothing below changes anything.
+export const land = () => state.meta.land;
+export const inLand = (code: string) => state.meta.land === code;
+export const subjectLabel = (subject: string, long?: boolean) => labelOf(state.meta.land, subject, long);
+// written subtraction: what the parents chose, else what the Bundesland usually does
+export const minusMethod = (): Minus =>
+  state.meta.minus === 'abz' || state.meta.minus === 'erg' ? state.meta.minus : minusDefault(state.meta.land);
+const practised = (m: string, k?: string) =>
+  k ? state.meta.stats[m][k].t > 0 : !!state.meta.started[m] || Object.values(state.meta.stats[m]).some((x) => x.t > 0);
+// what the Bundesland hides right now: never what the child has already practised or a parent switched on
+export const landHides = (m: string) =>
+  profileHides(state.meta.land, m) && !state.meta.forced.includes('mode:' + m) && !practised(m);
+export const landOff = (m: string, k: string) =>
+  profileOff(state.meta.land, m).includes(k) && !state.meta.forced.includes(`mod:${m}:${k}`) && !practised(m, k);
+// switched off by the parents themselves, as saved
+export const parentOff = (m: string): string[] =>
   isObj(state.meta.off) && Array.isArray(state.meta.off[m]) ? state.meta.off[m] : [];
+// switched off for the child: by the parents or by the Bundesland; at least two stay on per mode
+export const offList = (m: string) => {
+  const off = parentOff(m),
+    more = profileOff(state.meta.land, m).filter((k) => !off.includes(k) && landOff(m, k));
+  return more.length ? off.concat(more) : off;
+};
 // hidden in the parent area: 'mode:<mode>' for a game, 'hero:<mode>:<id>' for a hero; a subject is hidden when all its games are
-export const shown = (m: string) => !state.meta.hidden.includes('mode:' + m);
+export const shown = (m: string) => !state.meta.hidden.includes('mode:' + m) && !landHides(m);
+// A parent's switch for a unit ('mode:<unit>') or a task type ('mod:<unit>:<task type>'). It wins over the
+// Bundesland in both directions, and it is the only place that writes them: a default never gets into the save.
+export function setOn(token: string, on: boolean) {
+  const [kind, m, k] = token.split(':');
+  if (kind === 'mode') state.meta.hidden = state.meta.hidden.filter((x) => x !== token).concat(on ? [] : token);
+  else
+    state.meta.off[m] = parentOff(m)
+      .filter((x) => x !== k)
+      .concat(on ? [] : k);
+  state.meta.forced = state.meta.forced.filter((x) => x !== token);
+  if (on && (kind === 'mode' ? landHides(m) : landOff(m, k))) state.meta.forced.push(token);
+}
+// Choosing the Bundesland changes defaults only. A child who has already done written subtraction keeps the method
+// it was shown, whatever the new Bundesland usually does.
+export function setLand(code: string) {
+  if (!state.meta.minus && practised('math', 'ssub')) state.meta.minus = minusMethod();
+  state.meta.land = code;
+  state.meta.setup.land = true;
+  saveAll();
+}
+// Units of the next grade that parents added to this one ('also:<grade>:<unit>' in meta.forced). A unit with a
+// Lesestube stays in its grade: the texts are chosen by the unit's grade.
+export const canBorrow = (m: string, grade: number) => MODES[m].grade === grade + 1 && !readsIn(m);
+export const borrowed = (grade: number) =>
+  Object.keys(MODES).filter((m) => state.meta.forced.includes(`also:${grade}:${m}`) && canBorrow(m, grade));
 export const EXTRAS = {
   garten: ['Schulgarten', 'Beete bepflanzen und ernten.'],
   huette: ['Meine Hütte', 'Die Hütte einrichten, mit der Werkbank im Stempelheft.'],
@@ -57,10 +107,19 @@ export const EXTRAS = {
 export const extraOn = (k: string) => !state.meta.hidden.includes('extra:' + k);
 export const enOff = () => state.meta.hidden.filter((x) => x.startsWith('en:')).map((x) => x.slice(3));
 export const heroShown = (m: string | null, s: { id: string }) => !state.meta.hidden.includes(`hero:${m}:${s.id}`);
-export const visSubjects = () =>
-  curGrade()
-    .subjects.map((sub) => Object.assign({}, sub, { modes: sub.modes.filter(shown) }))
+export const visSubjects = () => {
+  const g = curGrade(),
+    more = borrowed(g.grade);
+  return (Object.keys(SUBJECTS) as Subject[])
+    .map((subject) => ({
+      subject,
+      icon: SUBJECTS[subject],
+      modes: (g.subjects.find((sub) => sub.subject === subject)?.modes || [])
+        .concat(more.filter((m) => MODES[m].subject === subject))
+        .filter(shown),
+    }))
     .filter((sub) => sub.modes.length);
+};
 export const fightMods = (m: string) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
 // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
 const inWorld = (m: string, k: string) => {

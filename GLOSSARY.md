@@ -13,6 +13,17 @@ A school year, 1 to 3. The title screen shows one Klasse at a time.
 
 **Fach** (code: `subject`):
 A school subject such as Mathe or Sachkunde. A Fach exists in a Klasse as soon as one Einheit names it.
+Its key never changes; the name on screen follows the Bundesland (`subjectLabel`), e.g. Sachunterricht.
+
+**Bundesland** (code: `land`, the table is `LAENDER`):
+The state the child goes to school in, chosen by the parents; none chosen is „Allgemein“. It only sets defaults
+and never locks anything.
+
+**Profil** (code: the entry of a Bundesland in `LAENDER`):
+What a Bundesland changes by default: the shown names of subjects, the units and Aufgabenarten that are hidden
+until parents switch them on, the usual method of written subtraction, and how each Einheit fits the state's plan
+(`fit`). A Profil is read when a screen is drawn and never saved.
+_Avoid_: writing a Profil into `meta.hidden` or `meta.off`
 
 **Einheit** (players see „Thema“; code: `mode`, the list is `UNITS`):
 One self-contained piece of learning content with its own hero, opponents and Aufgabenarten, such as Zahlenquest

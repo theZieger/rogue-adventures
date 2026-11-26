@@ -3,6 +3,7 @@ import { ELTERN } from '../src/eltern.ts';
 import { ICONS } from '../src/icons.ts';
 import { JSDOM } from 'jsdom';
 import { open as openPage } from './page.js';
+import { LAENDER, LAND_CODES } from '../src/laender.ts';
 import { MQ } from '../src/logic.ts';
 import { MK } from '../src/knowledge.ts';
 import { UNITS as modes } from '../src/units.ts';
@@ -271,6 +272,75 @@ if (modes.turm) fail('turm must not be a unit');
   p.close();
   if (inPage.join() !== Object.keys(modes).join())
     fail(`src/units.ts: Node has the units ${Object.keys(modes)}, the page has ${inPage}`);
+}
+
+// src/laender.ts names units and task types by id and must offer exactly the 13 states that were read
+{
+  const FITS = ['passt', 'frueher', 'spaeter', 'nicht', 'offen'];
+  if (LAND_CODES.join() !== 'BW,BY,BE,BB,HH,HE,MV,NI,NW,RP,SN,ST,SH')
+    fail(`laender.ts: offers ${LAND_CODES}, expected the 13 states in the order of their names`);
+  for (const [code, land] of Object.entries(LAENDER)) {
+    for (const unit of land.hide) if (!modes[unit]) fail(`laender.ts ${code}: hides unknown unit ${unit}`);
+    for (const [unit, types] of Object.entries(land.off))
+      for (const type of types)
+        if (!modes[unit]?.modules[type]) fail(`laender.ts ${code}: switches off unknown task type ${unit}.${type}`);
+    for (const [unit, fit] of Object.entries(land.fit)) {
+      if (!modes[unit]) fail(`laender.ts ${code}: fit for unknown unit ${unit}`);
+      if (!FITS.includes(fit)) fail(`laender.ts ${code}: unknown fit ${fit} for ${unit}`);
+    }
+    for (const subject of Object.keys({ ...land.labels, ...land.long }))
+      if (!modes.math || !Object.values(modes).some((unit) => unit.subject === subject))
+        fail(`laender.ts ${code}: label for unknown subject ${subject}`);
+    if (!['abz', 'erg'].includes(land.minus)) fail(`laender.ts ${code}: unknown subtraction method ${land.minus}`);
+  }
+  // Saxony is the plan the content was built from: every unit says how it fits, nothing is left to the default
+  for (const unit of Object.keys(modes))
+    if (!LAENDER.SN.fit[unit]) fail(`laender.ts SN: no fit for ${unit} (add it to LAENDER.SN.fit)`);
+}
+
+// Every Bundesland, every unit, every world: what the state switches off must leave a fight playable without the
+// „fewer than two → all“ rescue of enabledMods, and every hero must keep as many different attacks as without a state.
+{
+  const p = openPage();
+  const { meta, land } = p.w.__mq;
+  const grades = [...new Set(Object.values(modes).map((unit) => unit.grade))];
+  const attacksOf = (unit, starter, world) => {
+    p.w.__mq.mode = unit;
+    p.w.__mq.run = { mode: unit, world, hero: { attacks: (modes[unit].worldAttacks || {})[world] || starter.attacks } };
+    return land.heroAttacks().map((attack) => attack.mod);
+  };
+  const distinct = {};
+  for (const code of ['', ...LAND_CODES]) {
+    meta.land = code;
+    for (const grade of grades)
+      if (!Object.keys(modes).some((unit) => modes[unit].grade === grade && land.shown(unit)))
+        fail(`land ${code}: no unit left in grade ${grade}`);
+    for (const [unit, cfg] of Object.entries(modes))
+      for (let world = 1; world <= cfg.worlds; world++) {
+        const off = land.offList(unit);
+        const left = Object.keys(cfg.modules).filter(
+          (k) =>
+            !cfg.modules[k].shop &&
+            cfg.modules[k].worldCap[Math.min(world, cfg.modules[k].worldCap.length) - 1] > 0 &&
+            !off.includes(k),
+        );
+        if (left.length < 2) fail(`land ${code}: ${unit} world ${world} keeps only ${left.length} task types`);
+        for (const starter of cfg.starters) {
+          const mods = attacksOf(unit, starter, world);
+          const key = `${unit}:${starter.id}:${world}`;
+          if (mods.some((k) => off.includes(k))) fail(`land ${code}: ${key} attacks with a switched-off task type`);
+          if (!code) distinct[key] = new Set(mods).size;
+          else if (new Set(mods).size !== distinct[key] || mods.length !== 4)
+            fail(
+              `land ${code}: ${key} has ${new Set(mods).size} different attacks of ${mods.length}, without a state ${distinct[key]}`,
+            );
+          if (!code && world === 1 && cfg.grade === 3 && new Set(mods).size !== 4)
+            fail(`${key}: a hero needs four different attacks, has ${mods}`);
+        }
+      }
+  }
+  p.w.__mq.run = null;
+  p.close();
 }
 
 console.log('data fails', fails.length);
