@@ -383,6 +383,16 @@ export const ELTERN = (() => {
       magnet:
         'Ein Magnet zieht Eisen, Nickel und Kobalt an, nicht alle Metalle. Er wirkt durch Papier, Glas und Wasser. Magnete im Alltag.',
     },
+    gemeinde: {
+      rechte:
+        'Kinderrechte aus der UN-Kinderrechtskonvention: zu einer kleinen Geschichte das passende Recht finden, später Schutz-, Förder- und Beteiligungsrechte unterscheiden.',
+      regeln: 'Klassenregeln, Rechte und Pflichten, Streit fair lösen mit Ich-Botschaften und Streitschlichtern.',
+      klassenrat: 'Wie der Klassenrat abläuft und was eine Klassensprecherin tut, auch als Reihenfolge.',
+      abstimmen: 'Eine Strichliste auszählen, die Mehrheit erkennen, dazu Kompromiss und der Schutz der Minderheit.',
+      gemeinde: 'Was die Gemeinde für alle tut, wohin man womit geht und woher das Geld dafür kommt.',
+      rathaus:
+        'Wer im Ort entscheidet, was eine geheime, freie und gleiche Wahl ist, und was Klasse, Gemeinde, Bundesland und Bund bestimmen.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -444,6 +454,8 @@ export const ELTERN = (() => {
     natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
     strom:
       'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Stromkreis und Magnete nicht vor. Den einfachen Stromkreis nennen die Lehrpläne von Bayern, Baden-Württemberg, Hamburg und Nordrhein-Westfalen für die Klassen 3/4 (Hamburg: Klasse 4), Berlin und Rheinland-Pfalz ohne feste Klasse. Magnetismus steht in Mecklenburg-Vorpommern in Klasse 3, in Hamburg und Nordrhein-Westfalen schon in Klasse 1/2. In vielen Klassen ist das Thema also Stoff der Klasse 4.',
+    gemeinde:
+      'Sachunterricht. Im sächsischen Lehrplan stehen Rechte und Pflichten und das demokratische Aushandeln in Klasse 1/2, die UN-Kinderrechtskonvention in Klasse 4; die Gemeinde kommt dort nicht vor. Kinderrechte, Klassenrat, Abstimmen und die Gemeinde nennen die Pläne von Baden-Württemberg, Bayern, Berlin, Brandenburg, Hessen, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Rheinland-Pfalz, Sachsen-Anhalt und Schleswig-Holstein, meist als Stoff der Klassen 3/4 oder ohne feste Klasse (Mecklenburg-Vorpommern: Klasse 3). In Hamburg und Sachsen-Anhalt stehen Kinderrechte schon in Klasse 1/2. Weil die Regeln von Land zu Land verschieden sind, fehlt hier, wie die Bürgermeisterin gewählt wird und wie der Rat genau heißt. Eine Lehrkraft hat die Inhalte nicht geprüft.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {

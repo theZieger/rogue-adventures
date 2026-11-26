@@ -7414,6 +7414,150 @@ export const MONART = (() => {
     kalendermacherin: { top: [60, 27, 1.1], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
   });
 
+  // Kinderrechte und Gemeinde: the mayor and the troubles of a class and a town as opponents
+  const gm_shadow = (rx: number) => `<ellipse cx="60" cy="114" rx="${rx}" ry="3.5" fill="${OUT}" opacity=".15"/>`;
+  function buergermeisterin(o: DrawOpts, C: Defs) {
+    const e = o.evo;
+    const jacket = C.grad(['#2E7D7A', '#2A6E8E', '#5A3E8E'][e]),
+      shirt = C.grad('#F4F1EA'),
+      skin = C.grad('#E2A57C'),
+      hair = C.grad('#9AA0AE'),
+      gold = C.grad('#FFC93C');
+    let s = '';
+    if (e === 2) s += `<circle cx="96" cy="70" r="20" fill="#FFE066" opacity=".22"/>`;
+    s += `<path d="M20 116 Q22 80 60 78 Q98 80 100 116 Z" ${F(jacket)}/>`;
+    s += `<path d="M48 80 L60 100 L72 80 Z" ${F(shirt, 2)}/><path d="M48 80 L54 116 M72 80 L66 116" ${N(2)}/>`;
+    // the chain of office: gold links around the neck, a medallion with the town hall
+    s += along(
+      [40, 80],
+      [60, 104],
+      [80, 80],
+      9,
+      (x, y) => `<circle cx="${f1(x)}" cy="${f1(y)}" r="3" ${F(gold, 1.4)}/>`,
+    );
+    const m = [9, 10, 11.5][e];
+    s += `<circle cx="60" cy="${94 + m * 0.4}" r="${m}" ${F(gold, 2)}/><path d="M${60 - m * 0.55} ${94 + m * 0.7} L${60 + m * 0.55} ${94 + m * 0.7} L${60 + m * 0.55} ${94 + m * 0.2} L60 ${94 - m * 0.3} L${60 - m * 0.55} ${94 + m * 0.2} Z" fill="none" stroke="#B07A10" stroke-width="1.4" stroke-linejoin="round"/>`;
+    // left hand: a ballot with a cross
+    s += `<g transform="rotate(-10 26 92)"><rect x="12" y="74" width="26" height="32" rx="2" ${F('#FFFFFF', 2.2)}/><path d="M17 82 H33 M17 90 H33 M17 98 H27" stroke="#9AA3C2" stroke-width="2" stroke-linecap="round"/><circle cx="31" cy="98" r="3.4" fill="none" stroke="${OUT}" stroke-width="1.4"/><path d="M29 96 L33 100 M33 96 L29 100" stroke="#E0304A" stroke-width="2" stroke-linecap="round"/></g>`;
+    s += `<ellipse cx="32" cy="104" rx="6.5" ry="5.5" ${F(skin, 2)}/>`;
+    // right hand: the bell that opens the council meeting
+    s += `<path d="M86 84 Q86 68 96 68 Q106 68 106 84 L109 90 L83 90 Z" ${F(gold, 2.2)}/><circle cx="96" cy="92" r="3" ${F('#B07A10', 1.6)}/><rect x="93" y="58" width="6" height="11" rx="2.5" ${F('#7A4E26', 2)}/><path d="M89 74 Q90 70 93 69" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".6"/>`;
+    s += `<ellipse cx="96" cy="100" rx="6.5" ry="5.5" ${F(skin, 2)}/>`;
+    // head with short grey hair
+    s += `<path d="M37 50 Q37 30 60 30 Q83 30 83 50 Q83 78 60 79 Q37 78 37 50 Z" ${F(skin)}/>`;
+    s += `<ellipse cx="36" cy="56" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="84" cy="56" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    s += `<path d="M34 54 Q30 22 60 22 Q90 22 86 54 Q84 40 76 36 Q66 42 52 36 Q40 40 34 54 Z" ${F(hair)}/>`;
+    s += `<path d="M46 28 Q56 24 68 27" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".4"/>`;
+    if (e >= 1)
+      s += `<circle cx="36" cy="64" r="2.4" ${F(gold, 1.2)}/><circle cx="84" cy="64" r="2.4" ${F(gold, 1.2)}/>`; // earrings
+    s += shine(46, 50, 5, 3, -20);
+    s += pair(60, 56, 10, 5.5, { iris: '#5A7A3A', brow: 'flat', bw: 2.4, browColor: '#7A808E' });
+    // reading glasses
+    s += `<circle cx="50" cy="56" r="8" fill="none" stroke="${OUT}" stroke-width="2"/><circle cx="70" cy="56" r="8" fill="none" stroke="${OUT}" stroke-width="2"/><path d="M58 55 Q60 53 62 55" fill="none" stroke="${OUT}" stroke-width="2"/>`;
+    s += `<path d="M60 61 Q58 66 61 67" ${N(2)}/>${M.smile(60, 71, 7)}`;
+    s += blush(60, 66, 17, 4);
+    return s;
+  }
+  function vordraengler(o: DrawOpts, C: Defs) {
+    let s = gm_shadow(40);
+    // the queue it pushes past
+    for (const [x, h] of [
+      [96, 58],
+      [110, 52],
+    ])
+      s += `<path d="M${x - 9} 114 L${x - 9} ${114 - h + 14} Q${x - 9} ${114 - h} ${x} ${114 - h} Q${x + 9} ${114 - h} ${x + 9} ${114 - h + 14} L${x + 9} 114 Z" fill="#B8BFCE" stroke="${OUT}" stroke-width="1.8" opacity=".8"/>`;
+    s += `<path d="M6 60 L18 60 M2 74 L16 74 M8 88 L20 88" stroke="#9AA3B5" stroke-width="3" stroke-linecap="round"/>`;
+    // leaning forward, elbows out
+    s += `<path d="M28 112 Q24 70 42 44 Q58 24 76 36 Q90 48 84 80 Q82 104 76 112 Z" ${F(C.grad('#6FBF5A'))}/>`;
+    s += `<path d="M34 70 L18 58 L30 82 Z M80 66 L98 54 L86 80 Z" ${F(C.grad('#5AA84A'), 2.2)}/>`;
+    s += `<path d="M40 112 L36 118 M70 112 L74 118" ${N(4)}/>`;
+    s += shine(50, 46, 6, 9, -30);
+    s += pair(62, 52, 9, 6, { brow: 'angry', bw: 3, dir: [0.4, 0] });
+    s += M.tongue(64, 72, 8);
+    return s;
+  }
+  function dazwischenrufer(o: DrawOpts, C: Defs) {
+    let s = gm_shadow(30);
+    s += `<path d="M86 30 Q100 56 86 82 M98 18 Q118 56 98 94 M108 8 Q132 56 108 104" fill="none" stroke="#FF8A3D" stroke-width="3.4" stroke-linecap="round"/>`;
+    // a megaphone with a face, mouth at the wide end
+    s += `<path d="M34 106 L42 78 L52 82 L46 108 Z" ${F('#3A3F52', 2.2)}/>`;
+    s += `<path d="M14 52 Q12 40 22 38 L60 22 Q86 10 86 56 Q86 102 60 90 L22 74 Q12 72 14 60 Z" ${F(C.grad('#FF6A3D'))}/>`;
+    s += `<ellipse cx="74" cy="56" rx="11" ry="32" ${F(C.grad('#FFD23F'), 2.4)}/>`;
+    s += `<path d="M24 44 Q36 38 50 34" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>`;
+    s += pair(40, 50, 8, 5.5, { brow: 'angry', bw: 3 });
+    s += M.roar(74, 48, 6, 18);
+    return s;
+  }
+  function kaputteschaukel(o: DrawOpts, C: Defs) {
+    const wood = C.lin('#C98E52', '#8A5A2E');
+    let s = gm_shadow(48);
+    s += `<path d="M14 116 L30 14 M106 116 L90 14" ${N(7)}/><path d="M14 116 L30 14 M106 116 L90 14" stroke="#B5763A" stroke-width="3.6" stroke-linecap="round"/>`;
+    s += `<rect x="20" y="8" width="80" height="11" rx="4" ${F(wood, 2.4)}/>`;
+    // one chain holds, the other has snapped
+    s += `<path d="M40 19 L32 84" ${N(2)} stroke-dasharray="4 3"/><path d="M80 19 L80 46" ${N(2)} stroke-dasharray="4 3"/><path d="M76 48 l4 -3 l4 4" ${N(2.2)}/>`;
+    s += `<g transform="rotate(30 46 90)"><rect x="14" y="80" width="66" height="20" rx="5" ${F(wood)}/><path d="M22 86 H70 M22 94 H52" stroke="#7A4E28" stroke-width="1.6" stroke-linecap="round"/>${pair(48, 88, 9, 5, { brow: 'angry', bw: 3, dir: [0, 0.2] })}</g>`;
+    s += `<path d="M58 112 q4 -6 8 0 M70 112 q4 -6 8 0" fill="none" stroke="#9AA3B5" stroke-width="2"/>`;
+    s += `<path d="M90 60 l8 -4 M92 70 l9 0" stroke="#FFC93C" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += M.frown(56, 106, 6);
+    return s;
+  }
+  function schmiererei(o: DrawOpts, C: Defs) {
+    let s = `<rect x="4" y="20" width="112" height="94" rx="4" fill="#E6DDCC" stroke="${OUT}" stroke-width="1.6" opacity=".6"/>`;
+    s += `<path d="M4 44 H116 M4 68 H116 M4 92 H116 M30 20 V44 M74 44 V68 M40 68 V92 M90 92 V114" stroke="#C9B89A" stroke-width="1.6"/>`;
+    // a splash of paint with drips running down the wall
+    s += `<path d="M30 40 Q20 30 32 24 Q40 14 54 22 Q64 8 76 20 Q92 14 94 30 Q108 36 98 50 Q106 66 92 70 L90 96 Q88 102 84 96 L82 74 Q72 80 66 74 L64 104 Q62 110 58 104 L56 76 Q44 80 40 72 L38 86 Q36 92 32 86 L32 66 Q16 60 24 48 Q18 42 30 40 Z" ${F(C.grad('#B06FD0'))}/>`;
+    s += `<circle cx="16" cy="30" r="4" ${F('#B06FD0', 1.6)}/><circle cx="108" cy="22" r="3" ${F('#B06FD0', 1.4)}/><circle cx="104" cy="80" r="3.4" ${F('#B06FD0', 1.4)}/>`;
+    s += shine(46, 32, 7, 3.5, -20);
+    s += pair(62, 46, 9, 6, { brow: 'angry', bw: 3, dir: [-0.2, 0.2] });
+    s += M.grin(62, 60, 9);
+    return s;
+  }
+  function zettelfresser(o: DrawOpts, C: Defs) {
+    const box = C.grad('#3B6FB5');
+    let s = gm_shadow(40);
+    // a ballot box that eats the ballots: slot as a mouth
+    s += `<path d="M22 46 L98 46 L94 110 L26 110 Z" ${F(box)}/>`;
+    s += `<path d="M18 34 L102 34 L98 48 L22 48 Z" ${F(C.grad('#5A8ED0'))}/>`;
+    s += `<path d="M38 41 L82 41" stroke="${OUT}" stroke-width="5" stroke-linecap="round"/>`;
+    s += `<path d="M40 44 L44 52 L48 44 L52 52 L56 44 L60 52 L64 44 L68 52 L72 44 L76 52 L80 44" ${F('#fff', 1.6)}/>`;
+    // ballots it has not swallowed yet
+    s += `<g transform="rotate(-24 50 22)"><rect x="40" y="6" width="20" height="26" rx="1.5" ${F('#FFFFFF', 2)}/><path d="M44 12 l6 6 M50 12 l-6 6" stroke="#E0304A" stroke-width="2" stroke-linecap="round"/></g>`;
+    s += `<g transform="rotate(18 78 18)"><rect x="70" y="4" width="18" height="24" rx="1.5" ${F('#FFFFFF', 2)}/><path d="M74 20 H84 M74 14 H84" stroke="#9AA3C2" stroke-width="2"/></g>`;
+    s += `<path d="M30 58 L30 100" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".35"/>`;
+    s += pair(60, 72, 11, 7, { brow: 'angry', bw: 3.4, iris: '#E0304A' });
+    s += M.smirk(60, 94, 8);
+    s += `<path d="M106 68 l8 -2 M104 80 l10 2 M8 70 l8 2" stroke="#FFC93C" stroke-width="2.4" stroke-linecap="round"/>`;
+    return s;
+  }
+  function bestimmer(o: DrawOpts, C: Defs) {
+    let s = gm_shadow(46);
+    // the soapbox it shouts from
+    s += `<rect x="24" y="92" width="72" height="22" rx="3" ${F(C.lin('#C98E52', '#8A5A2E'), 2.4)}/><path d="M30 100 H90 M30 107 H90" stroke="#7A4E28" stroke-width="1.6"/>`;
+    s += `<path d="M28 94 Q20 54 40 34 Q60 18 80 34 Q100 54 92 94 Z" ${F(C.grad('#E8553A'))}/>`;
+    // a paper crown, a little crooked
+    s += `<path d="M38 34 L34 12 L46 22 L54 6 L62 20 L72 6 L76 24 L86 14 L82 36 Q60 28 38 34 Z" ${F(C.grad('#FFD23F'), 2.4)}/><circle cx="54" cy="7" r="2.6" fill="#E0304A"/><circle cx="72" cy="7" r="2.6" fill="#3B82F6"/>`;
+    // the arm that points at everyone
+    s += `<path d="M84 62 Q96 54 102 46" ${N(10)}/><path d="M84 62 Q96 54 102 46" stroke="#E8553A" stroke-width="6" stroke-linecap="round"/><circle cx="104" cy="44" r="6" ${F('#F4B38A', 2)}/><path d="M106 40 L112 32" ${N(5)}/><path d="M106 40 L112 32" stroke="#F4B38A" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += `<path d="M30 64 Q16 74 14 88" ${N(9)}/><path d="M30 64 Q16 74 14 88" stroke="#E8553A" stroke-width="5" stroke-linecap="round"/>`;
+    s += shine(44, 44, 6, 10, -20);
+    s += pair(60, 52, 10, 6.5, { brow: 'angry', bw: 4 });
+    s += M.roar(60, 68, 11, 14);
+    return s;
+  }
+  Object.assign(SHAPES, {
+    buergermeisterin,
+    vordraengler,
+    dazwischenrufer,
+    kaputteschaukel,
+    schmiererei,
+    zettelfresser,
+    bestimmer,
+  });
+  HEROES.push('buergermeisterin');
+  Object.assign(FIT, {
+    buergermeisterin: { top: [60, 26, 1.1], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
+  });
+
   return {
     monsterSVG,
     topSVG,
