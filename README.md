@@ -2,7 +2,7 @@
 
 Ein Lern-Abenteuer für Grundschüler (Klasse 1 bis 3) – Monster, Karte, Attacken.
 Jede Attacke ist eine Aufgabe: richtig gelöst = Treffer, falsch = der Gegner schlägt zu.
-Kein Server, kein Konto, alles bleibt auf dem Gerät. Deutsch, nach dem sächsischen Lehrplan.
+Kein Server, kein Konto, alles bleibt auf dem Gerät. Deutsch. Die Inhalte sind nach dem sächsischen Lehrplan entstanden; das Bundesland lässt sich wählen (siehe „Für Eltern“).
 
 **Loslegen:** https://thezieger.github.io/rogue-adventures/
 
@@ -92,6 +92,14 @@ Klasse 1 und 2 (nach Lehrplan Sachsen, Klassenstufe 1/2; Aufgaben werden von sel
 - Schulgarten und Wochenziele mit Wochenbericht.
 
 ## Für Eltern
+
+**Lehrplan und Bundesland.** Lernquest ist nach dem sächsischen Lehrplan und den Arbeitsblättern einer Klasse entstanden. Beim ersten Start und im Elternbereich können Sie ein Bundesland wählen: Baden-Württemberg, Bayern, Berlin, Brandenburg, Hamburg, Hessen, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen, Rheinland-Pfalz, Sachsen, Sachsen-Anhalt oder Schleswig-Holstein. Thüringen, Bremen und das Saarland kommen später dazu. Ohne Wahl bleibt alles „Allgemein“.
+
+Was die Wahl bewirkt: Die Fächer heißen wie im Bundesland (zum Beispiel „Sachunterricht“ statt „Sachkunde“), und einzelne Themen und Aufgabenarten sind zuerst ausgeblendet, wenn sie dort erst in Klasse 4 oder im Religionsunterricht vorkommen. Jeden Schalter können Sie selbst umstellen; was Ihr Kind schon geübt hat, verschwindet nie von selbst. Im Elternbereich steht bei jedem Thema, wie es zum Lehrplan des Bundeslands passt oder dass es noch nicht verglichen ist.
+
+Was die Wahl nicht bedeutet: Für die anderen Bundesländer wurden die veröffentlichten Lehrpläne gelesen (Stand November 2026), mit KI-Hilfe und ohne Gegenlesen durch eine Lehrkraft. Lernquest ist nicht nach diesen Plänen gebaut und deckt sie nicht ab. Was gerade dran ist, entscheidet die Schule – im Zweifel gilt das Heft Ihres Kindes. Die amtlichen Wörterlisten der Länder (Grundwortschatz) und Französisch sind nicht eingebaut. Hinweise auf Fehler sind willkommen.
+
+Themen der nächsten Klasse lassen sich im Elternbereich einzeln dazunehmen, wenn die Klasse Ihres Kindes ein Thema früher behandelt.
 
 - Elternbereich: Knopf „Eltern“ oben rechts, auf Wunsch mit PIN, in vier Reitern → Üben (Fächer, Themen, Helden und Aufgabenarten ein- und ausblenden), Fortschritt (Trefferquote, Wochenbericht), Spielstand (als Code oder QR-Code sichern, laden, zusammenlegen), App (Töne, Zurücksetzen). Unter „Anzeigen“ lassen sich ganze Klassen und Extras ausblenden und bei Englisch die Wortthemen aus dem Unterricht wählen.
 - Über den Spielstand-Code lässt sich alles auf ein anderes Gerät mitnehmen.

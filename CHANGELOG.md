@@ -6,6 +6,11 @@ Diese Datei wird auch im Spiel angezeigt (Titelbildschirm → „Was ist neu?“
 Format: `## JJJJ-MM-TT`, darunter die Gruppen `### Neu`, `### Verbessert`, `### Behoben`.
 Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder und Eltern verstehen.
 
+## 2026-11-25
+
+### Verbessert
+- Wörter wie „gestern“ und „jetzt“ heißen jetzt Zeitangaben, damit sie niemand mit Verben verwechselt.
+
 ## 2026-11-24
 
 ### Verbessert

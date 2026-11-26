@@ -57,6 +57,7 @@ src/k12_*.ts       grade 1/2 units: Mathe, Deutsch, Sachkunde, Ethik (Musik live
 src/turm.ts        Turmwacht rules (waves, guards, floors, Bauzeit, restart from the last Bauzeit), no UI
 src/turmart.ts     Turmwacht pictures: lanes, the tower with its floors, card pictures
 src/monsters.ts    hand-drawn SVG monsters (drawing code, the game draws them when it shows them)
+src/laender.ts     the Bundesländer a family can choose: subject names, what is hidden by default, how units fit the plan
 src/units.ts       the one list of all units (`UNITS`) – game, tests, bot and monster art read it
 src/curriculum.ts  order of units, subjects and grades (`MODES`, `MODE_KEYS`, `SUBJECTS`, `CURRICULUM`) with the types `Unit` and `TaskType`
 src/save.ts        the save: type `Meta`, defaults, loading/saving and the repair on load (`normMeta`)
@@ -79,7 +80,8 @@ tools/make_icons.js  makes docs/icons/*, docs/favicon.ico, the iOS launch screen
                    artwork changes, after `npm run build`)
 GLOSSARY.md        the project's words and their names in the code
 adr/               recorded architecture decisions
-lehrplan/          excerpts from the Saxon curricula, in German (research for new grades)
+lehrplan/          excerpts from the Saxon curricula, in German (research for new grades); laender/: the other
+                   states' plans, bundeslaender-entscheidungen.md: what was decided from them
 tests/             generator tests + the bot's playthrough (jsdom); page.js loads the built page for the page tests;
                    Turmwacht: test_turm.js (rules + balance table), test_turm_pages.js (screens, save)
 docs/index.html    the built app (not committed, CI builds and publishes it)
@@ -107,6 +109,13 @@ docs/fonts/        fonts Patrick Hand and Andika (SIL OFL) – self-hosted, no r
 - Kreisel parts and their values: `TOP_PARTS` in `src/logic.ts`
 - What parents hide is stored in `meta.hidden` as `grade:<n>`, `extra:<name>` and `en:<theme>`; the Turmwacht
   switch is `meta.turm.on`. The Kaufladen is the map node `markt`.
+- The Bundesland (`meta.land`) only sets defaults, and they are read when a screen is drawn (`adr/0010`): the
+  table is `src/laender.ts`, the reading is in `src/app/storage.ts` (`shown`, `offList`, `subjectLabel`,
+  `minusMethod`, `land`, `inLand`). Never write a state's default into `meta.hidden` or `meta.off`; a parent's
+  switch goes through `setOn`. `meta.forced` holds what parents switched on against the state (`mode:<unit>`,
+  `mod:<unit>:<task type>`) and the units they added from the next grade (`also:<grade>:<unit>`). Print a
+  subject's name with `subjectLabel(subject)`; keys, saves and comparisons keep `Ethik` and `Sachkunde`.
+  How a unit fits a state's plan is one word in that state's `fit` map; a new unit needs one in `LAENDER.SN.fit`.
 - Units of a subject that carry a `rank` (Mathe and Englisch in grade 3) are listed from easy to hard on the title
   screen; nothing is ever locked.
 
@@ -115,7 +124,7 @@ docs/fonts/        fonts Patrick Hand and Andika (SIL OFL) – self-hosted, no r
 Every unit carries its grade (`grade`) and subject (`subject`) itself and adds itself to `MK.MODES` (example:
 `src/sachkunde3.ts`). `src/units.ts` turns that into the one list `UNITS`: title screen, grade tabs, statistics,
 save, bot and monster art read it. To add one: import the new file in `src/units.ts` (the order there is the order
-of the units), add the parent texts in `src/eltern.ts`, drawings for hero and opponents in `src/monsters.ts` and
+of the units), add the parent texts in `src/eltern.ts`, how it fits each state's plan in `src/laender.ts`, drawings for hero and opponents in `src/monsters.ts` and
 new emojis in `src/icons.ts`. The tests tell you what is missing. A new subject is one line in `SUBJECTS`
 (`src/app/core.ts`).
 

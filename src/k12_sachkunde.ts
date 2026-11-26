@@ -2619,7 +2619,7 @@ export const MSK12 = (() => {
       ['Wer bringt den Blütenstaub von Blüte zu Blüte?', ['Bienen und Hummeln', 'Regenwürmer', 'Schnecken']],
       ['Ohne Bienen gäbe es viel weniger Äpfel.', true],
       ['Was wird aus der Apfelblüte?', ['Ein Apfel', 'Eine Kirsche', 'Ein Blatt']],
-      ['Welches Obst wächst bei uns in Sachsen?', ['Apfel', 'Banane', 'Ananas']],
+      ['Welches Obst wächst bei uns in Deutschland?', ['Apfel', 'Banane', 'Ananas']],
       ['Woher kommt die Banane?', ['Aus warmen Ländern', 'Aus dem Schulgarten', 'Aus Sachsen']],
       ['Pflaumen und Kirschen sind Steinobst.', true],
       ['Wie bleibt Obst lange haltbar?', ['Als Marmelade eingekocht', 'Draußen im Regen', 'Mit Seife gewaschen']],

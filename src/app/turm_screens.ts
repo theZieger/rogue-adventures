@@ -10,7 +10,7 @@ import { confirmBox } from './elternbereich.ts';
 import { showBag } from './map.ts';
 import { heroSVG, monsterSVG, stampLine } from './progress.ts';
 import { state } from './state.ts';
-import { curGrade, endRun, saveAll, visSubjects } from './storage.ts';
+import { curGrade, endRun, saveAll, subjectLabel, visSubjects } from './storage.ts';
 import { joined, runTask, speakBtn } from './tasks.ts';
 import { screenTitle } from './title.ts';
 import {
@@ -60,7 +60,7 @@ export function screenTurm() {
           ? `Bauzeit nach Welle ${t.wave} von ${W}`
           : `Welle ${t.wave} von ${W}`;
   screen(
-    html`<div class="screen">${raw(topbar('🏰 Turmwacht'))}<div class="scroll"><div class="card center tw-saved"><h2>Deine Turmwacht läuft</h2>${raw(heroSVG(turmHero(h), h.evo))}<p>${phaseText}<br>❤️ ${h.hp} / ${h.maxHp}</p><p class="pnote">${raw([...new Set(t.lanes.map((l) => l.subject))].map((s) => html`${SUBJECTS[s as Subject]} ${s}`).join(' · '))}</p>${state.meta.turm.best ? html`<p>Rekord: Welle ${state.meta.turm.best}</p>` : ''}</div></div>
+    html`<div class="screen">${raw(topbar('🏰 Turmwacht'))}<div class="scroll"><div class="card center tw-saved"><h2>Deine Turmwacht läuft</h2>${raw(heroSVG(turmHero(h), h.evo))}<p>${phaseText}<br>❤️ ${h.hp} / ${h.maxHp}</p><p class="pnote">${raw([...new Set(t.lanes.map((l) => l.subject))].map((s) => html`${SUBJECTS[s as Subject]} ${subjectLabel(s)}`).join(' · '))}</p>${state.meta.turm.best ? html`<p>Rekord: Welle ${state.meta.turm.best}</p>` : ''}</div></div>
       <div class="bottom"><div class="stack"><button class="btn" id="cont" data-action="resume">Weiter (${r.grade !== curGrade().grade ? `Klasse ${r.grade}, ` : ''}Welle ${t.wave})</button><div class="row"><button class="btn secondary" id="back" data-action="back">Zurück</button><button class="btn secondary" id="new" data-action="restart">Neu</button></div></div></div></div>`,
     {
       resume: () => {
@@ -98,8 +98,8 @@ function screenTurmNew() {
   let hero = heroes[0];
   const subj = (s: (typeof subs)[number], fix?: boolean) =>
     fix
-      ? html`<div class="tw-subj on fixed" data-subj="${s.subject}"><span class="ic" aria-hidden="true">${s.icon}</span><span class="nm">${s.subject}</span></div>`
-      : html`<button class="tw-subj" data-subj="${s.subject}" aria-pressed="false" data-action="subject"><span class="ic" aria-hidden="true">${s.icon}</span><span class="nm">${s.subject}${tip.includes(s.subject) ? raw('<small>Hier kannst du stärker werden</small>') : ''}</span><span class="tick" aria-hidden="true">✓</span></button>`;
+      ? html`<div class="tw-subj on fixed" data-subj="${s.subject}"><span class="ic" aria-hidden="true">${s.icon}</span><span class="nm">${subjectLabel(s.subject)}</span></div>`
+      : html`<button class="tw-subj" data-subj="${s.subject}" aria-pressed="false" data-action="subject"><span class="ic" aria-hidden="true">${s.icon}</span><span class="nm">${subjectLabel(s.subject)}${tip.includes(s.subject) ? raw('<small>Hier kannst du stärker werden</small>') : ''}</span><span class="tick" aria-hidden="true">✓</span></button>`;
   const paint = () => {
     app.querySelectorAll<HTMLElement>('button[data-subj]').forEach((b) => {
       const on = sel.includes(b.dataset.subj!);
@@ -503,7 +503,7 @@ function turmCards() {
         name: TWART.ROOMS[s].name,
         pic: s,
         price: TW.COST.floor,
-        desc: `Richtig in ${s}: ${FLOOR_FX[TW.FLOORS[s]]}`,
+        desc: `Richtig in ${subjectLabel(s)}: ${FLOOR_FX[TW.FLOORS[s]]}`,
         why: t.floors.includes(s) ? 'Schon gebaut.' : '',
       })),
     )
@@ -1642,7 +1642,7 @@ function screenTurmEnd(o: BoardOpts = {}) {
     H = turmHero();
   const rows = [...new Set<string>(t.lanes.map((l: Lane) => l.subject))].map((s) => {
     const v = t.score[s] || { c: 0, t: 0 };
-    return html`<li><span>${SUBJECTS[s as Subject]} ${s}</span><b>${v.c} von ${v.t} richtig</b></li>`;
+    return html`<li><span>${SUBJECTS[s as Subject]} ${subjectLabel(s)}</span><b>${v.c} von ${v.t} richtig</b></li>`;
   });
   if (!retry) endRun(); // over for good; record and scores are already in meta
   if (o.ev) setTimeout(won ? SFX.finale : SFX.lose, 150);

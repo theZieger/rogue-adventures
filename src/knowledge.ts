@@ -5374,7 +5374,7 @@ export const MK = (() => {
       t: 2,
       mod: 'zeit',
       g: 'zeit',
-      q: `Welches Zeitwort passt? ${s.replace(tw, '___').replace('___ ___', '___ ' + r)}`,
+      q: `Welche Zeitangabe passt? ${s.replace(tw, '___').replace('___ ___', '___ ' + r)}`,
       o: [tw].concat(shuffle(past ? NOW_WORDS : PAST_WORDS).slice(0, 2)),
       a: 0,
     });
@@ -5431,7 +5431,7 @@ export const MK = (() => {
         'Präsens (Gegenwart): Es passiert jetzt. Er läuft.',
         'Präteritum (Vergangenheit): Es ist schon passiert. Er lief.',
         'Viele Verben ändern im Präteritum ihren Selbstlaut: singen, sang.',
-        'Zeitwörter helfen: gestern, damals, früher, vorhin → Präteritum. Jetzt → Präsens.',
+        'Zeitangaben helfen: gestern, damals, früher, vorhin → Präteritum. Jetzt → Präsens.',
         'Was erst morgen passiert, sagt man oft im Präsens: Morgen kommt Opa.',
       ],
     },
@@ -5647,9 +5647,9 @@ export const MK = (() => {
       ],
     },
     'zeit:2': {
-      title: 'Zeitwörter',
+      title: 'Zeitangaben',
       steps: [
-        'Zeitwörter verraten, wann etwas passiert.',
+        'Zeitangaben verraten, wann etwas passiert.',
         'Gestern, damals, früher, vorhin: Es ist vorbei, also Präteritum. Jetzt und morgen: Präsens.',
         'Beispiel: Gestern ___ wir ins Schwimmbad. gehen oder gingen? Gestern ist vorbei, also: gingen.',
         'Tippe auf das Wort, das passt.',

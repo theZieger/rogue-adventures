@@ -104,7 +104,9 @@ function open(storage, opts) {
     const sub = m && d.querySelector('[data-sub]') && w.__mq.subjectOf(m[1]);
     if (!sub) return null;
     d.querySelectorAll('[data-sub]')[
-      [...d.querySelectorAll('[data-sub]')].findIndex((b) => b.textContent.includes(sub.subject))
+      [...d.querySelectorAll('[data-sub]')].findIndex((b) =>
+        b.textContent.includes(w.__mq.land.subjectLabel(sub.subject)),
+      )
     ].click();
     return d.querySelector(s);
   };

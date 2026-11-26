@@ -4,7 +4,7 @@ import { TW } from '../turm.ts';
 import { ITEMS, TYPES } from './core.ts';
 import { giveStamps, heroLocked, levelOf, makeTask, payAnswers, recordAnswer, taskTier } from './progress.ts';
 import { state } from './state.ts';
-import { curGrade, enabledMods, fightMods, heroShown, loadRun, saveAll, shown } from './storage.ts';
+import { curGrade, enabledMods, fightMods, heroShown, loadRun, saveAll, shown, subjectLabel } from './storage.ts';
 import { practised } from './title.ts';
 
 // the rules' types: src/turm.ts keeps them inside TW, so they are read off its functions
@@ -402,5 +402,5 @@ export const laneName = (i: number) => {
   const L = state.run.turm.lanes,
     s = L[i].subject,
     same = L.filter((l: Lane) => l.subject === s);
-  return same.length > 1 ? `${s} ${same.indexOf(L[i]) + 1}` : s;
+  return same.length > 1 ? `${subjectLabel(s)} ${same.indexOf(L[i]) + 1}` : subjectLabel(s);
 };

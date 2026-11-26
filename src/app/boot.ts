@@ -8,9 +8,19 @@ import { UNITS } from '../units.ts';
 import { importFromLink, mergeMeta, packSave, unpackSave } from './backup.ts';
 import { RECIPES, craft, screenTop, screenWardrobe } from './huette.ts';
 import { screenMap } from './map.ts';
-import { recordAnswer, weeklyGoals } from './progress.ts';
+import { heroAttacks, recordAnswer, weeklyGoals } from './progress.ts';
 import { state } from './state.ts';
-import { saveAll } from './storage.ts';
+import {
+  enabledMods,
+  minusMethod,
+  offList,
+  saveAll,
+  setLand,
+  setOn,
+  shown,
+  subjectLabel,
+  visSubjects,
+} from './storage.ts';
 import { screenTitle, subjectOf } from './title.ts';
 import { screenTurm, screenTurmBoard, turmLines } from './turm_screens.ts';
 import {
@@ -79,6 +89,14 @@ window.__mq = {
     },
   },
   subjectOf,
+  // the Bundesland: what the profile tests ask and set
+  land: { set: setLand, setOn, shown, offList, enabledMods, heroAttacks, minusMethod, subjectLabel, visSubjects },
+  set mode(m: string) {
+    state.mode = m;
+  },
+  set run(r: typeof state.run | null) {
+    state.run = r;
+  },
   recordAnswer,
   get meta() {
     return state.meta;
