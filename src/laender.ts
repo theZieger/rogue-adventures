@@ -155,6 +155,7 @@ export const LAENDER: Record<string, Land> = {
       verkehr: 'passt',
       wiese: 'passt',
       frueher: 'passt',
+      wald: 'nicht',
       musik: 'passt',
       zahlen20: 'passt',
       formen1: 'passt',
