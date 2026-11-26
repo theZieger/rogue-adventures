@@ -56,3 +56,19 @@ test('no screen has a serious accessibility problem', () =>
     }
     assert.deepStrictEqual(problems, []);
   }));
+
+test('Bayern reads Vokal and Konsonant, and a tapped answer still counts', () =>
+  withApp(async (newPage) => {
+    const page = await open(newPage, 'tutorial-vokal-by');
+    const text = () => page.evaluate(() => document.querySelector('#app').textContent);
+    assert.match(await text(), /Vokal oder Konsonant/);
+    await page.click('#tutok');
+    // the task keeps the Saxon words, the screen shows the Bavarian ones
+    const answer = await page.evaluate(() => window.__task.answer);
+    const shown = { Selbstlaut: 'Vokal', Mitlaut: 'Konsonant' }[answer] || answer;
+    await page.click(`.opt:text-is("${shown}")`);
+    assert.ok(await page.isVisible('.feedback.good'), 'the right option is right');
+    assert.doesNotMatch(await text(), /Selbstlaut|Mitlaut/);
+    const gloss = await open(newPage, 'tutorial-gloss-by');
+    assert.match(await gloss.textContent('#tutgloss'), /Satzkern/);
+  }));

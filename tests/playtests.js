@@ -43,6 +43,10 @@ const RUNS = [
   { MODE: 'woerterwerkstatt', LAND: 'HH', ACC: '0.9', RUNS: '1' },
   { MODE: 'freunde', LAND: 'HH', ACC: '0.9', RUNS: '1' },
   { MODE: 'turm', LAND: 'HH', GRADE: '3', ACC: '0.9', RUNS: '1' },
+  // Bayern: Vokal and Konsonant in the shown text, the answers keep the Saxon words
+  { MODE: 'laute1', ACC: '0.9', RUNS: '1' },
+  { MODE: 'laute1', LAND: 'BY', ACC: '0.9', RUNS: '1' },
+  { MODE: 'satzbaustelle', LAND: 'BY', ACC: '0.9', RUNS: '1' },
   // hidden everywhere but in Sachsen
   { MODE: 'kirchenjahr', LAND: 'SN', ACC: '0.9', RUNS: '1' },
   // „Mein Bundesland“ is an attack of the hero as soon as a Bundesland is chosen; a city state has the fewest questions

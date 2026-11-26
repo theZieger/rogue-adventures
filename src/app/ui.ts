@@ -1,4 +1,5 @@
 import type { Note } from '../curriculum.ts';
+import { glossOf } from '../laender.ts';
 import { MQ, type Task, type Tutorial } from '../logic.ts';
 import { READ_MOD, READ_TUT } from './battle.ts';
 import { $, CFG, MODULES_OF, app } from './core.ts';
@@ -334,8 +335,10 @@ function tutFor(group: string): Tutorial & { icon: string } {
 export function showTutorial(group: string, note?: string | null, onClose?: (() => void) | null, auto?: boolean) {
   const t = tutFor(group);
   const n: Note | null = note && CFG().notes ? CFG().notes![note] : null;
+  // the word the child's Bundesland uses for what this task type teaches
+  const gloss = glossOf(state.meta.land, state.mode, group.split(':')[0])?.kind;
   const ov = modal(
-    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:var(--soft)">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${n ? html`<div class="ex"><div style="font-size:var(--text-16);color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Verstanden</button>`,
+    html`<h2>${t.icon} ${t.title}</h2><p class="muted" style="opacity:var(--soft)">${auto ? 'Neue Aufgabenart. So geht sie:' : 'So geht es:'}</p><ol>${t.steps.map((s) => html`<li>${s}</li>`)}</ol>${gloss ? html`<p class="callout" id="tutgloss">${gloss}</p>` : ''}${n ? html`<div class="ex"><div style="font-size:var(--text-16);color:var(--ink-soft)">📄 Aus deinen Notizen: ${n.title}</div>${n.lines.map((l) => html`<div>• ${l}</div>`)}${raw(n.fig || '')}</div>` : ''}<button class="btn" id="tutok" data-action="understood" style="margin-top:var(--space-12)">Verstanden</button>`,
     {
       understood() {
         ov.remove();
@@ -348,7 +351,7 @@ export function showTutorial(group: string, note?: string | null, onClose?: (() 
   );
   const letter = /(^|[\s,(„])[A-Za-zÄÖÜäöü](?=[\s,.)“:]|$)/,
     say = (list: string[]) => (CFG().noLetters ? list.filter((x) => !letter.test(x)) : list);
-  const steps = () => joined(t.title, ...say(t.steps));
+  const steps = () => joined(t.title, ...say(t.steps), gloss);
   speakBtn(
     $('h2', ov),
     'afterbegin',

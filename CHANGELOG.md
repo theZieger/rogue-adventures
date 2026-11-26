@@ -14,6 +14,9 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 - Neues Thema in Ethik Klasse 3: Der Festkalender mit Festen aus Judentum, Christentum, Islam, Hinduismus, Buddhismus und ohne Religion.
 - In „Kompass und Karte“ gibt es Fragen zum eigenen Bundesland, sobald Eltern eines gewählt haben.
 
+### Verbessert
+- In Bayern und Niedersachsen heißt es Vokal und Konsonant; andere Grammatikwörter erklärt eine kurze Zeile.
+
 ## 2026-11-25
 
 ### Verbessert

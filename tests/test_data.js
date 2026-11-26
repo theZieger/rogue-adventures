@@ -2,6 +2,7 @@
 import { ELTERN } from '../src/eltern.ts';
 import { ICONS } from '../src/icons.ts';
 import { JSDOM } from 'jsdom';
+import fs from 'fs';
 import { open as openPage } from './page.js';
 import { LAENDER, LAND_CODES } from '../src/laender.ts';
 import { MQ } from '../src/logic.ts';
@@ -294,9 +295,50 @@ if (modes.turm) fail('turm must not be a unit');
         fail(`laender.ts ${code}: label for unknown subject ${subject}`);
     if (!['abz', 'erg'].includes(land.minus)) fail(`laender.ts ${code}: unknown subtraction method ${land.minus}`);
   }
-  // Saxony is the plan the content was built from: every unit says how it fits, nothing is left to the default
-  for (const unit of Object.keys(modes))
-    if (!LAENDER.SN.fit[unit]) fail(`laender.ts SN: no fit for ${unit} (add it to LAENDER.SN.fit)`);
+  // every state says for every unit how it fits; nothing is left to the default. Outside Saxony the verdict and
+  // the parents' note come from lehrplan/laender/_passung-je-thema.md, where each one has its source
+  const table = {};
+  let at = '';
+  for (const line of fs
+    .readFileSync(new URL('../lehrplan/laender/_passung-je-thema.md', import.meta.url), 'utf8')
+    .split('\n')) {
+    at = line.match(/^## .*\((\w\w)\)$/)?.[1] || at;
+    const row = line.match(/^\| `(\w+)` \| (\w+) \| (.*?) \| (.*?) \| (.*?) \|$/);
+    if (row) (table[at] ||= {})[row[1]] = { fit: row[2], note: row[3], src: row[4] };
+  }
+  for (const [code, land] of Object.entries(LAENDER)) {
+    for (const unit of Object.keys(modes)) {
+      const fit = land.fit[unit];
+      if (!fit) fail(`laender.ts ${code}: no fit for ${unit} (add it, 'offen' until the plan has been compared)`);
+      if (code === 'SN' || !fit) continue;
+      const row = table[code]?.[unit];
+      if (!row) {
+        if (fit !== 'offen') fail(`laender.ts ${code}: ${unit} is '${fit}' without a line in _passung-je-thema.md`);
+        continue;
+      }
+      if (row.fit !== fit || row.note !== (land.note[unit] || ''))
+        fail(`laender.ts ${code}: ${unit} differs from _passung-je-thema.md (${fit} / ${row.fit})`);
+      const file = row.src.match(/^lehrplan\/laender\/[\w-]+\.md(?= )/)?.[0];
+      if (fit !== 'offen' && !(file && fs.existsSync(new URL('../' + file, import.meta.url))))
+        fail(`_passung-je-thema.md ${code}: ${unit} is '${fit}' without a source in a state file`);
+    }
+    for (const [unit, note] of Object.entries(land.note)) {
+      if (!modes[unit]) fail(`laender.ts ${code}: note for unknown unit ${unit}`);
+      if (note.length > 140) fail(`laender.ts ${code}: the note for ${unit} has ${note.length} characters, 140 fit`);
+    }
+    for (const [key, gloss] of Object.entries(land.gloss || {})) {
+      const [unit, type] = key.split('.');
+      if (!modes[unit]?.modules[type]) fail(`laender.ts ${code}: gloss for unknown task type ${key}`);
+      if (!gloss.kind || !gloss.eltern)
+        fail(`laender.ts ${code}: gloss ${key} needs a line for the child and one for parents`);
+    }
+  }
+  if (LAENDER.SN.gloss || Object.keys(LAENDER.SN.note).length)
+    fail('laender.ts SN: Saxony is the baseline, no note or gloss');
+  // a default-hidden unit or task type must not contradict the verdict
+  for (const [code, land] of Object.entries(LAENDER))
+    for (const unit of land.hide)
+      if (land.fit[unit] !== 'nicht') fail(`laender.ts ${code}: hides ${unit}, but its fit is ${land.fit[unit]}`);
 }
 
 // Every Bundesland, every unit, every world: what the state switches off must leave a fight playable without the

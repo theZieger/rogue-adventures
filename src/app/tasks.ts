@@ -1,5 +1,6 @@
 import { MK } from '../knowledge.ts';
 import type { Note } from '../curriculum.ts';
+import { reword } from '../laender.ts';
 import { MQ, type Task } from '../logic.ts';
 import { MS } from '../sachkunde.ts';
 import { type Markup, html, raw } from '../ui/html.ts';
@@ -271,7 +272,7 @@ export const enVoice = () => {
 };
 export const voice = () => (state.meta.speak ? chosenVoice() : null);
 const spoken = (t: string) =>
-  t
+  reword(t, state.meta.land)
     .replace(/\bLP\b/g, 'Lebenspunkte')
     .replace(/_{2,}/g, ' Lücke ')
     .replace(/−/g, ' minus ')

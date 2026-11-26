@@ -1,6 +1,6 @@
 import { CURRICULUM, MODES, MODE_KEYS, SUBJECTS, type Subject } from '../curriculum.ts';
 import { ELTERN } from '../eltern.ts';
-import { LAENDER, fitOf, landName, whyHides, whyOff } from '../laender.ts';
+import { LAENDER, fitOf, glossOf, landName, noteOf, whyHides, whyOff } from '../laender.ts';
 import { MK } from '../knowledge.ts';
 import { MQ, type Tutorial } from '../logic.ts';
 import { QR } from '../qr.ts';
@@ -401,7 +401,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
               ? html`<p class="pplan"><b>Grundlage (Lehrplan Sachsen):</b> ${plan}</p>`
               : L === 'SN' && fit === 'passt'
                 ? html`<p class="pplan"><b>Lehrplan Sachsen:</b> ${plan}</p>`
-                : html`<p class="pplan"><b>Lehrplan ${landName(L)}:</b> ${T.fit[fit]}</p><p class="pplan"><b>Grundlage (Lehrplan Sachsen):</b> ${plan}</p>`
+                : html`<p class="pplan"><b>Lehrplan ${landName(L)}:</b> ${T.fit[fit]} ${noteOf(L, m)}</p><p class="pplan"><b>Grundlage (Lehrplan Sachsen):</b> ${plan}</p>`
           }${L && c.subject === 'Deutsch' && LAENDER[L].wordlist ? html`<p class="pplan">${T.wordlist(landName(L))}</p>` : ''}${landHides(m) ? html`<p class="callout">${T.hidden[whyHides(m)](landName(L))}</p>` : ''}${sw(shown(m), html`data-hide="mode:${m}" data-action="hide"`, 'Thema anzeigen', html`<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>`)}${msg}`,
         ),
         c.starters.length > 1
@@ -412,7 +412,7 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
           : '',
         card(
           'Aufgabenarten',
-          html`${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), html`data-m="${m}" data-k="${k}" data-action="module"`, html`${c.modules[k].icon} ${c.modules[k].name}`, html`<span>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</span>${landOff(m, k) ? html`<span>${T.off[whyOff(m, k)](landName(L))}</span>` : ''}<button class="linkbtn" data-info="${k}" data-action="info">Beispiel ansehen</button>`))}${msg}`,
+          html`${note(`${keys.filter((k) => !offList(m).includes(k)).length} von ${keys.length} sind an. Ausgeschaltete Aufgabenarten kommen nicht mehr vor. Mindestens zwei bleiben an, weil ein Kampf zwei Attacken braucht. Soll das Thema gar nicht vorkommen, schalten Sie oben „Thema anzeigen“ aus.`)}${keys.map((k) => sw(!offList(m).includes(k), html`data-m="${m}" data-k="${k}" data-action="module"`, html`${c.modules[k].icon} ${c.modules[k].name}`, html`<span>${(ELTERN.INFO as Texts<Texts<string>>)[m][k]}</span>${glossOf(L, m, k) ? html`<span>${glossOf(L, m, k)!.eltern}</span>` : ''}${landOff(m, k) ? html`<span>${T.off[whyOff(m, k)](landName(L))}</span>` : ''}<button class="linkbtn" data-info="${k}" data-action="info">Beispiel ansehen</button>`))}${msg}`,
         ),
       ];
     },

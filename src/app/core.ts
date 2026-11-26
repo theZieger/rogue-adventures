@@ -1,5 +1,6 @@
 import { MODES } from '../curriculum.ts';
 import { ICONS } from '../icons.ts';
+import { reword } from '../laender.ts';
 import { MQ } from '../logic.ts';
 import { state } from './state.ts';
 
@@ -48,6 +49,7 @@ export const esc = (s: string | undefined) =>
 /* ---------- Icons ---------- */
 // Emojis look different on every device and some are missing on older ones. Wherever one appears as text inside
 // #app, the drawn icon from icons.ts takes its place. Attributes (aria-label, data-*) keep the emoji.
+// The same walk puts the Bundesland's words into the text (reword); attributes keep the Saxon word.
 const emoId = (k: string) => 'i-' + [...k].map((c) => c.codePointAt(0)!.toString(16)).join('-');
 // not display:none, or Safari and Firefox lose the gradients inside <use>
 document.body.insertAdjacentHTML(
@@ -70,8 +72,11 @@ function drawIcons(root: Node) {
   const hits: Text[] = [];
   while (walk.nextNode()) {
     const n = walk.currentNode as Text;
+    if (n.parentElement!.closest<HTMLElement>('textarea, svg, script, style')) continue;
+    const said = reword(n.data, state.meta.land);
+    if (said !== n.data) n.data = said;
     EMO.lastIndex = 0;
-    if (EMO.test(n.data) && !n.parentElement!.closest<HTMLElement>('textarea, svg, script, style')) hits.push(n);
+    if (EMO.test(n.data)) hits.push(n);
   }
   for (const n of hits) {
     const box = document.createElement('span');

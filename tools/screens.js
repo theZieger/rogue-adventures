@@ -7,6 +7,7 @@ const GERMAN = [...TITLE, '[data-sub="1"]', '[data-new]', '.choice', '#go', '.no
 const KLASSE_1 = [...TITLE, '.chip[data-grade="1"]'];
 const PARENTS = [...TITLE, '#parents'];
 const LAND_UNIT = ['[data-sub="3"]', '[data-new="kompass"]'];
+const BY_TASK = ['[data-sub="1"]', '[data-new]', '.choice', '#go', '.node:not([disabled])'];
 
 const SCREENS = {
   // the design system page, docs/gallery.html
@@ -58,6 +59,19 @@ const SCREENS = {
   'land-task-hh': [...LAND_UNIT, '#go', '.node:not([disabled])', '.atk[data-i="3"]', '#tutok'],
   'parents-unit-land': ['#parents', '[data-pt="practice"]', '[data-pf="3"]', '[data-pm="kompass"]'],
   'parents-unit-noland': [...PARENTS, '[data-pt="practice"]', '[data-pf="3"]', '[data-pm="kompass"]'],
+  // the verdict with its note, and the Bundesland's own grammar words at the task types
+  'parents-words-by': ['#parents', '[data-pt="practice"]', '[data-pf="1"]', '[data-pm="satzbaustelle"]'],
+  'parents-fit-be': ['#parents', '[data-pt="practice"]', '[data-pf="3"]', '[data-pm="wetterstation"]'],
+  // Bayern says Vokal and Konsonant, and Satzkern for the Prädikat
+  'tutorial-vokal-by': [...BY_TASK, '.atk[data-i="0"]'],
+  'task-vokal-by': [...BY_TASK, '.atk[data-i="0"]', '#tutok'],
+  'tutorial-gloss-by': [
+    '[data-sub="1"]',
+    '[data-new="satzbaustelle"]',
+    '#go',
+    '.node:not([disabled])',
+    '.atk[data-i="1"]',
+  ],
   'parents-save': [...PARENTS, '[data-pt="settings"]'],
   'parents-app': [...PARENTS, '[data-pt="settings"]', '[data-ps="app"]'],
   'parents-show': [...PARENTS, '[data-pt="settings"]', '[data-ps="show"]'],
@@ -93,6 +107,11 @@ const SAVES = {
   'land-task': IN('SN'),
   'land-task-hh': IN('HH'),
   'parents-unit-land': IN('SN'),
+  'parents-words-by': IN('BY'),
+  'parents-fit-be': IN('BE'),
+  'tutorial-vokal-by': { ...IN('BY'), grade: 1 },
+  'task-vokal-by': { ...IN('BY'), grade: 1 },
+  'tutorial-gloss-by': IN('BY'),
   turm: TURM_ON,
   'turm-tutorial': TURM_ON,
   'turm-board': TURM_ON,
