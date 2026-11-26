@@ -50,6 +50,7 @@ src/ethik.ts       Ethik unit Ich, wir und die Welt (questions, Drei Welten, dil
 src/sachkunde.ts   Sachkunde units Kornkammer, Wetterstation, Kompass und Karte (questions, pictures, Forscherlabor, Schatzkarte)
 src/sachkunde2.ts  Sachkunde units Die fünf Sinne and Sicher im Verkehr (eye, ear, bicycle, traffic signs, crossing, illusions)
 src/sachkunde3.ts  Sachkunde units Die Wiese and Früher und heute (questions, plant pictures, meadow layers, dilemma cards)
+src/wald.ts        Sachkunde unit Der Wald (questions, forest layers, conifer twigs, tracks, mushroom, dilemma cards)
 src/musik.ts       Musik unit Der Konzertsaal (questions, note and bar pictures, instruments, composers)
 src/klasse12.ts    grades 1/2: one shared hero with opponents per subject
 src/k12_*.ts       grade 1/2 units: Mathe, Deutsch, Sachkunde, Ethik (Musik lives in k12_ethik.ts)

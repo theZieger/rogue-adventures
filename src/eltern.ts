@@ -169,6 +169,15 @@ export const ELTERN = (() => {
       schutz: 'Fragen dazu, wie man Pflanzen und Tiere auf der Wiese schützt.',
       sinne: 'Was kann man auf der Wiese sehen, hören, riechen und tasten?',
     },
+    wald: {
+      stock: 'Die fünf Stockwerke des Waldes kennen und wissen, welche Pflanzen und Tiere wo leben.',
+      baum: 'Fichte, Tanne, Kiefer und Lärche am Zweig erkennen, Laubbäume an Rinde und Früchten, dazu Laub-, Nadel- und Mischwald.',
+      spur: 'Waldtiere und ihre Spuren: Abdrücke von Reh, Wildschwein, Fuchs, Dachs und Hase, angenagte Zapfen.',
+      kreislauf: 'Wer frisst wen? Nahrungsketten ordnen und verstehen, wie aus Laub neue Erde wird.',
+      pilz: 'Die Teile eines Pilzes benennen und wissen: Einen unbekannten Pilz isst man nie.',
+      nutzen: 'Was der Wald den Menschen gibt und wie Försterinnen und Förster ihn pflegen.',
+      schutz: 'Fragen dazu, wie man sich im Wald verhält: Feuer, Müll, junge Tiere, Sturm und Zecken.',
+    },
     frueher: {
       geraet: 'Welches Gerät von heute macht die Arbeit eines Geräts von früher?',
       alltag: 'Fragen zu Kindheit, Arbeit und Freizeit früher und heute.',
@@ -369,6 +378,7 @@ export const ELTERN = (() => {
     kartoffel: SU(3, 'Begegnungen mit Pflanzen und Tieren'),
     kornkammer: SU(3, 'Begegnungen mit Pflanzen und Tieren'),
     wiese: SU(3, 'Begegnungen mit Pflanzen und Tieren'),
+    wald: 'Sachunterricht, Lebensraum Wald. Im sächsischen Lehrplan der Klasse 3 ist die Wiese der Lebensraum, der Wald steht dort nicht. Ausdrücklich genannt wird der Wald in Bayern („Wald und Gewässer“), Mecklenburg-Vorpommern (Klasse 3: Waldarten, Stockwerke, Pilze), Sachsen-Anhalt („Wald als Natur-, Lebens- und Wirtschaftsraum“), Thüringen und Nordrhein-Westfalen, dort jeweils als Stoff der Klassen 3 und 4. Welche Teile davon in Klasse 3 behandelt werden, entscheidet die Schule.',
     wetterstation: SU(4, 'Begegnung mit Phänomenen der unbelebten Natur'),
     kompass: SU(5, 'Begegnung mit Raum und Zeit'),
     verkehr: SU(5, 'Begegnung mit Raum und Zeit'),

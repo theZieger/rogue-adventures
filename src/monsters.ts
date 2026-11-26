@@ -5417,6 +5417,138 @@ export const MONART = (() => {
     return s;
   }
 
+  function foersterin(o: DrawOpts, C: Defs) {
+    const skin = C.grad('#E8B48A'),
+      coat = C.grad('#5E8A4A'),
+      hair = C.grad('#B5562A'),
+      fir = C.grad('#3E9A56');
+    // braid over the left shoulder, behind the jacket
+    let s = `<path d="M38 60 Q26 76 32 96 Q38 100 42 94 Q38 78 46 66 Z" ${F(hair, 2)}/>`;
+    s += `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(coat)}/><path d="M48 80 L60 94 L72 80" ${F('#F2E8D0', 2)}/><path d="M60 94 L60 116" ${N(2)}/>`;
+    s += `<path d="M31 80 L39 83 M32 88 L40 90" stroke="#7A3418" stroke-width="1.6" stroke-linecap="round"/>`;
+    // binoculars on a strap
+    s += `<path d="M50 83 Q51 94 54 99 M70 83 Q69 94 66 99" fill="none" stroke="#3A2A1E" stroke-width="1.8" stroke-linecap="round"/>`;
+    s += `<rect x="56" y="101" width="8" height="5" fill="#3A3F52" stroke="${OUT}" stroke-width="1.4"/><rect x="49" y="98" width="9.5" height="14" rx="3" ${F('#4A5068', 2)}/><rect x="61.5" y="98" width="9.5" height="14" rx="3" ${F('#4A5068', 2)}/><circle cx="53.7" cy="109" r="2.4" fill="#9AD0F0"/><circle cx="66.3" cy="109" r="2.4" fill="#9AD0F0"/>`;
+    // the spray can she marks trees with
+    s += `<rect x="25" y="81" width="7" height="6" rx="1.5" ${F('#3A3F52', 1.6)}/><rect x="22" y="86" width="13" height="24" rx="3" ${F('#F28C28', 2)}/><ellipse cx="33" cy="103" rx="6" ry="5" ${F(skin, 2)}/>`;
+    // a young spruce with its root ball
+    s += `<path d="M94 88 L94 102" ${N(3.4)}/><path d="M94 56 L105 74 L100 74 L110 91 L78 91 L88 74 L83 74 Z" ${F(fir, 2.2)}/><path d="M90 70 L98 70 M86 86 L102 86" stroke="#2A6E3C" stroke-width="1.4" stroke-linecap="round"/>`;
+    s += `<path d="M83 102 Q94 96 105 102 Q107 116 94 117 Q81 116 83 102 Z" ${F(C.grad('#8A5E3A'), 2.2)}/><path d="M88 108 l3 2 M98 106 l3 3 M93 112 l3 1" stroke="#5A3A20" stroke-width="1.4" stroke-linecap="round"/><ellipse cx="84" cy="106" rx="6" ry="5" ${F(skin, 2)}/>`;
+    s += `<ellipse cx="60" cy="57" rx="25" ry="26" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    s += `<path d="M34 58 Q30 30 60 30 Q90 30 86 58 Q82 44 72 40 Q60 46 46 40 Q38 46 34 58 Z" ${F(hair)}/><path d="M44 36 Q52 32 60 33" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".35"/>`;
+    s += shine(47, 54, 5, 3, -20);
+    s += pair(60, 59, 11, 5.5, { brow: 'up', bw: 2.4, iris: '#4E7A3A', browColor: '#7A3418' });
+    s += `<path d="M60 63 Q58 69 61 70" ${N(2.2)}/>${M.smile(60, 75, 7)}`;
+    s += blush(60, 69, 16, 4);
+    s += `<path d="M42 66 h.1 M45 69 h.1 M75 69 h.1 M78 66 h.1" stroke="#B5763A" stroke-width="1.6" stroke-linecap="round"/>`;
+    return s;
+  }
+
+  function borkenkaefer(o: DrawOpts, C: Defs) {
+    const wood = C.lin('#F0D8A8', '#D2AE74'),
+      shell = C.grad('#7A4A28'),
+      head = C.grad('#523018');
+    // the inside of a piece of bark with the tunnels the beetle and its larvae ate
+    let s = `<path d="M10 14 Q60 6 110 14 L114 108 Q60 116 6 108 Z" ${F(wood)}/>`;
+    s += `<path d="M60 16 L60 106 M60 26 Q44 26 28 20 M60 26 Q76 26 94 18 M60 100 Q42 102 24 100 M60 100 Q80 102 98 98 M34 54 Q24 50 14 52 M86 54 Q96 50 106 52 M30 80 Q20 82 12 88 M90 80 Q100 82 108 88" fill="none" stroke="#9A6A38" stroke-width="3.4" stroke-linecap="round"/>`;
+    s += `<path d="M42 58 L24 50 L20 40 M38 72 L20 72 L14 80 M42 86 L28 96 L26 106 M78 58 L96 50 L100 40 M82 72 L100 72 L106 80 M78 86 L92 96 L94 106" fill="none" stroke="${OUT}" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    s += `<path d="M50 36 Q46 26 38 26 M70 36 Q74 26 82 26" ${N(2.6)}/><circle cx="37" cy="26" r="3.6" ${F(head, 1.6)}/><circle cx="83" cy="26" r="3.6" ${F(head, 1.6)}/>`;
+    s += `<ellipse cx="60" cy="78" rx="24" ry="27" ${F(shell)}/><path d="M60 58 L60 104" ${N(2)}/>`;
+    s += `<path d="${[50, 44, 70, 76].map((x) => [72, 80, 88, 96].map((y) => `M${x} ${y} h.1`).join('')).join('')}" stroke="#4A2A14" stroke-width="2.2" stroke-linecap="round"/>`;
+    s += `<path d="M36 66 Q32 34 60 32 Q88 34 84 66 Q60 57 36 66 Z" ${F(head)}/>`;
+    s += shine(46, 80, 4, 9, 10) + shine(48, 40, 6, 3, -20);
+    s += pair(60, 47, 9, 6, { brow: 'angry', bw: 3, dir: [0, 0.3] });
+    s += M.grin(60, 56, 6);
+    return s;
+  }
+
+  function zigarettenkippe(o: DrawOpts, C: Defs) {
+    const paper = C.lin('#FFFFFF', '#D8D8E2'),
+      filter = C.lin('#EDBB78', '#BE8440');
+    let s = `<path d="M4 108 l20 -4 M18 115 l22 -2 M66 115 l24 -4 M92 109 l22 4 M40 108 l16 4" stroke="#B8894A" stroke-width="2.6" stroke-linecap="round"/>`;
+    s += `<path d="M98 34 Q88 24 98 16 Q108 8 100 0" fill="none" stroke="#9A96A4" stroke-width="5" stroke-linecap="round" opacity=".7"/><path d="M110 40 Q118 30 112 20" fill="none" stroke="#9A96A4" stroke-width="4" stroke-linecap="round" opacity=".5"/>`;
+    s += `<g transform="rotate(-24 60 76)">`;
+    s += `<path d="M86 60 Q96 57 101 64 Q108 70 103 78 Q106 87 96 90 L86 90 Z" ${F('#5A5560')}/><path d="M89 64 Q98 66 98 75 Q98 84 89 86 Z" fill="#FF6A3D"/><path d="M90 70 Q95 72 95 76 Q95 80 90 81 Z" fill="#FFD23F"/>`;
+    s += `<path d="M46 60 L88 60 L88 90 L46 90 Z" ${F(paper)}/><rect x="14" y="60" width="34" height="30" rx="6" ${F(filter)}/><path d="M52 61.5 L52 88.5" stroke="#C9A227" stroke-width="2.4"/>`;
+    s += `<path d="M22 68 h.1 M30 74 h.1 M24 82 h.1 M36 66 h.1 M38 82 h.1 M30 86 h.1" stroke="#9A6A2A" stroke-width="2" stroke-linecap="round"/>`;
+    s += shine(64, 65, 12, 2, 0);
+    s += pair(68, 73, 8, 5.5, { brow: 'angry', bw: 2.8, dir: [0.3, 0.1] }) + M.smirk(68, 84, 5);
+    s += `</g>`;
+    s += spark(112, 54, 3.4, '#FFB347') + spark(104, 64, 2.4, '#FFE066') + spark(116, 70, 2, '#FF8A3D');
+    return s;
+  }
+
+  function getraenkedose(o: DrawOpts, C: Defs) {
+    const can = C.lin('#62C4E4', '#2A7CA6'),
+      metal = C.lin('#EEF1F6', '#A8B0C0');
+    let s = `<path d="M4 116 l4 -13 l3 13 M14 116 l5 -10 l1 10 M102 116 l2 -12 l4 12 M110 116 l4 -15 l3 15" stroke="#6FAE3E" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    s += `<g transform="rotate(12 60 70)">`;
+    s += `<path d="M34 30 L86 30 L88 54 L80 63 L88 73 L86 106 Q60 114 34 106 L32 80 L39 68 L32 55 Z" ${F(can)}/>`;
+    s += `<path d="M33 86 Q60 94 87 86 L86.5 97 Q60 105 33.5 97 Z" fill="#F4E04A" stroke="${OUT}" stroke-width="1.6"/>`;
+    s += `<ellipse cx="60" cy="30" rx="26" ry="7" ${F(metal)}/><ellipse cx="55" cy="31.5" rx="5" ry="2.2" fill="${OUT}"/><ellipse cx="65" cy="28.5" rx="7" ry="2.6" ${F('#C9CED8', 1.5)}/>`;
+    s += `<path d="M39 68 L52 63 M80 63 L70 68" fill="none" stroke="#1E5E80" stroke-width="2" stroke-linecap="round"/>`;
+    s += shine(41, 46, 3, 9);
+    s += pair(60, 52, 10, 6, { brow: 'flat', bw: 2.8, dir: [0.3, 0.1] }) + M.smirk(60, 72, 7);
+    s += `</g>`;
+    return s;
+  }
+
+  function sturmschaden(o: DrawOpts, C: Defs) {
+    const bark = C.lin('#A27A52', '#684830'),
+      wood = C.grad('#F2DCAE'),
+      crown = C.grad('#6FAE4E');
+    let s = `<path d="M4 22 Q28 12 50 22 M72 12 Q94 4 116 14 M84 44 Q98 38 112 46" fill="none" stroke="#9AC4E8" stroke-width="3" stroke-linecap="round" opacity=".85"/>`;
+    s += `<path d="M20 4 l-4 10 M58 2 l-4 10 M98 22 l-4 10 M12 36 l-3 9 M114 58 l-3 9" stroke="#5FA8D3" stroke-width="2.4" stroke-linecap="round"/>`;
+    // the crown that broke off
+    s += `<path d="M62 100 L106 84 L110 96 L68 113 Z" ${F(bark, 2.2)}/><path d="M86 78 Q80 62 96 60 Q104 50 113 60 Q124 66 117 80 Q121 94 107 94 Q96 100 89 90 Q78 88 86 78 Z" ${F(crown, 2.2)}/><path d="M92 72 q6 -6 13 -2 M96 86 q7 -4 13 0" fill="none" stroke="#DDF2B8" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>`;
+    s += `<path d="M22 114 Q12 110 6 116 M74 114 Q84 109 90 116" ${N(3.4)}/>`;
+    s += `<path d="M22 115 Q17 100 25 92 L27 50 L35 62 L40 38 L47 58 L54 32 L60 56 L69 42 L70 92 Q79 102 75 115 Z" ${F(bark)}/>`;
+    s += `<path d="M31 62 L35 67 L40 46 L47 63 L54 40 L59 61 L66 51 L66 70 L31 70 Z" fill="${wood}" stroke="${OUT}" stroke-width="1.4" stroke-linejoin="round"/>`;
+    s += `<path d="M30 78 L30 90 M66 76 L66 88 M34 104 L34 110 M62 102 L62 110" stroke="#4E3420" stroke-width="1.6" stroke-linecap="round"/>`;
+    s += shine(33, 84, 3, 7);
+    s += pair(48, 84, 9, 6, { brow: 'angry', bw: 3, dir: [0.3, 0.2] });
+    s += M.frown(48, 98, 7);
+    return s;
+  }
+
+  function kahlschlag(o: DrawOpts, C: Defs) {
+    const bark = C.lin('#9A7048', '#5A3C26'),
+      top = C.grad('#F2DCAC'),
+      steel = C.lin('#E4E9F0', '#9AA3B5');
+    let s = `<path d="M0 108 Q60 98 120 108 L120 120 L0 120 Z" fill="#B89468" stroke="${OUT}" stroke-width="2"/>`;
+    for (const x of [14, 104])
+      s += `<path d="M${x - 9} 108 L${x - 7} 92 L${x + 7} 92 L${x + 9} 108 Z" ${F(bark, 2)}/><ellipse cx="${x}" cy="92" rx="7" ry="3" ${F(top, 1.6)}/>`;
+    s += `<path d="M28 112 Q16 110 10 117 M92 112 Q104 110 110 117" ${N(4.4)}/>`;
+    s += `<path d="M24 114 Q22 80 28 46 L92 46 Q98 80 96 114 Q60 120 24 114 Z" ${F(bark)}/>`;
+    s += `<path d="M32 60 L31 76 M88 58 L89 72 M36 98 L36 108 M84 98 L85 108 M44 108 L44 113" stroke="#3E2816" stroke-width="1.8" stroke-linecap="round"/>`;
+    s += `<ellipse cx="60" cy="46" rx="32" ry="12" ${F(top)}/><ellipse cx="58" cy="46" rx="22" ry="8" fill="none" stroke="#C9A066" stroke-width="1.6"/><ellipse cx="57" cy="46" rx="13" ry="4.6" fill="none" stroke="#C9A066" stroke-width="1.6"/><ellipse cx="56" cy="46" rx="5" ry="1.8" fill="none" stroke="#C9A066" stroke-width="1.6"/>`;
+    // the axe left in the stump
+    s += `<path d="M76 42 L104 10" stroke="${OUT}" stroke-width="7.5" stroke-linecap="round"/><path d="M76 42 L104 10" stroke="#B5763A" stroke-width="3.8" stroke-linecap="round"/><path d="M66 34 L82 28 L84 46 L68 50 Q62 42 66 34 Z" ${F(steel, 2.2)}/>`;
+    s += shine(36, 70, 4, 10, 4);
+    s += pair(60, 76, 12, 7, { brow: 'angry', bw: 3.4, dir: [0, 0.2] });
+    s += M.fangs(60, 95, 9);
+    return s;
+  }
+
+  function waldbrand(o: DrawOpts, C: Defs) {
+    const fire = C.lin('#FFD23F', '#EE4E1C'),
+      core = C.lin('#FFF6B0', '#FFAA2A');
+    let s = `<path d="M60 2 Q73 20 66 33 Q86 26 84 8 Q104 30 98 52 Q113 47 112 33 Q123 62 109 88 Q112 114 60 116 Q8 114 11 88 Q-3 62 8 33 Q7 47 22 52 Q16 30 36 8 Q34 26 54 33 Q47 20 60 2 Z" ${F(fire)}/>`;
+    s += `<path d="M60 38 Q70 51 66 61 Q82 57 80 45 Q95 66 87 87 Q85 108 60 108 Q35 108 33 87 Q25 66 40 45 Q38 57 54 61 Q50 51 60 38 Z" fill="${core}"/>`;
+    // charred spruces in front of the flames
+    for (const x of [16, 104])
+      s += `<path d="M${x - 3} 117 L${x - 2} 96 L${x - 10} 96 L${x - 3} 80 L${x - 8} 80 L${x - 2} 64 L${x - 6} 64 L${x} 48 L${x + 6} 64 L${x + 2} 64 L${x + 8} 80 L${x + 3} 80 L${x + 10} 96 L${x + 2} 96 L${x + 3} 117 Z" ${F('#2E2630', 2)}/>`;
+    s += pair(60, 72, 12, 7.5, { look: 'glow', glow: '#FFF3A0', brow: 'angry', bw: 4 });
+    s += M.roar(60, 90, 11, 10);
+    s +=
+      spark(30, 14, 4, '#FFE066') +
+      spark(92, 6, 3.4, '#FFB347') +
+      spark(112, 22, 3, '#FFE066') +
+      spark(8, 22, 2.6, '#FFB347');
+    return s;
+  }
+
   const SHAPES: Record<string, Draw> = {
     fox,
     toad,
@@ -5601,6 +5733,13 @@ export const MONART = (() => {
     langeweile,
     heimweh,
     grosserstreit,
+    foersterin,
+    borkenkaefer,
+    zigarettenkippe,
+    getraenkedose,
+    sturmschaden,
+    kahlschlag,
+    waldbrand,
   };
   // old shape names (saved games from before the redraw)
   const ALIAS: Record<string, string> = {
@@ -5648,6 +5787,7 @@ export const MONART = (() => {
     'bus',
     'lotte',
     'mats',
+    'foersterin',
   ];
 
   // where clothes sit on each hero (drawing coordinates before the stage scaling): head top [x, y, scale],
@@ -5688,6 +5828,7 @@ export const MONART = (() => {
     pfadfinderin: { top: [60, 28, 1.05], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
     lotte: { top: [60, 30, 1.1], eyes: [60, 59, 10, 6], neck: [60, 81, 44], pack: [24, 84] },
     mats: { top: [60, 30, 1.1], eyes: [60, 58, 10, 6], neck: [60, 81, 46], pack: [24, 84] },
+    foersterin: { top: [60, 30, 1.1], eyes: [60, 59, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
   };
   const at = (p: number[], body: string) => `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2] || 1})">${body}</g>`;
   const STRAW = '#E8C25A';

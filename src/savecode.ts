@@ -58,7 +58,9 @@ const WORDS = (
   'Die Bücherlawine|buecherlawine|Die Karies|karies|Die Schlammpfütze|schlammpfuetze|Der Sonnenbrand|sonnenbrand|Die Klette|klette|Der Schnupfen|' +
   'schnupfen|Der Schneesturm|schneesturm|Die zugeknallte Tür|knalltuer|Die schlechte Laune|schlechtelaune|Der Wutanfall|wutanfall|Die Langeweile|' +
   'langeweile|Das Heimweh|heimweh|Der große Streit|grosserstreit|Die Knarrtür|knarrtuer|Die gerissene Saite|gerissenesaite|Der Laubbläser|laubblaeser|' +
-  'Der Wasserhahn|wasserhahn|Die Pausenklingel|pausenklingel|Der Presslufthammer|presslufthammer'
+  'Der Wasserhahn|wasserhahn|Die Pausenklingel|pausenklingel|Der Presslufthammer|presslufthammer|' +
+  'wald|spur|pilz|foersterin|Der Borkenkäfer|borkenkaefer|Die Zigarettenkippe|zigarettenkippe|Die Getränkedose|getraenkedose|Der Sturmschaden|' +
+  'sturmschaden|Der Kahlschlag|kahlschlag|Der Waldbrand|waldbrand'
 ).split('|');
 const NUM = new Map(WORDS.map((w, i) => [w, i]));
 const isObj = (v: Json): v is JsonObject => !!v && typeof v === 'object' && !Array.isArray(v);
