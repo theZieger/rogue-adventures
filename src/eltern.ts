@@ -352,6 +352,17 @@ export const ELTERN = (() => {
       gefahr: 'Warnzeichen auf Putzmitteln erkennen und sicher mit gefährlichen Flüssigkeiten umgehen.',
       plan: 'Einen Ortsplan mit Legende lesen: Welches Zeichen steht wofür, was liegt links oder rechts daneben?',
     },
+    strom: {
+      kreis:
+        'Einen gezeichneten Stromkreis aus Batterie, Kabeln, Lämpchen und Schalter lesen: Leuchtet das Lämpchen? Später den Fehler finden.',
+      leiter: 'Welche Stoffe leiten den Strom und welche nicht? Metalle leiten, Plastik, Gummi und Glas nicht.',
+      energie: 'Woher der Strom kommt, was er im Haushalt bewirkt und wie man ihn spart.',
+      sicher:
+        'Die Sicherheitsregeln: Steckdose, nasse Hände, kaputte Kabel, Drachen an Stromleitungen, Versuche nur mit Batterien.',
+      pole: 'Nordpol und Südpol: Gleiche Pole stoßen sich ab, verschiedene ziehen sich an. Dazu die Kompassnadel.',
+      magnet:
+        'Ein Magnet zieht Eisen, Nickel und Kobalt an, nicht alle Metalle. Er wirkt durch Papier, Glas und Wasser. Magnete im Alltag.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -408,6 +419,8 @@ export const ELTERN = (() => {
     baeume2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
     tiere2: 'Sachunterricht, Klasse 1/2, Lernbereich 3 „Begegnungen mit Pflanzen und Tieren“.',
     natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
+    strom:
+      'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Stromkreis und Magnete nicht vor. Den einfachen Stromkreis nennen die Lehrpläne von Bayern, Baden-Württemberg, Hamburg und Nordrhein-Westfalen für die Klassen 3/4 (Hamburg: Klasse 4), Berlin und Rheinland-Pfalz ohne feste Klasse. Magnetismus steht in Mecklenburg-Vorpommern in Klasse 3, in Hamburg und Nordrhein-Westfalen schon in Klasse 1/2. In vielen Klassen ist das Thema also Stoff der Klasse 4.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {

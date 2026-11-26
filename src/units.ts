@@ -5,6 +5,7 @@
 import './sachkunde.ts';
 import './sachkunde2.ts';
 import './sachkunde3.ts';
+import './strom.ts';
 import './ethik.ts';
 import './musik.ts';
 import './k12_mathe.ts';
