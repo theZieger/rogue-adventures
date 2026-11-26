@@ -8,7 +8,7 @@ import { UNITS } from '../units.ts';
 import { importFromLink, mergeMeta, packSave, unpackSave } from './backup.ts';
 import { RECIPES, craft, screenTop, screenWardrobe } from './huette.ts';
 import { screenMap } from './map.ts';
-import { heroAttacks, recordAnswer, weeklyGoals } from './progress.ts';
+import { heroAttacks, makeTask, recordAnswer, weeklyGoals } from './progress.ts';
 import { state } from './state.ts';
 import {
   enabledMods,
@@ -21,7 +21,7 @@ import {
   subjectLabel,
   visSubjects,
 } from './storage.ts';
-import { colSolved } from './tasks.ts';
+import { colSolved, runTask } from './tasks.ts';
 import { screenTitle, subjectOf } from './title.ts';
 import { screenTurm, screenTurmBoard, turmLines } from './turm_screens.ts';
 import {
@@ -90,8 +90,20 @@ window.__mq = {
     },
   },
   subjectOf,
-  // the Bundesland: what the profile tests ask and set
-  land: { set: setLand, setOn, shown, offList, enabledMods, heroAttacks, minusMethod, subjectLabel, visSubjects },
+  // the Bundesland: what the profile tests ask and set; makeTask and runTask draw a task as a fight would
+  land: {
+    set: setLand,
+    setOn,
+    shown,
+    offList,
+    enabledMods,
+    heroAttacks,
+    minusMethod,
+    subjectLabel,
+    visSubjects,
+    makeTask,
+    runTask,
+  },
   set mode(m: string) {
     state.mode = m;
   },

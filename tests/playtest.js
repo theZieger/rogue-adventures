@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { install, sleep } from './clock.js';
 import { MQ } from '../src/logic.ts';
+import { LAENDER, LAND_CODES } from '../src/laender.ts';
 import path from 'path';
 import { JSDOM } from 'jsdom';
 import * as JM from './jm_solver.js';
@@ -17,6 +18,15 @@ const LITER = process.env.LITER === '1';
 const OFF = process.env.OFF || '';
 // LAND=HH: the family has chosen this Bundesland, so the bot plays with what it hides and renames
 const LAND = process.env.LAND || '';
+// SWITCH=1: a parent changes the Bundesland again and again during the adventure (every other map, or between
+// two Turmwacht waves), going through all 13 and none; the child then continues the adventure from the title
+const SWITCH = process.env.SWITCH === '1';
+const CODES = ['', ...LAND_CODES];
+let switches = 0,
+  mapVisits = 0,
+  resumeAfterSwitch = false;
+// the Bundesland's words for task types, as the child read them in a tutorial
+const glossesSeen = new Set();
 const w3run = () => {
   return JSON.stringify({
     mode: 'math',
@@ -156,6 +166,8 @@ async function closeModal() {
     const b = ov.querySelector('#tutok');
     if (b) {
       tutorialsSeen++;
+      const g = ov.querySelector('#tutgloss');
+      if (g) glossesSeen.add(g.textContent);
       click(b);
       return true;
     }
@@ -776,6 +788,10 @@ async function turmBot() {
       return true;
     }
     if (board.classList.contains('build')) {
+      if (SWITCH && !$('.tw-pickhint') && switches < SWITCH_BY * r.turm.wave) {
+        switchLand();
+        return true;
+      }
       if ($('.tw-pickhint')) click($('#pickno'));
       else turmShop(r);
       return true;
@@ -834,6 +850,7 @@ async function turmBot() {
     return true;
   }
   if ($('.tw-saved')) {
+    resumeAfterSwitch = false;
     click($('#cont'));
     return true;
   }
@@ -869,8 +886,29 @@ async function turmBot() {
   }
   return false;
 }
+// the parent switches the Bundesland, the child goes back to the title and continues from there
+// three states at a time, so a short adventure still goes through all of them
+const SWITCH_BY = 3;
+function switchLand() {
+  const unit = w.__mq.run.mode;
+  for (let i = 0; i < SWITCH_BY; i++) {
+    const code = CODES[switches++ % CODES.length];
+    w.__mq.land.set(code);
+    if (unit === 'turm') continue;
+    if (!w.__mq.land.shown(unit)) throw new Error(`switching to ${code || 'none'} hides the unit being played`);
+    const on = w.__mq.land.enabledMods(),
+      mods = w.__mq.land.heroAttacks().map((a) => a.mod);
+    if (on.length < 2 || mods.length !== 4 || mods.some((k) => !on.includes(k)))
+      throw new Error(`after switching to ${code || 'none'}: attacks ${mods}, on are ${on}`);
+  }
+  resumeAfterSwitch = true;
+  w.__mq.screenTitle();
+}
 async function step() {
   if (await closeModal()) return;
+  // Bayern and Niedersachsen say Vokal and Konsonant on every screen
+  if (['BY', 'NI'].includes(w.__mq.meta.land) && /Selbstlaut|Mitlaut/.test(text()))
+    throw new Error(`Selbstlaut or Mitlaut on screen in ${w.__mq.meta.land}: ${text().slice(0, 200)}`);
   if ($('#later')) {
     click($('#later'));
     return;
@@ -909,6 +947,8 @@ async function step() {
   if ($('[data-new]') && !$('.choice') && !$('.wmap')) {
     const m = process.env.MODE || 'math';
     const c = $('[data-cont="' + m + '"]');
+    if (resumeAfterSwitch && !c) throw new Error(`no way to continue the adventure in ${w.__mq.meta.land || 'none'}`);
+    resumeAfterSwitch = false;
     if (c) {
       click(c);
       return;
@@ -930,6 +970,10 @@ async function step() {
     return;
   }
   if ($('.node.open')) {
+    if (SWITCH && mapVisits++ % 2) {
+      switchLand();
+      return;
+    }
     const nodes = $$('.node.open');
     const special = nodes.find((n) =>
       ['Forscherlabor', 'Sinnestäuschung', 'Schatzkarte'].includes(n.getAttribute('aria-label')),
@@ -1110,6 +1154,7 @@ function turmEnd(m, ends, steps) {
     correctAnswers,
     wrongAnswers,
     tutorialsSeen,
+    switches,
     potions: turmPotions,
     bought: turmBuys,
     dex: Object.keys(m.dex).length,
@@ -1187,6 +1232,8 @@ function trace() {
     correctAnswers,
     wrongAnswers,
     tutorialsSeen,
+    switches,
+    glosses: glossesSeen.size,
     battles,
     events,
     dilemmas,
@@ -1208,6 +1255,28 @@ function trace() {
   });
   const mode = process.env.MODE || 'math';
   console.log('seed', SEED);
+  if (SWITCH && switches < CODES.length) {
+    console.error(`PLAYTEST FAIL: switched the Bundesland only ${switches} times`);
+    process.exit(1);
+  }
+  // the bot starts without practice, so nothing the state hides or switches off may have been asked, and the
+  // tutorial of a task type the state has its own word for must have shown that word
+  if (LAND && !SWITCH) {
+    const L = LAENDER[LAND],
+      landFail = (msg) => {
+        console.error(`PLAYTEST FAIL: ${LAND}: ${msg}`);
+        process.exit(1);
+      };
+    for (const [unit, types] of Object.entries(m.stats)) {
+      const asked = Object.keys(types).filter((k) => types[k].t > 0);
+      if (L.hide.includes(unit) && asked.length) landFail(`${unit} is hidden, but asked ${asked}`);
+      for (const k of L.off[unit] || []) if (asked.includes(k)) landFail(`${unit}.${k} is off, but was asked`);
+    }
+    for (const [key, gloss] of Object.entries(L.gloss || {})) {
+      const [unit, k] = key.split('.');
+      if (m.stats[unit][k].t && !glossesSeen.has(gloss.kind)) landFail(`${key} was asked without its explanation`);
+    }
+  }
   if (TURM) {
     turmEnd(m, ends, steps);
     return;
