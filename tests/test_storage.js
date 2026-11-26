@@ -4813,7 +4813,7 @@ async function landCases() {
     p.click('[data-hide="mode:ethik"]');
     p.click('[data-hidesub]');
     check(
-      same([...m.hidden].sort(), ['mode:ethik', 'mode:freunde', 'mode:ichwelt']) &&
+      same([...m.hidden].sort(), ['mode:ethik', 'mode:freunde', 'mode:ichwelt', 'mode:religionen']) &&
         !m.hidden.includes('mode:kirchenjahr') &&
         same(m.forced, []),
       'hiding the subject hides what was shown, not what Hamburg hides anyway',

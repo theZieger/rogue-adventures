@@ -147,6 +147,7 @@ export const LAENDER: Record<string, Land> = {
       kirchenjahr: 'passt',
       freunde: 'passt',
       ichwelt: 'passt',
+      religionen: 'spaeter',
       kartoffel: 'passt',
       kornkammer: 'passt',
       wetterstation: 'passt',
