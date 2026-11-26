@@ -42,6 +42,9 @@ const RUNS = [
   { MODE: 'turm', LAND: 'HH', GRADE: '3', ACC: '0.9', RUNS: '1' },
   // hidden everywhere but in Sachsen
   { MODE: 'kirchenjahr', LAND: 'SN', ACC: '0.9', RUNS: '1' },
+  // „Mein Bundesland“ is an attack of the hero as soon as a Bundesland is chosen; a city state has the fewest questions
+  { MODE: 'kompass', LAND: 'SN', ACC: '0.9', RUNS: '2' },
+  { MODE: 'kompass', LAND: 'HH', ACC: '0.9', RUNS: '2' },
 ];
 
 const named = new Set(RUNS.map((run) => run.MODE));

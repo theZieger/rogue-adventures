@@ -82,7 +82,8 @@ for (const [mode, cfg] of Object.entries(modes)) {
       for (const g of own)
         for (let i = 0; i < 60; i++) {
           const world = cfg.pool.find((e) => e.g === g).w || 1;
-          const q = MK.generate(mode, m, 1, {}, ++seq, { g, world });
+          // a state's questions (Themengebiet land_<code>) only come up for that state
+          const q = MK.generate(mode, m, 1, {}, ++seq, { g, world, land: g.replace('land_', '') });
           if (q.kind === 'order') continue; // order tasks (ord, grow, story) have no topic filter
           const e = cfg.pool.find((x) => x.id === q.qid);
           if (!e || e.g !== g) {
@@ -91,7 +92,7 @@ for (const [mode, cfg] of Object.entries(modes)) {
           }
         }
       // unknown topic falls back to the whole module
-      const q = MK.generate(mode, m, 1, {}, ++seq, { g: 'gibt-es-nicht' });
+      const q = MK.generate(mode, m, 1, {}, ++seq, { g: 'gibt-es-nicht', land: 'SN' });
       if (!q || !q.qid) fail(`${mode}/${m}: fallback for unknown g failed`);
     }
   }
@@ -223,7 +224,7 @@ if (modes.turm) fail('turm must not be a unit');
                   ? MQ.BAU.generate(k, 1)
                   : cfg.numGen
                     ? cfg.numGen(k, 1)
-                    : MK.generate(mode, k, 1, {}, ++seq, { world: w });
+                    : MK.generate(mode, k, 1, {}, ++seq, { world: w, land: 'SN' });
           } catch (e) {
             fail(`${mode}/${k} world ${w}: ${e.message}`);
             break;

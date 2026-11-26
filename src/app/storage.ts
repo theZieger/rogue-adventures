@@ -1,5 +1,5 @@
 import { CURRICULUM, MODES, SUBJECTS, type Subject } from '../curriculum.ts';
-import { type Minus, labelOf, minusDefault, profileHides, profileOff } from '../laender.ts';
+import { type Minus, isLand, labelOf, minusDefault, needsLand, profileHides, profileOff } from '../laender.ts';
 import { KEY_META, KEY_RUN_FOR, RENAMES, type TOP, clear, isObj, load, normMeta, ownsPart, save } from '../save.ts';
 import { ITEMS, esc } from './core.ts';
 import { NODE_INFO, readsIn } from './map.ts';
@@ -58,8 +58,11 @@ const practised = (m: string, k?: string) =>
 // what the Bundesland hides right now: never what the child has already practised or a parent switched on
 export const landHides = (m: string) =>
   profileHides(state.meta.land, m) && !state.meta.forced.includes('mode:' + m) && !practised(m);
+// a task type about the Bundesland itself has nothing to ask without one, whatever was switched or practised
+export const noLand = (m: string, k: string) => needsLand(m, k) && !isLand(state.meta.land);
 export const landOff = (m: string, k: string) =>
-  profileOff(state.meta.land, m).includes(k) && !state.meta.forced.includes(`mod:${m}:${k}`) && !practised(m, k);
+  noLand(m, k) ||
+  (profileOff(state.meta.land, m).includes(k) && !state.meta.forced.includes(`mod:${m}:${k}`) && !practised(m, k));
 // switched off by the parents themselves, as saved
 export const parentOff = (m: string): string[] =>
   isObj(state.meta.off) && Array.isArray(state.meta.off[m]) ? state.meta.off[m] : [];
@@ -120,7 +123,8 @@ export const visSubjects = () => {
     }))
     .filter((sub) => sub.modes.length);
 };
-export const fightMods = (m: string) => Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop);
+export const fightMods = (m: string) =>
+  Object.keys(MODES[m].modules).filter((k) => !MODES[m].modules[k].shop && !noLand(m, k));
 // worldCap 0 keeps a task type out of that world (the written methods start in world 3)
 const inWorld = (m: string, k: string) => {
   const c = MODES[m].modules[k].worldCap;

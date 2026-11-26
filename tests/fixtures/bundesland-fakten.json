@@ -1,0 +1,426 @@
+{
+  "BW": {
+    "name": "Baden-Württemberg",
+    "hauptstadt": "Stuttgart",
+    "nachbarlaender": ["Bayern", "Hessen", "Rheinland-Pfalz"],
+    "nachbarstaaten": ["Frankreich", "Schweiz"],
+    "meer": [],
+    "fluesse": ["Rhein", "Neckar", "Donau"],
+    "landschaften": ["Schwarzwald", "Schwäbische Alb", "Bodensee", "Oberrheinische Tiefebene (Rheinebene)"],
+    "staedte": ["Stuttgart", "Mannheim", "Karlsruhe", "Freiburg im Breisgau"],
+    "staedte_reihenfolge_sicher": false,
+    "staedte_hinweis": "Stuttgart ist sicher die größte Stadt. Mannheim und Karlsruhe liegen dicht beieinander – nicht nach Platz 2/3 fragen.",
+    "lage": "im Südwesten",
+    "feiertage": ["Heilige Drei Könige (Erscheinungsfest, 6. Januar)", "Fronleichnam", "Allerheiligen (1. November)"],
+    "feiertage_teilweise": [],
+    "feiertage_status": "Gesetzestext geöffnet",
+    "feiertage_quelle": [
+      "https://gewerbeaufsicht.baden-wuerttemberg.de/documents/20121/66937/1_3_1.pdf",
+      "https://im.baden-wuerttemberg.de/de/service/feiertage"
+    ],
+    "nicht_fragen": [
+      "Österreich als Nachbar: Grenze nur über den Bodensee, dort nicht festgelegt",
+      "Gründonnerstag/Reformationsfest sind nur schulfreie kirchliche Feiertage, keine gesetzlichen"
+    ]
+  },
+  "BY": {
+    "name": "Bayern",
+    "hauptstadt": "München",
+    "nachbarlaender": ["Baden-Württemberg", "Hessen", "Thüringen", "Sachsen"],
+    "nachbarstaaten": ["Österreich", "Tschechien"],
+    "meer": [],
+    "fluesse": ["Donau", "Main", "Isar", "Inn"],
+    "landschaften": ["Alpen (Bayerische Alpen)", "Alpenvorland", "Bayerischer Wald", "Chiemsee", "Starnberger See"],
+    "staedte": ["München", "Nürnberg", "Augsburg", "Regensburg"],
+    "staedte_reihenfolge_sicher": true,
+    "lage": "im Süden",
+    "lage_hinweis": "Wikipedia: „im Südosten“, „Süddeutschland“.",
+    "feiertage": ["Heilige Drei Könige (6. Januar)", "Fronleichnam", "Allerheiligen (1. November)"],
+    "feiertage_teilweise": [
+      "Mariä Himmelfahrt (15. August) – nur in Gemeinden mit überwiegend katholischer Bevölkerung",
+      "Augsburger Friedensfest (8. August) – nur in der Stadt Augsburg"
+    ],
+    "feiertage_status": "Gesetzestext geöffnet",
+    "feiertage_quelle": ["https://www.gesetze-bayern.de/Content/Document/BayFTG-1"],
+    "nicht_fragen": [
+      "Schweiz als Nachbar: Berührung nur über den Bodensee",
+      "Bodensee als bayerischer See (nur kleiner Anteil bei Lindau)"
+    ]
+  },
+  "BE": {
+    "name": "Berlin",
+    "hauptstadt": "Berlin",
+    "nachbarlaender": ["Brandenburg"],
+    "nachbarstaaten": [],
+    "hauptstadt_hinweis": "Stadtstaat: Stadt und Land sind dasselbe; zugleich Hauptstadt Deutschlands.",
+    "meer": [],
+    "fluesse": ["Spree", "Havel"],
+    "landschaften": ["Müggelsee", "Wannsee", "Tegeler See", "Grunewald"],
+    "staedte": [],
+    "staedte_reihenfolge_sicher": false,
+    "staedte_hinweis": "Stadtstaat – keine Städteliste.",
+    "lage": "im Nordosten",
+    "lage_hinweis": "Kinder sagen meist „im Osten“; Wikipedia: „im Nordosten“. Nur fragen, wenn beide Antworten gelten.",
+    "feiertage": ["Frauentag (8. März)"],
+    "feiertage_teilweise": [],
+    "feiertage_status": "Gesetzblatt (Änderungsgesetz) + amtliche Seite des Landes; konsolidierter Gesetzestext nicht geöffnet",
+    "feiertage_quelle": [
+      "https://www.berlin.de/sen/justiz/service/gesetze-und-verordnungen/2019/ausgabe-nr-3-vom-6-2-2019-s-21-32.pdf",
+      "https://www.berlin.de/sen/inneres/buerger-und-staat/verfassungs-und-verwaltungsrecht/artikel.1435639.php"
+    ],
+    "nicht_fragen": ["8. Mai: war nur 2020 und 2025 einmalig Feiertag", "Dahme als dritter Fluss (weniger bekannt)"]
+  },
+  "BB": {
+    "name": "Brandenburg",
+    "hauptstadt": "Potsdam",
+    "nachbarlaender": ["Berlin", "Mecklenburg-Vorpommern", "Niedersachsen", "Sachsen-Anhalt", "Sachsen"],
+    "nachbarstaaten": ["Polen"],
+    "meer": [],
+    "fluesse": ["Havel", "Spree"],
+    "landschaften": ["Spreewald", "Oderbruch", "Uckermark", "Havelland", "Fläming"],
+    "staedte": ["Potsdam", "Cottbus", "Brandenburg an der Havel", "Frankfurt (Oder)"],
+    "staedte_reihenfolge_sicher": true,
+    "lage": "im Nordosten",
+    "lage_hinweis": "Kinder sagen meist „im Osten“; Wikipedia: „im Nordosten“. Nur fragen, wenn beide Antworten gelten.",
+    "feiertage": ["Ostersonntag", "Pfingstsonntag", "Reformationstag (31. Oktober)"],
+    "feiertage_teilweise": [],
+    "feiertage_status": "Gesetzestext geöffnet",
+    "feiertage_quelle": ["https://bravors.brandenburg.de/gesetze/ftg_2015"],
+    "feiertage_hinweis": "Ostersonntag und Pfingstsonntag stehen im Gesetz, fallen aber immer auf einen Sonntag – für Kinder kaum als „zusätzlicher freier Tag“ fragbar.",
+    "nicht_fragen": ["Oder, Neiße und Elbe: überwiegend Grenzflüsse, nicht „fließt durch“"]
+  },
+  "HH": {
+    "name": "Hamburg",
+    "hauptstadt": "Hamburg",
+    "nachbarlaender": ["Niedersachsen", "Schleswig-Holstein"],
+    "nachbarstaaten": [],
+    "hauptstadt_hinweis": "Stadtstaat: Stadt und Land sind dasselbe.",
+    "meer": [],
+    "meer_hinweis": "Hamburg liegt an der Elbe, rund 100 km vor der Mündung in die Nordsee – keine Meeresküste. Die Nordseeinsel Neuwerk gehört zu Hamburg.",
+    "fluesse": ["Elbe", "Alster", "Bille"],
+    "landschaften": [
+      "Außenalster und Binnenalster",
+      "Harburger Berge",
+      "Insel Neuwerk (in der Nordsee, gehört zu Hamburg)"
+    ],
+    "staedte": [],
+    "staedte_reihenfolge_sicher": false,
+    "staedte_hinweis": "Stadtstaat – keine Städteliste.",
+    "lage": "im Norden",
+    "feiertage": null,
+    "feiertage_teilweise": [],
+    "feiertage_status": "nicht verifiziert: Gesetzestext auf dem Landesrechtsportal nicht erreichbar",
+    "feiertage_unbestaetigt": ["Reformationstag (31. Oktober)"],
+    "feiertage_quelle": [
+      "https://www.hamburg.de/leben-in-hamburg/ferien-feiertage-termine-378818",
+      "https://www.hamburg.de/resource/blob/134374/7a4a9de67fd46caec0947c11bf23316d/bsb-feiertage-data.pdf"
+    ],
+    "nicht_fragen": ["„Hamburg liegt an der Nordsee“ – falsch"]
+  },
+  "HE": {
+    "name": "Hessen",
+    "hauptstadt": "Wiesbaden",
+    "nachbarlaender": [
+      "Baden-Württemberg",
+      "Bayern",
+      "Niedersachsen",
+      "Nordrhein-Westfalen",
+      "Rheinland-Pfalz",
+      "Thüringen"
+    ],
+    "nachbarstaaten": [],
+    "meer": [],
+    "fluesse": ["Main", "Fulda", "Lahn"],
+    "landschaften": ["Taunus", "Rhön", "Odenwald", "Vogelsberg", "Edersee"],
+    "staedte": ["Frankfurt am Main", "Wiesbaden", "Kassel", "Darmstadt"],
+    "staedte_reihenfolge_sicher": true,
+    "lage": "in der Mitte",
+    "feiertage": null,
+    "feiertage_teilweise": [],
+    "feiertage_status": "nicht verifiziert: Gesetzestext auf dem Landesrechtsportal nicht erreichbar",
+    "feiertage_unbestaetigt": ["Fronleichnam"],
+    "feiertage_quelle": ["https://innen.hessen.de/buerger-staat/feiertage"],
+    "nicht_fragen": [
+      "Rhein: überwiegend Grenzfluss zu Rheinland-Pfalz, nicht „fließt durch“",
+      "Neckar und Weser berühren Hessen nur kurz",
+      "Größte Stadt ist Frankfurt, nicht die Hauptstadt Wiesbaden – als Frage gut, aber nicht verwechseln"
+    ]
+  },
+  "MV": {
+    "name": "Mecklenburg-Vorpommern",
+    "hauptstadt": "Schwerin",
+    "nachbarlaender": ["Brandenburg", "Niedersachsen", "Schleswig-Holstein"],
+    "nachbarstaaten": ["Polen"],
+    "meer": ["Ostsee"],
+    "fluesse": ["Warnow", "Peene", "Elde"],
+    "landschaften": ["Rügen", "Usedom", "Mecklenburgische Seenplatte", "Müritz", "Hiddensee"],
+    "staedte": ["Rostock", "Schwerin", "Neubrandenburg"],
+    "staedte_reihenfolge_sicher": true,
+    "staedte_hinweis": "Greifswald und Stralsund folgen dicht beieinander – nicht nach Platz 4 fragen.",
+    "lage": "im Nordosten",
+    "lage_hinweis": "„im Norden“ ist ebenfalls richtig.",
+    "feiertage": null,
+    "feiertage_teilweise": [],
+    "feiertage_status": "nicht verifiziert: Gesetzestext auf dem Landesrechtsportal nicht erreichbar; Frauentag durch Gesetzblatt belegt, Reformationstag nur durch amtliche Übersicht (Hamburg, Stand 2018) und Wikipedia",
+    "feiertage_unbestaetigt": ["Frauentag (8. März)", "Reformationstag (31. Oktober)"],
+    "feiertage_quelle": [
+      "https://www.dokumentation.landtag-mv.de/parldok/dokument/53736/gesetz_und_verordnungsblatt_31_2022.pdf",
+      "https://www.hamburg.de/resource/blob/134374/7a4a9de67fd46caec0947c11bf23316d/bsb-feiertage-data.pdf"
+    ],
+    "nicht_fragen": [
+      "Elbe: nur Grenzfluss im Südwesten",
+      "Usedom liegt zum Teil in Polen (als „liegt teilweise in MV“ korrekt)"
+    ]
+  },
+  "NI": {
+    "name": "Niedersachsen",
+    "hauptstadt": "Hannover",
+    "nachbarlaender": [
+      "Bremen",
+      "Hamburg",
+      "Schleswig-Holstein",
+      "Mecklenburg-Vorpommern",
+      "Brandenburg",
+      "Sachsen-Anhalt",
+      "Thüringen",
+      "Hessen",
+      "Nordrhein-Westfalen"
+    ],
+    "nachbarstaaten": ["Niederlande"],
+    "meer": ["Nordsee"],
+    "fluesse": ["Weser", "Elbe", "Ems", "Leine"],
+    "landschaften": [
+      "Harz",
+      "Lüneburger Heide",
+      "Ostfriesische Inseln (z. B. Borkum, Norderney)",
+      "Wattenmeer",
+      "Steinhuder Meer"
+    ],
+    "staedte": ["Hannover", "Braunschweig", "Oldenburg", "Osnabrück"],
+    "staedte_reihenfolge_sicher": true,
+    "lage": "im Nordwesten",
+    "lage_hinweis": "„im Norden“ ist ebenfalls richtig.",
+    "feiertage": ["Reformationstag (31. Oktober)"],
+    "feiertage_teilweise": [],
+    "feiertage_status": "Gesetzestext geöffnet",
+    "feiertage_quelle": ["https://voris.wolterskluwer-online.de/browse/document/f74bc6e7-6ded-3c2c-9afb-b34620456e56"],
+    "nicht_fragen": [
+      "Elbe ist über weite Strecken Grenzfluss (zu SH, MV, BB) – „fließt durch“ nur mit Vorsicht",
+      "Niedersachsen hat neun Nachbarländer; Bremen liegt als Enklave darin"
+    ]
+  },
+  "NW": {
+    "name": "Nordrhein-Westfalen",
+    "hauptstadt": "Düsseldorf",
+    "nachbarlaender": ["Niedersachsen", "Hessen", "Rheinland-Pfalz"],
+    "nachbarstaaten": ["Belgien", "Niederlande"],
+    "meer": [],
+    "fluesse": ["Rhein", "Ruhr", "Lippe", "Ems"],
+    "landschaften": ["Sauerland", "Eifel", "Münsterland", "Ruhrgebiet", "Teutoburger Wald"],
+    "staedte": ["Köln", "Düsseldorf", "Dortmund", "Essen"],
+    "staedte_reihenfolge_sicher": false,
+    "staedte_hinweis": "Köln ist sicher die größte Stadt. Düsseldorf, Dortmund und Essen liegen dicht beieinander – nicht nach Platz 2–4 fragen.",
+    "lage": "im Westen",
+    "feiertage": ["Fronleichnam", "Allerheiligen (1. November)"],
+    "feiertage_teilweise": [],
+    "feiertage_status": "Gesetzestext geöffnet",
+    "feiertage_quelle": [
+      "https://recht.nrw.de/lrgv/gesetz/01012000-bekanntmachung-der-neufassung-des-gesetzes-ueber-die-sonn-und-feiertage/"
+    ],
+    "nicht_fragen": ["Größte Stadt ist Köln, nicht die Hauptstadt Düsseldorf"]
+  },
+  "RP": {
+    "name": "Rheinland-Pfalz",
+    "hauptstadt": "Mainz",
+    "nachbarlaender": ["Nordrhein-Westfalen", "Hessen", "Baden-Württemberg", "Saarland"],
+    "nachbarstaaten": ["Frankreich", "Luxemburg", "Belgien"],
+    "meer": [],
+    "fluesse": ["Rhein", "Mosel", "Nahe", "Lahn"],
+    "landschaften": ["Eifel", "Hunsrück", "Pfälzerwald", "Westerwald"],
+    "staedte": ["Mainz", "Ludwigshafen am Rhein", "Koblenz", "Trier"],
+    "staedte_reihenfolge_sicher": false,
+    "staedte_hinweis": "Mainz vor Ludwigshafen ist stabil; Koblenz und Trier liegen dicht beieinander – nicht nach Platz 3/4 fragen.",
+    "lage": "im Südwesten",
+    "lage_hinweis": "Wikipedia: „im Südwesten“; oft auch „im Westen“ gesagt. Nur fragen, wenn beide Antworten gelten.",
+    "feiertage": null,
+    "feiertage_teilweise": [],
+    "feiertage_status": "nicht verifiziert: Gesetzestext auf dem Landesrechtsportal nicht erreichbar",
+    "feiertage_unbestaetigt": ["Fronleichnam", "Allerheiligen (1. November)"],
+    "feiertage_quelle": [
+      "https://mdi.rlp.de/themen/buerger-und-staat/verfassung-und-verwaltung/sonn-und-feiertagsrecht"
+    ],
+    "nicht_fragen": [
+      "Rhein ist streckenweise Grenzfluss (zu Hessen und Baden-Württemberg), fließt im Mittelrheintal (z. B. bei Koblenz) aber durch das Land"
+    ]
+  },
+  "SN": {
+    "name": "Sachsen",
+    "hauptstadt": "Dresden",
+    "nachbarlaender": ["Bayern", "Thüringen", "Sachsen-Anhalt", "Brandenburg"],
+    "nachbarstaaten": ["Polen", "Tschechien"],
+    "meer": [],
+    "fluesse": ["Elbe", "Mulde", "Spree", "Weiße Elster"],
+    "landschaften": [
+      "Erzgebirge",
+      "Elbsandsteingebirge (Sächsische Schweiz)",
+      "Vogtland",
+      "Lausitz (Oberlausitz)",
+      "Zittauer Gebirge"
+    ],
+    "staedte": ["Leipzig", "Dresden", "Chemnitz"],
+    "staedte_reihenfolge_sicher": true,
+    "staedte_hinweis": "Leipzig liegt seit Jahren vor Dresden; die Hauptstadt ist trotzdem Dresden.",
+    "lage": "im Osten",
+    "feiertage": ["Reformationsfest (31. Oktober)", "Buß- und Bettag"],
+    "feiertage_teilweise": ["Fronleichnam – nur in den durch Rechtsverordnung bestimmten Regionen"],
+    "feiertage_status": "Gesetzestext geöffnet",
+    "feiertage_quelle": ["https://www.revosax.sachsen.de/vorschrift/3997-SaechsSFG"],
+    "nicht_fragen": ["Lausitzer Neiße: Grenzfluss zu Polen, nicht „fließt durch“"]
+  },
+  "ST": {
+    "name": "Sachsen-Anhalt",
+    "hauptstadt": "Magdeburg",
+    "nachbarlaender": ["Niedersachsen", "Brandenburg", "Sachsen", "Thüringen"],
+    "nachbarstaaten": [],
+    "meer": [],
+    "fluesse": ["Elbe", "Saale"],
+    "landschaften": ["Harz", "Brocken", "Altmark", "Magdeburger Börde"],
+    "staedte": ["Magdeburg", "Halle (Saale)", "Dessau-Roßlau"],
+    "staedte_reihenfolge_sicher": false,
+    "staedte_hinweis": "Magdeburg und Halle liegen dicht beieinander und haben die Plätze schon getauscht – nicht nach der größten Stadt fragen. Dessau-Roßlau ist klar die dritte.",
+    "lage": null,
+    "lage_hinweis": "Nicht eindeutig: teils „in der Mitte“, teils „im Osten“ – nicht fragen.",
+    "feiertage": null,
+    "feiertage_teilweise": [],
+    "feiertage_status": "nicht verifiziert: Gesetzestext auf dem Landesrechtsportal nicht erreichbar",
+    "feiertage_unbestaetigt": ["Heilige Drei Könige (6. Januar)", "Reformationstag (31. Oktober)"],
+    "feiertage_quelle": ["https://statistik.sachsen-anhalt.de/news/news-details/zahl-der-woche-253"],
+    "nicht_fragen": []
+  },
+  "SH": {
+    "name": "Schleswig-Holstein",
+    "hauptstadt": "Kiel",
+    "nachbarlaender": ["Hamburg", "Niedersachsen", "Mecklenburg-Vorpommern"],
+    "nachbarstaaten": ["Dänemark"],
+    "meer": ["Nordsee", "Ostsee"],
+    "fluesse": ["Eider", "Trave"],
+    "landschaften": ["Sylt", "Fehmarn", "Helgoland", "Wattenmeer", "Holsteinische Schweiz"],
+    "staedte": ["Kiel", "Lübeck", "Flensburg"],
+    "staedte_reihenfolge_sicher": true,
+    "staedte_hinweis": "Platz 4 (Norderstedt/Neumünster) nicht fragen.",
+    "lage": "im Norden",
+    "feiertage": null,
+    "feiertage_teilweise": [],
+    "feiertage_status": "nicht verifiziert: Gesetzestext auf dem Landesrechtsportal nicht erreichbar",
+    "feiertage_unbestaetigt": ["Reformationstag (31. Oktober)"],
+    "feiertage_quelle": [
+      "https://www.hamburg.de/resource/blob/134374/7a4a9de67fd46caec0947c11bf23316d/bsb-feiertage-data.pdf"
+    ],
+    "nicht_fragen": ["Nord-Ostsee-Kanal ist ein Kanal, kein Fluss", "Elbe: Grenzfluss zu Niedersachsen"]
+  },
+  "neighbours16": {
+    "Baden-Württemberg": {
+      "code": "BW",
+      "nachbarlaender": ["Bayern", "Hessen", "Rheinland-Pfalz"],
+      "nachbarstaaten": ["Frankreich", "Schweiz"]
+    },
+    "Bayern": {
+      "code": "BY",
+      "nachbarlaender": ["Baden-Württemberg", "Hessen", "Thüringen", "Sachsen"],
+      "nachbarstaaten": ["Österreich", "Tschechien"]
+    },
+    "Berlin": {
+      "code": "BE",
+      "nachbarlaender": ["Brandenburg"],
+      "nachbarstaaten": []
+    },
+    "Brandenburg": {
+      "code": "BB",
+      "nachbarlaender": ["Berlin", "Mecklenburg-Vorpommern", "Niedersachsen", "Sachsen-Anhalt", "Sachsen"],
+      "nachbarstaaten": ["Polen"]
+    },
+    "Bremen": {
+      "code": "HB",
+      "nachbarlaender": ["Niedersachsen"],
+      "nachbarstaaten": []
+    },
+    "Hamburg": {
+      "code": "HH",
+      "nachbarlaender": ["Niedersachsen", "Schleswig-Holstein"],
+      "nachbarstaaten": []
+    },
+    "Hessen": {
+      "code": "HE",
+      "nachbarlaender": [
+        "Baden-Württemberg",
+        "Bayern",
+        "Niedersachsen",
+        "Nordrhein-Westfalen",
+        "Rheinland-Pfalz",
+        "Thüringen"
+      ],
+      "nachbarstaaten": []
+    },
+    "Mecklenburg-Vorpommern": {
+      "code": "MV",
+      "nachbarlaender": ["Brandenburg", "Niedersachsen", "Schleswig-Holstein"],
+      "nachbarstaaten": ["Polen"]
+    },
+    "Niedersachsen": {
+      "code": "NI",
+      "nachbarlaender": [
+        "Bremen",
+        "Hamburg",
+        "Schleswig-Holstein",
+        "Mecklenburg-Vorpommern",
+        "Brandenburg",
+        "Sachsen-Anhalt",
+        "Thüringen",
+        "Hessen",
+        "Nordrhein-Westfalen"
+      ],
+      "nachbarstaaten": ["Niederlande"]
+    },
+    "Nordrhein-Westfalen": {
+      "code": "NW",
+      "nachbarlaender": ["Niedersachsen", "Hessen", "Rheinland-Pfalz"],
+      "nachbarstaaten": ["Belgien", "Niederlande"]
+    },
+    "Rheinland-Pfalz": {
+      "code": "RP",
+      "nachbarlaender": ["Nordrhein-Westfalen", "Hessen", "Baden-Württemberg", "Saarland"],
+      "nachbarstaaten": ["Frankreich", "Luxemburg", "Belgien"]
+    },
+    "Saarland": {
+      "code": "SL",
+      "nachbarlaender": ["Rheinland-Pfalz"],
+      "nachbarstaaten": ["Frankreich", "Luxemburg"]
+    },
+    "Sachsen": {
+      "code": "SN",
+      "nachbarlaender": ["Bayern", "Thüringen", "Sachsen-Anhalt", "Brandenburg"],
+      "nachbarstaaten": ["Polen", "Tschechien"]
+    },
+    "Sachsen-Anhalt": {
+      "code": "ST",
+      "nachbarlaender": ["Niedersachsen", "Brandenburg", "Sachsen", "Thüringen"],
+      "nachbarstaaten": []
+    },
+    "Schleswig-Holstein": {
+      "code": "SH",
+      "nachbarlaender": ["Hamburg", "Niedersachsen", "Mecklenburg-Vorpommern"],
+      "nachbarstaaten": ["Dänemark"]
+    },
+    "Thüringen": {
+      "code": "TH",
+      "nachbarlaender": ["Hessen", "Bayern", "Sachsen", "Sachsen-Anhalt", "Niedersachsen"],
+      "nachbarstaaten": []
+    }
+  },
+  "_meta": {
+    "stand": "2026-11-25",
+    "hinweis": "Von einem KI-Agenten aus den in bundesland-quellen.md genannten Quellen zusammengestellt; nicht von einer Lehrkraft geprüft.",
+    "symmetrie": "geprüft, 16 Länder, 29 Nachbarpaare, keine Abweichung",
+    "feiertage_null": "null = Gesetzestext konnte nicht geöffnet werden; Kandidaten aus amtlichen Seiten stehen in feiertage_unbestaetigt"
+  }
+}

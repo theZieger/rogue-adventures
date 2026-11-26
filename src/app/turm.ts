@@ -121,6 +121,8 @@ export function turmAsk(id?: number | null) {
   state.mode = a.m;
   turmBox(a.m);
   if (!a.task) {
+    // the Bundesland was taken away after this monster got its task type: another one of the same unit
+    if (!(a.again && a.again.task) && !fightMods(a.m).includes(a.k)) a.k = enabledMods(a.m)[0];
     a.task = (a.again && a.again.task) || makeTask(a.k, a.again ? a.again.tier : taskTier(a.k));
     saveAll();
   }

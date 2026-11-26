@@ -12,7 +12,7 @@ for (const [mode, cfg] of Object.entries(K.MODES)) {
   for (const mod of Object.keys(cfg.modules)) {
     for (let t = 1; t <= cfg.modules[mod].maxTier; t++) {
       for (let i = 0; i < 400; i++) {
-        const q = K.generate(mode, mod, t, know, ++seq);
+        const q = K.generate(mode, mod, t, know, ++seq, { land: 'SN' });
         if (q.kind === 'choice' || q.kind === 'parts') {
           if (!q.options.includes(q.answer)) fails.push(JSON.stringify(q));
           if (new Set(q.options).size !== q.options.length) fails.push('dup ' + q.q);
@@ -433,7 +433,7 @@ for (let i = 0; i < 300; i++) {
 for (const [mode, cfg] of Object.entries(K.MODES))
   for (const mod of Object.keys(cfg.modules))
     for (let i = 0; i < 300; i++) {
-      const q = K.generate(mode, mod, 1, {}, ++seq);
+      const q = K.generate(mode, mod, 1, {}, ++seq, { land: 'HH' });
       if (q.kind === 'choice' && q.options.filter((o) => o === q.answer).length !== 1)
         fails.push(mode + ' not exactly one correct ' + q.qid);
     }
@@ -564,7 +564,7 @@ for (const m of ['kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher']) 
   for (const mod of Object.keys(cfg.modules))
     for (let t = 1; t <= cfg.modules[mod].maxTier; t++)
       for (let i = 0; i < 300; i++) {
-        const q = K.generate(m, mod, t, {}, ++seq);
+        const q = K.generate(m, mod, t, {}, ++seq, { land: 'BY' });
         if (q.kind === 'choice' || q.kind === 'parts') {
           if (q.options.filter((o) => o === q.answer).length !== 1) fails.push(m + ' not exactly one correct ' + q.qid);
           if (q.options.length < 2) fails.push(m + ' too few options ' + q.qid);

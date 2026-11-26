@@ -200,9 +200,14 @@ export const LAND_CODES = Object.keys(LAENDER).sort((a, b) => LAENDER[a].name.lo
 const of = (land: string): Land | undefined =>
   Object.prototype.hasOwnProperty.call(LAENDER, land) ? LAENDER[land] : undefined;
 export const isLand = (land: unknown): land is string => typeof land === 'string' && !!of(land);
-// '' (no state chosen, „Allgemein“) and an unknown code change nothing
+// '' (no state chosen, „Allgemein“) and an unknown code change nothing, except for the task types in OWN
 export const profileHides = (land: string, unit: string) => !!of(land)?.hide.includes(unit);
-export const profileOff = (land: string, unit: string): string[] => of(land)?.off[unit] || [];
+// Task types about the chosen Bundesland itself. Without one they have nothing to ask, so they are off and
+// neither a parent's switch nor earlier practice brings them back.
+const OWN: Record<string, string[]> = { kompass: ['land'] };
+export const needsLand = (unit: string, type: string) => !!OWN[unit]?.includes(type);
+export const profileOff = (land: string, unit: string): string[] =>
+  of(land) ? of(land)!.off[unit] || [] : OWN[unit] || [];
 export const fitOf = (land: string, unit: string): Fit => of(land)?.fit[unit] || 'offen';
 export const labelOf = (land: string, subject: string, long?: boolean) =>
   (long && of(land)?.long?.[subject]) || of(land)?.labels[subject] || subject;
@@ -211,6 +216,6 @@ export const landName = (land: string) => of(land)?.name || '';
 export const minusDefault = (land: string): Minus => of(land)?.minus || 'erg';
 // why a unit is hidden by default: Religion content elsewhere, or taught later there
 export const whyHides = (unit: string) => (CHRISTIAN.includes(unit) ? 'religion' : 'spaeter');
-// why a task type is off by default: Saxon dialect, or taught later there
+// why a task type is off by default: no Bundesland chosen, Saxon dialect, or taught later there
 export const whyOff = (unit: string, type: string) =>
-  (SAXON as Record<string, string[]>)[unit]?.includes(type) ? 'mundart' : 'spaeter';
+  needsLand(unit, type) ? 'land' : (SAXON as Record<string, string[]>)[unit]?.includes(type) ? 'mundart' : 'spaeter';

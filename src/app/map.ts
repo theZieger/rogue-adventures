@@ -1,4 +1,5 @@
 import { MODES, type Starter } from '../curriculum.ts';
+import { needsLand } from '../laender.ts';
 import { MQ } from '../logic.ts';
 import { PANTRY_MAX, isObj } from '../save.ts';
 import { TEXTE } from '../texte.ts';
@@ -56,8 +57,16 @@ export function screenStarter() {
   const last = state.meta.lastStarter[state.mode];
   let sel = S.length === 1 ? S[0].id : null;
   // grade 1 starts small: 2 attacks in the first adventure of a theme, 3 in the second, then all 4
-  const kit = (s: Starter) =>
-    CFG().grade === 1 ? s.attacks.slice(0, 2 + (state.meta.started[state.mode] || 0)) : s.attacks;
+  const kit = (s: Starter) => {
+    const a = CFG().grade === 1 ? s.attacks.slice(0, 2 + (state.meta.started[state.mode] || 0)) : s.attacks;
+    // A task type about the chosen Bundesland is on no hero, or children without one would get another hero. With a
+    // Bundesland it takes the place of the attack practised most; on a tie the last one.
+    const own = enabledMods().find((k) => needsLand(state.mode, k) && !a.some((x) => x.mod === k));
+    if (!own) return a;
+    const most = Math.max(...a.map((x) => practice(x.mod)));
+    const at = a.map((x) => practice(x.mod)).lastIndexOf(most);
+    return a.map((x, i) => (i === at ? { name: CFG().extra[own], mod: own } : x));
+  };
   // recommend the monster whose attacks were practised least (and not the one played last time)
   const score = (s: Starter) => s.attacks.reduce((n, a) => n + practice(a.mod), 0) + (s.id === last ? 1e6 : 0);
   const rec = S.length > 1 ? S.slice().sort((a, b) => score(a) - score(b))[0].id : null;

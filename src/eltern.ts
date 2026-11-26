@@ -145,6 +145,7 @@ export const ELTERN = (() => {
       plan: 'Einen einfachen Ortsplan mit Zeichenerklärung lesen: Was liegt wo?',
       karte: 'Einem Weg nach Himmelsrichtungen folgen und das Zielfeld finden.',
       lt: LT,
+      land: 'Fragen zum eigenen Bundesland: Hauptstadt, Nachbarn, Flüsse, Landschaften, große Städte und in manchen Ländern Feiertage. Quellen: Seiten der Länder, amtliche Statistik und Wikipedia (November 2026).',
     },
     sinne: {
       parts: 'Im Bild leuchtet ein Teil von Auge oder Ohr. Ihr Kind nennt seinen Namen.',
@@ -449,6 +450,7 @@ export const ELTERN = (() => {
         `In ${name} ist dieses Thema zuerst ausgeblendet: Es steht dort erst später im Lehrplan. Mit dem Schalter zeigen Sie es an.`,
     },
     off: {
+      land: () => 'Kommt erst vor, wenn unter „Alle Fächer“ ein Bundesland gewählt ist.',
       mundart: (name: string) => `In ${name} zuerst ausgeschaltet: Wörter aus der sächsischen Mundart.`,
       spaeter: (name: string) => `In ${name} zuerst ausgeschaltet: steht dort erst später im Lehrplan.`,
     },
