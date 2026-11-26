@@ -7,7 +7,7 @@ import { html, raw } from '../ui/html.ts';
 import { CONFETTI } from './collection.ts';
 import { $, CFG, MODULES_OF, TYPES } from './core.ts';
 import { state } from './state.ts';
-import { curGrade, enOff, enabledMods, extraOn, shown, subjectLabel, visSubjects } from './storage.ts';
+import { curGrade, enOff, enabledMods, extraOn, minusMethod, shown, subjectLabel, visSubjects } from './storage.ts';
 import { SFX, modal } from './ui.ts';
 
 /* ---------- Monster art ---------- */
@@ -18,7 +18,10 @@ const shade = MONART.shade;
 export const heroName = () => heroSpec().names[state.run.hero.evo];
 export const heroSpec = () => CFG().starters.find((s) => s.id === state.run.hero.id)!;
 export const STATS = () => state.meta.stats[state.mode];
-export const tutKey = (k: string) => state.mode + ':' + k;
+// written subtraction by Abziehen has its own explanation under its own key: a child whose parents switch the
+// method sees the new one once, and the key of the Ergänzen explanation keeps its meaning
+export const abzTut = (group: string) => state.mode === 'math' && group.startsWith('ssub:') && minusMethod() === 'abz';
+export const tutKey = (k: string) => state.mode + ':' + k + (abzTut(k) ? ':abz' : '');
 export const typeChip = (t: string) =>
   `<span class="pill lg" style="background:${TYPES[t].color}">${TYPES[t].icon} ${TYPES[t].name}</span>`;
 export const xpNeeded = (lvl: number) => 20 + lvl * 15;

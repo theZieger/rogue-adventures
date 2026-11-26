@@ -419,6 +419,37 @@
 .colcalc.mul {
   grid-template-columns: 30px repeat(var(--w), 54px) 74px;
 }
+/* Abziehen: the small fields stand above the minuend; a digit that gave one away is struck, one that got ten
+   has a small 1 in front */
+.colcalc .min.cut {
+  color: var(--ink-soft);
+  text-decoration: line-through var(--line-thin);
+}
+.colcalc .ten::before {
+  content: "1";
+}
+.colcalc .min.ten::before {
+  font-size: var(--text-18);
+  vertical-align: top;
+}
+/* a finished calculation as a picture */
+.colcalc.solved {
+  grid-template-columns: 20px repeat(var(--w), 30px);
+  gap: 0;
+  margin: var(--space-8) 0;
+  font-size: var(--text-24);
+}
+.colcalc.solved small,
+.colcalc.solved .min.ten::before {
+  font-size: var(--text-14);
+}
+.choice .colcalc.solved {
+  flex: none;
+  margin: 0;
+}
+.choice .colcalc.solved + .meta span {
+  display: block;
+}
 .task .numword {
   font-size: var(--text-30);
   font-weight: 700;

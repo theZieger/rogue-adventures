@@ -29,13 +29,14 @@ import {
   landOff,
   loadRun,
   noLand,
+  minusMethod,
   offList,
   saveAll,
   setOn,
   shown,
   subjectLabel,
 } from './storage.ts';
-import { TTS, chosenVoice, enVoice, enVoices, speak, voice, voiceGuide, voices } from './tasks.ts';
+import { TTS, chosenVoice, colSolved, enVoice, enVoices, speak, voice, voiceGuide, voices } from './tasks.ts';
 import { MONTHS, goalCount, screenLand, screenTitle, setPin } from './title.ts';
 import { SFX, modal, on, screen, topbar } from './ui.ts';
 
@@ -73,6 +74,7 @@ export let pAt: ParentPlace;
 type Texts<T> = Record<string, T>;
 const tutOf = (m: string, k: string, tier: number) => {
   const c = MODES[m];
+  if (m === 'math' && k === 'ssub' && minusMethod() === 'abz') return MQ.TUT_ABZ[tier];
   return c.numTut ? c.numTut[k][tier] : c.tut ? c.tut[k + ':' + tier] : MQ.TUT[k][tier];
 };
 // title, yes and a body given as a string are markup already
@@ -404,6 +406,15 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
                 : html`<p class="pplan"><b>Lehrplan ${landName(L)}:</b> ${T.fit[fit]} ${noteOf(L, m)}</p><p class="pplan"><b>Grundlage (Lehrplan Sachsen):</b> ${plan}</p>`
           }${L && c.subject === 'Deutsch' && LAENDER[L].wordlist ? html`<p class="pplan">${T.wordlist(landName(L))}</p>` : ''}${landHides(m) ? html`<p class="callout">${T.hidden[whyHides(m)](landName(L))}</p>` : ''}${sw(shown(m), html`data-hide="mode:${m}" data-action="hide"`, 'Thema anzeigen', html`<span>Ausgeschaltet erscheint das Thema nicht mehr. Ein laufendes Abenteuer bleibt gespeichert.</span>`)}${msg}`,
         ),
+        m === 'math'
+          ? card(
+              ELTERN.MINUS.title,
+              html`${note(ELTERN.MINUS.note)}<div class="stack">${(['abz', 'erg'] as const).map(
+                (k) =>
+                  html`<button class="choice${k === minusMethod() ? ' selected' : ''}" data-minus="${k}" data-action="minus" aria-pressed="${String(k === minusMethod())}">${colSolved([742, 318], k === 'abz')}<span class="meta"><span class="name">${ELTERN.MINUS[k][0]}</span><span class="desc">${ELTERN.MINUS[k][1]}</span></span></button>`,
+              )}</div>${note(`${L ? ELTERN.MINUS.land[L] || ELTERN.MINUS.free(landName(L)) : ELTERN.MINUS.none} ${ELTERN.MINUS.was}`)}`,
+            )
+          : '',
         c.starters.length > 1
           ? card(
               'Helden',
@@ -821,6 +832,11 @@ export function screenParent(jump?: string | null, back?: () => void, quiet?: bo
         const token = `also:${curGrade().grade}:${b.dataset.also}`,
           on = state.meta.forced.includes(token);
         state.meta.forced = state.meta.forced.filter((x) => x !== token).concat(on ? [] : token);
+        saveAll();
+        again();
+      },
+      minus: (b) => {
+        state.meta.minus = b.dataset.minus!;
         saveAll();
         again();
       },

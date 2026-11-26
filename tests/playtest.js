@@ -99,7 +99,12 @@ const dom = new JSDOM(html, {
     if (LITER) win.localStorage.setItem('mathquest_run_jahrmarkt', literRun());
     if (OFF)
       win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ off: { [process.env.MODE]: OFF.split(',') } }));
-    if (LAND) win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ land: LAND }));
+    // a save without `minus` is one from before the choice and keeps Ergänzen: MINUS=new is a family that starts now
+    if (LAND)
+      win.localStorage.setItem(
+        'mathquest_meta_v2',
+        JSON.stringify(process.env.MINUS === 'new' ? { land: LAND, minus: '' } : { land: LAND }),
+      );
   },
 });
 let runNo = 0; // each run picks the next starter, so all monsters (and their attacks) get played
@@ -158,6 +163,7 @@ async function closeModal() {
   return false;
 }
 let colTasks = 0,
+  abzTasks = 0,
   readNodes = 0,
   schools = 0,
   crafted = false,
@@ -186,9 +192,14 @@ async function solveColumns(forceWrong) {
     click($('.colcalc .inp[data-i="' + i + '"]'));
     click($('.numpad [data-k="' + ch + '"]'));
   };
+  // Abziehen: the small fields stand above the minuend and take its new digits
+  const abz = !!$('.colcalc .inp.up');
+  if (abz) abzTasks++;
   carry.forEach((c, i) => {
-    if (c) type(w + i, c);
+    if (c) type(w + i, abz ? (dig(rows[0], i) + 9) % 10 : c);
   });
+  if (abz && $$('.colcalc .min.cut').length !== carry.filter(Boolean).length)
+    throw new Error('Abziehen: not every unbundled digit is struck: ' + label);
   const s = String(forceWrong ? res + 1 : res);
   [...s].forEach((ch, k) => type(w - s.length + k, ch));
   click($('.numpad [data-k="ok"]'));
@@ -1251,6 +1262,10 @@ function trace() {
   }
   if (!crafted) {
     console.error('PLAYTEST FAIL: never used the Werkbank');
+    process.exit(1);
+  }
+  if (W3 && !process.env.W3ATK && (process.env.MINUS === 'new') !== abzTasks > 0) {
+    console.error('PLAYTEST FAIL: ' + abzTasks + ' subtractions by Abziehen, MINUS=' + process.env.MINUS);
     process.exit(1);
   }
   if (W3 && !process.env.W3ATK && colTasks < 4) {

@@ -9,12 +9,13 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 ## 2026-11-26
 
 ### Neu
-- Eltern können das Bundesland wählen: Fächer heißen dann wie dort, und es steht, wie jedes Thema zum Lehrplan passt.
-- Neue Themen in Sachkunde Klasse 3: Der Wald sowie Strom und Magnete mit Stromkreis und sicherem Umgang.
-- Neues Thema in Ethik Klasse 3: Der Festkalender mit Festen aus Judentum, Christentum, Islam, Hinduismus, Buddhismus und ohne Religion.
-- In „Kompass und Karte“ gibt es Fragen zum eigenen Bundesland, sobald Eltern eines gewählt haben.
+- Eltern können das Bundesland wählen: Fächer heißen wie dort, und „Kompass und Karte“ fragt nach dem eigenen Land.
+- Neue Themen in Klasse 3: Der Wald, Strom und Magnete sowie Der Festkalender mit Festen vieler Religionen.
+- Neu in Mathe Klasse 3: Rechnen mit Klammern und Liter und Milliliter am Messbecher.
 
 ### Verbessert
+- Schriftlich subtrahieren geht jetzt auch mit Abziehen; Eltern stellen ein, wie die Klasse rechnet.
+- Im Elternbereich steht bei jedem Thema, wie es zum Lehrplan des gewählten Bundeslandes passt.
 - In Bayern und Niedersachsen heißt es Vokal und Konsonant; andere Grammatikwörter erklärt eine kurze Zeile.
 
 ## 2026-11-25

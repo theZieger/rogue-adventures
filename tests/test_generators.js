@@ -906,6 +906,18 @@ for (const [d, k] of [
     b[0],
   ]);
 }
+// written subtraction is explained in both ways of writing it, tier by tier, with the same closing hint
+for (let t = 1; t <= M.MODULES.ssub.maxTier; t++) {
+  const abz = M.TUT_ABZ[t],
+    erg = M.TUT.ssub[t];
+  check(abz && abz.steps.length >= 3 && abz.more && abz.more === erg.more, 'Abziehen tutorial for tier ' + t);
+  const [a, b] = abz.col;
+  check(
+    erg.steps.join(' ').includes(a + ' − ' + b) && abz.steps.join(' ').includes(a + ' − ' + b + ':'),
+    'both explain the same numbers in tier ' + t,
+  );
+  check(abz.steps.join(' ').includes('Ergebnis: ' + (a - b) + '.'), 'and end in the right result', a - b);
+}
 // written methods: column layout, carries recomputed here, world 3 only
 for (const mod of ['sadd', 'ssub']) {
   const cap = M.MODULES[mod].worldCap;

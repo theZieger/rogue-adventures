@@ -4965,6 +4965,35 @@ async function landCases() {
         withMeta({ land: 'NI', minus: '' }).w.__mq.land.minusMethod() === 'abz',
       'Hessen: Ergänzen, Niedersachsen: Abziehen',
     );
+    // the parents' own choice is saved, outlives a reload and a change of the Bundesland, and travels in the save code
+    const c = withMeta({ land: 'HE', minus: '', seenTut: { 'math:ssub:1': true } }, { zip: true });
+    c.click('#parents');
+    c.subj('Mathe');
+    c.click('[data-minus="abz"]');
+    check(JSON.parse(c.dump()[META]).minus === 'abz', 'the parents choose Abziehen in Hessen and it is saved');
+    const d2 = open(c.dump(), { zip: true });
+    d2.w.__mq.meta.seenTut['math:ssub:1:abz'] = true;
+    d2.w.__mq.land.set('BW');
+    check(
+      d2.w.__mq.meta.minus === 'abz' && d2.w.__mq.land.minusMethod() === 'abz',
+      'the choice survives a reload and another Bundesland',
+    );
+    const q = d2.w.__mq;
+    const back = await q.unpackSave(await q.packSave({ v: 1, at: '', meta: q.meta, runs: {} }));
+    check(
+      back.meta.minus === 'abz' &&
+        back.meta.seenTut['math:ssub:1'] === true &&
+        back.meta.seenTut['math:ssub:1:abz'] === true,
+      'the save code carries the choice and both seen explanations',
+    );
+    const e = open();
+    e.w.__mq.land.set('BY');
+    e.w.__mq.meta.stats.math.ssub.t = 1;
+    e.w.__mq.land.set('HE');
+    check(
+      e.w.__mq.meta.minus === 'abz' && e.w.__mq.land.minusMethod() === 'abz',
+      'a new child who subtracted by Abziehen in Bayern keeps it after moving to Hessen',
+    );
   }
   await tick();
   // changing the Bundesland in the middle of an adventure

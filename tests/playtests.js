@@ -49,6 +49,8 @@ const RUNS = [
   { MODE: 'laute1', ACC: '0.9', RUNS: '1' },
   { MODE: 'laute1', LAND: 'BY', ACC: '0.9', RUNS: '1' },
   { MODE: 'satzbaustelle', LAND: 'BY', ACC: '0.9', RUNS: '1' },
+  // a family that starts in Bayern subtracts by Abziehen (Entbündeln)
+  { MODE: 'math', LAND: 'BY', MINUS: 'new', W3: '1', ACC: '0.9', RUNS: '1' },
   // hidden everywhere but in Sachsen
   { MODE: 'kirchenjahr', LAND: 'SN', ACC: '0.9', RUNS: '1' },
   // „Mein Bundesland“ is an attack of the hero as soon as a Bundesland is chosen; a city state has the fewest questions

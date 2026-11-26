@@ -8,6 +8,8 @@ type Tile = [shape: string, turn: number, colour: number];
 export interface Tutorial {
   title: string;
   steps: string[];
+  more?: string; // a closing line that is not a step
+  col?: number[]; // the worked example of written subtraction, drawn above the steps
 }
 // What a generator hands to the task screen. Each task type sets only the fields it needs.
 export interface Task {
@@ -502,7 +504,10 @@ export const MQ = (() => {
     return task(`${n}`, [n / 2], { ask: 'Halbiere die Zahl.' });
   }
   // column layout: carry[i] is the Übertrag written small under column i (0 = leftmost).
-  // Subtraction uses the Saxon Ergänzungsverfahren: the carry goes to the subtrahend's next column.
+  // Subtraction is stored the way Ergänzen writes it (the class worksheets): carry[i] is the 1 under the
+  // subtrahend's column i. The Saxon plan of 2025 names „Entbündeln im Minuenden“ instead (Abziehen), and the
+  // same 1 is then the one unbundled from the minuend's column i. The task screen draws either from this data
+  // (minusMethod in storage.ts), so a saved task fits both.
   function columns(op: string, rows: number[]) {
     const res = op === '+' ? rows.reduce((a, b) => a + b, 0) : op === '·' ? rows[0] * rows[1] : rows[0] - rows[1];
     const w = Math.max(...rows.concat(res).map((n) => String(n).length));
@@ -1275,6 +1280,7 @@ export const MQ = (() => {
       },
     },
   });
+  const OTHER_WAY = 'Rechnet deine Klasse anders? Deine Eltern können das im Elternbereich umstellen.';
   Object.assign(TUT, {
     sadd: {
       1: {
@@ -1298,6 +1304,7 @@ export const MQ = (() => {
     },
     ssub: {
       1: {
+        more: OTHER_WAY,
         title: 'Schriftlich subtrahieren',
         steps: [
           'Die kleinere Zahl steht stellengerecht unter der größeren. Du rechnest von rechts nach links und ergänzt von unten nach oben.',
@@ -1307,6 +1314,7 @@ export const MQ = (() => {
         ],
       },
       2: {
+        more: OTHER_WAY,
         title: 'Subtrahieren mit zwei Überträgen',
         steps: [
           'Ist die untere Zahl größer als die obere Ziffer, ergänzt du bis zur Zahl über 10 und schreibst 1 als Übertrag in die nächste Spalte.',
@@ -1317,6 +1325,29 @@ export const MQ = (() => {
       },
     },
   });
+  // written subtraction by Abziehen (Entbündeln), with the numbers of TUT.ssub
+  const TUT_ABZ: Record<number, Tutorial> = {
+    1: {
+      title: 'Schriftlich subtrahieren',
+      col: [742, 318],
+      steps: [
+        'Du rechnest von rechts nach links und ziehst die untere Ziffer von der oberen ab.',
+        '742 − 318: Einer: 2 − 8 geht nicht. Entbündle einen Zehner: Tippe 3 in das kleine Feld über der 4. Vor der 2 steht dann eine kleine 1. Das sind 12 Einer.',
+        'Einer: 12 − 8 = 4. Zehner: 3 − 1 = 2. Hunderter: 7 − 3 = 4. Ergebnis: 424.',
+      ],
+      more: OTHER_WAY,
+    },
+    2: {
+      title: 'Zweimal entbündeln',
+      col: [503, 276],
+      steps: [
+        '503 − 276: Einer: 3 − 6 geht nicht, und bei den Zehnern steht 0. Hol dir zuerst einen Hunderter: Aus 5 wird 4, aus 0 werden 10 Zehner.',
+        'Entbündle jetzt einen Zehner: Aus 10 Zehnern werden 9, aus 3 werden 13 Einer.',
+        'Einer: 13 − 6 = 7. Zehner: 9 − 7 = 2. Hunderter: 4 − 2 = 2. Ergebnis: 227.',
+      ],
+      more: OTHER_WAY,
+    },
+  };
   Object.assign(TUT, {
     smul: {
       1: {
@@ -3603,7 +3634,9 @@ export const MQ = (() => {
     MODULES,
     MODULE_KEYS,
     generate,
+    columns,
     TUT,
+    TUT_ABZ,
     TYPES,
     BEATS,
     STARTERS,
