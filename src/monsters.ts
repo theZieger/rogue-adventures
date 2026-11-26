@@ -7414,6 +7414,162 @@ export const MONART = (() => {
     kalendermacherin: { top: [60, 27, 1.1], eyes: [60, 56, 10, 5.5], neck: [60, 81, 44], pack: [24, 84] },
   });
 
+  /* ---------- Sachkunde: Sonne, Mond und Sterne (heroine Astronomin) ---------- */
+  const hm_shadow = (rx: number) => `<ellipse cx="60" cy="114" rx="${rx}" ry="3.5" fill="${OUT}" opacity=".15"/>`;
+  function astronomin(o: DrawOpts, C: Defs) {
+    const skin = C.grad('#E2A57A'),
+      coat = C.grad('#2F3F7A'),
+      hair = C.grad('#B5502E'),
+      tube = C.lin('#7CC2FF', '#2478D6');
+    let s = `<circle cx="102" cy="16" r="6" fill="#FFF3B0" opacity=".9"/><path d="M104 10 A6 6 0 1 0 104 22 A4.6 4.6 0 1 1 104 10 Z" fill="#2F3F7A" opacity=".8"/>`;
+    s += spark(14, 20, 4, '#FFE066') + spark(24, 8, 2.6, '#FFFFFF') + spark(112, 40, 3, '#FFE066');
+    s += `<path d="M18 116 Q20 80 60 78 Q100 80 102 116 Z" ${F(coat)}/>`;
+    // coat with a row of star buttons and a star chart in the pocket
+    s += `<path d="M60 80 L60 116" ${N(2)}/><path d="M50 80 L60 92 L70 80" ${F('#F2E3C2', 2)}/>`;
+    s += `<rect x="70" y="96" width="16" height="13" rx="2" ${F(shade('#2F3F7A', -0.2), 1.8)}/><path d="M72 96 L72 88 L84 88 L84 96" ${F('#FFFDF5', 1.6)}/><circle cx="78" cy="92" r="1.3" fill="#E8B93C"/>`;
+    s += spark(60, 99, 3, '#FFC93C') + spark(60, 108, 3, '#FFC93C');
+    // telescope on a tripod, held on the left
+    s += `<path d="M28 96 L18 116 M28 96 L28 116 M28 96 L38 116" ${N(3)}/>`;
+    s += `<g transform="rotate(-38 28 92)"><rect x="6" y="86" width="40" height="11" rx="3" ${F(tube, 2.2)}/><rect x="44" y="84" width="7" height="15" rx="2" ${F('#FFC93C', 2)}/><rect x="1" y="88.5" width="6" height="6" rx="1.5" ${F('#C9CEDD', 1.8)}/><path d="M12 89 L30 89" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".55"/></g>`;
+    s += `<ellipse cx="36" cy="98" rx="6.5" ry="5.5" ${F(skin, 2)}/>`;
+    s += `<ellipse cx="88" cy="100" rx="6" ry="5.5" ${F(skin, 2)}/>`;
+    // hair tied up in a bun
+    s += `<circle cx="60" cy="24" r="10" ${F(hair)}/>`;
+    s += `<ellipse cx="60" cy="56" rx="25" ry="25" ${F(skin)}/>`;
+    s += `<ellipse cx="35" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/><ellipse cx="85" cy="60" rx="4.5" ry="6.5" ${F(skin, 2)}/>`;
+    s += `<path d="M34 56 Q30 30 60 30 Q90 30 86 56 Q82 42 72 38 Q60 44 48 38 Q38 44 34 56 Z" ${F(hair)}/>`;
+    s += `<path d="M46 34 Q54 30 64 31" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".3"/>`;
+    s += shine(47, 62, 5, 3, -20);
+    s += pair(60, 60, 11, 5.5, { brow: 'up', bw: 2.4, iris: '#3B6FB5', browColor: '#8A3A20' });
+    s += `<path d="M60 63 Q58 69 61 70" ${N(2.2)}/>${M.smile(60, 74, 6)}`;
+    s += blush(60, 69, 16, 4);
+    return s;
+  }
+
+  function wolkendecke(o: DrawOpts, C: Defs) {
+    const cloud = C.lin('#E4E8F2', '#9AA3BC');
+    let s = spark(16, 14, 3.5, '#FFE066') + spark(104, 10, 3, '#FFE066');
+    s += `<path d="M14 84 Q2 84 4 70 Q6 56 22 58 Q20 36 42 34 Q54 16 76 26 Q96 20 102 40 Q118 44 114 62 Q120 82 100 84 Z" ${F(cloud)}/>`;
+    s += `<path d="M22 60 Q30 46 44 48 M76 28 Q88 30 92 40" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>`;
+    // the cloud pulls a grey veil over the stars below it
+    s += `<path d="M20 84 L16 98 M40 84 L36 102 M60 84 L56 98 M80 84 L76 104 M100 84 L96 98" stroke="#8FA0C8" stroke-width="2.6" stroke-linecap="round" opacity=".8"/>`;
+    s += hm_shadow(36);
+    s += pair(60, 60, 13, 7, { lid: '#AEB6CC', lidY: 0.05, brow: 'flat', bw: 3 });
+    s += M.flat(60, 75, 7);
+    return s;
+  }
+
+  function strassenlaterne(o: DrawOpts, C: Defs) {
+    const pole = C.lin('#5E6687', '#2E3452'),
+      glass = C.grad('#FFF3A0');
+    let s = `<path d="M38 50 L8 112 L112 112 L82 50 Z" fill="#FFE45C" opacity=".22"/>`;
+    s += hm_shadow(28);
+    s += `<rect x="55" y="54" width="10" height="58" rx="3" ${F(pole)}/><path d="M48 112 L72 112 L68 102 L52 102 Z" ${F(pole, 2)}/>`;
+    s += `<path d="M38 16 L82 16 L74 8 L46 8 Z" ${F(pole, 2.2)}/><circle cx="60" cy="5" r="3" ${F(pole, 1.8)}/>`;
+    s += `<path d="M38 16 L82 16 L76 52 L44 52 Z" ${F(glass)}/><path d="M60 16 L60 52" fill="none" stroke="#E0B23A" stroke-width="2"/>`;
+    s += `<rect x="42" y="50" width="36" height="7" rx="2" ${F(pole, 2)}/>`;
+    s += shine(48, 26, 3, 7, 10);
+    s += pair(60, 32, 8, 5.5, { look: 'glow', glow: '#FFFFFF', brow: 'angry', bw: 3 });
+    s += M.grin(60, 44, 6);
+    s += spark(18, 30, 3.5, '#FFE066') + spark(102, 30, 3.5, '#FFE066');
+    return s;
+  }
+
+  function weltraumschrott(o: DrawOpts, C: Defs) {
+    const panel = C.lin('#5AA7E8', '#2B5EA8'),
+      metal = C.lin('#E4E8F2', '#8E96B5');
+    let s = hm_shadow(30);
+    // a broken solar panel, a box with a bent antenna, loose bolts
+    s += `<g transform="rotate(-14 30 50)"><rect x="4" y="34" width="36" height="28" rx="2" ${F(panel, 2.2)}/><path d="M16 34 L16 62 M28 34 L28 62 M4 48 L40 48" stroke="#1C3C70" stroke-width="1.6"/><path d="M40 36 L48 34 L44 46 L48 58 L40 60" fill="none" stroke="${OUT}" stroke-width="2.2"/></g>`;
+    s += `<path d="M40 52 L56 52" ${N(4)}/>`;
+    s += `<path d="M54 40 L98 36 L104 84 L58 90 Z" ${F(metal)}/><path d="M60 46 L94 43" stroke="#fff" stroke-width="2.5" stroke-linecap="round" opacity=".55"/>`;
+    s += `<path d="M90 37 L96 20 L110 14" fill="none" stroke="${OUT}" stroke-width="2.6" stroke-linecap="round"/><circle cx="110" cy="14" r="3.5" ${F('#E5484D', 1.8)}/>`;
+    s += `<path d="M62 82 L74 80 M86 78 L98 77" stroke="#5E6687" stroke-width="2.4" stroke-linecap="round"/>`;
+    s += [
+      [20, 92],
+      [36, 102],
+      [100, 100],
+    ]
+      .map(
+        ([x, y]) =>
+          `<path d="M${x - 4} ${y} L${x - 2} ${y - 3.5} L${x + 2} ${y - 3.5} L${x + 4} ${y} L${x + 2} ${y + 3.5} L${x - 2} ${y + 3.5} Z" ${F('#C9A25A', 1.6)}/>`,
+      )
+      .join('');
+    s += pair(80, 60, 9, 6, { brow: 'angry', bw: 3, dir: [0.2, 0.2] });
+    s += M.wavy(80, 74, 6);
+    return s;
+  }
+
+  function staubsturm(o: DrawOpts, C: Defs) {
+    const dust = C.grad('#E08A5A');
+    let s = hm_shadow(34);
+    s += `<path d="M20 96 Q4 70 22 48 Q40 22 72 26 Q104 30 108 58 Q110 84 86 98 Q60 110 36 104 Z" ${F(dust)}/>`;
+    s += `<path d="M30 88 Q18 64 38 46 Q58 32 82 42 M40 96 Q70 100 92 80 M30 60 Q48 44 70 50" fill="none" stroke="#B5502E" stroke-width="3" stroke-linecap="round" opacity=".7"/>`;
+    s += `<path d="M104 46 Q116 40 116 30 M8 74 Q2 66 6 56 M98 100 Q110 104 116 96" fill="none" stroke="#C86A3E" stroke-width="3" stroke-linecap="round"/>`;
+    s += [
+      [12, 40, 2.5],
+      [110, 70, 3],
+      [16, 100, 2],
+      [100, 16, 2.4],
+    ]
+      .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#C86A3E"/>`)
+      .join('');
+    s += shine(44, 40, 7, 3, -25);
+    s += pair(62, 62, 11, 6.5, { lid: '#C86A3E', lidY: -0.1, lidRot: 12, brow: 'angry', bw: 3 });
+    s += M.o(62, 82, 5);
+    return s;
+  }
+
+  function sonnensturm(o: DrawOpts, C: Defs) {
+    let s = `<path d="${burst(60, 58, 34, 56, 12)}" fill="#FFE066" opacity=".35"/>`;
+    s += `<path d="${spikes(60, 58, 30, 50, 0, 360, 12)}" ${F(C.grad('#FF8A3D'))}/>`;
+    // flares that loop out of the surface
+    s += `<path d="M30 30 Q14 10 34 8 Q46 10 40 24 M92 92 Q110 108 112 90 Q110 78 96 84" fill="none" stroke="${OUT}" stroke-width="7" stroke-linecap="round"/><path d="M30 30 Q14 10 34 8 Q46 10 40 24 M92 92 Q110 108 112 90 Q110 78 96 84" fill="none" stroke="#FFB23F" stroke-width="3.5" stroke-linecap="round"/>`;
+    s += `<circle cx="60" cy="58" r="30" ${F(C.grad('#FFC93C'))}/>`;
+    s += `<circle cx="46" cy="72" r="3.5" fill="#E8853A" opacity=".7"/><circle cx="76" cy="44" r="2.6" fill="#E8853A" opacity=".7"/>`;
+    s += shine(48, 44, 7, 3.5, -30);
+    s += pair(60, 54, 11, 6.5, { look: 'glow', glow: '#FFFFFF', brow: 'angry', bw: 3.6 });
+    s += M.roar(60, 70, 9, 9);
+    s += spark(10, 60, 4, '#FFE066') + spark(112, 50, 4, '#FFE066');
+    return s;
+  }
+
+  function asteroid(o: DrawOpts, C: Defs) {
+    const rock = C.grad('#8E8478');
+    // the glowing trail behind it
+    let s = `<path d="M116 4 L70 40 L92 62 Z" fill="#FFB23F" opacity=".35"/><path d="M118 18 L80 48 L90 56 Z" fill="#FFE066" opacity=".5"/>`;
+    s += `<path d="M20 52 Q18 26 46 22 Q62 12 80 26 Q102 32 98 58 Q104 84 80 96 Q60 110 38 100 Q12 92 14 72 Q8 62 20 52 Z" ${F(rock)}/>`;
+    s += [
+      [36, 44, 7],
+      [80, 80, 9],
+      [34, 86, 5],
+      [70, 34, 4.5],
+    ]
+      .map(
+        ([x, y, r]) =>
+          `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${f1(r * 0.8)}" ${F(shade('#8E8478', -0.25), 1.8)}/><path d="M${x - r * 0.6} ${y - r * 0.2} Q${x} ${y - r * 0.8} ${x + r * 0.6} ${y - r * 0.2}" fill="none" stroke="#fff" stroke-width="1.4" opacity=".4"/>`,
+      )
+      .join('');
+    s += shine(40, 32, 8, 3.5, -25);
+    s += pair(58, 60, 11, 7, { brow: 'angry', bw: 4, iris: '#E8553A', dir: [-0.2, 0.1] });
+    s += M.roar(58, 80, 9, 9);
+    s += spark(8, 20, 3.5, '#FFE066') + spark(16, 110, 3, '#FFFFFF') + spark(110, 108, 4, '#FFE066');
+    return s;
+  }
+  Object.assign(SHAPES, {
+    astronomin,
+    wolkendecke,
+    strassenlaterne,
+    weltraumschrott,
+    staubsturm,
+    sonnensturm,
+    asteroid,
+  });
+  HEROES.push('astronomin');
+  Object.assign(FIT, {
+    astronomin: { top: [60, 30, 1.1], eyes: [60, 60, 11, 5.5], neck: [60, 81, 46], pack: [24, 84] },
+  });
+
   return {
     monsterSVG,
     topSVG,

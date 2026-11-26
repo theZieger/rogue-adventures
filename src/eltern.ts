@@ -383,6 +383,14 @@ export const ELTERN = (() => {
       magnet:
         'Ein Magnet zieht Eisen, Nickel und Kobalt an, nicht alle Metalle. Er wirkt durch Papier, Glas und Wasser. Magnete im Alltag.',
     },
+    himmel: {
+      tag: 'Warum es Tag und Nacht gibt: Die Erde dreht sich. Im Bild ablesen, ob an einem Ort Tag oder Nacht ist; der Weg der Sonne am Himmel.',
+      jahr: 'Das Jahr als Weg der Erde um die Sonne, das Schaltjahr und die Jahreszeiten durch die schiefe Erdachse, auch im Bild.',
+      mond: 'Der Mond und seine Phasen: im Bild benennen, später zunehmend oder abnehmend erkennen, auch als Reihenfolge.',
+      planeten: 'Die acht Planeten der Reihe nach, im Bild erkennen und je ein, zwei Merkmale.',
+      sterne: 'Die Sonne als Stern, Sternbilder wie der Große Wagen und wie man den Polarstern findet.',
+      raumfahrt: 'Leben auf der Raumstation ISS, die ersten Menschen im All und der Flug zur ISS als Reihenfolge.',
+    },
   };
   // Lernbereich names as in the Lehrplan Grundschule of Saxony (schulportal.sachsen.de/lplandb), Klassenstufe 3
   const SU = (n: number, name: string) => `Sachunterricht, Klasse 3, Lernbereich ${n} „${name}“.`;
@@ -444,6 +452,8 @@ export const ELTERN = (() => {
     natur2: 'Sachunterricht, Klasse 1/2, Lernbereich 4 „Begegnung mit Phänomenen der unbelebten Natur“.',
     strom:
       'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Stromkreis und Magnete nicht vor. Den einfachen Stromkreis nennen die Lehrpläne von Bayern, Baden-Württemberg, Hamburg und Nordrhein-Westfalen für die Klassen 3/4 (Hamburg: Klasse 4), Berlin und Rheinland-Pfalz ohne feste Klasse. Magnetismus steht in Mecklenburg-Vorpommern in Klasse 3, in Hamburg und Nordrhein-Westfalen schon in Klasse 1/2. In vielen Klassen ist das Thema also Stoff der Klasse 4.',
+    himmel:
+      'Sachunterricht. Im sächsischen Lehrplan der Klasse 3 kommen Sonne, Mond und Planeten nicht vor. Genannt werden sie in Berlin und Brandenburg (Sonnensystem, Tag und Nacht, ohne feste Klasse), Rheinland-Pfalz (Erde im Sonnensystem, bis Ende Klasse 4) und Schleswig-Holstein (astronomische Grundkenntnisse, Klasse 3/4). Sachsen-Anhalt nennt Sonne, Mond, Planeten und Mondphasen schon in Klasse 1/2, Hamburg Tag und Nacht in Klasse 1/2. In vielen Klassen ist das Thema Stoff der Klassen 3 und 4.',
   };
   // Turmwacht (an extra; its switch is under „Anzeigen“ with the other extras)
   const TURM = {
