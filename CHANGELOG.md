@@ -10,7 +10,7 @@ Kurz halten: wenige Punkte pro Tag, jeder Punkt ein kurzer Satz, den auch Kinder
 
 ### Neu
 - Eltern können das Bundesland wählen: Fächer heißen wie dort, und „Kompass und Karte“ fragt nach dem eigenen Land.
-- Acht neue Themen in Klasse 3, darunter Der Wald, Am Wasser, Feuer und Feuerwehr, Sonne, Mond und Sterne und Der Festkalender.
+- Sieben neue Themen in Klasse 3, darunter Der Wald, Am Wasser, Feuer und Feuerwehr, Kinderrechte und Der Festkalender.
 - Neu in Mathe Klasse 3: Rechnen mit Klammern und Liter und Milliliter am Messbecher.
 
 ### Verbessert
