@@ -1,9 +1,9 @@
 // Solves a Jahrmarkt task from what the child sees: the question text and the data attributes of the drawing.
 // Used by tests/test_jahrmarkt.js (against the generator's answers) and by the playtest bot (in the page).
-const UNIT = { km: 100000, m: 100, cm: 1, kg: 1000, g: 1 };
+const UNIT = { km: 100000, m: 100, cm: 1, kg: 1000, g: 1, l: 1000, ml: 1 };
 const qty = (s) => {
   let v = 0;
-  for (const [, n, u] of s.matchAll(/(½|\d+) (km|m|cm|kg|g)\b/g)) v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u];
+  for (const [, n, u] of s.matchAll(/(½|\d+) (km|m|cm|kg|g|l|ml)\b/g)) v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u];
   return v;
 };
 const tags = (html, cls) =>
@@ -78,7 +78,7 @@ function solve(html, options, REF) {
     case 'conv': {
       const sides = q
         .split(' = ')
-        .map((s) => ({ v: qty(s), slots: [...s.matchAll(/\? (km|m|cm|kg|g)\b/g)].map((m) => m[1]) }));
+        .map((s) => ({ v: qty(s), slots: [...s.matchAll(/\? (km|m|cm|kg|g|l|ml)\b/g)].map((m) => m[1]) }));
       const [S, O] = sides[0].slots.length ? sides : [sides[1], sides[0]];
       const v = O.v - S.v;
       return S.slots.length === 1
@@ -94,12 +94,21 @@ function solve(html, options, REF) {
       const s = tags(html, 'weight').reduce((a, w) => a + +w.g, 0);
       return t === 'scale' ? [s] : [Math.floor(s / 1000), s % 1000];
     }
+    case 'jug':
+    case 'jug2': {
+      const j = tags(html, 'juice')[0];
+      const ml = Math.round((j.y0 - j.y) / j.px) * j.step;
+      return t === 'jug' ? [ml] : [Math.floor(ml / 1000), ml % 1000];
+    }
     case 'per':
       return [T[0] * T[1]];
+    case 'perl':
+      return [qty(q.match(/mit (\d+ l)/)[1]) / T[0]];
     case 'perkg':
       return [qty(q.match(/zusammen (\d+ kg)/)[1]) / T[0]];
     case 'cmpl':
-    case 'cmpm': {
+    case 'cmpm':
+    case 'cmpv': {
       const [a, b, same] = options;
       return qty(a) === qty(b) ? same : qty(a) > qty(b) ? a : b;
     }

@@ -36,14 +36,16 @@ export const MJ = (() => {
     tafel: { name: 'Schautafel', icon: '📊', maxTier: 2, worldCap: [1, 2], dmg: 12 },
     sach: { name: 'Sachaufgaben', icon: '🎪', maxTier: 3, worldCap: [2, 3], dmg: 16 },
     fahrplan: { name: 'Fahrplan', icon: '🚂', maxTier: 2, worldCap: [1, 2], dmg: 12 },
+    // litres come last in grade 3 (in some states only in grade 4): world 2 only
+    liter: { name: 'Messbecher', icon: '🥛', maxTier: 3, worldCap: [0, 3], dmg: 12 },
   };
 
   /* ---------- Units and formats (never a comma number) ---------- */
-  const UNIT: Record<string, number> = { km: 100000, m: 100, cm: 1, kg: 1000, g: 1 };
-  // "2 m 35 cm", "½ kg" → cm or g
+  const UNIT: Record<string, number> = { km: 100000, m: 100, cm: 1, kg: 1000, g: 1, l: 1000, ml: 1 };
+  // "2 m 35 cm", "½ kg", "1 l 250 ml" → cm, g or ml
   const qty = (s: string) => {
     let v = 0;
-    (s as unknown as Walk).replace(/(½|\d+) (km|m|cm|kg|g)\b/g, (_, n, u) => {
+    (s as unknown as Walk).replace(/(½|\d+) (km|m|cm|kg|g|l|ml)\b/g, (_, n, u) => {
       v += n === '½' ? UNIT[u] / 2 : +n * UNIT[u];
     });
     return v;
@@ -89,6 +91,23 @@ export const MJ = (() => {
     return `<svg class="jm-fig jm-wide" viewBox="0 0 300 86" role="img" aria-label="Lineal mit ${thing}"><rect x="6" y="50" width="288" height="32" rx="4" fill="#F7E3A1" stroke="${OUT}" stroke-width="2"/>${marks}
       <rect class="thing" data-x0="${x0}" data-x1="${x1}" data-px="${px}" x="${x0}" y="22" width="${x1 - x0}" height="22" rx="10" fill="#FF8FA3" stroke="${OUT}" stroke-width="2"/><path d="M${x0 + 8} 26 L${x0 + 16} 40 M${x0 + 24} 26 L${x0 + 32} 40" stroke="#fff" stroke-width="3" opacity=".7"/>
       <line x1="${x0}" y1="16" x2="${x0}" y2="52" stroke="${OUT}" stroke-dasharray="3 3"/><line x1="${x1}" y1="16" x2="${x1}" y2="52" stroke="${OUT}" stroke-dasharray="3 3"/></svg>`;
+  }
+  // a measuring jug with a mark every 100 ml up to `top`; every `named` ml a longer mark carries its amount
+  function jugSVG(ml: number, top: number, named: number) {
+    const y0 = 148,
+      px = 12000 / top;
+    let marks = '';
+    for (let v = 100; v <= top; v += 100) {
+      const y = y0 - (v / 100) * px,
+        big = v % named === 0;
+      marks += `<line x1="72" y1="${y}" x2="${big ? 104 : v % 500 ? 86 : 95}" y2="${y}" stroke="${OUT}" stroke-width="${big ? 2 : 1.5}"/>`;
+      if (big)
+        marks += `<text x="110" y="${y + 4.5}" font-size="13" font-weight="700" fill="${OUT}">${v % 1000 ? `${v} ml` : `${v / 1000} l`}</text>`;
+    }
+    const y = y0 - (ml / 100) * px;
+    return `<svg class="jm-fig jm-wide" viewBox="0 0 240 160" role="img" aria-label="Messbecher mit einem Getränk"><path d="M70 14 L70 142 Q70 152 80 152 L190 152 Q200 152 200 142 L200 14 Z" fill="#FFF8E1"/>
+      <rect class="juice" data-y="${y}" data-y0="${y0}" data-px="${px}" data-step="100" x="72" y="${y}" width="126" height="${y0 + 2 - y}" fill="#FFB36B"/>
+      <path d="M70 14 L70 142 Q70 152 80 152 L190 152 Q200 152 200 142 L200 14 M70 14 L58 8 M70 44 Q30 44 30 80 Q30 116 70 116" fill="none" stroke="${OUT}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>${marks}</svg>`;
   }
   const WEIGHT_TXT = (g: number) => (g >= 1000 ? `${g / 1000} kg` : `${g} g`);
   function scaleSVG(weights: number[], thing: string) {
@@ -250,7 +269,7 @@ export const MJ = (() => {
     const va = qty(a),
       vb = qty(b);
     const answer = va === vb ? same : va > vb ? a : b,
-      u = id === 'cmpl' ? 'cm' : 'g';
+      u = ({ cmpl: 'cm', cmpm: 'g', cmpv: 'ml' } as Record<string, string>)[id];
     return choice(id, `Was ist ${adj}?`, '', [x, y, same], answer, `${a} sind ${va} ${u}, ${b} sind ${vb} ${u}.`);
   }
 
@@ -551,6 +570,112 @@ export const MJ = (() => {
           '',
           [(k * 1000) / w],
           [many.split(' ')[0]],
+          `${(k * 1000) / w} ${many}`,
+        );
+      },
+    ])();
+  }
+  // estimate what fits: first amount is right, the others are off by a factor of 10 or more
+  const VOL = [
+    ['in ein Trinkglas', '200 ml', '2 l', '20 l'],
+    ['in eine kleine Saftpackung', '200 ml', '2 ml', '20 l'],
+    ['auf einen Esslöffel', '15 ml', '150 ml', '2 l'],
+    ['in einen Milchkarton', '1 l', '10 ml', '100 l'],
+    ['in einen Kochtopf', '3 l', '30 ml', '300 l'],
+    ['in einen Eimer', '10 l', '100 ml', '1 l'],
+    ['in eine Gießkanne', '10 l', '100 ml', '100 l'],
+    ['in eine Badewanne', '150 l', '15 l', '1 l'],
+    ['in eine Regentonne', '200 l', '2 l', '20 l'],
+  ];
+  // [into one, how many, in n of them, ml]
+  const POUR: [string, string, string, number][] = [
+    ['einen Becher', 'Becher', 'Bechern', 250],
+    ['ein Glas', 'Gläser', 'Gläsern', 200],
+    ['eine Flasche', 'Flaschen', 'Flaschen', 500],
+    ['eine Suppenkelle', 'Suppenkellen', 'Suppenkellen', 100],
+  ];
+  const DRINKS = ['Apfelsaft', 'Limonade', 'Kakao', 'Früchtetee'];
+  function genLiter(t: number) {
+    if (t === 1)
+      return pick([
+        () => {
+          const ml = 100 * rnd(1, 9);
+          return num(
+            'jug',
+            `Wie viele Milliliter ${pick(DRINKS)} sind im Messbecher?`,
+            jugSVG(ml, 1000, 200),
+            [ml],
+            ['ml'],
+            `${ml} ml`,
+          );
+        },
+        () => conv(`${rnd(1, 9)} l`, 'ml'),
+        () => conv(`${1000 * rnd(2, 9)} ml`, 'l'),
+        () => conv('½ l', 'ml'),
+        () => missing(`${50 * rnd(1, 19)} ml`, 'ml', '1 l'),
+      ])();
+    if (t === 2)
+      return pick([
+        () => {
+          const ml = 100 * pick([11, 12, 13, 14, 16, 17, 18, 19]);
+          return num(
+            'jug2',
+            `Wie viel ${pick(DRINKS)} ist im Messbecher?`,
+            jugSVG(ml, 2000, 1000),
+            [1, ml - 1000],
+            ['l', 'ml'],
+            two(ml, 'l', 'ml'),
+          );
+        },
+        () => conv(`${rnd(1, 4)} l ${pick([5 * rnd(1, 19), 10 * rnd(10, 99)])} ml`, 'ml'),
+        () => {
+          let v;
+          do {
+            v = 10 * rnd(101, 499);
+          } while (v % 1000 === 0);
+          return conv(`${v} ml`, 'l', 'ml');
+        },
+        () => {
+          const k = rnd(1, 3),
+            c = rnd(1, 9);
+          const other = pick([k * 1000 + c * 100, k * 1000 + c * 10, k * 1000 - 100 * rnd(1, 5)]);
+          return compare('cmpv', `${k} l ${c * 10} ml`, `${other} ml`, 'mehr', 'Beide gleich viel');
+        },
+      ])();
+    return pick([
+      () => {
+        const r = pick(VOL);
+        return choice(
+          'guess',
+          `Wie viel passt ungefähr ${r[0]}?`,
+          '',
+          shuffle(r.slice(1)),
+          r[1],
+          `${r[0][0].toUpperCase() + r[0].slice(1)} ${r[1] === '1 l' ? 'passt' : 'passen'} ungefähr ${r[1]}.`,
+          r[0],
+        );
+      },
+      () => {
+        const [one, , many, w] = pick(POUR);
+        const n = rnd(2, 8);
+        return num(
+          'per',
+          `In ${one} passen ${w} ml. Wie viele Milliliter sind in ${n} vollen ${many}?`,
+          '',
+          [n * w],
+          ['ml'],
+          `${n * w} ml`,
+        );
+      },
+      () => {
+        const [one, many, , w] = pick(POUR);
+        const k = rnd(1, 2);
+        return num(
+          'perl',
+          `In ${one} passen ${w} ml. Wie viele ${many} kannst du mit ${k} l füllen?`,
+          '',
+          [(k * 1000) / w],
+          [many],
           `${(k * 1000) / w} ${many}`,
         );
       },
@@ -1057,6 +1182,7 @@ export const MJ = (() => {
     tafel: genTafel,
     sach: genSach,
     fahrplan: genFahrplan,
+    liter: genLiter,
   };
   function generate(mod: string, tier: number) {
     tier = Math.max(1, Math.min(MODULES[mod].maxTier, tier));
@@ -1245,6 +1371,33 @@ export const MJ = (() => {
         ],
       },
     },
+    liter: {
+      1: {
+        title: 'Liter und Milliliter',
+        steps: [
+          'Flüssigkeiten misst man in Litern und Millilitern. 1 l = 1000 ml. Ein halber Liter, ½ l, sind 500 ml.',
+          '3 l sind 3 · 1000 ml = 3000 ml. Umgekehrt: 4000 ml sind 4 l.',
+          'Am Messbecher liest du ab, bis zu welchem Strich das Getränk reicht. Von Strich zu Strich sind es 100 ml.',
+        ],
+      },
+      2: {
+        title: 'Mengen mit zwei Einheiten',
+        steps: [
+          'Mengen kann man mit zwei Einheiten schreiben: 1 l 250 ml.',
+          '1 l 250 ml = 1000 ml + 250 ml = 1250 ml. Umgekehrt: 2300 ml = 2 l 300 ml.',
+          'Am großen Messbecher: Reicht das Getränk 3 Striche über 1 l, sind es 1 l 300 ml.',
+          'Zum Vergleichen schreibst du beide Mengen in ml: 1 l 20 ml sind 1020 ml, das ist weniger als 1200 ml.',
+        ],
+      },
+      3: {
+        title: 'Schätzen mit Stützpunkten',
+        steps: [
+          'Merke dir Stützpunkte: In einen Milchkarton passt 1 l, in ein Trinkglas 200 ml, in einen Eimer 10 l.',
+          '5 Gläser mit je 200 ml sind 5 · 200 ml = 1000 ml. Ein Liter füllt also 5 Gläser.',
+          'Auf einen Esslöffel passt viel weniger als in ein Glas: ungefähr 15 ml.',
+        ],
+      },
+    },
     sach: {
       1: {
         title: 'Sachaufgaben',
@@ -1315,6 +1468,7 @@ export const MJ = (() => {
     tafel: 'Säulenblick',
     sach: 'Kassenbon',
     fahrplan: 'Fahrkarte',
+    liter: 'Schöpfkelle',
   };
   const ENEMIES = {
     1: {
@@ -1449,7 +1603,8 @@ export const MJ = (() => {
     ENEMIES,
     MOVES,
     EVENTS,
-    REF,
+    // the estimates the bot and the tests look up: weights and volumes
+    REF: REF.concat(VOL),
     qty,
     clockSVG,
     wheelSVG,

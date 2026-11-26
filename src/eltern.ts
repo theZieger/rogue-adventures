@@ -36,6 +36,8 @@ export const ELTERN = (() => {
       vergl:
         'Dreistellige Zahlen mit <, > und = vergleichen, auch in Hunderter, Zehner und Einer, und vier Zahlen der Größe nach ordnen.',
       ueber: 'Ihr Kind rundet auf Hunderter und erkennt so, welches Ergebnis stimmen kann (nur in Welt 3).',
+      klammer:
+        'Aufgaben wie (4 + 6) · 3: erst die Klammer, dann mal und geteilt, dann plus und minus (ab Welt 2). Im Plan von Mecklenburg-Vorpommern steht das in Klasse 3, in Hamburg und Schleswig-Holstein erst in Klasse 4. Viele Länder legen die Klasse nicht fest.',
       geld: 'Im Kaufladen Kunden bedienen: Euro und Cent passend abzählen und Rückgeld geben. Ohne „Geld“ gibt es keinen Kaufladen.',
     },
     bau: {
@@ -61,6 +63,8 @@ export const ELTERN = (() => {
       tafel: 'Werte aus Säulen- und Balkendiagrammen ablesen und damit rechnen.',
       sach: 'Textaufgaben vom Jahrmarkt: herausfinden, was gefragt ist, und rechnen.',
       fahrplan: 'Abfahrtszeiten aus einem Fahrplan ablesen und Fahrzeiten ausrechnen.',
+      liter:
+        'Mengen am Messbecher ablesen, umrechnen und schätzen: Liter und Milliliter (nur in Welt 2). Im Plan von Mecklenburg-Vorpommern steht das in Klasse 3, in Sachsen und Hamburg erst in Klasse 4. Viele Länder legen die Klasse nicht fest.',
     },
     ethik: facts('über Martin Luther'),
     kirchenjahr: facts('zu Kirche, Bibel und Kirchenjahr'),

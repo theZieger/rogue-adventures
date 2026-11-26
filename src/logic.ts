@@ -120,6 +120,7 @@ export const MQ = (() => {
     zmul: { name: 'Malnehmen mit großen Zahlen', icon: '✳️', maxTier: 2, worldCap: [0, 1, 2], dmg: 14 },
     vergl: { name: 'Zahlen vergleichen und ordnen', icon: '⚖️', maxTier: 2, worldCap: [0, 1, 2], dmg: 10 },
     ueber: { name: 'Überschlagen', icon: '💭', maxTier: 1, worldCap: [0, 0, 1], dmg: 14 },
+    klammer: { name: 'Klammern', icon: '📎', maxTier: 2, worldCap: [0, 1, 2], dmg: 14 },
     // practised at the market, never an attack
     geld: { name: 'Geld', icon: '🪙', maxTier: 2, worldCap: [1, 2, 2], dmg: 0, shop: true },
   };
@@ -691,6 +692,52 @@ export const MQ = (() => {
       });
     }
   }
+  // brackets first, then Punkt vor Strich; every step stays a whole number from 0 up
+  function genKlammer(t: number) {
+    for (;;) {
+      const plus = Math.random() < 0.5;
+      const tens = t === 2 && Math.random() < 0.3 ? 10 : 1;
+      const kind = rnd(0, 2);
+      // the bracket: a + b or a − b with the value v
+      const bracket = (v: number, most: number) => {
+        const b = plus ? rnd(1, v - 1) : rnd(1, Math.max(1, most - v));
+        return { text: `(${(plus ? v - b : v + b) * tens} ${plus ? '+' : '−'} ${b * tens})`, v: v * tens };
+      };
+      let text: string, res: number;
+      if (kind === 0) {
+        const c = rnd(2, 9),
+          B = bracket(rnd(2, 10), 20);
+        text = Math.random() < 0.5 ? `${B.text} · ${c}` : `${c} · ${B.text}`;
+        res = B.v * c;
+      } else if (kind === 1) {
+        const c = rnd(2, 9),
+          q = rnd(2, 9),
+          B = bracket(c * q, 99);
+        text = `${B.text} : ${c}`;
+        res = B.v / c;
+      } else if (t === 1) {
+        const B = bracket(rnd(2, 40), 60),
+          a = rnd(B.v, 99);
+        text = `${a} − ${B.text}`;
+        res = a - B.v;
+      } else continue;
+      if (t === 2 && tens === 1) {
+        const d = rnd(2, 60),
+          add = Math.random() < 0.5,
+          first = Math.random() < 0.5;
+        if (!add && (first ? res < d : d < res)) continue;
+        text = first ? `${text} ${add ? '+' : '−'} ${d}` : `${d} ${add ? '+' : '−'} ${text}`;
+        res = add ? res + d : first ? res - d : d - res;
+      }
+      const hi = t === 1 ? 100 : 1000;
+      if (res > hi || (text.match(/\d+/g) as string[]).some((n) => +n > hi)) continue;
+      // a long task breaks before the equals sign, never between it and the question mark
+      return task(`${text} =\u00a0?`, [res], {
+        ask: t === 1 ? 'Rechne zuerst, was in der Klammer steht.' : 'Erst die Klammer, dann Punkt vor Strich.',
+        long: true,
+      });
+    }
+  }
   const ONES = ['', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun'];
   const TEENS = [
     'zehn',
@@ -901,6 +948,7 @@ export const MQ = (() => {
         zmul: genZmul,
         vergl: genVergl,
         ueber: genUeber,
+        klammer: genKlammer,
         geld: genGeld,
       } as Record<string, (t: number) => Task>
     )[mod];
@@ -1492,6 +1540,26 @@ export const MQ = (() => {
         ],
       },
     },
+    klammer: {
+      1: {
+        title: 'Rechnen mit Klammern',
+        steps: [
+          'Was in der Klammer steht, rechnest du zuerst.',
+          '(4 + 6) · 3: Erst 4 + 6 = 10, dann 10 · 3 = 30.',
+          '20 − (8 + 5): Erst 8 + 5 = 13, dann 20 − 13 = 7.',
+          'Ohne Klammer käme etwas anderes heraus: 4 + 6 · 3 = 4 + 18 = 22.',
+        ],
+      },
+      2: {
+        title: 'Klammer, Punkt, Strich',
+        steps: [
+          'Die Reihenfolge ist: erst die Klammer, dann mal und geteilt, zum Schluss plus und minus.',
+          '50 − (3 + 4) · 6: Erst 3 + 4 = 7, dann 7 · 6 = 42, dann 50 − 42 = 8.',
+          '(18 − 6) : 4 + 25: Erst 18 − 6 = 12, dann 12 : 4 = 3, dann 3 + 25 = 28.',
+          'Mit Zehnerzahlen geht es genauso: (40 + 30) · 6 = 70 · 6 = 420.',
+        ],
+      },
+    },
   });
   TUT.riddle[2] = {
     title: 'Zahlenrätsel mit Hundertern',
@@ -1597,6 +1665,7 @@ export const MQ = (() => {
     zmul: 'Holzstoß',
     vergl: 'Waagschale',
     ueber: 'Fernrohr',
+    klammer: 'Klammergriff',
   };
 
   const ENEMIES = {

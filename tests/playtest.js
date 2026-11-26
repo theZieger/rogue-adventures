@@ -4,12 +4,15 @@ import { MQ } from '../src/logic.ts';
 import path from 'path';
 import { JSDOM } from 'jsdom';
 import * as JM from './jm_solver.js';
+import { evalExpr } from './expr.js';
 import fs from 'fs';
 const html = fs.readFileSync(path.join(import.meta.dirname, '../docs/index.html'), 'utf8');
 // Seeded randomness (game and bot), so a failing run can be reproduced: SEED=123 node tests/playtest.js
 const SEED = +(process.env.SEED || 20261108);
 // W3=1: continue a Zahlenquest adventure in world 3 whose hero has the written methods as attacks (W3ATK=kopf,ueber,… picks others)
 const W3 = process.env.W3 === '1';
+// LITER=1: continue a Jahrmarkt adventure in world 2 whose hero has learned the Messbecher and reached its last tier
+const LITER = process.env.LITER === '1';
 // OFF=a,b: these task types are switched off in the parent area, so the hero fights with the others
 const OFF = process.env.OFF || '';
 // LAND=HH: the family has chosen this Bundesland, so the bot plays with what it hides and renames
@@ -32,11 +35,37 @@ const w3run = () => {
         .map((mod) => ({ name: MQ.EXTRA_ATTACKS[mod], mod })),
     },
     items: ['trank'],
-    tiers: Object.fromEntries(MQ.MODULE_KEYS.map((k) => [k, 1])),
+    // Klammern joined later: its second tier (with the first mixed in) is only met by starting there
+    tiers: Object.fromEntries(MQ.MODULE_KEYS.map((k) => [k, k === 'klammer' ? 2 : 1])),
     path: [],
     shield: false,
   });
 };
+const literRun = () =>
+  JSON.stringify({
+    mode: 'jahrmarkt',
+    world: 2,
+    floor: 1,
+    map: MQ.makeMap(),
+    hero: {
+      id: 'holzpferd',
+      evo: 1,
+      level: 5,
+      xp: 0,
+      hp: 110,
+      maxHp: 110,
+      attacks: [
+        { name: 'Schöpfkelle', mod: 'liter' },
+        { name: 'Glockenschlag', mod: 'uhr' },
+        { name: 'Galoppsprung', mod: 'laenge' },
+        { name: 'Hufeisen', mod: 'masse' },
+      ],
+    },
+    items: ['trank'],
+    tiers: { liter: 3 },
+    path: [],
+    shield: false,
+  });
 function prng(seed) {
   let a = seed | 0;
   return () => {
@@ -67,6 +96,7 @@ const dom = new JSDOM(html, {
       }
     };
     if (W3) win.localStorage.setItem('mathquest_run_v1', w3run());
+    if (LITER) win.localStorage.setItem('mathquest_run_jahrmarkt', literRun());
     if (OFF)
       win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ off: { [process.env.MODE]: OFF.split(',') } }));
     if (LAND) win.localStorage.setItem('mathquest_meta_v2', JSON.stringify({ land: LAND }));
@@ -287,7 +317,8 @@ async function solveTask(forceWrong) {
     const FR = { '½': [1, 2], '¼': [1, 4], '¾': [3, 4], '⅓': [1, 3] },
       UNIT = { 'm cm': 100, 'h min': 60, 'kg g': 1000, 'km m': 1000 },
       dot = (a, o, b) => (o === '·' ? a * b : a / b);
-    if ((m = s.match(/^(\d+) ([+−·:]) (\d+) ([+−·:]) (\d+) = \?$/))) {
+    if (s.includes('(')) answers = [evalExpr(s.split(' =')[0]).value];
+    else if ((m = s.match(/^(\d+) ([+−·:]) (\d+) ([+−·:]) (\d+) = \?$/))) {
       const pt = (o) => '·:'.includes(o);
       const [a, b, c] = [+m[1], +m[3], +m[5]];
       answers = [
@@ -1226,6 +1257,15 @@ function trace() {
     console.error('PLAYTEST FAIL: only ' + colTasks + ' written tasks in world 3');
     process.exit(1);
   }
+  // the task types that join in a later world: the bot has to meet them
+  for (const [on, unit, type] of [
+    [(process.env.W3ATK || '').includes('klammer'), 'math', 'klammer'],
+    [LITER, 'jahrmarkt', 'liter'],
+  ])
+    if (on && m.stats[unit][type].t < 3) {
+      console.error(`PLAYTEST FAIL: ${type} asked only ${m.stats[unit][type].t} times`);
+      process.exit(1);
+    }
   if (['woerterwerkstatt', 'satzbaustelle', 'ethik', 'kirchenjahr', 'ichwelt'].includes(mode) && readNodes < RUNS) {
     console.error('PLAYTEST FAIL: Lesestube not played');
     process.exit(1);

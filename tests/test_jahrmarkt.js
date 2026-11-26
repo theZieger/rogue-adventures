@@ -7,12 +7,15 @@ const check = (cond, msg, t) => {
 };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 // upper bound per input field, by the unit written under it
-const FIELD_MAX = { Minuten: 59, Sekunden: 59, cm: 99, g: 999, ct: 99 };
+const FIELD_MAX = { Minuten: 59, Sekunden: 59, cm: 99, g: 999, ct: 99, ml: 999 };
 
 for (const [mod, M] of Object.entries(MJ.MODULES)) {
+  // only the Messbecher waits for world 2 (litres come last in grade 3)
   check(
     M.worldCap.length === MJ.MODE.worlds &&
-      M.worldCap.every((c, i) => c >= 1 && c <= M.maxTier && (!i || c >= M.worldCap[i - 1])),
+      M.worldCap.every(
+        (c, i) => c >= (mod === 'liter' && !i ? 0 : 1) && c <= M.maxTier && (!i || c >= M.worldCap[i - 1]),
+      ),
     'worldCap',
     mod,
   );
@@ -87,6 +90,39 @@ for (const [mod, M] of Object.entries(MJ.MODULES)) {
       if (new Set(hs).size > 1) cross++;
     }
     check(t === 1 ? cross === 0 : cross > 100, 'Fahrplan hours per tier', [t, cross]);
+  }
+}
+// Messbecher: only litres and millilitres, the only fraction is ½ l = 500 ml, every kind of task turns up, and a
+// drawn jug holds a whole number of marks between empty and full
+check(MJ.MODULES.liter.worldCap.join() === '0,3', 'Messbecher only in world 2', MJ.MODULES.liter.worldCap);
+{
+  const KINDS = { 1: ['jug', 'conv'], 2: ['jug2', 'conv', 'cmpv'], 3: ['guess', 'per', 'perl'] };
+  for (let t = 1; t <= 3; t++) {
+    const kinds = new Set();
+    for (let i = 0; i < 1500; i++) {
+      const tk = MJ.generate('liter', t);
+      const seen = textOf(tk.fig) + ' ' + (tk.q || '') + ' ' + (tk.show || tk.why) + ' ' + (tk.options || []).join(' ');
+      kinds.add(tk.fig.match(/data-t="([^"]+)"/)[1]);
+      check(!/\d (km|m|cm|kg|g)\b/.test(seen), 'Messbecher: litres and millilitres only', seen);
+      check(!/½/.test(seen) || /^½ l = \? ml$/.test(textOf(tk.fig)), 'Messbecher: ½ only as ½ l', seen);
+      if (tk.kind === 'num')
+        check(
+          tk.answers.every((a) => a <= 9000),
+          'Messbecher: up to 9 l',
+          tk,
+        );
+      const jug = tk.fig.match(/data-y="([\d.]+)" data-y0="([\d.]+)" data-px="([\d.]+)" data-step="(\d+)"/);
+      if (jug) {
+        const marks = (jug[2] - jug[1]) / jug[3],
+          lines = (tk.fig.match(/<line /g) || []).length;
+        check(
+          Math.abs(marks - Math.round(marks)) < 1e-9 && marks >= 1 && marks < lines && lines * jug[4] === t * 1000,
+          'Messbecher: the juice ends on a mark below the top',
+          { marks, lines },
+        );
+      }
+    }
+    check(same([...kinds].sort(), KINDS[t].slice().sort()), 'Messbecher kinds in tier ' + t, [...kinds]);
   }
 }
 // estimate questions: the other options are off by at least a factor of 10
