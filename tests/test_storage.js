@@ -2078,6 +2078,41 @@ await tick();
   );
 }
 
+// 17c. Der Festkalender: an old save without its stats loads, an adventure is saved and continues
+await tick();
+{
+  const p0 = open();
+  const old = JSON.parse(JSON.stringify(p0.w.__mq.meta));
+  delete old.stats.religionen;
+  const p1 = open({ [META]: JSON.stringify(old) });
+  if (p1.$('#later')) p1.click('#later');
+  const stats = p1.w.__mq.meta.stats.religionen;
+  check(
+    p1.errors.length === 0 && stats && stats.welche.t === 0 && stats.bild.t === 0,
+    'old save without Der Festkalender stats loads with empty stats, both new task types included',
+  );
+  p1.click('[data-new="religionen"]');
+  p1.click('.choice');
+  p1.click('#go');
+  p1.click('.node.open');
+  const p2 = open(p1.dump());
+  check(
+    p2.errors.length === 0 &&
+      !!p2.dump().mathquest_run_religionen &&
+      /Weiter \(Welt 1\)/.test(p2.$('[data-cont="religionen"]').textContent),
+    'Der Festkalender adventure is saved and can be continued',
+  );
+  // a save code with this unit's progress comes back exactly
+  const meta = JSON.parse(JSON.stringify(p2.w.__mq.meta));
+  meta.stats.religionen.welche = { ...meta.stats.religionen.welche, c: 3, t: 4 };
+  meta.know = { ...meta.know, rew_syn: { c: 2, t: 3, ws: 0, last: 5 } };
+  const small = SAVECODE.shrink(meta);
+  check(
+    JSON.stringify(SAVECODE.grow(small)) === JSON.stringify(meta) && !JSON.stringify(small).includes('religionen'),
+    'a save code keeps Der Festkalender progress and shortens its name',
+  );
+}
+
 // 18. Weekly goals, weekly boss, weekly report
 // W48 and W49 are two school weeks with different subjects in the subject goal
 const W48 = '2026-12-23T10:00:00',

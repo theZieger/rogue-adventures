@@ -24,6 +24,7 @@ const RUNS = [
   { MODE: 'frueher', ACC: '0.9', RUNS: '2' },
   { MODE: 'freunde', ACC: '0.9', RUNS: '2' },
   { MODE: 'ichwelt', ACC: '0.9', RUNS: '2' },
+  { MODE: 'religionen', ACC: '0.9', RUNS: '2' },
   { MODE: 'jahrmarkt', ACC: '0.9', RUNS: '2' },
   { MODE: 'sinne', ACC: '0.9', RUNS: '2' },
   { MODE: 'verkehr', ACC: '0.9', RUNS: '2' },

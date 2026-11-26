@@ -4,6 +4,7 @@ import { MS2 as S2 } from '../src/sachkunde2.ts';
 import { MS3 as S3 } from '../src/sachkunde3.ts';
 import { MU } from '../src/musik.ts';
 import { ME as E } from '../src/ethik.ts';
+import { MR as R } from '../src/religionen.ts';
 import '../src/units.ts';
 const know = {};
 let seq = 0;
@@ -80,6 +81,11 @@ for (const [name, arr] of Object.entries({
   BESSER: E.BESSER,
   ARCHE: E.ARCHE,
   PAPIER: E.PAPIER,
+  JAHR_J: R.JAHR_J,
+  RAMADAN: R.RAMADAN,
+  AUSZUG: R.AUSZUG,
+  MOND: R.MOND,
+  LEBEN: R.LEBEN,
   GROW: K.GROW,
   STORY: K.STORY,
   PARTS: K.PARTS,
@@ -556,6 +562,127 @@ for (const [mode, cfg] of Object.entries(K.MODES))
   for (const e of dil(1).concat(dil(2)))
     if (/ausgelacht|lacht über|lachen über|Auslachen/.test(e.text) && !e.opts.some((o) => o.label === E.HELP))
       fails.push('ichwelt dilemma without adult help: ' + e.title);
+}
+// Der Festkalender: two worlds with their own topics, every topic in two task types, „Welche Religion?“ with fixed buttons,
+// a drawing for every picture question, wording that describes and never ranks or addresses the child as a believer
+{
+  const fk = K.MODES.religionen;
+  const facts = fk.pool.filter((e) => !['welche', 'bild'].includes(e.mod));
+  if (facts.length < 80) fails.push('religionen has only ' + facts.length + ' questions');
+  if (fk.worlds !== 2 || !fk.byWorld) fails.push('religionen needs two worlds');
+  const topics = {
+    1: ['glaube', 'judentum', 'juedfeste', 'christentum', 'islam', 'islfeste'],
+    2: ['hindu', 'buddha', 'ohne', 'kalender', 'gemeinsam'],
+  };
+  if (Object.keys(fk.notes).sort().join() !== Object.values(topics).flat().sort().join())
+    fails.push('religionen: every Notizkarte belongs to one world');
+  for (const [w, gs] of Object.entries(topics))
+    for (const g of gs) {
+      const qs = fk.pool.filter((e) => e.g === g);
+      if (!fk.notes[g]) fails.push('religionen no note ' + g);
+      if (!qs.length || qs.some((e) => (e.w || 1) !== +w))
+        fails.push('religionen topic ' + g + ' not only in world ' + w);
+      if (new Set(qs.map((e) => e.mod)).size < 4) fails.push('religionen topic ' + g + ' in fewer than 4 task types');
+    }
+  for (const list of fk.starters.map((s) => s.attacks).concat(Object.values(fk.worldAttacks)))
+    if (new Set(list.map((a) => a.mod)).size < 4) fails.push('religionen: a hero needs 4 task types');
+  // Welche Religion?: the buttons of a world never move, every thing is asked, each button has enough things
+  for (const w of [1, 2]) {
+    const things = w === 1 ? R.SACHEN : R.SACHEN2;
+    const seen = new Set();
+    for (let i = 0; i < 600; i++) {
+      const q = K.generate('religionen', 'welche', 1, know, ++seq, { world: w });
+      seen.add(q.qid);
+      if (
+        q.options.join() !== R.WELCHE[w - 1].join() ||
+        q.options.filter((o) => o === q.answer).length !== 1 ||
+        !fk.tut[q.group] ||
+        !fk.notes[q.note]
+      )
+        fails.push('Welche Religion? task ' + q.qid);
+    }
+    if (seen.size !== things.length)
+      fails.push('Welche Religion? world ' + w + ': only ' + seen.size + ' of ' + things.length + ' asked');
+    for (const k of [0, 1, 2])
+      if (things.filter((d) => d[2] === k).length < 4)
+        fails.push('Welche Religion?: fewer than 4 things for ' + R.WELCHE[w - 1][k]);
+    if (new Set(things.map((d) => d[1])).size !== things.length) fails.push('Welche Religion?: a thing twice');
+  }
+  // pictures: every question has its drawing, the drawing names nothing, exactly one answer fits
+  for (const b of R.BILDER) if (!R.PICS[b[3]]) fails.push('religionen picture missing: ' + b[3]);
+  for (const [name, draw] of Object.entries(R.PICS)) {
+    const svg = draw();
+    if (
+      !svg.startsWith('<svg') ||
+      /<text|NaN|undefined/.test(svg) ||
+      !/role="img" aria-label="Bild zur Frage"/.test(svg)
+    )
+      fails.push('religionen picture ' + name);
+    if (!R.BILDER.some((b) => b[3] === name)) fails.push('religionen picture never asked: ' + name);
+  }
+  for (const w of [1, 2]) {
+    const seen = new Set();
+    for (let i = 0; i < 600; i++) {
+      const q = K.generate('religionen', 'bild', 1, know, ++seq, { world: w });
+      seen.add(q.qid);
+      const e = fk.pool.find((x) => x.id === q.qid);
+      if (!e || (e.w || 1) !== w || !q.pic || !q.pic.includes('<svg') || q.options.length !== 3)
+        fails.push('religionen picture task ' + q.qid);
+      if (q.options.filter((o) => o === q.answer).length !== 1) fails.push('religionen picture answer ' + q.qid);
+    }
+    if (seen.size !== R.BILDER.filter((b) => b[1] === w).length) fails.push('religionen: not every picture asked');
+  }
+  const w2order = fk.order.filter((o) => o.w === 2).map((o) => o.qid);
+  for (const w of [1, 2])
+    for (const mod of ['rf', 'mc', 'lt', 'def', 'ord'])
+      for (let i = 0; i < 200; i++) {
+        const q = K.generate('religionen', mod, 1, know, ++seq, { world: w });
+        const inW2 =
+          q.kind === 'order' ? w2order.some((p) => q.qid.startsWith(p)) : fk.pool.find((e) => e.id === q.qid).w === 2;
+        if (inW2 !== (w === 2)) {
+          fails.push('religionen world ' + w + ' got ' + q.qid);
+          break;
+        }
+      }
+  for (const o of fk.order) if (!fk.notes[o.note] || o.items.length < 5) fails.push('religionen order source ' + o.qid);
+  // any four steps of a sequence, in their order, must still tell a child which comes first
+  for (const src of [R.JAHR_J, R.RAMADAN, R.AUSZUG, R.MOND, R.LEBEN])
+    if (new Set(src.map((x) => x.text)).size !== src.length) fails.push('religionen order source with a step twice');
+  // every choice question explains its answer
+  for (const e of fk.pool)
+    if (['mc', 'lt', 'welche', 'bild'].includes(e.mod) && !e.why && !/^Was (ist|bedeutet)/.test(e.q))
+      fails.push('religionen ' + e.id + ' has no explanation');
+  // wording: no „wir/unser“ for a religion, no ranking, no year that would go out of date, no rule put to the child
+  const texts = fk.pool
+    .flatMap((e) => [e.q, e.why || '', ...(e.o || [])])
+    .concat(Object.values(fk.notes).flatMap((n) => n.lines))
+    .concat(fk.order.flatMap((o) => o.items.map((x) => x.text)));
+  for (const t of texts) {
+    if (
+      /\b(unsere?[mnrs]? (Gott|Glaube|Religion|Kirche|Fest)|wir (glauben|feiern|beten)|dein(e[mnrs]?)? (Glaube|Religion|Gott))/i.test(
+        t,
+      )
+    )
+      fails.push('religionen addresses the child as a believer: ' + t);
+    if (/richtige Religion|wahre Religion|beste Religion|besser als|falscher Glaube|Ungläubige/i.test(t))
+      fails.push('religionen ranks: ' + t);
+    if (/\b(19|20)\d\d\b(?! Jahren)/.test(t)) fails.push('religionen names a year: ' + t);
+    if (/\bdu (darfst|musst|sollst) (kein|nicht|nie)/i.test(t)) fails.push('religionen puts a rule to the child: ' + t);
+  }
+  // opponents and attacks carry nothing religious
+  const RELIGIOUS =
+    /gott|götter|engel|teufel|kreuz|kirch|mosche|synagog|tempel|leuchter|mond|stern|bibel|koran|tora|fasten|gebet|heilig|segen|opfer|prophet|priester|pfarr|imam|rabbi|mönch|kippa|kopftuch/i;
+  for (const set of Object.values(fk.enemies))
+    for (const e of set.normal.concat([set.elite, set.boss]))
+      if (RELIGIOUS.test(e.name + ' ' + e.shape)) fails.push('religionen opponent ' + e.name);
+  for (const m of fk.moves) if (RELIGIOUS.test(m)) fails.push('religionen enemy move ' + m);
+  const dil = (w) => fk.events.filter((e) => e.dilemma && e.w === w);
+  if (dil(1).length < 6) fails.push('religionen world 1 has only ' + dil(1).length + ' dilemma cards');
+  if (dil(2).length < 4) fails.push('religionen world 2 has only ' + dil(2).length + ' dilemma cards');
+  for (const e of dil(1).concat(dil(2)))
+    if (/ausgelacht|lacht über|lachen über|Auslachen/.test(e.text) && !e.opts.some((o) => o.label === R.HELP))
+      fails.push('religionen dilemma without adult help: ' + e.title);
+  if (fk.events.some((e) => e.w === undefined)) fails.push('religionen: every event belongs to one world');
 }
 // Sachkunde: every unit has enough questions, every generated picture task has exactly one fitting answer
 for (const m of ['kornkammer', 'wetterstation', 'kompass', 'wiese', 'frueher']) {
