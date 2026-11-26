@@ -4821,12 +4821,27 @@ async function landCases() {
     );
     const by = card('BY', 'Deutsch', 'woerterwerkstatt');
     check(
-      by.includes('Lehrplan Bayern: noch nicht verglichen.') &&
+      by.includes('Lehrplan Bayern: passt. Das Komma vor „aber“ und „denn“ nennt der Plan nicht.') &&
         by.includes('Grundlage (Lehrplan Sachsen): Deutsch') &&
         by.includes('Wörterliste (Grundwortschatz) von Bayern ist nicht eingebaut') &&
         by.includes('Wörter aus der sächsischen Mundart'),
       'in Bayern: the verdict, the basis, the word list that is not built in, the dialect words switched off',
     );
+    check(
+      card('BE', 'Sachunterricht', 'wetterstation').includes(
+        'Lehrplan Berlin: noch nicht verglichen. Der Plan ordnet dieses Thema keiner Klasse zu',
+      ),
+      'a unit whose plan names no grade stays „noch nicht verglichen“, with the reason',
+    );
+    const words = card('BY', 'Deutsch', 'satzbaustelle');
+    check(
+      words.includes('Der Lehrplan hier sagt Gegenwart und 1. Vergangenheit statt Präsens und Präteritum.') &&
+        words.includes('Der Lehrplan hier nennt das Prädikat auch Satzkern.') &&
+        words.includes('Die Klasse sagt vielleicht Grundform und Vergleichsstufen.'),
+      'Bayern: the task types say which words the plan there uses',
+    );
+    const saxon = card('SN', 'Deutsch', 'satzbaustelle') + card('', 'Deutsch', 'satzbaustelle');
+    check(!/Satzkern|Gegenwart|Vergleichsstufen/.test(saxon), 'in Sachsen and without a state no such line');
     check(
       !card('NI', 'Deutsch', 'woerterwerkstatt').includes('Wörterliste'),
       'no word list line where the state has none',

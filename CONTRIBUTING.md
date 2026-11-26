@@ -114,7 +114,12 @@ docs/fonts/        fonts Patrick Hand and Andika (SIL OFL) – self-hosted, no r
   switch goes through `setOn`. `meta.forced` holds what parents switched on against the state (`mode:<unit>`,
   `mod:<unit>:<task type>`) and the units they added from the next grade (`also:<grade>:<unit>`). Print a
   subject's name with `subjectLabel(subject)`; keys, saves and comparisons keep `Ethik` and `Sachkunde`.
-  How a unit fits a state's plan is one word in that state's `fit` map; a new unit needs one in `LAENDER.SN.fit`.
+  How a unit fits a state's plan is one word in that state's `fit` map, with an optional sentence for parents in
+  `note`; a new unit needs an entry in every state (`offen` until its plan has been compared). Outside Saxony both
+  come from `lehrplan/laender/_passung-je-thema.md`, where every verdict has its source; a test compares the two.
+  Two states say Vokal and Konsonant: `reword` swaps the listed forms of Selbstlaut and Mitlaut in shown and spoken
+  text only (`tests/test_laender.js` fails for a form it does not know). Other grammar words of a state are a line
+  under the tutorial and at the task type in the parent area (`gloss`).
 - Units of a subject that carry a `rank` (Mathe and Englisch in grade 3) are listed from easy to hard on the title
   screen; nothing is ever locked.
 
